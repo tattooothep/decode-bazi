@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -268,7 +269,7 @@
     <div class="us-head">
       <div class="us-tag">
         <span class="tc">擇</span>
-        <span data-i18n="mg.next.tag">ฤกษ์ถัดไป · NEXT IN LINE</span>
+        <span data-i18n="mg.next.tag">ฤกษ์ถัดไป · ถัดไป</span>
       </div>
       <div class="us-countdown">
         <div class="num">5d 18h</div>
@@ -287,7 +288,7 @@
           <div class="row">📅 <b data-i18n="auto.g.010">พุธ 13 พ.ค. 2569</b> · 三月廿四</div>
           <div class="row">⏰ <b>14:00 — 15:30</b> · 未時</div>
           <div class="row">柱 <span class="pillar">癸巳</span> DAY · <span class="pillar">乙巳</span> MONTH</div>
-          <div class="row">⚡ <b>+92</b> composite score (★★★)</div>
+          <div class="row">⚡ <b>+92</b> <span data-i18n="mg.next.score">คะแนนรวม (★★★)</span></div>
         </div>
       </div>
       <div class="us-actions">
@@ -308,7 +309,7 @@
       <button><span data-i18n="mg.filter.missed">พลาด</span><span class="count">2</span></button>
     </div>
     <div class="search-input">
-      <input type="text" placeholder="ค้นหาเป้าหมาย..."/>
+      <input type="text" placeholder="ค้นหาเป้าหมาย..." data-i18n-placeholder="mg.search.placeholder"/>
     </div>
   </div>
 
@@ -617,7 +618,8 @@ window.HK_I18N = {
   'mg.stat.missed':{ th:'พลาดฤกษ์', en:'Missed', zh:'失吉時' },
   'mg.stat.rate':  { th:'อัตราสำเร็จ', en:'Success Rate', zh:'成功率' },
   'mg.stat.avg':   { th:'คะแนนเฉลี่ย', en:'Average Score', zh:'平均分' },
-  'mg.next.tag':   { th:'ฤกษ์ถัดไป · NEXT IN LINE', en:'Next Up · NEXT IN LINE', zh:'下一個吉時 · NEXT IN LINE' },
+  'mg.next.tag':   { th:'ฤกษ์ถัดไป · ถัดไป', en:'Next auspicious slot', zh:'下一個吉時' },
+  'mg.next.score': { th:'คะแนนรวม (★★★)', en:'composite score (★★★)', zh:'綜合分數（★★★）' },
   'mg.next.misstag':{ th:'เซ็นสัญญา · 簽約', en:'Sign Contract · 簽約', zh:'簽約 · 簽約' },
   'mg.next.h2sub': { th:'กับ Fara — Anhui Hongyu', en:'with Fara — Anhui Hongyu', zh:'與 Fara — 安徽宏宇' },
   'mg.filter.all': { th:'ทั้งหมด', en:'All', zh:'全部' },
@@ -625,6 +627,7 @@ window.HK_I18N = {
   'mg.filter.soon':{ th:'เร็วๆนี้', en:'Soon', zh:'即將到來' },
   'mg.filter.done':{ th:'สำเร็จ', en:'Done', zh:'已成' },
   'mg.filter.missed':{ th:'พลาด', en:'Missed', zh:'失吉' },
+  'mg.search.placeholder':{ th:'ค้นหาเป้าหมาย...', en:'Search goals...', zh:'搜尋目標...' },
   'mg.cat.doc':    { th:'เอกสาร', en:'Documents', zh:'文書' },
   'mg.cat.talk':   { th:'เจรจา', en:'Negotiation', zh:'談判' },
   'mg.cat.trade':  { th:'ธุรกรรม', en:'Transaction', zh:'交易' },
@@ -647,6 +650,7 @@ window.HK_I18N = {
   'mg.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
   'mg.nav.network': { th:'เครือข่าย', en:'Network', zh:'人脈' },
   'mg.nav.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  'hk.nav.forecast':{ th:'พยากรณ์', en:'Forecast', zh:'占卜' },
   'mg.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
   'mg.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
   'mg.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
@@ -665,22 +669,42 @@ function applyI18N(lang){
         else el.textContent = v;
       }
     });
+    document.querySelectorAll('[data-i18n-placeholder="'+key+'"]').forEach(function(el){
+      if (v !== undefined) el.setAttribute('placeholder', v);
+    });
   });
 }
 window.applyI18N = applyI18N;
-window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 (function(){
-  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
-  var btns = sw.querySelectorAll('button');
-  function apply(lang){
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
-    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
-    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
-    applyI18N(lang);
-  }
+  var sw = document.getElementById('hk-lang-switch');
+	  var btns = sw ? sw.querySelectorAll('button') : [];
+	  function resolveLang(){
+	    try {
+	      var st = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+	      if (st && typeof st.sifu === 'function') return st.sifu() || 'th';
+	      if (st && typeof st.current === 'function') return st.current().raw || 'th';
+	    } catch(e) {}
+	    try { return localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th'; } catch(e) {}
+	    return 'th';
+	  }
+	  function apply(lang){
+	    var st = window.HK_LANG_STATE && window.HK_LANG_STATE.set ? window.HK_LANG_STATE.set(lang === 'cn' ? 'zh-cn' : lang) : null;
+	    var raw = st ? st.raw : (String(lang || 'th').toLowerCase().indexOf('zh') === 0 || lang === 'cn' ? 'zh' : String(lang || 'th').toLowerCase());
+	    var app = st ? st.app : (raw === 'th' || raw === 'en' || raw === 'zh' ? raw : 'en');
+	    var html = st ? st.html : (lang === 'cn' ? 'zh-Hans' : raw);
+	    document.documentElement.setAttribute('lang', html);
+	    document.documentElement.setAttribute('data-lang', app);
+	    document.documentElement.setAttribute('data-hk-locale', raw);
+	    if (raw === 'zh') document.documentElement.setAttribute('data-zh-variant', (lang === 'cn' || (st && st.variant === 'cn')) ? 'cn' : 'hant');
+	    else document.documentElement.removeAttribute('data-zh-variant');
+	    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === app); });
+	    try{ localStorage.setItem('hk_locale', raw); localStorage.setItem('hk_lang', raw); if(raw==='zh') localStorage.setItem('hk_zh_variant',(lang==='cn'||(st&&st.variant==='cn'))?'cn':'hant'); }catch(e){}
+	    applyI18N(raw === 'zh' ? 'zh' : raw);
+	    try{ if(raw==='zh' && document.documentElement.getAttribute('data-zh-variant')==='cn' && window.HK_ZHCN) window.HK_ZHCN.apply(); }catch(e){}
+	  }
+  window.__hkOverlayApply=function(l){apply(l);};
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  apply(resolveLang());
 })();
 </script>
 

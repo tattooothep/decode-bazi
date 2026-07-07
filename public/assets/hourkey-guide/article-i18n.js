@@ -5,12 +5,12 @@
     ['th', 'TH', 'th'],
     ['en', 'EN', 'en'],
     ['zh', '中文', 'zh-Hant'],
+    ['cn', '简', 'zh-Hans'],
     ['vi', 'VI', 'vi'],
     ['ja', 'JP', 'ja'],
     ['ko', 'KO', 'ko'],
     ['ru', 'RU', 'ru'],
-    ['es', 'ES', 'es'],
-    ['fr', 'FR', 'fr']
+    ['es', 'ES', 'es']
   ];
 
   var UI = {
@@ -87,6 +87,7 @@
       good: 'Lit bien', limit: 'Ne pas utiliser seul'
     }
   };
+  UI.cn = UI.zh;
 
   var SCIENCES = {
     bazi: {
@@ -442,14 +443,28 @@
     return LANGS[0];
   }
 
+  function normalizeLang(raw) {
+    raw = String(raw || '').trim().toLowerCase().replace('_', '-');
+    if (raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans') return 'cn';
+    if (raw === 'zh-tw' || raw === 'zh-hk' || raw === 'zh-hant') return 'zh';
+    if (raw.indexOf('zh') === 0) return 'zh';
+    return UI[raw] ? raw : '';
+  }
+
   function getLang() {
     try {
-      var q = new URLSearchParams(location.search).get('lang');
-      if (q && UI[q]) return q;
+      if (window.HK_LANG_STATE && typeof window.HK_LANG_STATE.sifu === 'function') {
+        var active = normalizeLang(window.HK_LANG_STATE.sifu());
+        if (active) return active;
+      }
+      var q = normalizeLang(new URLSearchParams(location.search).get('lang') || new URLSearchParams(location.search).get('locale'));
+      if (q) return q;
       var s = localStorage.getItem('hk_article_locale') || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang');
-      if (s && UI[s]) return s;
+      var stored = normalizeLang(s);
+      if (stored === 'zh' && localStorage.getItem('hk_zh_variant') === 'cn') stored = 'cn';
+      if (stored) return stored;
     } catch (e) {}
-    return document.documentElement.dataset.lang && UI[document.documentElement.dataset.lang] ? document.documentElement.dataset.lang : 'th';
+    return normalizeLang(document.documentElement.dataset.lang) || 'th';
   }
 
   function setMeta(name, value) {
@@ -487,11 +502,20 @@
   function syncLang(code) {
     var meta = langMeta(code);
     document.documentElement.lang = meta[2];
-    document.documentElement.dataset.lang = code;
+    document.documentElement.dataset.lang = code === 'cn' ? 'zh' : code;
+    document.documentElement.setAttribute('data-hk-locale', code === 'cn' ? 'zh' : code);
+    if (code === 'cn') document.documentElement.setAttribute('data-zh-variant', 'cn');
+    else if (code === 'zh') document.documentElement.setAttribute('data-zh-variant', 'hant');
+    else document.documentElement.removeAttribute('data-zh-variant');
     try {
-      localStorage.setItem('hk_article_locale', code);
-      localStorage.setItem('hk_locale', code);
-      localStorage.setItem('hk_lang', code);
+      localStorage.setItem('hk_article_locale', code === 'cn' ? 'zh' : code);
+      if (code !== 'fr') {
+        localStorage.setItem('hk_locale', code === 'cn' ? 'zh' : code);
+        localStorage.setItem('hk_lang', code === 'cn' ? 'zh' : code);
+        if (code === 'cn') localStorage.setItem('hk_zh_variant', 'cn');
+        else if (code === 'zh') localStorage.setItem('hk_zh_variant', 'hant');
+        else localStorage.removeItem('hk_zh_variant');
+      }
     } catch (e) {}
     var sel = document.getElementById('articleLang');
     if (sel) {
@@ -502,8 +526,21 @@
   }
 
   function localized(obj, code) {
-    if (obj && typeof obj === 'object') return obj[code] || obj.en || obj.th || '';
+    if (obj && typeof obj === 'object') return obj[code] || (code === 'cn' ? obj.zh : '') || obj.en || obj.th || '';
     return obj || '';
+  }
+
+  function applySimplified(code) {
+    if (code !== 'cn') return;
+    try {
+      if (window.HK_ZHCN && typeof window.HK_ZHCN.apply === 'function') {
+        window.HK_ZHCN.apply();
+        return;
+      }
+    } catch (_) {}
+    setTimeout(function () {
+      try { if (window.HK_ZHCN && typeof window.HK_ZHCN.apply === 'function') window.HK_ZHCN.apply(); } catch (_) {}
+    }, 250);
   }
 
   function paragraphBlock(items) {
@@ -585,6 +622,15 @@
       technical: 'Detail technique'
     }
   };
+  DETAIL_COPY.th = {
+    grammar: '%name% มีลำดับคำนวณชัดเจน ไม่ใช่ prompt ทำนายแบบอิสระ ต้องตั้งผังหรือข้อมูลก่อน แล้วจึงอ่านโครงสร้างที่เห็นจริง',
+    layer: 'Hourkey ถือว่าชั้นนี้เป็นภาษาเทคนิคที่มีประวัติ: ปฏิทิน ฟ้า ทิศ ตัวเลข และวังต้องแยกกันก่อน แล้วค่อยดูตอน Fusion ว่าชั้นใดหนุนหรือขัดกัน',
+    deep: 'การอ่านลึกต้องเรียงลำดับ: ฐานผัง สภาพหรือกำลัง ความสัมพันธ์ การกระตุ้นตามเวลา แล้วจึงเป็นคำแนะนำที่ใช้ได้จริง คำมงคลคำเดียวไม่พอ',
+    start: 'ผู้ใช้ใหม่ควรเริ่มจากชั้นที่นิ่งที่สุด แล้วค่อยเพิ่มเวลา ทิศ และสถานการณ์ สำหรับศาสตร์นี้ สิ่งแรกคือต้องรู้ว่าผังวัดอะไรอยู่',
+    source: 'ลำดับอ่านภายในถูกออกแบบให้ AI Sifu อธิบายที่มาของข้อสรุปได้: กฎต้นทาง ผังที่คำนวณ จุดขัดแย้ง และคำแนะนำที่อ่านเข้าใจ',
+    technical: 'รายละเอียดเทคนิค'
+  };
+  DETAIL_COPY.cn = DETAIL_COPY.zh;
 
   function dc(code, key, vars) {
     var pack = DETAIL_COPY[code] || DETAIL_COPY.en;
@@ -600,22 +646,311 @@
     return (code === 'en' ? '' : (dc(code, 'technical') + ': ')) + text;
   }
 
+  var GENERIC = {
+    th: {
+      kicker: 'ศาสตร์ · โครงสร้าง · วิธีใช้',
+      cardSmall: 'ระบบคำนวณ',
+      components: ['โครงสร้างหลักของระบบ', 'กฎเวลา ทิศ หรือดาวที่ใช้คำนวณ', 'ความสัมพันธ์ที่ต้องอ่านร่วมกัน', 'วิธีนำผลไปใช้ใน Hourkey'],
+      pills: ['โครงสร้าง', 'เวลา', 'ความสัมพันธ์'],
+      method: 'เริ่มจากตั้งข้อมูลให้ถูก อ่านโครงสร้างหลัก ตรวจความสัมพันธ์และข้อขัดแย้ง แล้วจึงแปลงเป็นคำแนะนำที่ใช้ได้จริง',
+      good: 'เหมาะกับการอ่านโครงสร้าง จังหวะ และเงื่อนไขที่เกี่ยวข้องกับคำถาม เมื่อใช้ร่วมกับข้อมูลเจ้าของดวงและบริบทจริง',
+      limit: 'ไม่ควรใช้แทนคำแนะนำทางแพทย์ กฎหมาย หรือการเงิน และไม่ควรตัดสินจากคำมงคลคำเดียวโดยไม่มีฐานคำนวณ',
+      compare: 'แต่ละศาสตร์เป็นคนละชั้น: พื้นดวง เวลา สถานการณ์ พื้นที่ และฤกษ์ต้องอ่านแยกก่อน แล้วค่อยดูว่าชั้นใดสนับสนุนหรือขัดกัน',
+      use: 'Hourkey ใช้ชั้นนี้เป็นข้อมูลที่ส่งต่อให้ผังดวง วันนี้ ปฏิทิน และ AI Sifu เพื่อให้คำตอบยึดกับผลคำนวณจริง',
+      reference: 'ชั้นอ้างอิง: %sources%.',
+      visual: 'ภาพประกอบของ %name% ใน Hourkey',
+      hubTitle: 'เลือกศาสตร์ให้ตรงคำถาม',
+      hubLead: 'Hourkey แยกเลนส์ให้ชัด: พื้นดวง ดวงดาว สถานการณ์ พื้นที่ ฤกษ์ และรากฐานระบบจีน เพื่อให้ผู้ใช้ใหม่รู้ว่าควรเริ่มตรงไหน และผู้ใช้ขั้นสูงอ่านหลายชั้นร่วมกันได้',
+      overviewTitle: 'ก่อนอ่าน ต้องแยก “ศาสตร์” กับ “หน้าใช้งาน”',
+      overviewBody: 'ศาสตร์คือระบบคำนวณและภาษาเหตุผล ส่วนหน้าต่าง ๆ ในเว็บคือพื้นที่นำผลไปใช้ การแยกสองชั้นนี้ทำให้คำตอบไม่ปนกันและตรวจสอบเหตุผลได้',
+      scienceKicker: 'สารบัญศาสตร์',
+      scienceTitle: 'หน้าแยกครบทุกศาสตร์',
+      scienceSub: 'แต่ละหน้าอธิบายที่มา วิธีอ่านลงลึก ข้อจำกัด และการใช้ใน Hourkey',
+      hubFigure: 'ฟ้าเดียวกัน หลายเลนส์: คน เวลา สถานการณ์ พื้นที่ และฤกษ์ต้องอ่านเป็นชั้น ไม่ใช่ปนกันจนกลายเป็นคำทำนายลอย ๆ',
+      startBody: 'เริ่มจากโปรไฟล์ดวงที่นิ่งที่สุด แล้วค่อยเพิ่มวันนี้ ปฏิทิน สถานการณ์ พื้นที่ และฤกษ์ เมื่อลำดับชัด AI Sifu จะตอบจากข้อมูลจริง ไม่ใช่ prompt ลอย ๆ',
+      advancedBody: 'Fusion ที่ดีไม่ใช่การเอาคำทำนายหลายศาสตร์มาต่อกัน แต่ต้องบอกว่าอะไรคือฐาน อะไรคือจังหวะชั่วคราว อะไรคือทิศหรือพื้นที่ และข้อขัดแย้งใดควรให้มนุษย์ตัดสินใจ',
+      toolsKicker: 'พื้นที่ใช้งาน',
+      toolsTitle: 'เครื่องมือในเว็บเอาศาสตร์ไปใช้ตรงไหน',
+      toolChart: 'ผังดวง / โปรไฟล์',
+      toolChartSub: 'ฐานดวงและข้อมูลเจ้าของดวง',
+      toolFusionSub: 'เปรียบเทียบหลายศาสตร์ในบริบทเดียวกัน',
+      toolSifuSub: 'ถามบนข้อมูลที่ระบบคำนวณแล้ว',
+      contents: 'ในหน้านี้',
+      overviewShort: 'โครงระบบ',
+      sciencesShort: 'ศาสตร์ทั้งหมด',
+      toolsShort: 'เครื่องมือในเว็บ',
+      footer: 'ชุดบทความเพื่อการเรียนรู้ · noindex จนกว่าจะอนุมัติ'
+    },
+    en: {
+      kicker: 'science · structure · use',
+      cardSmall: 'calculation system',
+      components: ['Core structure of the system', 'Time, direction, sky or number rules', 'Relationships read together', 'How Hourkey applies the result'],
+      pills: ['structure', 'timing', 'relations'],
+      method: 'Start with correct data, read the core structure, check relationships and conflicts, then turn the result into practical advice.',
+      good: 'Useful for reading structure, timing and conditions around the question when combined with the owner profile and real context.',
+      limit: 'Do not use it as medical, legal or financial advice, and do not judge from one lucky word without the calculation basis.',
+      compare: 'Each system is a separate layer: natal base, time, situation, space and starting moment are separated first, then compared for support or conflict.',
+      use: 'Hourkey passes this layer into Chart, Today, Calendar and AI Sifu so answers stay tied to computed data.',
+      reference: 'Reference layer: %sources%.',
+      visual: '%name% visual layer in Hourkey',
+      hubTitle: 'Choose the right science for the question',
+      hubLead: 'Hourkey separates the lenses: natal structure, real sky, palace maps, situational strategy, space, date selection and Chinese cosmology. New users get a path; advanced users get a fusion map.',
+      overviewTitle: 'Separate the science from the product surface',
+      overviewBody: 'A science is a calculation language. Product pages are places where the result is used. Keeping them separate makes the answer clearer and easier to verify.',
+      scienceKicker: 'science index',
+      scienceTitle: 'Dedicated page for every science',
+      scienceSub: 'Each page explains origin, deep reading method, limits and how Hourkey uses the science.',
+      hubFigure: 'One sky, many lenses: person, time, situation, space and starting moment are layered instead of mixed into a floating prediction.',
+      startBody: 'Start with the stable birth profile, then add today, calendar, situation, space and date selection. This order lets AI Sifu answer from real data rather than a floating prompt.',
+      advancedBody: 'Good fusion is not a pile of predictions. It explains what is the natal base, what is temporary timing, what belongs to direction or space, and which conflict needs human judgment.',
+      toolsKicker: 'product surface',
+      toolsTitle: 'Where the website uses each layer',
+      toolChart: 'Chart / Profile',
+      toolChartSub: 'Natal base and owner data',
+      toolFusionSub: 'Multi-science comparison',
+      toolSifuSub: 'Question layer over computed data',
+      contents: 'On this page',
+      overviewShort: 'System map',
+      sciencesShort: 'All sciences',
+      toolsShort: 'Website tools',
+      footer: 'Preview article set · education-first science guide · noindex until approved'
+    },
+    zh: {
+      kicker: '術數 · 結構 · 用法',
+      cardSmall: '計算系統',
+      components: ['系統的核心結構', '時間、方位、星曜或數理規則', '必須合參的關係', 'Hourkey 如何使用結果'],
+      pills: ['結構', '時間', '關係'],
+      method: '先校正資料，再讀核心結構，檢查關係與衝突，最後轉成可以執行的建議。',
+      good: '適合在命盤資料與真實情境配合下，閱讀結構、時機與問題周邊條件。',
+      limit: '不可取代醫療、法律或財務建議，也不應只憑單一吉凶詞下判斷。',
+      compare: '各術數是不同層：命盤、時間、情境、空間與起始時刻先分清，再看相助或相衝。',
+      use: 'Hourkey 將此層送入命盤、今日、曆與 AI Sifu，使回答貼合已計算資料。',
+      reference: '來源層: %sources%.',
+      visual: '%name% 在 Hourkey 的示意圖',
+      hubTitle: '選對問題的術數鏡頭',
+      hubLead: 'Hourkey 把命盤結構、真天星、宮位圖、情境策略、空間、擇日與中國宇宙觀分層；新手有路徑，進階者有合參地圖。',
+      overviewTitle: '先分清「術數」與「產品頁」',
+      overviewBody: '術數是計算語言，產品頁是使用結果的地方。分清兩層，回答才清楚，也更容易核對理由。',
+      scienceKicker: '術數索引',
+      scienceTitle: '每套術數都有獨立頁',
+      scienceSub: '每頁說明來源、深讀方法、限制，以及 Hourkey 如何使用該術數。',
+      hubFigure: '同一片天，不同鏡頭：人、時間、情境、空間與起始時刻要分層讀，不要混成漂浮的斷語。',
+      startBody: '先從最穩定的出生資料開始，再加入今日、曆法、情境、空間與擇日。順序清楚時，AI Sifu 才能依真實資料回答。',
+      advancedBody: '好的 Fusion 不是把多套斷語疊在一起，而是交代何者為基礎、何者為暫時時機、何者屬於方位或空間，以及哪些衝突需要人判斷。',
+      toolsKicker: '產品頁',
+      toolsTitle: '網站工具如何使用各層',
+      toolChart: '命盤 / 個人資料',
+      toolChartSub: '命盤基礎與主人資料',
+      toolFusionSub: '多術數合參',
+      toolSifuSub: '基於計算資料的問答層',
+      contents: '本頁內容',
+      overviewShort: '系統結構',
+      sciencesShort: '全部術數',
+      toolsShort: '網站工具',
+      footer: '教育文章預覽集 · 核准前 noindex'
+    },
+    vi: {
+      kicker: 'Học thuật · cấu trúc · ứng dụng',
+      cardSmall: 'hệ tính toán',
+      components: ['Cấu trúc lõi của hệ', 'Quy tắc về thời gian, hướng, sao hoặc số', 'Các quan hệ cần đọc cùng nhau', 'Cách Hourkey dùng kết quả'],
+      pills: ['cấu trúc', 'thời điểm', 'quan hệ'],
+      method: 'Bắt đầu bằng dữ liệu đúng, đọc cấu trúc chính, kiểm tra quan hệ và xung đột, rồi chuyển thành lời khuyên thực tế.',
+      good: 'Phù hợp để đọc cấu trúc, thời điểm và điều kiện quanh câu hỏi khi kết hợp với hồ sơ chủ lá số và bối cảnh thật.',
+      limit: 'Không thay thế tư vấn y tế, pháp lý hay tài chính, và không nên kết luận từ một từ may mắn riêng lẻ.',
+      compare: 'Mỗi môn là một lớp riêng: nền lá số, thời gian, tình huống, không gian và thời điểm khởi sự được tách trước rồi mới so sánh.',
+      use: 'Hourkey đưa lớp này vào lá số, hôm nay, lịch và AI Sifu để câu trả lời bám vào dữ liệu đã tính.',
+      reference: 'Lớp tham chiếu: %sources%.',
+      visual: 'Minh họa %name% trong Hourkey',
+      hubTitle: 'Chọn đúng môn cho câu hỏi',
+      hubLead: 'Hourkey tách rõ các lớp: nền lá số, bầu trời thật, cung vị, tình huống, không gian, chọn ngày và vũ trụ quan Trung Hoa.',
+      overviewTitle: 'Tách môn học thuật khỏi trang sử dụng',
+      overviewBody: 'Môn học thuật là ngôn ngữ tính toán, còn trang sản phẩm là nơi dùng kết quả. Tách hai lớp giúp câu trả lời rõ và kiểm chứng được.',
+      scienceKicker: 'mục lục học thuật',
+      scienceTitle: 'Mỗi môn có một trang riêng',
+      scienceSub: 'Mỗi trang nêu nguồn gốc, cách đọc sâu, giới hạn và cách Hourkey sử dụng.',
+      hubFigure: 'Một bầu trời, nhiều lăng kính: con người, thời gian, tình huống, không gian và thời điểm khởi sự được đọc theo lớp.',
+      startBody: 'Bắt đầu từ hồ sơ sinh ổn định nhất, rồi thêm hôm nay, lịch, tình huống, không gian và chọn ngày để AI Sifu trả lời từ dữ liệu thật.',
+      advancedBody: 'Fusion tốt không phải gom nhiều lời đoán, mà phải chỉ rõ nền tảng, thời điểm tạm thời, hướng hoặc không gian và điểm cần con người quyết định.',
+      toolsKicker: 'trang sử dụng',
+      toolsTitle: 'Công cụ trong web dùng từng lớp ở đâu',
+      toolChart: 'Lá số / hồ sơ',
+      toolChartSub: 'Nền lá số và dữ liệu chủ lá số',
+      toolFusionSub: 'So sánh nhiều môn trong cùng bối cảnh',
+      toolSifuSub: 'Lớp hỏi đáp trên dữ liệu đã tính',
+      contents: 'Trong trang này',
+      overviewShort: 'Sơ đồ hệ thống',
+      sciencesShort: 'Tất cả môn',
+      toolsShort: 'Công cụ web',
+      footer: 'Bộ bài học thuật xem trước · noindex đến khi duyệt'
+    },
+    ja: {
+      kicker: '術数 · 構造 · 使い方',
+      cardSmall: '計算体系',
+      components: ['体系の中核構造', '時間・方位・星・数の規則', '合わせて読む関係', 'Hourkey での使い方'],
+      pills: ['構造', '時機', '関係'],
+      method: '正しいデータを置き、中心構造を読み、関係と衝突を確認してから、実行できる助言へ変換します。',
+      good: '命盤情報と現実の文脈を合わせた上で、構造、時機、質問周辺の条件を読むのに向きます。',
+      limit: '医療、法律、金融の助言の代替にはせず、単一の吉凶語だけで判断しません。',
+      compare: '各体系は別の層です。命盤、時間、状況、空間、開始時刻を分けてから、支援と衝突を比較します。',
+      use: 'Hourkey はこの層を命盤、今日、暦、AI Sifu に渡し、回答を計算済みデータに結びます。',
+      reference: '参照層: %sources%.',
+      visual: 'Hourkey における %name% の図解',
+      hubTitle: '質問に合う術数を選ぶ',
+      hubLead: 'Hourkey は命盤構造、実天、宮位、状況、空間、日取り、中国宇宙観を層に分けます。初心者には道筋を、上級者には合参地図を示します。',
+      overviewTitle: '術数と利用画面を分ける',
+      overviewBody: '術数は計算言語で、製品画面は結果を使う場所です。二つを分けると、回答が明確で検証しやすくなります。',
+      scienceKicker: '術数索引',
+      scienceTitle: '各体系の個別ページ',
+      scienceSub: '各ページで起源、深い読み方、限界、Hourkey での使い方を説明します。',
+      hubFigure: '同じ空を複数のレンズで読む。人、時間、状況、空間、開始時刻を層に分けます。',
+      startBody: '最も安定した出生プロフィールから始め、今日、暦、状況、空間、日取りを加えることで、AI Sifu は実データから答えられます。',
+      advancedBody: '良い Fusion は予測の寄せ集めではありません。基礎、短期の時機、方位や空間、人が判断すべき衝突を分けます。',
+      toolsKicker: '利用画面',
+      toolsTitle: '各層をどの画面で使うか',
+      toolChart: '命盤 / プロフィール',
+      toolChartSub: '命盤基礎と本人データ',
+      toolFusionSub: '複数体系を同じ文脈で比較',
+      toolSifuSub: '計算済みデータ上の質問層',
+      contents: 'このページ',
+      overviewShort: '体系図',
+      sciencesShort: '全術数',
+      toolsShort: 'Web ツール',
+      footer: '教育記事プレビュー · 承認まで noindex'
+    },
+    ko: {
+      kicker: '술수 · 구조 · 사용',
+      cardSmall: '계산 체계',
+      components: ['체계의 핵심 구조', '시간·방향·별·숫자 규칙', '함께 읽어야 할 관계', 'Hourkey에서 쓰는 방식'],
+      pills: ['구조', '시기', '관계'],
+      method: '정확한 데이터를 놓고 핵심 구조를 읽은 뒤 관계와 충돌을 확인하고 실행 가능한 조언으로 바꿉니다.',
+      good: '명식 정보와 실제 맥락을 함께 볼 때 구조, 시기, 질문 주변 조건을 읽는 데 적합합니다.',
+      limit: '의료, 법률, 금융 조언을 대신하지 않으며 하나의 길흉 단어만으로 판단하지 않습니다.',
+      compare: '각 체계는 별도 층입니다. 명식, 시간, 상황, 공간, 시작 시점을 먼저 나누고 지지와 충돌을 비교합니다.',
+      use: 'Hourkey는 이 층을 명식, 오늘, 달력, AI Sifu에 넘겨 답변이 계산 데이터에 붙어 있게 합니다.',
+      reference: '참조 층: %sources%.',
+      visual: 'Hourkey에서 보는 %name% 설명 이미지',
+      hubTitle: '질문에 맞는 술수 선택',
+      hubLead: 'Hourkey는 명식 구조, 실제 하늘, 궁위, 상황, 공간, 택일, 중국 우주관을 층으로 나눕니다.',
+      overviewTitle: '술수와 사용 화면을 분리',
+      overviewBody: '술수는 계산 언어이고 제품 화면은 결과를 쓰는 곳입니다. 두 층을 분리하면 답변이 명확하고 검증하기 쉽습니다.',
+      scienceKicker: '술수 목록',
+      scienceTitle: '각 체계별 페이지',
+      scienceSub: '각 페이지는 기원, 깊은 읽기, 한계, Hourkey에서의 사용을 설명합니다.',
+      hubFigure: '하나의 하늘을 여러 렌즈로 읽습니다. 사람, 시간, 상황, 공간, 시작 시점을 층으로 나눕니다.',
+      startBody: '가장 안정적인 출생 프로필에서 시작해 오늘, 달력, 상황, 공간, 택일을 더하면 AI Sifu가 실제 데이터에서 답합니다.',
+      advancedBody: '좋은 Fusion은 여러 예측의 나열이 아니라 기반, 임시 시기, 방향 또는 공간, 사람이 판단할 충돌을 구분합니다.',
+      toolsKicker: '사용 화면',
+      toolsTitle: '웹 도구가 각 층을 쓰는 곳',
+      toolChart: '명식 / 프로필',
+      toolChartSub: '명식 기반과 소유자 데이터',
+      toolFusionSub: '여러 체계를 같은 맥락에서 비교',
+      toolSifuSub: '계산된 데이터 위의 질문 층',
+      contents: '이 페이지',
+      overviewShort: '시스템 지도',
+      sciencesShort: '전체 술수',
+      toolsShort: '웹 도구',
+      footer: '교육 글 미리보기 · 승인 전 noindex'
+    },
+    ru: {
+      kicker: 'Система · структура · применение',
+      cardSmall: 'система расчета',
+      components: ['Ключевая структура системы', 'Правила времени, направления, неба или чисел', 'Связи, которые читаются вместе', 'Как Hourkey применяет результат'],
+      pills: ['структура', 'время', 'связи'],
+      method: 'Сначала вводятся точные данные, затем читается основная структура, проверяются связи и конфликты, после чего вывод переводится в практический совет.',
+      good: 'Подходит для чтения структуры, времени и условий вокруг вопроса, если есть профиль владельца и реальный контекст.',
+      limit: 'Не заменяет медицинские, юридические или финансовые советы и не делает вывод по одному благоприятному слову без расчета.',
+      compare: 'Каждая система является отдельным слоем: натальная база, время, ситуация, пространство и момент начала сначала разделяются, затем сравниваются.',
+      use: 'Hourkey передает этот слой в карту, день, календарь и AI Sifu, чтобы ответы опирались на рассчитанные данные.',
+      reference: 'Слой источников: %sources%.',
+      visual: 'Иллюстрация %name% в Hourkey',
+      hubTitle: 'Выберите систему под вопрос',
+      hubLead: 'Hourkey разделяет слои: натальная структура, реальное небо, дворцы, ситуация, пространство, выбор даты и китайская космология.',
+      overviewTitle: 'Отделяйте систему от рабочей страницы',
+      overviewBody: 'Система является языком расчета, а страницы продукта используют результат. Разделение делает ответ понятнее и проверяемее.',
+      scienceKicker: 'индекс систем',
+      scienceTitle: 'Отдельная страница для каждой системы',
+      scienceSub: 'Каждая страница объясняет происхождение, глубокое чтение, ограничения и применение в Hourkey.',
+      hubFigure: 'Одно небо, много линз: человек, время, ситуация, пространство и момент начала читаются слоями.',
+      startBody: 'Начните со стабильного профиля рождения, затем добавляйте сегодня, календарь, ситуацию, пространство и выбор даты.',
+      advancedBody: 'Хороший Fusion не складывает прогнозы, а разделяет основу, временный фактор, направление или пространство и конфликт для человеческого решения.',
+      toolsKicker: 'рабочая страница',
+      toolsTitle: 'Где сайт использует каждый слой',
+      toolChart: 'Карта / профиль',
+      toolChartSub: 'Натальная база и данные владельца',
+      toolFusionSub: 'Сравнение нескольких систем',
+      toolSifuSub: 'Вопросы поверх рассчитанных данных',
+      contents: 'На этой странице',
+      overviewShort: 'Схема системы',
+      sciencesShort: 'Все системы',
+      toolsShort: 'Инструменты сайта',
+      footer: 'Предпросмотр учебных статей · noindex до утверждения'
+    },
+    es: {
+      kicker: 'Ciencia · estructura · uso',
+      cardSmall: 'sistema de cálculo',
+      components: ['Estructura central del sistema', 'Reglas de tiempo, dirección, cielo o número', 'Relaciones que se leen juntas', 'Cómo Hourkey aplica el resultado'],
+      pills: ['estructura', 'tiempo', 'relación'],
+      method: 'Empieza con datos correctos, lee la estructura central, revisa relaciones y conflictos, y convierte el resultado en consejo práctico.',
+      good: 'Sirve para leer estructura, tiempo y condiciones alrededor de la pregunta cuando se combina con el perfil y el contexto real.',
+      limit: 'No sustituye consejo médico, legal o financiero, ni debe juzgarse por una sola palabra favorable sin cálculo.',
+      compare: 'Cada sistema es una capa: base natal, tiempo, situación, espacio y momento de inicio se separan antes de comparar apoyo o conflicto.',
+      use: 'Hourkey pasa esta capa a carta, día, calendario y AI Sifu para que las respuestas se apoyen en datos calculados.',
+      reference: 'Capa de referencia: %sources%.',
+      visual: 'Ilustración de %name% en Hourkey',
+      hubTitle: 'Elige la ciencia correcta para la pregunta',
+      hubLead: 'Hourkey separa las capas: estructura natal, cielo real, palacios, situación, espacio, selección de fecha y cosmología china.',
+      overviewTitle: 'Separa la ciencia de la pantalla de uso',
+      overviewBody: 'La ciencia es un lenguaje de cálculo; las páginas del producto usan el resultado. Separarlas hace la respuesta más clara y verificable.',
+      scienceKicker: 'índice de ciencias',
+      scienceTitle: 'Página dedicada para cada ciencia',
+      scienceSub: 'Cada página explica origen, lectura profunda, límites y cómo Hourkey la usa.',
+      hubFigure: 'Un cielo, muchas lentes: persona, tiempo, situación, espacio y momento inicial se leen por capas.',
+      startBody: 'Empieza con el perfil de nacimiento estable; luego añade hoy, calendario, situación, espacio y selección de fecha.',
+      advancedBody: 'Una buena Fusion no apila predicciones; separa base natal, tiempo temporal, dirección o espacio y conflictos que requieren juicio humano.',
+      toolsKicker: 'pantalla de uso',
+      toolsTitle: 'Dónde usa el sitio cada capa',
+      toolChart: 'Carta / perfil',
+      toolChartSub: 'Base natal y datos de la persona',
+      toolFusionSub: 'Comparación de varias ciencias',
+      toolSifuSub: 'Preguntas sobre datos calculados',
+      contents: 'En esta página',
+      overviewShort: 'Mapa del sistema',
+      sciencesShort: 'Todas las ciencias',
+      toolsShort: 'Herramientas web',
+      footer: 'Vista previa educativa · noindex hasta aprobación'
+    }
+  };
+  GENERIC.cn = GENERIC.zh;
+
+  function gc(code, key) {
+    var pack = GENERIC[code] || GENERIC.en;
+    var value = pack[key] || GENERIC.en[key] || '';
+    return Array.isArray(value) ? value.slice() : value;
+  }
+
+  function fieldText(s, key, code) {
+    var value = s[key];
+    if (value && typeof value === 'object') return localized(value, code);
+    if (code === 'en') return value || '';
+    return gc(code, key);
+  }
+
   function scienceCopy(s, code) {
     var t = UI[code] || UI.th;
-    var name = s.title + (s.subtitle ? ' / ' + s.subtitle : '');
+    var name = s.title + (code === 'en' && s.subtitle ? ' / ' + s.subtitle : '');
     var lead = localized(s.lead, code);
     var origin = localized(s.origin, code);
     var sections = t.sections;
     return [
       '<section><h2>' + esc(sections[0]) + '</h2>' + paragraphBlock([lead, dc(code, 'grammar', {name: name})]) + '</section>',
       '<section><h2>' + esc(sections[1]) + '</h2>' + paragraphBlock([origin, dc(code, 'layer')]) + '</section>',
-      '<section><h2>' + esc(sections[2]) + '</h2>' + buildComponents(s) + '</section>',
-      '<section><h2>' + esc(sections[3]) + '</h2>' + paragraphBlock([techLine(code, s.method), dc(code, 'deep')]) + '</section>',
-      '<section><h2>' + esc(sections[4]) + '</h2><div class="facts"><div class="fact"><b>' + esc(t.good) + '</b><p>' + esc(techLine(code, s.good)) + '</p></div><div class="fact"><b>' + esc(t.limit) + '</b><p>' + esc(techLine(code, s.limit)) + '</p></div></div></section>',
+      '<section><h2>' + esc(sections[2]) + '</h2>' + buildComponents({ components: code === 'en' ? s.components : gc(code, 'components') }) + '</section>',
+      '<section><h2>' + esc(sections[3]) + '</h2>' + paragraphBlock([techLine(code, fieldText(s, 'method', code)), dc(code, 'deep')]) + '</section>',
+      '<section><h2>' + esc(sections[4]) + '</h2><div class="facts"><div class="fact"><b>' + esc(t.good) + '</b><p>' + esc(techLine(code, fieldText(s, 'good', code))) + '</p></div><div class="fact"><b>' + esc(t.limit) + '</b><p>' + esc(techLine(code, fieldText(s, 'limit', code))) + '</p></div></div></section>',
       '<section><h2>' + esc(sections[5]) + '</h2>' + paragraphBlock([dc(code, 'start')]) + '</section>',
-      '<section><h2>' + esc(sections[6]) + '</h2>' + paragraphBlock([techLine(code, s.compare)]) + '</section>',
-      '<section><h2>' + esc(sections[7]) + '</h2>' + paragraphBlock(['Reference layer: ' + s.sources + '.', dc(code, 'source')]) + '</section>',
-      '<section class="final-box"><h2>' + esc(sections[8]) + '</h2>' + paragraphBlock([techLine(code, s.use)]) + '<div class="actions"><a class="btn primary" href="/chart">' + esc(t.chart) + '</a><a class="btn" href="/master-fusion">' + esc(t.fusion) + '</a></div></section>'
+      '<section><h2>' + esc(sections[6]) + '</h2>' + paragraphBlock([techLine(code, fieldText(s, 'compare', code))]) + '</section>',
+      '<section><h2>' + esc(sections[7]) + '</h2>' + paragraphBlock([gc(code, 'reference').replace('%sources%', s.sources), dc(code, 'source')]) + '</section>',
+      '<section class="final-box"><h2>' + esc(sections[8]) + '</h2>' + paragraphBlock([techLine(code, fieldText(s, 'use', code))]) + '<div class="actions"><a class="btn primary" href="/chart">' + esc(t.chart) + '</a><a class="btn" href="/master-fusion">' + esc(t.fusion) + '</a></div></section>'
     ].join('');
   }
 
@@ -638,16 +973,17 @@
 
     var hero = document.querySelector('.detail-head');
     if (hero) {
+      var subtitle = code === 'en' ? s.subtitle : '';
       hero.innerHTML = [
         '<div class="detail-copy">',
-        '<p class="kicker">' + esc(s.kicker) + '</p>',
-        '<h1>' + esc(s.title) + '<br/><span class="han">' + esc(s.subtitle) + '</span></h1>',
+        '<p class="kicker">' + esc(code === 'en' ? s.kicker : gc(code, 'kicker')) + '</p>',
+        '<h1>' + esc(s.title) + (subtitle ? '<br/><span class="han">' + esc(subtitle) + '</span>' : '') + '</h1>',
         '<p class="lead">' + esc(desc) + '</p>',
-        '<div class="pill-row">' + s.pills.map(function (p) { return '<span class="pill">' + esc(p) + '</span>'; }).join('') + '</div>',
+        '<div class="pill-row">' + (code === 'en' ? s.pills : gc(code, 'pills')).map(function (p) { return '<span class="pill">' + esc(p) + '</span>'; }).join('') + '</div>',
         '</div>',
         '<figure class="poster media-card">',
         '<video autoplay muted loop playsinline preload="metadata" poster="/assets/hourkey-guide/science-' + esc(s.asset) + '-hero-v3.webp"><source src="/assets/hourkey-guide/science-' + esc(s.asset) + '-loop-v3.mp4" type="video/mp4"/></video>',
-        '<figcaption>' + esc(s.title + ' visual layer: ' + s.components.slice(0, 3).join(' · ')) + '</figcaption>',
+        '<figcaption>' + esc(gc(code, 'visual').replace('%name%', s.title)) + '</figcaption>',
         '</figure>'
       ].join('');
     }
@@ -665,11 +1001,13 @@
   }
 
   function renderHub(code) {
+    var zhMode = code === 'zh' || code === 'cn';
     var t = UI[code] || UI.th;
-    document.title = code === 'th' ? 'คู่มือศาสตร์ Hourkey: เลือกศาสตร์ให้ตรงคำถาม' : 'Hourkey Science Guide: choose the right lens';
+    document.title = code === 'th' ? 'คู่มือศาสตร์ Hourkey: เลือกศาสตร์ให้ตรงคำถาม' : (zhMode ? 'Hourkey 術數指南：選對問題的鏡頭' : gc(code, 'hubTitle') + ' | Hourkey');
     var desc = code === 'th'
       ? 'คู่มือให้ความรู้ว่าแต่ละศาสตร์ใน Hourkey คืออะไร ใช้ตอบคำถามแบบไหน และควรอ่านร่วมกันอย่างไร'
-      : 'Educational guide to every Hourkey science: what each system reads, where it comes from, and how AI Sifu fuses the layers.';
+      : (zhMode ? 'Hourkey 各術數教育指南：每套系統讀什麼、來源如何，以及 AI Sifu 如何合參各層。'
+      : gc(code, 'hubLead'));
     setMeta('description', desc);
     setProp('og:description', desc);
 
@@ -681,8 +1019,8 @@
     var heroInner = document.querySelector('.hero-inner');
     if (heroInner) {
       heroInner.innerHTML = '<p class="kicker">命 · 星 · 紫 · 占 · 吠 · 軸 · 奇 · 羅 · 擇 · 河</p>' +
-        '<h1>' + esc(code === 'th' ? 'เลือกศาสตร์ให้ตรงคำถาม' : 'Choose the right science for the question') + '</h1>' +
-        '<p class="lead">' + esc(code === 'th' ? 'Hourkey แยกเลนส์ให้ชัด: พื้นดวง ดวงดาว สถานการณ์ พื้นที่ ฤกษ์ และรากฐานระบบจีน เพื่อให้ผู้ใช้ใหม่รู้ว่าควรเริ่มตรงไหน และผู้ใช้ขั้นสูงอ่านหลายชั้นร่วมกันได้' : 'Hourkey separates the lenses: natal structure, real sky, palace maps, situational strategy, space, date selection and Chinese cosmology. New users get a path; advanced users get a fusion map.') + '</p>' +
+        '<h1>' + esc(zhMode ? '選對問題的術數鏡頭' : gc(code, 'hubTitle')) + '</h1>' +
+        '<p class="lead">' + esc(zhMode ? 'Hourkey 把命盤結構、真天星、宮位圖、情境策略、空間、擇日與中國宇宙觀分層；新手有路徑，進階者有合參地圖。' : gc(code, 'hubLead')) + '</p>' +
         '<div class="actions"><a class="btn primary" href="#sciences">' + esc(t.all) + '</a><a class="btn" href="#start">' + esc(t.start) + '</a><a class="btn" href="#advanced">' + esc(t.advanced) + '</a></div>';
     }
 
@@ -690,22 +1028,32 @@
     if (!article) return;
     var cards = Object.keys(SCIENCES).map(function (slug) {
       var s = SCIENCES[slug];
-      return '<a class="science-card" href="' + esc(s.href) + '?lang=' + esc(code) + '"><img src="/assets/hourkey-guide/science-' + esc(s.asset) + '-hero-v3.webp" alt="' + esc(s.title) + '" loading="lazy"/><div class="body"><small>' + esc(s.subtitle) + '</small><h3><em>' + esc(s.symbol) + '</em>' + esc(s.title) + '</h3><p>' + esc(localized(s.lead, code)) + '</p><span class="go">' + esc(t.open) + '</span></div></a>';
+      return '<a class="science-card" href="' + esc(s.href) + '?lang=' + esc(code) + '"><img src="/assets/hourkey-guide/science-' + esc(s.asset) + '-hero-v3.webp" alt="' + esc(s.title) + '" loading="lazy"/><div class="body"><small>' + esc(code === 'en' ? s.subtitle : gc(code, 'cardSmall')) + '</small><h3><em>' + esc(s.symbol) + '</em>' + esc(s.title) + '</h3><p>' + esc(localized(s.lead, code)) + '</p><span class="go">' + esc(t.open) + '</span></div></a>';
     }).join('');
     article.innerHTML = [
-      '<section id="overview"><p class="kicker">system map</p><h2>' + esc(code === 'th' ? 'ก่อนอ่าน ต้องแยก “ศาสตร์” กับ “หน้าใช้งาน”' : 'Separate the science from the product surface') + '</h2>',
-      paragraphBlock([code === 'th' ? 'ศาสตร์คือระบบคำนวณและภาษาเหตุผล เช่น BaZi, Qi Men หรือ Luopan ส่วน Today, Calendar, Natal Book และ AI Sifu คือหน้าที่นำผลไปใช้ การแยกสองชั้นนี้ทำให้คนอ่านไม่งงและทำให้ SEO ตอบ intent ได้ชัด' : 'A science is a calculation language such as BaZi, Qi Men or Luopan. Today, Calendar, Natal Book and AI Sifu are product surfaces that reuse those results. Keeping them separate makes the article useful and the search intent clear.']),
-      '</section><section id="sciences"><p class="kicker">science index</p><h2>' + esc(code === 'th' ? 'หน้าแยกครบทุกศาสตร์' : 'Dedicated page for every science') + '</h2><p class="section-sub">' + esc(code === 'th' ? 'แต่ละหน้าอธิบายที่มา วิธีอ่านลงลึก ข้อจำกัด และการใช้ใน Hourkey' : 'Each page explains origin, deep reading method, limits and how Hourkey uses the science.') + '</p><div class="science-grid">' + cards + '</div></section>',
-      '<figure><img src="/assets/hourkey-guide/hourkey-sciences-hero-v3.webp" alt="Hourkey science map" loading="lazy"/><figcaption>' + esc(code === 'th' ? 'ฟ้าเดียวกัน หลายเลนส์: คน เวลา สถานการณ์ พื้นที่ และฤกษ์ต้องอ่านเป็นชั้น ไม่ใช่ปนกันจนกลายเป็นคำทำนายลอย ๆ' : 'One sky, many lenses: person, time, situation, space and starting moment are layered instead of mixed into a floating prediction.') + '</figcaption></figure>',
-      '<section id="start"><p class="kicker">beginner path</p><h2>' + esc(t.start) + '</h2>' + paragraphBlock([code === 'th' ? 'เริ่มจากโปรไฟล์ดวงที่นิ่งที่สุด แล้วค่อยเพิ่มวันนี้ ปฏิทิน สถานการณ์ พื้นที่ และฤกษ์ เมื่อเข้าใจลำดับนี้ AI Sifu จะตอบจากข้อมูลจริง ไม่ใช่ prompt ลอย ๆ' : 'Start with the stable birth profile, then add today, calendar, situation, space and date selection. This order lets AI Sifu answer from real data rather than a floating prompt.']) + '</section>',
-      '<section id="advanced"><p class="kicker">fusion principle</p><h2>' + esc(t.advanced) + '</h2>' + paragraphBlock([code === 'th' ? 'Fusion ที่ดีไม่ใช่การเอาคำทำนายหลายศาสตร์มาต่อกัน แต่ต้องบอกว่าอะไรคือฐาน อะไรคือจังหวะชั่วคราว อะไรคือทิศ/พื้นที่ และข้อขัดแย้งใดควรให้มนุษย์ตัดสินใจ' : 'Good fusion is not a pile of predictions. It explains what is the natal base, what is temporary timing, what belongs to direction or space, and which conflict needs human judgment.']) + '</section>',
-      '<section id="tools"><p class="kicker">product surface</p><h2>' + esc(code === 'th' ? 'เครื่องมือในเว็บเอาศาสตร์ไปใช้ตรงไหน' : 'Where the website uses each layer') + '</h2><div class="reading-order"><a href="/chart"><em>命</em><div><b>Chart / Profile</b><span>BaZi profile and owner data</span></div><span class="go">' + esc(t.chart) + '</span></a><a href="/master-fusion"><em>合</em><div><b>Master Fusion</b><span>Multi-science comparison</span></div><span class="go">' + esc(t.fusion) + '</span></a><a href="/master"><em>師</em><div><b>AI Sifu</b><span>Question layer over real computed data</span></div><span class="go">AI Sifu →</span></a></div></section>',
-      '<footer>Preview article set · education-first science guide · noindex until approved.</footer>'
+      '<section id="overview"><p class="kicker">' + esc(gc(code, 'overviewShort')) + '</p><h2>' + esc(zhMode ? '先分清「術數」與「產品頁」' : gc(code, 'overviewTitle')) + '</h2>',
+      paragraphBlock([zhMode ? '術數是計算語言，產品頁是使用結果的地方。分清兩層，回答才清楚，也更容易核對理由。' : gc(code, 'overviewBody')]),
+      '</section><section id="sciences"><p class="kicker">' + esc(gc(code, 'scienceKicker')) + '</p><h2>' + esc(zhMode ? '每套術數都有獨立頁' : gc(code, 'scienceTitle')) + '</h2><p class="section-sub">' + esc(zhMode ? '每頁說明來源、深讀方法、限制，以及 Hourkey 如何使用該術數。' : gc(code, 'scienceSub')) + '</p><div class="science-grid">' + cards + '</div></section>',
+      '<figure><img src="/assets/hourkey-guide/hourkey-sciences-hero-v3.webp" alt="Hourkey science map" loading="lazy"/><figcaption>' + esc(zhMode ? '同一片天，不同鏡頭：人、時間、情境、空間與起始時刻要分層讀，不要混成漂浮的斷語。' : gc(code, 'hubFigure')) + '</figcaption></figure>',
+      '<section id="start"><p class="kicker">' + esc(t.start) + '</p><h2>' + esc(t.start) + '</h2>' + paragraphBlock([gc(code, 'startBody')]) + '</section>',
+      '<section id="advanced"><p class="kicker">' + esc(t.advanced) + '</p><h2>' + esc(t.advanced) + '</h2>' + paragraphBlock([gc(code, 'advancedBody')]) + '</section>',
+      '<section id="tools"><p class="kicker">' + esc(gc(code, 'toolsKicker')) + '</p><h2>' + esc(gc(code, 'toolsTitle')) + '</h2><div class="reading-order"><a href="/chart"><em>命</em><div><b>' + esc(gc(code, 'toolChart')) + '</b><span>' + esc(gc(code, 'toolChartSub')) + '</span></div><span class="go">' + esc(t.chart) + '</span></a><a href="/master-fusion"><em>合</em><div><b>Master Fusion</b><span>' + esc(gc(code, 'toolFusionSub')) + '</span></div><span class="go">' + esc(t.fusion) + '</span></a><a href="/master"><em>師</em><div><b>AI Sifu</b><span>' + esc(gc(code, 'toolSifuSub')) + '</span></div><span class="go">AI Sifu →</span></a></div></section>',
+      '<footer>' + esc(gc(code, 'footer')) + '</footer>'
     ].join('');
+    var toc = document.querySelector('aside.toc');
+    if (toc) {
+      toc.setAttribute('aria-label', zhMode ? '目錄' : gc(code, 'contents'));
+      toc.innerHTML = '<b>' + esc(zhMode ? '本頁內容' : gc(code, 'contents')) + '</b>' +
+        '<a href="#overview">' + esc(zhMode ? '系統結構' : gc(code, 'overviewShort')) + '</a>' +
+        '<a href="#sciences">' + esc(zhMode ? '全部術數' : gc(code, 'sciencesShort')) + '</a>' +
+        '<a href="#start">' + esc(t.start) + '</a>' +
+        '<a href="#advanced">' + esc(t.advanced) + '</a>' +
+        '<a href="#tools">' + esc(zhMode ? '網站工具' : gc(code, 'toolsShort')) + '</a>';
+    }
   }
 
   function getSlug() {
-    var m = location.pathname.match(/\/articles\/sciences\/([^\/]+)\.html$/);
+    var m = location.pathname.replace(/\/$/, '').match(/\/articles\/sciences\/([^\/]+?)(?:\.html)?$/);
     return m ? m[1] : '';
   }
 
@@ -746,17 +1094,12 @@
   function apply(code) {
     if (!UI[code]) code = 'th';
     ensureThaiSnapshot();
-    if (code === 'th') {
-      restoreThaiSnapshot();
-      syncLang(code);
-      injectLangSelect(code);
-      return;
-    }
     syncLang(code);
     injectLangSelect(code);
     var slug = getSlug();
     if (slug) renderScience(slug, code);
-    else if (/article-hourkey-guide\.html$/.test(location.pathname)) renderHub(code);
+    else if (/\/article-hourkey-guide(?:\.html)?\/?$/.test(location.pathname)) renderHub(code);
+    applySimplified(code);
   }
 
   document.addEventListener('DOMContentLoaded', function () {

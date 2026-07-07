@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -642,8 +643,33 @@ const PACKAGE_META = {
 
 const state = { me:null, packages:[], history:[], lang:'th', purchasing:null };
 
-function lang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
-function pick(value, fb){ return value && (value[lang()] || value.th || value.en) || fb || ''; }
+function normAccountLang(raw){
+  raw = String(raw || '').toLowerCase().replace('_','-');
+  if (raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans') return 'zh';
+  if (raw.indexOf('zh') === 0) return 'zh';
+  if (raw.indexOf('en') === 0) return 'en';
+  if (raw.indexOf('th') === 0) return 'th';
+  return ['vi','ja','ru','ko','es'].includes(raw) ? raw : '';
+}
+function stateInputForAccountLang(raw){
+  raw = String(raw || '').toLowerCase().replace('_','-');
+  if (raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans') return 'zh-cn';
+  if (raw === 'zh') return 'zh-hant';
+  return raw || 'th';
+}
+function lang(){
+  return normAccountLang(
+    state.lang ||
+    document.documentElement.getAttribute('data-hk-locale') ||
+    document.documentElement.getAttribute('data-lang') ||
+    'th'
+  ) || 'th';
+}
+function pick(value, fb){
+  if (!value) return fb || '';
+  const l = lang();
+  return value[l] || (l !== 'th' ? value.en : '') || value.th || value.en || fb || '';
+}
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function tx(k, fb){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('account.html',k,lang());if(ov!=null)return ov;}catch(_){} return pick(window.HK_I18N[k], fb || k); }
 function esc(s){
@@ -671,6 +697,10 @@ function alertMsg(html, type){
     setTimeout(() => { if (a.firstChild === el) a.innerHTML = ''; }, 420);
   }, 5200);
 }
+function renderDeviceEmpty(){
+  var list = document.getElementById('dev-list');
+  if (list) list.innerHTML = '<div class="dev-row"><span class="mg-note">' + esc(tx('mg.devices.empty')) + '</span></div>';
+}
 function setThemeFromStorage(){
   try {
     const saved = localStorage.getItem('hk-theme') || 'dark';
@@ -688,7 +718,10 @@ function renderStaticText(){
     const k = el.getAttribute('data-i18n');
     if (window.HK_I18N[k]) el.textContent = tx(k, el.textContent);
   });
-  document.querySelectorAll('#lang-switch button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang()));
+  document.querySelectorAll('#lang-switch button').forEach(b => b.classList.toggle('on', normAccountLang(b.dataset.lang) === lang()));
+}
+function relabelDeviceButtons(){
+  try { document.querySelectorAll('.dev-del').forEach(function(b){ b.textContent = tx('mg.devices.remove'); }); } catch(_){}
 }
 function renderMe(){
   const me = state.me;
@@ -790,7 +823,6 @@ async function loadMe(){
   try {
     const r = await fetch('/api/account/me', { credentials:'include', cache:'no-store' });
     if (r.status === 401) {
-      alertMsg(`${esc(tx('ac.login.body','เข้าสู่ระบบเพื่อดูเครดิต สมาชิก และประวัติรายการของบัญชี'))} <a href="/signup?tab=login&next=/account.html" style="color:var(--gold);text-decoration:underline">${esc(tx('ac.login.btn','เข้าสู่ระบบ'))}</a>`, 'error');
       return null;
     }
     if (!r.ok) throw new Error('account ' + r.status);
@@ -798,6 +830,17 @@ async function loadMe(){
   } catch(e) {
     alertMsg('Network: ' + esc(e.message), 'error');
     return null;
+  }
+}
+async function accountSessionOk(){
+  if (state.me) return true;
+  try {
+    const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+    if (!r.ok) return false;
+    const d = await r.json().catch(() => ({}));
+    return !!(d && d.user);
+  } catch(_) {
+    return false;
   }
 }
 async function loadPackages(){
@@ -949,23 +992,37 @@ async function purchase(code){
 window.purchase = purchase;
 
 function applyLang(nextLang){
-  state.lang = nextLang || 'th';
-  document.documentElement.setAttribute('data-lang', state.lang);
-  document.documentElement.setAttribute('lang', state.lang);
-  try { localStorage.setItem('hk_locale', state.lang); } catch(_){}
+  var input = stateInputForAccountLang(nextLang || 'th');
+  var st = window.HK_LANG_STATE && window.HK_LANG_STATE.set ? window.HK_LANG_STATE.set(input) : null;
+  state.lang = st ? (st.raw || normAccountLang(input) || 'th') : (normAccountLang(input) || 'th');
+  document.documentElement.setAttribute('data-lang', st ? st.app : state.lang);
+  document.documentElement.setAttribute('lang', st ? st.html : state.lang);
+  document.documentElement.setAttribute('data-hk-locale', state.lang);
+  if (st && st.variant) document.documentElement.setAttribute('data-zh-variant', st.variant);
+  else document.documentElement.removeAttribute('data-zh-variant');
+  try { localStorage.setItem('hk_locale', state.lang); localStorage.setItem('hk_lang', state.lang); } catch(_){}
   renderAll();
+  try { if (state.me) loadDevices(); else renderDeviceEmpty(); } catch(_){}
+  relabelDeviceButtons();
+  setTimeout(relabelDeviceButtons, 400);
+  setTimeout(relabelDeviceButtons, 1800);
 }
-window.__hkOverlayApply=function(l){ applyLang(l); };
+window.__hkOverlayApply=function(l){
+  var current = null;
+  try { current = window.HK_LANG_STATE && window.HK_LANG_STATE.current && window.HK_LANG_STATE.current(); } catch(_){}
+  if (current && current.raw === 'zh' && current.variant === 'cn') applyLang('zh-cn');
+  else applyLang(l);
+};
 document.querySelectorAll('#lang-switch button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
 setThemeFromStorage();
-try { applyLang(localStorage.getItem('hk_locale') || 'th'); } catch(_) { applyLang('th'); }
+try { applyLang((window.HK_LANG_STATE&&window.HK_LANG_STATE.raw&&window.HK_LANG_STATE.raw()) || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th'); } catch(_) { applyLang('th'); }
 (async function init(){
   renderPackages();
   try {
-    const [me, packages, history] = await Promise.all([loadMe(), loadPackages(), loadHistory()]);
+    const [me, packages] = await Promise.all([loadMe(), loadPackages()]);
     state.me = me;
     state.packages = packages;
-    state.history = history;
+    state.history = me ? await loadHistory() : [];
   } catch(e) {
     alertMsg('Network: ' + esc(e.message), 'error');
   }
@@ -1079,6 +1136,7 @@ function renderMgAvatar(){
 /* --- load profile --- */
 async function loadMgProfile(){
   try {
+    if (!(await accountSessionOk())) return;
     var r = await fetch('/api/account/profile', { credentials:'include', cache:'no-store' });
     if (!r.ok) return;
     mg.profile = await r.json();
@@ -1261,6 +1319,7 @@ function uaLabel(ua){
 async function loadDevices(){
   var list = $id('dev-list');
   try {
+    if (!(await accountSessionOk())) { renderDeviceEmpty(); return; }
     var r = await fetch('/api/account/devices?device=' + encodeURIComponent(deviceId()), { credentials:'include', cache:'no-store' });
     if (!r.ok) throw new Error(String(r.status));
     var d = await r.json();
@@ -1281,12 +1340,14 @@ async function loadDevices(){
         loadDevices();
       });
     });
+    relabelDeviceButtons();
   } catch(_) {
-    list.innerHTML = '<div class="dev-row"><span class="mg-note">' + esc(tx('mg.devices.empty')) + '</span></div>';
+    renderDeviceEmpty();
   }
 }
 async function pingDevice(){
   try {
+    if (!(await accountSessionOk())) return;
     await fetch('/api/account/ping', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ deviceId: deviceId() }) });
   } catch(_){}
 }
@@ -1332,7 +1393,7 @@ document.querySelectorAll('#lang-switch button').forEach(function(b){
   b.addEventListener('click', function(){
     var box = $id('spirit-pick');
     if (box.childElementCount) renderSpiritPicker();
-    loadDevices();
+    if (state.me) loadDevices(); else renderDeviceEmpty();
     if (mg.profile) {
       var setMode = !mg.profile.has_password;
       $id('pw-mode-note').textContent = tx(setMode ? 'mg.pw.note.set' : 'mg.pw.note.change');
@@ -1341,8 +1402,12 @@ document.querySelectorAll('#lang-switch button').forEach(function(b){
   });
 });
 
-loadMgProfile();
-pingDevice().then(loadDevices);
+(async function initAccountManagement(){
+  if (!(await accountSessionOk())) { renderDeviceEmpty(); return; }
+  await loadMgProfile();
+  await pingDevice();
+  await loadDevices();
+})();
 })();
 </script>
 <script>
@@ -1374,9 +1439,11 @@ Object.assign(window.HK_I18N, {
   'nt.test': { th:'ส่งแจ้งเตือนทดสอบ', en:'Send test notification', zh:'發送測試通知' },
   'nt.test.ok': { th:'ส่งแล้ว · ดูที่มุมจอหรือแถบแจ้งเตือน', en:'Sent. Check your notification area.', zh:'已發送 · 請查看通知列。' },
   'nt.test.none': { th:'เครื่องนี้ยังไม่ได้เปิดแจ้งเตือน · เปิดสวิตช์ด้านบนก่อน', en:'This device is not subscribed yet. Turn on the switch above first.', zh:'此裝置尚未訂閱 · 請先開啟上方開關。' },
-  'nt.test.err': { th:'ส่งไม่สำเร็จ · ลองใหม่อีกครั้ง', en:'Send failed. Please try again.', zh:'發送失敗 · 請再試一次。' },
-  'nt.saved': { th:'บันทึกการตั้งค่าแล้ว', en:'Preferences saved.', zh:'設定已儲存。' }
-});
+	  'nt.test.err': { th:'ส่งไม่สำเร็จ · ลองใหม่อีกครั้ง', en:'Send failed. Please try again.', zh:'發送失敗 · 請再試一次。' },
+	  'nt.saved': { th:'บันทึกการตั้งค่าแล้ว', en:'Preferences saved.', zh:'設定已儲存。' }
+	});
+		try { renderAll(); } catch(_) {}
+	try { if (state.me) loadDevices(); else renderDeviceEmpty(); } catch(_) {}
 
 function $nt(x){ return document.getElementById(x); }
 var nt = { prefs:null, busy:false };

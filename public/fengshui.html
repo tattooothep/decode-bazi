@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -570,7 +571,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <!-- ═══════════ HK Navbar (8 ปุ่ม + lang + theme) · 3-language ═══════════ -->
 <style>
-.hk-topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb, var(--bg, #0d0f12) 88%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line, rgba(200,164,77,.22));font-family:'Noto Serif Thai',serif;}
+.hk-topbar{position:sticky;top:0;z-index:100000;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb, var(--bg, #0d0f12) 88%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line, rgba(200,164,77,.22));font-family:'Noto Serif Thai',serif;}
 .hk-topbar .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:'Cormorant Garamond','Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--fg, #f6f1e6);text-decoration:none;}
 .hk-topbar .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold, #c8a44d);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold, #c8a44d);}
 .hk-topbar nav.hk-nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
@@ -585,6 +586,9 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 .hk-topbar .hk-theme-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:99px;padding:3px;}
 .hk-topbar .hk-theme-switch button{width:28px;height:28px;border:none;background:transparent;color:var(--fg-soft, rgba(246,241,230,.55));font-size:13px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
 .hk-topbar .hk-theme-switch button.on{background:var(--gold, #c8a44d);color:var(--bg, #0d0f12);}
+.hk-topbar #hk-user-menu-root,
+.hk-topbar #hk-user-menu-root .hk-um-panel{z-index:100001!important;}
+.hk-topbar #hk-user-menu-root.inline{position:fixed!important;top:14px!important;right:16px!important;z-index:100001!important;}
 @media(max-width:980px){
   .hk-topbar{padding:12px 14px;flex-wrap:wrap;gap:10px;}
   .hk-topbar nav.hk-nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line, rgba(200,164,77,.22));}
@@ -618,7 +622,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <section class="hero">
   <div class="eyebrow">方位 · HOUSE DIRECTION GATE · FIRST STEP</div>
-  <h1><span data-i18n="auto.f.022">หาทิศบ้าน</span> <span  class="tc" data-i18n="auto.f.001">วัดทิศ → ยืนยัน → พรีวิว</span></h1>
+  <h1><span data-i18n="auto.f.022">หาทิศบ้าน</span> <span  class="tc" data-i18n="auto.f.320">วัดทิศ → ยืนยัน → พรีวิว</span></h1>
   <p class="sub" data-i18n="auto.f.023">
     หน้านี้มีไว้สำหรับคนที่ยังไม่รู้ว่าหน้าบ้านหันกี่องศา ใช้แผนที่ เข็มทิศมือถือ หรือกรอกค่าที่วัดเอง แล้วล็อกทิศบ้านก่อนอ่านภาพรวมเบื้องต้น
   </p>
@@ -1203,7 +1207,7 @@ function _fstx(k, fb){
   const t = window.HK_I18N && window.HK_I18N[k];
   if (!t) return fb;
   const lang = document.documentElement.getAttribute('data-lang')||'th';
-  return t[lang] || t.th || fb;
+  return t[lang] || (lang !== 'th' ? t.en : '') || t.th || fb;
 }
 /* 📜 dir-name key maps · render-time translation only — the data tables (COMPASS_DIRS/DIR_NAMES/dirThaiShort) stay logic-only */
 const FS_DIR_NAME_KEY = { N:'auto.f.274', NE:'auto.f.275', E:'auto.f.276', SE:'auto.f.277', S:'auto.f.278', SW:'auto.f.279', W:'auto.f.280', NW:'auto.f.281' };
@@ -1243,7 +1247,14 @@ function m24Element(mountain){
   return M24_ELEMENT_BY_HAN[mountain?.h] || 'earth';
 }
 function elementThai(el){
-  return { water:'น้ำ', wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง' }[el] || 'ดิน';
+  const lang = (document.documentElement.getAttribute('data-lang') || 'th').toLowerCase();
+  const map = {
+    th: { water:'น้ำ', wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง' },
+    en: { water:'Water', wood:'Wood', fire:'Fire', earth:'Earth', metal:'Metal' },
+    zh: { water:'水', wood:'木', fire:'火', earth:'土', metal:'金' }
+  };
+  const key = lang.indexOf('zh') === 0 ? 'zh' : lang === 'en' ? 'en' : 'th';
+  return (map[key] && map[key][el]) || map.en[el] || 'Earth';
 }
 function normalizeDeg(deg){
   const n = Number(deg);
@@ -1301,6 +1312,8 @@ function getDirCode8(deg){
   return best.dir;
 }
 function dirThaiShort(dir){
+  const lang = (document.documentElement.getAttribute('data-lang') || 'th').toLowerCase();
+  if (lang !== 'th') return _fstx(FS_DIR_SHORT_KEY[dir], dir);
   return {
     N:'เหนือ', NE:'อีสาน', E:'ตะวันออก', SE:'อาคเนย์',
     S:'ใต้', SW:'หรดี', W:'ตะวันตก', NW:'พายัพ', C:'กลาง'
@@ -5206,6 +5219,7 @@ Object.assign(window.HK_I18N, {
   'auto.f.317': { th:'ตะวันตก', en:'West', zh:'西' },
   'auto.f.318': { th:'พายัพ', en:'Northwest', zh:'西北' },
   'auto.f.319': { th:'กลาง', en:'Center', zh:'中' },
+  'auto.f.320': { th:'วัดทิศ → ยืนยัน → พรีวิว', en:'Measure → Confirm → Preview', zh:'測向 → 確認 → 預覽' },
   'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },
   'hk.nav.today':   { th:'วันนี้',     en:'Today',    zh:'今日' },
   'hk.nav.calendar':{ th:'ปฏิทิน',    en:'Calendar', zh:'吉曆' },
@@ -5218,12 +5232,164 @@ Object.assign(window.HK_I18N, {
   'hk.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
   'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'}
 });
+function _fsLangState(raw, write){
+  try{
+    var api = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+    if (api && write && typeof api.set === 'function') return api.set(raw);
+    if (api && raw && typeof api.normalize === 'function') return api.normalize(raw);
+    if (api && typeof api.current === 'function') return api.current();
+  }catch(_){}
+  var x = String(raw || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th').toLowerCase();
+  if (x.indexOf('zh') === 0) x = 'zh';
+  if (x !== 'th' && x !== 'en' && x !== 'zh') x = 'en';
+  return { raw:x, app:x, storage:x, html:x === 'zh' ? 'zh-Hant' : x };
+}
+function _fsStateInput(l){ return l === 'cn' ? 'zh-cn' : (l === 'zh' ? 'zh-hant' : l); }
+function _fsPageLang(raw){
+  var st=null; try{ st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current(); }catch(_){}
+  var x=String(raw||'').toLowerCase().replace('_','-');
+  if ((st&&st.raw==='zh'&&st.variant==='cn') || x==='cn' || x==='zh-cn' || x==='zh-hans') return 'cn';
+  if (x.indexOf('zh')===0 || x==='hant') return 'zh';
+  if (['th','en','vi','ja','ru','ko','es'].indexOf(x)!==-1) return x;
+  if (st&&st.raw) return st.raw==='zh'&&st.variant==='cn'?'cn':st.raw;
+  return 'th';
+}
+function _fsI18nValue(key, lang, fallback){
+  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('fengshui.html',key,lang);if(ov!=null)return ov;}catch(_){}
+  var t = window.HK_I18N && window.HK_I18N[key];
+  if (!t) return fallback || '';
+  return t[lang] || t[lang === 'cn' ? 'zh' : lang] || (lang !== 'th' ? t.en : '') || t.th || fallback || '';
+}
+function _fsLooseNonThaiText(value, lang){
+  if (lang === 'th') return value;
+  var out = String(value == null ? '' : value);
+  var dict = {
+    'ทิศตะวันออกเฉียงเหนือ':'Northeast', 'ทิศตะวันออกเฉียงใต้':'Southeast',
+    'ทิศตะวันตกเฉียงใต้':'Southwest', 'ทิศตะวันตกเฉียงเหนือ':'Northwest',
+    'ทิศเหนือ':'North', 'ทิศใต้':'South', 'ทิศตะวันออก':'East', 'ทิศตะวันตก':'West',
+    'เหนือ':'North', 'อีสาน':'Northeast', 'ตะวันออก':'East', 'อาคเนย์':'Southeast',
+    'ใต้':'South', 'หรดี':'Southwest', 'พายัพ':'Northwest',
+    'หลัง':'Sitting', 'หน้าบ้าน':'Facing', 'ยังไม่ระบุ':'Not specified',
+    'ยังไม่ยืนยัน':'Not confirmed', 'ยังไม่ได้ยืนยันทิศบ้าน':'House direction not confirmed yet',
+    'ยังไม่ได้อัพรูป':'No image uploaded yet', 'ยังไม่มีข้อมูล':'No data yet',
+    'ทั้งครอบครัว':'Whole family', 'เลือกชั้นข้อมูลฮวงจุ้ยบนแผนที่':'Select Feng Shui map layers',
+    'เลือกชั้นข้อมูลบนรูปแปลน':'Select floor plan layers',
+    'ส้ม':'Orange', 'แดง':'Red', 'ทอง':'Gold', 'ม่วง':'Purple', 'เขียว':'Green',
+    'ภูเขา':'Mountain', 'ภู':'Mountain', 'น้ำ':'Water', 'ฐาน':'Base', 'ฐ':'Base',
+    'ดี':'Good', 'กลาง':'Neutral', 'เลี่ยง':'Avoid', 'ระวัง':'Caution',
+    'ไท่ซุ่ย':'Tai Sui', 'ไท่':'Tai Sui', 'สามชะ':'Three Killings', '3 ชะ':'Three Killings',
+    '5 เหลือง':'Five Yellow', '5เหลือง':'Five Yellow',
+    'ห้ามขุด/ตอก/รบกวนทิศนี้':'do not dig, hammer, or disturb this direction',
+    'ห้ามนั่งหันหลังใส่':'do not sit with your back to it',
+    'ห้ามนั่งหันหน้าใส่ทิศนี้':'do not face this direction',
+    'ห้ามรบกวน':'do not disturb', 'วางโลหะ/นาฬิกาทอง ลด':'use metal or a gold clock to reduce it',
+    'ศูนย์กลาง':'Center', 'จุดสมดุล':'balance point',
+    'ผังบ้าน:':'House chart:', 'ดาวประจำปีในทิศนี้:':'Annual star in this direction:',
+    'ขาว':'White', 'ปัญญา/ชัยชนะ':'wisdom/victory',
+    'การพัฒนา':'development', 'ความรู้':'knowledge', 'ความเป็นผู้นำ':'leadership'
+  };
+  Object.keys(dict).sort(function(a,b){ return b.length - a.length; }).forEach(function(k){
+    out = out.split(k).join(dict[k]);
+  });
+  out = out.replace(/[\u0E00-\u0E7F]+/g, '');
+  out = out.replace(/\s+([·/])/g, ' $1').replace(/([·/])\s+/g, '$1 ');
+  out = out.replace(/\s{2,}/g, ' ').replace(/(?:^|\s)·(?:\s|$)/g, ' · ').trim();
+  return out || '—';
+}
+var _fsScrubObserver = null;
+function fsScrubThaiForNonThai(lang){
+  lang = _fsPageLang(lang);
+  if (lang === 'th') return;
+  var thai = /[\u0E00-\u0E7F]/;
+  var attrs = ['placeholder','title','aria-label','alt'];
+  try{
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode:function(node){
+        var p = node.parentElement;
+        if (!p || /^(SCRIPT|STYLE|TEXTAREA)$/i.test(p.tagName)) return NodeFilter.FILTER_REJECT;
+        return thai.test(node.nodeValue || '') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+      }
+    });
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function(n){
+      var next = _fsLooseNonThaiText(n.nodeValue, lang);
+      if (next !== n.nodeValue) n.nodeValue = next;
+    });
+    document.querySelectorAll('[placeholder],[title],[aria-label],[alt],option').forEach(function(el){
+      attrs.forEach(function(a){
+        var v = el.getAttribute(a);
+        if (v && thai.test(v)) el.setAttribute(a, _fsLooseNonThaiText(v, lang));
+      });
+      if (el.tagName === 'OPTION' && thai.test(el.textContent || '')) {
+        el.textContent = _fsLooseNonThaiText(el.textContent, lang);
+      }
+    });
+  }catch(_){}
+  if (!_fsScrubObserver) {
+    var timer = 0;
+    _fsScrubObserver = new MutationObserver(function(){
+      clearTimeout(timer);
+      timer = setTimeout(function(){ fsScrubThaiForNonThai((_fsLangState()).app); }, 80);
+    });
+    try{ _fsScrubObserver.observe(document.body, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:attrs }); }catch(_){}
+  }
+}
+function applyFengshuiDynamicI18N(lang){
+  lang = _fsPageLang(lang);
+  var direct = {
+    th:{ eyebrow:'方位 · ประตูทิศบ้าน · ขั้นแรก', heading:'Heading', direction:'ทิศ', mountain:'24 ซาน' },
+    en:{ eyebrow:'方位 · HOUSE DIRECTION GATE · FIRST STEP', heading:'Heading', direction:'Direction', mountain:'24 Mountain' },
+    zh:{ eyebrow:'方位 · 宅向入口 · 第一步', heading:'度數', direction:'方位', mountain:'24山' },
+    cn:{ eyebrow:'方位 · 宅向入口 · 第一步', heading:'度数', direction:'方位', mountain:'24山' },
+    vi:{ eyebrow:'方位 · Cổng hướng nhà · bước đầu', heading:'Góc hướng', direction:'Phương hướng', mountain:'24 Sơn' },
+    ja:{ eyebrow:'方位・宅向ゲート・第一歩', heading:'方位角', direction:'方位', mountain:'24山' },
+    ru:{ eyebrow:'方位 · вход направления дома · первый шаг', heading:'Азимут', direction:'Направление', mountain:'24 горы' },
+    ko:{ eyebrow:'方位 · 집 방향 관문 · 첫 단계', heading:'방위각', direction:'방향', mountain:'24산' },
+    es:{ eyebrow:'方位 · puerta de dirección de la casa · primer paso', heading:'Rumbo', direction:'Dirección', mountain:'24 Montañas' }
+  };
+  var d = direct[lang] || direct.en;
+  function html(sel, value){ var el=document.querySelector(sel); if(el) el.innerHTML=value; }
+  function text(sel, value){ var el=document.querySelector(sel); if(el) el.textContent=value; }
+  text('.hero .eyebrow', d.eyebrow);
+  var mrb = document.querySelectorAll('.map-result-bar .mrb-cell b');
+  if (mrb[0]) mrb[0].textContent = d.heading;
+  if (mrb[1]) mrb[1].textContent = d.direction;
+  if (mrb[2]) mrb[2].textContent = d.mountain;
+  html('.fs-workflow .fs-step:nth-child(1) .fs-step-head h2', _fsI18nValue('auto.f.022', lang, 'Find House Direction') + ' · <span class="tc">Facing</span>');
+  text('.fs-workflow .fs-step:nth-child(1) .fs-step-head p', _fsI18nValue('auto.f.030', lang, 'Measure from the map first, then confirm the facing.'));
+  html('.fs-luopan-cta-title', _fsI18nValue('auto.f.031', lang, 'House Direction Status') + ' <span class="tc">坐向</span>');
+  text('#luopanCtaMeta', _fsI18nValue('auto.f.032', lang, 'House direction not confirmed yet.'));
+  html('#directionLockSummary .fs-lock-pill:nth-child(3) b', _fsI18nValue('auto.f.033', lang, '24 Mountains'));
+  html('#directionLockSummary .fs-lock-pill:nth-child(4) b', _fsI18nValue('auto.f.034', lang, 'Source'));
+  html('.fs-measure-note', '<b>' + _fsI18nValue('auto.f.035', lang, 'Key rule:') + '</b> ' + _fsI18nValue('auto.f.036', lang, 'Until confirmed, the system only shows the measured value.'));
+  text('#btnOpenLuopanFull', _fsI18nValue('auto.f.037', lang, 'Waiting to confirm direction'));
+  html('#btnOpenLuopanPage', '<span class="tc">羅</span> ' + _fsI18nValue('auto.f.038', lang, 'Open full Luopan'));
+  html('.fs-workflow .fs-step:nth-child(2) .fs-step-head h2', _fsI18nValue('auto.f.039', lang, '9-palace preview after locking direction') + ' · <span class="tc">Flying Star</span>');
+  text('.fs-workflow .fs-step:nth-child(2) .fs-step-head p', _fsI18nValue('auto.f.040', lang, 'Preliminary overview after confirming the degree.'));
+  html('.fs-workflow .fs-step:nth-child(3) .fs-step-head h2', _fsI18nValue('auto.f.041', lang, 'Quick timing warnings') + ' · <span class="tc">Timing</span>');
+  text('.fs-workflow .fs-step:nth-child(3) .fs-step-head p', _fsI18nValue('auto.f.042', lang, 'Preliminary year/month/day/hour direction warnings.'));
+  try{
+    var mountainSel = document.getElementById('houseFacingMountain');
+    if (mountainSel && typeof M24_RING !== 'undefined') {
+      var old = mountainSel.value;
+      mountainSel.innerHTML = M24_RING.map(function(m, i){
+        return '<option value="' + i + '">' + m.code + ' · ' + m.h + ' ' + m.pinyin + ' · ' + elementThai(m24Element(m)) + ' · ' + mountainRangeLabel(i) + '</option>';
+      }).join('');
+      if (old !== '') mountainSel.value = old;
+    }
+  }catch(_){}
+  setTimeout(function(){ fsScrubThaiForNonThai(lang); }, 0);
+  setTimeout(function(){ fsScrubThaiForNonThai(lang); }, 900);
+}
 function applyI18N(lang){
   if (!window.HK_I18N) return;
+  var st = _fsLangState(lang);
+  lang = _fsPageLang(lang || st.raw);
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
     var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('fengshui.html',key,lang);}catch(_){}
-    var v=(ov!=null)?ov:t[lang];
+    var v=(ov!=null)?ov:(t[lang] || t[lang === 'cn' ? 'zh' : lang] || (lang !== 'th' ? t.en : '') || t.th);
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
       if (v !== undefined) {
         if (v.indexOf('<') >= 0) el.innerHTML = v;
@@ -5234,21 +5400,39 @@ function applyI18N(lang){
       if (v !== undefined) el.setAttribute('placeholder', v.replace(/<[^>]+>/g,''));
     });
   });
+  applyFengshuiDynamicI18N(lang);
+  document.title = (lang === 'zh' || lang === 'cn') ? 'hourkey · 方位 · 找宅向' : lang === 'en' ? 'hourkey · Direction Gate · Feng Shui' : _fsI18nValue('auto.f.022', lang, 'hourkey · Direction Gate');
 }
 window.applyI18N = applyI18N;
-window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('lang',l);document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
+window.__hkOverlayApply=function(l){
+  var pageLang=_fsPageLang(l);
+  var st=_fsLangState(_fsStateInput(pageLang));
+  try{document.documentElement.setAttribute('lang',st.html);document.documentElement.setAttribute('data-lang',st.app);document.documentElement.setAttribute('data-hk-locale',st.raw);}catch(_){}
+  if (st.variant) document.documentElement.setAttribute('data-zh-variant', st.variant);
+  else document.documentElement.removeAttribute('data-zh-variant');
+  applyI18N(pageLang);
+};
 (function(){
-  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
-  var btns = sw.querySelectorAll('button');
+  var sw = document.getElementById('hk-lang-switch');
+  var btns = sw ? sw.querySelectorAll('button') : [];
   function apply(lang){
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
-    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
-    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
-    applyI18N(lang);
+    var st=_fsLangState(_fsStateInput(lang), true);
+    var pageLang=_fsPageLang(lang);
+    document.documentElement.setAttribute('lang', st.html);
+    document.documentElement.setAttribute('data-lang', st.app);
+    document.documentElement.setAttribute('data-hk-locale', st.raw);
+    if (st.variant) document.documentElement.setAttribute('data-zh-variant', st.variant);
+    else document.documentElement.removeAttribute('data-zh-variant');
+    btns.forEach(function(b){ b.classList.toggle('on', _fsPageLang(b.dataset.lang) === pageLang); });
+    applyI18N(pageLang);
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  try{
+    var api=window.HK_LANG_STATE||(window.HK&&window.HK.langState);
+    var cur=(api&&api.current&&api.current())||null;
+    var s=cur&&cur.raw==='zh'&&cur.variant==='cn'?'cn':((cur&&cur.raw)||localStorage.getItem('hk_lang')||localStorage.getItem('hk_locale')||'th');
+    apply(s);
+  }catch(e){ apply('th'); }
 })();
 (function(){
   var sw = document.getElementById('hk-theme-switch'); if (!sw) return;
@@ -5261,6 +5445,37 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.theme); }); });
   try{ var s = localStorage.getItem('hk-theme'); if (s) apply(s); else apply('dark'); }catch(e){ apply('dark'); }
+})();
+(function(){
+  var moved = false;
+  function portalUserMenu(){
+    var root = document.getElementById('hk-user-menu-root');
+    if (!root) return false;
+    if (root.parentElement !== document.body) document.body.appendChild(root);
+    root.classList.remove('inline');
+    root.style.position = 'fixed';
+    root.style.top = '20px';
+    root.style.right = '20px';
+    root.style.zIndex = '2147483000';
+    root.style.pointerEvents = 'auto';
+    var panel = root.querySelector('#hk-um-panel');
+    if (panel) {
+      panel.style.zIndex = '2147483000';
+      panel.style.pointerEvents = 'auto';
+    }
+    moved = true;
+    return true;
+  }
+  if (!portalUserMenu()) {
+    var tries = 0;
+    var timer = setInterval(function(){
+      if (portalUserMenu() || ++tries > 80) clearInterval(timer);
+    }, 100);
+    try {
+      new MutationObserver(function(){ if (!moved) portalUserMenu(); })
+        .observe(document.documentElement, { childList:true, subtree:true });
+    } catch(_) {}
+  }
 })();
 </script>
 

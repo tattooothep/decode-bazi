@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -55,7 +56,7 @@
   .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
   .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
   .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
-  .hk-top-r{display:flex;gap:8px;}
+  .hk-top-r{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
   .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
   .hk-btn:hover{background:var(--gold-soft);}
   .hk-btn.act{background:var(--gold);color:var(--bg);}
@@ -127,6 +128,10 @@
   .lang-note{margin-top:18px;font-size:11px;color:var(--fg-faint);text-align:center;font-family:var(--mono);letter-spacing:.05em;}
 
   @media(max-width:640px){
+    .hk-topbar{align-items:flex-start!important;flex-wrap:wrap!important;padding:10px 12px!important;}
+    .hk-topbar .hk-logo{order:1!important;width:100%!important;}
+    .hk-topbar .hk-top-r{order:3!important;flex:0 0 100%!important;width:100%!important;margin-left:0!important;display:flex!important;flex-wrap:wrap!important;justify-content:flex-start!important;gap:6px!important;margin-top:8px!important;}
+    .hk-topbar .hk-top-r .hk-btn{min-width:34px!important;padding:7px 9px!important;font-size:10px!important;}
     .hero h1{font-size:28px;}
     .hero .crest{font-size:48px;}
     .hero .desc{font-size:14px;}
@@ -146,7 +151,13 @@
     <div class="hk-top-r">
       <button class="hk-btn" id="lang-th">TH</button>
       <button class="hk-btn" id="lang-en">EN</button>
-      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="lang-zh">繁</button>
+      <button class="hk-btn" id="lang-cn">简</button>
+      <button class="hk-btn" id="lang-vi">VI</button>
+      <button class="hk-btn" id="lang-ja">JA</button>
+      <button class="hk-btn" id="lang-ru">RU</button>
+      <button class="hk-btn" id="lang-ko">KO</button>
+      <button class="hk-btn" id="lang-es">ES</button>
       <button class="hk-btn" id="theme-tog">🌓</button>
     </div>
   </header>
@@ -413,7 +424,7 @@ const I18N = {
       '得地 · DM มีรากในกิ่งดินหรือไม่ · 藏干มี DM อยู่กี่จุด',
       '得势 · DM มีพวกพ้อง/ธาตุช่วยหรือไม่ · resource + parallel',
       'ตัว DM เอง ห้ามนับเป็นตัวช่วยของตัวเอง',
-      'ผลลัพธ์: very_weak · weak · medium_weak · balanced · medium_strong · strong · very_strong'
+      'ผลลัพธ์: อ่อนมาก · อ่อน · ค่อนข้างอ่อน · สมดุล · ค่อนข้างแข็ง · แข็ง · แข็งมาก'
     ],
     body_en:[
       '得令 · Does DM get the season? Is birth month supportive?',
@@ -1668,17 +1679,145 @@ const I18N = {
   }
 };
 
-let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+const METHOD_LANGS = ['th','en','zh','cn','vi','ja','ru','ko','es'];
+function normalizeMethodLang(raw){
+  var x=String(raw||'').trim().toLowerCase().replace('_','-');
+  if(!x)return '';
+  if(x==='zh-cn'||x==='zh-hans'||x==='hans'||x==='cn')return 'cn';
+  if(x==='zh-tw'||x==='zh-hk'||x==='zh-hant'||x==='hant'||x==='zh')return 'zh';
+  if(x.indexOf('en')===0)return 'en';
+  if(x.indexOf('th')===0)return 'th';
+  if(METHOD_LANGS.indexOf(x)!==-1)return x;
+  return '';
+}
+function initialMethodLang(){
+  var q='';try{q=new URLSearchParams(location.search||'').get('lang')||new URLSearchParams(location.search||'').get('locale')||'';}catch(_){}
+  var n=normalizeMethodLang(q); if(n)return n;
+  var raw='';try{raw=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';}catch(_){}
+  n=normalizeMethodLang(raw);
+  if(n==='zh'){try{if(localStorage.getItem('hk_zh_variant')==='cn')return 'cn';}catch(_){}}
+  return n||'th';
+}
+let LANG = initialMethodLang();
+function methodBaseLang(l){ return l==='cn'?'zh':(I18N[l]?l:'en'); }
+function methodIsNative(l){ return l==='th'||l==='en'||l==='zh'||l==='cn'; }
+function methodHtmlLang(l){ return l==='cn'?'zh-Hans':(l==='zh'?'zh-Hant':l); }
+function methodUrlLang(l){ return l==='cn'?'cn':l; }
+function methodPersist(l, opts){
+  l=normalizeMethodLang(l)||'th'; opts=opts||{};
+  try{
+    var api=window.HK_LANG_STATE||(window.HK&&window.HK.langState);
+    if(api&&typeof api.set==='function')api.set(l==='cn'?'cn':l, opts);
+    else{
+      localStorage.setItem('hk_locale', l==='cn'?'zh':l);
+      localStorage.setItem('hk_lang', l==='cn'?'zh':l);
+      if(l==='cn')localStorage.setItem('hk_zh_variant','cn');
+      else if(l==='zh')localStorage.setItem('hk_zh_variant','hant');
+      else localStorage.removeItem('hk_zh_variant');
+    }
+  }catch(_){}
+}
+function methodApplyDom(){
+  var html=methodHtmlLang(LANG);
+  try{
+    if(document.documentElement.lang!==html)document.documentElement.lang=html;
+    var dataLang=LANG==='cn'?'zh':LANG;
+    if(document.documentElement.getAttribute('data-lang')!==dataLang)document.documentElement.setAttribute('data-lang', dataLang);
+    if(document.documentElement.getAttribute('data-hk-locale')!==dataLang)document.documentElement.setAttribute('data-hk-locale', dataLang);
+    if(LANG==='cn'||LANG==='zh'){
+      var variant=LANG==='cn'?'cn':'hant';
+      if(document.documentElement.getAttribute('data-zh-variant')!==variant)document.documentElement.setAttribute('data-zh-variant', variant);
+    } else if(document.documentElement.hasAttribute('data-zh-variant')) document.documentElement.removeAttribute('data-zh-variant');
+  }catch(_){}
+}
+let methodDomGuardStarted=false;
+function methodStartDomGuard(){
+  if(methodDomGuardStarted)return;
+  methodDomGuardStarted=true;
+  try{
+    new MutationObserver(function(){methodApplyDom();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang','data-lang','data-hk-locale','data-zh-variant']});
+    setInterval(methodApplyDom,500);
+  }catch(_){}
+}
+function methodSyncUrl(){
+  try{
+    var code=methodUrlLang(LANG);
+    var u=new URL(location.href);
+    if(u.searchParams.get('lang')===code&&!u.searchParams.get('locale'))return;
+    u.searchParams.set('lang',code); u.searchParams.delete('locale');
+    history.replaceState(null,'',u.pathname+u.search+u.hash);
+  }catch(_){}
+}
+function methodOverlayLang(l){ return ['vi','ja','ru','ko','es'].indexOf(l)!==-1?l:''; }
+function parseOverlayValue(v, fallback){
+  if(typeof v!=='string')return v;
+  var s=v.trim();
+  if(!s)return v;
+  if(s.charAt(0)!=='['&&s.charAt(0)!=='{')return v;
+  try{return Function('"use strict";return ('+s+');')();}catch(_){return fallback;}
+}
+function getOverlayValue(k, fallback){
+  try{
+    var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('methodology.html',k,LANG);
+    if(ov!=null)return parseOverlayValue(ov, fallback);
+  }catch(_){}
+  return fallback;
+}
 
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json เฉพาะคีย์ค่า string (คีย์ array ข้าม — overlay export เก็บเป็น string จะพัง .map/.forEach) · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _mttx(k){
-  var d=I18N[LANG]||I18N.th; var v=(d&&d[k]!=null)?d[k]:I18N.th[k];
-  if(typeof v==='string'){try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('methodology.html',k,LANG);if(ov!=null)return ov;}catch(_){}}
-  return v;
+  var base=methodBaseLang(LANG);
+  var d=I18N[base]||I18N.en||I18N.th; var v=(d&&d[k]!=null)?d[k]:I18N.th[k];
+  return getOverlayValue(k,v);
 }
 function _mtbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_mttx(k);});return o;}
 
-function pickStep(s, key){ return s[key+'_'+LANG] || s[key+'_th']; }
+function methodStepTopics(){
+  var t=_mtbag();
+  var raw=String(t.desc||t.flow||'').replace(/^\s*18\s*[^·]*·\s*/,'');
+  var parts=raw.split('→').map(function(x){return x.trim();}).filter(Boolean);
+  if(parts.length>=18)return parts;
+  return String(t.flow||'').split('→').map(function(x){return x.trim();}).filter(Boolean);
+}
+function methodStepBody(topic){
+  var dict={
+    vi:[
+      'Ở bước này, hệ thống kiểm tra {topic} trong bối cảnh toàn bộ lá số.',
+      'Tách riêng mùa sinh, gốc rễ, hợp xung và ảnh hưởng đến Dụng Thần.',
+      'Kết luận của bước này được chuyển sang bước kế tiếp để tránh đoán rời rạc.'
+    ],
+    ja:[
+      'この段階では、命式全体の文脈で「{topic}」を確認します。',
+      '季節、根、合冲、用神への影響を分けて判断します。',
+      'この結論を次の段階へ渡し、単独判断にならないようにします。'
+    ],
+    ru:[
+      'На этом этапе система проверяет «{topic}» в контексте всей карты.',
+      'Отдельно учитываются сезон, корни, сочетания, столкновения и влияние на 用神.',
+      'Вывод передается в следующий этап, чтобы не делать изолированное суждение.'
+    ],
+    ko:[
+      '이 단계에서는 전체 명반의 흐름 안에서 「{topic}」을 확인합니다.',
+      '계절, 뿌리, 합충, 용신에 주는 영향을 분리해서 판단합니다.',
+      '이 결론은 다음 단계로 이어져 단편 판단을 피합니다.'
+    ],
+    es:[
+      'En este paso, el sistema revisa «{topic}» dentro del contexto completo de la carta.',
+      'Se separan estación, raíces, combinaciones, choques e impacto sobre 用神.',
+      'La conclusión pasa al paso siguiente para evitar una lectura aislada.'
+    ]
+  };
+  return (dict[LANG]||[]).map(function(x){return x.replace('{topic}',topic);});
+}
+function pickStep(s, key){
+  var base=methodBaseLang(LANG);
+  if(methodIsNative(LANG))return s[key+'_'+base]||s[key+'_th'];
+  var topics=methodStepTopics();
+  var topic=topics[(s.n||1)-1]||s['title_en']||s['title_zh']||'';
+  if(key==='title')return topic;
+  if(key==='body')return methodStepBody(topic);
+  return s[key+'_'+base]||s[key+'_en']||s[key+'_th'];
+}
 
 function renderSteps(){
   const wrap = document.getElementById('steps-container');
@@ -1702,12 +1841,18 @@ function renderSteps(){
 function renderTOC(){
   const t = _mtbag();
   const items = I18N.steps.map(s => `<li><a href="#step-${s.n}">${s.icon} ${pickStep(s,'title')}</a></li>`).join('');
-  const extra = I18N.tocExtra.map(e => `<li><a href="#${e.id}">${e.icon} ${e[LANG]||e.th}</a></li>`).join('');
+  const extra = methodIsNative(LANG) ? I18N.tocExtra.map(e => `<li><a href="#${e.id}">${e.icon} ${e[methodBaseLang(LANG)]||e.th}</a></li>`).join('') : '';
   document.getElementById('toc').innerHTML = `<h3>📑 ${t.tocLabel}</h3><ol>${items}${extra}</ol>`;
 }
 
+const OPTIONAL_METHOD_CARDS = ['adv-state-card','adv-need-card','adv-ex-card','adv-warn-card','fs-needles-card','fs-pasha-card','fs-nashui-card','fs-ganzhi-card','fs-annual-card','fs-coresci-card'];
+function setOptionalMethodCards(show){
+  OPTIONAL_METHOD_CARDS.forEach(function(id){var el=document.getElementById(id); if(el)el.style.display=show?'':'none';});
+}
 function renderAdv(){
-  const a = I18N.adv[LANG] || I18N.adv.th;
+  if(!methodIsNative(LANG)){ setOptionalMethodCards(false); return; }
+  setOptionalMethodCards(true);
+  const a = I18N.adv[methodBaseLang(LANG)] || I18N.adv.th;
   /* 態 · state */
   document.getElementById('adv-state-title').textContent = a.state.title;
   document.getElementById('adv-state-intro').textContent = a.state.intro;
@@ -1749,7 +1894,9 @@ function fsTile(parts){
   return d;
 }
 function renderFengshui(){
-  const f = I18N.fengshui[LANG] || I18N.fengshui.th;
+  if(!methodIsNative(LANG)){ setOptionalMethodCards(false); return; }
+  setOptionalMethodCards(true);
+  const f = I18N.fengshui[methodBaseLang(LANG)] || I18N.fengshui.th;
   document.getElementById('fs-sec-title').textContent = f.secTitle;
   document.getElementById('fs-sec-intro').textContent = f.secIntro;
   const ng = document.getElementById('fs-needles-grid'); ng.textContent='';
@@ -1828,7 +1975,7 @@ function renderFengshui(){
 
 function renderAll(){
   const t = _mtbag();
-  document.documentElement.lang = LANG==='zh'?'zh-Hant':LANG;
+  methodApplyDom();
   document.title = t.crest+' '+t.title.replace(/<[^>]+>/g,'')+' · hourkey';
 
   document.getElementById('page-title').innerHTML = t.title;
@@ -1861,6 +2008,18 @@ function renderAll(){
     document.getElementById('w'+(i+1)+'-t').textContent = w[0];
     document.getElementById('w'+(i+1)+'-d').textContent = w[1];
   });
+  const routeLabels={
+    th:['ฤกษ์วันนี้','ปฏิทินฤกษ์','ดวงเต็ม','เน็ตเวิร์กดวง'],
+    en:['Today','Calendar','Chart','Network'],
+    zh:['今日','擇日','命盤','人脈'],
+    cn:['今日','择日','命盘','人脉'],
+    vi:['Hôm nay','Lịch','Lá số','Mạng lưới'],
+    ja:['今日','暦','命式','人脈'],
+    ru:['Сегодня','Календарь','Карта','Сеть'],
+    ko:['오늘','달력','명반','네트워크'],
+    es:['Hoy','Calendario','Carta','Red']
+  };
+  Array.from(document.querySelectorAll('#where-body + .grid-2 .tile .h')).forEach(function(el,i){el.textContent=(routeLabels[LANG]||routeLabels.en)[i]||el.textContent;});
 
   document.getElementById('lang-note').textContent = t.langNote;
 
@@ -1868,7 +2027,7 @@ function renderAll(){
     const el = document.getElementById(id); if(el) el.textContent = t.nav[i];
   });
 
-  ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+  METHOD_LANGS.forEach(l => { var el=document.getElementById('lang-'+l); if(el)el.classList.toggle('act', l===LANG); });
 
   renderSteps();
   renderTOC();
@@ -1880,8 +2039,9 @@ function renderAll(){
 /* 25 พ.ค. · คัมภีร์ปฏิกิริยาดวง (合冲刑害破/三合/สิบเทพ) · โหลดจาก interaction-methodology.json · 3 ภาษา */
 window.INTERACTION_M = null;
 function renderInteraction(){
-  const L = LANG, M = window.INTERACTION_M;
+  const L = methodBaseLang(LANG), M = window.INTERACTION_M;
   const card = document.getElementById('im-card');
+  if(!methodIsNative(LANG)){ if(card)card.style.display='none'; return; }
   if(!M){ if(card) card.style.display='none'; return; }
   if(card) card.style.display='';
   const pick = o => (o && (o[L] || o.th)) || '';
@@ -1896,13 +2056,18 @@ function renderInteraction(){
     if(sec.intro){ const p=document.createElement('p'); p.style.cssText='font-size:13px;color:var(--fg);opacity:.8;line-height:1.7;'; p.textContent=pick(sec.intro); body.appendChild(p); }
     (sec.rows||[]).forEach(r => {
       const d=document.createElement('div'); d.className='tile'; d.style.marginBottom='6px';
-      const k=document.createElement('div'); k.className='h'; k.textContent=r.k; d.appendChild(k);
+      const k=document.createElement('div'); k.className='h'; k.textContent=pick(r.k) || r.k || ''; d.appendChild(k);
       const v=document.createElement('div'); v.className='d'; v.innerHTML=pick(r.v); d.appendChild(v);
       body.appendChild(d);
     });
   });
 }
-fetch('/api/luopan/data?set=interaction').then(r=>r.json()).then(d=>{ window.INTERACTION_M=d; renderInteraction(); }).catch(e=>console.warn('interaction methodology load failed:',e));
+function loadInteractionMethodology(){
+  fetch('/api/auth/me',{credentials:'include'}).then(function(r){return r.ok?r.json():null;}).then(function(me){
+    if(!me||!me.user)return null;
+    return fetch('/api/luopan/data?set=interaction',{credentials:'include'}).then(function(r){return r.ok?r.json():null;});
+  }).then(function(d){ if(d){ window.INTERACTION_M=d; renderInteraction(); } }).catch(function(e){console.warn('interaction methodology load failed:',e);});
+}
 
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
@@ -1910,17 +2075,47 @@ function applyTheme(t){
   localStorage.setItem('hk-theme',t);
 }
 
-['th','en','zh'].forEach(l => {
-  document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); renderAll(); };
+function loadMethodOverlayThenRender(){
+  var ov=methodOverlayLang(LANG);
+  if(ov&&window.HK&&window.HK.i18n&&typeof window.HK.i18n.loadOverlay==='function'){
+    return window.HK.i18n.loadOverlay(ov).then(function(){renderAll();});
+  }
+  renderAll();
+  return Promise.resolve();
+}
+METHOD_LANGS.forEach(l => {
+  var btn=document.getElementById('lang-'+l);
+  if(!btn)return;
+  btn.onclick = () => { LANG=l; methodPersist(l); LANG=l; methodSyncUrl(); loadMethodOverlayThenRender(); };
 });
-window.__hkOverlayApply=function(l){ LANG=l; renderAll(); };
+function resolveMethodLocaleSignal(raw, detail){
+  detail=detail||{};
+  var l=(String(detail.html||'').toLowerCase()==='zh-hans')?'cn':normalizeMethodLang(raw);
+  if(l==='zh'){
+    try{
+      var q=new URLSearchParams(location.search||'').get('lang')||'';
+      if(normalizeMethodLang(q)==='cn'||localStorage.getItem('hk_zh_variant')==='cn')l='cn';
+    }catch(_){}
+  }
+  return l;
+}
+window.__hkOverlayApply=function(l){ LANG=resolveMethodLocaleSignal(l)||LANG; renderAll(); };
+document.addEventListener('hk:locale',function(ev){
+  var detail=(ev&&ev.detail)||{};
+  var l=resolveMethodLocaleSignal(detail.locale||detail.raw,detail);
+  if(l&&l!==LANG){LANG=l;loadMethodOverlayThenRender();}
+});
 document.getElementById('theme-tog').onclick = () => {
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';
   applyTheme(cur==='dark'?'light':'dark');
 };
 
 applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');
+methodPersist(LANG,{noUrl:true});
+methodSyncUrl();
+methodStartDomGuard();
 renderAll();
+loadInteractionMethodology();
 </script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
@@ -1935,5 +2130,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-nonthai-page-guard.js?v=2"></script>
 </body>
 </html>

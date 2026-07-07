@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -617,6 +618,35 @@
   };
 
   function _curLang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
+  function _calLang(raw){
+    raw = String(raw || _curLang() || 'th').toLowerCase();
+    if (raw.indexOf('zh') === 0) return 'zh';
+    return raw === 'en' ? 'en' : 'th';
+  }
+  function _calHasThai(v){ return /[\u0E00-\u0E7F]/.test(String(v || '')); }
+  function _calNoThai(v, lang, fallback){
+    v = String(v || '');
+    return lang !== 'th' && _calHasThai(v) ? (fallback || '') : v;
+  }
+  function _calIntentName(item, lang){
+    lang = _calLang(lang);
+    const id = item && item.id;
+    const row = INTENTS_CAL.find(i => i.id === id);
+    const val = row ? (row[lang] || row.en || row.zh || row.th || id) : (item && item.label) || id || '';
+    return _calNoThai(val, lang, id || '');
+  }
+  function _calStarName(s, lang){
+    lang = _calLang(lang);
+    if (lang === 'th') return s.name_th || s.han_trad || s.han || s.key || '';
+    if (lang === 'zh') return s.name_zh || s.han_trad || s.han || s.key || '';
+    return s.name_en || s.en || s.han_trad || s.han || s.key || '';
+  }
+  function _calStarDesc(s, lang){
+    lang = _calLang(lang);
+    if (lang === 'th') return s.desc_th || '';
+    if (lang === 'zh') return s.desc_zh || s.system || '';
+    return s.desc_en || [s.system, s.severity].filter(Boolean).join(' · ');
+  }
 
   function renderIntentDropdown(){
     const menu = document.getElementById('intent-dd-menu');
@@ -806,9 +836,9 @@
       const intentTier = intentSel && d.intentStatus ? d.intentStatus[intentSel] : null;
       const intentClass = intentTier ? `intent-${intentTier}` : '';
       /* 19 พ.ค. spec #2 · top + worst icon ใน default mode */
-      const topIcons = (d.topIntents || []).slice(0, 2).map(t => `<span class="d-intent-icon" title="${t.label}">${t.icon}</span>`).join('');
+      const topIcons = (d.topIntents || []).slice(0, 2).map(t => `<span class="d-intent-icon" title="${_calIntentName(t, _curLang())}">${t.icon}</span>`).join('');
       const _avoidTxt = ({th:'ห้าม:',en:'Avoid:',zh:'忌:'})[_curLang()] || 'ห้าม:';
-      const worstIcons = (d.worstIntents || []).slice(0, 1).map(t => `<span class="d-intent-icon worst" title="${_avoidTxt} ${t.label}">✕${t.icon}</span>`).join('');
+      const worstIcons = (d.worstIntents || []).slice(0, 1).map(t => `<span class="d-intent-icon worst" title="${_avoidTxt} ${_calIntentName(t, _curLang())}">✕${t.icon}</span>`).join('');
       const intentsHtml = (topIcons || worstIcons) && !intentSel ? `<div class="d-intents">${topIcons}${worstIcons}</div>` : '';
       const isToday = d.date === todayStr;
       const isSelected = d.day === state.selected;
@@ -1140,8 +1170,8 @@
           const subOff = lg==='th'?'建除·ชื่อวัน':lg==='zh'?'建除·日名':'jianchu';
           const subStar= lg==='th'?'黃道·ดาวประจำวัน':lg==='zh'?'黃道·值日':'huangdao';
           const escAttr = (s) => String(s||'').replace(/"/g,'&quot;');
-          const oFull = (lg==='th'?o.full_th:lg==='zh'?(o.full_zh||o.full_th):(o.full_en||o.full_th))||'';
-          const sFull = (lg==='th'?s.full_th:lg==='zh'?(s.full_zh||s.full_th):(s.full_en||s.full_th))||'';
+          const oFull = (lg==='th'?o.full_th:lg==='zh'?(o.full_zh||o.zh||off):(o.full_en||o.en||off))||'';
+          const sFull = (lg==='th'?s.full_th:lg==='zh'?(s.full_zh||s.zh||star12):(s.full_en||s.en||star12))||'';
           const iBtn = (col, fullText, headerText) =>
             `<button type="button" class="hk-i-btn" data-full="${escAttr(fullText)}" data-head="${escAttr(headerText)}" style="background:transparent;border:1px solid ${col.c};color:${col.c};border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;margin-left:auto;font-family:Arial,sans-serif;">i</button>`;
           return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
@@ -1201,7 +1231,7 @@
           const elTx = (e) => lg==='th'?EL_TH[e]:lg==='zh'?EL_ZH[e]:EL_EN[e];
           const polTx = (p) => lg==='zh'?POL_ZH[p]:lg==='th'?POL_TH[p]:p;
           const cards = [
-            { lbl_th:'年·ปี', lbl_en:'YEAR · ปี', lbl_zh:'年·年柱', p:d.pillars_full.year, highlight:false },
+            { lbl_th:'年·ปี', lbl_en:'YEAR', lbl_zh:'年·年柱', p:d.pillars_full.year, highlight:false },
             { lbl_th:'月·เดือน', lbl_en:'MONTH', lbl_zh:'月·月柱', p:d.pillars_full.month, highlight:false },
             { lbl_th:'日·วัน', lbl_en:'DAY', lbl_zh:'日·日主', p:d.pillars_full.day, highlight:true },
             { lbl_th:'時·ยาม', lbl_en:'HOUR', lbl_zh:'時·時柱', p:d.pillars_full.hour, highlight:false },
@@ -1215,6 +1245,7 @@
             const bd = pi.highlight ? 'var(--gold)' : 'var(--tile-bd)';
             const hex = pi.p.hex;
             const lbl = lg==='th'?pi.lbl_th:lg==='zh'?pi.lbl_zh:pi.lbl_en;
+            const hexTitle = hex ? (lg==='th' ? `${hex.zh} · ${hex.th}` : lg==='zh' ? `${hex.zh}` : `${hex.en || hex.zh} · ${hex.zh}`) : '';
             return `<div style="padding:10px 6px;background:${bg};border:1px solid ${bd};border-radius:10px;text-align:center;display:flex;flex-direction:column;gap:6px;">
               <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;border-bottom:1px dashed var(--tile-bd);padding-bottom:6px;">${lbl}</div>
               <div>
@@ -1225,7 +1256,7 @@
                 <div style="font-family:var(--tc);font-size:26px;font-weight:700;color:${bColor};line-height:1;">${pi.p.branch}<span style="font-size:14px;margin-left:2px;">${bi.emo||''}</span></div>
                 <div style="font-family:var(--thai);font-size:9px;color:${bColor};opacity:.85;margin-top:2px;letter-spacing:.02em;">${bi.th?lg==='th'?bi.th:lg==='zh'?bi.zh:bi.en:''} · ${elTx(bi.el)}</div>
               </div>
-              ${hex ? `<button type="button" class="hex-deep-btn" data-hex-num="${hex.num}" title="${hex.zh} · ${hex.th}" style="background:transparent;border:none;border-top:1px dashed var(--tile-bd);cursor:pointer;padding:6px 0 0;margin-top:2px;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              ${hex ? `<button type="button" class="hex-deep-btn" data-hex-num="${hex.num}" title="${hexTitle}" style="background:transparent;border:none;border-top:1px dashed var(--tile-bd);cursor:pointer;padding:6px 0 0;margin-top:2px;display:flex;flex-direction:column;align-items:center;gap:3px;">
                 <div style="font-family:'Noto Sans Symbols','Source Han Sans',serif;font-size:22px;line-height:1;color:#e8d496;text-shadow:0 0 8px rgba(232,212,150,.3);">${hex.symbol||''}</div>
                 <div style="font-family:var(--thai);font-size:10px;color:#e8d496;font-weight:600;letter-spacing:.02em;">${lg==='th'?hex.th:lg==='zh'?hex.zh:hex.en}</div>
                 <div style="font-family:var(--mono);font-size:8px;color:var(--fg-faint);">${hex.num} / 64</div>
@@ -1462,8 +1493,8 @@
         const _gist = (ps >= 65) ? ({th:'วันดี · ลุยเต็มที่ได้',en:'Good day · go for it',zh:'吉日·宜進'}[lg])
                     : (ps >= 45) ? ({th:'วันธรรมดา · ดีสำหรับงานเบา',en:'Routine day · light tasks ok',zh:'平日·宜輕務'}[lg])
                     : ({th:'วันระวัง · เลี่ยงตัดสินใจใหญ่',en:'Caution day · avoid big decisions',zh:'凶日·忌重決'}[lg]);
-        const _topTxt = top.length ? top.map(t => `${t.icon}${t.label}`).join(' · ') : QT_TXT.none;
-        const _worstTxt = worst.length ? worst.map(t => `${t.icon}${t.label}`).join(' · ') : QT_TXT.none;
+        const _topTxt = top.length ? top.map(t => `${t.icon}${_calIntentName(t, lg)}`).join(' · ') : QT_TXT.none;
+        const _worstTxt = worst.length ? worst.map(t => `${t.icon}${_calIntentName(t, lg)}`).join(' · ') : QT_TXT.none;
         return `<div class="sp-quick">
           <div class="qt-head">${QT_TXT.head}</div>
           <div class="qt-text">${_gist}</div>
@@ -1570,12 +1601,12 @@
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${sd.good.map(s => `<div style="display:grid;grid-template-columns:54px 1fr auto;gap:8px;align-items:start;padding:8px 10px;background:var(--wood-bg);border-left:3px solid var(--good);border-radius:6px;">
             <span style="font-family:var(--tc);font-size:14px;color:var(--good);font-weight:700;">${s.key}</span>
-            <span style="font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.45;"><b>${s.name_th}</b><div style="font-size:10.5px;color:var(--fg-soft);margin-top:2px;">${s.desc_th}</div></span>
+            <span style="font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.45;"><b>${_calStarName(s, lg)}</b><div style="font-size:10.5px;color:var(--fg-soft);margin-top:2px;">${_calStarDesc(s, lg)}</div></span>
             <span style="font-family:var(--mono);font-size:11px;color:var(--good);font-weight:700;white-space:nowrap;">+${s.weight}</span>
           </div>`).join('')}
           ${sd.bad.map(s => `<div style="display:grid;grid-template-columns:54px 1fr auto;gap:8px;align-items:start;padding:8px 10px;background:var(--fire-bg);border-left:3px solid var(--bad);border-radius:6px;">
             <span style="font-family:var(--tc);font-size:14px;color:var(--bad);font-weight:700;">${s.key}</span>
-            <span style="font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.45;"><b>${s.name_th}</b><div style="font-size:10.5px;color:var(--fg-soft);margin-top:2px;">${s.desc_th}</div></span>
+            <span style="font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.45;"><b>${_calStarName(s, lg)}</b><div style="font-size:10.5px;color:var(--fg-soft);margin-top:2px;">${_calStarDesc(s, lg)}</div></span>
             <span style="font-family:var(--mono);font-size:11px;color:var(--bad);font-weight:700;white-space:nowrap;">${s.weight}</span>
           </div>`).join('')}
           ${(sd.unknown||[]).length ? `<div style="font-size:10px;color:var(--fg-faint);text-align:center;padding:6px;">${({th:'ดาวที่ยังไม่แปล:',en:'Untranslated:',zh:'未翻譯:'})[lg]} ${sd.unknown.join(' · ')}</div>` : ''}
@@ -2042,19 +2073,30 @@ function applyI18N(lang){
   });
 }
 window.applyI18N = applyI18N;
-window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
+window.__hkOverlayApply=function(l){
+  try{
+    var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.normalize?window.HK_LANG_STATE.normalize(l):null;
+    document.documentElement.setAttribute('lang',st?st.html:l);
+    document.documentElement.setAttribute('data-lang',st?st.app:l);
+  }catch(_){}
+  applyI18N(l);
+};
 (function(){
-  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
-  var btns = sw.querySelectorAll('button');
+  var sw = document.getElementById('hk-lang-switch');
+  var btns = sw ? sw.querySelectorAll('button') : [];
   function apply(lang){
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
+    var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.set?window.HK_LANG_STATE.set(lang):null;
+    document.documentElement.setAttribute('lang', st?st.html:lang);
+    document.documentElement.setAttribute('data-lang', st?st.app:lang);
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
     try{ localStorage.setItem('hk_locale', lang); }catch(e){}
     applyI18N(lang);
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  try{
+    var s=(window.HK_LANG_STATE&&window.HK_LANG_STATE.raw&&window.HK_LANG_STATE.raw())||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'th';
+    apply(s);
+  }catch(e){ apply('th'); }
 })();
 </script>
 

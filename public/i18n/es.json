@@ -3332,7 +3332,8 @@
 "mygoal.html::mg.stat.missed": "Perdido",
 "mygoal.html::mg.stat.rate": "Tasa de éxito",
 "mygoal.html::mg.stat.avg": "Puntuación promedio",
-"mygoal.html::mg.next.tag": "Próximo · NEXT IN LINE",
+"mygoal.html::mg.next.tag": "Próxima hora favorable",
+"mygoal.html::mg.next.score": "Puntuación compuesta (★★★)",
 "mygoal.html::mg.next.misstag": "Firmar contrato · 簽約",
 "mygoal.html::mg.next.h2sub": "con Fara — Anhui Hongyu",
 "mygoal.html::mg.filter.all": "Todo",
@@ -3919,7 +3920,7 @@
 "today.html::t.de.sub": "El puntaje de energía direccional se calcula solo con Qi Men y las Estrellas Volantes Zi Bai, sin incluir tu carta personal",
 "today.html::t.de.loading": "Cargando la energía de dirección en tiempo real...",
 "today.html::t.ex.sum": "Extras clásicos · 黃曆 + 8 direcciones + 奇門/飛星",
-"today.html::t.bb.today.h": "今日 · Hoy vs. Natal · Cómo interactúa hoy con tu carta",
+"today.html::t.bb.today.h": "Hoy frente a la carta natal",
 "today.html::t.bb.go_chart": "📊 Ver carta completa · 11 secciones · /chart",
 "today.html::t.ex.ts.h": "<span class=\"tc\">黃曆</span>Almanaque Chino (Tong Shu) · favorable / evitar",
 "today.html::t.ex.dir.h": "<span class=\"tc\">八方</span>Direcciones auspiciosas · Qi Men/Estrellas Volantes",
@@ -3952,7 +3953,7 @@
 "today.html::t.ag.mode.wait": "Esperando el puntaje general del día antes de ordenar los consejos",
 "today.html::t.ag.rule": "Regla",
 "today.html::t.ag.rule.v": "Esta tarjeta no mostrará una señal fuerte si hoy es un día de precaución/evitar",
-"today.html::t.bb.h2": "Ba Zi básico · Basic BaZi",
+"today.html::t.bb.h2": "Base de BaZi",
 "today.html::t.ex.yi.title": "宜 Favorable",
 "today.html::t.ex.ji.title": "忌 Evitar",
 "today.html::t.ex.loading": "Cargando desde el almanaque real…",
@@ -5005,5 +5006,6 @@
 "yongsennetwork.html::n.bd.arun": "Fuego 丁 · 3 mar 1979",
 "yongsennetwork.html::n.bd.mint": "Fuego 丙 · 30 jul 1988",
 "yongsennetwork.html::n.bd.dee": "Metal 辛 · 25 nov 1989",
-"yongsennetwork.html::n.bd.eee": "Fuego 丁 · 17 feb 1982"
+"yongsennetwork.html::n.bd.eee": "Fuego 丁 · 17 feb 1982",
+"fengshui.html::auto.f.320": "Medir → confirmar → vista previa"
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -20,7 +21,7 @@
 <meta name="twitter:card" content="summary"/>
 <script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","name":"天星擇日 · ตรวจฤกษ์ด้วยดาวจริงบนฟ้า 七政四餘","url":"https://www.hourkey.io/tianxing","inLanguage":["th","en","zh"],"isPartOf":{"@type":"WebSite","name":"hourkey","url":"https://www.hourkey.io"}}
+{"@context":"https://schema.org","@type":"WebPage","name":"天星擇日 · Real-sky election astrology 七政四餘","url":"https://www.hourkey.io/tianxing","inLanguage":["th","en","zh-Hant","zh-Hans","vi","ja","ru","ko","es"],"isPartOf":{"@type":"WebSite","name":"hourkey","url":"https://www.hourkey.io"}}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -93,6 +94,7 @@ main{max-width:880px;margin:0 auto;padding:22px 16px 70px;}
 .eyebrow .han{font-family:var(--tc);font-size:19px;font-weight:700;color:var(--gold);}
 .eyebrow .lbl{font-size:14px;font-weight:600;color:var(--fg);}
 .eyebrow .en{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-faint);margin-left:auto;text-align:right;}
+html[data-hk-locale]:not([data-hk-locale="en"]) .eyebrow .en{display:none;}
 .muted{color:var(--fg-faint);font-size:12px;}
 .chip{display:inline-block;background:var(--bg-3);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:12px;color:var(--fg-soft);margin:2px 3px 2px 0;}
 .tc{font-family:var(--tc);}
@@ -267,7 +269,7 @@ td.st-name{text-align:left;}
     <div class="lang-seg" id="langSeg" role="group" aria-label="language">
       <button data-lang="th">TH</button><button data-lang="en">EN</button><button data-lang="zh">中</button>
     </div>
-    <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
+    <button class="tbtn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">☾</button>
   </div>
 </div>
 
@@ -384,7 +386,7 @@ td.st-name{text-align:left;}
 /* ═══════════ i18n ═══════════ */
 const I18N={
 th:{
-  back:"กลับหน้าวางฤกษ์",title:"ตรวจฤกษ์ด้วยดาวจริงบนฟ้า",
+  back:"กลับหน้าวางฤกษ์",title:"ตรวจฤกษ์ด้วยดาวจริงบนฟ้า",theme:"สลับธีม",
   sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — วงล้อจักรราศีแสดงตำแหน่งดาวจริง 11 ดวง ณ วินาทีที่เลือกลงมือ ผูกลัคนา แล้วตัดสินตามตำรา果老星宗",
   honesty_chip:"ตำแหน่งดาว = ดาราศาสตร์จริง · ชั้นตีความกำลังทยอย verify กับซินแส",
   s_time:"ฤกษ์ที่ตรวจ",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์เพื่อส่งฤกษ์เข้ามา · หรือกรอกวัน-เวลาด้านล่าง",
@@ -414,7 +416,7 @@ th:{
   disc:"การอ่านนี้ใช้ตำแหน่งดาวจริงบนฟ้า (七政四餘) เสริมการเลือกฤกษ์จาก黃曆 — เป็นแนวทางตามตำราโบราณ มีหลายสำนักและการตีความต่างกันได้ ไม่ใช่คำพยากรณ์ตายตัว และไม่ใช้แทนคำแนะนำทางการแพทย์ การเงิน หรือกฎหมาย"
 },
 en:{
-  back:"Back to date selection",title:"Verify the moment with the real sky",
+  back:"Back to date selection",title:"Verify the moment with the real sky",theme:"Toggle theme",
   sub:"The highest tier of election astrology — a zodiac wheel plotting the 11 real stars (7 planets + 4 nodes) at your chosen moment, judged by the Guolao Xingzong canon",
   honesty_chip:"Star positions = real astronomy · interpretation layer being verified with masters",
   s_time:"Chosen moment",loading:"Open this page from the datepick result to pass a chosen time, or enter a date-time below.",
@@ -444,7 +446,7 @@ en:{
   disc:"This reading uses real star positions (七政四餘) to complement almanac-based selection — a traditional framework; schools differ in interpretation. Not a fixed prediction, and no substitute for medical, financial or legal advice."
 },
 zh:{
-  back:"返回擇日頁",title:"以真實天象驗證所擇時刻",
+  back:"返回擇日頁",title:"以真實天象驗證所擇時刻",theme:"切換主題",
   sub:"擇日最高層 — 黃道盤呈現所擇時刻十一曜（七政四餘）真實位置，安命宮，依果老星宗斷之",
   honesty_chip:"星曜位置＝真實天文計算 · 論斷層正逐項與命師核證",
   s_time:"所擇時刻",loading:"請由擇日結果頁進入以傳入時刻，或於下方自行輸入日期時間。",
@@ -475,46 +477,116 @@ zh:{
 }
 };
 
+const LANG9_SET={th:1,en:1,zh:1,cn:1,vi:1,ja:1,ru:1,ko:1,es:1};
+function normLang9(raw){
+  raw=String(raw||"").toLowerCase().replace("_","-");
+  if(raw==="zh-cn"||raw==="zh-hans"||raw==="cn")return "cn";
+  if(raw==="zh-hant"||raw==="zh-tw"||raw==="zh-hk")return "zh";
+  if(raw.indexOf("zh")===0)return "zh";
+  if(raw.indexOf("en")===0)return "en";
+  if(raw.indexOf("th")===0)return "th";
+  return LANG9_SET[raw]?raw:"th";
+}
+function txObj(o,L,fb){
+  L=normLang9(L||LANG);
+  if(!o)return fb||"";
+  return o[L]||(L==="cn"?o.zh:"")||o.en||o.zh||o.th||fb||"";
+}
+const TX9={
+  dateMissing:{th:"กรอกวันและเวลาให้ครบ",en:"Please fill both date and time",zh:"請填齊日期與時間",cn:"请填齐日期与时间",vi:"Vui lòng nhập đủ ngày và giờ",ja:"日付と時刻を入力してください",ru:"Заполните дату и время",ko:"날짜와 시간을 모두 입력하세요",es:"Completa fecha y hora"},
+  invalidDate:{th:"รูปแบบเวลาไม่ถูกต้อง",en:"Invalid date-time",zh:"日期時間格式不正確",cn:"日期时间格式不正确",vi:"Định dạng ngày-giờ không hợp lệ",ja:"日時の形式が正しくありません",ru:"Неверный формат даты и времени",ko:"날짜-시간 형식이 올바르지 않습니다",es:"Fecha u hora no válida"},
+  starFail:{th:"คำนวณดาวไม่สำเร็จ — ลองใหม่อีกครั้ง",en:"Star computation failed — please retry",zh:"星位計算失敗，請重試",cn:"星位计算失败，请重试",vi:"Không tính được vị trí sao — hãy thử lại",ja:"星位計算に失敗しました。もう一度お試しください",ru:"Расчет светил не удался — попробуйте снова",ko:"별 위치 계산에 실패했습니다. 다시 시도하세요",es:"No se pudieron calcular las estrellas — inténtalo de nuevo"},
+  skyPrompt:{th:"เลือกฤกษ์เพื่อดูฟ้าจริง",en:"Pick a moment to see the sky",zh:"擇時刻以觀真天象",cn:"择时刻以观真天象",vi:"Chọn thời khắc để xem bầu trời thật",ja:"時刻を選ぶと実際の空が表示されます",ru:"Выберите момент, чтобы увидеть небо",ko:"시각을 선택하면 실제 하늘을 볼 수 있습니다",es:"Elige un momento para ver el cielo"},
+  asc:{th:"ลัคนา",en:"Ascendant",zh:"命宮",cn:"命宫",vi:"Cung Mệnh",ja:"命宮",ru:"Асцендент",ko:"명궁",es:"Ascendente"},
+  ascShort:{th:"ลัคนา",en:"Asc",zh:"命宮",cn:"命宫",vi:"Mệnh",ja:"命宮",ru:"Асц.",ko:"명궁",es:"Asc."},
+  ruler:{th:"用神",en:"Ruler",zh:"用神",cn:"用神",vi:"Dụng Thần",ja:"用神",ru:"Управитель",ko:"용신",es:"Regente"},
+  chartRuler:{th:"用神",en:"Chart ruler",zh:"用神",cn:"用神",vi:"Dụng Thần",ja:"用神",ru:"Управитель карты",ko:"용신",es:"Regente de carta"},
+  retro:{th:"พักร์",en:"retrograde",zh:"逆行",cn:"逆行",vi:"nghịch hành",ja:"逆行",ru:"ретроградно",ko:"역행",es:"retrógrado"},
+  glow:{th:"用神 เรืองแสง",en:"glowing = ruler",zh:"用神發光",cn:"用神发光",vi:"sáng = Dụng Thần",ja:"発光 = 用神",ru:"свечение = управитель",ko:"빛남 = 용신",es:"brillo = regente"},
+  affliction:{th:"ดาวร้าย 難星",en:"affliction star",zh:"難星",cn:"难星",vi:"sao gây trở ngại",ja:"難星",ru:"поражающее светило",ko:"난성",es:"estrella de aflicción"},
+  siderealNote:{th:"ราศีอิงดาวฤกษ์ (ayanamsa {A}° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก · ⚠️ ดาวคาบขอบราศี (ใกล้ 0°/29°) อาจคลาด — ใช้ประกอบ ไม่ฟันธง",en:"Sidereal zodiac (ayanamsa {A}° · V1) · 紫氣 school not yet locked · stars near a sign border (0°/29°) may shift — use as guidance, not a decree",zh:"恆星黃道（歲差 {A}° · V1）· 紫氣待定派 · 近宮界（0°/29°）之星或有出入 — 供參，不定斷",cn:"恒星黄道（岁差 {A}° · V1）· 紫氣待定派 · 近宫界（0°/29°）之星或有出入 — 供参，不定断",vi:"Hoàng đạo sao cố định (ayanamsa {A}° · V1) · 紫氣 chưa khóa trường phái · sao sát ranh giới cung (0°/29°) có thể dịch chuyển — dùng để tham khảo",ja:"恒星黄道（ayanamsa {A}° · V1）· 紫氣は流派未確定 · 宮境界付近（0°/29°）の星はずれる場合があります — 参考として扱ってください",ru:"Сидерический зодиак (аянамша {A}° · V1) · школа 紫氣 еще не закреплена · светила у границы знака (0°/29°) могут смещаться — используйте как ориентир",ko:"항성 황도(ayanamsa {A}° · V1) · 紫氣 유파 미확정 · 별자리 경계(0°/29°) 근처의 별은 달라질 수 있어 참고용입니다",es:"Zodiaco sideral (ayanamsa {A}° · V1) · escuela 紫氣 aún no fijada · estrellas cerca del límite del signo (0°/29°) pueden cambiar — úsalo como guía"},
+  tableNote:{th:'宿 = กลุ่มดาวฤกษ์ 28 ตำแหน่ง · กำลังดาว: <span class="miao">เขียว = แรง</span> · <span class="xian">แดง = อ่อน</span> · ↺ = พักร์ (เดินถอย)',en:'宿 = lunar mansion (28 xiu) · dignity: <span class="miao">green = strong</span> · <span class="xian">red = weak</span> · ↺ = retrograde',zh:'宿＝二十八宿 · <span class="miao">綠＝有力</span> · <span class="xian">紅＝失力</span> · ↺＝逆行',cn:'宿＝二十八宿 · <span class="miao">绿＝有力</span> · <span class="xian">红＝失力</span> · ↺＝逆行',vi:'宿 = 28 tú · <span class="miao">xanh = mạnh</span> · <span class="xian">đỏ = yếu</span> · ↺ = nghịch hành',ja:'宿＝二十八宿 · <span class="miao">緑＝強い</span> · <span class="xian">赤＝弱い</span> · ↺＝逆行',ru:'宿 = 28 лунных стоянок · <span class="miao">зеленый = сильно</span> · <span class="xian">красный = слабо</span> · ↺ = ретроградно',ko:'宿 = 28수 · <span class="miao">초록 = 강함</span> · <span class="xian">빨강 = 약함</span> · ↺ = 역행',es:'宿 = 28 mansiones lunares · <span class="miao">verde = fuerte</span> · <span class="xian">rojo = débil</span> · ↺ = retrógrado'},
+  placeFail:{th:"โหลดตัวค้นหาสถานที่ไม่สำเร็จ — ใช้ช่องพิกัดด้านล่างแทนได้",en:"Place search unavailable — use the coordinate fields below",zh:"地點搜尋載入失敗 — 可改用下方經緯度",cn:"地点搜索载入失败 — 可改用下方经纬度",vi:"Không tải được tìm kiếm địa điểm — hãy dùng ô tọa độ bên dưới",ja:"場所検索を読み込めません。下の座標欄を使ってください",ru:"Поиск места недоступен — используйте поля координат ниже",ko:"장소 검색을 불러오지 못했습니다. 아래 좌표 입력을 사용하세요",es:"La búsqueda de lugares no está disponible — usa las coordenadas de abajo"},
+  aiPick:{th:"เลือกฤกษ์ก่อน จึงถามซินแสได้",en:"Pick a moment first",zh:"請先擇時刻",cn:"请先择时刻",vi:"Hãy chọn thời khắc trước",ja:"先に時刻を選んでください",ru:"Сначала выберите момент",ko:"먼저 시각을 선택하세요",es:"Primero elige un momento"},
+  connFail:{th:"เชื่อมต่อไม่สำเร็จ",en:"Connection failed",zh:"連線失敗",cn:"连接失败",vi:"Kết nối thất bại",ja:"接続に失敗しました",ru:"Ошибка подключения",ko:"연결 실패",es:"Conexión fallida"},
+  login:{th:"เข้าสู่ระบบก่อนใช้ซินแส",en:"Log in to ask the master",zh:"請先登入",cn:"请先登录",vi:"Đăng nhập để hỏi thầy",ja:"先生に聞くにはログインしてください",ru:"Войдите, чтобы спросить мастера",ko:"사부에게 묻기 전에 로그인하세요",es:"Inicia sesión para preguntar al maestro"},
+  noHours:{th:"ยามไม่พอ — เติมยามเพื่อใช้ซินแส",en:"Not enough yam — top up to use the master",zh:"時數不足",cn:"时数不足",vi:"Không đủ lượt — hãy nạp thêm để dùng thầy",ja:"クレジット不足です — 追加して先生を使ってください",ru:"Недостаточно единиц — пополните для мастера",ko:"크레딧이 부족합니다 — 충전 후 이용하세요",es:"No hay suficientes créditos — recarga para usar el maestro"},
+  errPrefix:{th:"ผิดพลาด: ",en:"Error: ",zh:"錯誤：",cn:"错误：",vi:"Lỗi: ",ja:"エラー: ",ru:"Ошибка: ",ko:"오류: ",es:"Error: "},
+  lordAsc:{th:"เจ้าองศาลัคนา",en:"Lord of the ascendant degree",zh:"命度所主",cn:"命度所主",vi:"Chủ độ Cung Mệnh",ja:"命度の主",ru:"Владыка градуса асцендента",ko:"명도 주성",es:"Señor del grado ascendente"},
+  lordBody:{th:"เจ้าองศากาย (จันทร์)",en:"Lord of the body degree (Moon)",zh:"身度所主（月）",cn:"身度所主（月）",vi:"Chủ độ thân (Mặt Trăng)",ja:"身度の主（月）",ru:"Владыка градуса тела (Луна)",ko:"신도 주성(달)",es:"Señor del grado corporal (Luna)"}
+};
+function t9(k){return txObj(TX9[k],LANG,k);}
+
 /* ═══════════ ตารางอ้างอิงฝั่งแสดงผล ═══════════ */
 const SIGNS_L=[
-  {th:"เมษ",en:"Aries",zh:"白羊",g:"♈"},{th:"พฤษภ",en:"Taurus",zh:"金牛",g:"♉"},
-  {th:"เมถุน",en:"Gemini",zh:"雙子",g:"♊"},{th:"กรกฎ",en:"Cancer",zh:"巨蟹",g:"♋"},
-  {th:"สิงห์",en:"Leo",zh:"獅子",g:"♌"},{th:"กันย์",en:"Virgo",zh:"處女",g:"♍"},
-  {th:"ตุล",en:"Libra",zh:"天秤",g:"♎"},{th:"พิจิก",en:"Scorpio",zh:"天蠍",g:"♏"},
-  {th:"ธนู",en:"Sagittarius",zh:"人馬",g:"♐"},{th:"มังกร",en:"Capricorn",zh:"摩羯",g:"♑"},
-  {th:"กุมภ์",en:"Aquarius",zh:"寶瓶",g:"♒"},{th:"มีน",en:"Pisces",zh:"雙魚",g:"♓"}
+  {th:"เมษ",en:"Aries",zh:"白羊",cn:"白羊",vi:"Bạch Dương",ja:"牡羊",ru:"Овен",ko:"양자리",es:"Aries",g:"♈"},{th:"พฤษภ",en:"Taurus",zh:"金牛",cn:"金牛",vi:"Kim Ngưu",ja:"牡牛",ru:"Телец",ko:"황소자리",es:"Tauro",g:"♉"},
+  {th:"เมถุน",en:"Gemini",zh:"雙子",cn:"双子",vi:"Song Tử",ja:"双子",ru:"Близнецы",ko:"쌍둥이자리",es:"Géminis",g:"♊"},{th:"กรกฎ",en:"Cancer",zh:"巨蟹",cn:"巨蟹",vi:"Cự Giải",ja:"蟹",ru:"Рак",ko:"게자리",es:"Cáncer",g:"♋"},
+  {th:"สิงห์",en:"Leo",zh:"獅子",cn:"狮子",vi:"Sư Tử",ja:"獅子",ru:"Лев",ko:"사자자리",es:"Leo",g:"♌"},{th:"กันย์",en:"Virgo",zh:"處女",cn:"处女",vi:"Xử Nữ",ja:"乙女",ru:"Дева",ko:"처녀자리",es:"Virgo",g:"♍"},
+  {th:"ตุล",en:"Libra",zh:"天秤",cn:"天秤",vi:"Thiên Bình",ja:"天秤",ru:"Весы",ko:"천칭자리",es:"Libra",g:"♎"},{th:"พิจิก",en:"Scorpio",zh:"天蠍",cn:"天蝎",vi:"Bọ Cạp",ja:"蠍",ru:"Скорпион",ko:"전갈자리",es:"Escorpio",g:"♏"},
+  {th:"ธนู",en:"Sagittarius",zh:"人馬",cn:"人马",vi:"Nhân Mã",ja:"射手",ru:"Стрелец",ko:"사수자리",es:"Sagitario",g:"♐"},{th:"มังกร",en:"Capricorn",zh:"摩羯",cn:"摩羯",vi:"Ma Kết",ja:"山羊",ru:"Козерог",ko:"염소자리",es:"Capricornio",g:"♑"},
+  {th:"กุมภ์",en:"Aquarius",zh:"寶瓶",cn:"宝瓶",vi:"Bảo Bình",ja:"水瓶",ru:"Водолей",ko:"물병자리",es:"Acuario",g:"♒"},{th:"มีน",en:"Pisces",zh:"雙魚",cn:"双鱼",vi:"Song Ngư",ja:"魚",ru:"Рыбы",ko:"물고기자리",es:"Piscis",g:"♓"}
 ];
+function signNameByIndex(i,L){return txObj(SIGNS_L[i]||{},L);}
+function signNameOf(o,L){return signNameByIndex(o&&o.sign,L);}
 /* สีธาตุ 五行 ต่อดาว (จุดบนจานฟ้า + ตาราง) */
 const ELEM={
-  Jupiter:{c:"var(--wood)",cd:"#6fbe5b",th:"ไม้",en:"Wood",zh:"木"}, Ziqi:{c:"var(--wood)",cd:"#6fbe5b",th:"ไม้",en:"Wood",zh:"木"},
-  Mars:{c:"var(--fire)",cd:"#e0604f",th:"ไฟ",en:"Fire",zh:"火"}, Rahu:{c:"var(--fire)",cd:"#e0604f",th:"ไฟ",en:"Fire",zh:"火"},
-  Saturn:{c:"var(--earth)",cd:"#cf9d3f",th:"ดิน",en:"Earth",zh:"土"}, Ketu:{c:"var(--earth)",cd:"#cf9d3f",th:"ดิน",en:"Earth",zh:"土"},
-  Venus:{c:"var(--metal)",cd:"#c9cfd8",th:"ทอง",en:"Metal",zh:"金"},
-  Mercury:{c:"var(--water)",cd:"#5b9fd8",th:"น้ำ",en:"Water",zh:"水"}, Yuebo:{c:"var(--water)",cd:"#5b9fd8",th:"น้ำ",en:"Water",zh:"水"},
-  Sun:{c:"var(--sun)",cd:"#efa03c",th:"หยาง(ไฟ)",en:"Yang",zh:"陽"}, Moon:{c:"var(--moon)",cd:"#d8dce6",th:"หยิน(น้ำ)",en:"Yin",zh:"陰"}
+  Jupiter:{c:"var(--wood)",cd:"#6fbe5b",th:"ไม้",en:"Wood",zh:"木",cn:"木",vi:"Mộc",ja:"木",ru:"Дерево",ko:"목",es:"Madera"}, Ziqi:{c:"var(--wood)",cd:"#6fbe5b",th:"ไม้",en:"Wood",zh:"木",cn:"木",vi:"Mộc",ja:"木",ru:"Дерево",ko:"목",es:"Madera"},
+  Mars:{c:"var(--fire)",cd:"#e0604f",th:"ไฟ",en:"Fire",zh:"火",cn:"火",vi:"Hỏa",ja:"火",ru:"Огонь",ko:"화",es:"Fuego"}, Rahu:{c:"var(--fire)",cd:"#e0604f",th:"ไฟ",en:"Fire",zh:"火",cn:"火",vi:"Hỏa",ja:"火",ru:"Огонь",ko:"화",es:"Fuego"},
+  Saturn:{c:"var(--earth)",cd:"#cf9d3f",th:"ดิน",en:"Earth",zh:"土",cn:"土",vi:"Thổ",ja:"土",ru:"Земля",ko:"토",es:"Tierra"}, Ketu:{c:"var(--earth)",cd:"#cf9d3f",th:"ดิน",en:"Earth",zh:"土",cn:"土",vi:"Thổ",ja:"土",ru:"Земля",ko:"토",es:"Tierra"},
+  Venus:{c:"var(--metal)",cd:"#c9cfd8",th:"ทอง",en:"Metal",zh:"金",cn:"金",vi:"Kim",ja:"金",ru:"Металл",ko:"금",es:"Metal"},
+  Mercury:{c:"var(--water)",cd:"#5b9fd8",th:"น้ำ",en:"Water",zh:"水",cn:"水",vi:"Thủy",ja:"水",ru:"Вода",ko:"수",es:"Agua"}, Yuebo:{c:"var(--water)",cd:"#5b9fd8",th:"น้ำ",en:"Water",zh:"水",cn:"水",vi:"Thủy",ja:"水",ru:"Вода",ko:"수",es:"Agua"},
+  Sun:{c:"var(--sun)",cd:"#efa03c",th:"หยาง(ไฟ)",en:"Yang",zh:"陽",cn:"阳",vi:"Dương",ja:"陽",ru:"Ян",ko:"양",es:"Yang"}, Moon:{c:"var(--moon)",cd:"#d8dce6",th:"หยิน(น้ำ)",en:"Yin",zh:"陰",cn:"阴",vi:"Âm",ja:"陰",ru:"Инь",ko:"음",es:"Yin"}
 };
 const elOf=k=>ELEM[k]||{c:"var(--fg)",cd:"#ccc",th:"",en:"",zh:""};
 const STAR_EN={Sun:"Sun",Moon:"Moon",Mercury:"Mercury",Venus:"Venus",Mars:"Mars",Jupiter:"Jupiter",Saturn:"Saturn",Rahu:"Rahu",Ketu:"Ketu",Yuebo:"Yuebo",Ziqi:"Ziqi"};
+const STAR_LOCAL={
+  Sun:{vi:"Mặt Trời",ja:"太陽",ru:"Солнце",ko:"태양",es:"Sol"},
+  Moon:{vi:"Mặt Trăng",ja:"月",ru:"Луна",ko:"달",es:"Luna"},
+  Mercury:{vi:"Sao Thủy",ja:"水星",ru:"Меркурий",ko:"수성",es:"Mercurio"},
+  Venus:{vi:"Sao Kim",ja:"金星",ru:"Венера",ko:"금성",es:"Venus"},
+  Mars:{vi:"Sao Hỏa",ja:"火星",ru:"Марс",ko:"화성",es:"Marte"},
+  Jupiter:{vi:"Sao Mộc",ja:"木星",ru:"Юпитер",ko:"목성",es:"Júpiter"},
+  Saturn:{vi:"Sao Thổ",ja:"土星",ru:"Сатурн",ko:"토성",es:"Saturno"},
+  Rahu:{vi:"La Hầu",ja:"羅睺",ru:"Раху",ko:"라후",es:"Rahu"},
+  Ketu:{vi:"Kế Đô",ja:"計都",ru:"Кету",ko:"케투",es:"Ketu"},
+  Yuebo:{vi:"Nguyệt Bột",ja:"月孛",ru:"Юэбо",ko:"월패",es:"Yuebo"},
+  Ziqi:{vi:"Tử Khí",ja:"紫氣",ru:"Цзыци",ko:"자기",es:"Ziqi"}
+};
+function starNameOf(st,L){
+  L=normLang9(L||LANG);
+  if(!st)return "";
+  if(L==="th")return st.th;
+  if(L==="en")return STAR_EN[st.key]||st.th;
+  if(L==="zh"||L==="cn")return st.zh;
+  return (STAR_LOCAL[st.key]&&STAR_LOCAL[st.key][L])||st.zh||STAR_EN[st.key]||st.th;
+}
 /* อักษรเดี่ยวในจุดดาว */
 const STAR_CHAR={Rahu:"羅",Ketu:"計",Yuebo:"孛",Ziqi:"氣"};
 const charOf=s=>s.zh&&s.zh.length===1?s.zh:(STAR_CHAR[s.key]||s.zh.charAt(0));
 const STATUS_TH={"廟":"แรงสุด","旺":"รุ่งเรือง","升殿":"ได้ที่","樂":"สบาย","平":"ปกติ","落":"อ่อนแรง","陷":"อับแสง"};
 const STATUS_EN={"廟":"domicile","旺":"exalted","升殿":"enthroned","樂":"at ease","平":"neutral","落":"weakened","陷":"fallen"};
-const statusLabel=(st,L)=>L==="zh"?st:L==="en"?(STATUS_EN[st]||st):(STATUS_TH[st]||st);
+const STATUS_9={
+  vi:{"廟":"miếu","旺":"vượng","升殿":"đắc vị","樂":"an ổn","平":"trung tính","落":"yếu","陷":"hãm"},
+  ja:{"廟":"廟","旺":"旺","升殿":"昇殿","樂":"安定","平":"通常","落":"弱い","陷":"陷"},
+  ru:{"廟":"обитель","旺":"экзальтация","升殿":"на троне","樂":"устойчиво","平":"нейтрально","落":"ослаблено","陷":"падение"},
+  ko:{"廟":"묘","旺":"왕","升殿":"승전","樂":"안정","平":"보통","落":"약함","陷":"함"},
+  es:{"廟":"domicilio","旺":"exaltado","升殿":"entronizado","樂":"cómodo","平":"neutro","落":"debilitado","陷":"caído"}
+};
+const statusLabel=(st,L)=>{L=normLang9(L||LANG);return L==="zh"||L==="cn"?st:L==="en"?(STATUS_EN[st]||st):L==="th"?(STATUS_TH[st]||st):((STATUS_9[L]&&STATUS_9[L][st])||st);};
 const LEVELS={
-  top:{th:"มงคล",en:"Auspicious",zh:"大吉",seal:"吉",cls:"lv-top"},
-  good:{th:"ดี",en:"Favorable",zh:"吉",seal:"吉",cls:"lv-good"},
-  neutral:{th:"กลาง / ผสม",en:"Mixed",zh:"平",seal:"平",cls:"lv-neutral"},
-  bad:{th:"ควรเลี่ยง",en:"Better avoid",zh:"不宜",seal:"忌",cls:"lv-bad"}
+  top:{th:"มงคล",en:"Auspicious",zh:"大吉",cn:"大吉",vi:"Đại cát",ja:"大吉",ru:"Очень благоприятно",ko:"대길",es:"Muy auspicioso",seal:"吉",cls:"lv-top"},
+  good:{th:"ดี",en:"Favorable",zh:"吉",cn:"吉",vi:"Tốt",ja:"吉",ru:"Благоприятно",ko:"길",es:"Favorable",seal:"吉",cls:"lv-good"},
+  neutral:{th:"กลาง / ผสม",en:"Mixed",zh:"平",cn:"平",vi:"Trung bình / lẫn",ja:"中立 / 混合",ru:"Смешано",ko:"보통 / 혼합",es:"Mixto",seal:"平",cls:"lv-neutral"},
+  bad:{th:"ควรเลี่ยง",en:"Better avoid",zh:"不宜",cn:"不宜",vi:"Nên tránh",ja:"避けた方がよい",ru:"Лучше избегать",ko:"피하는 편이 좋음",es:"Mejor evitar",seal:"忌",cls:"lv-bad"}
 };
 const REL_LABEL={
-  en:{han:"恩星",th:"หนุน用神 (生)",en:"Benefactor (feeds ruler)",zh:"生用神",color:"var(--ok)"},
-  yong:{han:"用星",th:"用神ระบาย (剋難·ดี)",en:"Output (tames affliction)",zh:"用神所生",color:"var(--water)"},
-  chou:{han:"仇星",th:"剋ตัวหนุน (เสีย)",en:"Rival (harms benefactor)",zh:"用神所剋",color:"#c98f3e"},
-  nan:{han:"難星",th:"ขัด用神 (ร้ายสุด)",en:"Affliction (strikes ruler)",zh:"剋用神",color:"var(--bad)"}
+  en:{han:"恩星",th:"หนุน用神 (生)",en:"Benefactor (feeds ruler)",zh:"生用神",cn:"生用神",vi:"Sao trợ lực",ja:"用神を生じる",ru:"Благодетель",ko:"용신을 생함",es:"Benefactor",color:"var(--ok)"},
+  yong:{han:"用星",th:"用神ระบาย (剋難·ดี)",en:"Output (tames affliction)",zh:"用神所生",cn:"用神所生",vi:"Sao do Dụng Thần sinh",ja:"用神が生じる",ru:"Выход управителя",ko:"용신이 생함",es:"Salida del regente",color:"var(--water)"},
+  chou:{han:"仇星",th:"剋ตัวหนุน (เสีย)",en:"Rival (harms benefactor)",zh:"用神所剋",cn:"用神所克",vi:"Sao bị Dụng Thần khắc",ja:"用神が剋す",ru:"Соперник",ko:"용신이 극함",es:"Rival",color:"#c98f3e"},
+  nan:{han:"難星",th:"ขัด用神 (ร้ายสุด)",en:"Affliction (strikes ruler)",zh:"剋用神",cn:"克用神",vi:"Sao khắc Dụng Thần",ja:"用神を剋す",ru:"Поражение",ko:"용신을 극함",es:"Aflicción",color:"var(--bad)"}
 };
 
-let LANG=(function(){try{const u=new URLSearchParams(location.search).get("lang");if(u&&["th","en","zh"].includes(u))return u;return localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang")||"th";}catch(e){return "th";}})();
+let LANG=(function(){try{const st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current();if(st&&st.raw)return st.raw==="zh"&&st.variant==="cn"?"cn":st.raw;const u=new URLSearchParams(location.search).get("lang");if(u)return normLang9(u);return normLang9(localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang")||"th");}catch(e){return "th";}})();
 
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _txtx(k){
@@ -527,14 +599,20 @@ let HANDOFF=null;
 let PLACE_NAME="";
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
-function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return "";return d.toLocaleString(LANG==="th"?"th-TH":LANG==="zh"?"zh-CN":"en-US",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"});}catch(e){return "";}}
+function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return "";const m={th:"th-TH",en:"en-US",zh:"zh-TW",cn:"zh-CN",vi:"vi-VN",ja:"ja-JP",ru:"ru-RU",ko:"ko-KR",es:"es-ES"};return d.toLocaleString(m[normLang9(LANG)]||"en-US",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"});}catch(e){return "";}}
 
 /* ═══════════ ธีม + ภาษา ═══════════ */
 function applyLang(){
-  document.documentElement.lang=LANG;
+  LANG=normLang9(LANG);
+  var st=null;try{st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current();}catch(_){}
+  document.documentElement.lang=LANG==="cn"?"zh-Hans":(st&&st.html)||LANG;
+  document.documentElement.setAttribute("data-hk-locale",LANG==="cn"?"zh":LANG);
+  if(LANG==="cn")document.documentElement.setAttribute("data-zh-variant","cn");
   document.title="天星擇日 · "+(_txtx("title")||I18N.th.title)+" 七政四餘 · hourkey";
   document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");const v=_txtx(k);if(v)el.textContent=v;});
   document.querySelectorAll("[data-tp]").forEach(el=>{const k=el.getAttribute("data-tp");const v=_txtx(k);if(v)el.setAttribute("placeholder",v);});
+  const themeBtn=document.getElementById("themeBtn");
+  if(themeBtn){themeBtn.setAttribute("title",_txtx("theme")||"Toggle theme");themeBtn.setAttribute("aria-label",_txtx("theme")||"Toggle theme");}
   document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   renderHeader();
   if(window._last){render(window._last);}else{drawWheel(null);}
@@ -542,7 +620,8 @@ function applyLang(){
 }
 document.getElementById("langSeg").addEventListener("click",e=>{
   const b=e.target.closest("button[data-lang]");if(!b)return;
-  LANG=b.dataset.lang;try{localStorage.setItem("hk_locale",LANG);localStorage.setItem("hk_lang",LANG);}catch(err){}
+  LANG=normLang9(b.dataset.lang);
+  try{if(window.HK_LANG_STATE&&window.HK_LANG_STATE.set)window.HK_LANG_STATE.set(LANG==="cn"?"zh-cn":LANG);else{localStorage.setItem("hk_locale",LANG==="cn"?"zh":LANG);localStorage.setItem("hk_lang",LANG==="cn"?"zh":LANG);}}catch(err){}
   applyLang();
 });
 document.getElementById("themeBtn").onclick=()=>{
@@ -589,9 +668,9 @@ async function loadChart(){
 }
 async function goManual(){
   var dv=document.getElementById("mDate").value, tv=document.getElementById("mTime").value;
-  if(!dv||!tv){document.getElementById("hdrBody").innerHTML='<span class="muted">'+(LANG==="th"?"กรอกวันและเวลาให้ครบ":LANG==="zh"?"請填齊日期與時間":"Please fill both date and time")+"</span>";return;}
+  if(!dv||!tv){document.getElementById("hdrBody").innerHTML='<span class="muted">'+esc(t9("dateMissing"))+"</span>";return;}
   var dtUTC;
-  try{dtUTC=new Date(dv+"T"+tv+":00+07:00").toISOString();}catch(e){document.getElementById("hdrBody").innerHTML='<span class="muted">'+(LANG==="th"?"รูปแบบเวลาไม่ถูกต้อง":"Invalid date-time")+"</span>";return;}
+  try{dtUTC=new Date(dv+"T"+tv+":00+07:00").toISOString();}catch(e){document.getElementById("hdrBody").innerHTML='<span class="muted">'+esc(t9("invalidDate"))+"</span>";return;}
   HANDOFF={dtUTC:dtUTC,activity:{name:""},display:"",place:PLACE_NAME};
   renderHeader();
   await recompute();
@@ -601,7 +680,7 @@ async function recompute(){
   const lat=parseFloat(document.getElementById("lat").value),lng=parseFloat(document.getElementById("lng").value);
   const res=await fetch("/api/tianxing/chart",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng})}).then(r=>r.json()).catch(()=>null);
   if(!res||!res.ok){
-    document.getElementById("ascLine").innerHTML='<span class="muted">'+(LANG==="th"?"คำนวณดาวไม่สำเร็จ — ลองใหม่อีกครั้ง":LANG==="zh"?"星位計算失敗，請重試":"Star computation failed — please retry")+"</span>";
+    document.getElementById("ascLine").innerHTML='<span class="muted">'+esc(t9("starFail"))+"</span>";
     return;
   }
   window._last=res.reading;
@@ -658,7 +737,7 @@ function drawWheel(r){
   for(let i=0;i<12;i++){
     const mid=i*30+15;
     const [gx,gy]=wpt(mid,290),[nx,ny]=wpt(mid,268);
-    const nm=L==="zh"?SIGNS_L[i].zh:L==="en"?SIGNS_L[i].en:SIGNS_L[i].th;
+    const nm=signNameByIndex(i,L);
     s+='<text x="'+gx.toFixed(1)+'" y="'+(gy+5).toFixed(1)+'" text-anchor="middle" font-size="15" fill="#c8a44d" style="font-family:serif">'+SIGNS_L[i].g+'</text>';
     s+='<text x="'+nx.toFixed(1)+'" y="'+(ny+4).toFixed(1)+'" text-anchor="middle" font-size="'+(L==="en"?9:10.5)+'" fill="rgba(243,237,222,.72)">'+esc(nm)+"</text>";
   }
@@ -668,7 +747,7 @@ function drawWheel(r){
 
   if(!r){
     s+='<text x="320" y="314" text-anchor="middle" font-size="30" fill="rgba(200,164,77,.85)" style="font-family:\'Noto Serif TC\',serif" font-weight="700">天盤</text>';
-    s+='<text x="320" y="342" text-anchor="middle" font-size="12" fill="rgba(243,237,222,.55)">'+esc(L==="th"?"เลือกฤกษ์เพื่อดูฟ้าจริง":L==="zh"?"擇時刻以觀真天象":"Pick a moment to see the sky")+"</text>";
+    s+='<text x="320" y="342" text-anchor="middle" font-size="12" fill="rgba(243,237,222,.55)">'+esc(t9("skyPrompt"))+"</text>";
     svg.innerHTML=s;
     return;
   }
@@ -730,10 +809,10 @@ function drawWheel(r){
   s+=dots;
 
   /* ใจกลาง: ลัคนา + 用神 */
-  const signName=L==="zh"?asc.signZh:L==="en"?SIGNS_L[asc.sign].en:asc.signTh;
-  s+='<text x="320" y="300" text-anchor="middle" font-size="12" fill="rgba(243,237,222,.6)">'+esc(L==="zh"?"命宮":L==="en"?"Ascendant":"ลัคนา")+"</text>";
+  const signName=signNameOf(asc,L);
+  s+='<text x="320" y="300" text-anchor="middle" font-size="12" fill="rgba(243,237,222,.6)">'+esc(t9("asc"))+"</text>";
   s+='<text x="320" y="326" text-anchor="middle" font-size="20" fill="#e6c976" style="font-family:\'Noto Serif TC\',serif" font-weight="700">'+esc(signName)+" "+asc.deg.toFixed(1)+"°</text>";
-  s+='<text x="320" y="349" text-anchor="middle" font-size="11.5" fill="rgba(243,237,222,.72)">'+esc((L==="zh"?"用神 ":L==="en"?"Ruler ":"用神 ")+(L==="en"?STAR_EN[r.yongshen.key]||r.yongshen.th:L==="zh"?r.yongshen.zh:r.yongshen.th)+" · "+statusLabel(r.yongshen.status,L))+"</text>";
+  s+='<text x="320" y="349" text-anchor="middle" font-size="11.5" fill="rgba(243,237,222,.72)">'+esc(t9("ruler")+" "+starNameOf(r.yongshen,L)+" · "+statusLabel(r.yongshen.status,L))+"</text>";
   svg.innerHTML=s;
   wireTooltips(r);
 }
@@ -746,14 +825,14 @@ function wireTooltips(r){
   function show(g,evt){
     const i=+g.dataset.i;const st=r.stars[i];if(!st)return;
     const L=LANG;const e=elOf(st.key);
-    const nm=L==="en"?(STAR_EN[st.key]||st.th):L==="zh"?st.zh:st.th;
-    const alt=L==="zh"?st.th:st.zh;
-    const signName=L==="zh"?st.signZh:L==="en"?SIGNS_L[st.sign].en:st.signTh;
+    const nm=starNameOf(st,L);
+    const alt=(L==="th"?st.zh:(L==="zh"||L==="cn"?st.th:st.zh));
+    const signName=signNameOf(st,L);
     const rel=relMap[st.key];
     const relTag=rel?('<span class="tt-rel" style="color:'+REL_LABEL[rel].color+';border-color:'+REL_LABEL[rel].color+'">'+REL_LABEL[rel].han+"</span>"):"";
     tip.innerHTML='<div class="tt-name" style="color:'+e.cd+'">'+esc(nm)+' <span style="opacity:.65;font-weight:400">'+esc(alt)+"</span>"+relTag+"</div>"+
       esc(signName)+" "+st.deg+"° · 宿 "+esc(st.shu||"—")+(st.shu?" "+st.shuDeg+"°":"")+"<br>"+
-      esc(statusLabel(st.status,L))+' <span style="opacity:.6">'+esc(st.status)+"</span>"+(st.retro?" · ↺ "+(L==="th"?"พักร์":L==="zh"?"逆行":"retrograde"):"");
+      esc(statusLabel(st.status,L))+' <span style="opacity:.6">'+esc(st.status)+"</span>"+(st.retro?" · ↺ "+esc(t9("retro")):"");
     tip.style.display="block";
     const wr=wrap.getBoundingClientRect();
     let px,py;
@@ -787,28 +866,25 @@ function render(r){
 
   /* legend */
   const lg=document.getElementById("wheelLegend");
-  const legendEls=[["Jupiter","ไม้ 木","Wood 木","木"],["Mars","ไฟ 火","Fire 火","火"],["Saturn","ดิน 土","Earth 土","土"],["Venus","ทอง 金","Metal 金","金"],["Mercury","น้ำ 水","Water 水","水"],["Sun","อาทิตย์ 日","Sun 日","日"],["Moon","จันทร์ 月","Moon 月","月"]];
-  lg.innerHTML=legendEls.map(x=>'<span class="li"><span class="swd" style="background:'+elOf(x[0]).cd+'"></span>'+esc(L==="en"?x[2]:L==="zh"?x[3]:x[1])+"</span>").join("")+
-    '<span class="li"><span class="swd" style="background:transparent;border:2px solid #e6c976;box-shadow:0 0 6px #e6c976"></span>'+esc(L==="th"?"用神 เรืองแสง":L==="zh"?"用神發光":"glowing = ruler")+"</span>"+
-    '<span class="li"><span class="swd" style="background:transparent;border:1.5px dashed var(--bad)"></span>'+esc(L==="th"?"ดาวร้าย 難星":L==="zh"?"難星":"affliction star")+"</span>";
+  const legendEls=["Jupiter","Mars","Saturn","Venus","Mercury","Sun","Moon"];
+  lg.innerHTML=legendEls.map(x=>'<span class="li"><span class="swd" style="background:'+elOf(x).cd+'"></span>'+esc(txObj(elOf(x),L))+"</span>").join("")+
+    '<span class="li"><span class="swd" style="background:transparent;border:2px solid #e6c976;box-shadow:0 0 6px #e6c976"></span>'+esc(t9("glow"))+"</span>"+
+    '<span class="li"><span class="swd" style="background:transparent;border:1.5px dashed var(--bad)"></span>'+esc(t9("affliction"))+"</span>";
 
   /* asc line + ayanamsa note */
   const a=r.ascendant;
-  const signName=L==="zh"?a.signZh:L==="en"?SIGNS_L[a.sign].en:a.signTh;
-  document.getElementById("ascLine").innerHTML=(L==="zh"?"命宮":L==="en"?"Ascendant":"ลัคนา (命宮)")+": <b class=\"tc\">"+esc(signName)+"</b> "+a.deg.toFixed(1)+"° · 宿 "+esc(a.shu)+" "+a.shuDeg.toFixed(1)+"° · "+(L==="th"?"用神":L==="zh"?"用神":"Chart ruler")+": <b>"+esc(L==="en"?STAR_EN[r.yongshen.key]||r.yongshen.th:L==="zh"?r.yongshen.zh:r.yongshen.th+" "+r.yongshen.zh)+"</b> "+esc(statusLabel(r.yongshen.status,L));
-  document.getElementById("ayanNote").textContent=
-    L==="en"?("Sidereal zodiac (ayanamsa "+r.ayanamsa+"° · V1) · 紫氣 school not yet locked · stars near a sign border (0°/29°) may shift — use as guidance, not a decree"):
-    L==="zh"?("恆星黃道（歲差 "+r.ayanamsa+"° · V1）· 紫氣待定派 · 近宮界（0°/29°）之星或有出入 — 供參，不定斷"):
-    ("ราศีอิงดาวฤกษ์ (ayanamsa "+r.ayanamsa+"° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก · ⚠️ ดาวคาบขอบราศี (ใกล้ 0°/29°) อาจคลาด — ใช้ประกอบ ไม่ฟันธง");
+  const signName=signNameOf(a,L);
+  document.getElementById("ascLine").innerHTML=esc(t9("asc"))+": <b class=\"tc\">"+esc(signName)+"</b> "+a.deg.toFixed(1)+"° · 宿 "+esc(a.shu)+" "+a.shuDeg.toFixed(1)+"° · "+esc(t9("chartRuler"))+": <b>"+esc(starNameOf(r.yongshen,L))+"</b> "+esc(statusLabel(r.yongshen.status,L));
+  document.getElementById("ayanNote").textContent=txObj(TX9.siderealNote,L).replace("{A}",r.ayanamsa);
 
   /* verdict */
   const vc=document.getElementById("vcard");vc.style.display="";
   const lv=LEVELS[r.level]||LEVELS.neutral;
   const v=document.getElementById("verdict");v.className="verdict "+lv.cls;
   document.getElementById("vSeal").textContent=lv.seal;
-  document.getElementById("vBig").textContent=lv[L]||lv.th;
-  document.getElementById("vSub").textContent=(r.verdictTh[L]||r.verdictTh.th)+" · "+(L==="th"?"用神 "+r.yongshen.th+" "+statusLabel(r.yongshen.status,L):L==="zh"?"用神"+r.yongshen.zh+statusLabel(r.yongshen.status,L):"Ruler "+(STAR_EN[r.yongshen.key]||"")+" "+statusLabel(r.yongshen.status,L));
-  document.getElementById("reasons").innerHTML=r.reasons.map(x=>"<li>"+esc(x[L]||x.th)+"</li>").join("");
+  document.getElementById("vBig").textContent=txObj(lv,L);
+  document.getElementById("vSub").textContent=txObj(r.verdictTh,L)+" · "+esc(t9("ruler"))+" "+esc(starNameOf(r.yongshen,L))+" "+esc(statusLabel(r.yongshen.status,L));
+  document.getElementById("reasons").innerHTML=r.reasons.map(x=>"<li>"+esc(txObj(x,L))+"</li>").join("");
   const gj=document.getElementById("gejuRow");
   if(r.geju&&r.geju.length){
     gj.innerHTML='<span class="glbl">格局</span>'+r.geju.map(g=>'<span class="gchip '+(g.good?"g1":"g0")+'">'+(g.good?"✓ ":"✗ ")+esc(L==="th"?g.th:g.zh)+"</span>").join("");
@@ -818,36 +894,33 @@ function render(r){
 
   /* deep · 恩用仇難 */
   document.getElementById("ruleCard").style.display="";
-  const starLabel=x=>'<b style="color:'+elOf(x.key).cd+'">'+esc(L==="en"?STAR_EN[x.key]||x.th:L==="th"?x.th:x.zh)+"</b>";
+  const starLabel=x=>'<b style="color:'+elOf(x.key).cd+'">'+esc(starNameOf(x,L))+"</b>";
   const cells=[["en",r.en_stars],["yong",r.yong_stars||[]],["chou",r.chou_stars||[]],["nan",r.nan_stars]];
   document.getElementById("relGrid").innerHTML=cells.map(c=>{
     const meta=REL_LABEL[c[0]];
-    return '<div class="rel-cell rel-'+c[0]+'"><div class="rc-h"><span class="rc-han">'+meta.han+'</span><span class="rc-th">'+esc(meta[L]||meta.th)+'</span></div><div class="rc-stars">'+(c[1].length?c[1].map(starLabel).join(" · "):'<span class="muted">—</span>')+"</div></div>";
+    return '<div class="rel-cell rel-'+c[0]+'"><div class="rc-h"><span class="rc-han">'+meta.han+'</span><span class="rc-th">'+esc(txObj(meta,L))+'</span></div><div class="rc-stars">'+(c[1].length?c[1].map(starLabel).join(" · "):'<span class="muted">—</span>')+"</div></div>";
   }).join("");
   const md=r.mingDegree,sd=r.shenDegree;
   const lordLine=(labelHan,labelTxt,d)=>{
     if(!d||!d.lordKey)return "";
-    const lord=L==="en"?(STAR_EN[d.lordKey]||d.lordTh):L==="zh"?d.lordZh:d.lordTh;
+    const lord=starNameOf({key:d.lordKey,th:d.lordTh,zh:d.lordZh},L);
     return '<div><span class="tc" style="color:var(--gold)">'+labelHan+"</span> "+esc(labelTxt)+": 宿 "+esc(d.shu)+" → "+esc(lord)+" · "+esc(statusLabel(d.lordStatus,L))+(d.relationToMing&&d.relationToMing!=="中性"?' · <span class="tc">'+esc(d.relationToMing)+"</span>":"")+"</div>";
   };
   document.getElementById("degLords").innerHTML=
-    lordLine("命度主",L==="th"?"เจ้าองศาลัคนา":L==="zh"?"命度所主":"Lord of the ascendant degree",md)+
-    lordLine("身度主",L==="th"?"เจ้าองศากาย (จันทร์)":L==="zh"?"身度所主（月）":"Lord of the body degree (Moon)",sd);
+    lordLine("命度主",t9("lordAsc"),md)+
+    lordLine("身度主",t9("lordBody"),sd);
 
   /* ตารางดาว */
   document.getElementById("chartCard").style.display="";
   document.querySelector("#starTbl tbody").innerHTML=r.stars.map(st=>{
     const cls=st.statusRank>=4?"miao":st.statusRank<=2?"xian":"";
     const e=elOf(st.key);
-    const nm=L==="en"?(STAR_EN[st.key]||st.th):L==="th"?st.th:st.zh;
-    const alt=L==="zh"?st.th:st.zh;
-    const sgn=L==="zh"?st.signZh:L==="en"?SIGNS_L[st.sign].en:st.signTh;
-    return "<tr><td class=\"st-name\"><b style=\"color:"+e.cd+"\">"+esc(nm)+"</b> <span class=\"muted\">"+esc(alt)+(e.th?" · "+esc(L==="en"?e.en:L==="zh"?e.zh:e.th):"")+"</span></td><td>"+esc(sgn)+"</td><td>"+st.deg+"°</td><td class=\"muted\">"+esc(st.shu||"—")+(st.shu?" "+st.shuDeg+"°":"")+"</td><td class=\""+cls+"\">"+esc(statusLabel(st.status,L))+" <span class=\"muted\">"+esc(st.status)+"</span>"+(st.retro?" ↺":"")+"</td></tr>";
+    const nm=starNameOf(st,L);
+    const alt=(L==="th"?st.zh:(L==="zh"||L==="cn"?st.th:st.zh));
+    const sgn=signNameOf(st,L);
+    return "<tr><td class=\"st-name\"><b style=\"color:"+e.cd+"\">"+esc(nm)+"</b> <span class=\"muted\">"+esc(alt)+(e.th?" · "+esc(txObj(e,L)):"")+"</span></td><td>"+esc(sgn)+"</td><td>"+st.deg+"°</td><td class=\"muted\">"+esc(st.shu||"—")+(st.shu?" "+st.shuDeg+"°":"")+"</td><td class=\""+cls+"\">"+esc(statusLabel(st.status,L))+" <span class=\"muted\">"+esc(st.status)+"</span>"+(st.retro?" ↺":"")+"</td></tr>";
   }).join("");
-  document.getElementById("tblNote").innerHTML=
-    L==="en"?"宿 = lunar mansion (28 xiu) · dignity: <span class=\"miao\">green = strong</span> · <span class=\"xian\">red = weak</span> · ↺ = retrograde":
-    L==="zh"?"宿＝二十八宿 · <span class=\"miao\">綠＝有力</span> · <span class=\"xian\">紅＝失力</span> · ↺＝逆行":
-    "宿 = กลุ่มดาวฤกษ์ 28 ตำแหน่ง · กำลังดาว: <span class=\"miao\">เขียว = แรง</span> · <span class=\"xian\">แดง = อ่อน</span> · ↺ = พักร์ (เดินถอย)";
+  document.getElementById("tblNote").innerHTML=txObj(TX9.tableNote,L);
 }
 
 /* ═══════════ Google Places (lazy · fallback พิกัด) ═══════════ */
@@ -900,7 +973,7 @@ function ensurePlacesScript(){
       });
     }catch(e){
       hint.style.display="";
-      hint.textContent=LANG==="th"?"โหลดตัวค้นหาสถานที่ไม่สำเร็จ — ใช้ช่องพิกัดด้านล่างแทนได้":LANG==="zh"?"地點搜尋載入失敗 — 可改用下方經緯度":"Place search unavailable — use the coordinate fields below";
+      hint.textContent=t9("placeFail");
       document.querySelector("details.coords").open=true;
     }
   });
@@ -917,15 +990,15 @@ document.getElementById("mGo").onclick=goManual;
   document.addEventListener("keydown",e=>{if(e.key==="Escape")pop.classList.remove("show");});
 })();
 document.getElementById("aiBtn").onclick=async function(){
-  if(!HANDOFF){document.getElementById("aiout").textContent=LANG==="th"?"เลือกฤกษ์ก่อน จึงถามซินแสได้":LANG==="zh"?"請先擇時刻":"Pick a moment first";return;}
+  if(!HANDOFF){document.getElementById("aiout").textContent=t9("aiPick");return;}
   const btn=this,out=document.getElementById("aiout");btn.disabled=true;out.textContent="…";
   const lat=parseFloat(document.getElementById("lat").value),lng=parseFloat(document.getElementById("lng").value);
   const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||"";
   const res=await fetch("/api/tianxing/sifu",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng,activity:act,lang:LANG})}).then(r=>r.json()).catch(()=>null);
-  if(!res){out.textContent=LANG==="th"?"เชื่อมต่อไม่สำเร็จ":"Connection failed";btn.disabled=false;return;}
-  if(res.error==="Login required"){out.innerHTML='<a href="/signup?tab=login&next=/tianxing">'+(LANG==="th"?"เข้าสู่ระบบก่อนใช้ซินแส":LANG==="zh"?"請先登入":"Log in to ask the master")+"</a>";btn.disabled=false;return;}
-  if(res.error==="insufficient_hours"){out.textContent=LANG==="th"?"ยามไม่พอ — เติมยามเพื่อใช้ซินแส":LANG==="zh"?"時數不足":"Not enough yam — top up to use the master";btn.disabled=false;return;}
-  if(!res.ok){out.textContent=(LANG==="th"?"ผิดพลาด: ":"Error: ")+(res.error||"");btn.disabled=false;return;}
+  if(!res){out.textContent=t9("connFail");btn.disabled=false;return;}
+  if(res.error==="Login required"){out.innerHTML='<a href="/signup?tab=login&next=/tianxing">'+esc(t9("login"))+"</a>";btn.disabled=false;return;}
+  if(res.error==="insufficient_hours"){out.textContent=t9("noHours");btn.disabled=false;return;}
+  if(!res.ok){out.textContent=t9("errPrefix")+(res.error||"");btn.disabled=false;return;}
   out.textContent=res.reply;btn.disabled=false;
 };
 
@@ -934,16 +1007,16 @@ document.getElementById("aiBtn").onclick=async function(){
    degrade เงียบ: qimen ล่ม → โชว์เฉพาะนาทีมงคล · ไม่มีพิกัด/วัน → บอกตรง ๆ */
 (function(){
   var msState = { data:null, date:"", lat:null, lng:null, qimen:{}, qByShichen:{}, statusKey:"" };
-  function L(k){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('tianxing.html',k,LANG);if(ov!=null)return ov;}catch(_){} var o=I18N[LANG]; return (o&&o[k])||I18N.th[k]||""; }
+  function L(k){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('tianxing.html',k,LANG);if(ov!=null)return ov;}catch(_){} var o=I18N[LANG]||(LANG==="th"?I18N.th:LANG==="en"?I18N.en:I18N.zh); return (o&&o[k])||I18N.zh[k]||I18N.en[k]||""; }
   /* ทิศ 8 + กลาง (ชุดเดียวกับหน้า today · คน familiar) */
   var DIR = {
-    N:{th:'เหนือ',en:'North',zh:'北'}, S:{th:'ใต้',en:'South',zh:'南'},
-    E:{th:'ตะวันออก',en:'East',zh:'東'}, W:{th:'ตะวันตก',en:'West',zh:'西'},
-    NE:{th:'ตะวันออกเฉียงเหนือ',en:'Northeast',zh:'東北'}, NW:{th:'ตะวันตกเฉียงเหนือ',en:'Northwest',zh:'西北'},
-    SE:{th:'ตะวันออกเฉียงใต้',en:'Southeast',zh:'東南'}, SW:{th:'ตะวันตกเฉียงใต้',en:'Southwest',zh:'西南'},
-    C:{th:'กลาง',en:'Center',zh:'中'}
+    N:{th:'เหนือ',en:'North',zh:'北',cn:'北',vi:'Bắc',ja:'北',ru:'Север',ko:'북',es:'Norte'}, S:{th:'ใต้',en:'South',zh:'南',cn:'南',vi:'Nam',ja:'南',ru:'Юг',ko:'남',es:'Sur'},
+    E:{th:'ตะวันออก',en:'East',zh:'東',cn:'东',vi:'Đông',ja:'東',ru:'Восток',ko:'동',es:'Este'}, W:{th:'ตะวันตก',en:'West',zh:'西',cn:'西',vi:'Tây',ja:'西',ru:'Запад',ko:'서',es:'Oeste'},
+    NE:{th:'ตะวันออกเฉียงเหนือ',en:'Northeast',zh:'東北',cn:'东北',vi:'Đông Bắc',ja:'東北',ru:'Северо-восток',ko:'북동',es:'Noreste'}, NW:{th:'ตะวันตกเฉียงเหนือ',en:'Northwest',zh:'西北',cn:'西北',vi:'Tây Bắc',ja:'西北',ru:'Северо-запад',ko:'북서',es:'Noroeste'},
+    SE:{th:'ตะวันออกเฉียงใต้',en:'Southeast',zh:'東南',cn:'东南',vi:'Đông Nam',ja:'東南',ru:'Юго-восток',ko:'남동',es:'Sureste'}, SW:{th:'ตะวันตกเฉียงใต้',en:'Southwest',zh:'西南',cn:'西南',vi:'Tây Nam',ja:'西南',ru:'Юго-запад',ko:'남서',es:'Suroeste'},
+    C:{th:'กลาง',en:'Center',zh:'中',cn:'中',vi:'Trung tâm',ja:'中央',ru:'Центр',ko:'중앙',es:'Centro'}
   };
-  function dirLabel(code){ var o=DIR[code]; return o?(o[LANG]||o.th):(code||''); }
+  function dirLabel(code){ var o=DIR[code]; return o?txObj(o,LANG):(code||''); }
   var GRID_ORDER = ['NW','N','NE','W','C','E','SW','S','SE'];
   var GOOD_DOORS = {'開門':1,'休門':1,'生門':1}, NEUTRAL_DOORS = {'景門':1};
   function doorClass(zh){ if(GOOD_DOORS[zh])return 'good'; if(NEUTRAL_DOORS[zh])return ''; return 'bad'; }
@@ -958,9 +1031,9 @@ document.getElementById("aiBtn").onclick=async function(){
   }
   function composeReason(h){
     var lang=LANG;
-    var sg = lang==='zh'? h.ascSignZh : lang==='en'? ((SIGNS_L[h.ascSign]&&SIGNS_L[h.ascSign].en)||h.ascSignTh) : h.ascSignTh;
-    var yn = lang==='en'? (STAR_EN[h.yongKey]||h.yongTh) : lang==='zh'? h.yongZh : h.yongTh;
-    var ascLbl = lang==='zh'?'命宮':lang==='en'?'Asc':'ลัคนา';
+    var sg = signNameByIndex(h.ascSign,lang);
+    var yn = starNameOf({key:h.yongKey,th:h.yongTh,zh:h.yongZh},lang);
+    var ascLbl = txObj(TX9.ascShort,lang);
     var ascTxt = esc(ascLbl)+' '+esc(sg)+' '+Number(h.ascDeg).toFixed(1)+'°';
     var yongTxt = '<span class="tc">用神</span> '+esc(yn)+' '+esc(statusLabel(h.yongStatus,lang))+' <span style="opacity:.6">'+esc(h.yongStatus)+'</span>';
     var border = h.atBorder? ' · <span class="bd">'+esc(L('ms_border'))+'</span>' : '';
@@ -1005,7 +1078,7 @@ document.getElementById("aiBtn").onclick=async function(){
     if(!d.top||!d.top.length){ list.innerHTML='<div class="ms-empty">'+esc(L('ms_none'))+'</div>'; if(foot)foot.style.display='none'; return; }
     var medals=['🥇','🥈','🥉'];
     list.innerHTML=d.top.map(function(h){
-      var lk=levelKey(h.score), lv=LEVELS[lk]||LEVELS.neutral, lvlbl=lv[LANG]||lv.th;
+      var lk=levelKey(h.score), lv=LEVELS[lk]||LEVELS.neutral, lvlbl=txObj(lv,LANG);
       return '<div class="ms-hit lv-'+lk+'">'
         +'<div class="ms-hit-head"><span class="ms-medal">'+(medals[(h.rank||1)-1]||'•')+'</span>'
         +'<div><div class="ms-time">'+esc(h.time)+' <span class="ms-lvtag">'+esc(lvlbl)+'</span></div>'

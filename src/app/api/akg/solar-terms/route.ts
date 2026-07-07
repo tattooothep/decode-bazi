@@ -11,6 +11,14 @@ import { q1 } from "@/lib/db";
 
 type Term = { no: number; name: string; date: string; branch_starts?: string };
 type AnnualEntry = { year_stem_branch: string; li_chun: string; is_leap?: boolean; terms: Term[] };
+type SolarLang = "th" | "en" | "zh" | "vi" | "ja" | "ru" | "ko" | "es";
+
+function normalizeLang(raw: string | null): SolarLang {
+  const x = String(raw || "th").toLowerCase().replace("_", "-");
+  if (x === "cn" || x === "zh-cn" || x === "zh-hans" || x.startsWith("zh")) return "zh";
+  if (x === "vi" || x === "ja" || x === "ru" || x === "ko" || x === "es" || x === "en" || x === "th") return x;
+  return "th";
+}
 
 function shiftCstToLocal(cst: string, tzOffsetH: number): string {
   // cst format "YYYY-MM-DD HH:MM" (CST = UTC+8)
@@ -26,7 +34,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const year = parseInt(searchParams.get("year") || `${new Date().getFullYear()}`, 10);
-    const lang = (searchParams.get("lang") || "th") as "th" | "en" | "zh";
+    const lang = normalizeLang(searchParams.get("lang"));
     const tzOff = parseInt(searchParams.get("tz") || "7", 10);
 
     if (!year || year < 2020 || year > 2035) {
@@ -49,14 +57,21 @@ export async function GET(req: NextRequest) {
     // DB (ref_akg_data key=v3_24_terms_basic) มีแค่ concept_explanation.thai กับ .zh — ไม่มี .en
     // เดิม fallback ไปที่ .thai ตรง ๆ เมื่อขอ en → ไทยหลุดโผล่ตอนเลือก EN บน /solar-terms
     // เติม fallback ภาษาอังกฤษ (แปลตรงจาก .thai/.zh) กันไทยหลุด โดยไม่แตะข้อมูลใน DB (ref_ ตาราง)
-    const CONCEPT_EN_FALLBACK =
-      "24 Solar Terms = 24 periods of the year defined by the sun's position along its orbit · not a lunar calendar";
-    // ภาษาใหม่ (vi/ja/ko/ru/es) ที่ DB ยังไม่มีคอลัมน์ ต้องถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569)
+    const CONCEPT_FALLBACK: Record<SolarLang, string> = {
+      th: "24 節氣 คือ 24 ช่วงฤดูกาลจากตำแหน่งดวงอาทิตย์บนวงโคจร · ไม่ใช่ปฏิทินจันทรคติ",
+      en: "24 Solar Terms = 24 periods of the year defined by the sun's position along its orbit · not a lunar calendar",
+      zh: "二十四節氣是依太陽在黃道上的位置劃分的一年24段 · 不是農曆月份",
+      vi: "24 Tiết Khí là 24 giai đoạn trong năm theo vị trí của Mặt Trời trên quỹ đạo · không phải lịch âm",
+      ja: "二十四節気は太陽の軌道上の位置で一年を24区分した季節暦です · 旧暦そのものではありません",
+      ru: "24 солнечных термина делят год по положению Солнца на орбите · это не лунный календарь",
+      ko: "24절기는 태양의 궤도상 위치로 한 해를 24구간으로 나눈 절기 체계입니다 · 음력 달력이 아닙니다",
+      es: "Los 24 términos solares dividen el año según la posición del sol en su órbita · no son un calendario lunar",
+    };
     const concept =
       conceptObj?.[lang] ||
       (lang === "th" ? conceptObj?.thai : undefined) ||
       (lang === "zh" ? conceptObj?.zh : undefined) ||
-      CONCEPT_EN_FALLBACK ||
+      CONCEPT_FALLBACK[lang] ||
       conceptObj?.thai ||
       conceptObj?.zh ||
       "";

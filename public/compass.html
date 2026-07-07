@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
+<script>try{if(/\/compass\.html$/i.test(location.pathname))location.replace('/fengshui'+location.search+location.hash);}catch(_){}</script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -103,6 +105,9 @@
   .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.1em;padding:6px 12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
 
   @media(max-width:640px){
+    .hk-topbar{align-items:flex-start;flex-wrap:wrap;padding:10px 12px;}
+    .hk-top-r{width:100%;flex-wrap:wrap;justify-content:flex-start;gap:6px;}
+    .hk-top-r .hk-btn{min-width:34px;padding:7px 9px;font-size:10px;}
     .hero h1{font-size:24px;} .hero .crest{font-size:46px;}
     main{padding:20px 14px 60px;}
     .row3{grid-template-columns:1fr;}
@@ -244,20 +249,47 @@ const I18N = {
         link_fengshui:'🏠 風水', link_flyingstars:'⭐ 飛星', link_datepick:'📅 擇日',
         err_need_name:'請先輸入房屋名稱', ok_saved:'✓ 已保存', confirm_delete:'刪除房屋「{name}」？', ok_deleted:'✓ 已刪除' },
 };
-let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+function _cpLangState(raw, write){
+  try{
+    var api = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+    if (api && write && typeof api.set === 'function') return api.set(raw);
+    if (api && raw && typeof api.normalize === 'function') return api.normalize(raw);
+    if (api && typeof api.current === 'function') return api.current();
+  }catch(_){}
+  var x = String(raw || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th').toLowerCase();
+  if (x.indexOf('zh') === 0) x = 'zh';
+  if (x !== 'th' && x !== 'en' && x !== 'zh') x = 'en';
+  return { raw:x, app:x, storage:x, html:x === 'zh' ? 'zh-Hant' : x };
+}
+function _cpStateInput(l){ return l === 'cn' ? 'zh-cn' : (l === 'zh' ? 'zh-hant' : l); }
+function _cpPageLang(raw){
+  var st=null; try{ st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current(); }catch(_){}
+  var x=String(raw||'').toLowerCase().replace('_','-');
+  if ((st&&st.raw==='zh'&&st.variant==='cn') || x==='cn' || x==='zh-cn' || x==='zh-hans') return 'cn';
+  if (x.indexOf('zh')===0 || x==='hant') return 'zh';
+  if (['th','en','vi','ja','ru','ko','es'].indexOf(x)!==-1) return x;
+  if (st&&st.raw) return st.raw==='zh'&&st.variant==='cn'?'cn':st.raw;
+  return 'th';
+}
+let LANG = _cpPageLang((_cpLangState()).raw || 'th');
 
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _cptx(k){
   try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('compass.html',k,LANG);if(ov!=null)return ov;}catch(_){}
-  var d=I18N[LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
+  var d=I18N[LANG]||I18N[LANG==='cn'?'zh':LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
 }
 function _cpbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_cptx(k);});return o;}
-window.__hkOverlayApply=function(l){LANG=l;applyLang();};
+window.__hkOverlayApply=function(l){LANG=_cpPageLang(l);applyLang();try{loadHouses();}catch(_){}};
 
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
 function applyLang(){
   const t = _cpbag();
-  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
+  const st = _cpLangState(_cpStateInput(LANG));
+  document.documentElement.lang = st.html;
+  document.documentElement.setAttribute('data-lang', st.app);
+  document.documentElement.setAttribute('data-hk-locale', st.raw);
+  if (st.variant) document.documentElement.setAttribute('data-zh-variant', st.variant);
+  else document.documentElement.removeAttribute('data-zh-variant');
   document.title = '羅盤 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
   ['page-title','lbl-need-login','lbl-need-login-p','lbl-login-btn','lbl-houses','lbl-add','lbl-name','lbl-face','lbl-mountain','lbl-dir','lbl-primary','lbl-save','lbl-empty','lbl-qr','lbl-qr-p'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
@@ -275,6 +307,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
     const k = el.dataset.i18nPh; if (t[k]!=null) el.setAttribute('placeholder', t[k]);
   });
+  document.querySelectorAll('#houses-list .empty p').forEach(el=>{ el.textContent = t.empty; });
   ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
 }
 
@@ -383,7 +416,7 @@ async function sendQR(houseId){
   } catch(e){ img.innerHTML='⚠ '+e.message; }
 }
 
-['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); loadHouses(); });
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { const st=_cpLangState(_cpStateInput(l), true); LANG=_cpPageLang(st.raw); applyLang(); loadHouses(); });
 document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
 document.getElementById('btn-save').onclick = saveHouse;
 

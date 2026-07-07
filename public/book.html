@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i="pageTitle">คัมภีร์ชะตา · หนังสือดวงชะตา 6 ศาสตร์ · hourkey</title>
@@ -165,9 +166,9 @@
     <a class="back" href="/"><span class="seal">幾</span><span>hourkey</span></a>
     <div class="top-r">
       <div class="lang-seg" id="langSeg" role="group" aria-label="language">
-        <button data-lang="th" class="on">TH</button><button data-lang="en">EN</button><button data-lang="zh">中</button>
+        <button data-lang="th" class="on">TH</button><button data-lang="en">EN</button><button data-lang="zh-hant">繁</button><button data-lang="cn">简</button><button data-lang="vi">VI</button><button data-lang="ja">JA</button><button data-lang="ru">RU</button><button data-lang="ko">KO</button><button data-lang="es">ES</button>
       </div>
-      <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
+      <button class="tbtn" id="themeBtn" title="Toggle theme" aria-label="toggle theme">☾</button>
       <button class="pbtn printbtn" id="printBtn" data-i="print">📥 บันทึก PDF</button>
     </div>
   </div>
@@ -244,9 +245,48 @@
       running:"⏳ 正在撰寫您的命書", runningSub:"可關閉或收起螢幕 — 系統會在後台繼續撰寫，稍後可從「我的命書」重新開啟（約需 4-8 分鐘 · 六術＋融合章）。",
       notReady:"此章尚未就緒 — 系統將自動補齊", errTitle:"無法打開", degraded:"部分章節缺失",
       chapter:"第", noId:"缺少命書編號（id）— 請從「我的命盤」開啟", disclaimer:"聲明", method:"計算方法" }
+    ,
+    cn:{ brand:"命书", print:"📥 保存为 PDF", loadingText:"正在打开命书…",
+      pageTitle:"命书 · 六术合参 · hourkey",
+      kai:"命书 · 六术合参", issued:"hourkey 出品 · 第",
+      domEl:"主导五行", sciencesUnit:"术",
+      shelfTitle:"我的命书", shelfEmpty:"尚无命书 — 请点上方「建立新书」", shelfNew:"建立新书", shelfOpen:"打开", sDone:"完成", sRunning:"撰写中…", sDegraded:"部分缺失", sError:"失败",
+      newTitle:"建立新命书", newSub:"选择命盘 + 勾选要收录的术数 · 每章附命盘图", chart:"命盘", synth:"融合章（需选择 2 术以上）", total:"合计", confirm:"生成命书", cancel:"取消", noSci:"至少选择 1 术", creating:"⏳ 正在生成命书…", needTime:"需要出生时间", soon:"即将推出", needYam:"时数不足", needLogin:"请先登录", jobError:"生成失败 · 请重试", noProfile:"尚无命盘 — 请先在「我的命盘」建立",
+      toc:"目录", preface:"前言", prefaceBody:"本书以六种古术解读您的命盘，各以自身术语与典籍立论，再融合为一。此书为指南针，并非命令。",
+      synthesis:"融合章", timing:"时运章", appendix:"附录",
+      running:"⏳ 正在撰写您的命书", runningSub:"可以关闭或收起屏幕 — 系统会在后台继续撰写，稍后可从「我的命书」重新打开（约需 4-8 分钟 · 六术＋融合章）。",
+      notReady:"此章尚未就绪 — 系统会自动补齐", errTitle:"无法打开", degraded:"部分章节缺失",
+      chapter:"第", noId:"缺少命书编号（id）— 请从「我的命盘」打开", disclaimer:"声明", method:"计算方法" }
   };
-  /* new locales (vi/ja/ko/ru/es) allowed here — without overlay every key falls back to th in t() as before */
-  var lang = (function(){ var s=localStorage.getItem("hk_book_lang"); if(s==="en"||s==="zh")return s; if(["vi","ja","ko","ru","es"].indexOf(s)!==-1)return s; return "th"; })();
+  function normalizeLang(raw){
+    raw=String(raw||'').toLowerCase().replace("_","-");
+    if(raw==='cn'||raw==='zh-cn'||raw==='zh-hans'||raw==='hans') return 'cn';
+    if(raw==='zh'||raw==='zh-tw'||raw==='zh-hant'||raw==='zh-hk'||raw==='hant') return 'zh';
+    if(raw.indexOf('en')===0) return 'en';
+    if(raw.indexOf('th')===0) return 'th';
+    if(["vi","ja","ko","ru","es"].indexOf(raw)!==-1) return raw;
+    return '';
+  }
+  function stateInputForLang(l){ return l==="cn"?"zh-cn":(l==="zh"?"zh-hant":l); }
+  function langFromState(st, requested){
+    var want=normalizeLang(requested);
+    if(st&&st.raw==="zh"&&(st.variant==="cn"||want==="cn")) return "cn";
+    return normalizeLang(st&&st.raw)||want||lang||"th";
+  }
+  function langUrlCode(){ return lang==="cn"?"cn":lang; }
+  function langHref(href){
+    try{
+      if(window.HK_LANG_STATE&&window.HK_LANG_STATE.withLangHref) return window.HK_LANG_STATE.withLangHref(href);
+      var u=new URL(href, location.href); u.searchParams.set("lang", langUrlCode()); u.searchParams.delete("locale");
+      return u.pathname+u.search+u.hash;
+    }catch(_){ return href; }
+  }
+  var lang = (function(){
+    var q=''; try{ q=new URLSearchParams(location.search).get('lang')||''; }catch(_){}
+    var st=''; try{ st=(window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current())||''; }catch(_){}
+    var s=''; try{ s=localStorage.getItem("hk_book_lang")||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||''; }catch(_){}
+    return normalizeLang(q)||langFromState(st,s)||normalizeLang(s)||"th";
+  })();
   var theme = (function(){ var s=localStorage.getItem("hk_book_theme"); return (s==="dark"||s==="light")?s:"light"; })();
   function t(k){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('book.html',k,lang);if(ov!=null)return ov;}catch(_){} return (I18N[lang]&&I18N[lang][k]) || I18N.th[k] || k; }
   var root = document.getElementById("root");
@@ -288,12 +328,49 @@
   }
 
   function applyTheme(){ document.documentElement.setAttribute("data-theme", theme); document.getElementById("themeBtn").textContent = theme==="dark"?"☀️":"🌙"; }
-  function applyStaticI18n(){ document.documentElement.setAttribute("lang", lang);
+  function applyStaticI18n(){
+    try{
+      if(window.HK_LANG_STATE&&window.HK_LANG_STATE.set){
+        var st=window.HK_LANG_STATE.set(stateInputForLang(lang));
+        lang=langFromState(st,lang);
+        document.documentElement.setAttribute("lang", st.html);
+        document.documentElement.setAttribute("data-lang", st.app);
+      }else{
+        document.documentElement.setAttribute("lang", lang==="cn"?"zh-Hans":(lang==="zh"?"zh-Hant":lang));
+        document.documentElement.setAttribute("data-lang", (lang==="zh"||lang==="cn")?"zh":lang);
+      }
+      localStorage.setItem("hk_book_lang", lang);
+    }catch(_){ document.documentElement.setAttribute("lang", lang==="cn"?"zh-Hans":lang); document.documentElement.setAttribute("data-lang", (lang==="zh"||lang==="cn")?"zh":lang); }
     document.querySelectorAll("[data-i]").forEach(function(el){ el.textContent = t(el.getAttribute("data-i")); });
-    document.querySelectorAll("#langSeg button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-lang")===lang); });
+    document.querySelectorAll("#langSeg button").forEach(function(b){ b.classList.toggle("on", normalizeLang(b.getAttribute("data-lang"))===lang); });
+    try{ if(window.HK_LANG_STATE&&window.HK_LANG_STATE.decorateLinks) window.HK_LANG_STATE.decorateLinks(); }catch(_){}
   }
-  /* hk-overlay-boot calls this only after a new-language overlay loaded OK */
-  window.__hkOverlayApply=function(l){ lang=l; applyStaticI18n(); };
+  var overlaySerial=0;
+  function overlayLocale(l){ return ["vi","ja","ko","ru","es"].indexOf(l)!==-1?l:""; }
+  function loadOverlayForLang(l, done){
+    var ol=overlayLocale(l);
+    if(!ol){ if(done) done(false); return; }
+    var serial=++overlaySerial, tries=0;
+    (function waitCore(){
+      if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){
+        if(++tries<80) setTimeout(waitCore,50);
+        else if(done) done(false);
+        return;
+      }
+      window.HK.i18n.loadOverlay(ol).then(function(ov){
+        if(serial!==overlaySerial||lang!==ol) return;
+        applyStaticI18n();
+        if(done) done(!!ov);
+      });
+    })();
+  }
+  /* hk-overlay-boot / hk-lang-upgrade call this after a locale changes. */
+  window.__hkOverlayApply=function(l){
+    var st=null; try{ st=(window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current())||null; }catch(_){}
+    lang=langFromState(st,l)||normalizeLang(l)||lang;
+    applyStaticI18n();
+    try{ load(); }catch(_){}
+  };
 
   function getId(){
     var q = new URLSearchParams(location.search);
@@ -399,13 +476,29 @@
       '<div style="font-size:18px;color:var(--ink);margin-top:8px">'+esc(t("errTitle"))+"</div>"+
       '<div style="margin-top:6px">'+esc(msg||"")+"</div></div>";
   }
+  function loginHref(){
+    return "/signup?next=" + encodeURIComponent(location.pathname + location.search);
+  }
+  function ensureSignedIn(){
+    return fetch("/api/auth/me", { credentials:"same-origin", cache:"no-store", headers:{ "Accept":"application/json" } })
+      .then(function(r){
+        if (r.status === 401 || r.status === 403) return false;
+        if (!r.ok) return true;
+        return r.json().then(function(j){ return !!(j && j.user); }).catch(function(){ return true; });
+      })
+      .catch(function(){ return true; });
+  }
 
   // ===== ชั้นหนังสือของฉัน (เมนู /book ไม่มี id) =====
   function loadShelf(){
     root.innerHTML = '<div class="state"><div class="spinner"></div><div>'+esc(t("shelfTitle"))+"…</div></div>";
-    fetch("/api/book?list=1", { headers:{ "Accept":"application/json" }, credentials:"same-origin" })
-      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+    ensureSignedIn().then(function(ok){
+      if(!ok){ location.href = loginHref(); return null; }
+      return fetch("/api/book?list=1", { headers:{ "Accept":"application/json" }, credentials:"same-origin" });
+    })
+      .then(function(r){ if(!r) return null; return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
       .then(function(res){
+        if(!res) return;
         var j = res.j || {};
         if(!res.ok || j.error){
           if(j.error==="not_logged_in"){ location.href = "/signup?next="+encodeURIComponent(location.pathname); return; }
@@ -433,7 +526,7 @@
         '<div style="font-size:13px;color:var(--muted)">'+esc(fmtDate(b.createdAt))+' · '+((b.sciences||[]).length)+' '+esc(t("sciencesUnit"))+' '+statusBadge(b.status)+'</div></div>'+
         (open?'<span class="btn" style="pointer-events:none">'+esc(t("shelfOpen"))+' →</span>':"")+"</div>";
       return open
-        ? '<a class="chapter" style="display:block;text-decoration:none;color:inherit;padding:16px 18px;margin:10px 0" href="/book?id='+encodeURIComponent(b.bookId)+'">'+inner+"</a>"
+        ? '<a class="chapter" style="display:block;text-decoration:none;color:inherit;padding:16px 18px;margin:10px 0" href="'+esc(langHref('/book?id='+encodeURIComponent(b.bookId)))+'">'+inner+"</a>"
         : '<div class="chapter" style="padding:16px 18px;margin:10px 0;opacity:.75">'+inner+"</div>";
     }).join("");
     root.innerHTML = head + '<div style="margin:6px 0 40px">'+cards+"</div>";
@@ -442,9 +535,13 @@
   function load(){
     var id = getId();
     if(!id){ loadShelf(); return; }
-    fetch("/api/book?id="+encodeURIComponent(id), { headers:{ "Accept":"application/json" }, credentials:"same-origin" })
-      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+    ensureSignedIn().then(function(ok){
+      if(!ok){ location.href = loginHref(); return null; }
+      return fetch("/api/book?id="+encodeURIComponent(id), { headers:{ "Accept":"application/json" }, credentials:"same-origin" });
+    })
+      .then(function(r){ if(!r) return null; return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
       .then(function(res){
+        if(!res) return;
         var j = res.j || {};
         if(!res.ok || j.error){
           if(j.error==="not_logged_in"){ location.href = "/signup?next="+encodeURIComponent(location.pathname+location.search); return; }
@@ -465,17 +562,17 @@
 
   // ===== สร้างคัมภีร์เล่มใหม่ (modal ในหน้าชั้นหนังสือ · r402 · ย้ายจาก fusion) =====
   var DISCIPLINES = {
-    bazi:    { th:"ปาจื้อ 八字",          en:"BaZi 八字",          zh:"八字",     needsBirthTime:false, available:true },
-    qizheng: { th:"ดาวจริง 七政四餘",      en:"Real-Star 七政四餘", zh:"七政四餘", needsBirthTime:true,  available:true },
-    ziwei:   { th:"จื่อเวยโต่วซู 紫微斗數", en:"Zi Wei 紫微斗數",    zh:"紫微斗數", needsBirthTime:true,  available:true },
-    western: { th:"โหราตะวันตก",          en:"Western Astrology",  zh:"西洋占星", needsBirthTime:false, available:true },
-    vedic:   { th:"โหราพระเวท (ฮินดู)",   en:"Vedic Astrology",    zh:"吠陀占星", needsBirthTime:false, available:true },
-    uranian: { th:"โหราศาสตร์ยูเรเนียน",  en:"Uranian Astrology",  zh:"天王星占星(漢堡學派)", needsBirthTime:false, available:true }
+    bazi:    { th:"ปาจื้อ 八字",          en:"BaZi 八字",          zh:"八字", cn:"八字", vi:"BaZi 八字", ja:"四柱推命 八字", ru:"Ба-цзы 八字", ko:"사주 八字", es:"BaZi 八字", needsBirthTime:false, available:true },
+    qizheng: { th:"ดาวจริง 七政四餘",      en:"Real-Star 七政四餘", zh:"七政四餘", cn:"七政四余", vi:"Sao thực 七政四餘", ja:"七政四余", ru:"Реальные звезды 七政四餘", ko:"실성 七政四餘", es:"Estrellas reales 七政四餘", needsBirthTime:true,  available:true },
+    ziwei:   { th:"จื่อเวยโต่วซู 紫微斗數", en:"Zi Wei 紫微斗數",    zh:"紫微斗數", cn:"紫微斗数", vi:"Tử Vi 紫微斗數", ja:"紫微斗数", ru:"Цзы Вэй 紫微斗數", ko:"자미두수 紫微斗數", es:"Zi Wei 紫微斗數", needsBirthTime:true,  available:true },
+    western: { th:"โหราตะวันตก",          en:"Western Astrology",  zh:"西洋占星", cn:"西洋占星", vi:"Chiêm tinh Tây phương", ja:"西洋占星術", ru:"Западная астрология", ko:"서양 점성술", es:"Astrología occidental", needsBirthTime:false, available:true },
+    vedic:   { th:"โหราพระเวท (ฮินดู)",   en:"Vedic Astrology",    zh:"吠陀占星", cn:"吠陀占星", vi:"Chiêm tinh Vệ Đà", ja:"ヴェーダ占星術", ru:"Ведическая астрология", ko:"베다 점성술", es:"Astrología védica", needsBirthTime:false, available:true },
+    uranian: { th:"โหราศาสตร์ยูเรเนียน",  en:"Uranian Astrology",  zh:"天王星占星(漢堡學派)", cn:"天王星占星(汉堡学派)", vi:"Chiêm tinh Uranian", ja:"ウラニアン占星術", ru:"Уранианская астрология", ko:"우라니안 점성술", es:"Astrología uraniana", needsBirthTime:false, available:true }
   };
   var SCI_ORDER = ["bazi","qizheng","ziwei","western","vedic","uranian"];
   var BOOK_SCI_YAM = 50, BOOK_SYNTH_YAM = 50;
   var cProfiles = [], cProfileId = "", cSel = {}, cSynth = true, cSubmitting = false;
-  function sciLabel(s){ var b=DISCIPLINES[s]; return b?(b[lang]||b.th):s; }
+  function sciLabel(s){ var b=DISCIPLINES[s]; return b?(b[lang]||b.en||b.th):s; }
   function cProfileById(id){ return cProfiles.find(function(p){ return String(p.id)===String(id); })||null; }
   function cProfileHasTime(p){ return !p || p.birth_time_known !== false; }
   function cSelectable(){ var has=cProfileHasTime(cProfileById(cProfileId)); return SCI_ORDER.filter(function(s){ var b=DISCIPLINES[s]; return b&&b.available&&(!b.needsBirthTime||has); }); }
@@ -596,10 +693,11 @@
   });
   document.getElementById("langSeg").addEventListener("click", function(e){
     var b = e.target.closest("button[data-lang]"); if(!b) return;
-    lang = b.getAttribute("data-lang"); localStorage.setItem("hk_book_lang", lang);
+    lang = normalizeLang(b.getAttribute("data-lang"))||lang; localStorage.setItem("hk_book_lang", lang);
     applyStaticI18n();
     // re-render เนื้อ (ป้าย UI เปลี่ยน · เนื้อ AI คงภาษาที่เจนไว้)
     load();
+    loadOverlayForLang(lang, function(){ load(); });
   });
   document.getElementById("printBtn").addEventListener("click", function(){
     // ตั้งชื่อไฟล์ PDF ให้สวย (browser ใช้ document.title เป็นชื่อไฟล์ตอน Save as PDF)
@@ -612,6 +710,7 @@
   applyTheme();
   applyStaticI18n();
   load();
+  loadOverlayForLang(lang, function(){ load(); });
 })();
 </script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>

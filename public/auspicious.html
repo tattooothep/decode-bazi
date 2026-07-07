@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -159,26 +160,26 @@
 
 <script>
 const ACTIVITIES = [
-  {key:'立約', th:'เซ็นสัญญา', en:'Contract', zh:'簽約', emoji:'📜'},
-  {key:'出行', th:'เดินทาง', en:'Travel', zh:'出行', emoji:'🚗'},
-  {key:'搬家', th:'ย้ายบ้าน', en:'Move home', zh:'搬家', emoji:'🏠'},
-  {key:'開市', th:'เปิดกิจการ', en:'Open business', zh:'開市', emoji:'🏢'},
-  {key:'婚姻', th:'แต่งงาน', en:'Marriage', zh:'婚姻', emoji:'💒'},
-  {key:'求財', th:'หาเงิน', en:'Wealth', zh:'求財', emoji:'💰'},
-  {key:'祭祀', th:'พิธีกรรม', en:'Ritual', zh:'祭祀', emoji:'🕯️'},
+  {key:'立約', th:'เซ็นสัญญา', en:'Contract', zh:'簽約', vi:'Ký hợp đồng', ja:'契約', ru:'Контракт', ko:'계약', es:'Contrato', emoji:'📜'},
+  {key:'出行', th:'เดินทาง', en:'Travel', zh:'出行', vi:'Đi xa', ja:'外出', ru:'Поездка', ko:'이동', es:'Viaje', emoji:'🚗'},
+  {key:'搬家', th:'ย้ายบ้าน', en:'Move home', zh:'搬家', vi:'Chuyển nhà', ja:'引っ越し', ru:'Переезд', ko:'이사', es:'Mudanza', emoji:'🏠'},
+  {key:'開市', th:'เปิดกิจการ', en:'Open business', zh:'開市', vi:'Khai trương', ja:'開業', ru:'Открыть бизнес', ko:'개업', es:'Abrir negocio', emoji:'🏢'},
+  {key:'婚姻', th:'แต่งงาน', en:'Marriage', zh:'婚姻', vi:'Hôn lễ', ja:'結婚', ru:'Брак', ko:'혼인', es:'Matrimonio', emoji:'💒'},
+  {key:'求財', th:'หาเงิน', en:'Wealth', zh:'求財', vi:'Cầu tài', ja:'財運', ru:'Деньги', ko:'재물', es:'Riqueza', emoji:'💰'},
+  {key:'祭祀', th:'พิธีกรรม', en:'Ritual', zh:'祭祀', vi:'Nghi lễ', ja:'祭祀', ru:'Ритуал', ko:'제사', es:'Ritual', emoji:'🕯️'},
 ];
 const MODULES = [
-  {key:'ze_ri', zh:'擇日', th:'เลือกวัน', en:'Auspicious Day'},
-  {key:'twelve_officers', zh:'十二建除', th:'12 จี้านฉู', en:'12 Officers'},
-  {key:'twenty_eight', zh:'二十八宿', th:'28 ดาว', en:'28 Constellations'},
-  {key:'twelve_spirits', zh:'十二神煞', th:'12 เซินซา', en:'12 Spirits'},
-  {key:'nine_stars', zh:'九飛星', th:'9 ดาว', en:'9 Stars'},
-  {key:'tai_sui', zh:'太歲', th:'ไท้ส่วย', en:'Tai Sui'},
-  {key:'qi_men', zh:'奇門', th:'ฉีเหมิน', en:'Qi Men'},
-  {key:'he_luo', zh:'河洛', th:'เหอลั่ว', en:'He Luo'},
-  {key:'ba_zi', zh:'八字', th:'ปาจื้อ', en:'BaZi (personal)'},
-  {key:'yong_shen', zh:'用神', th:'ย่งเสิน', en:'Useful God'},
-  {key:'hex64', zh:'64卦', th:'64 กว้า', en:'64 Hexagrams'},
+  {key:'ze_ri', zh:'擇日', th:'เลือกวัน', en:'Auspicious Day', vi:'Ngày tốt', ja:'吉日', ru:'Благоприятный день', ko:'길일', es:'Día auspicioso'},
+  {key:'twelve_officers', zh:'十二建除', th:'12 จี้านฉู', en:'12 Officers', vi:'12 Trực', ja:'十二建除', ru:'12 управителей', ko:'12직', es:'12 oficiales'},
+  {key:'twenty_eight', zh:'二十八宿', th:'28 ดาว', en:'28 Constellations', vi:'28 tú', ja:'二十八宿', ru:'28 созвездий', ko:'28수', es:'28 constelaciones'},
+  {key:'twelve_spirits', zh:'十二神煞', th:'12 เซินซา', en:'12 Spirits', vi:'12 thần sát', ja:'十二神煞', ru:'12 духов', ko:'12신살', es:'12 espíritus'},
+  {key:'nine_stars', zh:'九飛星', th:'9 ดาว', en:'9 Stars', vi:'9 sao', ja:'九星', ru:'9 звёзд', ko:'구성', es:'9 estrellas'},
+  {key:'tai_sui', zh:'太歲', th:'ไท้ส่วย', en:'Tai Sui', vi:'Thái Tuế', ja:'太歳', ru:'Тай Суй', ko:'태세', es:'Tai Sui'},
+  {key:'qi_men', zh:'奇門', th:'ฉีเหมิน', en:'Qi Men', vi:'Kỳ Môn', ja:'奇門', ru:'Ци Мэнь', ko:'기문', es:'Qi Men'},
+  {key:'he_luo', zh:'河洛', th:'เหอลั่ว', en:'He Luo', vi:'Hà Lạc', ja:'河洛', ru:'Хэ Ло', ko:'하락', es:'He Luo'},
+  {key:'ba_zi', zh:'八字', th:'ปาจื้อ', en:'BaZi (personal)', vi:'Bát Tự cá nhân', ja:'四柱推命', ru:'Ба-цзы', ko:'사주', es:'BaZi personal'},
+  {key:'yong_shen', zh:'用神', th:'ย่งเสิน', en:'Useful God', vi:'Dụng Thần', ja:'用神', ru:'Полезный элемент', ko:'용신', es:'Dios útil'},
+  {key:'hex64', zh:'64卦', th:'64 กว้า', en:'64 Hexagrams', vi:'64 quẻ', ja:'64卦', ru:'64 гексаграммы', ko:'64괘', es:'64 hexagramas'},
 ];
 const I18N = {
   th: { activity:'เลือกกิจกรรม · ACTIVITY', modules:'เลือกศาสตร์ที่ต้องการให้ผ่าน · MODULES',
@@ -205,7 +206,14 @@ const TIER_LABEL = {
   poor:{th:'⚠ ไม่ดี',en:'⚠ Poor',zh:'⚠ 凶'},
 };
 
-let LANG = new URLSearchParams(location.search).get('lang') || localStorage.getItem('hk_locale') || localStorage.getItem('lang') || 'th';
+function _auNormLang(raw){
+  raw = String(raw || '').toLowerCase().replace('_','-');
+  if (raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans') return 'zh';
+  if (raw.indexOf('zh') === 0) return 'zh';
+  if (['th','en','vi','ja','ru','ko','es'].includes(raw)) return raw;
+  return 'th';
+}
+let LANG = _auNormLang(new URLSearchParams(location.search).get('lang') || localStorage.getItem('hk_locale') || localStorage.getItem('lang') || 'th');
 
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _autx(k){
@@ -214,7 +222,10 @@ function _autx(k){
   var d=I18N[LANG]||I18N.en; var v=d[k]; return v!=null?v:I18N.en[k];
 }
 function _aubag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_autx(k);});return o;}
-window.__hkOverlayApply=function(l){LANG=l;applyLang();};
+window.__hkOverlayApply=function(l){LANG=_auNormLang(l);applyLang();};
+function _auPick(row){
+  return row[LANG] || (LANG === 'zh' ? row.zh : '') || (LANG !== 'th' ? row.en : '') || row.th || row.en || '';
+}
 
 let activity = '立約';
 let activeMods = new Set(['ze_ri','twelve_officers','tai_sui','qi_men']);
@@ -231,14 +242,14 @@ function renderActivities(){
   el.innerHTML = ACTIVITIES.map(a => `
     <div class="activity ${a.key===activity?'act':''}" data-k="${a.key}">
       <div class="zh">${a.key}</div>
-      <div class="name">${a.emoji} ${LANG==='th'?a.th:(LANG==='zh'?a.zh:a.en)}</div>
+      <div class="name">${a.emoji} ${_auPick(a)}</div>
     </div>`).join('');
   el.querySelectorAll('.activity').forEach(d => d.onclick = () => { activity = d.dataset.k; renderActivities(); });
 }
 function renderModules(){
   const el = document.getElementById('modules-grid');
   el.innerHTML = MODULES.map(m => {
-    const lbl = LANG==='th'?m.th:(LANG==='zh'?m.zh:m.en);
+    const lbl = _auPick(m);
     return `<label class="mod-chip ${activeMods.has(m.key)?'act':''}">
       <input type="checkbox" ${activeMods.has(m.key)?'checked':''} data-k="${m.key}"/>
       <span class="tc">${m.zh}</span> <span style="font-size:10px;color:var(--fg-soft)">${lbl}</span>
@@ -324,7 +335,7 @@ function renderResults(d, clientMs){
 }
 function getTierColor(t){return {excellent:'#ffd700',very_good:'#7dd37b',good:'#5db3ff',acceptable:'#f7b955',poor:'#e26b5d'}[t]||'#999';}
 
-['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); localStorage.setItem('lang',l); applyLang(); });
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=_auNormLang(l); localStorage.setItem('hk_locale',LANG); localStorage.setItem('lang',LANG); applyLang(); });
 document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
 document.getElementById('btn-go').onclick = search;
 

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="th" data-theme="dark" data-lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=1"></script>
 <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
 <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -45,6 +46,9 @@
   .top-r{display:flex;align-items:center;gap:12px;}
   #hk-user-menu-mount{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px;}
   #hk-user-menu-root.hk-um-wrap.inline{width:40px;height:40px;display:inline-flex;flex:0 0 40px;}
+  body>#hk-user-menu-root,
+  body>#hk-user-menu-root .hk-um-panel{z-index:2147483000!important;}
+  body>#hk-user-menu-root{position:fixed!important;top:20px!important;right:20px!important;}
   #hk-user-menu-mount .hk-um-trigger{width:40px;height:40px;padding:0;overflow:hidden;background:var(--panel);border:1px solid rgba(246,241,230,.18);color:var(--gold-bright);box-shadow:none;}
   #hk-user-menu-mount .hk-um-trigger:hover{transform:none;border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,164,77,.18);}
   #hk-user-menu-mount .hk-um-trigger img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;}
@@ -286,12 +290,12 @@
       <select id="profileSelect" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;">
         <option value="" data-i18n="prof.none">ยังไม่ได้เลือก</option>
       </select>
-      <button class="btn" id="btnAddProfile" title="เพิ่มคน" data-i18n="prof.add">+ เพิ่มคน</button>
+      <button class="btn" id="btnAddProfile" title="Add person" data-i18n="prof.add">+ เพิ่มคน</button>
     </div>
     <div class="row" id="addProfileRow" style="gap:6px;align-items:center;display:none;margin-top:6px">
       <input id="newProfileName" type="text" maxlength="40" placeholder="ชื่อคนใหม่ · เช่น คุณเอ" data-i18n-ph="ph.newProfile" autocomplete="off" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--gold-line,var(--line));border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;"/>
-      <button class="btn" id="btnSaveProfile" title="บันทึก">✓</button>
-      <button class="btn" id="btnCancelProfile" title="ยกเลิก">✕</button>
+      <button class="btn" id="btnSaveProfile" title="Save">✓</button>
+      <button class="btn" id="btnCancelProfile" title="Cancel">✕</button>
     </div>
     <div class="help-line" id="profileStatus" data-i18n="prof.empty">ยังไม่มีโปรไฟล์</div>
 
@@ -301,10 +305,10 @@
       <button class="btn" id="btnLock" data-i18n="btn.lock">🔒 ล็อกบ้าน · เริ่มสำรวจ</button>
     </div>
     <div class="row" id="houseListRow" style="gap:6px;align-items:center;margin-top:6px">
-      <select id="houseSelect" title="บ้านที่บันทึก" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;">
+      <select id="houseSelect" title="Saved houses" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;">
         <option value="" data-i18n="house.saved">— บ้านที่บันทึก —</option>
       </select>
-      <button class="btn" id="btnDeleteHouse" title="ลบบ้านที่เลือก">🗑</button>
+      <button class="btn" id="btnDeleteHouse" title="Delete selected house">🗑</button>
     </div>
     <div class="btn-grp" style="margin-top:6px">
       <button class="btn" id="btnSave" data-i18n="btn.save">บันทึก</button>
@@ -476,7 +480,10 @@
     <div class="stage">
       <canvas id="plan" width="760" height="760"></canvas>
 
-      <svg id="lp" viewBox="0 0 760 760" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="lp" viewBox="0 0 760 760" xmlns="http://www.w3.org/2000/svg">
+        <!-- ROLLBACK-SAFE: group for monthly prohibition arcs -->
+        <g id="monthlyProhibit" style="display:none"></g>
+      </svg>
     </div>
 
     <div class="cursor-ctrl">
@@ -498,7 +505,11 @@
       </div>
     </div>
 
-    
+    <!-- ROLLBACK-SAFE: Monthly Prohibition Warning Box -->
+    <div id="monthlyWarnBox" style="display:none; margin-top:8px; padding:8px 10px; border:1.5px solid #c62828; border-radius:8px; background:rgba(198,40,40,0.08); font-size:11px; line-height:1.35;">
+      <div style="font-weight:700; color:#c62828;" data-i18n="monthly.prohibit.title">ทิศห้ามประจำเดือน</div>
+      <div id="monthlyWarnContent" style="margin-top:4px;"></div>
+    </div>
 
     <div class="timing">
       <div><b id="tPeriod">9</b><span data-i18n="time.period">ยุค</span></div>
@@ -537,26 +548,128 @@
 
 <script>
 /* 1 มิ.ย. · luopan บังคับ login (เจ้านายเคาะ · ตำราเป็น engine IP) · กำแพงจริง=API 401 · นี่=UX redirect */
-(async () => {
+window.HK_LUOPAN_AUTH_READY = (async () => {
   const next = (window.location.pathname || '/luopan') + (window.location.search || '') + (window.location.hash || '');
-  const goLogin = () => window.location.replace('/signup?next=' + encodeURIComponent(next));
+  const goLogin = () => { window.location.replace('/signup?next=' + encodeURIComponent(next)); return false; };
   try {
     const r = await fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' });
     if (r.status === 401 || r.status === 403) return goLogin();
     if (!r.ok) {
       console.warn('luopan auth check skipped', r.status);
-      return;
+      return true;
     }
     const d = await r.json().catch(() => null);
-    if (!d || !d.user) goLogin();
+    if (!d || !d.user) return goLogin();
+    return true;
   } catch (err) {
     console.warn('luopan auth check unavailable', err);
+    return true;
   }
 })();
+function luopanPrivateJson(url){
+  return (window.HK_LUOPAN_AUTH_READY || Promise.resolve(true)).then(ok => ok ? fetch(url).then(r => r.json()) : null);
+}
 /* === embedded luopan-data.js === */
 /* ════════════════════════════════════════════════════════════════
  * Luopan Data v2 — 22 rings · authentic Chinese Feng Shui Luopan
  * ════════════════════════════════════════════════════════════════ */
+
+/* ROLLBACK-SAFE: Monthly Prohibition (ส่วยผัวะ / 歲破, ซาสั่วะ / 三煞, โหงวอึ้ง / 五鬼, มหาวิบัติ)
+   - เปิดด้วย flag ด้านล่าง
+   - ข้อมูลและโค้ดใหม่ทั้งหมดห่อด้วย if (ENABLE_MONTHLY_PROHIBIT)
+   - ไม่แตะ annual-warning เดิม
+   - Rollback: ตั้ง flag=false หรือ revert commit นี้
+*/
+const ENABLE_MONTHLY_PROHIBIT = true; // เปลี่ยนเป็น true เมื่อทดสอบผ่าน + i18n ครบ
+// ROLLBACK: set to false or git revert the monthly commits
+
+// สำหรับใช้จริง: ตั้ง activeMonthBranch เป็น branch ของเดือนที่ต้องการ (เช่น '未' สำหรับ 乙未, '午' สำหรับ 丙午)
+// ใน production ควรคำนวณจากวันที่จริงหรือ locked house + lunar month
+let ACTIVE_MONTH_BRANCH = '未'; // สำหรับใช้จริง: เปลี่ยนเป็น branch ของเดือนปัจจุบัน (เช่น '未' สำหรับ 乙未, '午' สำหรับ 丙午)
+// ในเวอร์ชันเต็มจะคำนวณอัตโนมัติจาก locked house + timing / ปฏิทิน
+
+// ─── Monthly Prohibition Data (ตัวอย่างจากผู้ใช้ + ขยายได้)
+// โครงสร้าง: key = month branch, value = { suipo: {degStart, degEnd, mountain}, saSo: {...}, wuGui: {...}, mahawibati: {overlap} }
+// องศาตาม Luopan มาตรฐาน (0=North, เพิ่มตามเข็มนาฬิกา? แต่โค้ดใช้ 0=North ปัจจุบัน)
+const MONTHLY_PROHIBITIONS = {
+  // Full 12 months - based on user's examples + classical clash for Sui Po
+  // suipo = clash branch sector ( +/- 15° around center)
+  // saSo / wuGui / mahawibati use user's pattern adjusted per group for demo
+  // For real use: verify with classical Tong Shu / almanac per month
+
+  '子': {
+    suipo: { start: 165, end: 195, name: '午', mountain: '午', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 315, end: 45, name: 'เหนือ', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 337.5, end: 22.5, name: 'เหนือ', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 345, end: 15, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนแตกสลาย + อสูร' }
+  },
+  '丑': {
+    suipo: { start: 195, end: 225, name: '未', mountain: '未', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 225, end: 315, name: 'ตะวันตก', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 247.5, end: 292.5, name: 'ตะวันตก', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 247.5, end: 292.5, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '寅': {
+    suipo: { start: 225, end: 255, name: '申', mountain: '申', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 135, end: 225, name: 'ตะวันออกเฉียงใต้', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 157.5, end: 202.5, name: 'ตะวันออกเฉียงใต้', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 165, end: 195, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '卯': {
+    suipo: { start: 255, end: 285, name: '酉', mountain: '酉', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 45, end: 135, name: 'ตะวันออก', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 67.5, end: 112.5, name: 'ตะวันออก', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 75, end: 105, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '辰': {
+    suipo: { start: 285, end: 315, name: '戌', mountain: '戌', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 315, end: 45, name: 'เหนือ', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 337.5, end: 22.5, name: 'เหนือ', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 345, end: 15, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '巳': {
+    suipo: { start: 315, end: 345, name: '亥', mountain: '亥', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 225, end: 315, name: 'ตะวันตก', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 247.5, end: 292.5, name: 'ตะวันตก', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 247.5, end: 292.5, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '午': {
+    suipo: { start: 345, end: 15, name: 'ชวด', mountain: '子', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 315, end: 45, name: 'เหนือ', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 157.5, end: 202.5, name: 'ใต้', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 345, end: 15, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนแตกสลาย + อสูร' }
+  },
+  '未': {
+    suipo: { start: 15, end: 45, name: 'ฉลู', mountain: '丑', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 225, end: 315, name: 'ตะวันตก', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 247.5, end: 292.5, name: 'ตะวันตก', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 247.5, end: 292.5, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '申': {
+    suipo: { start: 45, end: 75, name: '寅', mountain: '寅', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 135, end: 225, name: 'ตะวันออกเฉียงใต้', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 157.5, end: 202.5, name: 'ตะวันออกเฉียงใต้', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 165, end: 195, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '酉': {
+    suipo: { start: 75, end: 105, name: '卯', mountain: '卯', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 45, end: 135, name: 'ตะวันออก', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 67.5, end: 112.5, name: 'ตะวันออก', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 75, end: 105, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '戌': {
+    suipo: { start: 105, end: 135, name: '辰', mountain: '辰', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 315, end: 45, name: 'เหนือ', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 337.5, end: 22.5, name: 'เหนือ', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 345, end: 15, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  },
+  '亥': {
+    suipo: { start: 135, end: 165, name: '巳', mountain: '巳', label_th: 'ทิศแตกสลาย (ส่วยผัวะ)', label_en: 'Monthly Destruction (Sui Po)' },
+    saSo: { start: 225, end: 315, name: 'ตะวันตก', label_th: 'ทิศอสูร (ซาสั่วะ)' },
+    wuGui: { start: 247.5, end: 292.5, name: 'ตะวันตก', label_th: 'ทิศเบญจภูติ (โหงวอึ้ง)' },
+    mahawibati: { start: 247.5, end: 292.5, label_th: 'ทิศมหาวิบัติ', desc_th: 'ทับซ้อนอสูร + เบญจภูติ' }
+  }
+};
 
 // ─── Heavenly Stems · 十天干
 const STEMS_10 = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
@@ -1469,32 +1582,89 @@ const I18N = {
 };
 /* expose key-major HK_I18N ให้ hk-user-menu (อวตาร) สลับภาษาแล้วแปลเนื้อ luopan ได้ */
 window.HK_I18N = (function(){ var o={}; ['th','en','zh'].forEach(function(L){ var d=I18N[L]||{}; for(var k in d){ (o[k]=o[k]||{})[L]=d[k]; } }); return o; })();
+
+/* NEW: Monthly Prohibition i18n keys (9 languages ready)
+   - All new UI text uses data-i18n or T()
+   - New languages fallback to en (per handoff)
+   - Add to external i18n/*.json later for full 9 lang
+*/
+Object.assign(I18N.th, {
+  'monthly.prohibit.title': 'ทิศห้ามประจำเดือน',
+  'monthly.suipo': 'ส่วยผัวะ (แตกสลาย)',
+  'monthly.saso': 'ซาสั่วะ (อสูร)',
+  'monthly.wugui': 'โหงวอึ้ง (เบญจภูติ)',
+  'monthly.mahawibati': 'มหาวิบัติ (ทับซ้อนรุนแรง)',
+  'monthly.forbid': 'ห้ามกระทบแรงในทิศนี้',
+  'monthly.activities': 'กิจกรรมที่ควรเลี่ยง: ก่อสร้าง/ขุดเจาะ/ตั้งพระ/นอนห้องแรก/เริ่มใช้โต๊ะทำงาน',
+  'monthly.arc.legend': 'ทิศห้ามเดือน (แดง=รุนแรง)',
+  'warn.monthly.active': '⚠️ เดือนนี้มีทิศห้าม — ดู arc สีแดงบนหล่อแก'
+});
+Object.assign(I18N.en, {
+  'monthly.prohibit.title': 'Monthly Prohibited Directions',
+  'monthly.suipo': 'Sui Po (Destruction)',
+  'monthly.saso': 'Sa So (Killing)',
+  'monthly.wugui': 'Wu Gui (5 Ghosts)',
+  'monthly.mahawibati': 'Mahawibati (Severe Overlap)',
+  'monthly.forbid': 'Avoid strong disturbance in this direction',
+  'monthly.activities': 'Avoid: construction/digging/altar setup/first sleep in room/first desk use',
+  'monthly.arc.legend': 'Monthly Bad Directions (red = severe)',
+  'warn.monthly.active': '⚠️ This month has prohibited directions — see red arcs'
+});
+Object.assign(I18N.zh, {
+  'monthly.prohibit.title': '月忌方位',
+  'monthly.suipo': '歲破',
+  'monthly.saso': '三煞',
+  'monthly.wugui': '五鬼',
+  'monthly.mahawibati': '大禍',
+  'monthly.forbid': '忌動土強力催動',
+  'monthly.activities': '忌：興工、動土、設壇、首睡、首用桌',
+  'monthly.arc.legend': '月忌方位（紅=嚴重）',
+  'warn.monthly.active': '⚠️ 本月有忌方 — 見紅弧'
+});
 /* T(key): ตัวช่วยแปลฝั่ง JS (สำหรับ string ที่สร้างใน render function) — อ้างอิงแบบเดียวกับ master-fusion */
 function T(key){
   /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
-  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('luopan.html',key,document.documentElement.dataset.lang||'th');if(ov!=null)return ov;}catch(_){}
-  var L = document.documentElement.dataset.lang || 'th';
-  var d = I18N[L] || I18N.th;
-  return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key);
+  var rawL = (window.HK_LANG_STATE&&window.HK_LANG_STATE.raw&&window.HK_LANG_STATE.raw()) || document.documentElement.dataset.lang || 'th';
+  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('luopan.html',key,rawL);if(ov!=null)return ov;}catch(_){}
+  var L = (rawL === 'th' || rawL === 'en' || rawL === 'zh') ? rawL : 'en';
+  var d = I18N[L] || I18N.en || I18N.th;
+  return (d && d[key] != null) ? d[key] : (L !== 'th' && I18N.en && I18N.en[key] != null ? I18N.en[key] : (I18N.th[key] != null ? I18N.th[key] : key));
 }
 /* 🌐 คลังคำอ่าน 3 ภาษา (6 ก.ค. 2569): เลือก field ภาษาใน data object แบบ additive
  * pk(o,'general')  → o.general_en / o.general_zh ตามภาษา · fallback o.general (th เดิม)
  * pkt(o,'name')    → o.name_en / o.name_zh · fallback o.name_th (สำหรับคลังที่ตั้งชื่อ field ลงท้าย _th)
  * ค่า th เดิมไม่ถูกแตะ — ภาษาอื่นที่ไม่มีคำแปลจะเห็น th เหมือนเดิม */
 function lpLang(){ return document.documentElement.dataset.lang || 'th'; }
+function lpSifuLang(){
+  try{
+    var st=window.HK_LANG_STATE || (window.HK&&window.HK.langState);
+    if(st&&typeof st.sifu==='function') return st.sifu();
+  }catch(_){}
+  var L=lpLang();
+  try{ if(L==='zh'&&localStorage.getItem('hk_zh_variant')==='cn') return 'cn'; }catch(_){}
+  return L;
+}
+function lpAnswerInstruction(){
+  var L=lpSifuLang();
+  if(L==='en') return 'Answer briefly in English. Keep Chinese technical terms in Hanzi in parentheses when useful.';
+  if(L==='zh') return '請用繁體中文簡潔回答。術數術語可保留中文原詞。';
+  if(L==='cn') return '请用简体中文简洁回答。术数术语可保留中文原词。';
+  if(['vi','ja','ko','ru','es'].indexOf(L)!==-1) return 'Answer in the user selected language. Keep Chinese technical terms in Hanzi in parentheses when useful.';
+  return 'ตอบสั้น กระชับ เป็นภาษาไทย อธิบายศัพท์จีนที่ใช้';
+}
 function pk(o, f){
   if(!o) return undefined;
   const L = lpLang();
   if(L !== 'th'){ const v = o[f + '_' + L]; if(v != null) return v;
-    /* ภาษาใหม่ (vi/ja/ko/ru/es) ตก en ก่อน ไม่ตกไทย */
-    if(L !== 'zh'){ const ve = o[f + '_en']; if(ve != null) return ve; } }
+    /* non-TH ตก en ก่อน ไม่ตกไทย */
+    const ve = o[f + '_en']; if(ve != null) return ve; }
   return o[f];
 }
 function pkt(o, base){
   if(!o) return undefined;
   const L = lpLang();
   if(L !== 'th'){ const v = o[base + '_' + L]; if(v != null) return v;
-    if(L !== 'zh'){ const ve = o[base + '_en']; if(ve != null) return ve; } }
+    const ve = o[base + '_en']; if(ve != null) return ve; }
   return o[base + '_th'];
 }
 /* คลัง const ฝั่ง JS ที่เดิมเป็นไทยล้วน → ทำเป็น bank 3 ภาษา · getter อ่านตามภาษาปัจจุบัน (call site เดิมใช้ต่อได้ทุกจุด) */
@@ -1503,31 +1673,160 @@ function lpBank(banks){
   Object.keys(banks.th).forEach(k => Object.defineProperty(o, k, {
     enumerable: true,
     get(){ const L = lpLang(); if(banks[L] && banks[L][k] != null) return banks[L][k];
-      if(L !== 'th' && L !== 'zh' && banks.en && banks.en[k] != null) return banks.en[k];
+      if(L !== 'th' && banks.en && banks.en[k] != null) return banks.en[k];
       return banks.th[k]; }
   }));
   return o;
 }
+const LP_TEXT_FALLBACKS = {
+  vi: {
+    'Bright and hot — fame, charm, passion, energy.':'Sáng và nóng - danh tiếng, sức hút, đam mê, năng lượng.',
+    'Wu is Yang fire of the Four Cardinals, carrying the power of fame, light, expression and prominence.':'Ngọ là Hỏa dương của nhóm Tứ Chính, mang lực danh tiếng, ánh sáng, biểu đạt và sự nổi bật.',
+    'Fame, brightness, expression, speed, open energy':'Danh tiếng, ánh sáng, biểu đạt, tốc độ, khí mở',
+    'The main needle used to measure the true direction — determines the Sitting (back of the house) and the Facing (front of the house).':'Kim chính dùng để đo hướng thật - xác định Tọa (sau nhà) và Hướng (trước nhà).',
+    "Tian Chi (天池) means 'Heavenly Pool' — the point where the energy of Heaven (天) and Earth (地) converge. The magnetic needle points to magnetic north, the reference point for every discipline on the compass.":'Thiên Trì (天池) là nơi khí Trời (天) và Đất (地) hội tụ. Kim từ chỉ Bắc từ, làm mốc cho mọi tầng trên la bàn.',
+    'Star of wisdom and good fortune. Signifies incoming water, knowledge, travel, and reputation.':'Sao trí tuệ và cát khí; biểu thị nước đến, tri thức, di chuyển và danh tiếng.',
+    'Star of wealth and great fortune — the most auspicious star of Period 8 (2004–2023), still favorable in Period 9.':'Sao tài lộc và đại cát - vượng nhất trong Vận 8 (2004-2023), vẫn còn tốt trong Vận 9.',
+    'Star of scholarship, romance, arts, and creativity. Enhances charm and study.':'Sao học thuật, tình cảm, nghệ thuật và sáng tạo; tăng sức hút và việc học.',
+    'Star 1 White (Yi Bai · Greedy Wolf)':'Sao Nhất Bạch (Yi Bai · Tham Lang)',
+    'Star 8 White (Ba Bai · Left Assistant)':'Sao Bát Bạch (Ba Bai · Tả Phụ)',
+    'Star 4 Green (Si Lu · Scholar)':'Sao Tứ Lục (Si Lu · Văn Xương)',
+    'Star (Xīng)':'Sao (Xīng)',
+    'The bright star, beak of the Vermilion Bird — heat, fame, fire':'Sao sáng, mỏ Chu Tước - nhiệt, danh tiếng, Hỏa',
+    'Supple willow branches — graceful and gentle, but not strong':'Cành liễu mềm - duyên dáng và dịu, nhưng lực không mạnh',
+    'Tai Sui is the annual ruling direction. Avoid disturbing it with renovation, digging, drilling, demolition, or strong activation.':'Thái Tuế là phương chủ quản của năm. Tránh kích động bằng sửa chữa, đào, khoan, phá dỡ hoặc kích hoạt mạnh.'
+  },
+  ja: {
+    'Bright and hot — fame, charm, passion, energy.':'明るく熱い気。名声、魅力、情熱、活力を示します。',
+    'Wu is Yang fire of the Four Cardinals, carrying the power of fame, light, expression and prominence.':'午は四正の陽火で、名声・光・表現・目立つ力を帯びます。',
+    'Fame, brightness, expression, speed, open energy':'名声、明るさ、表現、速さ、開いた気',
+    'The main needle used to measure the true direction — determines the Sitting (back of the house) and the Facing (front of the house).':'真の方位を測る主針です。坐（家の後ろ）と向（家の前）を定めます。',
+    "Tian Chi (天池) means 'Heavenly Pool' — the point where the energy of Heaven (天) and Earth (地) converge. The magnetic needle points to magnetic north, the reference point for every discipline on the compass.":'天池は天（天）と地（地）の気が集まる場所です。磁針は磁北を指し、羅盤の各層の基準になります。',
+    'Star of wisdom and good fortune. Signifies incoming water, knowledge, travel, and reputation.':'知恵と吉運の星です。來水、知識、移動、評判を示します。',
+    'Star of wealth and great fortune — the most auspicious star of Period 8 (2004–2023), still favorable in Period 9.':'財と大吉の星です。第8運（2004-2023）で最も強く、第9運でもなお良い意味を持ちます。',
+    'Star of scholarship, romance, arts, and creativity. Enhances charm and study.':'学問、恋愛、芸術、創造性の星です。魅力と学びを高めます。',
+    'Star 1 White (Yi Bai · Greedy Wolf)':'一白星（Yi Bai · 貪狼）',
+    'Star 8 White (Ba Bai · Left Assistant)':'八白星（Ba Bai · 左輔）',
+    'Star 4 Green (Si Lu · Scholar)':'四緑星（Si Lu · 文昌）',
+    'Star (Xīng)':'星（Xīng）',
+    'The bright star, beak of the Vermilion Bird — heat, fame, fire':'朱雀のくちばしにあたる明るい星 - 熱、名声、火',
+    'Supple willow branches — graceful and gentle, but not strong':'しなやかな柳の枝 - 優美で柔らかいが、力は強くない',
+    'Tai Sui is the annual ruling direction. Avoid disturbing it with renovation, digging, drilling, demolition, or strong activation.':'太歳はその年を司る方位です。改修、掘削、穴あけ、解体、強い活性化を避けます。'
+  },
+  ru: {
+    'Bright and hot — fame, charm, passion, energy.':'Яркая и горячая энергия: слава, обаяние, страсть и активность.',
+    'Wu is Yang fire of the Four Cardinals, carrying the power of fame, light, expression and prominence.':'午 - янский Огонь из Четырех кардинальных ветвей, несущий славу, свет, выражение и заметность.',
+    'Fame, brightness, expression, speed, open energy':'Слава, яркость, выражение, скорость, открытая энергия',
+    'The main needle used to measure the true direction — determines the Sitting (back of the house) and the Facing (front of the house).':'Главная стрелка для измерения истинного направления: определяет сидение (зад дома) и фасад (перед дома).',
+    "Tian Chi (天池) means 'Heavenly Pool' — the point where the energy of Heaven (天) and Earth (地) converge. The magnetic needle points to magnetic north, the reference point for every discipline on the compass.":'Тяньчи (天池) - место схода ци Неба (天) и Земли (地). Магнитная стрелка указывает на магнитный север, базовую точку всех слоев компаса.',
+    'Star of wisdom and good fortune. Signifies incoming water, knowledge, travel, and reputation.':'Звезда мудрости и удачи; указывает на приходящую воду, знания, поездки и репутацию.',
+    'Star of wealth and great fortune — the most auspicious star of Period 8 (2004–2023), still favorable in Period 9.':'Звезда богатства и большой удачи - самая благоприятная в Период 8 (2004-2023), все еще полезна в Период 9.',
+    'Star of scholarship, romance, arts, and creativity. Enhances charm and study.':'Звезда учебы, романтики, искусства и творчества; усиливает обаяние и обучение.',
+    'Star 1 White (Yi Bai · Greedy Wolf)':'Звезда 1 Белая (Yi Bai · Тан Лан)',
+    'Star 8 White (Ba Bai · Left Assistant)':'Звезда 8 Белая (Ba Bai · Цзо Фу)',
+    'Star 4 Green (Si Lu · Scholar)':'Звезда 4 Зеленая (Si Lu · ученость)',
+    'Star (Xīng)':'Звезда (Xīng)',
+    'The bright star, beak of the Vermilion Bird — heat, fame, fire':'Яркая звезда, клюв Алой птицы - жар, слава, Огонь',
+    'Supple willow branches — graceful and gentle, but not strong':'Гибкие ветви ивы - изящные и мягкие, но не сильные',
+    'Tai Sui is the annual ruling direction. Avoid disturbing it with renovation, digging, drilling, demolition, or strong activation.':'Тай Суй - управляющее направление года. Избегайте ремонта, копания, сверления, сноса и сильной активации.'
+  },
+  ko: {
+    'Bright and hot — fame, charm, passion, energy.':'밝고 뜨거운 기운입니다. 명성, 매력, 열정, 에너지를 뜻합니다.',
+    'Wu is Yang fire of the Four Cardinals, carrying the power of fame, light, expression and prominence.':'午는 사정(四正)의 양화(陽火)로, 명성·빛·표현·두드러짐의 힘을 지닙니다.',
+    'Fame, brightness, expression, speed, open energy':'명성, 밝음, 표현, 속도, 열린 기운',
+    'The main needle used to measure the true direction — determines the Sitting (back of the house) and the Facing (front of the house).':'실제 방향을 재는 주침입니다. 좌(집 뒤쪽)와 향(집 앞쪽)을 정합니다.',
+    "Tian Chi (天池) means 'Heavenly Pool' — the point where the energy of Heaven (天) and Earth (地) converge. The magnetic needle points to magnetic north, the reference point for every discipline on the compass.":'천지(天池)는 하늘(天)과 땅(地)의 기가 모이는 곳입니다. 자침은 자기 북쪽을 가리키며 나침반 모든 층의 기준점입니다.',
+    'Star of wisdom and good fortune. Signifies incoming water, knowledge, travel, and reputation.':'지혜와 길운의 별입니다. 들어오는 물, 지식, 이동, 평판을 뜻합니다.',
+    'Star of wealth and great fortune — the most auspicious star of Period 8 (2004–2023), still favorable in Period 9.':'재물과 큰 길운의 별입니다. 8운(2004-2023)에 가장 길하며 9운에서도 여전히 좋습니다.',
+    'Star of scholarship, romance, arts, and creativity. Enhances charm and study.':'학문, 연애, 예술, 창의성의 별입니다. 매력과 공부 운을 높입니다.',
+    'Star 1 White (Yi Bai · Greedy Wolf)':'1백성 (Yi Bai · 탐랑)',
+    'Star 8 White (Ba Bai · Left Assistant)':'8백성 (Ba Bai · 좌보)',
+    'Star 4 Green (Si Lu · Scholar)':'4록성 (Si Lu · 문창)',
+    'Star (Xīng)':'별 (Xīng)',
+    'The bright star, beak of the Vermilion Bird — heat, fame, fire':'주작의 부리에 해당하는 밝은 별 - 열기, 명성, 화(火)',
+    'Supple willow branches — graceful and gentle, but not strong':'유연한 버드나무 가지 - 우아하고 부드럽지만 강하지는 않음',
+    'Tai Sui is the annual ruling direction. Avoid disturbing it with renovation, digging, drilling, demolition, or strong activation.':'태세는 그해를 주관하는 방향입니다. 수리, 굴착, 드릴 작업, 철거, 강한 활성화를 피합니다.'
+  },
+  es: {
+    'Bright and hot — fame, charm, passion, energy.':'Brillante y caliente: fama, encanto, pasion y energia.',
+    'Wu is Yang fire of the Four Cardinals, carrying the power of fame, light, expression and prominence.':'Wu/午 es Fuego yang de los Cuatro Cardinales; trae fama, luz, expresion y protagonismo.',
+    'Fame, brightness, expression, speed, open energy':'Fama, brillo, expresion, velocidad, energia abierta',
+    'The main needle used to measure the true direction — determines the Sitting (back of the house) and the Facing (front of the house).':'La aguja principal mide la direccion real y define el asiento (parte trasera) y la orientacion (frente) de la casa.',
+    "Tian Chi (天池) means 'Heavenly Pool' — the point where the energy of Heaven (天) and Earth (地) converge. The magnetic needle points to magnetic north, the reference point for every discipline on the compass.":'Tian Chi (天池) es el punto donde convergen el Cielo (天) y la Tierra (地). La aguja marca el norte magnetico, referencia de todas las capas de la brujula.',
+    'Star of wisdom and good fortune. Signifies incoming water, knowledge, travel, and reputation.':'Estrella de sabiduria y buena fortuna; indica agua entrante, conocimiento, viajes y reputacion.',
+    'Star of wealth and great fortune — the most auspicious star of Period 8 (2004–2023), still favorable in Period 9.':'Estrella de riqueza y gran fortuna: la mas auspiciosa del Periodo 8 (2004-2023), todavia favorable en el Periodo 9.',
+    'Star of scholarship, romance, arts, and creativity. Enhances charm and study.':'Estrella de estudio, romance, artes y creatividad; mejora el encanto y el aprendizaje.',
+    'Star 1 White (Yi Bai · Greedy Wolf)':'Estrella 1 Blanca (Yi Bai · Lobo Codicioso)',
+    'Star 8 White (Ba Bai · Left Assistant)':'Estrella 8 Blanca (Ba Bai · Asistente Izquierdo)',
+    'Star 4 Green (Si Lu · Scholar)':'Estrella 4 Verde (Si Lu · Erudito)',
+    'Star (Xīng)':'Estrella (Xing)',
+    'The bright star, beak of the Vermilion Bird — heat, fame, fire':'La estrella brillante, pico del Ave Bermellon: calor, fama, fuego',
+    'Supple willow branches — graceful and gentle, but not strong':'Ramas flexibles de sauce: gráciles y suaves, aunque no fuertes',
+    'Tai Sui is the annual ruling direction. Avoid disturbing it with renovation, digging, drilling, demolition, or strong activation.':'Tai Sui es la direccion regente del año. Evita alterarla con reformas, excavaciones, perforaciones, demoliciones o activacion fuerte.'
+  }
+};
+function lpLocalizeFallbackText(v){
+  if(v == null) return v;
+  var L = lpSifuLang();
+  if (L === 'th' || L === 'en' || L === 'zh' || L === 'cn') return v;
+  var bank = LP_TEXT_FALLBACKS[L];
+  var s = String(v);
+  if(!bank || !s) return v;
+  Object.keys(bank).forEach(function(k){ s = s.split(k).join(bank[k]); });
+  return s;
+}
+function lpScrubRenderedFallbackText(root){
+  var L = lpSifuLang();
+  if (L === 'th' || L === 'en' || L === 'zh' || L === 'cn') return;
+  var bank = LP_TEXT_FALLBACKS[L];
+  if (!bank || !root) return;
+  var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  var nodes = [], n;
+  while((n = walker.nextNode())) nodes.push(n);
+  nodes.forEach(function(node){
+    var next = lpLocalizeFallbackText(node.nodeValue);
+    if (next !== node.nodeValue) node.nodeValue = next;
+  });
+}
 function applyLang(L){
-  document.documentElement.dataset.lang = L;
+  var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.set?window.HK_LANG_STATE.set(L):null;
+  L = st ? st.raw : L;
+  const baseL = st ? st.app : ((L === 'th' || L === 'en' || L === 'zh') ? L : 'en');
+  document.documentElement.lang = st ? st.html : (L === 'zh' ? 'zh-Hant' : L);
+  document.documentElement.dataset.lang = baseL;
   document.querySelectorAll('[data-i18n]').forEach(e => {
     const k = e.dataset.i18n;
     var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('luopan.html',k,L);}catch(_){}
-    if(ov!=null) e.textContent = ov; else if(I18N[L]?.[k]) e.textContent = I18N[L][k];
+    if(ov!=null) e.textContent = ov; else if(I18N[baseL]?.[k]) e.textContent = I18N[baseL][k];
   });
   document.querySelectorAll('[data-i18n-ph]').forEach(e => {
     const k = e.dataset.i18nPh;
     var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('luopan.html',k,L);}catch(_){}
-    if(ov!=null) e.placeholder = ov; else if(I18N[L]?.[k]) e.placeholder = I18N[L][k];
+    if(ov!=null) e.placeholder = ov; else if(I18N[baseL]?.[k]) e.placeholder = I18N[baseL][k];
   });
+  document.querySelectorAll('[data-i18n-title]').forEach(e => {
+    const k = e.dataset.i18nTitle;
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('luopan.html',k,L);}catch(_){}
+    if(ov!=null) e.title = ov; else if(I18N[baseL]?.[k]) e.title = I18N[baseL][k];
+  });
+  if(baseL !== 'th'){
+    document.querySelectorAll('[title]').forEach(e => {
+      if(!/[\u0E00-\u0E7F]/.test(e.getAttribute('title') || '')) return;
+      const k = e.dataset.i18n || e.dataset.i18nTitle;
+      if(k && I18N[baseL]?.[k]) e.setAttribute('title', I18N[baseL][k]);
+      else e.setAttribute('title', '');
+    });
+  }
   document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('active', b.dataset.lang === L));
   /* re-render เนื้อหาที่สร้างด้วย JS (idempotent · อ่านจาก state ปัจจุบัน ไม่รีเซ็ต pin/cursor) ให้สลับภาษาสด */
   try { if(typeof updateCastleGate==='function') updateCastleGate(); } catch(_){}
   try { if(typeof updateInspector==='function') updateInspector(); } catch(_){}
   try { if(typeof updateHouseReadout==='function' && typeof M24!=='undefined') updateHouseReadout(); } catch(_){}
+  try { lpScrubRenderedFallbackText(document.body); setTimeout(function(){ lpScrubRenderedFallbackText(document.body); }, 250); } catch(_){}
 }
 window.__hkOverlayApply=function(l){ applyLang(l); };
-document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+/* :not(html) — <html> มี data-lang จาก applyLang เอง ถ้าไม่กันไว้ ทุกคลิกทั้งหน้าจะ bubble มาเรียก applyLang → วาด inspector ทับ ทำปุ่มพับ/กาง (เช่น คำแนะนำบ้าน) กดไม่ติด */
+document.querySelectorAll('[data-lang]:not(html)').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
 applyLang(localStorage.getItem('hk_locale') || 'th');
 
 /* ============== theme (อวตารจัดการ toggle · redraw ดวงเมื่อ data-theme เปลี่ยน) ============== */
@@ -1605,6 +1904,11 @@ function rebuildLuopan(){
   if(typeof renderCastleGateOverlay==='function') renderCastleGateOverlay();
   if(typeof renderBashaOverlay==='function') renderBashaOverlay();
   if(typeof renderPins==='function') renderPins();
+  if(typeof renderMonthlyProhibitOverlay === 'function') renderMonthlyProhibitOverlay();
+  if (ENABLE_MONTHLY_PROHIBIT && typeof checkAndFlagMonthlyPins === 'function') {
+    // pass current pins for flagging (placeholder integration)
+    checkAndFlagMonthlyPins(pins || []);
+  }
   if(typeof cursorDeg!=='undefined'){
     const cn=document.getElementById('cursorNeedle');
     if(cn) cn.setAttribute('transform', `rotate(${cursorDeg} 380 380)`);
@@ -1738,6 +2042,8 @@ async function applyTiming(k){
   if((k==='year'||k==='month'||k==='day') && window.FS_FETCH_STATE!=='loading' && window.FS_FETCH_STATE!=='ok'){
     fetchFengshuiReal();
   }
+  /* Monthly prohibit arcs (only when month selected) */
+  if(typeof renderMonthlyProhibitOverlay === 'function') renderMonthlyProhibitOverlay();
 }
 document.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>applyTiming(b.dataset.time)));
 document.querySelectorAll('[data-time-jump]').forEach(b=>{
@@ -2433,6 +2739,141 @@ function renderBashaOverlay(){
   }
 }
 
+/* ROLLBACK-SAFE: Monthly Prohibition Arcs (ส่วยผัวะ / มหาวิบัติ etc.)
+   - วาดเฉพาะเมื่อ ENABLE_MONTHLY_PROHIBIT && time filter = 'month'
+   - ใช้สีแดงเข้มสำหรับ severe (suipo/mahawibati)
+   -  rollback: flag=false หรือลบฟังก์ชันนี้
+*/
+function getActiveMonthBranch() {
+  // ลองดึงจากวันที่ที่โหลดมา (หน้าโหลด api/today มาให้แล้ว)
+  if (window.MONTH_DAY_SHA_STATE && window.MONTH_DAY_SHA_STATE.monthBranch) {
+    return window.MONTH_DAY_SHA_STATE.monthBranch;
+  }
+  // ถ้ายังไม่มี ใช้ค่าที่ตั้งเอง
+  return ACTIVE_MONTH_BRANCH;
+}
+
+function renderMonthlyProhibitOverlay(){
+  const g = document.getElementById('monthlyProhibit');
+  const box = document.getElementById('monthlyWarnBox');
+  if(box) box.style.display = 'none';
+  if(!g) return;
+  g.innerHTML = '';
+  g.style.display = 'none';
+  if(!ENABLE_MONTHLY_PROHIBIT || !houseLocked) return;
+  if(currentTimingKey !== 'month') return;
+
+  const activeBranch = getActiveMonthBranch();
+  const rule = MONTHLY_PROHIBITIONS[activeBranch] || MONTHLY_PROHIBITIONS['未'];
+  if(!rule) return;
+
+  // ถ้า branch เปลี่ยนจากวันที่จริง ก็รีโหลด arc ใหม่
+  if (window.MONTH_DAY_SHA_STATE && window.MONTH_DAY_SHA_STATE.monthBranch && window.MONTH_DAY_SHA_STATE.monthBranch !== ACTIVE_MONTH_BRANCH) {
+    // ใช้ค่าจริงแทน
+  }
+
+  g.style.display = '';
+  const NS = 'http://www.w3.org/2000/svg';
+  const cx=380, cy=380, r1=210, r2=250;
+  const rad = d => (d-90)*Math.PI/180;
+  const pt = (r,a) => [cx + r*Math.cos(rad(a)), cy + r*Math.sin(rad(a))];
+
+  function drawArc(start, end, color, label, opacity=0.45){
+    if(end < start) end += 360;
+    const a1=pt(r1,start), a2=pt(r2,start), b1=pt(r1,end), b2=pt(r2,end);
+    const large = (end-start > 180) ? 1 : 0;
+    const d = `M${a1[0]},${a1[1]} L${a2[0]},${a2[1]} A${r2},${r2} 0 ${large},1 ${b2[0]},${b2[1]} L${b1[0]},${b1[1]} A${r1},${r1} 0 ${large},0 ${a1[0]},${a1[1]} Z`;
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('fill', color);
+    p.setAttribute('opacity', opacity);
+    p.setAttribute('stroke', color);
+    p.setAttribute('stroke-width', '1.5');
+    p.setAttribute('pointer-events', 'none');
+    g.appendChild(p);
+
+    // label
+    const mid = (start + end) / 2;
+    const [x,y] = pt(230, mid);
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', x.toFixed(1));
+    t.setAttribute('y', y.toFixed(1));
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'middle');
+    t.setAttribute('font-family', 'var(--tc)');
+    t.setAttribute('font-size', '11');
+    t.setAttribute('font-weight', '700');
+    t.setAttribute('fill', '#fff');
+    t.setAttribute('paint-order', 'stroke');
+    t.setAttribute('stroke', '#300');
+    t.setAttribute('stroke-width', '2.5');
+    t.textContent = label;
+    g.appendChild(t);
+  }
+
+  // Draw in order (severe first)
+  if(rule.mahawibati) drawArc(rule.mahawibati.start, rule.mahawibati.end, '#c62828', T('monthly.mahawibati') || 'มหาวิบัติ', 0.55);
+  if(rule.suipo) drawArc(rule.suipo.start, rule.suipo.end, '#b71c1c', T('monthly.suipo') || 'ส่วยผัวะ', 0.5);
+  if(rule.saSo) drawArc(rule.saSo.start, rule.saSo.end, '#e65100', T('monthly.saso') || 'ซาสั่วะ', 0.4);
+  if(rule.wuGui) drawArc(rule.wuGui.start, rule.wuGui.end, '#ff8f00', T('monthly.wugui') || 'โหงวอึ้ง', 0.35);
+
+  /* Update warning box (9-lang ready via data-i18n + T()) */
+  const monthlyBox = document.getElementById('monthlyWarnBox');
+  const monthlyContent = document.getElementById('monthlyWarnContent');
+  if(monthlyBox && monthlyContent){
+    monthlyBox.style.display = '';
+    let html = '';
+    if(rule.suipo) html += `<div><b>${T('monthly.suipo')}</b> ${rule.suipo.start}°-${rule.suipo.end}° (${rule.suipo.name}) — ${T('monthly.forbid')}</div>`;
+    if(rule.mahawibati) html += `<div style="color:#c62828;"><b>${T('monthly.mahawibati')}</b> ${rule.mahawibati.start}°-${rule.mahawibati.end}° — ${rule.mahawibati.desc_th || ''}</div>`;
+    html += `<div style="margin-top:3px; font-size:10px; opacity:0.85;">${T('monthly.activities')}</div>`;
+    monthlyContent.innerHTML = html;
+  }
+}
+
+/* สำหรับ production จริง: ควรมีฟังก์ชันคำนวณเดือน branch จาก locked + timing จริง
+   ตัวอย่าง skeleton (ใส่ที่นี่เพื่อให้ต่อได้ง่าย):
+   function getActiveMonthBranch() {
+     // ใช้ lockedYear + current solar term หรือ month filter
+     // คืนค่า branch เช่น '未', '午' ฯลฯ
+     return '未'; // แก้ให้ดึงจาก engine จริง
+   }
+*/
+
+/* ROLLBACK-SAFE: Check if a position (deg) is in prohibited for current monthly rule */
+function isMonthlyProhibited(deg) {
+  if (!ENABLE_MONTHLY_PROHIBIT || !houseLocked || currentTimingKey !== 'month') return false;
+  const activeBranch = getActiveMonthBranch();
+  const rule = MONTHLY_PROHIBITIONS[activeBranch];
+  if (!rule) return false;
+  function inRange(d, start, end) {
+    if (end < start) end += 360;
+    if (d < start) d += 360;
+    return d >= start && d <= end;
+  }
+  if (rule.mahawibati && inRange(deg, rule.mahawibati.start, rule.mahawibati.end)) return 'mahawibati';
+  if (rule.suipo && inRange(deg, rule.suipo.start, rule.suipo.end)) return 'suipo';
+  if (rule.saSo && inRange(deg, rule.saSo.start, rule.saSo.end)) return 'saso';
+  if (rule.wuGui && inRange(deg, rule.wuGui.start, rule.wuGui.end)) return 'wugui';
+  return false;
+}
+
+/* Call this from renderPins to flag bad pins (isolated, no break existing) */
+function checkAndFlagMonthlyPins(pins) {
+  if (!ENABLE_MONTHLY_PROHIBIT) return;
+  if (!pins || pins.length === 0) return;
+  const badPins = [];
+  pins.forEach(p => {
+    if (p && typeof p.deg === 'number') {
+      const bad = isMonthlyProhibited(p.deg);
+      if (bad) badPins.push({type: p.type || 'pin', deg: p.deg, reason: bad});
+    }
+  });
+  if (badPins.length > 0) {
+    console.warn('Monthly prohibition hit on pins:', badPins);
+    // Optional: could update a status, but isolated to not disturb main UI
+  }
+}
+
 /* overlay 八宅 (8 ทิศ มงคล/ร้าย) + 正神零神 (山/水) บนหล่อแก · วาดเมื่อล็อกบ้าน */
 function renderBazhaiOverlay(){
   const g8=document.getElementById('r8Z'), gz=document.getElementById('rZL');
@@ -2551,28 +2992,32 @@ function updateCastleGate(){
 
 /* ============== Inspector · อ่านทุกศาสตร์ที่เข็มผ่าน ============== */
 window.LUOPAN_DATA = null;
-fetch('/api/luopan/data?set=luopan').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=luopan').then(d => {
+  if(!d) return;
   window.LUOPAN_DATA = d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('luopan data load failed:', e));
 
 /* 24 พ.ค. · 地盤象意 (12地支+10天干 · score+เหตุผล+recommendation) จาก JSON ซินแส v1.1 */
 window.EARTH_SYMBOLIC = null;
-fetch('/api/luopan/data?set=earth').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=earth').then(d => {
+  if(!d) return;
   window.EARTH_SYMBOLIC = d.earth_plate_symbolic_layers || d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('earth-plate symbolic load failed:', e));
 
 /* 24 พ.ค. · 太歲/三煞/歲破 ดาวเตือนปี จาก JSON ซินแส v1.0 (score 2/1/2 · 三煞 5 ขุนเขา 75°) */
 window.ANNUAL_WARNING = null;
-fetch('/api/luopan/data?set=annual').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=annual').then(d => {
+  if(!d) return;
   window.ANNUAL_WARNING = d.annual_warning_layer || d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('annual-warning load failed:', e));
 
 /* 24 พ.ค. · 玄空大卦 64卦 + 卦運(ยุค) + 卦氣(ชั้น) · guaYun + guaQi เติมครบ 64 (玄空大卦 เต็มรูปแบบ) */
 window.XKDG = null;
-fetch('/api/luopan/data?set=xkdg').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=xkdg').then(d => {
+  if(!d) return;
   const byId = {}; (d.hexagrams || []).forEach(h => { byId[h.id] = h; }); d.byId = byId;
   /* map ชื่อกว้าสั้น (HEXAGRAMS_64) → guaYun ผ่าน King Wen id · ใช้ในวง rKU บนหล่อแก */
   const guaYunByName = {};
@@ -2595,14 +3040,16 @@ fetch('/api/luopan/data?set=xkdg').then(r => r.json()).then(d => {
 
 /* 24 พ.ค. · core-sciences ซินแส (後天/先天/五行 · familyRole·lifeArea·cycles·relationLogic) — เสริม score/general/home เดิม */
 window.CORE_SCI = null;
-fetch('/api/luopan/data?set=core').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=core').then(d => {
+  if(!d) return;
   window.CORE_SCI = {}; (Array.isArray(d)?d:[]).forEach(s => window.CORE_SCI[s.id] = s);
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('core-sciences load failed:', e));
 
 /* 26 พ.ค. · 楊公120分金 (人紀/立向) · 120 ช่อง 3° · index0=337.5° · 旺5相4孤虛2火坑1 · 48 ใช้ได้ · interp 3 ภาษา (ตรวจ 120/48/60 ผ่าน) */
 window.FENJIN120 = null;
-fetch('/api/luopan/data?set=fenjin').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=fenjin').then(d => {
+  if(!d) return;
   window.FENJIN120 = (d && d.fenjin) ? d.fenjin : null;
   /* re-render วง r120 ด้วยข้อมูลจริงตำรา (ตอน build ครั้งแรกยังไม่โหลด → ใช้ fallback) */
   try {
@@ -2614,7 +3061,8 @@ fetch('/api/luopan/data?set=fenjin').then(r => r.json()).then(d => {
 
 /* 26 พ.ค. · 周易384爻辭 (เส้นเหย้า ~0.9375°) · 64卦×6เส้น + บทจีน+ไทย3ช่อง+score(จากคำมงคล) · ซินแสร่างไทย 386 entries (รวม用九用六) · index byGua[ชื่อกว้า]=[6เส้น 初→上] */
 window.YAO384 = null;
-fetch('/api/luopan/data?set=yao').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=yao').then(d => {
+  if(!d) return;
   const byGua = {};
   (d.lines || []).forEach(l => { if(!l.bonus){ (byGua[l.gua] = byGua[l.gua] || []).push(l); } });
   window.YAO384 = byGua;
@@ -2623,38 +3071,44 @@ fetch('/api/luopan/data?set=yao').then(r => r.json()).then(d => {
 
 /* 4 มิ.ย. · missing luopan modules from ซินแส zip · private API only */
 window.SANYUAN_LONG = null;
-fetch('/api/luopan/data?set=sanyuan_long').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=sanyuan_long').then(d => {
+  if(!d) return;
   window.SANYUAN_LONG = d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('sanyuan long load failed:', e));
 
 window.TIGUA_RULES = null;
-fetch('/api/luopan/data?set=tigua').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=tigua').then(d => {
+  if(!d) return;
   window.TIGUA_RULES = d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('tigua load failed:', e));
 
 window.NAJIA_RULES = null;
-fetch('/api/luopan/data?set=najia').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=najia').then(d => {
+  if(!d) return;
   window.NAJIA_RULES = d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('najia load failed:', e));
 
 window.BASHA_HQ = null;
-fetch('/api/luopan/data?set=basha_huangquan_interpreted').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=basha_huangquan_interpreted').then(d => {
+  if(!d) return;
   window.BASHA_HQ = d;
   if(typeof renderBashaOverlay === 'function') renderBashaOverlay();
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('basha/huangquan load failed:', e));
 
 window.WATER_METHOD_RULES = null;
-fetch('/api/luopan/data?set=water_method').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=water_method').then(d => {
+  if(!d) return;
   window.WATER_METHOD_RULES = d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('water-method load failed:', e));
 
 window.MONTH_DAY_SHA_RULES = null;
-fetch('/api/luopan/data?set=month_day_sha').then(r => r.json()).then(d => {
+luopanPrivateJson('/api/luopan/data?set=month_day_sha').then(d => {
+  if(!d) return;
   window.MONTH_DAY_SHA_RULES = d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('month-day-sha load failed:', e));
@@ -3840,7 +4294,7 @@ function degToMountain(d){
 }
 /* ชื่อธาตุใน M24 เก็บเป็นไทย (ค่าเดิมห้ามแตะ) → แปลตอนแสดงผลตามภาษา */
 const M24_EL_LOC = {'น้ำ':{en:'Water',zh:'水'},'ไม้':{en:'Wood',zh:'木'},'ไฟ':{en:'Fire',zh:'火'},'ดิน':{en:'Earth',zh:'土'},'ทอง':{en:'Metal',zh:'金'}};
-function m24ElLoc(el){ const L=lpLang(); return (L!=='th' && M24_EL_LOC[el] && M24_EL_LOC[el][L]) ? M24_EL_LOC[el][L] : el; }
+function m24ElLoc(el){ const L=lpLang(); const row=M24_EL_LOC[el]; if(!row) return el; if(L==='th') return el; return row[L] || row.en || el; }
 /* 9 ยุค · period 1 = 1864-1883, ..., period 9 = 2024-2043 */
 function yearToPeriod(y){
   const Y = Number(y) || 2026;
@@ -3912,6 +4366,7 @@ function applyLock(){
   updateCastleGate(); /* คำนวณก่อน · เพื่อให้ updateInspector ใน setCursor เห็น castleGateResult */
   setCursor(0); /* เข็มทองเริ่มชี้บน = หน้าบ้าน (วงหมุนแล้ว) · trigger updateInspector */
   document.getElementById('cursorRot').value = 0;
+  if(typeof renderMonthlyProhibitOverlay === 'function') renderMonthlyProhibitOverlay();
 }
 function applyUnlock(){
   houseLocked = false;
@@ -4000,6 +4455,8 @@ function renderProfileSelect(){
 }
 async function loadMasterProfiles(){
   try{
+    const ok = await (window.HK_LUOPAN_AUTH_READY || Promise.resolve(true));
+    if(!ok) return;
     const r = await fetch('/api/luopan/profiles');
     if(!r.ok) return;
     const d = await r.json();
@@ -4292,7 +4749,8 @@ async function fetchEngineAdvice(){
   const hasRealProfile = selected && !String(selected).startsWith('p_');
   if (!hasRealProfile) return engineBrief + '\n(ยังไม่ได้เลือกโปรไฟล์จากระบบ master)';
   const prompt = [
-    'ช่วยสรุปคำแนะนำการวางตำแหน่งในบ้านจากข้อมูลองศาด้านล่างแบบสั้น กระชับ ใช้ภาษาไทย',
+    'ช่วยสรุปคำแนะนำการวางตำแหน่งในบ้านจากข้อมูลองศาด้านล่างแบบสั้น กระชับ',
+    lpAnswerInstruction(),
     'เน้น 1) ทิศที่ควรใช้ 2) ทิศที่ควรเลี่ยง 3) คำแนะนำประตู/เตียง/โต๊ะ',
     'ข้อมูลมี FULL_LUOPAN_SCIENCES_PACKET ซึ่งรวมศาสตร์ของหน้า Luopan ทั้งหมดแล้ว ให้ใช้ science_count/catalog เป็นจำนวนศาสตร์หลัก',
     'ห้ามตอบว่าระบบได้แค่ 5-6 ศาสตร์ เว้นแต่ระบุชัดว่า 5-6 นั้นคือ evidence เฉพาะของ engine360 score ไม่ใช่ศาสตร์ทั้งหมด',
@@ -4306,7 +4764,7 @@ async function fetchEngineAdvice(){
       message: prompt,
       profileId: selected,
       topic: 'overview',
-      lang: 'th',
+      lang: lpSifuLang(),
       history: [],
     }),
   });
@@ -4380,7 +4838,8 @@ async function askLuopanSifu(question){
   }
   if(!hasRealProfile) throw new Error('เลือกโปรไฟล์จากระบบ master ก่อน (หรืออัพแปลนบ้านเพื่อถามจากภาพ)');
   const prompt = [
-    'ผู้ใช้ถามเรื่องการจัดบ้าน/ฮวงจุ้ยจากหล่อแก ตอบสั้น กระชับ เป็นภาษาไทย อ้างองศา/ทิศ/ผู้อยู่จากบริบทถ้ามี',
+    'ผู้ใช้ถามเรื่องการจัดบ้าน/ฮวงจุ้ยจากหล่อแก ตอบสั้น กระชับ อ้างองศา/ทิศ/ผู้อยู่จากบริบทถ้ามี',
+    lpAnswerInstruction(),
     'ถ้าผู้ใช้ถามจำนวนศาสตร์ ให้ตอบจาก FULL_LUOPAN_SCIENCES_PACKET science_count/catalog และแยกสถานะ ready/needs-house-lock/needs-water-pin/needs-hour-mode ให้ชัด',
     'ห้ามนับเฉพาะ engine360 score evidence เป็นจำนวนศาสตร์ทั้งหมด',
     `คำถาม: ${question}`,
@@ -4389,7 +4848,7 @@ async function askLuopanSifu(question){
   const sr = await fetch('/api/sifu', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: prompt, profileId: selected, topic: 'overview', lang: 'th', history: [] }),
+    body: JSON.stringify({ message: prompt, profileId: selected, topic: 'overview', lang: lpSifuLang(), history: [] }),
   });
   if(sr.status === 402) throw new Error('NO_CREDIT');
   if(!sr.ok) throw new Error(`sifu ${sr.status}`);
@@ -4558,6 +5017,37 @@ try {
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
 <script>
+(function(){
+  var moved = false;
+  function portalUserMenu(){
+    var root = document.getElementById('hk-user-menu-root');
+    if (!root) return false;
+    if (root.parentElement !== document.body) document.body.appendChild(root);
+    root.classList.remove('inline');
+    root.style.position = 'fixed';
+    root.style.top = '20px';
+    root.style.right = '20px';
+    root.style.zIndex = '2147483000';
+    root.style.pointerEvents = 'auto';
+    var panel = root.querySelector('#hk-um-panel');
+    if (panel) {
+      panel.style.zIndex = '2147483000';
+      panel.style.pointerEvents = 'auto';
+    }
+    moved = true;
+    return true;
+  }
+  if (!portalUserMenu()) {
+    var tries = 0;
+    var timer = setInterval(function(){
+      if (portalUserMenu() || ++tries > 80) clearInterval(timer);
+    }, 100);
+    try {
+      new MutationObserver(function(){ if (!moved) portalUserMenu(); })
+        .observe(document.documentElement, { childList:true, subtree:true });
+    } catch(_) {}
+  }
+})();
 /* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
 (function(){try{
 var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';

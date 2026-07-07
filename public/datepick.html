@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -1744,12 +1745,12 @@ function personAstroText(p){
   const lang = getCurrentLang();
   const elLabel = (lang === 'zh' ? PERSON_ELEMENT_ZH[el] : lang === 'th' ? PERSON_ELEMENT_TH[el] : PERSON_ELEMENT_EN[el]) || _dptx('dp.person.unknown_el','ไม่ทราบธาตุ');
   const elZh = PERSON_ELEMENT_ZH[el] || '';
-  const branchLabel = ((lang === 'th' || lang === 'zh') ? PERSON_BRANCH_TH[p.branch] : PERSON_BRANCH_EN[p.branch]) || _dptx('dp.person.unknown_zodiac','ไม่ทราบปีนักษัตร');
+  const branchLabel = (lang === 'zh' ? p.branch : lang === 'th' ? PERSON_BRANCH_TH[p.branch] : PERSON_BRANCH_EN[p.branch]) || _dptx('dp.person.unknown_zodiac','ไม่ทราบปีนักษัตร');
   const dot = el ? `<span class="el-dot el-${el}"></span>` : '';
   const elPrefix = _dptx('dp.element.prefix','ธาตุ');
   const dmLabel = _dptx('dp.person.daystem','ก้านวัน');
   const yearLabel = _dptx('dp.person.year','ปี');
-  return `${dot}${elPrefix}${escHtml(elLabel)}${(lang !== 'zh' && elZh) ? ` <span class="han">${escHtml(elZh)}</span>` : ''} · ${dmLabel} <span class="han">${escHtml(p.dm || '-')}</span>${p.branch ? ` · ${yearLabel}${escHtml(branchLabel)} <span class="han">${escHtml(p.branch)}</span>` : ''}`;
+  return `${dot}${elPrefix}${escHtml(elLabel)}${(lang !== 'zh' && elZh) ? ` <span class="han">${escHtml(elZh)}</span>` : ''} · ${dmLabel} <span class="han">${escHtml(p.dm || '-')}</span>${p.branch ? ` · ${yearLabel}${escHtml(branchLabel)}${branchLabel !== p.branch ? ` <span class="han">${escHtml(p.branch)}</span>` : ''}` : ''}`;
 }
 
 function renderSelectedPeople(){
@@ -1948,6 +1949,30 @@ const MODULE_LABELS = {
   /* r374 · phase-3 ปัญจางค์+ตาราพละ (สายอินเดีย) */
   panchanga: { th:'ปัญจางค์ 5 องค์', en:'Panchanga (5 limbs)', zh:'五支曆', mode:'เพดานคะแนน+ปรับเบา', modeEn:'Score cap + soft adjust', element:null, desc:'ติถี/วาระ/นักษัตร/โยคะ/กรณะ ตามปฏิทินอินเดีย; ติถีริกตา (เปิดกิจการ/แต่งงาน) + กรณะภัทรา เพดาน 55 · จันทร์ดับ 45 · โยคะร้าย 60 · โยคะดี +5', descEn:'Tithi/vara/nakshatra/yoga/karana by the Hindu calendar; rikta tithi + Bhadra karana cap 55 · new moon 45 · malefic yoga 60 · benefic yoga +5' },
   tara_bala: { th:'ตาราพละ', en:'Tarabala', zh:'宿曜', mode:'เฉพาะบุคคล · เพดานคะแนน', modeEn:'Personal · score cap', element:null, desc:'นับนักษัตรเกิดของคุณถึงนักษัตรของวัน (Tārābala 9 ชั้น); ชั้นร้าย 3/5/7 เพดาน 50 · ชั้นดี +4 · ไม่มีโปรไฟล์ = ไม่ทำงาน', descEn:'Counts from your birth nakshatra to the day’s nakshatra (9-fold Tarabala); bad taras 3/5/7 cap 50 · good taras +4 · no profile = inactive' },
+};
+/* 6 ก.ค. 2569 · i18n โซนผลค้นหา: คำแปลจีน (繁體) ของ mode/desc ในรายงานชั้นกรอง — ชั้นแสดงผลล้วน
+   th/en ใช้ mode/modeEn·desc/descEn ใน MODULE_LABELS เดิม · ตารางนี้เติมเฉพาะ zh ที่ขาด */
+const MODULE_LABELS_ZH = {
+  ze_ri:           { mode:'忌日硬篩',            desc:'僅剔除正犯本事項「忌」之日；董公在此層作輔助加減分' },
+  tai_sui:         { mode:'重沖剔除',            desc:'剔除與流年太歲相沖過重的日／時' },
+  ba_zi:           { mode:'僅限個人',            desc:'將該日與所選之人的八字比對' },
+  qi_men:          { mode:'時辰篩選／分數上限',   desc:'看門、星、神與方位是否合事項；局不合則封頂限分' },
+  yong_shen:       { mode:'僅限個人',            desc:'日／時扶起命中喜用之五行時加分' },
+  twelve_officers: { mode:'輔助計分',            desc:'以建除十二神作加減分，非主要篩選' },
+  twenty_eight:    { mode:'輔助計分',            desc:'值日星宿依事項加減分，不單獨剔除' },
+  twelve_spirits:  { mode:'輔助計分',            desc:'黃道吉神加分、黑道凶神減分，與八字神煞有別' },
+  nine_stars:      { mode:'調整分數',            desc:'當日／該時之飛星能量' },
+  he_luo:          { mode:'輔助參考',            desc:'解讀河洛數理格局與能量節奏' },
+  hex64:           { mode:'釋義',                desc:'用於解讀情勢，非主要篩選' },
+  tian_xing:       { mode:'進階輔助計分',        desc:'七政四餘真星擇日（自選）；勾選才計分，不勾選無影響' },
+  dong_gong:       { mode:'擇日審核 · 分數上限', desc:'擇日典籍《董公選要覽》；大凶日封頂30 · 凶／正犯事項禁忌封頂45 · 吉日加分' },
+  moon_void:       { mode:'分數上限',            desc:'月亮換座前的空亡時段（Void of Course）；新事起頭落此段封頂45' },
+  moon_sign:       { mode:'輕微調整',            desc:'該時辰月亮實際所在星座；合事項+6／不合−6（輕微），不剔除' },
+  retro_window:    { mode:'分數上限',            desc:'水星／金星／火星實際逆行（R→D站點前後）；正犯事項類別封頂40-50' },
+  eclipse_zone:    { mode:'分數上限',            desc:'日蝕／月蝕前後±3日；正逢蝕日封頂35 · 蝕區內大型開張封頂55' },
+  rahu_kalam:      { mode:'分數上限',            desc:'印度每日凶時約90分鐘，依現場實際日出計算；落此段封頂50' },
+  panchanga:       { mode:'分數上限＋輕微調整',  desc:'依印度曆法之提替／瓦拉／納克沙特拉／瑜伽／迦羅納；Rikta提替＋Bhadra迦羅納封頂55 · 新月45 · 凶瑜伽60 · 吉瑜伽+5' },
+  tara_bala:       { mode:'僅限個人 · 分數上限', desc:'由本命納克沙特拉數至當日納克沙特拉（九重Tārābala）；凶重3/5/7封頂50 · 吉重+4 · 未選命盤則不啟用' },
 };
 const MODULE_ORDER = ['ba_zi','ze_ri','dong_gong','tai_sui','qi_men','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','panchanga','yong_shen','tara_bala','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
 const STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
@@ -2410,15 +2435,15 @@ function renderScienceSections(sections){
   const cardHtml = (sec) => {
     const tone = scienceTone(sec);
     const status = tone === 'mixed' ? _dptx('dp.tone.mixed','มีทั้งหนุน/หัก') : tone === 'warn' ? _dptx('dp.tone.warn','ต้องระวัง') : tone === 'neutral' ? _dptx('dp.tone.neutral','กลาง') : _dptx('dp.tone.good','เป็นแรงหนุน');
-    /* ภาษาใหม่ (vi/ja/ko/ru/es) ไม่มี field เฉพาะ — ถอยไป EN ไม่ใช่ TH เหมือน en (6 ก.ค. 2569) */
-    const secName = escHtml(((lang === 'en' || (lang !== 'th' && lang !== 'zh')) && sec.en) ? sec.en : sec.th);
+    /* ภาษาใหม่ (vi/ja/ko/ru/es) ไม่มี field เฉพาะ — ถอยไป EN ไม่ใช่ TH เหมือน en · zh ใช้ชื่อจีนตรง (6 ก.ค. 2569) */
+    const secName = escHtml(lang === 'zh' ? (sec.zh || sec.th) : ((lang !== 'th' && sec.en) ? sec.en : sec.th));
     const items = sec.items.slice(0, 5).map(it => {
       const delta = it.label || (it.kind === 'offtopic' ? _dptx('dp.tone.offtopic','ภาพรวมวัน') : it.delta ? (it.delta > 0 ? `+${it.delta}` : `${it.delta}`) : (it.kind === 'warn' ? _dptx('dp.tone.warn_short','ระวัง') : _dptx('dp.tone.read','อ่าน')));
       return `<div class="science-item ${it.kind}"><span class="delta">${escHtml(delta)}</span><span class="txt">${escHtml(it.text)}</span></div>`;
     }).join('');
     return `<section class="science-card ${tone}">
       <div class="science-head">
-        <div class="science-name">${secName} <span class="zh">${escHtml(sec.zh)}</span></div>
+        <div class="science-name">${secName}${secName !== escHtml(sec.zh) ? ` <span class="zh">${escHtml(sec.zh)}</span>` : ''}</div>
         <div class="science-meta">
           ${sec.score == null ? '' : `<span class="science-score">${sec.score}</span>`}
           <span class="science-status ${tone}">${status}</span>
@@ -2444,7 +2469,8 @@ function renderScienceSections(sections){
 
 function summarizeScience(sections){
   const _ssLang = getCurrentLang();
-  const _ssPick = (s) => (_ssLang === 'en' && s.en) ? s.en : s.th;
+  /* 6 ก.ค. 2569 · i18n: zh ใช้ชื่อจีน · ภาษาใหม่ตก en · th เดิม */
+  const _ssPick = (s) => _ssLang === 'zh' ? (s.zh || s.th) : ((_ssLang !== 'th' && s.en) ? s.en : s.th);
   const good = sections.filter(s => s.good).slice(0,3).map(_ssPick);
   const warn = sections.filter(s => s.warn).slice(0,2).map(_ssPick);
   const parts = [];
@@ -2595,29 +2621,35 @@ function buildLayerReport(funnelStats, activeModules, hardModules, finalCount){
   const per = funnelStats?.perModule || {};
   const active = new Set(activeModules || []);
   const hard = new Set(hardModules || []);
+  /* 6 ก.ค. 2569 · i18n โซนผลค้นหา: เลือกชื่อ/โหมด/คำอธิบายตามภาษา (แสดงผลล้วน · ตัวเลข passed/failed เดิมทุกบรรทัด) */
+  const L = getCurrentLang();
   return MODULE_ORDER.filter(k => active.has(k)).map(k => {
     const meta = MODULE_LABELS[k] || { th:k, zh:k, mode:'', desc:'' };
+    const zhX = MODULE_LABELS_ZH[k] || {};
+    const name = L === 'zh' ? meta.zh : L === 'th' ? meta.th : (meta.en || meta.th);
+    const baseMode = L === 'zh' ? (zhX.mode || meta.modeEn || meta.mode) : L === 'th' ? meta.mode : (meta.modeEn || meta.mode);
+    const baseDesc = L === 'zh' ? (zhX.desc || meta.descEn || meta.desc) : L === 'th' ? meta.desc : (meta.descEn || meta.desc);
     const row = per[k] || {};
     let total = poolTotal;
     let passed = Number(row.passed ?? poolTotal);
     let failed = Number(row.failed ?? Math.max(0, total - passed));
-    let desc = meta.desc;
+    let desc = baseDesc;
     if (k === 'ba_zi' && hard.has(k)) {
       total = baseTotal;
       passed = poolTotal;
       failed = personCut;
-      desc = 'ตัดวัน/ยามที่ชงกับดวงของคนที่เลือกก่อน แล้วค่อยจัดคะแนนต่อ';
+      desc = _dptx('dp.layer.bazi_hard_desc','ตัดวัน/ยามที่ชงกับดวงของคนที่เลือกก่อน แล้วค่อยจัดคะแนนต่อ');
     } else if (k === 'ba_zi' || k === 'yong_shen' || k === 'hex64') {
       total = Math.max(finalCount, 1);
       passed = finalCount;
       failed = 0;
-      desc = meta.desc + ' · ใช้กับผลลัพธ์ที่ผ่านเข้ารอบ ไม่ใช่ตัวตัด 360 ยาม';
+      desc = baseDesc + ' · ' + _dptx('dp.layer.applied_note','ใช้กับผลลัพธ์ที่ผ่านเข้ารอบ ไม่ใช่ตัวตัด 360 ยาม');
     }
     return {
       key:k,
-      th:meta.th,
+      th:name,
       zh:meta.zh,
-      mode: hard.has(k) ? 'ตัดจริง' : meta.mode,
+      mode: hard.has(k) ? _dptx('dp.layer.hard_cut','ตัดจริง') : baseMode,
       desc,
       total,
       passed,
@@ -2633,7 +2665,12 @@ function _dptx(k, fb){
   try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('datepick.html',k,localStorage.getItem('hk_locale')||'th');if(ov!=null)return ov;}catch(_){}
   const t = window.HK_I18N && window.HK_I18N[k];
   if (!t) return fb;
-  const lang = document.documentElement.getAttribute('data-lang')||'th';
+  /* 6 ก.ค. 2569 (i18n โซนผลค้นหา): data-lang เคยไม่ถูกตั้งตอนโหลด (ตัวสลับภาษาย้ายไป avatar menu)
+     ทำให้ en/zh ตกกลับไทยทั้งโซน JS — อ่านจาก hk_locale เป็น fallback · th เดิมไม่เปลี่ยน
+     ภาษาใหม่ (vi/ja/ko/ru/es) ไม่มีค่าใน dict → ตก en ก่อน th (ล็อกแบบเดิม: ภาษาใหม่ตก en) */
+  let lang = document.documentElement.getAttribute('data-lang');
+  if (!lang) { try { lang = localStorage.getItem('hk_locale') || 'th'; } catch(_) { lang = 'th'; } }
+  if (lang !== 'th' && lang !== 'zh' && !t[lang]) return t.en || t.th || fb;
   return t[lang] || t.th || fb;
 }
 async function performSearch(){
@@ -3090,8 +3127,9 @@ function renderRealResults(items, allCut){
       return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
     }).slice(0,6).map(([k,v]) => {
       const m = MODULE_LABELS[k] || { th:k, zh:k };
-      const mLabel = (L0 === 'en' && m.en) ? m.en : m.th;
-      return `<span class="score-pill">${escHtml(mLabel)} <span class="zh">${escHtml(m.zh)}</span> <b>${Math.round(v)}</b></span>`;
+      /* 6 ก.ค. 2569 · i18n: zh ใช้ชื่อจีน · ภาษาใหม่ตก en · th เดิม */
+      const mLabel = L0 === 'zh' ? (m.zh || m.th) : ((L0 !== 'th' && m.en) ? m.en : m.th);
+      return `<span class="score-pill">${escHtml(mLabel)}${mLabel !== m.zh ? ` <span class="zh">${escHtml(m.zh)}</span>` : ''} <b>${Math.round(v)}</b></span>`;
     }).join('');
     /* r378 · ใช้ reason object (source ตรง + ครบ warning/neutral ชั้นท้องฟ้า) · ผลค้นเก่า/เส้นทาง legacy fallback เป็น string เดิม */
     const scienceSections = enrichScienceSectionsForSlot(buildScienceSections(t.science_reasons || t.matches || [], t.moduleScores || {}), t);
@@ -3104,7 +3142,7 @@ function renderRealResults(items, allCut){
       <div class="result-head">
         <div class="rank">${rankBadge}</div>
         <div class="rdate">
-          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip} ${dgChip} ${ag.chip}</div>
+          <div class="dt">🗓 ${dateThai} · ${t.time}${T0(' น.','','')} <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip} ${dgChip} ${ag.chip}</div>
           <div class="ctx">
             <span>${T0('ทิศที่เด่น','Best direction','吉方')}: ${directionText} · ${T0('วัง','Palace','宮')} ${t.palace_id}</span>
             <span>· ${T0('ผังฉีเหมิน','Qi Men chart','奇門局')} ${pole}${t.ju_number}局</span>
@@ -3681,29 +3719,30 @@ function mockSearch(){
 function renderLayerFunnel(layers, total, resultCount, candidatePool, windowLabel){
   const f = document.getElementById('funnel');
   f.style.display = 'block';
-  document.getElementById('funnelTotal').textContent = `${resultCount} ฤกษ์แนะนำ จาก ${total} ยาม`;
+  /* 6 ก.ค. 2569 · i18n โซนผลค้นหา: ป้าย/คำอธิบายใน funnel ผ่าน _dptx (th เดิมเป๊ะ · แสดงผลล้วน) */
+  document.getElementById('funnelTotal').textContent = `${resultCount} ${_dptx('dp.funnel.recommended','ฤกษ์แนะนำ')} ${_dptx('dp.search.outof','จาก')} ${total} ${_dptx('dp.unit.yam','ยาม')}`;
   const hardLayers = (layers || []).filter(x => x.hard);
   const scoreLayers = (layers || []).filter(x => !x.hard);
   const layerCard = (r) => `
     <div class="layer-card">
       <div class="top">
         <div>
-          <div class="th">${escHtml(r.th)} <span class="zh">${escHtml(r.zh)}</span></div>
+          <div class="th">${escHtml(r.th)}${r.th !== r.zh ? ` <span class="zh">${escHtml(r.zh)}</span>` : ''}</div>
           <div class="mode">${escHtml(r.mode)}</div>
         </div>
         <div class="count">${r.passed}<span style="font-size:10px;color:var(--fg-faint);">/${r.total}</span></div>
       </div>
       <div class="bar"><div class="fill" style="width:${r.pct}%"></div></div>
-      <p class="desc">${escHtml(r.desc)}${r.hard && r.failed ? ` · ไม่ผ่าน ${r.failed} ยาม` : (!r.hard ? ' · ไม่มีการตัดเดี่ยว' : '')}</p>
+      <p class="desc">${escHtml(r.desc)}${r.hard && r.failed ? ` · ${_dptx('dp.funnel.failed','ไม่ผ่าน')} ${r.failed} ${_dptx('dp.unit.yam','ยาม')}` : (!r.hard ? ` · ${_dptx('dp.funnel.no_solo','ไม่มีการตัดเดี่ยว')}` : '')}</p>
     </div>`;
   document.getElementById('funnelRows').innerHTML = `
-    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">ภาพรวม ${escHtml(windowLabel || 'ช่วงที่เลือก')}</div>
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">${_dptx('dp.funnel.overview','ภาพรวม')} ${escHtml(windowLabel || _dptx('dp.funnel.window_fallback','ช่วงที่เลือก'))}</div>
     <div style="font-size:13px;color:var(--fg-soft);line-height:1.6;margin-bottom:12px;">
-      ระบบเริ่มจากทุกยามในช่วงที่เลือก แล้วแยกชั้นตัดจริงออกจากชั้นปรับคะแนน/อ่านประกอบ · ภาษาไทยเป็นคำอธิบายหลัก จีนเป็นชื่อศาสตร์อ้างอิง
-      ${candidatePool && candidatePool !== total ? `<br>หลังตัดดวงคน/ชั้นห้ามเบื้องต้น เหลือ ${candidatePool} ยามสำหรับจัดอันดับ` : ''}
+      ${_dptx('dp.funnel.intro','ระบบเริ่มจากทุกยามในช่วงที่เลือก แล้วแยกชั้นตัดจริงออกจากชั้นปรับคะแนน/อ่านประกอบ · ภาษาไทยเป็นคำอธิบายหลัก จีนเป็นชื่อศาสตร์อ้างอิง')}
+      ${candidatePool && candidatePool !== total ? `<br>${_dptx('dp.funnel.pool_prefix','หลังตัดดวงคน/ชั้นห้ามเบื้องต้น เหลือ')} ${candidatePool} ${_dptx('dp.funnel.pool_suffix','ยามสำหรับจัดอันดับ')}` : ''}
     </div>
-    ${hardLayers.length ? `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--bad);text-transform:uppercase;margin:10px 0 8px;">ชั้นที่ตัดจริง</div><div class="layer-grid">${hardLayers.map(layerCard).join('')}</div>` : ''}
-    ${scoreLayers.length ? `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--info);text-transform:uppercase;margin:14px 0 8px;">ชั้นที่ใช้ให้คะแนน / อธิบาย</div><div class="layer-grid">${scoreLayers.map(layerCard).join('')}</div>` : ''}
+    ${hardLayers.length ? `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--bad);text-transform:uppercase;margin:10px 0 8px;">${_dptx('dp.funnel.hard_layers','ชั้นที่ตัดจริง')}</div><div class="layer-grid">${hardLayers.map(layerCard).join('')}</div>` : ''}
+    ${scoreLayers.length ? `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--info);text-transform:uppercase;margin:14px 0 8px;">${_dptx('dp.funnel.score_layers','ชั้นที่ใช้ให้คะแนน / อธิบาย')}</div><div class="layer-grid">${scoreLayers.map(layerCard).join('')}</div>` : ''}
   `;
 }
 
@@ -4138,14 +4177,32 @@ Object.assign(window.HK_I18N, {
   'dp.hint.range_over60b': { th:'วัน เกิน 60 · ระบบจะค้น 60 วันแรกเพื่อคุมความเร็ว', en:'days, over 60 · the system searches the first 60 days to stay fast', zh:'天，超過60天 · 系統將搜尋前60天以確保速度' },
   'dp.unit.people_singular': { th:'คน', en:'Someone', zh:'某人' },
   'dp.qimen.read3': { th:'อ่านฉีเหมินครบ 3 ชั้น', en:'Full 3-layer Qi Men reading', zh:'奇門三層完整解讀' },
-  'dp.hex.tap_to_read': { th:'กดดูตำราเพื่ออ่านรายละเอียดจากฐานข้อมูล', en:'Tap to view the full canon text from the database', zh:'點擊查看資料庫中的典籍全文' }
+  'dp.hex.tap_to_read': { th:'กดดูตำราเพื่ออ่านรายละเอียดจากฐานข้อมูล', en:'Tap to view the full canon text from the database', zh:'點擊查看資料庫中的典籍全文' },
+  /* 6 ก.ค. 2569 · i18n โซนผลค้นหา (funnel/ชั้นกรอง) — th = ข้อความเดิมเป๊ะ */
+  'dp.layer.bazi_hard_desc': { th:'ตัดวัน/ยามที่ชงกับดวงของคนที่เลือกก่อน แล้วค่อยจัดคะแนนต่อ', en:'First cuts days/hours that clash with the chosen people’s charts, then scores the rest', zh:'先剔除與所選之人命盤相沖的日／時，再進行計分' },
+  'dp.layer.applied_note': { th:'ใช้กับผลลัพธ์ที่ผ่านเข้ารอบ ไม่ใช่ตัวตัด 360 ยาม', en:'Applied to shortlisted results only, not a 360-slot cut', zh:'僅套用於入圍結果，非360時辰硬篩' },
+  'dp.layer.hard_cut': { th:'ตัดจริง', en:'Hard cut', zh:'硬篩' },
+  'dp.funnel.recommended': { th:'ฤกษ์แนะนำ', en:'recommended timings', zh:'個推薦吉時' },
+  'dp.funnel.failed': { th:'ไม่ผ่าน', en:'failed', zh:'未過' },
+  'dp.funnel.no_solo': { th:'ไม่มีการตัดเดี่ยว', en:'never cuts on its own', zh:'不單獨剔除' },
+  'dp.funnel.overview': { th:'ภาพรวม', en:'Overview', zh:'總覽' },
+  'dp.funnel.window_fallback': { th:'ช่วงที่เลือก', en:'selected window', zh:'所選期間' },
+  'dp.funnel.intro': { th:'ระบบเริ่มจากทุกยามในช่วงที่เลือก แล้วแยกชั้นตัดจริงออกจากชั้นปรับคะแนน/อ่านประกอบ · ภาษาไทยเป็นคำอธิบายหลัก จีนเป็นชื่อศาสตร์อ้างอิง', en:'The system starts from every hour-slot in the chosen window, then separates hard-cut layers from scoring/context layers · Chinese characters are shown as canonical science names', zh:'系統從所選期間的每個時辰開始，先分出「硬篩層」與「計分／輔讀層」· 漢字為各學科正名' },
+  'dp.funnel.pool_prefix': { th:'หลังตัดดวงคน/ชั้นห้ามเบื้องต้น เหลือ', en:'After personal-chart and forbidden-layer cuts,', zh:'扣除個人命盤／禁忌層後，剩餘' },
+  'dp.funnel.pool_suffix': { th:'ยามสำหรับจัดอันดับ', en:'slots remain for ranking', zh:'個時辰進入排名' },
+  'dp.funnel.hard_layers': { th:'ชั้นที่ตัดจริง', en:'Hard-cut layers', zh:'硬篩層' },
+  'dp.funnel.score_layers': { th:'ชั้นที่ใช้ให้คะแนน / อธิบาย', en:'Scoring / context layers', zh:'計分／輔讀層' }
 });
 function applyI18N(lang){
   if (!window.HK_I18N) return;
+  /* 🌐 ภาษาใหม่ (vi/ja/ko/ru/es): dict ในหน้ามีแค่ th/en/zh → key ที่ overlay ยังไม่ครอบ ตกอังกฤษ ไม่ค้างไทย (6 ก.ค. 2569)
+   * overlay ใช้ locale ดิบจาก hk_locale เสมอ — กัน caller ส่งภาษา base มาเขียนทับคำแปล overlay */
+  var L=(lang==='th'||lang==='en'||lang==='zh')?lang:'en';
+  var rawLoc=(function(){try{return localStorage.getItem('hk_locale');}catch(e){return null;}})()||lang;
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
-    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('datepick.html',key,lang);}catch(_){}
-    var v=(ov!=null)?ov:t[lang];
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('datepick.html',key,rawLoc);}catch(_){}
+    var v=(ov!=null)?ov:t[L];
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
       if (v !== undefined) {
         if (v.indexOf('<') >= 0) el.innerHTML = v;
@@ -4168,8 +4225,8 @@ window.__hkOverlayApply=function(l){
   try{if(typeof updateDateModeUI==='function')updateDateModeUI();}catch(_){}
 };
 (function(){
-  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
-  var btns = sw.querySelectorAll('button');
+  var sw = document.getElementById('hk-lang-switch');
+  var btns = sw ? sw.querySelectorAll('button') : [];
   function apply(lang){
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('data-lang', lang);
@@ -4178,7 +4235,14 @@ window.__hkOverlayApply=function(l){
     applyI18N(lang);
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  /* 6 ก.ค. 2569 (i18n โซนผลค้นหา): หน้าปัจจุบันไม่มี #hk-lang-switch (ตัวสลับย้ายไป avatar menu)
+     เดิม return ทิ้งทั้ง IIFE → data-i18n ไม่ถูกแปลตอนโหลดเลยสำหรับ en/zh
+     แก้: ไม่มีปุ่มก็ยัง apply ภาษาที่บันทึกไว้ · th ไม่แตะ (ไม่ apply = หน้าเดิมเป๊ะ) */
+  try{
+    var s = localStorage.getItem('hk_locale');
+    if (sw) { if (s) apply(s); else apply('th'); }
+    else if (s && s !== 'th') apply(s);
+  }catch(e){ if (sw) apply('th'); }
 })();
 (function(){
   var sw = document.getElementById('hk-theme-switch'); if (!sw) return;
@@ -4211,5 +4275,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 </body>
 </html>

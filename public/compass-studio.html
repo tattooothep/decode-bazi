@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -35,7 +36,7 @@
   .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
   .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
   .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
-  .hk-top-r{display:flex;gap:8px;}
+  .hk-top-r{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
   .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
   .hk-btn:hover{background:var(--gold-soft);}
   .hk-btn.act{background:var(--gold);color:var(--bg);}
@@ -102,6 +103,9 @@
   .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.1em;padding:5px 11px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
 
   @media(max-width:640px){
+    .hk-topbar{align-items:flex-start;flex-wrap:wrap;padding:10px 12px;}
+    .hk-top-r{width:100%;justify-content:flex-start;gap:6px;}
+    .hk-top-r .hk-btn{min-width:34px;padding:7px 9px;font-size:10px;}
     .hero h1{font-size:22px;} .hero .crest{font-size:40px;}
     main{padding:14px;}
     #map{height:320px;}
@@ -114,9 +118,15 @@
   <header class="hk-topbar">
     <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
     <div class="hk-top-r">
-      <button class="hk-btn" id="lang-th">TH</button>
-      <button class="hk-btn" id="lang-en">EN</button>
-      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="lang-th" data-lang="th">TH</button>
+      <button class="hk-btn" id="lang-en" data-lang="en">EN</button>
+      <button class="hk-btn" id="lang-zh" data-lang="zh">繁</button>
+      <button class="hk-btn" id="lang-cn" data-lang="cn">简</button>
+      <button class="hk-btn" id="lang-vi" data-lang="vi">VI</button>
+      <button class="hk-btn" id="lang-ja" data-lang="ja">JA</button>
+      <button class="hk-btn" id="lang-ru" data-lang="ru">RU</button>
+      <button class="hk-btn" id="lang-ko" data-lang="ko">KO</button>
+      <button class="hk-btn" id="lang-es" data-lang="es">ES</button>
       <button class="hk-btn" id="theme-tog">🌓</button>
     </div>
   </header>
@@ -224,22 +234,50 @@ const I18N = {
         tier_excellent:'🌟 極佳', tier_good:'✓ 好', tier_neutral:'○ 中等', tier_bad:'⚠ 注意',
         warnings_label:'⚠ 警示', best3_label:'最佳3方位' },
 };
-let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+function _csLangState(raw, write){
+  try{
+    var api = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+    if (api && write && typeof api.set === 'function') return api.set(raw);
+    if (api && raw && typeof api.normalize === 'function') return api.normalize(raw);
+    if (api && typeof api.current === 'function') return api.current();
+  }catch(_){}
+  var x = String(raw || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th').toLowerCase().replace('_','-');
+  if (x === 'cn' || x === 'zh-cn' || x === 'zh-hans') return { raw:'zh', app:'zh', storage:'zh', html:'zh-Hans', variant:'cn' };
+  if (x.indexOf('zh') === 0) return { raw:'zh', app:'zh', storage:'zh', html:'zh-Hant', variant:'hant' };
+  if (['th','en','vi','ja','ru','ko','es'].indexOf(x) === -1) x = 'en';
+  return { raw:x, app:x === 'th' || x === 'en' ? x : 'en', storage:x, html:x };
+}
+function _csStateInput(l){ return l === 'cn' ? 'zh-cn' : (l === 'zh' ? 'zh-hant' : l); }
+function _csPageLang(raw){
+  var st=null; try{ st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current(); }catch(_){}
+  var x=String(raw||'').toLowerCase().replace('_','-');
+  if ((st&&st.raw==='zh'&&st.variant==='cn') || x==='cn' || x==='zh-cn' || x==='zh-hans') return 'cn';
+  if (x.indexOf('zh')===0 || x==='hant') return 'zh';
+  if (['th','en','vi','ja','ru','ko','es'].indexOf(x)!==-1) return x;
+  if (st&&st.raw) return st.raw==='zh'&&st.variant==='cn'?'cn':st.raw;
+  return 'th';
+}
+let LANG = _csPageLang((_csLangState()).raw || 'th');
 
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _cstx(k){
   try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('compass-studio.html',k,LANG);if(ov!=null)return ov;}catch(_){}
-  var d=I18N[LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
+  var d=I18N[LANG]||I18N[LANG==='cn'?'zh':LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
 }
 function _csbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_cstx(k);});return o;}
-window.__hkOverlayApply=function(l){LANG=l;applyLang();};
+window.__hkOverlayApply=function(l){LANG=_csPageLang(l);applyLang();};
 
 let startPin = null, endPin = null, pinMode = 'start', startMarker = null, endMarker = null, polyline = null, map = null;
 
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
 function applyLang(){
   const t = _csbag();
-  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
+  const st = _csLangState(_csStateInput(LANG));
+  document.documentElement.lang = st.html;
+  document.documentElement.setAttribute('data-lang', st.app);
+  document.documentElement.setAttribute('data-hk-locale', st.raw);
+  if (st.variant) document.documentElement.setAttribute('data-zh-variant', st.variant);
+  else document.documentElement.removeAttribute('data-zh-variant');
   document.title = '羅盤 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
   document.getElementById('page-title').innerHTML = t.title;
   document.getElementById('lbl-map').textContent = t.map;
@@ -255,7 +293,10 @@ function applyLang(){
     const k = el.dataset.i18n; if (t[k]==null) return;
     if (el.dataset.i18nHtml) el.innerHTML = t[k]; else el.textContent = t[k];
   });
-  ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+  ['th','en','zh','cn','vi','ja','ru','ko','es'].forEach(l => {
+    const el = document.getElementById('lang-'+l);
+    if (el) el.classList.toggle('act', l===LANG);
+  });
   if (typeof updateResult === 'function') updateResult(); // สลับภาษาแล้ว re-render ผลที่คำนวณไว้ให้ตรงภาษาใหม่
 }
 
@@ -421,7 +462,15 @@ function renderAnalysis(d){
 }
 document.getElementById('btn-analyze').onclick = analyze;
 
-['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); });
+['th','en','zh','cn','vi','ja','ru','ko','es'].forEach(l => {
+  const el = document.getElementById('lang-'+l);
+  if (!el) return;
+  el.onclick = () => {
+    const st = _csLangState(_csStateInput(l), true);
+    LANG = _csPageLang(l === 'cn' ? 'cn' : (st && st.raw));
+    applyLang();
+  };
+});
 document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
 
 applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');

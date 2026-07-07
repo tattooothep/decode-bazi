@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
+<script>try{if(/\/fengshui-pro\.html$/i.test(location.pathname))location.replace('/fengshui'+location.search+location.hash);}catch(_){}</script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -94,6 +96,9 @@
   .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.1em;padding:6px 12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
 
   @media(max-width:640px){
+    .hk-topbar{align-items:flex-start;flex-wrap:wrap;padding:10px 12px;}
+    .hk-top-r{width:100%;flex-wrap:wrap;justify-content:flex-start;gap:6px;}
+    .hk-top-r .hk-btn{min-width:34px;padding:7px 9px;font-size:10px;}
     .hero h1{font-size:24px;} .hero .crest{font-size:42px;}
     main{padding:16px 14px 60px;}
     .palace .star{font-size:22px;}
@@ -203,15 +208,38 @@ const I18N = {
         hex64_info_tpl:'<b>64卦</b> · 房屋朝向 = 卦 <b>{hex}</b> (共64) · 完整資料見 /datepick',
         warnings_count_tpl:'⚠ 警示 ({count})' },
 };
-let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+function _fpLangState(raw, write){
+  try{
+    var api = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+    if (api && write && typeof api.set === 'function') return api.set(raw);
+    if (api && raw && typeof api.normalize === 'function') return api.normalize(raw);
+    if (api && typeof api.current === 'function') return api.current();
+  }catch(_){}
+  var x = String(raw || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th').toLowerCase().replace('_','-');
+  if (x === 'cn' || x === 'zh-cn' || x === 'zh-hans') return { raw:'zh', app:'zh', storage:'zh', html:'zh-Hans', variant:'cn' };
+  if (x.indexOf('zh') === 0) x = 'zh';
+  if (['th','en','zh','vi','ja','ru','ko','es'].indexOf(x) === -1) x = 'th';
+  return { raw:x, app:(x==='th'||x==='en'||x==='zh')?x:'en', storage:x, html:x === 'zh' ? 'zh-Hant' : x, variant:null };
+}
+function _fpStateInput(l){ return l === 'cn' ? 'zh-cn' : (l === 'zh' ? 'zh-hant' : l); }
+function _fpPageLang(raw){
+  var st=null; try{ st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current(); }catch(_){}
+  var x=String(raw||'').toLowerCase().replace('_','-');
+  if ((st&&st.raw==='zh'&&st.variant==='cn') || x==='cn' || x==='zh-cn' || x==='zh-hans') return 'cn';
+  if (x.indexOf('zh')===0 || x==='hant') return 'zh';
+  if (['th','en','vi','ja','ru','ko','es'].indexOf(x)!==-1) return x;
+  if (st&&st.raw) return st.raw==='zh'&&st.variant==='cn'?'cn':st.raw;
+  return 'th';
+}
+let LANG = _fpPageLang((new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th');
 
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _fptx(k){
   try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('fengshui-pro.html',k,LANG);if(ov!=null)return ov;}catch(_){}
-  var d=I18N[LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
+  var d=I18N[LANG]||I18N[LANG==='cn'?'zh':LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
 }
 function _fpbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_fptx(k);});return o;}
-window.__hkOverlayApply=function(l){LANG=l;applyLang();};
+window.__hkOverlayApply=function(l){LANG=_fpPageLang(l);applyLang();};
 
 let curMode = 'flying_stars';
 let curHouseId = null;
@@ -220,7 +248,12 @@ let curSnapshot = null; // เก็บ snapshot ล่าสุดไว้ re-
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
 function applyLang(){
   const t = _fpbag();
-  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
+  const st = _fpLangState(_fpStateInput(LANG));
+  document.documentElement.lang = st.html;
+  document.documentElement.setAttribute('data-lang', st.app);
+  document.documentElement.setAttribute('data-hk-locale', st.raw);
+  if (st.variant) document.documentElement.setAttribute('data-zh-variant', st.variant);
+  else document.documentElement.removeAttribute('data-zh-variant');
   document.title = '九宮 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
   document.getElementById('page-title').innerHTML = t.title;
   document.getElementById('lbl-house').textContent = t.house;
@@ -265,20 +298,58 @@ const PALACE_LAYOUT = [
   ['SE','S','SW'], ['E','C','W'], ['NE','N','NW']
 ];
 const DIR_NAME = {N:'北 N',NE:'東北',E:'東 E',SE:'東南',S:'南 S',SW:'西南',W:'西 W',NW:'西北',C:'中央'};
+const FP_TEXT_MAP = {
+  'ชื่อเสียง · ความรัก': { en:'Fame · relationships', zh:'名聲 · 感情', cn:'名声 · 感情', vi:'Danh tiếng · tình cảm', ja:'名声・恋愛', ru:'Слава · отношения', ko:'명예 · 관계', es:'Fama · relaciones' },
+  'หายนะ · ภัยพิบัติ': { en:'Disaster · trouble', zh:'災厄 · 險象', cn:'灾厄 · 险象', vi:'Tai họa · rủi ro', ja:'災厄・困難', ru:'Риски · бедствия', ko:'재난 · 위험', es:'Riesgo · desastre' },
+  'การเงิน(เก่า) · ขโมย(ใหม่)': { en:'Old wealth · theft risk', zh:'舊財 · 盜失', cn:'旧财 · 盗失', vi:'Tài cũ · rủi ro mất mát', ja:'旧財・盗難注意', ru:'Старые деньги · риск потерь', ko:'구재물 · 도난 주의', es:'Riqueza antigua · riesgo de pérdida' },
+  'การเงิน(ปัจจุบัน) · มั่งคั่ง': { en:'Current wealth · prosperity', zh:'當令財 · 旺財', cn:'当令财 · 旺财', vi:'Tài hiện tại · thịnh vượng', ja:'現財・繁栄', ru:'Текущие деньги · процветание', ko:'현재 재물 · 번영', es:'Riqueza actual · prosperidad' },
+  'อำนาจ · ปัญญา · ตำแหน่ง': { en:'Authority · wisdom · rank', zh:'權力 · 智慧 · 職位', cn:'权力 · 智慧 · 职位', vi:'Quyền lực · trí tuệ · vị trí', ja:'権威・知恵・地位', ru:'Власть · мудрость · статус', ko:'권위 · 지혜 · 지위', es:'Autoridad · sabiduría · cargo' },
+  'โต้แย้ง · ฟ้องร้อง': { en:'Disputes · lawsuits', zh:'爭執 · 訴訟', cn:'争执 · 诉讼', vi:'Tranh chấp · kiện tụng', ja:'口論・訴訟', ru:'Споры · суды', ko:'분쟁 · 소송', es:'Disputas · litigios' },
+  'การเรียน · เสน่ห์': { en:'Study · charm', zh:'學習 · 桃花', cn:'学习 · 桃花', vi:'Học tập · sức hút', ja:'学び・魅力', ru:'Учёба · обаяние', ko:'학습 · 매력', es:'Estudio · encanto' },
+  'ราชการ · อำนาจ': { en:'Office · authority', zh:'官職 · 權威', cn:'官职 · 权威', vi:'Công quyền · quyền lực', ja:'官職・権威', ru:'Служба · власть', ko:'관직 · 권위', es:'Cargo público · autoridad' },
+  'โรค · ห่วย · ระวัง': { en:'Illness · caution', zh:'病符 · 注意', cn:'病符 · 注意', vi:'Bệnh khí · thận trọng', ja:'病符・注意', ru:'Болезнь · осторожно', ko:'병부 · 주의', es:'Enfermedad · cuidado' },
+  'ห้ามรบกวน': { en:'do not disturb', zh:'勿擾動', cn:'勿扰动', vi:'không nên động', ja:'動かさない', ru:'не беспокоить', ko:'건드리지 말 것', es:'no perturbar' },
+  'ขุด': { en:'dig', zh:'動土', cn:'动土', vi:'đào', ja:'掘削', ru:'копать', ko:'파기', es:'excavar' },
+  'ตอก': { en:'hammer', zh:'敲打', cn:'敲打', vi:'đóng đinh', ja:'打ち込み', ru:'стучать', ko:'못질', es:'golpear' },
+  'วางโลหะ-นาฬิกาทองสลาย': { en:'use metal or a gold clock to reduce it', zh:'以金屬或金色鐘化解', cn:'以金属或金色钟化解', vi:'dùng kim loại hoặc đồng hồ vàng để hóa giải', ja:'金属や金色の時計で和らげる', ru:'смягчить металлом или золотыми часами', ko:'금속 또는 금색 시계로 완화', es:'usar metal o reloj dorado para reducir' }
+};
+const FP_WORD_MAP = {
+  Health:{ en:'Health', zh:'健康', cn:'健康', vi:'Sức khỏe', ja:'健康', ru:'Здоровье', ko:'건강', es:'Salud' },
+  center:{ en:'center', zh:'中宮', cn:'中宫', vi:'trung cung', ja:'中宮', ru:'центр', ko:'중궁', es:'centro' }
+};
+function fpText(value){
+  if (LANG === 'th') return String(value == null ? '' : value);
+  let out = String(value == null ? '' : value);
+  Object.keys(FP_TEXT_MAP).sort((a,b)=>b.length-a.length).forEach(k => {
+    out = out.split(k).join(FP_TEXT_MAP[k][LANG] || FP_TEXT_MAP[k].en || k);
+  });
+  Object.keys(FP_WORD_MAP).forEach(k => {
+    out = out.replace(new RegExp('\\b'+k+'\\b','g'), FP_WORD_MAP[k][LANG] || FP_WORD_MAP[k].en || k);
+  });
+  if (LANG !== 'th') out = out.replace(/[\u0E00-\u0E7F]+/g, '');
+  out = out.replace(/\s*([·/])\s*/g, ' $1 ').replace(/\s{2,}/g, ' ').trim();
+  return out || '—';
+}
 
 async function loadSnapshot(){
   const dt = document.getElementById('dt').value;
   const params = new URLSearchParams();
   if (curHouseId) params.set('house_id', curHouseId);
   if (dt) params.set('datetime', dt+':00');
-  try {
-    const r = await fetch('/api/fengshui-snapshot?'+params);
-    const d = await r.json();
-    if (d.error) { document.getElementById('palace-grid').innerHTML = '<div style="color:var(--bad);padding:20px;text-align:center;">⚠ '+d.error+'</div>'; return; }
-    curSnapshot = d;
-    renderMode(d);
-  } catch(e){ console.error(e); }
-}
+	  try {
+	    const r = await fetch('/api/fengshui-snapshot?'+params);
+	    if (!r.ok || !(r.headers.get('content-type') || '').includes('application/json')) {
+	      document.getElementById('palace-grid').innerHTML = '<div style="color:var(--bad);padding:20px;text-align:center;">⚠ '+_fpbag().need_house_only+'</div>';
+	      return;
+	    }
+	    const d = await r.json();
+	    if (d.error) { document.getElementById('palace-grid').innerHTML = '<div style="color:var(--bad);padding:20px;text-align:center;">⚠ '+d.error+'</div>'; return; }
+	    curSnapshot = d;
+	    renderMode(d);
+	  } catch(e){
+	    document.getElementById('palace-grid').innerHTML = '<div style="color:var(--bad);padding:20px;text-align:center;">⚠ '+_fpbag().need_house_only+'</div>';
+	  }
+	}
 
 function renderMode(d){
   const tr = _fpbag();
@@ -297,14 +368,14 @@ function renderMode(d){
     PALACE_LAYOUT.flat().forEach(dir => {
       const cell = fs.palaces[dir];
       if (!cell) {
-        grid.innerHTML += `<div class="palace neutral"><div class="corner">${DIR_NAME[dir]||dir}</div><div class="star">${fs.annual_center}</div><div class="info">center</div></div>`;
+        grid.innerHTML += `<div class="palace neutral"><div class="corner">${DIR_NAME[dir]||dir}</div><div class="star">${fs.annual_center}</div><div class="info">${fpText('center')}</div></div>`;
         return;
       }
       const cls = cell.quality === 'good' ? 'good' : cell.quality === 'bad' ? 'bad' : 'neutral';
       grid.innerHTML += `<div class="palace ${cls}">
         <div class="corner">${DIR_NAME[dir]||dir}</div>
         <div class="star">${cell.annual} ${cell.color||''}</div>
-        <div class="info">${cell.meaning || ''}</div>
+        <div class="info">${fpText(cell.meaning)}</div>
       </div>`;
     });
   } else if (m === 'twenty_four') {
@@ -330,11 +401,11 @@ function renderMode(d){
       info.innerHTML = tr.need_house_angle;
       grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">'+tr.select_house_above+'</div>';
     } else {
-      info.innerHTML = tr.aixing_info_tpl.replace('{mtn}', ax.mountain_star).replace('{water}', ax.water_star).replace('{period}', ax.period_star).replace('{note}', ax.note);
+      info.innerHTML = tr.aixing_info_tpl.replace('{mtn}', ax.mountain_star).replace('{water}', ax.water_star).replace('{period}', ax.period_star).replace('{note}', fpText(ax.note));
     }
   } else if (m === 'qi_men') {
     const qm = d.layers.qi_men;
-    info.innerHTML = `<b>奇門</b> · ${qm.note || tr.qm_fallback_note}`;
+    info.innerHTML = `<b>奇門</b> · ${fpText(qm.note || tr.qm_fallback_note)}`;
     grid.innerHTML = '';
     grid.style.aspectRatio = '1/1';
     grid.style.gridTemplateColumns = 'repeat(3,1fr)';
@@ -393,7 +464,7 @@ function renderMode(d){
 
   // warnings
   const w = d.warnings || [];
-  warns.innerHTML = w.length ? `<div class="warnings-box"><h3>${tr.warnings_count_tpl.replace('{count}', w.length)}</h3>${w.map(x=>`<div class="warn-item ${x.severity}">${x.text}</div>`).join('')}</div>` : '';
+  warns.innerHTML = w.length ? `<div class="warnings-box"><h3>${tr.warnings_count_tpl.replace('{count}', w.length)}</h3>${w.map(x=>`<div class="warn-item ${x.severity}">${fpText(x.text)}</div>`).join('')}</div>` : '';
 }
 
 document.querySelectorAll('.mode-tab').forEach(t => t.onclick = () => {
@@ -405,7 +476,7 @@ document.querySelectorAll('.mode-tab').forEach(t => t.onclick = () => {
 document.getElementById('house-sel').onchange = (e) => { curHouseId = e.target.value || null; loadSnapshot(); };
 document.getElementById('btn-refresh').onclick = loadSnapshot;
 document.getElementById('btn-now').onclick = () => { document.getElementById('dt').value = nowLocal(); loadSnapshot(); };
-['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); loadSnapshot(); });
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { const st=_fpLangState(_fpStateInput(l), true); LANG=_fpPageLang(st.raw); applyLang(); loadSnapshot(); });
 document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
 
 applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');
@@ -427,5 +498,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 </body>
 </html>
