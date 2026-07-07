@@ -108,9 +108,38 @@ export async function buildBaziAnchors(
   if (calc.geJu?.structure) {
     anchors.push({ id: "bazi.structure", science: "bazi", label: "โครงดวง (格局)", value: s(calc.geJu.structure, 60) });
   }
-  const ys = calc.yongshen?.[0];
-  if (ys) {
-    anchors.push({ id: "bazi.yongshen", science: "bazi", label: "ธาตุที่ดวงต้องการ (用神)", value: `${ys.stem} (${ys.element})` });
+  /* 用神: ยึดคำตัดสิน wrapper-7 (สูตรสูงสุด — ตัวเดียวกับซินแสหลัก/YONG_LOCK) ไม่ใช้ลิสต์ดิบ wrapper-6
+   * เหตุ: ดวงโครงพิเศษ (從/假從) wrapper-6 เสนอธาตุกลับด้านได้ (เคสจริง 7 ก.ค.: 假從財格 ได้ไฟทั้งที่ไฟคือตัวห้าม) */
+  const EL_TH: Record<string, string> = { wood: "ไม้", fire: "ไฟ", earth: "ดิน", metal: "ทอง", water: "น้ำ" };
+  let w7ok = false;
+  try {
+    const w7 = (await import("../../../../../data/library/wrappers/7-yongshen-v2.js")) as unknown as {
+      synthesizeYongshen: (n: unknown) => {
+        structure_label?: string; primary_yongshen?: string[]; xishen?: string[]; jishen?: string[]; tiaohou_required?: string | null;
+      };
+    };
+    const v = w7.synthesizeYongshen(calc.pillars);
+    const els = (a?: string[]) => (a || []).map((e) => EL_TH[e] || e).join(" ");
+    if (v && (v.primary_yongshen?.length || v.jishen?.length)) {
+      anchors.push({
+        id: "bazi.yongshen",
+        science: "bazi",
+        label: "ธาตุที่ดวงต้องการ (用神 · คำตัดสินเครื่องสูงสุด)",
+        value: s(
+          `หลัก: ${els(v.primary_yongshen)}${v.xishen?.length ? ` · เสริมได้: ${els(v.xishen)}` : ""}${v.jishen?.length ? ` · ห้ามเสริม: ${els(v.jishen)}` : ""}${v.tiaohou_required ? ` · ปรับอากาศ: ${EL_TH[v.tiaohou_required] || v.tiaohou_required} (เล็กน้อย ไม่ใช่สายหลัก)` : ""}`,
+          220
+        ),
+      });
+      w7ok = true;
+    }
+  } catch (e) {
+    warnings.push(`bazi.yongshen w7: ${s(e instanceof Error ? e.message : e, 80)}`);
+  }
+  if (!w7ok) {
+    const ys = calc.yongshen?.[0];
+    if (ys) {
+      anchors.push({ id: "bazi.yongshen", science: "bazi", label: "ธาตุที่ดวงต้องการ (用神)", value: `${ys.stem} (${ys.element})` });
+    }
   }
   if (calc.climate) {
     anchors.push({ id: "bazi.climate", science: "bazi", label: "ภูมิอากาศดวง (調候)", value: s(calc.climate, 80) });
