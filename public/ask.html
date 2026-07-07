@@ -140,6 +140,15 @@
     .loading.is-active{display:block}
     .loading h2{margin:0;font-family:var(--serif);font-size:30px;line-height:1.18;font-weight:620;color:#fff}
     .loading p{margin:10px 0 18px;color:var(--muted);font-size:13.5px;line-height:1.68}
+    .ld-progress{height:8px;border-radius:99px;background:rgba(212,165,116,.14);overflow:hidden;margin:14px 0 8px;position:relative}
+    .ld-bar{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#8a6a3f,var(--gold,#d4a574),#f0d9b8);transition:width .35s ease;position:relative}
+    .ld-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.35) 48%,transparent 70%);animation:ldShimmer 1.4s linear infinite}
+    @keyframes ldShimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+    .ld-meta{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;min-height:20px}
+    .ld-pct{font-family:var(--mono,monospace);font-size:15px;color:var(--gold,#d4a574);min-width:44px}
+    .ld-sci{flex:1;font-size:12.5px;color:var(--soft,#b9ac99);animation:ldFade .5s ease}
+    .ld-elapsed{font-family:var(--mono,monospace);font-size:11px;opacity:.55}
+    @keyframes ldFade{from{opacity:.15;transform:translateY(3px)}to{opacity:1;transform:none}}
     .loading-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
     .loading-list li{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;color:var(--soft);font-size:13.5px}
     .dot{width:18px;height:18px;border:1px solid rgba(225,189,104,.4);border-radius:999px;position:relative;background:rgba(255,255,255,.04)}
@@ -634,6 +643,12 @@
           <div class="loading" id="loadingPanel" aria-live="polite">
             <h2>กำลังพิจารณาดวงชะตาอย่างลึกซึ้ง</h2>
             <p>Hourkey กำลังแยกสัญญาณที่ตรงกับความกังวลของคุณ</p>
+            <div class="ld-progress"><div class="ld-bar" id="ldBar"></div></div>
+            <div class="ld-meta">
+              <b id="ldPct" class="ld-pct">0%</b>
+              <span id="ldSci" class="ld-sci">เตรียมผังทั้ง 6 ศาสตร์...</span>
+              <small id="ldElapsed" class="ld-elapsed">0s</small>
+            </div>
             <ol class="loading-list" id="loadingList">
               <li><span class="dot"></span><span>อ่านข้อมูลวันเกิด เวลาเกิด และโปรไฟล์</span><small>queued</small></li>
               <li><span class="dot"></span><span>จัดคำถามเข้ากับชั้นพื้นดวงและจังหวะเวลา</span><small>queued</small></li>
@@ -1332,7 +1347,9 @@
           var d = await r.json().catch(function(){ return {}; });
           if(r.status === 202 && d && (d.status === 'queued' || d.status === 'busy')){
             var waitS = Math.min(Math.max(Number(d.retryAfterSec) || 30, 10), 45);
-            if(stepHint) stepHint.textContent = tx('misc.liveQueue', 'คิวคำนวณสดเต็ม กำลังต่อคิวรอบถัดไป') + ' (~' + waitS + 's)';
+            var qMsg = tx('misc.liveQueue', 'คิวคำนวณสดเต็ม กำลังต่อคิวรอบถัดไป') + ' (~' + waitS + 's)';
+            if(window.__ldStatus) window.__ldStatus('⏳ ' + qMsg);
+            if(stepHint) stepHint.textContent = qMsg;
             await new Promise(function(res){ window.setTimeout(res, waitS * 1000); });
             continue;
           }
@@ -1564,6 +1581,63 @@
         renderTimeline(report.timeline);
       }
 
+      /* ── ลูกเล่นตอนรอ: % วิ่งจริงตามเวลา + ข้อความรายศาสตร์สลับ + เวลานับ (grok ใช้ ~30-60 วิ ต้องมีอะไรขยับตลอด) ── */
+      var _ldTimer = null, _ldT0 = 0, _ldSciTimer = null;
+      var LD_LINES_TH = [
+        'กางผังปาจื้อ 八字 · ชั่งกำลังธาตุทั้งห้า...',
+        'วางตำแหน่งดาวจริงบนฟ้า 七政四餘...',
+        'ไล่เรือนชีวิตจื่อเหวย 紫微斗數 ทีละเรือน...',
+        'สแกนทรานซิตดาวช้า ♃ หาช่วงเวลาที่กดและเปิด...',
+        'เทียบรอบมหาทศา ॐ กับปีที่คุณถาม...',
+        'หมุนหน้าปัด 90° ⨀ จับ midpoint ที่คมที่สุด...',
+        'ย้อนตรวจจุดเปลี่ยนวัยจรในอดีตของคุณ...',
+        'ให้ซินแส AI อ่านหมุดทั้งหมดแล้วเรียบเรียงรายงาน...',
+        'ตรวจหลักฐานทุกประโยคกับผังจริงอีกรอบ...',
+        'ขัดเกลาสำนวนรายงานส่วนตัวของคุณ...'
+      ];
+      var LD_LINES_EN = [
+        'Casting the BaZi chart 八字 · weighing the five elements...',
+        'Placing real planets in the sky 七政四餘...',
+        'Walking the Zi Wei palaces 紫微斗數 one by one...',
+        'Scanning slow transits ♃ for pressure and opening windows...',
+        'Matching the Dasha cycle ॐ against your target year...',
+        'Rotating the 90° dial ⨀ for the sharpest midpoint...',
+        'Backtesting your past luck-cycle turning points...',
+        'The AI master is reading every anchor and drafting your report...',
+        'Verifying every sentence against the real chart...',
+        'Polishing your personal report...'
+      ];
+      function startLoadingFx(){
+        var bar=document.getElementById('ldBar'), pct=document.getElementById('ldPct'), sci=document.getElementById('ldSci'), el=document.getElementById('ldElapsed');
+        if(!bar) return;
+        _ldT0 = Date.now();
+        var lines = currentAskLang()==='th' ? LD_LINES_TH : LD_LINES_EN;
+        var li = 0;
+        sci.textContent = lines[0];
+        clearInterval(_ldTimer); clearInterval(_ldSciTimer);
+        _ldTimer = window.setInterval(function(){
+          var t=(Date.now()-_ldT0)/1000;
+          /* โค้งเวลาจริง: 10วิ≈31% · 30วิ≈64% · 60วิ≈83% · ไม่มีวันถึง 92 จนกว่าของจริงจะมา */
+          var p=Math.min(92, 92*(1-Math.exp(-t/25)));
+          bar.style.width=p.toFixed(1)+'%';
+          pct.textContent=Math.round(p)+'%';
+          el.textContent=Math.round(t)+'s';
+        }, 180);
+        _ldSciTimer = window.setInterval(function(){
+          li=(li+1)%lines.length;
+          sci.textContent=lines[li];
+          sci.style.animation='none'; void sci.offsetWidth; sci.style.animation='';
+        }, 2600);
+        window.__ldStatus = function(msg){ if(sci && msg) sci.textContent = msg; };
+      }
+      function finishLoadingFx(){
+        clearInterval(_ldTimer); clearInterval(_ldSciTimer);
+        var bar=document.getElementById('ldBar'), pct=document.getElementById('ldPct');
+        if(bar){ bar.style.width='100%'; }
+        if(pct){ pct.textContent='100%'; }
+        window.__ldStatus = null;
+      }
+
       function startLoading(){
         saveDraft();
         page.classList.remove('is-form','has-result');
@@ -1576,9 +1650,11 @@
           dot.classList.remove('is-active');
         });
         loadingPanel.classList.add('is-active');
+        startLoadingFx();
         var reportPromise = requestReport().catch(function(err){
           return { ok:false, error:err.message };
         });
+        reportPromise.then(function(){ finishLoadingFx(); });
         var items = Array.prototype.slice.call(loadingList.querySelectorAll('li'));
         items.forEach(function(item){
           item.classList.remove('is-running','is-done');
