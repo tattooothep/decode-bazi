@@ -340,6 +340,22 @@
     .report-category{display:inline-flex;width:max-content;max-width:100%;border:1px solid rgba(212,165,116,.32);border-radius:999px;background:rgba(212,165,116,.12);color:#efd7ae;padding:7px 10px;font-size:13px;font-weight:800}
     .report-title{margin:0;font-family:var(--thai);font-size:clamp(25px,7vw,34px);line-height:1.28;font-weight:900;color:#fff}
     .report-quote{margin:0;border-left:3px solid var(--gold);padding:14px 0 14px 14px;color:#e9dfd1;font-size:15px;line-height:1.75;background:linear-gradient(90deg,rgba(212,165,116,.09),transparent)}
+    .viz-wrap{margin-top:16px}
+    .viz-head{font-size:13px;color:var(--gold);margin:0 0 10px;font-weight:600}
+    .viz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+    .viz-card{border:1px solid var(--line,rgba(212,165,116,.25));border-radius:12px;padding:12px;background:rgba(255,255,255,.02)}
+    .viz-card h4{margin:0 0 10px;font-size:12.5px;color:var(--soft,#b9ac99);font-weight:600}
+    .viz-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+    .viz-pillar small{display:block;font-size:10.5px;opacity:.6;margin-bottom:4px}
+    .viz-pillar .vp-stem,.viz-pillar .vp-branch{font-size:26px;line-height:1.25;font-weight:700}
+    .viz-pillar.vp-dm{outline:1.5px solid var(--gold);outline-offset:3px;border-radius:8px}
+    .viz-pillar .vp-el{font-size:9.5px;opacity:.65;display:block}
+    .viz-elements{display:grid;gap:7px}
+    .viz-el-row{display:grid;grid-template-columns:44px 1fr 34px;align-items:center;gap:8px;font-size:12px}
+    .viz-el-bar{height:8px;border-radius:4px;min-width:2px}
+    .viz-el-track{background:rgba(255,255,255,.06);border-radius:4px}
+    .viz-el-val{font-family:var(--mono,monospace);font-size:11px;text-align:right;opacity:.85}
+    #vizWheel svg,#vizVedic svg{width:100%;height:auto;display:block}
     .past-check{margin:12px 0 2px;border:1px solid rgba(212,165,116,.55);border-radius:12px;padding:12px 14px;background:rgba(212,165,116,.07)}
     .past-check-title{font-weight:700;color:var(--gold);font-size:14px}
     .past-check-when{font-size:12px;opacity:.72;margin:2px 0 6px;font-family:var(--mono,monospace)}
@@ -687,6 +703,15 @@
             <h3 class="section-title">Hourkey อ่าน 6 ศาสตร์ ไม่ได้ผูกอยู่กับซาจูศาสตร์เดียว</h3>
             <p class="section-copy">ระบบใช้ข้อมูลเกิดและคำถามเดียวกัน แล้วแยกอ่านผ่าน 6 เลนส์หลัก เพื่อดูว่าเรื่องที่ถามมีสัญญาณซ้ำตรงไหน และจุดไหนเป็นเพียงเสียงรบกวน</p>
             <div class="science-grid" id="scienceGrid" style="margin-top:12px"></div>
+            <div id="vizWrap" class="viz-wrap" hidden>
+              <h3 class="viz-head" id="vizHead">ผังจริงจากเครื่องคำนวณ · คำนวณสดจากวันเกิดของคุณ ไม่ใช่ภาพประกอบ</h3>
+              <div class="viz-grid">
+                <div class="viz-card"><h4 id="vizT1">ผังปาจื้อ 4 เสา 八字</h4><div id="vizPillars" class="viz-pillars"></div></div>
+                <div class="viz-card"><h4 id="vizT2">สัดส่วนธาตุในผัง 五行</h4><div id="vizElements" class="viz-elements"></div></div>
+                <div class="viz-card"><h4 id="vizT3">ดาวจริงโหราตะวันตก ♃</h4><div id="vizWheel"></div></div>
+                <div class="viz-card"><h4 id="vizT4">ผังโหราพระเวท ॐ (ราศีนิรายนะ)</h4><div id="vizVedic"></div></div>
+              </div>
+            </div>
           </section>
 
           <section class="report-section">
@@ -1554,6 +1579,96 @@
         });
       }
 
+      /* ── ผังจริงจากเครื่องคำนวณ (visuals จาก API — ตัวเลข/ตำแหน่งจริงทั้งหมด) ── */
+      var EL_COLOR = { wood:'#55963f', fire:'#cf3322', earth:'#c08328', metal:'#009aa8', water:'#5f63dc' };
+      var EL_NAME_TH = { wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง', water:'น้ำ' };
+      var EL_NAME_EN = { wood:'Wood', fire:'Fire', earth:'Earth', metal:'Metal', water:'Water' };
+      var ZODIAC_G = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+      function elName(el){ return (currentAskLang()==='th' ? EL_NAME_TH : EL_NAME_EN)[el] || el; }
+
+      function renderVisuals(v){
+        var wrap = document.getElementById('vizWrap');
+        if(!wrap) return;
+        if(!v || !v.pillars || !v.pillars.length){ wrap.hidden = true; return; }
+        var th = currentAskLang()==='th';
+        document.getElementById('vizHead').textContent = th ? 'ผังจริงจากเครื่องคำนวณ · คำนวณสดจากวันเกิดของคุณ ไม่ใช่ภาพประกอบ' : 'Real computed charts · calculated live from your birth data, not stock images';
+        document.getElementById('vizT1').textContent = th ? 'ผังปาจื้อ 4 เสา 八字' : 'BaZi Four Pillars 八字';
+        document.getElementById('vizT2').textContent = th ? 'สัดส่วนธาตุในผัง 五行' : 'Five-Element Share 五行';
+        document.getElementById('vizT3').textContent = th ? 'ดาวจริงโหราตะวันตก ♃' : 'Western Planets ♃';
+        document.getElementById('vizT4').textContent = th ? 'ผังโหราพระเวท ॐ (ราศีนิรายนะ)' : 'Vedic Chart ॐ (sidereal)';
+        /* 1 · เสาปาจื้อ */
+        var pl = document.getElementById('vizPillars'); clearNode(pl);
+        var lbEn = { 'ปี':'Year','เดือน':'Month','วัน':'Day','ยาม':'Hour' };
+        v.pillars.forEach(function(p){
+          var d = makeEl('div', 'viz-pillar' + (p.isDM ? ' vp-dm' : ''));
+          var lb = makeEl('small', null, (th ? p.label : (lbEn[p.label]||p.label)) + (p.isDM ? ' ★' : ''));
+          var st = makeEl('div', 'vp-stem', p.stem); st.style.color = EL_COLOR[p.stemEl]||'';
+          var se = makeEl('span', 'vp-el', elName(p.stemEl));
+          var br = makeEl('div', 'vp-branch', p.branch); br.style.color = EL_COLOR[p.branchEl]||'';
+          var be = makeEl('span', 'vp-el', elName(p.branchEl));
+          d.appendChild(lb); d.appendChild(st); d.appendChild(se); d.appendChild(br); d.appendChild(be);
+          pl.appendChild(d);
+        });
+        /* 2 · แท่งธาตุ (label ทุกแถว = secondary encoding) */
+        var ev = document.getElementById('vizElements'); clearNode(ev);
+        (v.elements||[]).forEach(function(e){
+          var row = makeEl('div','viz-el-row');
+          row.appendChild(makeEl('span', null, elName(e.el)));
+          var track = makeEl('div','viz-el-track');
+          var bar = makeEl('div','viz-el-bar'); bar.style.width = Math.max(2, e.pct) + '%'; bar.style.background = EL_COLOR[e.el]||'#888';
+          track.appendChild(bar); row.appendChild(track);
+          row.appendChild(makeEl('span','viz-el-val', e.pct + '%'));
+          ev.appendChild(row);
+        });
+        /* 3 · วงล้อตะวันตก (มุมจากองศาจริง) */
+        var wh = document.getElementById('vizWheel'); clearNode(wh);
+        if(v.western && v.western.planets && v.western.planets.length){
+          var NS='http://www.w3.org/2000/svg', S=250, C=S/2, R=104;
+          var svg=document.createElementNS(NS,'svg'); svg.setAttribute('viewBox','0 0 '+S+' '+S);
+          function pol(lon,r){ var a=(180+lon)*Math.PI/180; return [C + r*Math.cos(a), C - r*Math.sin(a)]; }
+          function circle(r,w,op){ var c=document.createElementNS(NS,'circle'); c.setAttribute('cx',C); c.setAttribute('cy',C); c.setAttribute('r',r); c.setAttribute('fill','none'); c.setAttribute('stroke','rgba(212,165,116,'+op+')'); c.setAttribute('stroke-width',w); svg.appendChild(c); }
+          circle(R+16,1,.5); circle(R+2,1,.25); circle(R-26,1,.18);
+          for(var i=0;i<12;i++){
+            var p1=pol(i*30,R+2), p2=pol(i*30,R+16);
+            var ln=document.createElementNS(NS,'line'); ln.setAttribute('x1',p1[0]);ln.setAttribute('y1',p1[1]);ln.setAttribute('x2',p2[0]);ln.setAttribute('y2',p2[1]); ln.setAttribute('stroke','rgba(212,165,116,.4)'); ln.setAttribute('stroke-width','1'); svg.appendChild(ln);
+            var gz=pol(i*30+15,R+9); var t=document.createElementNS(NS,'text'); t.setAttribute('x',gz[0]);t.setAttribute('y',gz[1]+3); t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','9'); t.setAttribute('fill','rgba(212,165,116,.75)'); t.textContent=ZODIAC_G[i]; svg.appendChild(t);
+          }
+          if(v.western.asc != null){
+            var pa=pol(v.western.asc,R+2), pb=pol(v.western.asc,R-56);
+            var la=document.createElementNS(NS,'line'); la.setAttribute('x1',pa[0]);la.setAttribute('y1',pa[1]);la.setAttribute('x2',pb[0]);la.setAttribute('y2',pb[1]); la.setAttribute('stroke','#d4a574'); la.setAttribute('stroke-width','1.5'); svg.appendChild(la);
+            var lt=document.createElementNS(NS,'text'); var pt=pol(v.western.asc,R-64); lt.setAttribute('x',pt[0]);lt.setAttribute('y',pt[1]+3); lt.setAttribute('text-anchor','middle'); lt.setAttribute('font-size','8'); lt.setAttribute('fill','#d4a574'); lt.textContent='ASC'; svg.appendChild(lt);
+          }
+          v.western.planets.forEach(function(p,i){
+            var r = R-14 - (i%3)*15; /* สลับรัศมีกันตัวทับ */
+            var pos=pol(p.lon,r);
+            var t=document.createElementNS(NS,'text'); t.setAttribute('x',pos[0]); t.setAttribute('y',pos[1]+4); t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','12'); t.setAttribute('fill','#e9dfd1'); t.textContent=p.g + (p.retro?'ᴿ':'');
+            var tt=document.createElementNS(NS,'title'); tt.textContent=p.name+' '+ZODIAC_G[Math.floor(p.lon/30)%12]+' '+(p.lon%30).toFixed(1)+'°'+(p.retro?' retrograde':''); t.appendChild(tt);
+            svg.appendChild(t);
+          });
+          wh.appendChild(svg);
+        } else { wh.textContent = th ? 'รอฉบับเต็ม' : 'In full report'; }
+        /* 4 · ผังพระเวท (South Indian · ช่องราศีตายตัว) */
+        var vd = document.getElementById('vizVedic'); clearNode(vd);
+        if(v.vedic && v.vedic.grahas && v.vedic.grahas.length){
+          var POS = {11:[0,0],0:[1,0],1:[2,0],2:[3,0],10:[0,1],3:[3,1],9:[0,2],4:[3,2],8:[0,3],7:[1,3],6:[2,3],5:[3,3]};
+          var NS2='http://www.w3.org/2000/svg', W=260, CELL=W/4;
+          var svg2=document.createElementNS(NS2,'svg'); svg2.setAttribute('viewBox','0 0 '+W+' '+W);
+          var byRashi={}; v.vedic.grahas.forEach(function(g){ (byRashi[g.rashi]=byRashi[g.rashi]||[]).push(g.a); });
+          if(v.vedic.lagna!=null){ (byRashi[v.vedic.lagna]=byRashi[v.vedic.lagna]||[]).unshift(th?'ลัคน์':'La'); }
+          Object.keys(POS).forEach(function(rs){
+            var xy=POS[rs], x=xy[0]*CELL, y=xy[1]*CELL;
+            var rc=document.createElementNS(NS2,'rect'); rc.setAttribute('x',x);rc.setAttribute('y',y);rc.setAttribute('width',CELL);rc.setAttribute('height',CELL); rc.setAttribute('fill', Number(rs)===v.vedic.lagna?'rgba(212,165,116,.12)':'none'); rc.setAttribute('stroke','rgba(212,165,116,.35)'); svg2.appendChild(rc);
+            var zt=document.createElementNS(NS2,'text'); zt.setAttribute('x',x+4);zt.setAttribute('y',y+11); zt.setAttribute('font-size','8'); zt.setAttribute('fill','rgba(212,165,116,.55)'); zt.textContent=ZODIAC_G[rs]; svg2.appendChild(zt);
+            var names=byRashi[rs]||[];
+            names.slice(0,4).forEach(function(nm,j){
+              var t2=document.createElementNS(NS2,'text'); t2.setAttribute('x',x+CELL/2); t2.setAttribute('y',y+26+j*11); t2.setAttribute('text-anchor','middle'); t2.setAttribute('font-size','9.5'); t2.setAttribute('fill', nm==='La'||nm==='ลัคน์' ? '#d4a574' : '#e9dfd1'); t2.textContent=nm; svg2.appendChild(t2);
+            });
+          });
+          vd.appendChild(svg2);
+        } else { vd.textContent = th ? 'รอฉบับเต็ม' : 'In full report'; }
+        wrap.hidden = false;
+      }
+
       function renderPastCheck(pc){
         var card = document.getElementById('pastCheckCard');
         if(!card) return;
@@ -1575,6 +1690,7 @@
         renderPastCheck(report.pastCheck);
         renderOpenPoints(report.openPoints);
         renderSciences(report.sciences);
+        renderVisuals(reportData && reportData.visuals);
         renderToc(report.toc);
         renderPillars((report.chart && report.chart.pillars) || clientChartPillars(reportData));
         renderEvents(report.events);

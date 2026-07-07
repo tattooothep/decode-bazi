@@ -47,12 +47,21 @@ export type AskAnchorInput = {
   targetYear: number;
 };
 
+/* ข้อมูลวาดผังจริงฝั่งหน้า (พิสูจน์ว่าคำนวณจริง ไม่มั่ว) — ตัวเลข/ตำแหน่งจากเครื่องล้วน */
+export type AskVisuals = {
+  pillars: { label: string; stem: string; branch: string; stemEl: string; branchEl: string; isDM: boolean }[];
+  elements: { el: string; pct: number }[];
+  western: { asc: number | null; planets: { g: string; name: string; lon: number; retro: boolean }[] } | null;
+  vedic: { lagna: number | null; grahas: { a: string; rashi: number }[] } | null;
+};
+
 export type AskAnchorBundle = {
   anchors: AskAnchor[];
   byScience: Partial<Record<ScienceId, AskAnchor[]>>;
   missingSciences: ScienceId[]; // ศาสตร์ที่สร้างหมุดจริงไม่ได้ในรอบนี้ (ห้าม AI แต่งแทน)
   warnings: string[];
   pastCheckAnchor: AskAnchor | null; // หมุด "ทายอดีต" (จุดเปลี่ยน 大運 ล่าสุดที่ผ่านมาแล้ว)
+  visuals: AskVisuals;
 };
 
 /* ── util ── */
@@ -416,10 +425,12 @@ export async function buildAskAnchors(
     uranian: () => buildUranianPacket(uranianChart(dtUTC, lat, lng, hasTime, gender), null),
   };
 
+  const packets: Partial<Record<string, unknown>> = {};
   const astroSciences: ScienceId[] = ["qizheng", "ziwei", "western", "vedic", "uranian"];
   for (const science of astroSciences) {
     try {
       const packet = packetBuilders[science]();
+      packets[science] = packet;
       if (!packet) {
         missingSciences.push(science);
         warnings.push(`${science}: packet builder คืนค่าว่าง`);
@@ -442,7 +453,85 @@ export async function buildAskAnchors(
   }
 
   const anchors = Object.values(byScience).flat().filter(Boolean) as AskAnchor[];
-  return { anchors, byScience, missingSciences, warnings, pastCheckAnchor: bazi.pastCheckAnchor };
+  const visuals = await buildVisuals(calc, packets, warnings);
+  return { anchors, byScience, missingSciences, warnings, pastCheckAnchor: bazi.pastCheckAnchor, visuals };
+}
+
+/* ── ข้อมูลวาดผังฝั่งหน้า — ดึงจาก calc + packet จริงเท่านั้น ── */
+
+const STEM_EL: Record<string, string> = { "甲": "wood", "乙": "wood", "丙": "fire", "丁": "fire", "戊": "earth", "己": "earth", "庚": "metal", "辛": "metal", "壬": "water", "癸": "water" };
+const BRANCH_EL: Record<string, string> = { "寅": "wood", "卯": "wood", "巳": "fire", "午": "fire", "辰": "earth", "戌": "earth", "丑": "earth", "未": "earth", "申": "metal", "酉": "metal", "亥": "water", "子": "water" };
+const PLANET_GLYPH: Record<string, string> = { Sun: "☉", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂", Jupiter: "♃", Saturn: "♄", Uranus: "♅", Neptune: "♆", Pluto: "♇" };
+const GRAHA_ABBR: Record<string, string> = { Sun: "Su", Moon: "Mo", Mars: "Ma", Mercury: "Me", Jupiter: "Ju", Venus: "Ve", Saturn: "Sa", Rahu: "Ra", Ketu: "Ke" };
+
+async function buildVisuals(
+  calc: BaziAnalysis,
+  packets: Partial<Record<string, unknown>>,
+  warnings: string[]
+): Promise<AskVisuals> {
+  /* ปาจื้อ 4 เสา */
+  const P = calc.pillars as Record<string, { stem: string; branch: string } | null>;
+  const labels: [string, string][] = [["year", "ปี"], ["month", "เดือน"], ["day", "วัน"], ["hour", "ยาม"]];
+  const pillars = labels
+    .filter(([k]) => P[k])
+    .map(([k, label]) => ({
+      label,
+      stem: P[k]!.stem,
+      branch: P[k]!.branch,
+      stemEl: STEM_EL[P[k]!.stem] || "earth",
+      branchEl: BRANCH_EL[P[k]!.branch] || "earth",
+      isDM: k === "day",
+    }));
+
+  /* สัดส่วนธาตุ (ก้อนดิบ wrapper-6 — ชุดเดียวกับที่ใช้ตัดสินกำลัง) */
+  let elements: { el: string; pct: number }[] = [];
+  try {
+    const w6 = (await import("../../../../../data/library/wrappers/6-strength-yongshen.js")) as unknown as {
+      computeStrength: (n: unknown) => { detail?: { counts?: Record<string, number> } };
+    };
+    const counts = w6.computeStrength(calc.pillars)?.detail?.counts || {};
+    const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+    elements = ["wood", "fire", "earth", "metal", "water"].map((el) => ({ el, pct: Math.round(((counts[el] || 0) / total) * 100) }));
+  } catch (e) {
+    warnings.push(`visuals.elements: ${s(e instanceof Error ? e.message : e, 60)}`);
+  }
+
+  /* วงล้อตะวันตก: ดาวจริง + ลัคนา (องศา ecliptic จริง) */
+  let western: AskVisuals["western"] = null;
+  try {
+    const wp = packets.western as Record<string, unknown> | undefined;
+    const planets = ((findAllByKey(wp, "planets")[0] as Record<string, unknown>[] | undefined) || [])
+      .filter((p) => PLANET_GLYPH[String(p?.name)])
+      .map((p) => ({
+        g: PLANET_GLYPH[String(p.name)],
+        name: String(p.name),
+        lon: (Number(p.sign) || 0) * 30 + (Number(p.signDeg) || 0),
+        retro: !!p.retro,
+      }));
+    const asc = findAllByKey(wp, "ascendant")[0] as Record<string, unknown> | undefined;
+    if (planets.length) {
+      western = { asc: asc && Number.isFinite(Number(asc.sign)) ? (Number(asc.sign) || 0) * 30 + (Number(asc.signDeg) || 0) : null, planets };
+    }
+  } catch (e) {
+    warnings.push(`visuals.western: ${s(e instanceof Error ? e.message : e, 60)}`);
+  }
+
+  /* ผังพระเวท: ราศีต่อดาว (sidereal) */
+  let vedic: AskVisuals["vedic"] = null;
+  try {
+    const vp = packets.vedic as Record<string, unknown> | undefined;
+    const grahas = ((findAllByKey(vp, "grahas")[0] as Record<string, unknown>[] | undefined) || [])
+      .filter((g) => GRAHA_ABBR[String(g?.name)] && Number.isFinite(Number(g?.rashi)))
+      .map((g) => ({ a: GRAHA_ABBR[String(g.name)], rashi: Number(g.rashi) }));
+    const lagna = findAllByKey(vp, "lagna")[0] as Record<string, unknown> | undefined;
+    if (grahas.length) {
+      vedic = { lagna: lagna && Number.isFinite(Number(lagna.rashi)) ? Number(lagna.rashi) : null, grahas };
+    }
+  } catch (e) {
+    warnings.push(`visuals.vedic: ${s(e instanceof Error ? e.message : e, 60)}`);
+  }
+
+  return { pillars, elements, western, vedic };
 }
 
 /** id หมุดทั้งหมด (คลังหลักฐานที่อนุญาต) */

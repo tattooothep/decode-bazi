@@ -1095,6 +1095,7 @@ export async function POST(req: Request) {
         climate: calc.climate || null,
       },
       anchorsUsed: bundle.anchors.map((a) => ({ id: a.id, value: a.value, when: a.when || null })),
+      visuals: bundle.visuals,
       sciencesWithoutData: bundle.missingSciences,
       report,
       checkout: { packageCode: "master_1m", returnPath: "/ask" },
