@@ -373,7 +373,7 @@
 
   <div class="hero-head">
     <div>
-      <div class="label" data-i18n="cal.h.hero">黃曆 · TONGSHU CALENDAR</div>
+      <div class="label" data-i18n="cal.h.label">黃曆 · TONGSHU CALENDAR</div>
       <h1 data-i18n="cal.h.title">ปฏิทินมงคล <span class="tc">擇日</span></h1>
       <p class="lede" data-i18n="cal.h.lede">ปฏิทินจีนโบราณ <b>+</b> ดวงส่วนตัวของคุณ — ทุกวันมีคะแนน <b>มงคล/ห้าม</b> · เห็นทั้ง <b>เดือน</b> ในมุมเดียว · เลือกเป้าหมายเพื่อเห็นวันที่ <b>"เปิดดวง"</b> สำหรับเรื่องที่คุณสนใจ</p>
     </div>
@@ -384,7 +384,7 @@
     </div>
   </div>
   <div style="text-align:center;margin:14px 0 6px;display:none;"><!-- ซ่อน 1 มิ.ย.: ลิงก์ methodology 13 ขั้น (เจ้านายสั่งเอาออก · display:none กัน rollback) -->
-    <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 อ่านวิธีคิดธาตุให้คุณ-ให้โทษ 13 ขั้น →" data-en="📿 Read yongshen methodology (13 steps) →" data-zh="📿 看用神方法論 · 十三步 →" data-vi="📿 Đọc phương pháp Dụng Thần (13 bước) →" data-ja="📿 用神メソッドを読む（13ステップ）→" data-ko="📿 용신 방법론 읽기 (13단계) →" data-ru="📿 Методика Юншэнь (13 шагов) →" data-es="📿 Metodología Yongshen (13 pasos) →" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:7px 16px;border-radius:99px;background:rgba(200,164,77,.08);">📿 อ่านวิธีคิดธาตุให้คุณ-ให้โทษ 13 ขั้น →</a>
+    <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 อ่านวิธีคิดธาตุให้คุณ-ให้โทษ 13 ขั้น →" data-en="📿 Read yongshen methodology (13 steps) →" data-zh="📿 看用神方法論 · 十三步 →" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:7px 16px;border-radius:99px;background:rgba(200,164,77,.08);">📿 อ่านวิธีคิดธาตุให้คุณ-ให้โทษ 13 ขั้น →</a>
   </div>
 
   <!-- control bar -->
@@ -400,7 +400,7 @@
     <div></div>
     <div class="toggle-group" id="overlay-toggle">
       <button class="on" data-mode="personal" data-i18n="cal.mode.personal">ดวงฉัน · 我</button>
-      <button data-mode="tongshu" data-i18n="cal.mode.general">ทั่วไป · 黃曆</button>
+      <button data-mode="tongshu" data-i18n="cal.mode.tongshu">ทั่วไป · 黃曆</button>
     </div>
   </div>
 
@@ -593,21 +593,21 @@
 
   /* 19 พ.ค. spec #2 · 15 หมวด tongshu (mirror src/lib/tongshu-intents.ts) */
   const INTENTS_CAL = [
-    { id:'start_work',    group:'work',   icon:'🎯', th:'เริ่มงานใหม่', en:'Start work', zh:'就職', vi:'Nhậm chức', ja:'就職', ko:'취업', ru:'Начать работу', es:'Empezar' },
-    { id:'sign_contract', group:'work',   icon:'📝', th:'เซ็นสัญญา', en:'Sign contract', zh:'立券', vi:'Ký hợp đồng', ja:'契約', ko:'계약', ru:'Договор', es:'Contrato' },
-    { id:'open_business', group:'work',   icon:'🏪', th:'เปิดกิจการ', en:'Open business', zh:'開市', vi:'Khai trương', ja:'開業', ko:'개업', ru:'Открыть дело', es:'Abrir negocio' },
-    { id:'negotiate',     group:'work',   icon:'🤝', th:'เจรจาธุรกิจ', en:'Negotiate', zh:'交易', vi:'Đàm phán', ja:'交渉', ko:'협상', ru:'Переговоры', es:'Negociar' },
-    { id:'invest',        group:'wealth', icon:'💵', th:'รับทรัพย์/ลงทุน', en:'Wealth/Invest', zh:'納財', vi:'Đầu tư', ja:'投資', ko:'투자', ru:'Инвестиции', es:'Invertir' },
-    { id:'loan',          group:'wealth', icon:'🏦', th:'กู้ยืม/ธุรกรรม', en:'Loan', zh:'立卷', vi:'Vay mượn', ja:'融資', ko:'대출', ru:'Заём', es:'Préstamo' },
-    { id:'marriage',      group:'love',   icon:'💒', th:'แต่งงาน', en:'Marriage', zh:'嫁娶', vi:'Kết hôn', ja:'結婚', ko:'결혼', ru:'Брак', es:'Casarse' },
-    { id:'engagement',    group:'love',   icon:'💍', th:'หมั้น/สู่ขอ', en:'Engagement', zh:'納采', vi:'Đính hôn', ja:'婚約', ko:'약혼', ru:'Помолвка', es:'Compromiso' },
-    { id:'gathering',     group:'love',   icon:'🎉', th:'พบผู้ใหญ่/งานเลี้ยง', en:'Gathering', zh:'會親友', vi:'Gặp gỡ', ja:'会合', ko:'모임', ru:'Встреча', es:'Reunión' },
-    { id:'move_house',    group:'home',   icon:'🏠', th:'ขึ้นบ้าน/ย้ายบ้าน', en:'Move house', zh:'入宅', vi:'Dọn nhà', ja:'引越し', ko:'이사', ru:'Переезд', es:'Mudanza' },
-    { id:'construct',     group:'home',   icon:'🧱', th:'ก่อสร้าง/ลงเสา', en:'Construction', zh:'動土', vi:'Khởi công', ja:'着工', ko:'착공', ru:'Стройка', es:'Construir' },
-    { id:'renovate',      group:'home',   icon:'🔧', th:'ซ่อมแซม/ตกแต่ง', en:'Renovate', zh:'修造', vi:'Sửa chữa', ja:'改修', ko:'수리', ru:'Ремонт', es:'Renovar' },
-    { id:'install_bed',   group:'home',   icon:'🛏️', th:'ตั้งเตียง', en:'Install bed', zh:'安床', vi:'Kê giường', ja:'安床', ko:'침대 설치', ru:'Установка кровати', es:'Instalar cama' },
-    { id:'travel',        group:'travel', icon:'🚗', th:'เดินทาง/ออกรถ', en:'Travel', zh:'出行', vi:'Đi xa', ja:'外出', ko:'여행', ru:'Поездка', es:'Viajar' },
-    { id:'pray_heal',     group:'travel', icon:'🙏', th:'ไหว้พระ/หาหมอ/เคลียร์', en:'Pray/Heal', zh:'祈福', vi:'Cầu phúc', ja:'祈願', ko:'기도', ru:'Молитва', es:'Orar' },
+    { id:'start_work',    group:'work',   icon:'🎯', th:'เริ่มงานใหม่', en:'Start work', zh:'就職' },
+    { id:'sign_contract', group:'work',   icon:'📝', th:'เซ็นสัญญา', en:'Sign contract', zh:'立券' },
+    { id:'open_business', group:'work',   icon:'🏪', th:'เปิดกิจการ', en:'Open business', zh:'開市' },
+    { id:'negotiate',     group:'work',   icon:'🤝', th:'เจรจาธุรกิจ', en:'Negotiate', zh:'交易' },
+    { id:'invest',        group:'wealth', icon:'💵', th:'รับทรัพย์/ลงทุน', en:'Wealth/Invest', zh:'納財' },
+    { id:'loan',          group:'wealth', icon:'🏦', th:'กู้ยืม/ธุรกรรม', en:'Loan', zh:'立卷' },
+    { id:'marriage',      group:'love',   icon:'💒', th:'แต่งงาน', en:'Marriage', zh:'嫁娶' },
+    { id:'engagement',    group:'love',   icon:'💍', th:'หมั้น/สู่ขอ', en:'Engagement', zh:'納采' },
+    { id:'gathering',     group:'love',   icon:'🎉', th:'พบผู้ใหญ่/งานเลี้ยง', en:'Gathering', zh:'會親友' },
+    { id:'move_house',    group:'home',   icon:'🏠', th:'ขึ้นบ้าน/ย้ายบ้าน', en:'Move house', zh:'入宅' },
+    { id:'construct',     group:'home',   icon:'🧱', th:'ก่อสร้าง/ลงเสา', en:'Construction', zh:'動土' },
+    { id:'renovate',      group:'home',   icon:'🔧', th:'ซ่อมแซม/ตกแต่ง', en:'Renovate', zh:'修造' },
+    { id:'install_bed',   group:'home',   icon:'🛏️', th:'ตั้งเตียง', en:'Install bed', zh:'安床' },
+    { id:'travel',        group:'travel', icon:'🚗', th:'เดินทาง/ออกรถ', en:'Travel', zh:'出行' },
+    { id:'pray_heal',     group:'travel', icon:'🙏', th:'ไหว้พระ/หาหมอ/เคลียร์', en:'Pray/Heal', zh:'祈福' },
   ];
   const INTENT_GROUP_LABELS = {
     work:   { th:'💼 งาน · อาชีพ', en:'💼 Work · Career', zh:'💼 事業' },
@@ -621,9 +621,7 @@
   function _calLang(raw){
     raw = String(raw || _curLang() || 'th').toLowerCase();
     if (raw.indexOf('zh') === 0) return 'zh';
-    if (raw === 'th') return 'th';
-    /* vi/ja/ko/ru/es and any other unsupported locale → English fallback (never Thai) */
-    return raw === 'en' ? 'en' : 'en';
+    return raw === 'en' ? 'en' : 'th';
   }
   function _calHasThai(v){ return /[\u0E00-\u0E7F]/.test(String(v || '')); }
   function _calNoThai(v, lang, fallback){
@@ -631,42 +629,23 @@
     return lang !== 'th' && _calHasThai(v) ? (fallback || '') : v;
   }
   function _calIntentName(item, lang){
-    const raw = String(lang || _curLang() || 'th').toLowerCase();
     lang = _calLang(lang);
     const id = item && item.id;
     const row = INTENTS_CAL.find(i => i.id === id);
-    const val = row ? (row[raw] || row[lang] || row.en || row.zh || row.th || id) : (item && item.label) || id || '';
+    const val = row ? (row[lang] || row.en || row.zh || row.th || id) : (item && item.label) || id || '';
     return _calNoThai(val, lang, id || '');
   }
-  /* 神煞 star severity words per raw locale (star data only ships th/en/zh) */
-  const _STAR_SEV = {
-    vi:{ virtue:'đức', major:'mạnh', medium:'vừa', minor:'nhẹ', good:'cát', bad:'hung' },
-    ja:{ virtue:'徳', major:'大', medium:'中', minor:'小', good:'吉', bad:'凶' },
-    ko:{ virtue:'덕', major:'강', medium:'중', minor:'약', good:'길', bad:'흉' },
-    ru:{ virtue:'добродетель', major:'сильный', medium:'средний', minor:'слабый', good:'благо', bad:'зло' },
-    es:{ virtue:'virtud', major:'fuerte', medium:'medio', minor:'leve', good:'favorable', bad:'adverso' },
-  };
   function _calStarName(s, lang){
-    const raw = String(lang || _curLang() || 'th').toLowerCase();
     lang = _calLang(lang);
     if (lang === 'th') return s.name_th || s.han_trad || s.han || s.key || '';
     if (lang === 'zh') return s.name_zh || s.han_trad || s.han || s.key || '';
-    if (raw === 'en') return s.name_en || s.en || s.han_trad || s.han || s.key || '';
-    /* vi/ja/ko/ru/es: prefer the Chinese 神煞 glyph (exempt · avoids echoing the EN name) */
-    return s.han_trad || s.han || s.name_zh || s.key || s.name_en || '';
+    return s.name_en || s.en || s.han_trad || s.han || s.key || '';
   }
   function _calStarDesc(s, lang){
-    const raw = String(lang || _curLang() || 'th').toLowerCase();
     lang = _calLang(lang);
     if (lang === 'th') return s.desc_th || '';
     if (lang === 'zh') return s.desc_zh || s.system || '';
-    if (raw === 'en') return s.desc_en || [s.system, s.severity].filter(Boolean).join(' · ');
-    /* vi/ja/ko/ru/es: keep system code but translate severity so the line differs from EN */
-    const localDesc = s['desc_' + raw];
-    if (localDesc) return localDesc;
-    const sevMap = _STAR_SEV[raw] || {};
-    const sev = s.severity ? (sevMap[s.severity] || s.severity) : '';
-    return [s.system, sev].filter(Boolean).join(' · ');
+    return s.desc_en || [s.system, s.severity].filter(Boolean).join(' · ');
   }
 
   function renderIntentDropdown(){
@@ -936,109 +915,11 @@
     const sb = document.getElementById('cal-stats');
     if (sb) {
       sb.innerHTML = `<div><b>${open}</b><span data-i18n="cal.stat.open">เปิดดวง</span></div><div><b>${mid}</b><span data-i18n="cal.stat.mid">กลาง</span></div><div><b>${avoid}</b><span data-i18n="cal.stat.avoid">เลี่ยง</span></div>`;
-      if (window.applyI18N) window.applyI18N(getRawLang());
+      if (window.applyI18N) window.applyI18N(getLang());
     }
   }
 
   function getLang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
-  /* raw user locale (vi/ja/ko/ru/es) · NEVER clamped to en · used for content selection so
-     language-specific text is not stomped back to English (bug fix 7 ก.ค.) */
-  function getRawLang(){
-    try { if (window.HK_LANG_STATE && typeof window.HK_LANG_STATE.raw === 'function') { var r = window.HK_LANG_STATE.raw(); if (r) return r; } } catch(e){}
-    try { var v = localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang'); if (v) return String(v).trim().toLowerCase(); } catch(e){}
-    return getLang();
-  }
-  /* BCP-47 tag for toLocaleDateString by raw locale */
-  function _bcp47(raw){
-    var m = { th:'th', en:'en', zh:'zh-Hant', vi:'vi', ja:'ja', ko:'ko', ru:'ru', es:'es' };
-    return m[raw] || 'en';
-  }
-  /* 64 hexagram names · vi=Hán-Việt · ru/es=translated · ja/ko use the Chinese 卦名 (exempt CJK) */
-  const HEX_TR = {
-    1:{vi:'Càn',ru:'Творчество',es:'Lo Creativo'},2:{vi:'Khôn',ru:'Исполнение',es:'Lo Receptivo'},
-    3:{vi:'Truân',ru:'Начальная трудность',es:'La Dificultad Inicial'},4:{vi:'Mông',ru:'Юношеская глупость',es:'La Necedad Juvenil'},
-    5:{vi:'Nhu',ru:'Ожидание',es:'La Espera'},6:{vi:'Tụng',ru:'Тяжба',es:'El Conflicto'},
-    7:{vi:'Sư',ru:'Войско',es:'El Ejército'},8:{vi:'Tỷ',ru:'Единение',es:'La Solidaridad'},
-    9:{vi:'Tiểu Súc',ru:'Малое накопление',es:'La Pequeña Domesticación'},10:{vi:'Lý',ru:'Наступление',es:'El Andar'},
-    11:{vi:'Thái',ru:'Расцвет',es:'La Paz'},12:{vi:'Bĩ',ru:'Упадок',es:'El Estancamiento'},
-    13:{vi:'Đồng Nhân',ru:'Родня',es:'La Comunidad'},14:{vi:'Đại Hữu',ru:'Владение великим',es:'La Gran Posesión'},
-    15:{vi:'Khiêm',ru:'Смирение',es:'La Modestia'},16:{vi:'Dự',ru:'Вольность',es:'El Entusiasmo'},
-    17:{vi:'Tùy',ru:'Последование',es:'El Seguimiento'},18:{vi:'Cổ',ru:'Исправление',es:'El Trabajo sobre lo Dañado'},
-    19:{vi:'Lâm',ru:'Приближение',es:'El Acercamiento'},20:{vi:'Quán',ru:'Созерцание',es:'La Contemplación'},
-    21:{vi:'Phệ Hạp',ru:'Стиснутые зубы',es:'La Mordedura Tajante'},22:{vi:'Bí',ru:'Убранство',es:'La Gracia'},
-    23:{vi:'Bác',ru:'Разорение',es:'La Desintegración'},24:{vi:'Phục',ru:'Возврат',es:'El Retorno'},
-    25:{vi:'Vô Vọng',ru:'Беспорочность',es:'La Inocencia'},26:{vi:'Đại Súc',ru:'Большое накопление',es:'La Gran Domesticación'},
-    27:{vi:'Di',ru:'Питание',es:'La Nutrición'},28:{vi:'Đại Quá',ru:'Переразвитие великого',es:'La Preponderancia de lo Grande'},
-    29:{vi:'Khảm',ru:'Бездна',es:'Lo Abismal'},30:{vi:'Ly',ru:'Сияние',es:'Lo Adherente'},
-    31:{vi:'Hàm',ru:'Взаимодействие',es:'El Influjo'},32:{vi:'Hằng',ru:'Постоянство',es:'La Duración'},
-    33:{vi:'Độn',ru:'Бегство',es:'La Retirada'},34:{vi:'Đại Tráng',ru:'Мощь великого',es:'El Gran Poder'},
-    35:{vi:'Tấn',ru:'Восход',es:'El Progreso'},36:{vi:'Minh Di',ru:'Поражение света',es:'El Oscurecimiento de la Luz'},
-    37:{vi:'Gia Nhân',ru:'Домашние',es:'La Familia'},38:{vi:'Khuê',ru:'Разлад',es:'La Oposición'},
-    39:{vi:'Kiển',ru:'Препятствие',es:'El Impedimento'},40:{vi:'Giải',ru:'Разрешение',es:'La Liberación'},
-    41:{vi:'Tổn',ru:'Убыль',es:'La Merma'},42:{vi:'Ích',ru:'Приумножение',es:'El Aumento'},
-    43:{vi:'Quải',ru:'Выход',es:'La Resolución'},44:{vi:'Cấu',ru:'Перечение',es:'El Ir al Encuentro'},
-    45:{vi:'Tụy',ru:'Воссоединение',es:'La Reunión'},46:{vi:'Thăng',ru:'Подъём',es:'La Ascensión'},
-    47:{vi:'Khốn',ru:'Истощение',es:'La Desazón'},48:{vi:'Tỉnh',ru:'Колодец',es:'El Pozo'},
-    49:{vi:'Cách',ru:'Смена',es:'La Revolución'},50:{vi:'Đỉnh',ru:'Жертвенник',es:'El Caldero'},
-    51:{vi:'Chấn',ru:'Возбуждение',es:'Lo Suscitativo'},52:{vi:'Cấn',ru:'Сосредоточенность',es:'El Aquietamiento'},
-    53:{vi:'Tiệm',ru:'Течение',es:'El Desarrollo'},54:{vi:'Quy Muội',ru:'Невеста',es:'La Muchacha que se Casa'},
-    55:{vi:'Phong',ru:'Изобилие',es:'La Abundancia'},56:{vi:'Lữ',ru:'Странствие',es:'El Andariego'},
-    57:{vi:'Tốn',ru:'Проникновение',es:'Lo Suave'},58:{vi:'Đoài',ru:'Радость',es:'Lo Sereno'},
-    59:{vi:'Hoán',ru:'Раздробление',es:'La Disolución'},60:{vi:'Tiết',ru:'Ограничение',es:'La Restricción'},
-    61:{vi:'Trung Phu',ru:'Внутренняя правда',es:'La Verdad Interior'},62:{vi:'Tiểu Quá',ru:'Переразвитие малого',es:'La Preponderancia de lo Pequeño'},
-    63:{vi:'Ký Tế',ru:'Уже конец',es:'Después de la Consumación'},64:{vi:'Vị Tế',ru:'Ещё не конец',es:'Antes de la Consumación'},
-  };
-  /* 黃曆 宜/忌 activity terms · native translations for common terms (source dict ships th/en/zh only) ·
-     any term not listed falls back to its Chinese glyph (exempt) — never English */
-  const TONGSHU_TR = (function(){
-    const raw = {
-      '祭祀':{vi:'Tế tự',ja:'祭祀',ko:'제사',ru:'жертвоприношение',es:'ofrenda ritual'},
-      '祈福':{vi:'Cầu phúc',ja:'祈福',ko:'기복',ru:'молебен',es:'plegaria'},
-      '求嗣':{vi:'Cầu tự',ja:'子宝祈願',ko:'구사',ru:'моление о потомстве',es:'rogar por descendencia'},
-      '出行':{vi:'Xuất hành',ja:'外出',ko:'외출',ru:'поездка',es:'viajar'},
-      '嫁娶':{vi:'Giá thú',ja:'婚礼',ko:'혼례',ru:'свадьба',es:'boda'},
-      '訂婚':{vi:'Đính hôn',ja:'婚約',ko:'약혼',ru:'помолвка',es:'compromiso'},
-      '納采':{vi:'Nạp thái',ja:'納采',ko:'납채',ru:'сговор',es:'petición de mano'},
-      '會親友':{vi:'Hội thân hữu',ja:'親友会',ko:'친지 모임',ru:'встреча с близкими',es:'reunión con allegados'},
-      '安葬':{vi:'An táng',ja:'埋葬',ko:'매장',ru:'погребение',es:'entierro'},
-      '破土':{vi:'Phá thổ',ja:'破土',ko:'파토',ru:'вскрытие земли',es:'romper tierra'},
-      '動土':{vi:'Động thổ',ja:'土工',ko:'동토',ru:'закладка',es:'iniciar obra'},
-      '作灶':{vi:'Đắp bếp',ja:'かまど設置',ko:'부뚜막',ru:'установка очага',es:'instalar fogón'},
-      '詞訟':{vi:'Kiện tụng',ja:'訴訟',ko:'소송',ru:'тяжба',es:'litigio'},
-      '作梁':{vi:'Làm rường',ja:'棟上げ',ko:'대들보',ru:'установка балки',es:'colocar viga'},
-      '伐木':{vi:'Đốn gỗ',ja:'伐採',ko:'벌목',ru:'рубка леса',es:'talar árboles'},
-      '掘井':{vi:'Đào giếng',ja:'井戸掘り',ko:'우물 파기',ru:'рытьё колодца',es:'excavar pozo'},
-      '交易':{vi:'Giao dịch',ja:'取引',ko:'거래',ru:'торговля',es:'comercio'},
-      '割蜜':{vi:'Cắt mật',ja:'採蜜',ko:'채밀',ru:'сбор мёда',es:'cosechar miel'},
-      '造畜稠':{vi:'Làm chuồng',ja:'畜舎造り',ko:'축사 짓기',ru:'постройка хлева',es:'construir establo'},
-      '納財':{vi:'Nạp tài',ja:'蓄財',ko:'납재',ru:'приём богатства',es:'recibir riqueza'},
-      '開光':{vi:'Khai quang',ja:'開眼',ko:'개광',ru:'освящение',es:'consagrar'},
-      '移徙':{vi:'Di dời',ja:'転居',ko:'이사',ru:'переселение',es:'reubicación'},
-      '入宅':{vi:'Nhập trạch',ja:'入居',ko:'입택',ru:'новоселье',es:'mudanza a casa'},
-      '安床':{vi:'An sàng',ja:'寝台設置',ko:'침대 설치',ru:'установка кровати',es:'instalar cama'},
-      '開市':{vi:'Khai thị',ja:'開業',ko:'개시',ru:'открытие торговли',es:'abrir negocio'},
-      '立券':{vi:'Lập khoán',ja:'証文',ko:'입권',ru:'оформление документа',es:'firmar escritura'},
-      '修造':{vi:'Tu tạo',ja:'改修',ko:'수조',ru:'ремонт',es:'renovar'},
-      '謝土':{vi:'Tạ thổ',ja:'謝土',ko:'사토',ru:'благодарение земли',es:'gracias a la tierra'},
-      '求醫':{vi:'Cầu y',ja:'医療',ko:'치료',ru:'лечение',es:'buscar tratamiento'},
-      '栽種':{vi:'Trồng trọt',ja:'植付',ko:'파종',ru:'посадка',es:'plantar'},
-      '捕捉':{vi:'Bắt giữ',ja:'捕獲',ko:'포획',ru:'ловля',es:'captura'},
-      '畋獵':{vi:'Săn bắn',ja:'狩猟',ko:'사냥',ru:'охота',es:'caza'},
-      '沐浴':{vi:'Mộc dục',ja:'沐浴',ko:'목욕',ru:'омовение',es:'baño ritual'},
-      '剃頭':{vi:'Cạo tóc',ja:'散髪',ko:'이발',ru:'стрижка',es:'corte de pelo'},
-      '納畜':{vi:'Nạp súc',ja:'家畜導入',ko:'납축',ru:'приобретение скота',es:'adquirir ganado'},
-      '啟攢':{vi:'Khải toản',ja:'改葬',ko:'계찬',ru:'перезахоронение',es:'exhumar'},
-      '安門':{vi:'An môn',ja:'門設置',ko:'문 설치',ru:'установка двери',es:'instalar puerta'},
-      '掛匾':{vi:'Treo biển',ja:'扁額掲揚',ko:'현판 걸기',ru:'вывеска',es:'colgar letrero'},
-      '出火':{vi:'Xuất hỏa',ja:'遷座',ko:'출화',ru:'вынос очага',es:'trasladar altar'},
-      '開倉':{vi:'Khai thương',ja:'蔵開き',ko:'개창',ru:'открытие склада',es:'abrir almacén'},
-    };
-    // map simplified glyph variants to the same value
-    const simp = {'动土':'動土','词讼':'詞訟','纳财':'納財','开光':'開光','开市':'開市','纳采':'納采','会亲友':'會親友','谢土':'謝土','求医':'求醫','栽种':'栽種','畋猎':'畋獵','剃头':'剃頭','纳畜':'納畜','启攒':'啟攢','安门':'安門','挂匾':'掛匾','开仓':'開倉','订婚':'訂婚'};
-    const out = Object.assign({}, raw);
-    for (const s in simp) if (raw[simp[s]]) out[s] = raw[simp[s]];
-    return out;
-  })();
 
   function updateMonthHeader(){
     const mTC = document.getElementById('m-tc');
@@ -1050,15 +931,10 @@
     const pillarLbl = MONTH_DATA.month_pillar_label || MONTH_DATA.month_pillar || '—';
     if (mTC) mTC.textContent = MONTH_DATA.month_pillar || '—';
     if (mTH) {
-      const _hdrLang = getRawLang();
-      let _hdr;
-      if (_hdrLang==='th') _hdr = `${MONTH_TH[MONTH_DATA.month]||''} ${(MONTH_DATA.year||0)+543}`;
-      else if (_hdrLang==='zh') _hdr = `${MONTH_DATA.year||0}年${MONTH_DATA.month||''}月`;
-      else {
-        try { _hdr = new Date(MONTH_DATA.year||1970, (MONTH_DATA.month||1)-1, 1).toLocaleDateString(_bcp47(_hdrLang),{month:'long',year:'numeric'}); }
-        catch(e){ _hdr = new Date(MONTH_DATA.year||1970, (MONTH_DATA.month||1)-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'}); }
-      }
-      mTH.textContent = _hdr;
+      const _hdrLang = getLang();
+      mTH.textContent = (_hdrLang==='th') ? `${MONTH_TH[MONTH_DATA.month]||''} ${(MONTH_DATA.year||0)+543}`
+                       : (_hdrLang==='zh') ? `${MONTH_DATA.year||0}年${MONTH_DATA.month||''}月`
+                       : new Date(MONTH_DATA.year||1970, (MONTH_DATA.month||1)-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'});
     }
     if (mPil) mPil.textContent = pillarLbl;
     /* 節氣 · ถ้ามี transition ในเดือน แสดงครบ */
@@ -1099,18 +975,10 @@
     const sClass = scoreClass(score);
     const sLabel = scoreLabel(score);
 
-    /* Verdict text · raw locale (vi/ja/ko/ru/es) so language-specific text is not clamped to en */
-    const lg = getRawLang();
-    /* pick localized value by raw locale · EN fallback (never Thai) · works for string- and object-valued dicts */
-    const _pl = (o)=>{ if(o==null) return o; let v=o[lg]; if(v===undefined||v===null||v==='') v=(o.en!==undefined?o.en:o.th); return v; };
-    /* pick suffix-keyed value (short_th/short_en/... , full_.., lbl_..) by raw locale · EN fallback */
-    const _pf = (o,b)=>{ if(o==null) return ''; let v=o[b+'_'+lg]; if(v===undefined||v===null||v==='') v=(o[b+'_en']!==undefined?o[b+'_en']:o[b+'_th']); return v; };
-    /* term-dict lang: HK_termPair only knows th/en/zh → map unsupported locales to en (never Thai) */
-    const _tpLang = (lg==='th'||lg==='zh')?lg:'en';
-    /* hexagram name · th/en/zh original · ja/ko use Chinese 卦名 (exempt) · vi/ru/es native */
-    const _hexName = (hex)=>{ if(!hex) return ''; if(lg==='th') return hex.th||hex.zh||''; if(lg==='en') return hex.en||hex.zh||''; if(lg==='zh') return hex.zh||''; if(lg==='ja'||lg==='ko') return hex.zh||hex.en||''; const t=HEX_TR[hex.num]; return (t&&t[lg])||hex.zh||hex.en||''; };
+    /* Verdict text · 3 lang */
+    const lg = getLang();
     const gl = state.goal==='all' ? '' : (window._calGoalLabel ? window._calGoalLabel(state.goal, lg) : '');
-    const VTPL = _pl({
+    const VTPL = {
       th: { use:'วัน <span class="vtc">用神</span> ตรง', flat:'วัน <span class="vtc">平順</span>', neut:'วัน <span class="vtc">中和</span>', caut:'วัน <span class="vtc">慎</span>', ji:'วัน <span class="vtc">忌</span>',
             useSfx:gl?` — เหมาะเรื่อง${gl}`:' — เหมาะตัดสินใจสำคัญ',
             flatSfx:gl?` — พอเดินไป${gl}ได้`:' — งานปกติ ทำได้ดี',
@@ -1128,41 +996,11 @@
             flatSfx:gl?` — 可行${gl}`:' — 平日，運勢順遂',
             neutSfx:' — 平日，無大事',
             cautSfx:gl?` — 慎於${gl}`:' — 謹慎決策',
-            jiSfx:gl?` — 忌${gl}`:' — 忌做大事' },
-      vi: { use:'<span class="vtc">用神</span> ngày hợp Dụng Thần', flat:'<span class="vtc">平順</span> ngày bình thuận', neut:'<span class="vtc">中和</span> ngày trung hòa', caut:'<span class="vtc">慎</span> thận trọng', ji:'<span class="vtc">忌</span> nên tránh',
-            useSfx:gl?` — thuận cho ${gl}`:' — thuận cho quyết định quan trọng',
-            flatSfx:gl?` — tạm ổn cho ${gl}`:' — việc thường ngày, suôn sẻ',
-            neutSfx:' — làm được, không phải dịp lớn',
-            cautSfx:gl?` — cẩn thận với ${gl}`:' — thận trọng khi quyết định',
-            jiSfx:gl?` — tránh ${gl}`:' — tránh việc quan trọng' },
-      ja: { use:'<span class="vtc">用神</span> 用神が調う日', flat:'<span class="vtc">平順</span> 平穏な日', neut:'<span class="vtc">中和</span> 中庸の日', caut:'<span class="vtc">慎</span> 慎重に', ji:'<span class="vtc">忌</span> 避ける日',
-            useSfx:gl?` — ${gl}に適する`:' — 重要な決断に適する',
-            flatSfx:gl?` — ${gl}はまずまず`:' — 日常の業務は順調',
-            neutSfx:' — こなせるが大きな節目ではない',
-            cautSfx:gl?` — ${gl}は注意`:' — 決断は慎重に',
-            jiSfx:gl?` — ${gl}は避ける`:' — 重要な事は避ける' },
-      ko: { use:'<span class="vtc">用神</span> 용신에 맞는 날', flat:'<span class="vtc">平順</span> 평온한 날', neut:'<span class="vtc">中和</span> 중화의 날', caut:'<span class="vtc">慎</span> 신중', ji:'<span class="vtc">忌</span> 피하는 날',
-            useSfx:gl?` — ${gl}에 좋음`:' — 중요한 결정에 좋음',
-            flatSfx:gl?` — ${gl}에 무난`:' — 일상 업무 순조로움',
-            neutSfx:' — 무난하나 큰 전환점은 아님',
-            cautSfx:gl?` — ${gl} 주의`:' — 결정에 주의',
-            jiSfx:gl?` — ${gl} 피하기`:' — 중요한 일 피하기' },
-      ru: { use:'<span class="vtc">用神</span> благоприятный день', flat:'<span class="vtc">平順</span> спокойный день', neut:'<span class="vtc">中和</span> нейтральный день', caut:'<span class="vtc">慎</span> осторожность', ji:'<span class="vtc">忌</span> избегать',
-            useSfx:gl?` — благоприятно для: ${gl}`:' — благоприятно для важных решений',
-            flatSfx:gl?` — подходит для: ${gl}`:' — рутинные дела, спокойно',
-            neutSfx:' — рабочий день, без крупных событий',
-            cautSfx:gl?` — осторожно с: ${gl}`:' — осторожность в решениях',
-            jiSfx:gl?` — избегать: ${gl}`:' — избегать важных дел' },
-      es: { use:'<span class="vtc">用神</span> día alineado con el Dios Útil', flat:'<span class="vtc">平順</span> día apacible', neut:'<span class="vtc">中和</span> día neutral', caut:'<span class="vtc">慎</span> precaución', ji:'<span class="vtc">忌</span> evitar',
-            useSfx:gl?` — bueno para ${gl}`:' — bueno para decisiones importantes',
-            flatSfx:gl?` — aceptable para ${gl}`:' — trabajo rutinario, tranquilo',
-            neutSfx:' — viable, no es un hito',
-            cautSfx:gl?` — cuidado con ${gl}`:' — cuidado con las decisiones',
-            jiSfx:gl?` — evita ${gl}`:' — evita asuntos importantes' }
-    });
+            jiSfx:gl?` — 忌${gl}`:' — 忌做大事' }
+    }[lg] || VTPL_TH;
     /* 17 พ.ค. threshold ใหม่ ตามอาเจ็กฮ้ง · ละเอียด 5 ระดับ */
     const role = d.verdict && d.verdict.role;
-    const ROLE_TPL = _pl({
+    const ROLE_TPL = {
       th: {
         xishen: { head:'วัน <span class="vtc">喜神</span> รอง', sfx:gl?` — พอช่วยเรื่อง${gl}ได้ แต่ไม่แรงเท่า用神`:' — ช่วยได้แบบมีเงื่อนไข ไม่ใช่用神หลัก' },
         jishen: { head:'วัน <span class="vtc">忌神</span>', sfx:gl?` — ระวัง${gl}`:' — ระวังเรื่องสำคัญ' },
@@ -1175,27 +1013,7 @@
         xishen: { head:'<span class="vtc">喜神</span> 輔助日', sfx:gl?` — 可用於${gl}，但不如用神`:' — 可助，但非主用神' },
         jishen: { head:'<span class="vtc">忌神</span> 慎日', sfx:gl?` — 慎於${gl}`:' — 慎重行事' },
       },
-      vi: {
-        xishen: { head:'<span class="vtc">喜神</span> ngày Hỷ Thần phụ trợ', sfx:gl?` — dùng được cho ${gl}, nhẹ hơn 用神`:' — hỗ trợ có điều kiện, không phải 用神 chính' },
-        jishen: { head:'<span class="vtc">忌神</span> ngày Kỵ Thần', sfx:gl?` — cẩn thận với ${gl}`:' — cẩn thận việc quan trọng' },
-      },
-      ja: {
-        xishen: { head:'<span class="vtc">喜神</span> 喜神の補助日', sfx:gl?` — ${gl}に使えるが用神より弱い`:' — 条件付きの助け、主たる用神ではない' },
-        jishen: { head:'<span class="vtc">忌神</span> 忌神の警戒日', sfx:gl?` — ${gl}は注意`:' — 重要な事は注意' },
-      },
-      ko: {
-        xishen: { head:'<span class="vtc">喜神</span> 희신 보조일', sfx:gl?` — ${gl}에 쓸 수 있으나 용신보다 약함`:' — 조건부 도움, 주된 용신은 아님' },
-        jishen: { head:'<span class="vtc">忌神</span> 기신 경계일', sfx:gl?` — ${gl} 주의`:' — 중요한 일 주의' },
-      },
-      ru: {
-        xishen: { head:'<span class="vtc">喜神</span> вспомогательный день', sfx:gl?` — годится для: ${gl}, слабее чем 用神`:' — условная поддержка, не основной 用神' },
-        jishen: { head:'<span class="vtc">忌神</span> день осторожности', sfx:gl?` — осторожно с: ${gl}`:' — осторожность в важных делах' },
-      },
-      es: {
-        xishen: { head:'<span class="vtc">喜神</span> día de apoyo', sfx:gl?` — útil para ${gl}, más leve que 用神`:' — apoyo condicional, no el 用神 principal' },
-        jishen: { head:'<span class="vtc">忌神</span> día de cautela', sfx:gl?` — cuidado con ${gl}`:' — cuidado con asuntos importantes' },
-      },
-    }) || {};
+    }[lg] || {};
     let vText = '';
     if(role === 'xishen' && score >= 10) vText = `${ROLE_TPL.xishen.head}${ROLE_TPL.xishen.sfx}`;
     else if(role === 'jishen' && score < 65) vText = `${ROLE_TPL.jishen.head}${ROLE_TPL.jishen.sfx}`;
@@ -1218,33 +1036,33 @@
     const det = DAY_DETAILS[d.date] || {};
     /* 12 ราศีไทย + emoji */
     const _BR_ZODIAC = {
-      '子':{th:'หนู',en:'Rat',zh:'鼠',vi:'Tý',ja:'子',ko:'자',ru:'Крыса',es:'Rata',emo:'🐀'},'丑':{th:'วัว',en:'Ox',zh:'牛',vi:'Sửu',ja:'丑',ko:'축',ru:'Бык',es:'Buey',emo:'🐂'},
-      '寅':{th:'เสือ',en:'Tiger',zh:'虎',vi:'Dần',ja:'寅',ko:'인',ru:'Тигр',es:'Tigre',emo:'🐯'},'卯':{th:'กระต่าย',en:'Rabbit',zh:'兔',vi:'Mão',ja:'卯',ko:'묘',ru:'Кролик',es:'Conejo',emo:'🐰'},
-      '辰':{th:'มังกร',en:'Dragon',zh:'龍',vi:'Thìn',ja:'辰',ko:'진',ru:'Дракон',es:'Dragón',emo:'🐲'},'巳':{th:'งู',en:'Snake',zh:'蛇',vi:'Tỵ',ja:'巳',ko:'사',ru:'Змея',es:'Serpiente',emo:'🐍'},
-      '午':{th:'ม้า',en:'Horse',zh:'馬',vi:'Ngọ',ja:'午',ko:'오',ru:'Лошадь',es:'Caballo',emo:'🐴'},'未':{th:'แพะ',en:'Goat',zh:'羊',vi:'Mùi',ja:'未',ko:'미',ru:'Коза',es:'Cabra',emo:'🐐'},
-      '申':{th:'ลิง',en:'Monkey',zh:'猴',vi:'Thân',ja:'申',ko:'신',ru:'Обезьяна',es:'Mono',emo:'🐵'},'酉':{th:'ไก่',en:'Rooster',zh:'雞',vi:'Dậu',ja:'酉',ko:'유',ru:'Петух',es:'Gallo',emo:'🐔'},
-      '戌':{th:'สุนัข',en:'Dog',zh:'狗',vi:'Tuất',ja:'戌',ko:'술',ru:'Собака',es:'Perro',emo:'🐶'},'亥':{th:'หมู',en:'Pig',zh:'豬',vi:'Hợi',ja:'亥',ko:'해',ru:'Свинья',es:'Cerdo',emo:'🐷'},
+      '子':{th:'หนู',en:'Rat',zh:'鼠',emo:'🐀'},'丑':{th:'วัว',en:'Ox',zh:'牛',emo:'🐂'},
+      '寅':{th:'เสือ',en:'Tiger',zh:'虎',emo:'🐯'},'卯':{th:'กระต่าย',en:'Rabbit',zh:'兔',emo:'🐰'},
+      '辰':{th:'มังกร',en:'Dragon',zh:'龍',emo:'🐲'},'巳':{th:'งู',en:'Snake',zh:'蛇',emo:'🐍'},
+      '午':{th:'ม้า',en:'Horse',zh:'馬',emo:'🐴'},'未':{th:'แพะ',en:'Goat',zh:'羊',emo:'🐐'},
+      '申':{th:'ลิง',en:'Monkey',zh:'猴',emo:'🐵'},'酉':{th:'ไก่',en:'Rooster',zh:'雞',emo:'🐔'},
+      '戌':{th:'สุนัข',en:'Dog',zh:'狗',emo:'🐶'},'亥':{th:'หมู',en:'Pig',zh:'豬',emo:'🐷'},
     };
     const _QUAL_INFO = {
-      best:    { ico:'⭐', th:'ดีมาก',   en:'BEST',   zh:'大吉', vi:'Rất tốt', ja:'大吉', ko:'대길', ru:'Отлично', es:'Óptimo', col:'var(--good)', bg:'var(--wood-bg)' },
-      good:    { ico:'✅', th:'ดี',     en:'GOOD',   zh:'吉',  vi:'Tốt', ja:'吉', ko:'길', ru:'Хорошо', es:'Bueno', col:'var(--good)', bg:'var(--wood-bg)' },
-      ok:      { ico:'⚖',  th:'ปกติ',   en:'OK',     zh:'中',  vi:'Bình', ja:'中', ko:'보통', ru:'Норм', es:'Normal', col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
-      neutral: { ico:'⚖',  th:'ปกติ',   en:'OK',     zh:'中',  vi:'Bình', ja:'中', ko:'보통', ru:'Норм', es:'Normal', col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
-      bad:     { ico:'⛔', th:'ห้าม',   en:'AVOID',  zh:'忌',  vi:'Tránh', ja:'忌', ko:'피함', ru:'Избегать', es:'Evitar', col:'var(--bad)',  bg:'var(--fire-bg)' },
-      avoid:   { ico:'⛔', th:'ห้าม',   en:'AVOID',  zh:'忌',  vi:'Tránh', ja:'忌', ko:'피함', ru:'Избегать', es:'Evitar', col:'var(--bad)',  bg:'var(--fire-bg)' },
+      best:    { ico:'⭐', th:'ดีมาก',   en:'BEST',   zh:'大吉', col:'var(--good)', bg:'var(--wood-bg)' },
+      good:    { ico:'✅', th:'ดี',     en:'GOOD',   zh:'吉',  col:'var(--good)', bg:'var(--wood-bg)' },
+      ok:      { ico:'⚖',  th:'ปกติ',   en:'OK',     zh:'中',  col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
+      neutral: { ico:'⚖',  th:'ปกติ',   en:'OK',     zh:'中',  col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
+      bad:     { ico:'⛔', th:'ห้าม',   en:'AVOID',  zh:'忌',  col:'var(--bad)',  bg:'var(--fire-bg)' },
+      avoid:   { ico:'⛔', th:'ห้าม',   en:'AVOID',  zh:'忌',  col:'var(--bad)',  bg:'var(--fire-bg)' },
     };
     const _renderHourCell = (h, fallbackName, fallbackRange, fallbackQual) => {
       const branch = h.branch || fallbackName || '';
       const zd = _BR_ZODIAC[branch] || { th:'',en:'',zh:'',emo:'' };
-      const zName = _pl(zd);
+      const zName = lg==='th'?zd.th:lg==='zh'?zd.zh:zd.en;
       const qKey = (h.quality||fallbackQual||'neutral');
       const q = _QUAL_INFO[qKey] || _QUAL_INFO.neutral;
-      const qLabel = _pl(q);
+      const qLabel = lg==='th'?q.th:lg==='zh'?q.zh:q.en;
       const range = h.range || fallbackRange || (h.start_hour!=null?`${h.start_hour}-${h.end_hour}`:'');
       const rangeShort = String(range).replace(/^(\d+):00-/,'$1-').replace(':00','');
       const isNow = !!h.isNow;
       const nowBorder = isNow ? `box-shadow:0 0 0 2px var(--gold);` : '';
-      const nowBadge  = isNow ? `<div style="position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0d0f12;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.12em;padding:1px 6px;border-radius:99px;">${_pl({th:'NOW',en:'NOW',zh:'NOW',vi:'BÂY GIỜ',ja:'現在',ko:'지금',ru:'СЕЙЧАС',es:'AHORA'})}</div>` : '';
+      const nowBadge  = isNow ? `<div style="position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0d0f12;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.12em;padding:1px 6px;border-radius:99px;">NOW</div>` : '';
       return `<div style="position:relative;padding:10px 6px;background:${q.bg};border:1.5px solid ${q.col};border-radius:10px;text-align:center;display:flex;flex-direction:column;gap:3px;${nowBorder}">
         ${nowBadge}
         <div style="font-size:16px;line-height:1;">${q.ico}</div>
@@ -1271,24 +1089,18 @@
       }).join('');
     }
 
-    const lang = getRawLang();
+    const lang = getLang();
     const DOW = {
       th:['อา','จ','อ','พ','พฤ','ศ','ส'],
       en:['SUN','MON','TUE','WED','THU','FRI','SAT'],
-      zh:['日','一','二','三','四','五','六'],
-      vi:['CN','T2','T3','T4','T5','T6','T7'],
-      ja:['日','月','火','水','木','金','土'],
-      ko:['일','월','화','수','목','금','토'],
-      ru:['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'],
-      es:['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']
+      zh:['日','一','二','三','四','五','六']
     }[lang] || ['SUN','MON','TUE','WED','THU','FRI','SAT'];
     /* คำนวณ DOW จริง จาก year/month */
     const dt = new Date(MONTH_DATA.year, MONTH_DATA.month-1, d.day);
     const dowLabel = DOW[dt.getDay()];
-    let monthLabel;
-    if (lang==='th') monthLabel = `${MONTH_TH[MONTH_DATA.month]||''} ${MONTH_DATA.year+543}`;
-    else if (lang==='zh') monthLabel = `${MONTH_DATA.year}年${MONTH_DATA.month}月`;
-    else { try { monthLabel = new Date(MONTH_DATA.year, MONTH_DATA.month-1, 1).toLocaleDateString(_bcp47(lang),{month:'long',year:'numeric'}); } catch(e){ monthLabel = new Date(MONTH_DATA.year, MONTH_DATA.month-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'}); } }
+    const monthLabel = (lang==='th') ? `${MONTH_TH[MONTH_DATA.month]||''} ${MONTH_DATA.year+543}` :
+                       (lang==='zh') ? `${MONTH_DATA.year}年${MONTH_DATA.month}月` :
+                                       new Date(MONTH_DATA.year, MONTH_DATA.month-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'});
 
     const sp = document.getElementById('side-panel');
     sp.innerHTML = `
@@ -1307,43 +1119,43 @@
         ${(() => {
           /* 17 พ.ค. · header ใหม่ · ไม่ซ้ำ 宜/忌 · บอกแค่ identity + verdict ของวัน
            * หลัก 5 ของอากงอาม่า: ภาษาไทยนำ · icon นำ · color = severity · จีนเป็นลายเซ็น */
-          const _OFFICER_HEAD = _pl({th:'ดาว 12 建除 (หมุนทุก 12 วัน · บอกพลังพื้นฐานของวัน)',en:'12 Day Officers · 12-day cycle',zh:'十二建除·日值·12日一輪',vi:'12 Kiến Trừ · chu kỳ 12 ngày',ja:'十二建除 · 12日周期の日役',ko:'십이건제 · 12일 주기',ru:'12 стражей дня (建除) · 12-дневный цикл',es:'12 Oficiales del Día (建除) · ciclo de 12 días'});
+          const _OFFICER_HEAD = lg==='th'?'ดาว 12 建除 (หมุนทุก 12 วัน · บอกพลังพื้นฐานของวัน)':lg==='zh'?'十二建除·日值·12日一輪':'12 Day Officers · 12-day cycle';
           const OFFICER_TH = {
-            '建':{th:'วันสร้าง',en:'Build',zh:'建日',vi:'Ngày Kiến',ja:'建の日',ko:'건일',ru:'День Цзянь',es:'Día Jian',ico:'🔨',cls:'pos', short_th:'พลังเริ่มต้น·เปิดงาน', short_en:'starts·initiate', short_zh:'始建·起頭', short_vi:'khởi đầu·mở việc',short_ja:'始まり·着手',short_ko:'시작·착수',short_ru:'начало·запуск',short_es:'inicio·comenzar', full_th:'建 = สร้าง/ก่อ · เป็นวันแรกของวง 12 วัน · พลังเริ่มต้นแรง เหมาะพิธีเปิด·ก่อตั้ง·เริ่มเรียน·เริ่มงาน · ห้ามทำลาย·เดินทางไกล'},
-            '除':{th:'วันขจัด',en:'Clear',zh:'除日',vi:'Ngày Trừ',ja:'除の日',ko:'제일',ru:'День Чу',es:'Día Chu',ico:'🧹',cls:'pos', short_th:'พลังกำจัด·ล้างของเก่า', short_en:'clear·sweep', short_zh:'除舊·清理', short_vi:'quét dọn·trừ cũ',short_ja:'清掃·祓う',short_ko:'청소·제거',short_ru:'уборка·очистка',short_es:'limpiar·barrer', full_th:'除 = ขจัด · พลังกวาดล้าง เหมาะรักษาโรค·ทำความสะอาด·สะเดาะเคราะห์·เลิกเหล้า·เลิกของไม่ดี'},
-            '满':{th:'วันเต็ม',en:'Full',zh:'滿日',vi:'Ngày Mãn',ja:'満の日',ko:'만일',ru:'День Мань',es:'Día Man',ico:'🌕',cls:'mid', short_th:'พลังครบ·เก็บเกี่ยว', short_en:'fullness·harvest', short_zh:'圓滿·收穫', short_vi:'viên mãn·thu hoạch',short_ja:'満ちる·収穫',short_ko:'가득·수확',short_ru:'полнота·сбор урожая',short_es:'plenitud·cosecha', full_th:'满 = เต็ม · พลังครบบริบูรณ์ เหมาะงานเลี้ยง·เก็บเกี่ยว·พิธีฉลอง · ระวังเริ่มงานใหม่ (พลังอิ่มจะล้น)'},
-            '滿':{th:'วันเต็ม',en:'Full',zh:'滿日',vi:'Ngày Mãn',ja:'満の日',ko:'만일',ru:'День Мань',es:'Día Man',ico:'🌕',cls:'mid', short_th:'พลังครบ·เก็บเกี่ยว', short_en:'fullness·harvest', short_zh:'圓滿·收穫', short_vi:'viên mãn·thu hoạch',short_ja:'満ちる·収穫',short_ko:'가득·수확',short_ru:'полнота·сбор урожая',short_es:'plenitud·cosecha', full_th:'满 = เต็ม · พลังครบบริบูรณ์ เหมาะงานเลี้ยง·เก็บเกี่ยว·พิธีฉลอง · ระวังเริ่มงานใหม่'},
-            '平':{th:'วันเสมอ',en:'Balanced',zh:'平日',vi:'Ngày Bình',ja:'平の日',ko:'평일',ru:'День Пин',es:'Día Ping',ico:'⚖',cls:'mid', short_th:'พลังสมดุล·งานปกติ', short_en:'balance·routine', short_zh:'平順·常事', short_vi:'cân bằng·việc thường',short_ja:'均衡·日常',short_ko:'균형·일상',short_ru:'равновесие·рутина',short_es:'equilibrio·rutina', full_th:'平 = เสมอ · พลังสมดุลกลาง เหมาะงานทั่วไป·ทำสัญญา·ปลูกต้นไม้·ตัดเล็บ·ปรับถนน'},
-            '定':{th:'วันมั่นคง',en:'Settled',zh:'定日',vi:'Ngày Định',ja:'定の日',ko:'정일',ru:'День Дин',es:'Día Ding',ico:'📌',cls:'pos', short_th:'พลังตกลง·เซ็นสัญญา', short_en:'settle·sign', short_zh:'定盟·簽約', short_vi:'ổn định·ký kết',short_ja:'定まる·契約',short_ko:'안정·계약',short_ru:'закрепить·подписать',short_es:'estabilizar·firmar', full_th:'定 = กำหนด/มั่นคง · พลังตั้งมั่น เหมาะหมั้น·เซ็นสัญญา·ลงทุน·ตั้งหุ้น · ห้ามฟ้องร้อง·เคลื่อนย้าย'},
-            '执':{th:'วันยึด',en:'Hold',zh:'執日',vi:'Ngày Chấp',ja:'執の日',ko:'집일',ru:'День Чжи',es:'Día Zhi',ico:'✊',cls:'mid', short_th:'พลังยึดมั่น·เก็บของ', short_en:'hold·keep', short_zh:'執守·保', short_vi:'giữ chặt·cất giữ',short_ja:'保持·守る',short_ko:'지킴·보관',short_ru:'держать·хранить',short_es:'retener·guardar', full_th:'执 = ยึดมั่น · พลังยึดเหนี่ยว เหมาะเก็บของ·จับคน·ไล่จับโจร · ห้ามเคลื่อนย้าย·เดินทาง'},
-            '執':{th:'วันยึด',en:'Hold',zh:'執日',vi:'Ngày Chấp',ja:'執の日',ko:'집일',ru:'День Чжи',es:'Día Zhi',ico:'✊',cls:'mid', short_th:'พลังยึดมั่น·เก็บของ', short_en:'hold·keep', short_zh:'執守·保', short_vi:'giữ chặt·cất giữ',short_ja:'保持·守る',short_ko:'지킴·보관',short_ru:'держать·хранить',short_es:'retener·guardar', full_th:'执 = ยึดมั่น · พลังยึดเหนี่ยว เหมาะเก็บของ·จับคน · ห้ามเคลื่อนย้าย'},
-            '破':{th:'วันแตก',en:'Break',zh:'破日',vi:'Ngày Phá',ja:'破の日',ko:'파일',ru:'День По',es:'Día Po',ico:'💥',cls:'neg', short_th:'พลังพังทลาย·ห้ามเริ่ม', short_en:'break·no start', short_zh:'破壞·勿始', short_vi:'phá vỡ·chớ khởi sự',short_ja:'破壊·着手不可',short_ko:'파괴·시작 금지',short_ru:'разрушение·не начинать',short_es:'romper·no iniciar', full_th:'破 = ทำลาย/แตก · พลังทำลายแรง ห้ามมงคลทุกชนิด (แต่งงาน·เปิดร้าน·ลงทุน·เซ็นสัญญา) · ใช้ได้แค่รื้อถอนของเก่า·ทุบบ้านเก่า'},
-            '危':{th:'วันเสี่ยง',en:'Danger',zh:'危日',vi:'Ngày Nguy',ja:'危の日',ko:'위일',ru:'День Вэй',es:'Día Wei',ico:'⚠',cls:'neg', short_th:'พลังเสี่ยง·ห้ามผจญ', short_en:'risk·be cautious', short_zh:'危險·勿冒', short_vi:'rủi ro·thận trọng',short_ja:'危険·要注意',short_ko:'위험·주의',short_ru:'риск·осторожно',short_es:'riesgo·precaución', full_th:'危 = อันตราย · พลังเสี่ยงสูง ห้ามเดินทางไกล·ขึ้นที่สูง·ขุดดิน·ลงเรือ · ระวังของหล่นทับ'},
-            '成':{th:'วันสำเร็จ',en:'Success',zh:'成日',vi:'Ngày Thành',ja:'成の日',ko:'성일',ru:'День Чэн',es:'Día Cheng',ico:'⭐',cls:'pos', short_th:'พลังสำเร็จ·ทำได้ทุกอย่าง', short_en:'success·all OK', short_zh:'成功·百事可', short_vi:'thành tựu·mọi việc tốt',short_ja:'成就·万事良し',short_ko:'성취·만사형통',short_ru:'успех·всё благоприятно',short_es:'éxito·todo bien', full_th:'成 = สำเร็จ · พลังบรรลุผล เป็น 1 ใน 3 วันมงคลสุดของ 12 建除 · ทำกิจกรรมมงคลได้ทุกชนิด เริ่มงานใหม่·แต่งงาน·เปิดร้าน·เซ็นสัญญา'},
-            '收':{th:'วันเก็บ',en:'Gather',zh:'收日',vi:'Ngày Thu',ja:'収の日',ko:'수일',ru:'День Шоу',es:'Día Shou',ico:'📥',cls:'pos', short_th:'พลังเก็บ·ปิดบัญชี', short_en:'gather·close books', short_zh:'收藏·結帳', short_vi:'thu gom·chốt sổ',short_ja:'収集·決算',short_ko:'수렴·결산',short_ru:'сбор·закрыть счета',short_es:'recoger·cerrar cuentas', full_th:'收 = เก็บ · พลังรวบรวม เหมาะเก็บทรัพย์·ปิดบัญชี·เก็บเกี่ยว · ห้ามเริ่มเดินทาง·เปิดร้าน·ฝังศพ'},
-            '开':{th:'วันเปิด',en:'Open',zh:'開日',vi:'Ngày Khai',ja:'開の日',ko:'개일',ru:'День Кай',es:'Día Kai',ico:'🚪',cls:'pos', short_th:'พลังเปิด·เริ่มใหม่', short_en:'open·new start', short_zh:'開創·啟新', short_vi:'khai mở·khởi đầu',short_ja:'開始·新たな出発',short_ko:'개시·새 출발',short_ru:'открытие·новое начало',short_es:'apertura·nuevo inicio', full_th:'开 = เปิด · พลังเริ่มใหม่ เหมาะเปิดร้าน·เริ่มเรียน·พิธีเปิด·ขึ้นบ้านใหม่·แต่งงาน · ห้ามฝังศพ·พิธีไว้อาลัย'},
-            '開':{th:'วันเปิด',en:'Open',zh:'開日',vi:'Ngày Khai',ja:'開の日',ko:'개일',ru:'День Кай',es:'Día Kai',ico:'🚪',cls:'pos', short_th:'พลังเปิด·เริ่มใหม่', short_en:'open·new start', short_zh:'開創·啟新', short_vi:'khai mở·khởi đầu',short_ja:'開始·新たな出発',short_ko:'개시·새 출발',short_ru:'открытие·новое начало',short_es:'apertura·nuevo inicio', full_th:'开 = เปิด · พลังเริ่มใหม่ เหมาะเปิดร้าน·เริ่มเรียน·พิธีเปิด · ห้ามฝังศพ'},
-            '闭':{th:'วันปิด',en:'Close',zh:'閉日',vi:'Ngày Bế',ja:'閉の日',ko:'폐일',ru:'День Би',es:'Día Bi',ico:'⛔',cls:'neg', short_th:'พลังอุดตัน·ห้ามเริ่ม', short_en:'closed·no start', short_zh:'閉塞·勿開', short_vi:'bế tắc·chớ khởi sự',short_ja:'閉塞·着手不可',short_ko:'폐색·시작 금지',short_ru:'закрыто·не начинать',short_es:'cerrado·no iniciar', full_th:'闭 = ปิด/อุดตัน · พลังกั้น-ปิด เหมาะปิดธุรกิจ·ออมเงิน·เก็บความลับ·อุดรู·ฝังบ่อน้ำ · ห้ามเริ่มทุกอย่าง (แต่งงาน·เปิดร้าน·เซ็นสัญญา·เปิดเอกสาร·เดินทาง·เปิดประตูใหม่)'},
-            '閉':{th:'วันปิด',en:'Close',zh:'閉日',vi:'Ngày Bế',ja:'閉の日',ko:'폐일',ru:'День Би',es:'Día Bi',ico:'⛔',cls:'neg', short_th:'พลังอุดตัน·ห้ามเริ่ม', short_en:'closed·no start', short_zh:'閉塞·勿開', short_vi:'bế tắc·chớ khởi sự',short_ja:'閉塞·着手不可',short_ko:'폐색·시작 금지',short_ru:'закрыто·не начинать',short_es:'cerrado·no iniciar', full_th:'闭 = ปิด/อุดตัน · พลังกั้น-ปิด เหมาะปิดธุรกิจ·ออม·อุดรู·ฝังบ่อน้ำ · ห้ามเริ่มทุกอย่าง'},
+            '建':{th:'วันสร้าง',en:'Build',zh:'建日',ico:'🔨',cls:'pos', short_th:'พลังเริ่มต้น·เปิดงาน', short_en:'starts·initiate', short_zh:'始建·起頭', full_th:'建 = สร้าง/ก่อ · เป็นวันแรกของวง 12 วัน · พลังเริ่มต้นแรง เหมาะพิธีเปิด·ก่อตั้ง·เริ่มเรียน·เริ่มงาน · ห้ามทำลาย·เดินทางไกล'},
+            '除':{th:'วันขจัด',en:'Clear',zh:'除日',ico:'🧹',cls:'pos', short_th:'พลังกำจัด·ล้างของเก่า', short_en:'clear·sweep', short_zh:'除舊·清理', full_th:'除 = ขจัด · พลังกวาดล้าง เหมาะรักษาโรค·ทำความสะอาด·สะเดาะเคราะห์·เลิกเหล้า·เลิกของไม่ดี'},
+            '满':{th:'วันเต็ม',en:'Full',zh:'滿日',ico:'🌕',cls:'mid', short_th:'พลังครบ·เก็บเกี่ยว', short_en:'fullness·harvest', short_zh:'圓滿·收穫', full_th:'满 = เต็ม · พลังครบบริบูรณ์ เหมาะงานเลี้ยง·เก็บเกี่ยว·พิธีฉลอง · ระวังเริ่มงานใหม่ (พลังอิ่มจะล้น)'},
+            '滿':{th:'วันเต็ม',en:'Full',zh:'滿日',ico:'🌕',cls:'mid', short_th:'พลังครบ·เก็บเกี่ยว', short_en:'fullness·harvest', short_zh:'圓滿·收穫', full_th:'满 = เต็ม · พลังครบบริบูรณ์ เหมาะงานเลี้ยง·เก็บเกี่ยว·พิธีฉลอง · ระวังเริ่มงานใหม่'},
+            '平':{th:'วันเสมอ',en:'Balanced',zh:'平日',ico:'⚖',cls:'mid', short_th:'พลังสมดุล·งานปกติ', short_en:'balance·routine', short_zh:'平順·常事', full_th:'平 = เสมอ · พลังสมดุลกลาง เหมาะงานทั่วไป·ทำสัญญา·ปลูกต้นไม้·ตัดเล็บ·ปรับถนน'},
+            '定':{th:'วันมั่นคง',en:'Settled',zh:'定日',ico:'📌',cls:'pos', short_th:'พลังตกลง·เซ็นสัญญา', short_en:'settle·sign', short_zh:'定盟·簽約', full_th:'定 = กำหนด/มั่นคง · พลังตั้งมั่น เหมาะหมั้น·เซ็นสัญญา·ลงทุน·ตั้งหุ้น · ห้ามฟ้องร้อง·เคลื่อนย้าย'},
+            '执':{th:'วันยึด',en:'Hold',zh:'執日',ico:'✊',cls:'mid', short_th:'พลังยึดมั่น·เก็บของ', short_en:'hold·keep', short_zh:'執守·保', full_th:'执 = ยึดมั่น · พลังยึดเหนี่ยว เหมาะเก็บของ·จับคน·ไล่จับโจร · ห้ามเคลื่อนย้าย·เดินทาง'},
+            '執':{th:'วันยึด',en:'Hold',zh:'執日',ico:'✊',cls:'mid', short_th:'พลังยึดมั่น·เก็บของ', short_en:'hold·keep', short_zh:'執守·保', full_th:'执 = ยึดมั่น · พลังยึดเหนี่ยว เหมาะเก็บของ·จับคน · ห้ามเคลื่อนย้าย'},
+            '破':{th:'วันแตก',en:'Break',zh:'破日',ico:'💥',cls:'neg', short_th:'พลังพังทลาย·ห้ามเริ่ม', short_en:'break·no start', short_zh:'破壞·勿始', full_th:'破 = ทำลาย/แตก · พลังทำลายแรง ห้ามมงคลทุกชนิด (แต่งงาน·เปิดร้าน·ลงทุน·เซ็นสัญญา) · ใช้ได้แค่รื้อถอนของเก่า·ทุบบ้านเก่า'},
+            '危':{th:'วันเสี่ยง',en:'Danger',zh:'危日',ico:'⚠',cls:'neg', short_th:'พลังเสี่ยง·ห้ามผจญ', short_en:'risk·be cautious', short_zh:'危險·勿冒', full_th:'危 = อันตราย · พลังเสี่ยงสูง ห้ามเดินทางไกล·ขึ้นที่สูง·ขุดดิน·ลงเรือ · ระวังของหล่นทับ'},
+            '成':{th:'วันสำเร็จ',en:'Success',zh:'成日',ico:'⭐',cls:'pos', short_th:'พลังสำเร็จ·ทำได้ทุกอย่าง', short_en:'success·all OK', short_zh:'成功·百事可', full_th:'成 = สำเร็จ · พลังบรรลุผล เป็น 1 ใน 3 วันมงคลสุดของ 12 建除 · ทำกิจกรรมมงคลได้ทุกชนิด เริ่มงานใหม่·แต่งงาน·เปิดร้าน·เซ็นสัญญา'},
+            '收':{th:'วันเก็บ',en:'Gather',zh:'收日',ico:'📥',cls:'pos', short_th:'พลังเก็บ·ปิดบัญชี', short_en:'gather·close books', short_zh:'收藏·結帳', full_th:'收 = เก็บ · พลังรวบรวม เหมาะเก็บทรัพย์·ปิดบัญชี·เก็บเกี่ยว · ห้ามเริ่มเดินทาง·เปิดร้าน·ฝังศพ'},
+            '开':{th:'วันเปิด',en:'Open',zh:'開日',ico:'🚪',cls:'pos', short_th:'พลังเปิด·เริ่มใหม่', short_en:'open·new start', short_zh:'開創·啟新', full_th:'开 = เปิด · พลังเริ่มใหม่ เหมาะเปิดร้าน·เริ่มเรียน·พิธีเปิด·ขึ้นบ้านใหม่·แต่งงาน · ห้ามฝังศพ·พิธีไว้อาลัย'},
+            '開':{th:'วันเปิด',en:'Open',zh:'開日',ico:'🚪',cls:'pos', short_th:'พลังเปิด·เริ่มใหม่', short_en:'open·new start', short_zh:'開創·啟新', full_th:'开 = เปิด · พลังเริ่มใหม่ เหมาะเปิดร้าน·เริ่มเรียน·พิธีเปิด · ห้ามฝังศพ'},
+            '闭':{th:'วันปิด',en:'Close',zh:'閉日',ico:'⛔',cls:'neg', short_th:'พลังอุดตัน·ห้ามเริ่ม', short_en:'closed·no start', short_zh:'閉塞·勿開', full_th:'闭 = ปิด/อุดตัน · พลังกั้น-ปิด เหมาะปิดธุรกิจ·ออมเงิน·เก็บความลับ·อุดรู·ฝังบ่อน้ำ · ห้ามเริ่มทุกอย่าง (แต่งงาน·เปิดร้าน·เซ็นสัญญา·เปิดเอกสาร·เดินทาง·เปิดประตูใหม่)'},
+            '閉':{th:'วันปิด',en:'Close',zh:'閉日',ico:'⛔',cls:'neg', short_th:'พลังอุดตัน·ห้ามเริ่ม', short_en:'closed·no start', short_zh:'閉塞·勿開', full_th:'闭 = ปิด/อุดตัน · พลังกั้น-ปิด เหมาะปิดธุรกิจ·ออม·อุดรู·ฝังบ่อน้ำ · ห้ามเริ่มทุกอย่าง'},
           };
-          const _STAR12_HEAD = _pl({th:'ดาว 12 黄道神 (1 ใน 6 มงคล + 6 ร้าย · บอกพลังเทพประจำวัน)',en:'12 Yellow/Black Path Gods',zh:'十二黃道神·日神·六黃六黑',vi:'12 thần Hoàng Đạo/Hắc Đạo',ja:'十二黄道神 · 六黄六黒の日神',ko:'십이 황도/흑도신',ru:'12 богов Жёлтого/Чёрного пути',es:'12 Dioses de la Senda Amarilla/Negra'});
+          const _STAR12_HEAD = lg==='th'?'ดาว 12 黄道神 (1 ใน 6 มงคล + 6 ร้าย · บอกพลังเทพประจำวัน)':lg==='zh'?'十二黃道神·日神·六黃六黑':'12 Yellow/Black Path Gods';
           const STAR12_TH = {
-            '青龙':{th:'มังกรเขียว',en:'Azure Dragon',zh:'青龍',vi:'Thanh Long',ja:'青龍',ko:'청룡',ru:'Лазурный дракон',es:'Dragón Azur',ico:'🐉',cls:'pos', short_th:'บารมีสูงสุด·เริ่มงานใหญ่', short_en:'top fortune·start big', short_zh:'貴氣·宜大事', short_vi:'quý khí·khởi sự lớn',short_ja:'貴気·大事に吉',short_ko:'귀기·큰일 시작',short_ru:'высшая удача·крупные дела',short_es:'gran fortuna·empezar grande', full_th:'青龙 = มังกรเขียว · 1 ใน 6 黄道吉星 (ดาวมงคล) · ดาวขุนนางสูงสุด · ทำกิจกรรมมงคลทุกอย่างได้ · เริ่มงานใหญ่·เปิดร้าน·พบผู้ใหญ่·เซ็นสัญญา · พลังเด่นทั้งกลางวันและกลางคืน'},
-            '青龍':{th:'มังกรเขียว',en:'Azure Dragon',zh:'青龍',vi:'Thanh Long',ja:'青龍',ko:'청룡',ru:'Лазурный дракон',es:'Dragón Azur',ico:'🐉',cls:'pos', short_th:'บารมีสูงสุด·เริ่มงานใหญ่', short_en:'top fortune·start big', short_zh:'貴氣·宜大事', short_vi:'quý khí·khởi sự lớn',short_ja:'貴気·大事に吉',short_ko:'귀기·큰일 시작',short_ru:'высшая удача·крупные дела',short_es:'gran fortuna·empezar grande', full_th:'青龙 = มังกรเขียว · 1 ใน 6 ดาวมงคล · บารมีสูงสุดของ 12 黄道神'},
-            '明堂':{th:'พระโรงสว่าง',en:'Bright Hall',zh:'明堂',vi:'Minh Đường',ja:'明堂',ko:'명당',ru:'Светлый зал',es:'Salón Radiante',ico:'🏛',cls:'pos', short_th:'พบผู้ใหญ่·มงคล', short_en:'meet noble·auspicious', short_zh:'會貴·吉', short_vi:'gặp quý nhân·cát',short_ja:'貴人に会う·吉',short_ko:'귀인 상봉·길',short_ru:'встреча с покровителем·благо',short_es:'conocer a un noble·propicio', full_th:'明堂 = พระโรงสว่าง · 1 ใน 6 黄道吉星 · พื้นที่ของจักรพรรดิรับขุนนาง · เหมาะพบผู้ใหญ่·ขอตำแหน่ง·แสดงตัว·พรีเซนต์งาน'},
-            '天刑':{th:'อาญาฟ้า',en:'Heaven Penalty',zh:'天刑',vi:'Thiên Hình',ja:'天刑',ko:'천형',ru:'Небесная кара',es:'Castigo Celestial',ico:'⚖',cls:'neg', short_th:'พลังลงโทษ·ห้ามคดี', short_en:'penalty·no lawsuit', short_zh:'刑罰·忌訟', short_vi:'hình phạt·kỵ kiện tụng',short_ja:'刑罰·訴訟を忌む',short_ko:'형벌·소송 금지',short_ru:'кара·избегать тяжб',short_es:'castigo·evitar pleitos', full_th:'天刑 = อาญาฟ้า · 1 ใน 6 黑道凶星 · พลังลงโทษจากฟ้า · ห้ามเริ่มคดีความ·ฟ้องร้อง·เริ่มความขัดแย้ง · ใช้ได้แค่ออกรบ·ปราบโจร'},
-            '朱雀':{th:'นกแดง',en:'Vermilion Bird',zh:'朱雀',vi:'Chu Tước',ja:'朱雀',ko:'주작',ru:'Красная птица',es:'Ave Bermellón',ico:'🔥',cls:'neg', short_th:'ปากเสียง·ห้ามเจรจา', short_en:'gossip·no talks', short_zh:'口舌·忌議', short_vi:'khẩu thiệt·kỵ đàm phán',short_ja:'口舌·協議を忌む',short_ko:'구설·협상 금지',short_ru:'сплетни·избегать переговоров',short_es:'chismes·evitar negociaciones', full_th:'朱雀 = นกแดง · 1 ใน 6 黑道凶星 · พลังปากเสียง·นินทา · ห้ามฟ้องร้อง·เจรจาขัดแย้ง·ลงนามคนหลายคน · ระวังคำพูดทำร้าย'},
-            '金匮':{th:'คลังทอง',en:'Gold Chest',zh:'金匱',vi:'Kim Quỹ',ja:'金匱',ko:'금궤',ru:'Золотой ларец',es:'Cofre Dorado',ico:'💰',cls:'pos', short_th:'ทรัพย์·เก็บทอง·ทำสัญญา', short_en:'wealth·gold·contracts', short_zh:'財運·宜約', short_vi:'tài lộc·vàng·hợp đồng',short_ja:'財運·金·契約',short_ko:'재운·금·계약',short_ru:'богатство·золото·договоры',short_es:'riqueza·oro·contratos', full_th:'金匮 = คลังทอง · 1 ใน 6 黄道吉星 · ดาวการเงิน·ทรัพย์ · เหมาะแต่งงาน (รวมทรัพย์)·เซ็นสัญญาเงิน·ลงทุน·ฝากเงิน·เปิดธุรกิจ'},
-            '金匱':{th:'คลังทอง',en:'Gold Chest',zh:'金匱',vi:'Kim Quỹ',ja:'金匱',ko:'금궤',ru:'Золотой ларец',es:'Cofre Dorado',ico:'💰',cls:'pos', short_th:'ทรัพย์·เก็บทอง·ทำสัญญา', short_en:'wealth·gold·contracts', short_zh:'財運·宜約', short_vi:'tài lộc·vàng·hợp đồng',short_ja:'財運·金·契約',short_ko:'재운·금·계약',short_ru:'богатство·золото·договоры',short_es:'riqueza·oro·contratos', full_th:'金匮 = คลังทอง · ดาวการเงินมงคล · เหมาะแต่งงาน·ทำสัญญาเงิน'},
-            '天德':{th:'คุณธรรมฟ้า',en:'Heaven Virtue',zh:'天德',vi:'Thiên Đức',ja:'天徳',ko:'천덕',ru:'Небесная добродетель',es:'Virtud Celestial',ico:'🌟',cls:'pos', short_th:'มงคลสูงสุด·เริ่มอะไรก็ดี', short_en:'highest virtue·all good', short_zh:'至吉·百事', short_vi:'chí đức·vạn sự cát',short_ja:'至徳·万事吉',short_ko:'지덕·만사길',short_ru:'высшая добродетель·всё к добру',short_es:'suma virtud·todo bien', full_th:'天德 = คุณธรรมฟ้า · 1 ใน 6 黄道吉星 · มงคลสูงสุดของ 12 黄道神 · override ดาวร้ายปกติได้ · เริ่มงานใหญ่ได้ทุกชนิด · เป็นวันที่ฟ้าให้พร'},
-            '白虎':{th:'เสือขาว',en:'White Tiger',zh:'白虎',vi:'Bạch Hổ',ja:'白虎',ko:'백호',ru:'Белый тигр',es:'Tigre Blanco',ico:'🐯',cls:'neg', short_th:'เสี่ยงเลือด·ระวังของมีคม', short_en:'blood risk·sharp objects', short_zh:'血光·慎刀', short_vi:'huyết quang·kỵ vật sắc',short_ja:'血光·刃物に注意',short_ko:'혈광·날붙이 주의',short_ru:'риск крови·острые предметы',short_es:'riesgo de sangre·objetos filosos', full_th:'白虎 = เสือขาว · 1 ใน 6 黑道凶星 · พลังเสี่ยงเลือด·อุบัติเหตุ · ห้ามผ่าตัด·ลงมีด·ออกรบ · ใช้ได้แค่ล่าสัตว์·บูชายัญ'},
-            '玉堂':{th:'พระโรงหยก',en:'Jade Hall',zh:'玉堂',vi:'Ngọc Đường',ja:'玉堂',ko:'옥당',ru:'Нефритовый зал',es:'Salón de Jade',ico:'💎',cls:'pos', short_th:'ความสุข·เกียรติยศ·ศิลปะ', short_en:'joy·honor·art', short_zh:'喜慶·貴顯', short_vi:'hỷ khánh·vinh hiển·nghệ thuật',short_ja:'喜慶·栄誉·芸術',short_ko:'경사·영예·예술',short_ru:'радость·честь·искусство',short_es:'alegría·honor·arte', full_th:'玉堂 = พระโรงหยก · 1 ใน 6 黄道吉星 · พระตำหนักศักดิ์สิทธิ์ · เหมาะเอกสาร·พิธีมงคล·ฝังศพอย่างเกียรติ·งานศิลปะ·วิชาการ'},
-            '天牢':{th:'คุกฟ้า',en:'Heaven Prison',zh:'天牢',vi:'Thiên Lao',ja:'天牢',ko:'천뢰',ru:'Небесная темница',es:'Prisión Celestial',ico:'⛓',cls:'neg', short_th:'กักขัง·ห้ามเปิดงาน', short_en:'confinement·no opening', short_zh:'拘禁·忌開', short_vi:'giam cầm·kỵ khai trương',short_ja:'拘禁·開業を忌む',short_ko:'구금·개업 금지',short_ru:'заточение·не открывать',short_es:'confinamiento·no inaugurar', full_th:'天牢 = คุกฟ้า · 1 ใน 6 黑道凶星 · พลังกักขัง·ผูกมัด · ห้ามทำกิจกรรมเปิดเผย·เริ่มงานใหม่ · เสี่ยงถูกจองจำ·เอกสารผูกพัน'},
-            '玄武':{th:'เต่าดำ',en:'Black Tortoise',zh:'玄武',vi:'Huyền Vũ',ja:'玄武',ko:'현무',ru:'Чёрная черепаха',es:'Tortuga Negra',ico:'🐢',cls:'neg', short_th:'โจร·ระวังทรัพย์', short_en:'theft·guard wealth', short_zh:'盜賊·防財', short_vi:'trộm cắp·giữ của',short_ja:'盗難·財を守る',short_ko:'도난·재물 주의',short_ru:'кража·берегите имущество',short_es:'robo·cuide su dinero', full_th:'玄武 = เต่าดำ · 1 ใน 6 黑道凶星 · พลังโจร·เล่ห์เหลี่ยม · ห้ามคดีความ·พนัน·ลงเอกสารใหญ่ · ระวังถูกหลอก·ขโมย'},
-            '元武':{th:'เต่าดำ',en:'Black Tortoise',zh:'元武',vi:'Huyền Vũ',ja:'玄武',ko:'현무',ru:'Чёрная черепаха',es:'Tortuga Negra',ico:'🐢',cls:'neg', short_th:'โจร·ระวังทรัพย์', short_en:'theft·guard wealth', short_zh:'盜賊·防財', short_vi:'trộm cắp·giữ của',short_ja:'盗難·財を守る',short_ko:'도난·재물 주의',short_ru:'кража·берегите имущество',short_es:'robo·cuide su dinero', full_th:'元武 = เต่าดำ (อีกชื่อของ 玄武) · พลังโจร·เล่ห์เหลี่ยม · ระวังถูกหลอก'},
-            '司命':{th:'ผู้กำหนดชะตา',en:'Life Master',zh:'司命',vi:'Tư Mệnh',ja:'司命',ko:'사명',ru:'Владыка судьбы',es:'Señor del Destino',ico:'✦',cls:'pos', short_th:'บารมีกลางวัน·ตัดสินใจใหญ่', short_en:'noon power·big decisions', short_zh:'晝吉·宜決', short_vi:'quyền ngày·quyết định lớn',short_ja:'昼吉·大決断',short_ko:'낮의 길·큰 결정',short_ru:'сила дня·важные решения',short_es:'poder diurno·grandes decisiones', full_th:'司命 = ผู้กำหนดชะตา/เทพเจ้าครัว · 1 ใน 6 黄道吉星 · เทพผู้บันทึกบุญบาป·ดูแลครัวเรือน · เวลากลางวัน (07:00-19:00) พลังบารมีสูงสุด เหมาะตัดสินใจใหญ่·พบผู้ใหญ่ · กลางคืนพลังอ่อน ไม่ควรลงนามสำคัญ'},
-            '勾陈':{th:'ขอเกี่ยว',en:'Hook Stretch',zh:'勾陳',vi:'Câu Trần',ja:'勾陳',ko:'구진',ru:'Гоучэнь',es:'Gou Chen',ico:'🪝',cls:'neg', short_th:'ติดขัด·เริ่มไม่ได้', short_en:'stuck·no start', short_zh:'拘滯·勿始', short_vi:'trì trệ·chớ khởi sự',short_ja:'停滞·着手不可',short_ko:'정체·시작 금지',short_ru:'застой·не начинать',short_es:'estancado·no iniciar', full_th:'勾陈 = ขอเกี่ยว · 1 ใน 6 黑道凶星 · พลังติดขัด·ผูกพันไม่จบ · ห้ามเริ่มงานสำคัญ·ทำสัญญาผูกพัน · ระวังเอกสารที่หลุดยาก'},
-            '勾陳':{th:'ขอเกี่ยว',en:'Hook Stretch',zh:'勾陳',vi:'Câu Trần',ja:'勾陳',ko:'구진',ru:'Гоучэнь',es:'Gou Chen',ico:'🪝',cls:'neg', short_th:'ติดขัด·เริ่มไม่ได้', short_en:'stuck·no start', short_zh:'拘滯·勿始', short_vi:'trì trệ·chớ khởi sự',short_ja:'停滞·着手不可',short_ko:'정체·시작 금지',short_ru:'застой·не начинать',short_es:'estancado·no iniciar', full_th:'勾陈 = ขอเกี่ยว · ดาวขัดข้อง·ผูกมัด · ห้ามเริ่มงานสำคัญ'},
+            '青龙':{th:'มังกรเขียว',en:'Azure Dragon',zh:'青龍',ico:'🐉',cls:'pos', short_th:'บารมีสูงสุด·เริ่มงานใหญ่', short_en:'top fortune·start big', short_zh:'貴氣·宜大事', full_th:'青龙 = มังกรเขียว · 1 ใน 6 黄道吉星 (ดาวมงคล) · ดาวขุนนางสูงสุด · ทำกิจกรรมมงคลทุกอย่างได้ · เริ่มงานใหญ่·เปิดร้าน·พบผู้ใหญ่·เซ็นสัญญา · พลังเด่นทั้งกลางวันและกลางคืน'},
+            '青龍':{th:'มังกรเขียว',en:'Azure Dragon',zh:'青龍',ico:'🐉',cls:'pos', short_th:'บารมีสูงสุด·เริ่มงานใหญ่', short_en:'top fortune·start big', short_zh:'貴氣·宜大事', full_th:'青龙 = มังกรเขียว · 1 ใน 6 ดาวมงคล · บารมีสูงสุดของ 12 黄道神'},
+            '明堂':{th:'พระโรงสว่าง',en:'Bright Hall',zh:'明堂',ico:'🏛',cls:'pos', short_th:'พบผู้ใหญ่·มงคล', short_en:'meet noble·auspicious', short_zh:'會貴·吉', full_th:'明堂 = พระโรงสว่าง · 1 ใน 6 黄道吉星 · พื้นที่ของจักรพรรดิรับขุนนาง · เหมาะพบผู้ใหญ่·ขอตำแหน่ง·แสดงตัว·พรีเซนต์งาน'},
+            '天刑':{th:'อาญาฟ้า',en:'Heaven Penalty',zh:'天刑',ico:'⚖',cls:'neg', short_th:'พลังลงโทษ·ห้ามคดี', short_en:'penalty·no lawsuit', short_zh:'刑罰·忌訟', full_th:'天刑 = อาญาฟ้า · 1 ใน 6 黑道凶星 · พลังลงโทษจากฟ้า · ห้ามเริ่มคดีความ·ฟ้องร้อง·เริ่มความขัดแย้ง · ใช้ได้แค่ออกรบ·ปราบโจร'},
+            '朱雀':{th:'นกแดง',en:'Vermilion Bird',zh:'朱雀',ico:'🔥',cls:'neg', short_th:'ปากเสียง·ห้ามเจรจา', short_en:'gossip·no talks', short_zh:'口舌·忌議', full_th:'朱雀 = นกแดง · 1 ใน 6 黑道凶星 · พลังปากเสียง·นินทา · ห้ามฟ้องร้อง·เจรจาขัดแย้ง·ลงนามคนหลายคน · ระวังคำพูดทำร้าย'},
+            '金匮':{th:'คลังทอง',en:'Gold Chest',zh:'金匱',ico:'💰',cls:'pos', short_th:'ทรัพย์·เก็บทอง·ทำสัญญา', short_en:'wealth·gold·contracts', short_zh:'財運·宜約', full_th:'金匮 = คลังทอง · 1 ใน 6 黄道吉星 · ดาวการเงิน·ทรัพย์ · เหมาะแต่งงาน (รวมทรัพย์)·เซ็นสัญญาเงิน·ลงทุน·ฝากเงิน·เปิดธุรกิจ'},
+            '金匱':{th:'คลังทอง',en:'Gold Chest',zh:'金匱',ico:'💰',cls:'pos', short_th:'ทรัพย์·เก็บทอง·ทำสัญญา', short_en:'wealth·gold·contracts', short_zh:'財運·宜約', full_th:'金匮 = คลังทอง · ดาวการเงินมงคล · เหมาะแต่งงาน·ทำสัญญาเงิน'},
+            '天德':{th:'คุณธรรมฟ้า',en:'Heaven Virtue',zh:'天德',ico:'🌟',cls:'pos', short_th:'มงคลสูงสุด·เริ่มอะไรก็ดี', short_en:'highest virtue·all good', short_zh:'至吉·百事', full_th:'天德 = คุณธรรมฟ้า · 1 ใน 6 黄道吉星 · มงคลสูงสุดของ 12 黄道神 · override ดาวร้ายปกติได้ · เริ่มงานใหญ่ได้ทุกชนิด · เป็นวันที่ฟ้าให้พร'},
+            '白虎':{th:'เสือขาว',en:'White Tiger',zh:'白虎',ico:'🐯',cls:'neg', short_th:'เสี่ยงเลือด·ระวังของมีคม', short_en:'blood risk·sharp objects', short_zh:'血光·慎刀', full_th:'白虎 = เสือขาว · 1 ใน 6 黑道凶星 · พลังเสี่ยงเลือด·อุบัติเหตุ · ห้ามผ่าตัด·ลงมีด·ออกรบ · ใช้ได้แค่ล่าสัตว์·บูชายัญ'},
+            '玉堂':{th:'พระโรงหยก',en:'Jade Hall',zh:'玉堂',ico:'💎',cls:'pos', short_th:'ความสุข·เกียรติยศ·ศิลปะ', short_en:'joy·honor·art', short_zh:'喜慶·貴顯', full_th:'玉堂 = พระโรงหยก · 1 ใน 6 黄道吉星 · พระตำหนักศักดิ์สิทธิ์ · เหมาะเอกสาร·พิธีมงคล·ฝังศพอย่างเกียรติ·งานศิลปะ·วิชาการ'},
+            '天牢':{th:'คุกฟ้า',en:'Heaven Prison',zh:'天牢',ico:'⛓',cls:'neg', short_th:'กักขัง·ห้ามเปิดงาน', short_en:'confinement·no opening', short_zh:'拘禁·忌開', full_th:'天牢 = คุกฟ้า · 1 ใน 6 黑道凶星 · พลังกักขัง·ผูกมัด · ห้ามทำกิจกรรมเปิดเผย·เริ่มงานใหม่ · เสี่ยงถูกจองจำ·เอกสารผูกพัน'},
+            '玄武':{th:'เต่าดำ',en:'Black Tortoise',zh:'玄武',ico:'🐢',cls:'neg', short_th:'โจร·ระวังทรัพย์', short_en:'theft·guard wealth', short_zh:'盜賊·防財', full_th:'玄武 = เต่าดำ · 1 ใน 6 黑道凶星 · พลังโจร·เล่ห์เหลี่ยม · ห้ามคดีความ·พนัน·ลงเอกสารใหญ่ · ระวังถูกหลอก·ขโมย'},
+            '元武':{th:'เต่าดำ',en:'Black Tortoise',zh:'元武',ico:'🐢',cls:'neg', short_th:'โจร·ระวังทรัพย์', short_en:'theft·guard wealth', short_zh:'盜賊·防財', full_th:'元武 = เต่าดำ (อีกชื่อของ 玄武) · พลังโจร·เล่ห์เหลี่ยม · ระวังถูกหลอก'},
+            '司命':{th:'ผู้กำหนดชะตา',en:'Life Master',zh:'司命',ico:'✦',cls:'pos', short_th:'บารมีกลางวัน·ตัดสินใจใหญ่', short_en:'noon power·big decisions', short_zh:'晝吉·宜決', full_th:'司命 = ผู้กำหนดชะตา/เทพเจ้าครัว · 1 ใน 6 黄道吉星 · เทพผู้บันทึกบุญบาป·ดูแลครัวเรือน · เวลากลางวัน (07:00-19:00) พลังบารมีสูงสุด เหมาะตัดสินใจใหญ่·พบผู้ใหญ่ · กลางคืนพลังอ่อน ไม่ควรลงนามสำคัญ'},
+            '勾陈':{th:'ขอเกี่ยว',en:'Hook Stretch',zh:'勾陳',ico:'🪝',cls:'neg', short_th:'ติดขัด·เริ่มไม่ได้', short_en:'stuck·no start', short_zh:'拘滯·勿始', full_th:'勾陈 = ขอเกี่ยว · 1 ใน 6 黑道凶星 · พลังติดขัด·ผูกพันไม่จบ · ห้ามเริ่มงานสำคัญ·ทำสัญญาผูกพัน · ระวังเอกสารที่หลุดยาก'},
+            '勾陳':{th:'ขอเกี่ยว',en:'Hook Stretch',zh:'勾陳',ico:'🪝',cls:'neg', short_th:'ติดขัด·เริ่มไม่ได้', short_en:'stuck·no start', short_zh:'拘滯·勿始', full_th:'勾陈 = ขอเกี่ยว · ดาวขัดข้อง·ผูกมัด · ห้ามเริ่มงานสำคัญ'},
           };
           const COLOR = { pos:{c:'var(--good)',bg:'var(--wood-bg)'}, mid:{c:'var(--fg-soft)',bg:'var(--bg-2,var(--tile))'}, neg:{c:'var(--bad)',bg:'var(--fire-bg)'} };
           const off = d.day_officer || '';
@@ -1351,15 +1163,15 @@
           const o = OFFICER_TH[off] || {th:off,en:off,zh:off,ico:'·',cls:'mid'};
           const s = STAR12_TH[star12] || {th:star12,en:star12,zh:star12,ico:'·',cls:'mid'};
           const oCol = COLOR[o.cls], sCol = COLOR[s.cls];
-          const oName = _pl(o);
-          const sName = _pl(s);
-          const oShort = _pf(o,'short');
-          const sShort = _pf(s,'short');
-          const subOff = _pl({th:'建除·ชื่อวัน',en:'jianchu',zh:'建除·日名',vi:'建除·tên ngày',ja:'建除·日名',ko:'建除·일명',ru:'建除·имя дня',es:'建除·nombre del día'});
-          const subStar= _pl({th:'黃道·ดาวประจำวัน',en:'huangdao',zh:'黃道·值日',vi:'黃道·sao ngày',ja:'黃道·日神',ko:'黃道·일신',ru:'黃道·звезда дня',es:'黃道·estrella del día'});
+          const oName = lg==='th'?o.th:lg==='zh'?o.zh:o.en;
+          const sName = lg==='th'?s.th:lg==='zh'?s.zh:s.en;
+          const oShort = lg==='th'?o.short_th:lg==='zh'?o.short_zh:o.short_en;
+          const sShort = lg==='th'?s.short_th:lg==='zh'?s.short_zh:s.short_en;
+          const subOff = lg==='th'?'建除·ชื่อวัน':lg==='zh'?'建除·日名':'jianchu';
+          const subStar= lg==='th'?'黃道·ดาวประจำวัน':lg==='zh'?'黃道·值日':'huangdao';
           const escAttr = (s) => String(s||'').replace(/"/g,'&quot;');
-          const oFull = (lg==='th'?o.full_th:lg==='zh'?(o.full_zh||o.zh||off):(o['full_'+lg]||o.full_en||o.en||off))||'';
-          const sFull = (lg==='th'?s.full_th:lg==='zh'?(s.full_zh||s.zh||star12):(s['full_'+lg]||s.full_en||s.en||star12))||'';
+          const oFull = (lg==='th'?o.full_th:lg==='zh'?(o.full_zh||o.zh||off):(o.full_en||o.en||off))||'';
+          const sFull = (lg==='th'?s.full_th:lg==='zh'?(s.full_zh||s.zh||star12):(s.full_en||s.en||star12))||'';
           const iBtn = (col, fullText, headerText) =>
             `<button type="button" class="hk-i-btn" data-full="${escAttr(fullText)}" data-head="${escAttr(headerText)}" style="background:transparent;border:1px solid ${col.c};color:${col.c};border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;margin-left:auto;font-family:Arial,sans-serif;">i</button>`;
           return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
@@ -1397,35 +1209,32 @@
           };
           /* branch + ธาตุ + emoji + นักษัตร */
           const BR_INFO = {
-            '子':{el:'water',emo:'🐀',th:'หนู',en:'Rat',zh:'鼠',vi:'Tý',ja:'子',ko:'자',ru:'Крыса',es:'Rata'},
-            '丑':{el:'earth',emo:'🐂',th:'วัว',en:'Ox',zh:'牛',vi:'Sửu',ja:'丑',ko:'축',ru:'Бык',es:'Buey'},
-            '寅':{el:'wood',emo:'🐯',th:'เสือ',en:'Tiger',zh:'虎',vi:'Dần',ja:'寅',ko:'인',ru:'Тигр',es:'Tigre'},
-            '卯':{el:'wood',emo:'🐰',th:'กระต่าย',en:'Rabbit',zh:'兔',vi:'Mão',ja:'卯',ko:'묘',ru:'Кролик',es:'Conejo'},
-            '辰':{el:'earth',emo:'🐲',th:'มังกร',en:'Dragon',zh:'龍',vi:'Thìn',ja:'辰',ko:'진',ru:'Дракон',es:'Dragón'},
-            '巳':{el:'fire',emo:'🐍',th:'งู',en:'Snake',zh:'蛇',vi:'Tỵ',ja:'巳',ko:'사',ru:'Змея',es:'Serpiente'},
-            '午':{el:'fire',emo:'🐴',th:'ม้า',en:'Horse',zh:'馬',vi:'Ngọ',ja:'午',ko:'오',ru:'Лошадь',es:'Caballo'},
-            '未':{el:'earth',emo:'🐐',th:'แพะ',en:'Goat',zh:'羊',vi:'Mùi',ja:'未',ko:'미',ru:'Коза',es:'Cabra'},
-            '申':{el:'metal',emo:'🐵',th:'ลิง',en:'Monkey',zh:'猴',vi:'Thân',ja:'申',ko:'신',ru:'Обезьяна',es:'Mono'},
-            '酉':{el:'metal',emo:'🐔',th:'ไก่',en:'Rooster',zh:'雞',vi:'Dậu',ja:'酉',ko:'유',ru:'Петух',es:'Gallo'},
-            '戌':{el:'earth',emo:'🐶',th:'สุนัข',en:'Dog',zh:'狗',vi:'Tuất',ja:'戌',ko:'술',ru:'Собака',es:'Perro'},
-            '亥':{el:'water',emo:'🐷',th:'หมู',en:'Pig',zh:'豬',vi:'Hợi',ja:'亥',ko:'해',ru:'Свинья',es:'Cerdo'},
+            '子':{el:'water',emo:'🐀',th:'หนู',en:'Rat',zh:'鼠'},
+            '丑':{el:'earth',emo:'🐂',th:'วัว',en:'Ox',zh:'牛'},
+            '寅':{el:'wood',emo:'🐯',th:'เสือ',en:'Tiger',zh:'虎'},
+            '卯':{el:'wood',emo:'🐰',th:'กระต่าย',en:'Rabbit',zh:'兔'},
+            '辰':{el:'earth',emo:'🐲',th:'มังกร',en:'Dragon',zh:'龍'},
+            '巳':{el:'fire',emo:'🐍',th:'งู',en:'Snake',zh:'蛇'},
+            '午':{el:'fire',emo:'🐴',th:'ม้า',en:'Horse',zh:'馬'},
+            '未':{el:'earth',emo:'🐐',th:'แพะ',en:'Goat',zh:'羊'},
+            '申':{el:'metal',emo:'🐵',th:'ลิง',en:'Monkey',zh:'猴'},
+            '酉':{el:'metal',emo:'🐔',th:'ไก่',en:'Rooster',zh:'雞'},
+            '戌':{el:'earth',emo:'🐶',th:'สุนัข',en:'Dog',zh:'狗'},
+            '亥':{el:'water',emo:'🐷',th:'หมู',en:'Pig',zh:'豬'},
           };
           const EL_COLOR = { wood:'#7c9e5a', fire:'#c66', earth:'#b89a5e', metal:'#aaa', water:'#5a8ec9' };
-          const EL_MAP = {
-            wood:{th:'ไม้',en:'Wood',zh:'木',vi:'Mộc',ja:'木',ko:'목',ru:'Дерево',es:'Madera'},
-            fire:{th:'ไฟ',en:'Fire',zh:'火',vi:'Hỏa',ja:'火',ko:'화',ru:'Огонь',es:'Fuego'},
-            earth:{th:'ดิน',en:'Earth',zh:'土',vi:'Thổ',ja:'土',ko:'토',ru:'Земля',es:'Tierra'},
-            metal:{th:'ทอง',en:'Metal',zh:'金',vi:'Kim',ja:'金',ko:'금',ru:'Металл',es:'Metal'},
-            water:{th:'น้ำ',en:'Water',zh:'水',vi:'Thủy',ja:'水',ko:'수',ru:'Вода',es:'Agua'},
-          };
-          const POL_MAP = { yang:{th:'หยาง',en:'yang',zh:'陽',vi:'Dương',ja:'陽',ko:'양',ru:'Ян',es:'Yang'}, yin:{th:'หยิน',en:'yin',zh:'陰',vi:'Âm',ja:'陰',ko:'음',ru:'Инь',es:'Yin'} };
-          const elTx = (e) => e?(_pl(EL_MAP[e])||''):'';
-          const polTx = (p) => { if(!p) return p; const v=_pl(POL_MAP[p]); return (lg==='th'||lg==='zh')?v:(v||p); };
+          const EL_TH = { wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง', water:'น้ำ' };
+          const EL_EN = { wood:'Wood', fire:'Fire', earth:'Earth', metal:'Metal', water:'Water' };
+          const EL_ZH = { wood:'木', fire:'火', earth:'土', metal:'金', water:'水' };
+          const POL_TH = { yang:'หยาง', yin:'หยิน' };
+          const POL_ZH = { yang:'陽', yin:'陰' };
+          const elTx = (e) => lg==='th'?EL_TH[e]:lg==='zh'?EL_ZH[e]:EL_EN[e];
+          const polTx = (p) => lg==='zh'?POL_ZH[p]:lg==='th'?POL_TH[p]:p;
           const cards = [
-            { lbl_th:'年·ปี', lbl_en:'YEAR', lbl_zh:'年·年柱', lbl_vi:'年·Năm', lbl_ja:'年·年柱', lbl_ko:'年·년주', lbl_ru:'年·Год', lbl_es:'年·Año', p:d.pillars_full.year, highlight:false },
-            { lbl_th:'月·เดือน', lbl_en:'MONTH', lbl_zh:'月·月柱', lbl_vi:'月·Tháng', lbl_ja:'月·月柱', lbl_ko:'月·월주', lbl_ru:'月·Месяц', lbl_es:'月·Mes', p:d.pillars_full.month, highlight:false },
-            { lbl_th:'日·วัน', lbl_en:'DAY', lbl_zh:'日·日主', lbl_vi:'日·Ngày', lbl_ja:'日·日柱', lbl_ko:'日·일주', lbl_ru:'日·День', lbl_es:'日·Día', p:d.pillars_full.day, highlight:true },
-            { lbl_th:'時·ยาม', lbl_en:'HOUR', lbl_zh:'時·時柱', lbl_vi:'時·Giờ', lbl_ja:'時·時柱', lbl_ko:'時·시주', lbl_ru:'時·Час', lbl_es:'時·Hora', p:d.pillars_full.hour, highlight:false },
+            { lbl_th:'年·ปี', lbl_en:'YEAR', lbl_zh:'年·年柱', p:d.pillars_full.year, highlight:false },
+            { lbl_th:'月·เดือน', lbl_en:'MONTH', lbl_zh:'月·月柱', p:d.pillars_full.month, highlight:false },
+            { lbl_th:'日·วัน', lbl_en:'DAY', lbl_zh:'日·日主', p:d.pillars_full.day, highlight:true },
+            { lbl_th:'時·ยาม', lbl_en:'HOUR', lbl_zh:'時·時柱', p:d.pillars_full.hour, highlight:false },
           ];
           return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;">${cards.map(pi => {
             const si = STEM_INFO[pi.p.stem] || {};
@@ -1435,8 +1244,8 @@
             const bg = pi.highlight ? 'rgba(200,164,77,.08)' : 'var(--bg-2,var(--tile))';
             const bd = pi.highlight ? 'var(--gold)' : 'var(--tile-bd)';
             const hex = pi.p.hex;
-            const lbl = _pf(pi,'lbl');
-            const hexTitle = hex ? (lg==='th' ? `${hex.zh} · ${hex.th}` : lg==='zh' ? `${hex.zh}` : `${_hexName(hex) || hex.zh} · ${hex.zh}`) : '';
+            const lbl = lg==='th'?pi.lbl_th:lg==='zh'?pi.lbl_zh:pi.lbl_en;
+            const hexTitle = hex ? (lg==='th' ? `${hex.zh} · ${hex.th}` : lg==='zh' ? `${hex.zh}` : `${hex.en || hex.zh} · ${hex.zh}`) : '';
             return `<div style="padding:10px 6px;background:${bg};border:1px solid ${bd};border-radius:10px;text-align:center;display:flex;flex-direction:column;gap:6px;">
               <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;border-bottom:1px dashed var(--tile-bd);padding-bottom:6px;">${lbl}</div>
               <div>
@@ -1445,11 +1254,11 @@
               </div>
               <div>
                 <div style="font-family:var(--tc);font-size:26px;font-weight:700;color:${bColor};line-height:1;">${pi.p.branch}<span style="font-size:14px;margin-left:2px;">${bi.emo||''}</span></div>
-                <div style="font-family:var(--thai);font-size:9px;color:${bColor};opacity:.85;margin-top:2px;letter-spacing:.02em;">${bi.th?_pl(bi):''} · ${elTx(bi.el)}</div>
+                <div style="font-family:var(--thai);font-size:9px;color:${bColor};opacity:.85;margin-top:2px;letter-spacing:.02em;">${bi.th?lg==='th'?bi.th:lg==='zh'?bi.zh:bi.en:''} · ${elTx(bi.el)}</div>
               </div>
               ${hex ? `<button type="button" class="hex-deep-btn" data-hex-num="${hex.num}" title="${hexTitle}" style="background:transparent;border:none;border-top:1px dashed var(--tile-bd);cursor:pointer;padding:6px 0 0;margin-top:2px;display:flex;flex-direction:column;align-items:center;gap:3px;">
                 <div style="font-family:'Noto Sans Symbols','Source Han Sans',serif;font-size:22px;line-height:1;color:#e8d496;text-shadow:0 0 8px rgba(232,212,150,.3);">${hex.symbol||''}</div>
-                <div style="font-family:var(--thai);font-size:10px;color:#e8d496;font-weight:600;letter-spacing:.02em;">${_hexName(hex)}</div>
+                <div style="font-family:var(--thai);font-size:10px;color:#e8d496;font-weight:600;letter-spacing:.02em;">${lg==='th'?hex.th:lg==='zh'?hex.zh:hex.en}</div>
                 <div style="font-family:var(--mono);font-size:8px;color:var(--fg-faint);">${hex.num} / 64</div>
               </button>` : ''}
             </div>`;
@@ -1471,36 +1280,31 @@
           : Math.max(0, Math.min(100, Math.round(50 + ((d.stars_detail||{}).total || 0))));
         const delta = personalScore - universalScore;
         const VINFO_BASE = (s) => {
-          if (s >= 80) return { ico:'⭐', th:'ดีมาก',   en:'Excellent', zh:'很好', vi:'Rất tốt', ja:'大吉', ko:'대길', ru:'Отлично', es:'Excelente', han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' };
-          if (s >= 65) return { ico:'✓',  th:'ดี',     en:'Good',      zh:'好',   vi:'Tốt', ja:'吉', ko:'길', ru:'Хорошо', es:'Bueno', han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' };
-          if (s >= 45) return { ico:'⚖',  th:'ปานกลาง', en:'Neutral',   zh:'中等', vi:'Trung bình', ja:'中庸', ko:'보통', ru:'Нейтрально', es:'Neutro', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' };
-          if (s >= 30) return { ico:'⚠',  th:'ระวัง',   en:'Caution',   zh:'謹慎', vi:'Thận trọng', ja:'注意', ko:'주의', ru:'Осторожно', es:'Precaución', han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' };
-          return            { ico:'⛔', th:'ห้าม',    en:'Avoid',     zh:'避免', vi:'Nên tránh', ja:'避ける', ko:'피함', ru:'Избегать', es:'Evitar', han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' };
+          if (s >= 80) return { ico:'⭐', th:'ดีมาก',   en:'Excellent', zh:'很好', han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' };
+          if (s >= 65) return { ico:'✓',  th:'ดี',     en:'Good',      zh:'好',   han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' };
+          if (s >= 45) return { ico:'⚖',  th:'ปานกลาง', en:'Neutral',   zh:'中等', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' };
+          if (s >= 30) return { ico:'⚠',  th:'ระวัง',   en:'Caution',   zh:'謹慎', han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' };
+          return            { ico:'⛔', th:'ห้าม',    en:'Avoid',     zh:'避免', han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' };
         };
         /* 1 มิ.ย. · label การ์ดวันสากล ใช้ level จาก backend (band เดียวกับ grid best≥84) ให้ป้ายตรงกัน · personal คงใช้ VINFO_BASE เดิม */
         const U_LEVEL_VINFO = {
-          best:   { ico:'⭐', th:'ดีมาก',   en:'Excellent', zh:'很好', vi:'Rất tốt', ja:'大吉', ko:'대길', ru:'Отлично', es:'Excelente', han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' },
-          good:   { ico:'✓',  th:'ดี',     en:'Good',      zh:'好',   vi:'Tốt', ja:'吉', ko:'길', ru:'Хорошо', es:'Bueno', han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' },
-          ok:     { ico:'⚖',  th:'ปานกลาง', en:'Neutral',   zh:'中等', vi:'Trung bình', ja:'中庸', ko:'보통', ru:'Нейтрально', es:'Neutro', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
-          caution:{ ico:'⚠',  th:'ระวัง',   en:'Caution',   zh:'謹慎', vi:'Thận trọng', ja:'注意', ko:'주의', ru:'Осторожно', es:'Precaución', han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' },
-          avoid:  { ico:'⛔', th:'ห้าม',    en:'Avoid',     zh:'避免', vi:'Nên tránh', ja:'避ける', ko:'피함', ru:'Избегать', es:'Evitar', han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' },
+          best:   { ico:'⭐', th:'ดีมาก',   en:'Excellent', zh:'很好', han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' },
+          good:   { ico:'✓',  th:'ดี',     en:'Good',      zh:'好',   han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' },
+          ok:     { ico:'⚖',  th:'ปานกลาง', en:'Neutral',   zh:'中等', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
+          caution:{ ico:'⚠',  th:'ระวัง',   en:'Caution',   zh:'謹慎', han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' },
+          avoid:  { ico:'⛔', th:'ห้าม',    en:'Avoid',     zh:'避免', han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' },
         };
         const uV = (d.universal_verdict && U_LEVEL_VINFO[d.universal_verdict.level]) ? U_LEVEL_VINFO[d.universal_verdict.level] : VINFO_BASE(universalScore);
         const pV = VINFO_BASE(personalScore);
         const officerName = d.day_officer || '—';
         const star12 = d.twelve_star || '';
-        const goalLbl = state.goal==='all' ? _pl({th:'ทั้งหมด',en:'all',zh:'全部',vi:'tất cả',ja:'すべて',ko:'전체',ru:'все',es:'todo'}) : (gl||state.goal);
-        const goalHead = _pl({th:'🎯 กำลังดู',en:'🎯 Filter',zh:'🎯 篩選',vi:'🎯 Đang xem',ja:'🎯 表示中',ko:'🎯 보기',ru:'🎯 Фильтр',es:'🎯 Filtro'});
-        const TX = _pl({
+        const goalLbl = state.goal==='all' ? ({th:'ทั้งหมด',en:'all',zh:'全部'})[lg] : (gl||state.goal);
+        const goalHead = ({th:'🎯 กำลังดู',en:'🎯 Filter',zh:'🎯 篩選'})[lg];
+        const TX = {
           th: { hdr:'คุณภาพวัน', uTitle:'🌐 วันสากล', uSub:'(ทุกคนเหมือนกัน)', pTitle:'👤 ดวงคุณ', pSub:'(จากดวงเกิด)', delta_pos:'จากสากล', delta_neg:'จากสากล' },
           en: { hdr:'DAY QUALITY', uTitle:'🌐 Universal', uSub:'(same for all)', pTitle:'👤 Personal', pSub:'(your chart)',  delta_pos:'vs universal', delta_neg:'vs universal' },
           zh: { hdr:'日運品質',    uTitle:'🌐 通用',     uSub:'(人人相同)',     pTitle:'👤 個人',     pSub:'(命盤計算)',    delta_pos:'對通用',     delta_neg:'對通用' },
-          vi: { hdr:'CHẤT LƯỢNG NGÀY', uTitle:'🌐 Phổ quát', uSub:'(giống nhau cho tất cả)', pTitle:'👤 Cá nhân', pSub:'(theo lá số)', delta_pos:'so với phổ quát', delta_neg:'so với phổ quát' },
-          ja: { hdr:'日の品質', uTitle:'🌐 共通', uSub:'(全員共通)', pTitle:'👤 個人', pSub:'(命式による)', delta_pos:'共通との差', delta_neg:'共通との差' },
-          ko: { hdr:'일진 품질', uTitle:'🌐 공통', uSub:'(모두 동일)', pTitle:'👤 개인', pSub:'(사주 기준)', delta_pos:'공통 대비', delta_neg:'공통 대비' },
-          ru: { hdr:'КАЧЕСТВО ДНЯ', uTitle:'🌐 Общее', uSub:'(одинаково для всех)', pTitle:'👤 Личное', pSub:'(по вашей карте)', delta_pos:'к общему', delta_neg:'к общему' },
-          es: { hdr:'CALIDAD DEL DÍA', uTitle:'🌐 Común', uSub:'(igual para todos)', pTitle:'👤 Individual', pSub:'(según tu carta)', delta_pos:'frente al común', delta_neg:'frente al común' },
-        }) || {};
+        }[lg] || {};
         const renderCard = (info, score, title, sub, footer) => `
           <div style="background:${info.bg};border:1.5px solid ${info.col};border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:8px;">
             <div>
@@ -1516,7 +1320,7 @@
             </div>
             <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
               <span style="font-size:16px;">${info.ico}</span>
-              <span style="font-family:var(--thai);font-size:13px;color:${info.col};font-weight:700;">${_pl(info)}</span>
+              <span style="font-family:var(--thai);font-size:13px;color:${info.col};font-weight:700;">${lg==='th'?info.th:lg==='zh'?info.zh:info.en}</span>
               <span style="font-family:var(--tc);font-size:10px;color:${info.col};opacity:.7;">${info.han}</span>
             </div>
             <div style="font-family:var(--thai);font-size:10px;color:var(--fg-soft);text-align:center;line-height:1.4;border-top:1px dashed ${info.col};padding-top:6px;opacity:.85;">${footer}</div>
@@ -1598,65 +1402,65 @@
         };
         /* 18 พ.ค. · อาม่าอากง · แปลภาษาบ้าน ห้ามใช้ศัพท์จีน · 3 lang */
         const TEN_GOD_TH = {
-          '正官':{th:'ผู้ใหญ่/อำนาจตรง', en:'Authority figure', zh:'長輩·正統權威',vi:'Chính Quan · quyền uy',ja:'正官·権威',ko:'정관·권위',ru:'Чжэн-гуань · власть',es:'Funcionario Recto · autoridad'},
-          '七殺':{th:'ผู้บังคับ·เฉียบขาด', en:'Strict enforcer', zh:'嚴厲管束',vi:'Thất Sát · kỷ luật',ja:'七殺·厳格',ko:'칠살·엄격',ru:'Ци-ша · строгость',es:'Siete Muertes · disciplina'},
-          '正財':{th:'ทรัพย์ตรง·เงินเดือน', en:'Steady income', zh:'穩定收入',vi:'Chính Tài · thu nhập ổn định',ja:'正財·安定財',ko:'정재·안정 수입',ru:'Чжэн-цай · стабильный доход',es:'Riqueza Recta · ingreso estable'},
-          '偏財':{th:'ทรัพย์ลื่น·เก็งกำไร', en:'Windfall gains', zh:'意外財運',vi:'Thiên Tài · lộc bất ngờ',ja:'偏財·臨時収入',ko:'편재·횡재',ru:'Пянь-цай · неожиданная прибыль',es:'Riqueza Indirecta · ganancia inesperada'},
-          '食神':{th:'ความคิดสร้างสรรค์', en:'Creative ideas', zh:'創意巧思',vi:'Thực Thần · sáng tạo',ja:'食神·創造',ko:'식신·창의',ru:'Ши-шэнь · творчество',es:'Dios de la Comida · creatividad'},
-          '傷官':{th:'พรสวรรค์·ระวังคำพูด', en:'Talent, mind your words', zh:'才華洋溢·慎言',vi:'Thương Quan · tài năng, giữ lời',ja:'傷官·才能・言葉に注意',ko:'상관·재능, 말조심',ru:'Шан-гуань · талант, следите за словами',es:'Oficial Herido · talento, cuida tus palabras'},
-          '正印':{th:'เทพคุณธรรม·พ่อแม่·ที่ปรึกษา', en:'Support & guidance', zh:'貴人扶持·長輩關懷',vi:'Chính Ấn · nâng đỡ',ja:'正印·支え',ko:'정인·후원',ru:'Чжэн-инь · поддержка',es:'Sello Recto · apoyo'},
-          '偏印':{th:'ปัญญาเฉพาะ·งานวิจัย', en:'Specialized insight', zh:'專精智慧',vi:'Thiên Ấn · trí tuệ chuyên sâu',ja:'偏印·専門知',ko:'편인·전문 지혜',ru:'Пянь-инь · особая проницательность',es:'Sello Indirecto · perspicacia'},
-          '比肩':{th:'เพื่อน·พี่น้อง·ทีม', en:'Friends & peers', zh:'朋友·手足',vi:'Tỷ Kiên · bạn bè',ja:'比肩·仲間',ko:'비견·동료',ru:'Би-цзянь · друзья',es:'Hombro a Hombro · compañeros'},
-          '劫財':{th:'คู่แข่ง·ระวังเงิน', en:'Rivals, guard money', zh:'競爭者·慎財',vi:'Kiếp Tài · đối thủ, giữ tiền',ja:'劫財·競争・財に注意',ko:'겁재·경쟁, 재물 주의',ru:'Цзе-цай · соперники, берегите деньги',es:'Rival de Riqueza · cuida el dinero'},
+          '正官':{th:'ผู้ใหญ่/อำนาจตรง', en:'Authority figure', zh:'長輩·正統權威'},
+          '七殺':{th:'ผู้บังคับ·เฉียบขาด', en:'Strict enforcer', zh:'嚴厲管束'},
+          '正財':{th:'ทรัพย์ตรง·เงินเดือน', en:'Steady income', zh:'穩定收入'},
+          '偏財':{th:'ทรัพย์ลื่น·เก็งกำไร', en:'Windfall gains', zh:'意外財運'},
+          '食神':{th:'ความคิดสร้างสรรค์', en:'Creative ideas', zh:'創意巧思'},
+          '傷官':{th:'พรสวรรค์·ระวังคำพูด', en:'Talent, mind your words', zh:'才華洋溢·慎言'},
+          '正印':{th:'เทพคุณธรรม·พ่อแม่·ที่ปรึกษา', en:'Support & guidance', zh:'貴人扶持·長輩關懷'},
+          '偏印':{th:'ปัญญาเฉพาะ·งานวิจัย', en:'Specialized insight', zh:'專精智慧'},
+          '比肩':{th:'เพื่อน·พี่น้อง·ทีม', en:'Friends & peers', zh:'朋友·手足'},
+          '劫財':{th:'คู่แข่ง·ระวังเงิน', en:'Rivals, guard money', zh:'競爭者·慎財'},
         };
         const verdictTags = (d.verdict && Array.isArray(d.verdict.tags)) ? d.verdict.tags : [];
         const TAG_TX = {
-          '合':{th:'ผสานก้าน', en:'Stem union', zh:'天干合',vi:'Hợp can',ja:'天干合',ko:'천간합',ru:'Союз стволов',es:'Unión de troncos'},
-          '沖':{th:'ปะทะก้าน', en:'Stem clash', zh:'天干沖',vi:'Xung can',ja:'天干沖',ko:'천간충',ru:'Столкновение стволов',es:'Choque de troncos'},
-          '六合':{th:'จับคู่ผสาน', en:'Six harmony', zh:'六合',vi:'Lục Hợp',ja:'六合',ko:'육합',ru:'Шесть гармоний',es:'Seis armonías'},
-          '六沖':{th:'ปะทะกิ่ง', en:'Branch clash', zh:'六沖',vi:'Lục Xung',ja:'六沖',ko:'육충',ru:'Шесть столкновений',es:'Choque de ramas'},
-          '半合':{th:'ผสานครึ่ง·ดึงดูดธาตุใหม่', en:'Half union · new element pull', zh:'半合·引動新氣',vi:'Bán Hợp · dẫn khí mới',ja:'半合·新気を引く',ko:'반합·새 기운 유도',ru:'Полусоюз · новый элемент',es:'Media unión · nuevo elemento'},
-          '三合':{th:'ผสานเต็ม·ธาตุพันธมิตร', en:'Full union · allied element', zh:'三合·聯盟氣',vi:'Tam Hợp · khí liên minh',ja:'三合·連合の気',ko:'삼합·연합 기운',ru:'Полный союз · союзная стихия',es:'Unión plena · elemento aliado'},
-          '三會':{th:'ฤดูเต็มกำลัง', en:'Seasonal full power', zh:'三會·當季全力',vi:'Tam Hội · trọn khí mùa',ja:'三会·季の全力',ko:'삼회·계절 전력',ru:'Сезонная полнота',es:'Plenitud estacional'},
-          '害':{th:'ทำร้ายเงียบ', en:'Silent harm', zh:'相害',vi:'Tương Hại · hại ngầm',ja:'相害·陰の害',ko:'상해·은근한 해',ru:'Тайный вред',es:'Daño silencioso'},
-          '破':{th:'บั่นทอน', en:'Erosion', zh:'相破',vi:'Tương Phá · bào mòn',ja:'相破·浸食',ko:'상파·침식',ru:'Разрушение',es:'Erosión'},
-          '刑':{th:'ลงโทษ', en:'Punishment', zh:'相刑',vi:'Tương Hình · hình phạt',ja:'相刑·刑罰',ko:'상형·형벌',ru:'Наказание',es:'Castigo'},
-          '用神':{th:'ตรงของช่วย ★', en:'Favorable element ★', zh:'用神 ★',vi:'Dụng Thần · khí hợp ★',ja:'用神·喜神 ★',ko:'용신·이로운 기운 ★',ru:'Полезный элемент ★',es:'Elemento favorable ★'},
-          '用神·รอง':{th:'รองของช่วย', en:'Secondary favorable', zh:'喜神',vi:'Dụng Thần phụ',ja:'補助の喜神',ko:'보조 용신',ru:'Второстепенно полезный',es:'Favorable secundario'},
-          '忌神':{th:'ตรงของแสลง ⚠', en:'Unfavorable element ⚠', zh:'忌神 ⚠',vi:'Kỵ Thần · khí kỵ ⚠',ja:'忌神·凶の気 ⚠',ko:'기신·해로운 기운 ⚠',ru:'Неблагоприятный элемент ⚠',es:'Elemento desfavorable ⚠'},
-          '忌神แรง':{th:'ของแสลงแรง ⚠⚠', en:'Strong unfavorable ⚠⚠', zh:'忌神強 ⚠⚠',vi:'Kỵ Thần mạnh ⚠⚠',ja:'強い忌神 ⚠⚠',ko:'강한 기신 ⚠⚠',ru:'Сильно неблагоприятный ⚠⚠',es:'Muy desfavorable ⚠⚠'},
-          '合化用神':{th:'ผสานเป็นของช่วย ★', en:'Union transforms to favorable ★', zh:'合化用神 ★',vi:'Hợp hóa thành Dụng Thần ★',ja:'合化して喜神 ★',ko:'합화하여 용신 ★',ru:'Союз даёт полезное ★',es:'La unión se vuelve favorable ★'},
-          '合化忌神':{th:'ผสานเป็นของแสลง ⚠', en:'Union transforms to unfavorable ⚠', zh:'合化忌神 ⚠',vi:'Hợp hóa thành Kỵ Thần ⚠',ja:'合化して忌神 ⚠',ko:'합화하여 기신 ⚠',ru:'Союз даёт неблагоприятное ⚠',es:'La unión se vuelve desfavorable ⚠'},
-          '沖去忌神 ⚠':{th:'ลบของแสลง·พลิกเป็นบุญ', en:'Clash removes unfavorable · turns lucky', zh:'沖去忌神·轉禍為福',vi:'Xung khứ Kỵ Thần · hóa cát',ja:'忌神を沖去·吉に転ず',ko:'기신을 충거·길로 전환',ru:'Столкновение убирает вредное · к удаче',es:'El choque elimina lo desfavorable · trae suerte'},
-          '克':{th:'ครอบงำกัน', en:'Overcoming', zh:'相剋',vi:'Tương Khắc',ja:'相剋',ko:'상극',ru:'Преодоление',es:'Dominación'},
-          '被生':{th:'ได้รับการเลี้ยงดู', en:'Nourished', zh:'被生',vi:'Được sinh',ja:'生じられる',ko:'생을 받음',ru:'Питается',es:'Nutrido'},
-          '我生':{th:'เราเลี้ยงเขา', en:'I nourish it', zh:'我生',vi:'Ta sinh nó',ja:'我生ず',ko:'내가 생함',ru:'Я питаю',es:'Yo nutro'},
-          '克我':{th:'ถูกครอบงำ', en:'Overcome by', zh:'克我',vi:'Bị khắc',ja:'我を剋す',ko:'나를 극함',ru:'Преодолевает меня',es:'Me domina'},
-          '我克':{th:'ครอบงำเขา', en:'I overcome it', zh:'我克',vi:'Ta khắc nó',ja:'我剋す',ko:'내가 극함',ru:'Я преодолеваю',es:'Yo domino'},
-          '比和':{th:'ธาตุเดียวกัน·เพื่อน', en:'Same element · ally', zh:'比和·同氣',vi:'Tỷ Hòa · đồng khí',ja:'比和·同気',ko:'비화·동기',ru:'Та же стихия · союзник',es:'Mismo elemento · aliado'},
-          '生':{th:'เลี้ยงดูกัน', en:'Nourishing', zh:'相生',vi:'Tương Sinh',ja:'相生',ko:'상생',ru:'Порождение',es:'Generación'},
-          '生·เสียพลัง':{th:'เลี้ยงเขาแล้วเสียพลัง', en:'Nourishing drains strength', zh:'生而洩氣',vi:'Sinh · hao khí',ja:'生じて洩気',ko:'생하여 기운 누설',ru:'Питание истощает',es:'Nutrir agota'},
-          '調候·火助':{th:'ดวงหนาว·ได้ไฟอุ่น', en:'Cold chart · fire warms', zh:'調候·得火暖局',vi:'Điều hậu · Hỏa sưởi ấm',ja:'調候·火が暖める',ko:'조후·화가 데움',ru:'Регуляция · огонь согревает',es:'Ajuste · el fuego calienta'},
-          '用神·根':{th:'มีรากของช่วย', en:'Rooted favorable element', zh:'用神有根',vi:'Dụng Thần có gốc',ja:'用神に根あり',ko:'용신 유근',ru:'Полезный элемент укоренён',es:'Elemento favorable con raíz'},
-          '沖·ผสม·พอชดเชย':{th:'ปะทะแบบชดเชยกัน', en:'Clash offsets, balances out', zh:'沖而互抵',vi:'Xung · bù trừ cân bằng',ja:'沖·相殺で均衡',ko:'충·상쇄로 균형',ru:'Столкновение уравновешивается',es:'El choque se compensa'},
-          '沖去用神 ⚠⚠':{th:'ปะทะลบของช่วย ⚠⚠', en:'Clash removes favorable ⚠⚠', zh:'沖去用神 ⚠⚠',vi:'Xung khứ Dụng Thần ⚠⚠',ja:'用神を沖去 ⚠⚠',ko:'용신을 충거 ⚠⚠',ru:'Столкновение убирает полезное ⚠⚠',es:'El choque elimina lo favorable ⚠⚠'},
-          '貪合忘剋':{th:'ผสานชนะการครอบงำ', en:'Union overrides overcoming', zh:'貪合忘剋',vi:'Tham hợp quên khắc',ja:'貪合忘剋',ko:'탐합망극',ru:'Союз важнее преодоления',es:'La unión anula la dominación'},
-          'แรงขับ·ไม่นิ่ง':{th:'พลังแรงแต่ไม่นิ่ง', en:'Strong drive · unstable', zh:'力強不穩',vi:'Lực mạnh · bất ổn',ja:'勢い強·不安定',ko:'추진력 강·불안정',ru:'Сильный напор · нестабильно',es:'Impulso fuerte · inestable'},
+          '合':{th:'ผสานก้าน', en:'Stem union', zh:'天干合'},
+          '沖':{th:'ปะทะก้าน', en:'Stem clash', zh:'天干沖'},
+          '六合':{th:'จับคู่ผสาน', en:'Six harmony', zh:'六合'},
+          '六沖':{th:'ปะทะกิ่ง', en:'Branch clash', zh:'六沖'},
+          '半合':{th:'ผสานครึ่ง·ดึงดูดธาตุใหม่', en:'Half union · new element pull', zh:'半合·引動新氣'},
+          '三合':{th:'ผสานเต็ม·ธาตุพันธมิตร', en:'Full union · allied element', zh:'三合·聯盟氣'},
+          '三會':{th:'ฤดูเต็มกำลัง', en:'Seasonal full power', zh:'三會·當季全力'},
+          '害':{th:'ทำร้ายเงียบ', en:'Silent harm', zh:'相害'},
+          '破':{th:'บั่นทอน', en:'Erosion', zh:'相破'},
+          '刑':{th:'ลงโทษ', en:'Punishment', zh:'相刑'},
+          '用神':{th:'ตรงของช่วย ★', en:'Favorable element ★', zh:'用神 ★'},
+          '用神·รอง':{th:'รองของช่วย', en:'Secondary favorable', zh:'喜神'},
+          '忌神':{th:'ตรงของแสลง ⚠', en:'Unfavorable element ⚠', zh:'忌神 ⚠'},
+          '忌神แรง':{th:'ของแสลงแรง ⚠⚠', en:'Strong unfavorable ⚠⚠', zh:'忌神強 ⚠⚠'},
+          '合化用神':{th:'ผสานเป็นของช่วย ★', en:'Union transforms to favorable ★', zh:'合化用神 ★'},
+          '合化忌神':{th:'ผสานเป็นของแสลง ⚠', en:'Union transforms to unfavorable ⚠', zh:'合化忌神 ⚠'},
+          '沖去忌神 ⚠':{th:'ลบของแสลง·พลิกเป็นบุญ', en:'Clash removes unfavorable · turns lucky', zh:'沖去忌神·轉禍為福'},
+          '克':{th:'ครอบงำกัน', en:'Overcoming', zh:'相剋'},
+          '被生':{th:'ได้รับการเลี้ยงดู', en:'Nourished', zh:'被生'},
+          '我生':{th:'เราเลี้ยงเขา', en:'I nourish it', zh:'我生'},
+          '克我':{th:'ถูกครอบงำ', en:'Overcome by', zh:'克我'},
+          '我克':{th:'ครอบงำเขา', en:'I overcome it', zh:'我克'},
+          '比和':{th:'ธาตุเดียวกัน·เพื่อน', en:'Same element · ally', zh:'比和·同氣'},
+          '生':{th:'เลี้ยงดูกัน', en:'Nourishing', zh:'相生'},
+          '生·เสียพลัง':{th:'เลี้ยงเขาแล้วเสียพลัง', en:'Nourishing drains strength', zh:'生而洩氣'},
+          '調候·火助':{th:'ดวงหนาว·ได้ไฟอุ่น', en:'Cold chart · fire warms', zh:'調候·得火暖局'},
+          '用神·根':{th:'มีรากของช่วย', en:'Rooted favorable element', zh:'用神有根'},
+          '沖·ผสม·พอชดเชย':{th:'ปะทะแบบชดเชยกัน', en:'Clash offsets, balances out', zh:'沖而互抵'},
+          '沖去用神 ⚠⚠':{th:'ปะทะลบของช่วย ⚠⚠', en:'Clash removes favorable ⚠⚠', zh:'沖去用神 ⚠⚠'},
+          '貪合忘剋':{th:'ผสานชนะการครอบงำ', en:'Union overrides overcoming', zh:'貪合忘剋'},
+          'แรงขับ·ไม่นิ่ง':{th:'พลังแรงแต่ไม่นิ่ง', en:'Strong drive · unstable', zh:'力強不穩'},
         };
-        const _tx3 = (dict, key) => { const e = dict[key]; if (!e) return null; return _pl(e) || e.en || e.th; };
+        const _tx3 = (dict, key) => { const e = dict[key]; if (!e) return null; return (lg==='th'?e.th:lg==='zh'?e.zh:e.en) || e.th; };
         function buildFooter() {
           const tg = d.ten_god;
           const tgTh = tg ? (_tx3(TEN_GOD_TH, tg) || tg) : '';
           if (state.goal === 'all') {
             const reasons = verdictTags.slice(0,3).map(t => _tx3(TAG_TX, t) || t).filter(Boolean).join(' · ');
-            const arriveTxt = _pl({th:'มาเยือน',en:'arrives',zh:'來訪',vi:'xuất hiện',ja:'が巡る',ko:'도래',ru:'приходит',es:'llega'});
+            const arriveTxt = ({th:'มาเยือน',en:'arrives',zh:'來訪'})[lg] || 'มาเยือน';
             const head = tg ? `${tgTh} ${arriveTxt}` : '';
-            const emptyTxt = _pl({th:'ดวงต่างจากสากลตามเสาเกิด',en:'Your chart differs from the universal reading, based on your birth pillars',zh:'因您的生辰八字，命盤與通用不同',vi:'Lá số của bạn khác với phổ quát, dựa trên các trụ ngày sinh',ja:'あなたの命式は生まれの四柱により共通と異なります',ko:'당신의 사주는 생년 기둥에 따라 공통과 다릅니다',ru:'Ваша карта отличается от общего прочтения — по столпам рождения',es:'Tu carta difiere de la lectura universal, según tus pilares de nacimiento'});
+            const emptyTxt = ({th:'ดวงต่างจากสากลตามเสาเกิด',en:'Your chart differs from the universal reading, based on your birth pillars',zh:'因您的生辰八字，命盤與通用不同'})[lg] || 'ดวงต่างจากสากลตามเสาเกิด';
             return [head, reasons].filter(Boolean).join(' · ') || emptyTxt;
           }
           const narrEntry = (NARRATIVE_BY_GOAL[state.goal] || {})[tg];
           const narr = narrEntry ? _tx3(NARRATIVE_BY_GOAL[state.goal], tg) : null;
-          const resultTxt = _pl({th:'ผลตามดวงคุณ',en:'Based on your personal chart',zh:'依您命盤而定',vi:'Theo lá số cá nhân của bạn',ja:'あなたの命式に基づく',ko:'당신의 사주에 따름',ru:'По вашей личной карте',es:'Según tu carta personal'});
+          const resultTxt = ({th:'ผลตามดวงคุณ',en:'Based on your personal chart',zh:'依您命盤而定'})[lg] || 'ผลตามดวงคุณ';
           if (narr) return `${tgTh} · ${narr}`;
           return tg ? `${tgTh} · ${resultTxt}` : resultTxt;
         }
@@ -1681,19 +1485,14 @@
         const top = d.topIntents || [];
         const worst = d.worstIntents || [];
         const ps = Math.max(0, Math.min(100, Math.round(rawScore)));
-        const QT_TXT = _pl({
+        const QT_TXT = {
           th: { head:'⚡ สรุปสั้น', best:'✅ วันนี้ทำได้ดีที่สุด:', avoid:'❌ ห้ามทำ:', none:'—' },
           en: { head:'⚡ Quick Take', best:'✅ Best today:', avoid:'❌ Avoid:', none:'—' },
           zh: { head:'⚡ 速覽',       best:'✅ 今日宜:', avoid:'❌ 忌:', none:'—' },
-          vi: { head:'⚡ Tóm tắt nhanh', best:'✅ Hôm nay hợp nhất:', avoid:'❌ Nên tránh:', none:'—' },
-          ja: { head:'⚡ ひと目', best:'✅ 今日の吉:', avoid:'❌ 忌:', none:'—' },
-          ko: { head:'⚡ 요약', best:'✅ 오늘 좋은 일:', avoid:'❌ 피할 일:', none:'—' },
-          ru: { head:'⚡ Кратко', best:'✅ Лучше всего сегодня:', avoid:'❌ Избегать:', none:'—' },
-          es: { head:'⚡ Resumen', best:'✅ Mejor hoy:', avoid:'❌ Evitar:', none:'—' },
-        }) || {};
-        const _gist = (ps >= 65) ? _pl({th:'วันดี · ลุยเต็มที่ได้',en:'Good day · go for it',zh:'吉日·宜進',vi:'Ngày tốt · cứ tiến tới',ja:'吉日 · 積極的に',ko:'좋은 날 · 밀어붙이기 좋음',ru:'Хороший день · действуйте',es:'Buen día · adelante'})
-                    : (ps >= 45) ? _pl({th:'วันธรรมดา · ดีสำหรับงานเบา',en:'Routine day · light tasks ok',zh:'平日·宜輕務',vi:'Ngày thường · hợp việc nhẹ',ja:'平日 · 軽い用事に',ko:'평범한 날 · 가벼운 일에 적합',ru:'Обычный день · лёгкие дела',es:'Día normal · tareas ligeras'})
-                    : _pl({th:'วันระวัง · เลี่ยงตัดสินใจใหญ่',en:'Caution day · avoid big decisions',zh:'凶日·忌重決',vi:'Ngày thận trọng · tránh quyết định lớn',ja:'注意の日 · 大きな決断は避ける',ko:'주의의 날 · 큰 결정 자제',ru:'День осторожности · без крупных решений',es:'Día de cautela · evita grandes decisiones'});
+        }[lg] || {};
+        const _gist = (ps >= 65) ? ({th:'วันดี · ลุยเต็มที่ได้',en:'Good day · go for it',zh:'吉日·宜進'}[lg])
+                    : (ps >= 45) ? ({th:'วันธรรมดา · ดีสำหรับงานเบา',en:'Routine day · light tasks ok',zh:'平日·宜輕務'}[lg])
+                    : ({th:'วันระวัง · เลี่ยงตัดสินใจใหญ่',en:'Caution day · avoid big decisions',zh:'凶日·忌重決'}[lg]);
         const _topTxt = top.length ? top.map(t => `${t.icon}${_calIntentName(t, lg)}`).join(' · ') : QT_TXT.none;
         const _worstTxt = worst.length ? worst.map(t => `${t.icon}${_calIntentName(t, lg)}`).join(' · ') : QT_TXT.none;
         return `<div class="sp-quick">
@@ -1709,40 +1508,40 @@
         const intStat = d.intentStatus || {};
         if (!Object.keys(intStat).length) return '';
         const INTENTS = window._calIntents || [
-          { id:'start_work',group:'work',icon:'🎯',th:'เริ่มงาน',en:'Start',zh:'就職',vi:'Nhậm chức',ja:'就職',ko:'취업',ru:'Начать работу',es:'Empezar' },
-          { id:'sign_contract',group:'work',icon:'📝',th:'สัญญา',en:'Contract',zh:'立券',vi:'Ký hợp đồng',ja:'契約',ko:'계약',ru:'Договор',es:'Contrato' },
-          { id:'open_business',group:'work',icon:'🏪',th:'เปิดร้าน',en:'Open biz',zh:'開市',vi:'Khai trương',ja:'開業',ko:'개업',ru:'Открыть дело',es:'Abrir negocio' },
-          { id:'negotiate',group:'work',icon:'🤝',th:'เจรจา',en:'Negotiate',zh:'交易',vi:'Đàm phán',ja:'交渉',ko:'협상',ru:'Переговоры',es:'Negociar' },
-          { id:'invest',group:'wealth',icon:'💵',th:'ลงทุน',en:'Invest',zh:'納財',vi:'Đầu tư',ja:'投資',ko:'투자',ru:'Инвестиции',es:'Invertir' },
-          { id:'loan',group:'wealth',icon:'🏦',th:'กู้ยืม',en:'Loan',zh:'立卷',vi:'Vay mượn',ja:'融資',ko:'대출',ru:'Заём',es:'Préstamo' },
-          { id:'marriage',group:'love',icon:'💒',th:'แต่งงาน',en:'Marry',zh:'嫁娶',vi:'Kết hôn',ja:'結婚',ko:'결혼',ru:'Брак',es:'Casarse' },
-          { id:'engagement',group:'love',icon:'💍',th:'หมั้น',en:'Engage',zh:'納采',vi:'Đính hôn',ja:'婚約',ko:'약혼',ru:'Помолвка',es:'Compromiso' },
-          { id:'gathering',group:'love',icon:'🎉',th:'งานเลี้ยง',en:'Gather',zh:'會親友',vi:'Gặp gỡ',ja:'会合',ko:'모임',ru:'Встреча',es:'Reunión' },
-          { id:'move_house',group:'home',icon:'🏠',th:'ย้ายบ้าน',en:'Move',zh:'入宅',vi:'Dọn nhà',ja:'引越し',ko:'이사',ru:'Переезд',es:'Mudanza' },
-          { id:'construct',group:'home',icon:'🧱',th:'ก่อสร้าง',en:'Build',zh:'動土',vi:'Khởi công',ja:'着工',ko:'착공',ru:'Стройка',es:'Construir' },
-          { id:'renovate',group:'home',icon:'🔧',th:'ซ่อมแซม',en:'Renovate',zh:'修造',vi:'Sửa chữa',ja:'改修',ko:'수리',ru:'Ремонт',es:'Renovar' },
-          { id:'install_bed',group:'home',icon:'🛏️',th:'ตั้งเตียง',en:'Bed',zh:'安床',vi:'Kê giường',ja:'安床',ko:'침대 설치',ru:'Установка кровати',es:'Instalar cama' },
-          { id:'travel',group:'travel',icon:'🚗',th:'เดินทาง',en:'Travel',zh:'出行',vi:'Đi xa',ja:'外出',ko:'여행',ru:'Поездка',es:'Viajar' },
-          { id:'pray_heal',group:'travel',icon:'🙏',th:'ไหว้พระ',en:'Pray',zh:'祈福',vi:'Cầu phúc',ja:'祈願',ko:'기도',ru:'Молитва',es:'Orar' },
+          { id:'start_work',group:'work',icon:'🎯',th:'เริ่มงาน',en:'Start',zh:'就職' },
+          { id:'sign_contract',group:'work',icon:'📝',th:'สัญญา',en:'Contract',zh:'立券' },
+          { id:'open_business',group:'work',icon:'🏪',th:'เปิดร้าน',en:'Open biz',zh:'開市' },
+          { id:'negotiate',group:'work',icon:'🤝',th:'เจรจา',en:'Negotiate',zh:'交易' },
+          { id:'invest',group:'wealth',icon:'💵',th:'ลงทุน',en:'Invest',zh:'納財' },
+          { id:'loan',group:'wealth',icon:'🏦',th:'กู้ยืม',en:'Loan',zh:'立卷' },
+          { id:'marriage',group:'love',icon:'💒',th:'แต่งงาน',en:'Marry',zh:'嫁娶' },
+          { id:'engagement',group:'love',icon:'💍',th:'หมั้น',en:'Engage',zh:'納采' },
+          { id:'gathering',group:'love',icon:'🎉',th:'งานเลี้ยง',en:'Gather',zh:'會親友' },
+          { id:'move_house',group:'home',icon:'🏠',th:'ย้ายบ้าน',en:'Move',zh:'入宅' },
+          { id:'construct',group:'home',icon:'🧱',th:'ก่อสร้าง',en:'Build',zh:'動土' },
+          { id:'renovate',group:'home',icon:'🔧',th:'ซ่อมแซม',en:'Renovate',zh:'修造' },
+          { id:'install_bed',group:'home',icon:'🛏️',th:'ตั้งเตียง',en:'Bed',zh:'安床' },
+          { id:'travel',group:'travel',icon:'🚗',th:'เดินทาง',en:'Travel',zh:'出行' },
+          { id:'pray_heal',group:'travel',icon:'🙏',th:'ไหว้พระ',en:'Pray',zh:'祈福' },
         ];
         const GROUPS = ['work','wealth','love','home','travel'];
         const GRP_LBL = {
-          work:   {th:'💼 งาน · อาชีพ',en:'💼 Work',zh:'💼 事業',vi:'💼 Công việc',ja:'💼 仕事',ko:'💼 일',ru:'💼 Работа',es:'💼 Trabajo'},
-          wealth: {th:'💰 ทรัพย์ · เงิน',en:'💰 Wealth',zh:'💰 財運',vi:'💰 Tài lộc',ja:'💰 財運',ko:'💰 재물',ru:'💰 Богатство',es:'💰 Riqueza'},
-          love:   {th:'❤️ ความรัก · ครอบครัว',en:'❤️ Love · Family',zh:'❤️ 婚戀',vi:'❤️ Tình cảm · Gia đình',ja:'❤️ 恋愛 · 家庭',ko:'❤️ 사랑 · 가정',ru:'❤️ Любовь · Семья',es:'❤️ Amor · Familia'},
-          home:   {th:'🏠 บ้าน · ทรัพย์สิน',en:'🏠 Home',zh:'🏠 居家',vi:'🏠 Nhà cửa',ja:'🏠 住居',ko:'🏠 집',ru:'🏠 Дом',es:'🏠 Hogar'},
-          travel: {th:'🚗 เดินทาง · สุขภาพ',en:'🚗 Travel',zh:'🚗 出行',vi:'🚗 Di chuyển',ja:'🚗 移動',ko:'🚗 이동',ru:'🚗 Поездки',es:'🚗 Viajes'},
+          work:   {th:'💼 งาน · อาชีพ',en:'💼 Work',zh:'💼 事業'},
+          wealth: {th:'💰 ทรัพย์ · เงิน',en:'💰 Wealth',zh:'💰 財運'},
+          love:   {th:'❤️ ความรัก · ครอบครัว',en:'❤️ Love · Family',zh:'❤️ 婚戀'},
+          home:   {th:'🏠 บ้าน · ทรัพย์สิน',en:'🏠 Home',zh:'🏠 居家'},
+          travel: {th:'🚗 เดินทาง · สุขภาพ',en:'🚗 Travel',zh:'🚗 出行'},
         };
-        const TIER_LBL = _pl({th:{good:'🟢 ดี',neutral:'⊘ กลาง',bad:'🔴 ห้าม'},en:{good:'🟢 Good',neutral:'⊘ OK',bad:'🔴 Avoid'},zh:{good:'🟢 宜',neutral:'⊘ 中',bad:'🔴 忌'},vi:{good:'🟢 Tốt',neutral:'⊘ Bình',bad:'🔴 Tránh'},ja:{good:'🟢 吉',neutral:'⊘ 中',bad:'🔴 忌'},ko:{good:'🟢 좋음',neutral:'⊘ 보통',bad:'🔴 피함'},ru:{good:'🟢 Хорошо',neutral:'⊘ Норм',bad:'🔴 Избегать'},es:{good:'🟢 Bueno',neutral:'⊘ Normal',bad:'🔴 Evitar'}}) || {};
-        const HEAD = _pl({th:'🎯 15 หมวดวันนี้',en:'🎯 15 Activities',zh:'🎯 15活動',vi:'🎯 15 việc hôm nay',ja:'🎯 本日の15項目',ko:'🎯 오늘 15가지',ru:'🎯 15 дел сегодня',es:'🎯 15 actividades'});
+        const TIER_LBL = {th:{good:'🟢 ดี',neutral:'⊘ กลาง',bad:'🔴 ห้าม'},en:{good:'🟢 Good',neutral:'⊘ OK',bad:'🔴 Avoid'},zh:{good:'🟢 宜',neutral:'⊘ 中',bad:'🔴 忌'}}[lg] || {};
+        const HEAD = ({th:'🎯 15 หมวดวันนี้',en:'🎯 15 Activities',zh:'🎯 15活動'})[lg];
         let html = `<div class="sp-section"><h4><span>${HEAD}</span></h4><div class="sp-intents">`;
         GROUPS.forEach(grp => {
           const cells = INTENTS.filter(i => i.group === grp).map(i => {
             const tier = intStat[i.id] || 'neutral';
-            const lbl = _pl(i);
+            const lbl = (lg==='th'?i.th:lg==='zh'?i.zh:i.en);
             return `<div class="it-cell ${tier}"><span class="it-ico">${i.icon}</span><span class="it-lbl">${lbl}</span><span class="it-tier">${TIER_LBL[tier]||''}</span></div>`;
           }).join('');
-          html += `<div class="grp-h">${_pl(GRP_LBL[grp])}</div><div class="grp-row">${cells}</div>`;
+          html += `<div class="grp-h">${GRP_LBL[grp][lg]}</div><div class="grp-row">${cells}</div>`;
         });
         html += `</div></div>`;
         return html;
@@ -1750,29 +1549,19 @@
 
       ${(() => {
         /* 18 พ.ค. redesign · หลัก 5 อากงอาม่า · 2 col · ไทยใหญ่ จีนเล็กลายเซ็น */
-        const tpair = (t) => (window.HK_termPair) ? window.HK_termPair(t, _tpLang) : { han:t, th:'' };
-        const _isBaseLg = (lg==='th'||lg==='en'||lg==='zh');
+        const tpair = (t) => (window.HK_termPair) ? window.HK_termPair(t, lg) : { han:t, th:'' };
         const renderList = (arr) => arr.length ? arr.map(t => {
           const p = tpair(t);
-          const tr = (!_isBaseLg && TONGSHU_TR[t]) ? (TONGSHU_TR[t][lg] || '') : '';
-          /* base langs: term + glyph (unchanged) · new langs: native term (or glyph) + glyph */
-          const mainLine = _isBaseLg ? (p.th || '—') : (tr || p.han || '—');
-          const subLine  = _isBaseLg ? p.han : (tr ? p.han : '');
           return `<div style="padding:8px 10px;border-bottom:1px dashed rgba(255,255,255,.05);display:flex;flex-direction:column;gap:2px;">
-            <div style="font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600;line-height:1.3;">${mainLine}</div>
-            <div style="font-family:var(--tc);font-size:11px;color:var(--fg-faint);opacity:.7;">${subLine}</div>
+            <div style="font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600;line-height:1.3;">${p.th || '—'}</div>
+            <div style="font-family:var(--tc);font-size:11px;color:var(--fg-faint);opacity:.7;">${p.han}</div>
           </div>`;
-        }).join('') : `<div style="padding:14px 10px;text-align:center;color:var(--fg-faint);font-size:11px;font-style:italic;">— ${_pl({th:'ไม่มี',en:'none',zh:'無',vi:'không có',ja:'なし',ko:'없음',ru:'нет',es:'ninguno'})} —</div>`;
-        const TXT = _pl({
+        }).join('') : `<div style="padding:14px 10px;text-align:center;color:var(--fg-faint);font-size:11px;font-style:italic;">— ${({th:'ไม่มี',en:'none',zh:'無'})[lg]} —</div>`;
+        const TXT = {
           th:{ head:'黃曆·ทำได้ / ห้ามทำ', yi:'ทำได้', ji:'ห้ามทำ', note:'💡 黃曆 = ตำราทั่วไป (ทุกคน · ไม่ขึ้นกับหมวด)' },
           en:{ head:'黃曆·Do / Avoid',     yi:'Do',     ji:'Avoid',   note:'💡 黃曆 = universal almanac (everyone)' },
           zh:{ head:'黃曆·宜/忌',          yi:'宜',      ji:'忌',      note:'💡 黃曆 為通書 · 不分人事' },
-          vi:{ head:'黃曆·Nên / Kỵ', yi:'Nên làm', ji:'Nên kỵ', note:'💡 黃曆 = lịch chung (mọi người · không theo mục)' },
-          ja:{ head:'黃曆·宜 / 忌', yi:'吉事', ji:'忌事', note:'💡 黃曆 = 共通の暦（万人・分野を問わず）' },
-          ko:{ head:'黃曆·마땅 / 꺼림', yi:'좋은 일', ji:'꺼릴 일', note:'💡 黃曆 = 공통 책력(모두 · 분야 무관)' },
-          ru:{ head:'黃曆·Можно / Нельзя', yi:'Можно', ji:'Нельзя', note:'💡 黃曆 = общий альманах (для всех · без учёта сферы)' },
-          es:{ head:'黃曆·Hacer / Evitar', yi:'Hacer', ji:'Evitar', note:'💡 黃曆 = almanaque universal (para todos)' },
-        }) || { head:'黃曆', yi:'宜', ji:'忌', note:'' };
+        }[lg] || { head:'黃曆', yi:'宜', ji:'忌', note:'' };
         return `<div class="sp-section">
           <h4><span>${TXT.head}</span></h4>
           ${state.goal==='all' ? `<div style="font-size:11px;color:var(--fg-soft);opacity:.75;margin:-4px 0 10px;letter-spacing:.02em;">${TXT.note}</div>` : ''}
@@ -1807,7 +1596,7 @@
       <div class="sp-section">
         <h4>
           <span data-i18n="cal.sp.stars">神煞 · ดาวประจำวัน</span>
-          <span class="tc" style="color:${sd.total>=0?'var(--good)':'var(--bad)'};font-family:var(--mono);font-size:13px;">${sd.total>=0?'+':''}${sd.total} ${_pl({th:'pts',en:'pts',zh:'pts',vi:'điểm',ja:'点',ko:'점',ru:'очк.',es:'puntos'})}</span>
+          <span class="tc" style="color:${sd.total>=0?'var(--good)':'var(--bad)'};font-family:var(--mono);font-size:13px;">${sd.total>=0?'+':''}${sd.total} pts</span>
         </h4>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${sd.good.map(s => `<div style="display:grid;grid-template-columns:54px 1fr auto;gap:8px;align-items:start;padding:8px 10px;background:var(--wood-bg);border-left:3px solid var(--good);border-radius:6px;">
@@ -1820,7 +1609,7 @@
             <span style="font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.45;"><b>${_calStarName(s, lg)}</b><div style="font-size:10.5px;color:var(--fg-soft);margin-top:2px;">${_calStarDesc(s, lg)}</div></span>
             <span style="font-family:var(--mono);font-size:11px;color:var(--bad);font-weight:700;white-space:nowrap;">${s.weight}</span>
           </div>`).join('')}
-          ${(sd.unknown||[]).length ? `<div style="font-size:10px;color:var(--fg-faint);text-align:center;padding:6px;">${_pl({th:'ดาวที่ยังไม่แปล:',en:'Untranslated:',zh:'未翻譯:',vi:'Chưa dịch:',ja:'未翻訳:',ko:'미번역:',ru:'Без перевода:',es:'Sin traducir:'})} ${sd.unknown.join(' · ')}</div>` : ''}
+          ${(sd.unknown||[]).length ? `<div style="font-size:10px;color:var(--fg-faint);text-align:center;padding:6px;">${({th:'ดาวที่ยังไม่แปล:',en:'Untranslated:',zh:'未翻譯:'})[lg]} ${sd.unknown.join(' · ')}</div>` : ''}
         </div>
       </div>
 
@@ -1876,27 +1665,26 @@
   /* 19 พ.ค. spec #2 · ทิศไทย + ดาวไทย + 中文 รอง · 3 ภาษา */
   /* 19 พ.ค. เจ้านาย · อาม่าอากงบอก "ใช้สัญลักษณ์หมด" · NW/N/NE ทุกภาษา */
   const DIR_LABELS = {
-    NW: { th:'NW', en:'NW', zh:'NW', vi:'Tây Bắc', ja:'北西', ko:'북서', ru:'СЗ', es:'Noroeste' },
-    N:  { th:'N',  en:'N',  zh:'N',  vi:'Bắc',      ja:'北',   ko:'북',   ru:'Север', es:'Norte' },
-    NE: { th:'NE', en:'NE', zh:'NE', vi:'Đông Bắc', ja:'北東', ko:'북동', ru:'СВ', es:'Noreste' },
-    W:  { th:'W',  en:'W',  zh:'W',  vi:'Tây',      ja:'西',   ko:'서',   ru:'Запад', es:'Oeste' },
-    E:  { th:'E',  en:'E',  zh:'E',  vi:'Đông',     ja:'東',   ko:'동',   ru:'Восток', es:'Este' },
-    SW: { th:'SW', en:'SW', zh:'SW', vi:'Tây Nam',  ja:'南西', ko:'남서', ru:'ЮЗ', es:'Suroeste' },
-    S:  { th:'S',  en:'S',  zh:'S',  vi:'Nam',      ja:'南',   ko:'남',   ru:'Юг', es:'Sur' },
-    SE: { th:'SE', en:'SE', zh:'SE', vi:'Đông Nam', ja:'南東', ko:'남동', ru:'ЮВ', es:'Sureste' },
+    NW: { th:'NW', en:'NW', zh:'NW' },
+    N:  { th:'N',  en:'N',  zh:'N'  },
+    NE: { th:'NE', en:'NE', zh:'NE' },
+    W:  { th:'W',  en:'W',  zh:'W'  },
+    E:  { th:'E',  en:'E',  zh:'E'  },
+    SW: { th:'SW', en:'SW', zh:'SW' },
+    S:  { th:'S',  en:'S',  zh:'S'  },
+    SE: { th:'SE', en:'SE', zh:'SE' },
   };
   const STAR_DIR_LABELS = {
-    '财神': { ico:'💰', th:'เทพทรัพย์', en:'Wealth God',  zh:'財神', vi:'Thần Tài', ja:'財神', ko:'재신', ru:'Бог богатства', es:'Dios de la Riqueza' },
-    '財神': { ico:'💰', th:'เทพทรัพย์', en:'Wealth God',  zh:'財神', vi:'Thần Tài', ja:'財神', ko:'재신', ru:'Бог богатства', es:'Dios de la Riqueza' },
-    '福神': { ico:'🍀', th:'เทพโชค',    en:'Fortune God', zh:'福神', vi:'Phúc Thần', ja:'福神', ko:'복신', ru:'Бог удачи', es:'Dios de la Fortuna' },
-    '喜神': { ico:'🌸', th:'เทพมงคล',   en:'Joy God',     zh:'喜神', vi:'Hỷ Thần', ja:'喜神', ko:'희신', ru:'Бог радости', es:'Dios de la Alegría' },
-    '阳贵': { ico:'🎓', th:'ขุนนางหยาง', en:'Yang Noble', zh:'陽貴', vi:'Quý Nhân Dương', ja:'陽貴人', ko:'양귀인', ru:'Ян-покровитель', es:'Noble Yang' },
-    '陽貴': { ico:'🎓', th:'ขุนนางหยาง', en:'Yang Noble', zh:'陽貴', vi:'Quý Nhân Dương', ja:'陽貴人', ko:'양귀인', ru:'Ян-покровитель', es:'Noble Yang' },
-    '阴贵': { ico:'🌙', th:'ขุนนางหยิน', en:'Yin Noble',  zh:'陰貴', vi:'Quý Nhân Âm', ja:'陰貴人', ko:'음귀인', ru:'Инь-покровитель', es:'Noble Yin' },
-    '陰貴': { ico:'🌙', th:'ขุนนางหยิน', en:'Yin Noble',  zh:'陰貴', vi:'Quý Nhân Âm', ja:'陰貴人', ko:'음귀인', ru:'Инь-покровитель', es:'Noble Yin' },
+    '财神': { ico:'💰', th:'เทพทรัพย์', en:'Wealth God',  zh:'財神' },
+    '財神': { ico:'💰', th:'เทพทรัพย์', en:'Wealth God',  zh:'財神' },
+    '福神': { ico:'🍀', th:'เทพโชค',    en:'Fortune God', zh:'福神' },
+    '喜神': { ico:'🌸', th:'เทพมงคล',   en:'Joy God',     zh:'喜神' },
+    '阳贵': { ico:'🎓', th:'ขุนนางหยาง', en:'Yang Noble', zh:'陽貴' },
+    '陽貴': { ico:'🎓', th:'ขุนนางหยาง', en:'Yang Noble', zh:'陽貴' },
+    '阴贵': { ico:'🌙', th:'ขุนนางหยิน', en:'Yin Noble',  zh:'陰貴' },
+    '陰貴': { ico:'🌙', th:'ขุนนางหยิน', en:'Yin Noble',  zh:'陰貴' },
   };
-  function _calDirLang(){ return getRawLang(); }
-  function _dirNm(code){ const m = DIR_LABELS[code]; if(!m) return code; const l = getRawLang(); return m[l] || m.en || code; }
+  function _calDirLang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
 
   /* render 8 directions · 3×3 grid · ใช้ /api/today/directions ถ้ามี */
   /* 19 พ.ค. Phase 13 · Option B · card stack + mini compass · Codex approved */
@@ -1918,7 +1706,7 @@
         const key = s.han || s.name || '';
         const meta = STAR_DIR_LABELS[key];
         const priority = STAR_PRIORITY[key] || 1;
-        return { key, meta, priority, label: meta ? (meta[lang] || meta.en || meta.th) : key, ico: meta?.ico || '✨' };
+        return { key, meta, priority, label: meta ? (meta[lang] || meta.th) : key, ico: meta?.ico || '✨' };
       });
       const starScore = stars.reduce((sum, s) => sum + s.priority, 0);
       const score = (qual==='best' ? 100 : qual==='good' ? 80 : qual==='avoid'||qual==='bad' ? -50 : 30) + starScore * 5;
@@ -1934,8 +1722,8 @@
     if (good.length) {
       const b = good[0];
       const dirLbl = DIR_LABELS[b.code] || { th:b.code };
-      const dirNameEN = _dirNm(b.code);
-      const dirNameLocal = dirLbl[lang] || dirLbl.en || dirLbl.th;
+      const dirNameEN = b.code;
+      const dirNameLocal = dirLbl[lang] || dirLbl.th;
       const starChips = b.stars.map(s => `<span class="db-star">${s.ico} ${s.label}</span>`).join('');
       /* "เหมาะกับ" — derive จากดาวเด่น */
       const topStar = b.stars[0]?.key;
@@ -1968,8 +1756,8 @@
         const medal = idx === 0 ? '🥈' : '🥉';
         const starLine = e.stars.map(s => s.label).slice(0, 2).join(' · ') || '—';
         return `<div class="dr-card">
-          <div class="drc-head">${medal} ${_dirNm(e.code)}</div>
-          <div class="drc-rank">${dirLbl[lang] || dirLbl.en || dirLbl.th}</div>
+          <div class="drc-head">${medal} ${e.code}</div>
+          <div class="drc-rank">${dirLbl[lang] || dirLbl.th}</div>
           <div class="drc-stars">${starLine}</div>
         </div>`;
       }).join('');
@@ -1990,8 +1778,8 @@
           <div class="dir-rank-label">⛔ ${T('cal.dir.avoid')}</div>
           <div class="dir-avoid-card">
             <span class="dac-ico">⛔</span>
-            <span class="dac-dir">${_dirNm(a.code)}</span>
-            <span class="dac-reason">${dirLbl[lang] || dirLbl.en || dirLbl.th} · ${T('cal.dir.avoid.reason')}</span>
+            <span class="dac-dir">${a.code}</span>
+            <span class="dac-reason">${dirLbl[lang] || dirLbl.th} · ${T('cal.dir.avoid.reason')}</span>
           </div>
         </div>`;
     }
@@ -2001,7 +1789,7 @@
       .filter(e => e.stars.length || e.qual === 'avoid' || e.qual === 'bad')
       .map(e => {
         const tag = e.qual === 'avoid' || e.qual === 'bad' ? '忌' : (e.stars[0]?.key || '');
-        return `${_dirNm(e.code)} ${tag}`;
+        return `${e.code} ${tag}`;
       }).join(' · ') || '—';
     const allLineHtml = `<div class="dir-all-line">${T('cal.dir.all')} · ${allLine}</div>`;
 
@@ -2190,8 +1978,7 @@ window.HK_I18N = {
   /* hero */
   'cal.crumb.home':  { th:'หน้าหลัก', en:'Home', zh:'首頁' },
   'cal.crumb.cal':   { th:'ปฏิทินมงคล · 黃曆 TONGSHU', en:'Tongshu Calendar · 黃曆', zh:'黃曆 · 吉日選擇' },
-  'cal.h.label':     { th:'黃曆 · TONGSHU CALENDAR', en:'黃曆 · TONGSHU CALENDAR', zh:'黃曆 · 通書', vi:'黃曆 · LỊCH THÔNG THƯ', ja:'黃曆 · 通書カレンダー', ko:'黃曆 · 통서 달력', ru:'黃曆 · КАЛЕНДАРЬ ТУНШУ', es:'黃曆 · CALENDARIO TONGSHU' },
-  'cal.h.hero':      { th:'黃曆 · TONGSHU CALENDAR', en:'黃曆 · TONGSHU CALENDAR', zh:'黃曆 · 通書', vi:'黃曆 · LỊCH THÔNG THƯ', ja:'黃曆 · 通書カレンダー', ko:'黃曆 · 통서 달력', ru:'黃曆 · КАЛЕНДАРЬ ТУНШУ', es:'黃曆 · CALENDARIO TONGSHU' },
+  'cal.h.label':     { th:'黃曆 · TONGSHU CALENDAR', en:'黃曆 · TONGSHU CALENDAR', zh:'黃曆 · 通書' },
   'cal.h.title':     { th:'ปฏิทินมงคล <span class="tc">擇日</span>', en:'Tongshu Calendar <span class="tc">擇日</span>', zh:'吉日選擇 <span class="tc">擇日</span>' },
   'cal.h.lede':      { th:'ปฏิทินจีนโบราณ <b>+</b> ดวงส่วนตัวของคุณ — ทุกวันมีคะแนน <b>มงคล/ห้าม</b> · เห็นทั้ง <b>เดือน</b> ในมุมเดียว · เลือกเป้าหมายเพื่อเห็นวันที่ <b>"เปิดดวง"</b>',
                        en:'Ancient Chinese calendar <b>+</b> your personal chart — each day has a <b>good/avoid</b> score · whole month at a glance · pick a goal to see <b>"open"</b> days',
@@ -2199,8 +1986,7 @@ window.HK_I18N = {
 
   /* mode toggle */
   'cal.mode.personal': { th:'ดวงฉัน · 我', en:'My Chart · 我', zh:'我的命盤 · 我' },
-  'cal.mode.tongshu':  { th:'ทั่วไป · 黃曆', en:'General · 黃曆', zh:'通用 · 黃曆', vi:'Tổng quát · 黃曆', ja:'全般 · 黃曆', ko:'일반 · 黃曆', ru:'Общий · 黃曆', es:'Común · 黃曆' },
-  'cal.mode.general':  { th:'ทั่วไป · 黃曆', en:'General · 黃曆', zh:'通用 · 黃曆', vi:'Tổng quát · 黃曆', ja:'全般 · 黃曆', ko:'일반 · 黃曆', ru:'Общий · 黃曆', es:'Común · 黃曆' },
+  'cal.mode.tongshu':  { th:'ทั่วไป · 黃曆', en:'General · 黃曆', zh:'通用 · 黃曆' },
 
   /* goal */
   'cal.goal.label':  { th:'เป้าหมาย:', en:'Goal:', zh:'目標:' },
@@ -2238,17 +2024,17 @@ window.HK_I18N = {
   'cal.sp.stars':   { th:'神煞 · ดาวประจำวัน',  en:'神煞 · Day Stars',  zh:'神煞 · 日星' },
   'cal.sp.dirs':    { th:'八方 · 8 ทิศมงคล',     en:'八方 · 8 Directions', zh:'八方 · 八方位' },
   /* Phase 13 · 8 directions redesign · ranked card stack */
-  'cal.dir.best':   { th:'ดีที่สุดวันนี้', en:'Best Today', zh:'今日最佳', vi:'Tốt nhất hôm nay', ja:'本日の最良', ko:'오늘의 최적', ru:'Лучшее сегодня', es:'Lo mejor de hoy' },
-  'cal.dir.secondary':{ th:'🥈🥉 ทิศดีรอง', en:'🥈🥉 Also Good', zh:'🥈🥉 次佳', vi:'🥈🥉 Cũng tốt', ja:'🥈🥉 次に良い', ko:'🥈🥉 다음으로 좋음', ru:'🥈🥉 Тоже хорошо', es:'🥈🥉 También bueno' },
-  'cal.dir.avoid':  { th:'ควรเลี่ยง', en:'Avoid', zh:'宜避', vi:'Nên tránh', ja:'避ける', ko:'피하기', ru:'Избегать', es:'Evitar' },
-  'cal.dir.avoid.reason':{ th:'พลังชนวันนี้', en:'energy clashes today', zh:'今日沖煞', vi:'xung năng lượng hôm nay', ja:'本日は気が衝突', ko:'오늘 기운 충돌', ru:'сегодня столкновение энергий', es:'hoy chocan las energías' },
-  'cal.dir.all':    { th:'สรุปทั้งหมด', en:'Summary', zh:'總覽', vi:'Tổng hợp', ja:'総覧', ko:'총람', ru:'Сводка', es:'Resumen' },
-  'cal.dir.empty':  { th:'— ยังไม่มีข้อมูลทิศมงคล —', en:'— no direction data —', zh:'— 暫無方位資料 —', vi:'— chưa có dữ liệu phương vị —', ja:'— 方位データなし —', ko:'— 방위 데이터 없음 —', ru:'— нет данных о направлениях —', es:'— sin datos de dirección —' },
-  'cal.dir.use.wealth':{ th:'⭐ เหมาะกับ: ทำเรื่องเงิน · ปิดดีล · เซ็นสัญญา · ลงทุน', en:'⭐ Best for: money matters · deals · contracts · investments', zh:'⭐ 宜: 財運 · 簽約 · 談判 · 投資', vi:'⭐ Hợp cho: tiền bạc · thương lượng · hợp đồng · đầu tư', ja:'⭐ 好適: 金銭 · 取引 · 契約 · 投資', ko:'⭐ 적합: 금전 · 거래 · 계약 · 투자', ru:'⭐ Хорошо для: деньги · сделки · договоры · инвестиции', es:'⭐ Ideal para: dinero · tratos · contratos · inversiones' },
-  'cal.dir.use.noble':{ th:'⭐ เหมาะกับ: พบผู้ใหญ่ · ขอความช่วยเหลือ · งานราชการ', en:'⭐ Best for: meeting elders · seeking help · officials', zh:'⭐ 宜: 見貴人 · 求助 · 公務', vi:'⭐ Hợp cho: gặp quý nhân · nhờ giúp · việc quan', ja:'⭐ 好適: 目上に会う · 助けを求める · 公務', ko:'⭐ 적합: 윗사람 만남 · 도움 요청 · 관공서', ru:'⭐ Хорошо для: встреча со старшими · помощь · чиновники', es:'⭐ Ideal para: ver a mayores · pedir ayuda · trámites' },
-  'cal.dir.use.joy':{ th:'⭐ เหมาะกับ: งานมงคล · พิธีแต่งงาน · เปิดร้าน', en:'⭐ Best for: celebrations · wedding · opening', zh:'⭐ 宜: 喜事 · 婚禮 · 開市', vi:'⭐ Hợp cho: lễ mừng · cưới hỏi · khai trương', ja:'⭐ 好適: 慶事 · 婚礼 · 開業', ko:'⭐ 적합: 경사 · 결혼 · 개업', ru:'⭐ Хорошо для: торжества · свадьба · открытие', es:'⭐ Ideal para: celebraciones · boda · apertura' },
-  'cal.dir.use.fortune':{ th:'⭐ เหมาะกับ: บูชาเทพ · ทำบุญ · พิธีมงคล', en:'⭐ Best for: worship · merit · rituals', zh:'⭐ 宜: 祭祀 · 祈福 · 開光', vi:'⭐ Hợp cho: cúng bái · làm phúc · nghi lễ', ja:'⭐ 好適: 参拝 · 功徳 · 儀式', ko:'⭐ 적합: 참배 · 공덕 · 의식', ru:'⭐ Хорошо для: поклонение · заслуги · обряды', es:'⭐ Ideal para: culto · méritos · rituales' },
-  'cal.dir.use.default':{ th:'⭐ ทิศเสริมพลังวันนี้', en:'⭐ Favorable direction today', zh:'⭐ 今日吉方', vi:'⭐ Phương tốt hôm nay', ja:'⭐ 本日の吉方', ko:'⭐ 오늘의 길방', ru:'⭐ Благоприятное направление сегодня', es:'⭐ Dirección favorable hoy' },
+  'cal.dir.best':   { th:'ดีที่สุดวันนี้', en:'Best Today', zh:'今日最佳' },
+  'cal.dir.secondary':{ th:'🥈🥉 ทิศดีรอง', en:'🥈🥉 Also Good', zh:'🥈🥉 次佳' },
+  'cal.dir.avoid':  { th:'ควรเลี่ยง', en:'Avoid', zh:'宜避' },
+  'cal.dir.avoid.reason':{ th:'พลังชนวันนี้', en:'energy clashes today', zh:'今日沖煞' },
+  'cal.dir.all':    { th:'สรุปทั้งหมด', en:'Summary', zh:'總覽' },
+  'cal.dir.empty':  { th:'— ยังไม่มีข้อมูลทิศมงคล —', en:'— no direction data —', zh:'— 暫無方位資料 —' },
+  'cal.dir.use.wealth':{ th:'⭐ เหมาะกับ: ทำเรื่องเงิน · ปิดดีล · เซ็นสัญญา · ลงทุน', en:'⭐ Best for: money matters · deals · contracts · investments', zh:'⭐ 宜: 財運 · 簽約 · 談判 · 投資' },
+  'cal.dir.use.noble':{ th:'⭐ เหมาะกับ: พบผู้ใหญ่ · ขอความช่วยเหลือ · งานราชการ', en:'⭐ Best for: meeting elders · seeking help · officials', zh:'⭐ 宜: 見貴人 · 求助 · 公務' },
+  'cal.dir.use.joy':{ th:'⭐ เหมาะกับ: งานมงคล · พิธีแต่งงาน · เปิดร้าน', en:'⭐ Best for: celebrations · wedding · opening', zh:'⭐ 宜: 喜事 · 婚禮 · 開市' },
+  'cal.dir.use.fortune':{ th:'⭐ เหมาะกับ: บูชาเทพ · ทำบุญ · พิธีมงคล', en:'⭐ Best for: worship · merit · rituals', zh:'⭐ 宜: 祭祀 · 祈福 · 開光' },
+  'cal.dir.use.default':{ th:'⭐ ทิศเสริมพลังวันนี้', en:'⭐ Favorable direction today', zh:'⭐ 今日吉方' },
   'cal.sp.verdict': { th:'VERDICT · 日運',       en:'VERDICT · Day Fortune', zh:'日運 · 評分' },
   'cal.sp.deeptoday':{ th:'→ ดู today\'s pillar เต็ม', en:'→ Full today\'s pillar',  zh:'→ 完整日柱' },
   'cal.sp.deepqimen':{ th:'→ ตั้งคำถาม ฉีเหมิน',       en:'→ Ask Qi Men',             zh:'→ 奇門問事' },
@@ -2263,23 +2049,21 @@ window.HK_I18N = {
 /* expose for renderers */
 window._calGoalLabel = function(g, lang){
   const map = {
-    wealth:{th:'การเงิน',en:'wealth',zh:'財運',vi:'tài chính',ja:'金運',ko:'재물',ru:'финансы',es:'finanzas'},
-    career:{th:'การงาน',en:'career',zh:'事業',vi:'sự nghiệp',ja:'仕事',ko:'경력',ru:'карьера',es:'carrera'},
-    love:{th:'ความรัก',en:'love',zh:'感情',vi:'tình cảm',ja:'恋愛',ko:'애정',ru:'любовь',es:'amor'},
-    family:{th:'ครอบครัว',en:'family',zh:'家庭',vi:'gia đình',ja:'家庭',ko:'가정',ru:'семья',es:'familia'},
-    health:{th:'สุขภาพ',en:'health',zh:'健康',vi:'sức khỏe',ja:'健康',ko:'건강',ru:'здоровье',es:'salud'},
-    travel:{th:'การเดินทาง',en:'travel',zh:'出行',vi:'đi lại',ja:'外出',ko:'이동',ru:'поездки',es:'viajes'}
+    wealth:{th:'การเงิน',en:'wealth',zh:'財運'},
+    career:{th:'การงาน',en:'career',zh:'事業'},
+    love:{th:'ความรัก',en:'love',zh:'感情'},
+    family:{th:'ครอบครัว',en:'family',zh:'家庭'},
+    health:{th:'สุขภาพ',en:'health',zh:'健康'},
+    travel:{th:'การเดินทาง',en:'travel',zh:'出行'}
   };
-  const e = map[g]||{};
-  return e[lang] || e.en || e.th || '';
+  return (map[g]||{})[lang||'th'] || '';
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
     var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('calendar.html',key,lang);}catch(_){}
-    /* for locales without a static entry (vi/ja/ko/ru/es) fall back to EN, never leave Thai default in place */
-    var v=(ov!=null)?ov:(t[lang]!==undefined?t[lang]:t.en);
+    var v=(ov!=null)?ov:t[lang];
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
       if (v !== undefined) {
         if (v.indexOf('<') >= 0) el.innerHTML = v;
@@ -2331,26 +2115,6 @@ if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeo
 window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
 })();
 }catch(_){}})();
-/* method-link override · production hk-method-link.js (old) clamps vi/ja/ko/ru/es → th (shows Thai).
-   Re-apply from data-<rawlocale> after its init so new locales never show Thai. (7 ก.ค. 2569) */
-(function(){
-  function rawLoc(){
-    try{ if(window.HK_LANG_STATE&&typeof window.HK_LANG_STATE.raw==='function'){ var r=window.HK_LANG_STATE.raw(); if(r) return r; } }catch(e){}
-    try{ return String(localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'').trim().toLowerCase().split('-')[0]; }catch(e){}
-    return '';
-  }
-  function fix(){
-    var l=rawLoc();
-    if(['vi','ja','ko','ru','es'].indexOf(l)===-1) return;
-    document.querySelectorAll('.hk-method-link').forEach(function(a){
-      var t=a.getAttribute('data-'+l);
-      if(t) a.textContent=t;
-    });
-  }
-  fix();
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', fix);
-  [300,900,1800,3000].forEach(function(ms){ setTimeout(fix, ms); });
-})();
 </script>
 </body>
 </html>

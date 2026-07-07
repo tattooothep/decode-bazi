@@ -646,7 +646,7 @@
     }
   </style>
   <div style="text-align:center;margin:12px 0;">
-    <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 อ่านวิธีคิดธาตุครบ 18 ขั้น · ตำรา + คู่ + ดวงเค้าเอง →" data-en="📿 Read full methodology · 18 steps · pair + own →" data-zh="📿 看完整方法論 · 十八步 · 配對 + 個人運 →" data-vi="📿 Đọc toàn bộ phương pháp · 18 bước · cặp + lá số riêng →" data-ja="📿 完全な方法論を読む · 18ステップ · ペア + 自分の命式 →" data-ko="📿 전체 방법론 읽기 · 18단계 · 궁합 + 본인 사주 →" data-ru="📿 Полная методология · 18 шагов · пара + своя карта →" data-es="📿 Metodología completa · 18 pasos · pareja + carta propia →" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:7px 16px;border-radius:99px;background:rgba(200,164,77,.08);">📿 อ่านวิธีคิดธาตุครบ 18 ขั้น · ตำรา + คู่ + ดวงเค้าเอง →</a>
+    <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 อ่านวิธีคิดธาตุครบ 18 ขั้น · ตำรา + คู่ + ดวงเค้าเอง →" data-en="📿 Read full methodology · 18 steps · pair + own →" data-zh="📿 看完整方法論 · 十八步 · 配對 + 個人運 →" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:7px 16px;border-radius:99px;background:rgba(200,164,77,.08);">📿 อ่านวิธีคิดธาตุครบ 18 ขั้น · ตำรา + คู่ + ดวงเค้าเอง →</a>
   </div>
 
   <!-- VIEW MODE TABS -->
@@ -1121,15 +1121,12 @@
   // tx() helper: ดึงข้อความตาม locale ปัจจุบัน
   // 5 ก.ค. i18n stray cleanup: เพิ่ม fallback ตัวที่ 2 (ค่าไทยเดิม) กันกรณีถูกเรียกก่อน window.HK_I18N โหลด (initial render() ที่บรรทัดท้ายไฟล์นี้ ก่อน script ถัดไปนิยาม HK_I18N)
   function _tx(key, fallback){
-    /* 🌐 overlay hook · ภาษาใหม่ (vi/ja/ko/ru/es) · th/en/zh ได้ ov=null = พฤติกรรมเดิม
-       7 ก.ค. root-cause fix: ใช้ data-hk-locale (raw locale) แทน data-lang (clamped th/en/zh)
-       เพราะ overlay ถูกโหลด/เก็บไว้ตาม raw locale จริง (vi/ja/ko/ru/es) — ถ้าส่ง data-lang (clamp เป็น 'en')
-       เข้าไป overlay จะหาไม่เจอเลย แล้วตกไปโชว์ t.en/t.th แทน · th/en/zh: data-hk-locale === data-lang เสมอ ไม่กระทบ */
-    const lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
-    try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('yongsennetwork.html',key,lang);if(ov!=null)return ov;}catch(_){}
+    /* 🌐 overlay hook · ภาษาใหม่ (vi/ja/ko/ru/es) · th/en/zh ได้ ov=null = พฤติกรรมเดิม */
+    try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('yongsennetwork.html',key,document.documentElement.getAttribute('data-lang')||'th');if(ov!=null)return ov;}catch(_){}
     if(!key || !window.HK_I18N) return fallback !== undefined ? fallback : (key||'');
     const t = window.HK_I18N[key];
     if(!t) return fallback !== undefined ? fallback : key;
+    const lang = document.documentElement.getAttribute('data-lang') || 'th';
     return t[lang] || t.th || (fallback !== undefined ? fallback : key);
   }
   function resolveRole(p){ return p.roleKey ? _tx(p.roleKey) : (p.role||''); }
@@ -2319,8 +2316,8 @@
             const div = document.createElement('div');
             div.className = 'pc-insight';
             /* 19 พ.ค. เจ้านาย: ใส่หัวข้อ "คำแนะนำของวันนี้" ให้ user ไม่งงว่า insight นี้คือของช่วงเวลาไหน */
-            const _lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
-            const _hdr = {th:'คำแนะนำของวันนี้', en:"Today's guidance", zh:'今日提示', vi:'Gợi ý hôm nay', ja:'今日のアドバイス', ko:'오늘의 조언', ru:'Совет на сегодня', es:'Consejo de hoy'}[_lang] || 'คำแนะนำของวันนี้';
+            const _lang = document.documentElement.getAttribute('data-lang') || 'th';
+            const _hdr = {th:'คำแนะนำของวันนี้', en:"Today's guidance", zh:'今日提示'}[_lang] || 'คำแนะนำของวันนี้';
             div.innerHTML = `
               <div class="ins-hdr" style="font-size:11px;color:var(--gold);font-weight:600;letter-spacing:.04em;border-bottom:1px solid var(--gold-line);padding:2px 0 4px;margin-bottom:4px;text-align:center;">${_hdr}</div>
               ${ins.lp ? `<div class="ins-row"><span class="ins-lbl">大運</span><span class="ins-val" style="color:var(--gold);font-weight:600;">${ins.lp}</span></div>` : ''}
@@ -2426,17 +2423,16 @@
       const s = self.pillars.day.stem;
       dm = s;
     }
+    /* 2) Period · range ตาม timeframe */
+    const now = new Date();
+    const tfMap = {day:1, week:7, month:30, year:365, luck:3650};
+    const days = tfMap[state.timeframe]||7;
+    const end = new Date(now.getTime() + days*86400000);
+    const fmtD = d => `${d.getDate()}/${d.getMonth()+1}`;
     setHtml('meta-dm', stemTermHtml(dm));
-    /* 2) Period · 8 ก.ค.: เดิม updateMeta เขียนช่วงวันที่คำนวณ (เช่น "8/7-15/7") ทับ meta-period
-       แต่ meta-period มี data-i18n="auto.n.509" (ค่า static "7-13 พ.ค."/"May 7-13"/"5月7-13日") ด้วย →
-       เกิด race: applyI18N(static) vs updateMeta(computed) ใครวิ่งทีหลังชนะ · โปรดักชัน (baseline)
-       โชว์ค่า static เสมอ · จึงให้ applyI18N เป็นเจ้าของ meta-period ตัวเดียว (deterministic + ตรง baseline)
-       — ไม่เขียนค่า computed ทับอีก (ตัดตัวแปร now/end ที่ใช้เฉพาะจุดนี้ออกด้วย) */
-    /* 3) Favor · ดึงจาก yongshen 2 อันดับแรกจาก /api/chart (wrapper-6)
-       7 ก.ค.: เดิม cache เก็บเป็น HTML ที่ render คำแปลไว้แล้ว (string) — พอ apply() เรียก updateMeta() ซ้ำ
-       ตอน locale เปลี่ยน/overlay โหลดเสร็จ ค่าที่ cache ไว้ยังเป็นภาษาตอน fetch ครั้งแรก (มักเป็นก่อน overlay พร้อม)
-       → ค้างอังกฤษ/ไทยตลอดไป · แก้ให้ cache เป็น raw element array แล้ว render คำผ่าน elemTermHtml() ใหม่ทุกครั้ง */
-    if (self && self.pillars && self.pillars.day && self.pillars.day.stem && !Array.isArray(window._cachedFavor)) {
+    set('meta-period', `${fmtD(now)}-${fmtD(end)}`);
+    /* 3) Favor · ดึงจาก yongshen 2 อันดับแรกจาก /api/chart (wrapper-6) */
+    if (self && self.pillars && self.pillars.day && self.pillars.day.stem && !window._cachedFavor) {
       const birthDate = (function(){ try { return JSON.parse(localStorage.getItem('hk_birth')||'null'); } catch(_){ return null; }})();
 	      if (birthDate && birthDate.date) {
 	        fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
@@ -2446,13 +2442,13 @@
             if (!d) return;
             const ys = d.analysis?.strength_yongshen?.yongshenFinal || [];
             const top2 = ys.slice(0,2).map(y => y.element).filter(Boolean);
-            window._cachedFavor = top2;
-            if (top2.length) setHtml('meta-favor', top2.map(elemTermHtml).join(' · '));
+            window._cachedFavor = top2.length ? top2.map(elemTermHtml).join(' · ') : '';
+            if (window._cachedFavor) setHtml('meta-favor', window._cachedFavor);
           })
           .catch(_=>{});
       }
-    } else if (Array.isArray(window._cachedFavor) && window._cachedFavor.length) {
-      setHtml('meta-favor', window._cachedFavor.map(elemTermHtml).join(' · '));
+    } else if (window._cachedFavor) {
+      setHtml('meta-favor', window._cachedFavor);
     }
   }
 
@@ -2795,16 +2791,16 @@
 /* hourkey · network · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
   'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
-  'n.sync.title': { th:'ดึงดวงจาก DB ใหม่ · ล้าง cache', en:'Refresh profiles from DB · clear cache', zh:'從 DB 重新同步命盤 · 清除快取', vi:'Đồng bộ lại hồ sơ từ DB · xóa bộ nhớ đệm', ja:'DBからプロフィールを再同期・キャッシュを消去', ko:'DB에서 프로필 새로고침 · 캐시 지우기', ru:'Обновить профили из БД · очистить кеш', es:'Actualizar perfiles desde la base de datos · borrar caché' },
-  'n.pm.ph.name': { th:'เช่น พีท · ใหม่', en:'e.g. Pete · Mai', zh:'例如 Pete · Mai', vi:'VD: Pete · Mai', ja:'例：ピート・マイ', ko:'예: 피트 · 마이', ru:'напр. Пит · Май', es:'p. ej. Pete · Mai' },
-  'n.pm.ph.role': { th:'เช่น ผู้ร่วมก่อตั้ง · ที่ทำงาน (ไม่บังคับ)', en:'e.g. co-founder · work (optional)', zh:'例如 共同創辦人 · 工作 (選填)', vi:'VD: đồng sáng lập · nơi làm việc (không bắt buộc)', ja:'例：共同創業者・職場（任意）', ko:'예: 공동 창업자 · 직장 (선택)', ru:'напр. сооснователь · работа (необязательно)', es:'p. ej. cofundador · trabajo (opcional)' },
-  'n.pm.ph.city': { th:'พิมพ์ชื่อเมือง · เช่น กรุงเทพฯ · โตเกียว · ลอนดอน', en:'Type a city · e.g. Bangkok · Tokyo · London', zh:'輸入城市 · 如 曼谷 · 東京 · 倫敦', vi:'Nhập tên thành phố · VD: Bangkok · Tokyo · London', ja:'都市名を入力・例：バンコク・東京・ロンドン', ko:'도시 이름 입력 · 예: 방콕 · 도쿄 · 런던', ru:'Введите город · напр. Бангкок · Токио · Лондон', es:'Escribe una ciudad · p. ej. Bangkok · Tokio · Londres' },
-  'n.addp.ph.name': { th:'เช่น แม่ · พี่ชาย · เพื่อนสนิท', en:'e.g. mother · older brother · close friend', zh:'例如 母親 · 兄長 · 好友', vi:'VD: mẹ · anh trai · bạn thân', ja:'例：母・兄・親友', ko:'예: 어머니 · 형 · 친한 친구', ru:'напр. мама · старший брат · близкий друг', es:'p. ej. madre · hermano mayor · amigo cercano' },
-  'n.addp.ph.nickname': { th:'ชื่อเล่น (ไม่บังคับ)', en:'Nickname (optional)', zh:'暱稱 (選填)', vi:'Biệt danh (không bắt buộc)', ja:'ニックネーム（任意）', ko:'별명 (선택)', ru:'Прозвище (необязательно)', es:'Apodo (opcional)' },
-  'n.addp.ph.city': { th:'พิมพ์ชื่อเมือง เช่น บ้านบึง · กรุงเทพฯ · 北京', en:'Type a city, e.g. Bangkok · Tokyo · Beijing', zh:'輸入城市，如 曼谷 · 東京 · 北京', vi:'Nhập tên thành phố, VD: Bangkok · Tokyo · Bắc Kinh', ja:'都市名を入力、例：バンコク・東京・北京', ko:'도시 이름 입력, 예: 방콕 · 도쿄 · 베이징', ru:'Введите город, напр. Бангкок · Токио · Пекин', es:'Escribe una ciudad, p. ej. Bangkok · Tokio · Pekín' },
-  'n.addp.ph.rel': { th:'แม่ · พี่ · เพื่อนเรียน (ไม่บังคับ)', en:'mother · sibling · classmate (optional)', zh:'母親 · 兄弟姊妹 · 同學 (選填)', vi:'mẹ · anh chị em · bạn học (không bắt buộc)', ja:'母・兄弟姉妹・同級生（任意）', ko:'어머니 · 형제자매 · 동창 (선택)', ru:'мама · брат/сестра · одноклассник (необязательно)', es:'madre · hermano/a · compañero de clase (opcional)' },
-  'n.team.sifu.ph': { th:"ถามซินแสได้เลย · เช่น 'ทีมนี้ขาดธาตุอะไร'", en:"Ask the Sifu, e.g. 'What element is this team missing?'", zh:'可問師父，例如「這隊缺什麼五行？」', vi:"Cứ hỏi Thầy phong thủy · VD: 'Đội này thiếu ngũ hành gì?'", ja:'師父に何でも聞いてください・例：「このチームに足りない五行は？」', ko:"선생님께 물어보세요 · 예: '이 팀에 부족한 오행은?'", ru:'Спросите наставника · напр. «Какой стихии не хватает этой команде?»', es:"Pregunta al maestro · p. ej. '¿Qué elemento le falta a este equipo?'" },
-  'n.cm.sifu.ph': { th:'ถามซินแสได้เลย · เช่น ‘คู่นี้เหมาะร่วมงานมั๊ย’', en:"Ask the Sifu, e.g. 'Is this pair good for work?'", zh:'可問師父，例如「這一對適合共事嗎？」', vi:"Cứ hỏi Thầy phong thủy · VD: 'Cặp này có hợp làm việc cùng nhau không'", ja:'師父に何でも聞いてください・例：「この二人は一緒に働くのに向いていますか」', ko:"선생님께 물어보세요 · 예: '이 두 사람 함께 일하기 좋을까요'", ru:'Спросите наставника · напр. «Подходит ли эта пара для совместной работы»', es:"Pregunta al maestro · p. ej. '¿Esta pareja es buena para trabajar juntos?'" },
+  'n.sync.title': { th:'ดึงดวงจาก DB ใหม่ · ล้าง cache', en:'Refresh profiles from DB · clear cache', zh:'從 DB 重新同步命盤 · 清除快取' },
+  'n.pm.ph.name': { th:'เช่น พีท · ใหม่', en:'e.g. Pete · Mai', zh:'例如 Pete · Mai' },
+  'n.pm.ph.role': { th:'เช่น ผู้ร่วมก่อตั้ง · ที่ทำงาน (ไม่บังคับ)', en:'e.g. co-founder · work (optional)', zh:'例如 共同創辦人 · 工作 (選填)' },
+  'n.pm.ph.city': { th:'พิมพ์ชื่อเมือง · เช่น กรุงเทพฯ · โตเกียว · ลอนดอน', en:'Type a city · e.g. Bangkok · Tokyo · London', zh:'輸入城市 · 如 曼谷 · 東京 · 倫敦' },
+  'n.addp.ph.name': { th:'เช่น แม่ · พี่ชาย · เพื่อนสนิท', en:'e.g. mother · older brother · close friend', zh:'例如 母親 · 兄長 · 好友' },
+  'n.addp.ph.nickname': { th:'ชื่อเล่น (ไม่บังคับ)', en:'Nickname (optional)', zh:'暱稱 (選填)' },
+  'n.addp.ph.city': { th:'พิมพ์ชื่อเมือง เช่น บ้านบึง · กรุงเทพฯ · 北京', en:'Type a city, e.g. Bangkok · Tokyo · Beijing', zh:'輸入城市，如 曼谷 · 東京 · 北京' },
+  'n.addp.ph.rel': { th:'แม่ · พี่ · เพื่อนเรียน (ไม่บังคับ)', en:'mother · sibling · classmate (optional)', zh:'母親 · 兄弟姊妹 · 同學 (選填)' },
+  'n.team.sifu.ph': { th:"ถามซินแสได้เลย · เช่น 'ทีมนี้ขาดธาตุอะไร'", en:"Ask the Sifu, e.g. 'What element is this team missing?'", zh:'可問師父，例如「這隊缺什麼五行？」' },
+  'n.cm.sifu.ph': { th:'ถามซินแสได้เลย · เช่น ‘คู่นี้เหมาะร่วมงานมั๊ย’', en:"Ask the Sifu, e.g. 'Is this pair good for work?'", zh:'可問師父，例如「這一對適合共事嗎？」' },
   'n.pc.overview_btn': { th:'ดูภาพรวม', en:'View overview', zh:'查看總覽' },
   'n.meta.favor.metal': { th:'ทอง <span class="zh">金</span>', en:'Metal <span class="zh">金</span>', zh:'<span class="zh">金</span>' },
   'n.meta.favor.wood':  { th:'ไม้ <span class="zh">木</span>', en:'Wood <span class="zh">木</span>', zh:'<span class="zh">木</span>' },
@@ -3229,22 +3225,10 @@ window.applyI18N = applyI18N;
 	    else document.documentElement.removeAttribute('data-zh-variant');
 	    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === app); });
 	    try{ localStorage.setItem('hk_locale', raw); localStorage.setItem('hk_lang', raw); if(raw==='zh') localStorage.setItem('hk_zh_variant',(lang==='cn'||(st&&st.variant==='cn'))?'cn':'hant'); }catch(e){}
-	    /* applyI18N + HK_ZHCN ต้องวิ่ง "ก่อน" การ re-render ทุก view (ลำดับเดิมของหน้า · ห้ามสลับ)
-	       — ถ้าเอา HK_ZHCN.apply() ไปวิ่งทีหลัง renders มันจะแปลงทั้งหน้าเป็นจีนตัวย่อ (简) ทำให้โหมด cn
-	       ต่างจาก baseline (โปรดักชัน cn = 繁 ตามที่ hk-zhcn ยังไม่ได้แปลงตอน render จริง) · en ไม่กระทบ */
 	    applyI18N(raw === 'zh' ? 'zh' : raw);
 	    try{ if(raw==='zh' && document.documentElement.getAttribute('data-zh-variant')==='cn' && window.HK_ZHCN) window.HK_ZHCN.apply(); }catch(e){}
-	    /* renderGrid = พฤติกรรมเดิมของหน้า (bug 5 fix · อยู่ใน apply มาแต่เดิม) */
+	    /* bug 5 fix: re-render grid · role/tag dynamic ตาม locale */
 	    if (typeof renderGrid === 'function') try{ renderGrid(); }catch(e){}
-	    /* 8 ก.ค. root-cause fix (dynamic ทุก view): re-render solar/meta/team ด้วย locale ปัจจุบัน
-	       — จำเป็นสำหรับ vi/ja/ko/ru/es (แก้ไทยค้างจาก tx() fallback→th ก่อน overlay โหลด)
-	       — และสำหรับ zh/cn: การ re-render (tx→zh繁) หลัง HK_ZHCN ช่วย "คืนค่าตัวเต็ม" ให้ตรง baseline (โปรดักชัน cn=繁)
-	         ถ้าไม่ re-render ตัวย่อจาก HK_ZHCN จะค้าง ทำให้ cn เพี้ยนจาก baseline
-	       — th/en: solar/meta ได้ค่าถูกภาษาตั้งแต่ render แรก · re-render ให้ค่าเดิม (ยกเว้น team synergy ที่มี
-	         race placeholder↔ค่าคำนวณ อยู่แล้วแต่เดิม flaky เท่ากันทั้งก่อน/หลังแก้) */
-	    if (typeof renderSolar === 'function') try{ renderSolar(); }catch(e){}
-	    if (typeof updateMeta === 'function') try{ updateMeta(); }catch(e){}
-	    if (typeof window.renderTeam === 'function') try{ window.renderTeam(); }catch(e){}
 	  }
   /* 🌐 overlay re-apply · ถูกเรียกเฉพาะเมื่อ overlay ภาษาใหม่โหลดสำเร็จ */
   window.__hkOverlayApply=function(l){ apply(l); };
@@ -3437,11 +3421,8 @@ window.applyI18N = applyI18N;
   });
 
   function tx(k){
-    /* 7 ก.ค. i18n dynamic fix: เดิม tx() นี้ไม่เช็ค overlay เลย + ใช้ data-lang (clamp th/en/zh)
-       → vi/ja/ko/ru/es โชว์เป็นอังกฤษเสมอ · แก้ให้เช็ค overlay ด้วย data-hk-locale (raw) เหมือน _tx() */
-    const lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
-    try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('yongsennetwork.html',k,lang);if(ov!=null)return ov;}catch(_){}
     const t = window.HK_I18N[k]; if(!t) return k;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
     return t[lang]||t.th||k;
   }
 
@@ -3852,10 +3833,7 @@ window.applyI18N = applyI18N;
         `;
         card.appendChild(row);
       });
-      /* 7 ก.ค. root-cause fix #2 (dynamic): เดิมเรียก applyI18N ด้วย data-lang (clamp th/en/zh) ทุกครั้งที่
-         renderGrid วิ่ง (รวมตอนถูกเรียกจากปลาย apply() เอง) → ทับคำแปล vi/ja/ko/ru/es ที่เพิ่ง apply ถูกต้อง
-         กลับเป็นอังกฤษทันที · แก้ให้ใช้ raw locale (data-hk-locale) เหมือนจุดอื่น */
-      if (window.applyI18N) try { applyI18N(document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th'); } catch(e){}
+      if (window.applyI18N) try { applyI18N(document.documentElement.getAttribute('data-lang')||'th'); } catch(e){}
     };
     /* run once now if grid populated */
     setTimeout(()=>{ if (state.view==='grid') renderGrid(); }, 100);
@@ -4204,10 +4182,10 @@ window.applyI18N = applyI18N;
     <div class="pcm-section">
       <h4 data-i18n="n.cm.pillars">โครงดวง 4 เสา · 四柱</h4>
       <div class="pcm-pillars">
-        <div class="pcm-pillar"><div class="lab" data-i18n="n.cm.pillar.hour">時 HOUR</div><div class="stem" id="cm-h-s">—</div><div class="branch" id="cm-h-b">—</div></div>
+        <div class="pcm-pillar"><div class="lab">時 HOUR</div><div class="stem" id="cm-h-s">—</div><div class="branch" id="cm-h-b">—</div></div>
         <div class="pcm-pillar dm"><div class="lab" data-i18n="n.cm.pillar.dm">日 วันเกิดหลัก</div><div class="stem" id="cm-d-s">—</div><div class="branch" id="cm-d-b">—</div></div>
-        <div class="pcm-pillar"><div class="lab" data-i18n="n.cm.pillar.month">月 MONTH</div><div class="stem" id="cm-m-s">—</div><div class="branch" id="cm-m-b">—</div></div>
-        <div class="pcm-pillar"><div class="lab" data-i18n="n.cm.pillar.year">年 YEAR</div><div class="stem" id="cm-y-s">—</div><div class="branch" id="cm-y-b">—</div></div>
+        <div class="pcm-pillar"><div class="lab">月 MONTH</div><div class="stem" id="cm-m-s">—</div><div class="branch" id="cm-m-b">—</div></div>
+        <div class="pcm-pillar"><div class="lab">年 YEAR</div><div class="stem" id="cm-y-s">—</div><div class="branch" id="cm-y-b">—</div></div>
       </div>
     </div>
 
@@ -4316,11 +4294,6 @@ window.applyI18N = applyI18N;
   Object.assign(window.HK_I18N, {
     'n.cm.pillars': { th:'โครงดวง 4 เสา · 四柱', en:'四柱 · Four Pillars', zh:'四柱' },
     'n.cm.pillar.dm': { th:'日 วันเกิดหลัก', en:'日 DAY MASTER', zh:'日 日主' },
-    /* 8 ก.ค.: เดิม 3 เสา (時/月/年) hardcode "時 HOUR" ฯลฯ ไม่มี data-i18n → vi/ja/ko/ru/es โชว์อังกฤษ
-       th/en/zh คงค่าเดิม (ตรง baseline เป๊ะ) · เพิ่มเฉพาะ 5 ภาษาใหม่ (glyph + คำท้องถิ่น ตามแบบ n.cm.pillar.dm) */
-    'n.cm.pillar.hour':  { th:'時 HOUR', en:'時 HOUR', zh:'時 HOUR', vi:'時 Giờ', ja:'時 時柱', ko:'時 시주', ru:'時 Час', es:'時 Hora' },
-    'n.cm.pillar.month': { th:'月 MONTH', en:'月 MONTH', zh:'月 MONTH', vi:'月 Tháng', ja:'月 月柱', ko:'月 월주', ru:'月 Месяц', es:'月 Mes' },
-    'n.cm.pillar.year':  { th:'年 YEAR', en:'年 YEAR', zh:'年 YEAR', vi:'年 Năm', ja:'年 年柱', ko:'年 년주', ru:'年 Год', es:'年 Año' },
     'n.cm.rel':     { th:'關係 · ปฏิกิริยากับคุณ · 5 ช่วงเวลา', en:'關係 · Reactions with you · 5 tf', zh:'關係 · 與您之互動 · 五時段' },
     'n.cm.gconf':   { th:'ความมั่นใจ', en:'Confidence', zh:'信心度' },
     'n.pcm.bd.base':     { th:'ฐาน base', en:'Base', zh:'基礎 base' },
@@ -4445,11 +4418,8 @@ window.applyI18N = applyI18N;
     };
   }
   function tx(k){
-    /* 7 ก.ค. i18n dynamic fix: เดิม tx() นี้ไม่เช็ค overlay เลย + ใช้ data-lang (clamp th/en/zh)
-       → vi/ja/ko/ru/es โชว์เป็นอังกฤษเสมอ · แก้ให้เช็ค overlay ด้วย data-hk-locale (raw) เหมือน _tx() */
-    const lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
-    try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('yongsennetwork.html',k,lang);if(ov!=null)return ov;}catch(_){}
     const t = window.HK_I18N[k]; if(!t) return k;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
     return t[lang]||t.th||k;
   }
   window.currentChartPersonId = null;
@@ -4558,9 +4528,7 @@ window.applyI18N = applyI18N;
       _set('cm-self-name', selfName); _set('cm-self-name2', selfName);
       _set('cm-other-name', person.name); _set('cm-other-name2', person.name);
       _set('cm-result-overall', sc?.overall ?? '—');
-      /* 7 ก.ค.: lab มาจาก engine (th/en เท่านั้น ไม่มี zh/vi/ja/ko/ru/es) — เดิม non-en ทุกภาษาตกไปเป็นไทยหมด (รวม zh)
-         แก้ให้เฉพาะ th จริงๆ ถึงโชว์ th · ที่เหลือ (zh/vi/ja/ko/ru/es) โชว์ en แทน (ไม่มี fallback ภาษาอื่นจาก backend ให้ใช้) */
-      _set('cm-result-label',   lab ? (((document.documentElement.getAttribute('data-hk-locale')||document.documentElement.getAttribute('data-lang'))==='th') ? lab.th : (lab.en||lab.th)) : '—');
+      _set('cm-result-label',   lab ? (document.documentElement.getAttribute('data-lang')==='en' ? lab.en : lab.th) : '—');
       _set('cm-result-atob', dir ? (dir.atob>0?'+'+dir.atob:dir.atob) : '—');
       _set('cm-result-btoa', dir ? (dir.btoa>0?'+'+dir.btoa:dir.btoa) : '—');
       /* breakdown rows */
@@ -4583,8 +4551,7 @@ window.applyI18N = applyI18N;
       const gEl = document.getElementById('cm-guidance');
       if (gEl && guidance) {
         gEl.style.display = 'flex';
-        /* guidance.intent.* มาจาก engine (th/en เท่านั้น) — ใช้ raw locale กัน zh/vi/ja/ko/ru/es ตกไปเป็นไทย (pickLang จะ fallback .th ถ้าไม่มี key ตรง แต่เราอยากได้ en ก่อนสำหรับภาษาที่ engine ไม่รองรับ) */
-        const lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
+        const lang = document.documentElement.getAttribute('data-lang') || 'th';
         const pct = Math.round((guidance.confidence||0.7)*100);
         const fillEl = document.getElementById('cm-g-fill');
         if (fillEl) fillEl.style.width = pct + '%';
@@ -4596,7 +4563,7 @@ window.applyI18N = applyI18N;
         if (ctxEl) ctxEl.innerHTML = (guidance.context||[]).map(c=>`<div class="ctx">${c}</div>`).join('');
         const intentEl = document.getElementById('cm-g-intent');
         if (intentEl && guidance.intent) {
-          const pickLang = (obj) => obj?.[lang] || (lang!=='th' ? obj?.en : null) || obj?.th || '—';
+          const pickLang = (obj) => obj?.[lang] || obj?.th || '—';
           intentEl.innerHTML = `
             <div class="it"><div class="icon">業</div><div class="lab">${escHtml(tx('n.pcm.intent.work'))}</div><div class="val">${pickLang(guidance.intent.work)}</div></div>
             <div class="it"><div class="icon">情</div><div class="lab">${escHtml(tx('n.pcm.intent.love'))}</div><div class="val">${pickLang(guidance.intent.love)}</div></div>
@@ -5203,11 +5170,8 @@ window.applyI18N = applyI18N;
     'n.tp.empty':  { th:'ทุกคนอยู่ในทีมแล้ว · เพิ่มคนใหม่ที่ Solar', en:'Everyone in team · add new from Solar', zh:'全員已在團隊 · 從太陽系新增' }
   });
   function tx(k){
-    /* 7 ก.ค. i18n dynamic fix: เดิม tx() นี้ไม่เช็ค overlay เลย + ใช้ data-lang (clamp th/en/zh)
-       → vi/ja/ko/ru/es โชว์เป็นอังกฤษเสมอ · แก้ให้เช็ค overlay ด้วย data-hk-locale (raw) เหมือน _tx() */
-    const lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
-    try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('yongsennetwork.html',k,lang);if(ov!=null)return ov;}catch(_){}
     const t = window.HK_I18N[k]; if(!t) return k;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
     return t[lang]||t.th||k;
   }
 
@@ -5705,11 +5669,11 @@ window.applyI18N = applyI18N;
   });
 
   const TEAM_EL = {
-    wood:  { zh:'木', th:'ไม้',  en:'Wood',  vi:'Mộc', ja:'木', ko:'목', ru:'Дерево', es:'Madera', icon:'木', role:'n.team.el.wood' },
-    fire:  { zh:'火', th:'ไฟ',   en:'Fire',  vi:'Hỏa', ja:'火', ko:'화', ru:'Огонь',  es:'Fuego',  icon:'火', role:'n.team.el.fire' },
-    earth: { zh:'土', th:'ดิน',  en:'Earth', vi:'Thổ', ja:'土', ko:'토', ru:'Земля',  es:'Tierra', icon:'土', role:'n.team.el.earth' },
-    metal: { zh:'金', th:'ทอง', en:'Metal', vi:'Kim', ja:'金', ko:'금', ru:'Металл', es:'Metal',  icon:'金', role:'n.team.el.metal' },
-    water: { zh:'水', th:'น้ำ', en:'Water', vi:'Thủy', ja:'水', ko:'수', ru:'Вода',   es:'Agua',   icon:'水', role:'n.team.el.water' },
+    wood:  { zh:'木', th:'ไม้',  en:'Wood',  icon:'木', role:'n.team.el.wood' },
+    fire:  { zh:'火', th:'ไฟ',   en:'Fire',  icon:'火', role:'n.team.el.fire' },
+    earth: { zh:'土', th:'ดิน',  en:'Earth', icon:'土', role:'n.team.el.earth' },
+    metal: { zh:'金', th:'ทอง', en:'Metal', icon:'金', role:'n.team.el.metal' },
+    water: { zh:'水', th:'น้ำ', en:'Water', icon:'水', role:'n.team.el.water' },
   };
   const TEAM_ACTIVITIES = {
     deal_closing: {
@@ -6104,9 +6068,8 @@ window.applyI18N = applyI18N;
   function clampTeamScore(n){ return Math.max(0, Math.min(100, Math.round(n))); }
   function teamElemLabel(el){
     const e = TEAM_EL[el] || { zh:el, th:el, en:el };
-    /* 7 ก.ค.: ใช้ raw locale (data-hk-locale) แทน data-lang (clamp) กัน vi/ja/ko/ru/es ตกไปเป็นไทย */
-    const lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
-    const word = lang === 'zh' ? '' : (e[lang] || e.en || e.th);
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
+    const word = lang === 'zh' ? '' : (lang === 'en' ? e.en : e.th);
     return word ? `${word} ${e.zh}` : e.zh;
   }
   function colorizeTeamText(text){
@@ -6647,8 +6610,6 @@ window.applyI18N = applyI18N;
   };
   /* render team initially */
   setTimeout(renderTeam, 150);
-  /* 8 ก.ค.: expose ให้ apply() (คนละ IIFE) re-render team ตอน locale/overlay เปลี่ยนได้ */
-  window.renderTeam = renderTeam;
 })();
 </script>
 
@@ -6723,11 +6684,8 @@ window.applyI18N = applyI18N;
     'n.bulk.placeholder': { th:'พิมพ์รายชื่อคน 1 คน 1 บรรทัด...', en:'Type your list, 1 person per line...', zh:'輸入名單，每行一人...' },
   });
   function tx(k){
-    /* 7 ก.ค. i18n dynamic fix: เดิม tx() นี้ไม่เช็ค overlay เลย + ใช้ data-lang (clamp th/en/zh)
-       → vi/ja/ko/ru/es โชว์เป็นอังกฤษเสมอ · แก้ให้เช็ค overlay ด้วย data-hk-locale (raw) เหมือน _tx() */
-    const lang = document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th';
-    try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('yongsennetwork.html',k,lang);if(ov!=null)return ov;}catch(_){}
     const t = window.HK_I18N[k]; if(!t) return k;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
     return t[lang]||t.th||k;
   }
   window.openBulkModal = function(){

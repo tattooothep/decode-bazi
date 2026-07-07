@@ -1073,11 +1073,6 @@ window.__hkOverlayApply=function(l){
   const DIR_FULL_TH = { SE:'ทิศตะวันออกเฉียงใต้', S:'ทิศใต้', SW:'ทิศตะวันตกเฉียงใต้', E:'ทิศตะวันออก', C:'กลาง', W:'ทิศตะวันตก', NE:'ทิศตะวันออกเฉียงเหนือ', N:'ทิศเหนือ', NW:'ทิศตะวันตกเฉียงเหนือ' };
   const DIR_FULL_EN = { SE:'Southeast', S:'South', SW:'Southwest', E:'East', C:'Center', W:'West', NE:'Northeast', N:'North', NW:'Northwest' };
   const DIR_FULL_ZH = { SE:'東南', S:'南', SW:'西南', E:'東', C:'中', W:'西', NE:'東北', N:'北', NW:'西北' };
-  const DIR_FULL_VI = { SE:'Đông Nam', S:'Nam', SW:'Tây Nam', E:'Đông', C:'Trung tâm', W:'Tây', NE:'Đông Bắc', N:'Bắc', NW:'Tây Bắc' };
-  const DIR_FULL_JA = { SE:'南東', S:'南', SW:'南西', E:'東', C:'中央', W:'西', NE:'北東', N:'北', NW:'北西' };
-  const DIR_FULL_KO = { SE:'남동', S:'남', SW:'남서', E:'동', C:'중앙', W:'서', NE:'북동', N:'북', NW:'북서' };
-  const DIR_FULL_RU = { SE:'Юго-Восток', S:'Юг', SW:'Юго-Запад', E:'Восток', C:'Центр', W:'Запад', NE:'Северо-Восток', N:'Север', NW:'Северо-Запад' };
-  const DIR_FULL_ES = { SE:'Sureste', S:'Sur', SW:'Suroeste', E:'Este', C:'Centro', W:'Oeste', NE:'Noreste', N:'Norte', NW:'Noroeste' };
   const INTERNAL_DIRS = new Set(['N','NE','E','SE']);
   const BRANCHES_ZH = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   const BRANCH_TH = { 子:'หนู', 丑:'วัว', 寅:'เสือ', 卯:'กระต่าย', 辰:'มังกร', 巳:'งู', 午:'ม้า', 未:'แพะ', 申:'ลิง', 酉:'ไก่', 戌:'หมา', 亥:'หมู' };
@@ -1086,11 +1081,6 @@ window.__hkOverlayApply=function(l){
   const XIU_GROUP_TH = { 東方青龍:'กลุ่มตะวันออก มังกรเขียว', 南方朱雀:'กลุ่มใต้ หงส์แดง', 西方白虎:'กลุ่มตะวันตก เสือขาว', 北方玄武:'กลุ่มเหนือ เต่าดำ' };
   const ZH_DIR_TH = { 北:'ทิศเหนือ', 南:'ทิศใต้', 東:'ทิศตะวันออก', 西:'ทิศตะวันตก', 東北:'ทิศตะวันออกเฉียงเหนือ', 東南:'ทิศตะวันออกเฉียงใต้', 西南:'ทิศตะวันตกเฉียงใต้', 西北:'ทิศตะวันตกเฉียงเหนือ', 中:'กลาง' };
   const ZH_DIR_EN = { 北:'North', 南:'South', 東:'East', 西:'West', 東北:'Northeast', 東南:'Southeast', 西南:'Southwest', 西北:'Northwest', 中:'Center' };
-  const ZH_DIR_VI = { 北:'Bắc', 南:'Nam', 東:'Đông', 西:'Tây', 東北:'Đông Bắc', 東南:'Đông Nam', 西南:'Tây Nam', 西北:'Tây Bắc', 中:'Trung tâm' };
-  const ZH_DIR_JA = { 北:'北', 南:'南', 東:'東', 西:'西', 東北:'北東', 東南:'南東', 西南:'南西', 西北:'北西', 中:'中央' };
-  const ZH_DIR_KO = { 北:'북', 南:'남', 東:'동', 西:'서', 東北:'북동', 東南:'남동', 西南:'남서', 西北:'북서', 中:'중앙' };
-  const ZH_DIR_RU = { 北:'Север', 南:'Юг', 東:'Восток', 西:'Запад', 東北:'Северо-Восток', 東南:'Юго-Восток', 西南:'Юго-Запад', 西北:'Северо-Запад', 中:'Центр' };
-  const ZH_DIR_ES = { 北:'Norte', 南:'Sur', 東:'Este', 西:'Oeste', 東北:'Noreste', 東南:'Sureste', 西南:'Suroeste', 西北:'Noroeste', 中:'Centro' };
   const STEM_CN = { JIA:'甲',YI:'乙',BING:'丙',DING:'丁',WU:'戊',JI:'己',GENG:'庚',XIN:'辛',REN:'壬',GUI:'癸' };
   const STAR_CN = { TIAN_PENG:'天蓬',TIAN_REN:'天任',TIAN_CHONG:'天沖',TIAN_FU:'天輔',TIAN_YING:'天英',TIAN_QIN:'天禽',TIAN_ZHU:'天柱',TIAN_XIN:'天心',TIAN_RUI:'天芮' };
   const DOOR_CN = { KAI_MEN:{zh:'開門',q:'good'}, XIU_MEN:{zh:'休門',q:'good'}, SHENG_MEN:{zh:'生門',q:'good'}, JING_VIEW_MEN:{zh:'景門',q:'mid'}, JING_FEAR_MEN:{zh:'驚門',q:'bad'}, DU_MEN:{zh:'杜門',q:'mid'}, SHANG_MEN:{zh:'傷門',q:'bad'}, SI_MEN:{zh:'死門',q:'bad'} };
@@ -1102,46 +1092,15 @@ window.__hkOverlayApply=function(l){
   const QIMEN_STAR_TH_BY_ZH = { 天蓬:'ดาวเทียนเผิง', 天任:'ดาวเทียนเริ่น', 天沖:'ดาวเทียนชง', 天輔:'ดาวเทียนฝู่', 天英:'ดาวเทียนอิง', 天禽:'ดาวเทียนฉิน', 天柱:'ดาวเทียนจู้', 天心:'ดาวเทียนซิน', 天芮:'ดาวเทียนรุ่ย' };
   const QIMEN_DEITY_TH_BY_ZH = { 值符:'เทพจื๋อฝู', 螣蛇:'เทพเถิงเสอ', 太陰:'เทพไท่อิน', 六合:'เทพลิ่วเหอ', 白虎:'เทพไป๋หู่', 玄武:'เทพเสวียนอู่', 九地:'เทพจิ่วตี้', 九天:'เทพจิ่วเทียน', 勾陳:'เทพโกวเฉิน', 朱雀:'เทพจูเชวี่ย' };
   /* r420 · i18n · EN term dicts — ศัพท์ Qi Men วงการจริง (ชุดเดียวกับ /api/auspicious QIMEN_TERM_EN)
-   * ใช้ผ่าน qimenDoorTh/qimenStarTh/qimenDeityTh (จุดเลือกภาษาจุดเดียว ripple ทุก build*Html) */
+   * ใช้ผ่าน qimenDoorTh/qimenStarTh/qimenDeityTh (จุดเลือกภาษาจุดเดียว ripple ทุก build*Html)
+   * ภาษาใหม่ (vi/ja/ko/ru/es) ตกไป EN · ไม่แตะ logic ผัง/คะแนน */
   const QIMEN_DOOR_EN = { KAI_MEN:'Open Gate', XIU_MEN:'Rest Gate', SHENG_MEN:'Life Gate', JING_VIEW_MEN:'Scenery Gate', JING_FEAR_MEN:'Fear Gate', DU_MEN:'Closed Gate', SHANG_MEN:'Injury Gate', SI_MEN:'Death Gate' };
   const QIMEN_DOOR_EN_BY_ZH = { 開門:'Open Gate', 休門:'Rest Gate', 生門:'Life Gate', 景門:'Scenery Gate', 驚門:'Fear Gate', 杜門:'Closed Gate', 傷門:'Injury Gate', 死門:'Death Gate' };
   const QIMEN_STAR_EN = { TIAN_PENG:'Tian Peng star', TIAN_REN:'Tian Ren star', TIAN_CHONG:'Tian Chong star', TIAN_FU:'Tian Fu star', TIAN_YING:'Tian Ying star', TIAN_QIN:'Tian Qin star', TIAN_ZHU:'Tian Zhu star', TIAN_XIN:'Tian Xin star', TIAN_RUI:'Tian Rui star' };
   const QIMEN_STAR_EN_BY_ZH = { 天蓬:'Tian Peng star', 天任:'Tian Ren star', 天沖:'Tian Chong star', 天輔:'Tian Fu star', 天英:'Tian Ying star', 天禽:'Tian Qin star', 天柱:'Tian Zhu star', 天心:'Tian Xin star', 天芮:'Tian Rui star' };
   const QIMEN_DEITY_EN = { ZHI_FU:'Chief (Zhi Fu)', TENG_SHE:'Coiling Snake', TAI_YIN:'Great Yin', LIU_HE:'Six Harmony', BAI_HU:'White Tiger', XUAN_WU:'Black Tortoise', JIU_DI:'Nine Earth', JIU_TIAN:'Nine Heavens', GOU_CHEN:'Hooking Chen', ZHU_QUE:'Vermilion Bird' };
   const QIMEN_DEITY_EN_BY_ZH = { 值符:'Chief (Zhi Fu)', 螣蛇:'Coiling Snake', 太陰:'Great Yin', 六合:'Six Harmony', 白虎:'White Tiger', 玄武:'Black Tortoise', 九地:'Nine Earth', 九天:'Nine Heavens', 勾陳:'Hooking Chen', 朱雀:'Vermilion Bird' };
-  /* r454 · i18n 9-lang · 8門9星8神 native-quality terms (vi/ja/ko/ru/es) — จีนกำกับเสมอตามนโยบาย · ไม่ fallback EN/TH
-   * ตรวจสอบ: ไม่มีเจ้าของภาษายืนยัน (native reviewer) — ใช้ Hán-Việt/Kanji-on'yomi/Hanja/transliteration มาตรฐานวงการ */
-  const QIMEN_DOOR_VI = { KAI_MEN:'Cửa Khai 開門', XIU_MEN:'Cửa Hưu 休門', SHENG_MEN:'Cửa Sinh 生門', JING_VIEW_MEN:'Cửa Cảnh 景門', JING_FEAR_MEN:'Cửa Kinh 驚門', DU_MEN:'Cửa Đỗ 杜門', SHANG_MEN:'Cửa Thương 傷門', SI_MEN:'Cửa Tử 死門' };
-  const QIMEN_DOOR_VI_BY_ZH = { 開門:'Cửa Khai 開門', 休門:'Cửa Hưu 休門', 生門:'Cửa Sinh 生門', 景門:'Cửa Cảnh 景門', 驚門:'Cửa Kinh 驚門', 杜門:'Cửa Đỗ 杜門', 傷門:'Cửa Thương 傷門', 死門:'Cửa Tử 死門' };
-  const QIMEN_DOOR_JA = { KAI_MEN:'開門(かいもん)', XIU_MEN:'休門(きゅうもん)', SHENG_MEN:'生門(せいもん)', JING_VIEW_MEN:'景門(けいもん)', JING_FEAR_MEN:'驚門(きょうもん)', DU_MEN:'杜門(ともん)', SHANG_MEN:'傷門(しょうもん)', SI_MEN:'死門(しもん)' };
-  const QIMEN_DOOR_JA_BY_ZH = { 開門:'開門(かいもん)', 休門:'休門(きゅうもん)', 生門:'生門(せいもん)', 景門:'景門(けいもん)', 驚門:'驚門(きょうもん)', 杜門:'杜門(ともん)', 傷門:'傷門(しょうもん)', 死門:'死門(しもん)' };
-  const QIMEN_DOOR_KO = { KAI_MEN:'개문 開門', XIU_MEN:'휴문 休門', SHENG_MEN:'생문 生門', JING_VIEW_MEN:'경문 景門', JING_FEAR_MEN:'경문(驚) 驚門', DU_MEN:'두문 杜門', SHANG_MEN:'상문 傷門', SI_MEN:'사문 死門' };
-  const QIMEN_DOOR_KO_BY_ZH = { 開門:'개문 開門', 休門:'휴문 休門', 生門:'생문 生門', 景門:'경문 景門', 驚門:'경문(驚) 驚門', 杜門:'두문 杜門', 傷門:'상문 傷門', 死門:'사문 死門' };
-  const QIMEN_DOOR_RU = { KAI_MEN:'Врата Открытия 開門', XIU_MEN:'Врата Покоя 休門', SHENG_MEN:'Врата Жизни 生門', JING_VIEW_MEN:'Врата Пейзажа 景門', JING_FEAR_MEN:'Врата Страха 驚門', DU_MEN:'Врата Ду 杜門', SHANG_MEN:'Врата Ранения 傷門', SI_MEN:'Врата Смерти 死門' };
-  const QIMEN_DOOR_RU_BY_ZH = { 開門:'Врата Открытия 開門', 休門:'Врата Покоя 休門', 生門:'Врата Жизни 生門', 景門:'Врата Пейзажа 景門', 驚門:'Врата Страха 驚門', 杜門:'Врата Ду 杜門', 傷門:'Врата Ранения 傷門', 死門:'Врата Смерти 死門' };
-  const QIMEN_DOOR_ES = { KAI_MEN:'Puerta de Apertura 開門', XIU_MEN:'Puerta del Descanso 休門', SHENG_MEN:'Puerta de la Vida 生門', JING_VIEW_MEN:'Puerta del Paisaje 景門', JING_FEAR_MEN:'Puerta del Miedo 驚門', DU_MEN:'Puerta Du 杜門', SHANG_MEN:'Puerta de la Herida 傷門', SI_MEN:'Puerta de la Muerte 死門' };
-  const QIMEN_DOOR_ES_BY_ZH = { 開門:'Puerta de Apertura 開門', 休門:'Puerta del Descanso 休門', 生門:'Puerta de la Vida 生門', 景門:'Puerta del Paisaje 景門', 驚門:'Puerta del Miedo 驚門', 杜門:'Puerta Du 杜門', 傷門:'Puerta de la Herida 傷門', 死門:'Puerta de la Muerte 死門' };
-  const QIMEN_STAR_VI = { TIAN_PENG:'Sao Thiên Bồng 天蓬', TIAN_REN:'Sao Thiên Nhậm 天任', TIAN_CHONG:'Sao Thiên Xung 天沖', TIAN_FU:'Sao Thiên Phụ 天輔', TIAN_YING:'Sao Thiên Anh 天英', TIAN_QIN:'Sao Thiên Cầm 天禽', TIAN_ZHU:'Sao Thiên Trụ 天柱', TIAN_XIN:'Sao Thiên Tâm 天心', TIAN_RUI:'Sao Thiên Nhuế 天芮' };
-  const QIMEN_STAR_VI_BY_ZH = { 天蓬:'Sao Thiên Bồng 天蓬', 天任:'Sao Thiên Nhậm 天任', 天沖:'Sao Thiên Xung 天沖', 天輔:'Sao Thiên Phụ 天輔', 天英:'Sao Thiên Anh 天英', 天禽:'Sao Thiên Cầm 天禽', 天柱:'Sao Thiên Trụ 天柱', 天心:'Sao Thiên Tâm 天心', 天芮:'Sao Thiên Nhuế 天芮' };
-  const QIMEN_STAR_JA = { TIAN_PENG:'天蓬星(てんほうせい)', TIAN_REN:'天任星(てんにんせい)', TIAN_CHONG:'天沖星(てんちゅうせい)', TIAN_FU:'天輔星(てんほせい)', TIAN_YING:'天英星(てんえいせい)', TIAN_QIN:'天禽星(てんきんせい)', TIAN_ZHU:'天柱星(てんちゅうせい)', TIAN_XIN:'天心星(てんしんせい)', TIAN_RUI:'天芮星(てんぜいせい)' };
-  const QIMEN_STAR_JA_BY_ZH = { 天蓬:'天蓬星(てんほうせい)', 天任:'天任星(てんにんせい)', 天沖:'天沖星(てんちゅうせい)', 天輔:'天輔星(てんほせい)', 天英:'天英星(てんえいせい)', 天禽:'天禽星(てんきんせい)', 天柱:'天柱星(てんちゅうせい)', 天心:'天心星(てんしんせい)', 天芮:'天芮星(てんぜいせい)' };
-  const QIMEN_STAR_KO = { TIAN_PENG:'천봉성 天蓬', TIAN_REN:'천임성 天任', TIAN_CHONG:'천충성 天沖', TIAN_FU:'천보성 天輔', TIAN_YING:'천영성 天英', TIAN_QIN:'천금성 天禽', TIAN_ZHU:'천주성 天柱', TIAN_XIN:'천심성 天心', TIAN_RUI:'천예성 天芮' };
-  const QIMEN_STAR_KO_BY_ZH = { 天蓬:'천봉성 天蓬', 天任:'천임성 天任', 天沖:'천충성 天沖', 天輔:'천보성 天輔', 天英:'천영성 天英', 天禽:'천금성 天禽', 天柱:'천주성 天柱', 天心:'천심성 天心', 天芮:'천예성 天芮' };
-  const QIMEN_STAR_RU = { TIAN_PENG:'Звезда Тянь Пэн 天蓬', TIAN_REN:'Звезда Тянь Жэнь 天任', TIAN_CHONG:'Звезда Тянь Чун 天沖', TIAN_FU:'Звезда Тянь Фу 天輔', TIAN_YING:'Звезда Тянь Ин 天英', TIAN_QIN:'Звезда Тянь Цинь 天禽', TIAN_ZHU:'Звезда Тянь Чжу 天柱', TIAN_XIN:'Звезда Тянь Синь 天心', TIAN_RUI:'Звезда Тянь Жуй 天芮' };
-  const QIMEN_STAR_RU_BY_ZH = { 天蓬:'Звезда Тянь Пэн 天蓬', 天任:'Звезда Тянь Жэнь 天任', 天沖:'Звезда Тянь Чун 天沖', 天輔:'Звезда Тянь Фу 天輔', 天英:'Звезда Тянь Ин 天英', 天禽:'Звезда Тянь Цинь 天禽', 天柱:'Звезда Тянь Чжу 天柱', 天心:'Звезда Тянь Синь 天心', 天芮:'Звезда Тянь Жуй 天芮' };
-  const QIMEN_STAR_ES = { TIAN_PENG:'Estrella Tian Peng 天蓬', TIAN_REN:'Estrella Tian Ren 天任', TIAN_CHONG:'Estrella Tian Chong 天沖', TIAN_FU:'Estrella Tian Fu 天輔', TIAN_YING:'Estrella Tian Ying 天英', TIAN_QIN:'Estrella Tian Qin 天禽', TIAN_ZHU:'Estrella Tian Zhu 天柱', TIAN_XIN:'Estrella Tian Xin 天心', TIAN_RUI:'Estrella Tian Rui 天芮' };
-  const QIMEN_STAR_ES_BY_ZH = { 天蓬:'Estrella Tian Peng 天蓬', 天任:'Estrella Tian Ren 天任', 天沖:'Estrella Tian Chong 天沖', 天輔:'Estrella Tian Fu 天輔', 天英:'Estrella Tian Ying 天英', 天禽:'Estrella Tian Qin 天禽', 天柱:'Estrella Tian Zhu 天柱', 天心:'Estrella Tian Xin 天心', 天芮:'Estrella Tian Rui 天芮' };
-  const QIMEN_DEITY_VI = { ZHI_FU:'Trực Phù 值符', TENG_SHE:'Đằng Xà 螣蛇', TAI_YIN:'Thái Âm 太陰', LIU_HE:'Lục Hợp 六合', BAI_HU:'Bạch Hổ 白虎', XUAN_WU:'Huyền Vũ 玄武', JIU_DI:'Cửu Địa 九地', JIU_TIAN:'Cửu Thiên 九天', GOU_CHEN:'Câu Trần 勾陳', ZHU_QUE:'Chu Tước 朱雀' };
-  const QIMEN_DEITY_VI_BY_ZH = { 值符:'Trực Phù 值符', 螣蛇:'Đằng Xà 螣蛇', 太陰:'Thái Âm 太陰', 六合:'Lục Hợp 六合', 白虎:'Bạch Hổ 白虎', 玄武:'Huyền Vũ 玄武', 九地:'Cửu Địa 九地', 九天:'Cửu Thiên 九天', 勾陳:'Câu Trần 勾陳', 朱雀:'Chu Tước 朱雀' };
-  const QIMEN_DEITY_JA = { ZHI_FU:'値符(ちょくふ)', TENG_SHE:'螣蛇(とうだ)', TAI_YIN:'太陰(たいいん)', LIU_HE:'六合(りくごう)', BAI_HU:'白虎(びゃっこ)', XUAN_WU:'玄武(げんぶ)', JIU_DI:'九地(きゅうち)', JIU_TIAN:'九天(きゅうてん)', GOU_CHEN:'勾陳(こうちん)', ZHU_QUE:'朱雀(すざく)' };
-  const QIMEN_DEITY_JA_BY_ZH = { 值符:'値符(ちょくふ)', 螣蛇:'螣蛇(とうだ)', 太陰:'太陰(たいいん)', 六合:'六合(りくごう)', 白虎:'白虎(びゃっこ)', 玄武:'玄武(げんぶ)', 九地:'九地(きゅうち)', 九天:'九天(きゅうてん)', 勾陳:'勾陳(こうちん)', 朱雀:'朱雀(すざく)' };
-  const QIMEN_DEITY_KO = { ZHI_FU:'치부 值符', TENG_SHE:'등사 螣蛇', TAI_YIN:'태음 太陰', LIU_HE:'육합 六合', BAI_HU:'백호 白虎', XUAN_WU:'현무 玄武', JIU_DI:'구지 九地', JIU_TIAN:'구천 九天', GOU_CHEN:'구진 勾陳', ZHU_QUE:'주작 朱雀' };
-  const QIMEN_DEITY_KO_BY_ZH = { 值符:'치부 值符', 螣蛇:'등사 螣蛇', 太陰:'태음 太陰', 六合:'육합 六合', 白虎:'백호 白虎', 玄武:'현무 玄武', 九地:'구지 九地', 九天:'구천 九天', 勾陳:'구진 勾陳', 朱雀:'주작 朱雀' };
-  const QIMEN_DEITY_RU = { ZHI_FU:'Чжифу (Дежурный символ) 值符', TENG_SHE:'Тэн Шэ (Извивающаяся змея) 螣蛇', TAI_YIN:'Тай Инь (Великая Инь) 太陰', LIU_HE:'Лю Хэ (Шесть Гармоний) 六合', BAI_HU:'Белый Тигр 白虎', XUAN_WU:'Чёрная Черепаха 玄武', JIU_DI:'Девять Земель 九地', JIU_TIAN:'Девять Небес 九天', GOU_CHEN:'Гоу Чэнь (Крюк Чэнь) 勾陳', ZHU_QUE:'Чжу Цюэ (Красная Птица) 朱雀' };
-  const QIMEN_DEITY_RU_BY_ZH = { 值符:'Чжифу (Дежурный символ) 值符', 螣蛇:'Тэн Шэ (Извивающаяся змея) 螣蛇', 太陰:'Тай Инь (Великая Инь) 太陰', 六合:'Лю Хэ (Шесть Гармоний) 六合', 白虎:'Белый Тигр 白虎', 玄武:'Чёрная Черепаха 玄武', 九地:'Девять Земель 九地', 九天:'Девять Небес 九天', 勾陳:'Гоу Чэнь (Крюк Чэнь) 勾陳', 朱雀:'Чжу Цюэ (Красная Птица) 朱雀' };
-  const QIMEN_DEITY_ES = { ZHI_FU:'Zhifu (Símbolo de Turno) 值符', TENG_SHE:'Teng She (Serpiente Enroscada) 螣蛇', TAI_YIN:'Tai Yin (Gran Yin) 太陰', LIU_HE:'Liu He (Seis Armonías) 六合', BAI_HU:'Tigre Blanco 白虎', XUAN_WU:'Tortuga Negra 玄武', JIU_DI:'Nueve Tierras 九地', JIU_TIAN:'Nueve Cielos 九天', GOU_CHEN:'Gou Chen (Gancho Chen) 勾陳', ZHU_QUE:'Ave Bermellón 朱雀' };
-  const QIMEN_DEITY_ES_BY_ZH = { 值符:'Zhifu (Símbolo de Turno) 值符', 螣蛇:'Teng She (Serpiente Enroscada) 螣蛇', 太陰:'Tai Yin (Gran Yin) 太陰', 六合:'Liu He (Seis Armonías) 六合', 白虎:'Tigre Blanco 白虎', 玄武:'Tortuga Negra 玄武', 九地:'Nueve Tierras 九地', 九天:'Nueve Cielos 九天', 勾陳:'Gou Chen (Gancho Chen) 勾陳', 朱雀:'Ave Bermellón 朱雀' };
-  /* จุดเลือกภาษาเนื้อหา engine: th/zh/en ตรงตัว · vi/ja/ko/ru/es = คำแปลจริง (r454 9-lang) · แยกจาก normLang เดิม (ไม่แตะ overlay)
+  /* จุดเลือกภาษาเนื้อหา engine: th/zh ตรงตัว · อื่น ๆ ทั้งหมด (รวม vi/ja/ko/ru/es) = en · แยกจาก normLang เดิม (ไม่แตะ overlay)
    * ลำดับ: hk_locale (ตัวเลือกผู้ใช้จริง) → html.lang → data-lang · ห้ามให้ html.lang ค่า default "th" ทับตัวเลือกผู้ใช้ */
   function qmContentLang(){
     var raw = String((function(){ try{ return localStorage.getItem('hk_locale'); }catch(e){ return null; }})()
@@ -1149,152 +1108,11 @@ window.__hkOverlayApply=function(l){
       || document.documentElement.getAttribute('data-lang') || 'th').toLowerCase();
     if (raw.indexOf('th') === 0) return 'th';
     if (raw.indexOf('zh') === 0) return 'zh';
-    if (raw.indexOf('vi') === 0) return 'vi';
-    if (raw.indexOf('ja') === 0) return 'ja';
-    if (raw.indexOf('ko') === 0) return 'ko';
-    if (raw.indexOf('ru') === 0) return 'ru';
-    if (raw.indexOf('es') === 0) return 'es';
     return 'en';
   }
-  /* r454 · i18n 9-lang · คำแปล qmUiWord() สำหรับ vi/ja/ko/ru/es · คีย์ = ค่า th เดิม (unique ต่อวลี)
-   * ทุก call site ของ qmUiWord(th,en,zh) ไม่ต้องแก้ — lookup ผ่าน dict นี้อัตโนมัติ */
-  const QM_UI_WORD_I18N = {
-    'ม้าเดินทาง': { vi:'Dịch Mã 驛馬', ja:'駅馬(えきば)', ko:'역마 驛馬', ru:'Дорожная лошадь 驛馬', es:'Caballo Viajero 驛馬' },
-    'ช่วยเรื่องเดินทาง ติดต่อ เคลื่อนงาน หรือเร่งให้เรื่องขยับ': { vi:'Hỗ trợ việc đi lại, liên lạc, chuyển việc, hoặc thúc đẩy sự việc tiến triển.', ja:'旅行、連絡、異動を後押しし、物事の進展を早める。', ko:'여행, 연락, 이동을 돕고 일이 진전되도록 촉진한다.', ru:'Способствует поездкам, контактам, переменам и ускоряет развитие дел.', es:'Favorece los viajes, los contactos, los cambios o impulsa el avance de un asunto.' },
-    'ก้านถูกลงโทษ': { vi:'Can bị Hình', ja:'撃刑(げきけい)', ko:'격형', ru:'Наказанный ствол', es:'Tallo Castigado' },
-    'มีแรงกดดัน ผิดพลาดง่าย ต้องระวังเงื่อนไข': { vi:'Áp lực lớn, dễ xảy ra sai sót, cần thận trọng với điều kiện xung quanh.', ja:'プレッシャーが強く、ミスが起きやすいため、条件に注意が必要。', ko:'압박이 강해 실수가 나기 쉬우므로 조건을 주의해야 한다.', ru:'Высокое давление, легко допустить ошибку — нужно внимательно проверять условия.', es:'Hay mucha presión y es fácil cometer errores; hay que revisar bien las condiciones.' },
-    'ก้านถูกลงโทษ · 擊刑': { vi:'Can bị Hình · 擊刑', ja:'撃刑(げきけい) · 擊刑', ko:'격형 · 擊刑', ru:'Наказанный ствол · 擊刑', es:'Tallo Castigado · 擊刑' },
-    'ปฏิกิริยาก้านฟ้า · 十干克應': { vi:'Phản ứng Thiên Can · 十干克應', ja:'天干反応 · 十干克應', ko:'천간 반응 · 十干克應', ru:'Реакция небесных стволов · 十干克應', es:'Reacción de los Tallos Celestiales · 十干克應' },
-    'วังใน': { vi:'Cung Nội', ja:'内宮(ないきゅう)', ko:'내궁', ru:'Внутренний дворец', es:'Palacio Interior' },
-    'วังนอก': { vi:'Cung Ngoại', ja:'外宮(がいきゅう)', ko:'외궁', ru:'Внешний дворец', es:'Palacio Exterior' },
-    'ม้าเดินทาง 驛馬': { vi:'Dịch Mã 驛馬', ja:'駅馬(えきば) 驛馬', ko:'역마 驛馬', ru:'Дорожная лошадь 驛馬', es:'Caballo Viajero 驛馬' },
-    'วัน': { vi:'Ngày', ja:'日', ko:'일', ru:'День', es:'Día' },
-    'ยาม': { vi:'Giờ', ja:'時', ko:'시', ru:'Час', es:'Hora' },
-    'แรงเคลื่อนไหว เดินทาง ติดต่อ หรือเรื่องที่ต้องให้ขยับ': { vi:'Sức chuyển động, đi lại, liên lạc, hoặc việc cần được thúc đẩy.', ja:'動き、旅行、連絡、または物事を前進させる力。', ko:'이동, 여행, 연락 또는 일을 진전시키는 힘을 뜻한다.', ru:'Энергия движения, поездок, контактов или того, что нужно сдвинуть с места.', es:'Energía de movimiento, viajes, contactos o asuntos que necesitan avanzar.' },
-    'วังใน/วังนอก 內外': { vi:'Cung Nội/Ngoại 內外', ja:'内宮・外宮 內外', ko:'내궁/외궁 內外', ru:'Внутренний/внешний дворец 內外', es:'Palacios Interior/Exterior 內外' },
-    'เรื่องใกล้ตัว/ในองค์กร เทียบกับเรื่องภายนอก/ตลาด/เดินทาง': { vi:'So sánh việc gần gũi/nội bộ với việc bên ngoài/thị trường/đi lại.', ja:'身近・組織内の事柄と、外部・市場・移動に関する事柄を比較する。', ko:'가까운 일/조직 내부와 외부/시장/이동 관련 일을 비교한다.', ru:'Сравнение личных/внутренних дел с внешними, рыночными или связанными с поездками.', es:'Compara asuntos cercanos o internos con asuntos externos, de mercado o de viaje.' },
-    'ม้าเดินทาง · 驛馬': { vi:'Dịch Mã · 驛馬', ja:'駅馬(えきば) · 驛馬', ko:'역마 · 驛馬', ru:'Дорожная лошадь · 驛馬', es:'Caballo Viajero · 驛馬' },
-    'ช่องว่าง · 空亡': { vi:'Không Vong · 空亡', ja:'空亡(くうぼう) · 空亡', ko:'공망 · 空亡', ru:'Пустота · 空亡', es:'Vacío · 空亡' },
-    'ปะทะ 沖': { vi:'Xung 沖', ja:'衝(しょう) 沖', ko:'충 沖', ru:'Столкновение 沖', es:'Choque 沖' },
-    'วัง': { vi:'Cung', ja:'宮', ko:'궁', ru:'Дворец', es:'Palacio' },
-    'ม้า': { vi:'Mã', ja:'馬', ko:'마', ru:'Конь', es:'Caballo' },
-    'ว่าง': { vi:'Không', ja:'空', ko:'공', ru:'Пусто', es:'Vacío' },
-    'ชั้นดวงผู้ใช้เท่านั้น ต้องอ่านคู่กับวังฉีเหมิน': { vi:'Chỉ là lớp lá số cá nhân của bạn, cần đọc cùng với cung Kỳ Môn.', ja:'ユーザー個人の命式レイヤーに過ぎず、奇門の宮位と合わせて読む必要がある。', ko:'사용자 개인 명반 레이어일 뿐이며, 기문 궁위와 함께 읽어야 한다.', ru:'Это только личный слой натальной карты пользователя; читать нужно вместе с дворцом Ци Мэнь.', es:'Es solo la capa de la carta personal del usuario; debe leerse junto con el palacio de Qi Men.' },
-    'ธาตุ用': { vi:'Dụng Thần 用', ja:'用神 用', ko:'용신 用', ru:'Юншэнь (благоприятный элемент) 用', es:'Yongshen (elemento favorable) 用' },
-    'ธาตุทิศนี้ตรงตัวช่วยหลักของดวงคุณ · 用神 · ไม่ใช่คำตัดสินวังฉีเหมิน': { vi:'Ngũ hành của hướng này trùng với Dụng Thần chính của lá số bạn · 用神 · không phải là phán quyết của cung Kỳ Môn.', ja:'この方位の五行はあなたの主要な用神と一致する · 用神 · 奇門の宮位の吉凶判断ではない。', ko:'이 방향의 오행은 당신 명반의 주요 용신과 일치한다 · 用神 · 기문 궁위의 길흉 판단이 아니다.', ru:'Стихия этого направления совпадает с вашим основным Юншэнь (благоприятным элементом) · 用神 · это не вердикт дворца Ци Мэнь.', es:'El elemento de esta dirección coincide con tu Yongshen principal (elemento favorable) · 用神 · no es un veredicto del palacio de Qi Men.' },
-    'ธาตุ喜': { vi:'Hỷ Thần 喜', ja:'喜神 喜', ko:'희신 喜', ru:'Сишэнь (поддерживающий элемент) 喜', es:'Xishen (elemento de apoyo) 喜' },
-    'ธาตุทิศนี้ถูกกับธาตุเสริมของดวงคุณ · 喜神 · ไม่ใช่คำตัดสินวังฉีเหมิน': { vi:'Ngũ hành của hướng này hợp với Hỷ Thần (ngũ hành hỗ trợ) của lá số bạn · 喜神 · không phải là phán quyết của cung Kỳ Môn.', ja:'この方位の五行はあなたの喜神(サポート元素)と合う · 喜神 · 奇門の宮位の吉凶判断ではない。', ko:'이 방향의 오행은 당신 명반의 희신(보조 오행)과 어울린다 · 喜神 · 기문 궁위의 길흉 판단이 아니다.', ru:'Стихия этого направления гармонирует с вашим Сишэнь (поддерживающим элементом) · 喜神 · это не вердикт дворца Ци Мэнь.', es:'El elemento de esta dirección armoniza con tu Xishen (elemento de apoyo) · 喜神 · no es un veredicto del palacio de Qi Men.' },
-    'ธาตุ忌': { vi:'Kỵ Thần 忌', ja:'忌神 忌', ko:'기신 忌', ru:'Цзишэнь (неблагоприятный элемент) 忌', es:'Jishen (elemento desfavorable) 忌' },
-    'ธาตุทิศนี้ต้านดวงคุณ · 忌神 · ต้องลดน้ำหนักเมื่อใช้ทิศนี้': { vi:'Ngũ hành của hướng này khắc với lá số của bạn · 忌神 · cần giảm mức độ tin cậy khi dùng hướng này.', ja:'この方位の五行はあなたの命式に不利に働く · 忌神 · この方位を使う際は信頼度を下げる必要がある。', ko:'이 방향의 오행은 당신의 명반과 상극이다 · 忌神 · 이 방향을 사용할 때는 신뢰도를 낮춰야 한다.', ru:'Стихия этого направления противоречит вашей карте · 忌神 · при использовании этого направления следует снизить уверенность.', es:'El elemento de esta dirección choca con tu carta · 忌神 · reduce la confianza al usar esta dirección.' },
-  };
   function qmUiWord(th, en, zh){
     const L = qmContentLang();
-    if (L === 'th') return th;
-    if (L === 'zh') return zh;
-    if (L === 'en') return en;
-    const extra = QM_UI_WORD_I18N[th];
-    return (extra && extra[L]) || en;
-  }
-  /* r454 · i18n 9-lang · ป้าย/หัวเรื่อง/วัน-เดือน ที่สร้างจาก JS หรือ static (ไม่ผ่าน overlay) สำหรับ vi/ja/ko/ru/es
-   * th/en/zh ไม่ใช้ตารางนี้ (คงพฤติกรรมเดิมเป๊ะ) · จีนกำกับคงไว้ตามนโยบาย */
-  const QM_NEW_LANGS = ['vi','ja','ko','ru','es'];
-  const QM_WEEKDAY_I18N = {
-    vi: ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'],
-    ja: ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'],
-    ko: ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'],
-    ru: ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'],
-    es: ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],
-  };
-  const QM_MONTH_I18N = {
-    vi: ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
-    ja: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
-    ko: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
-    ru: ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
-    es: ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
-  };
-  /* ป้ายโหมด (時家/日家/月家/年家 = Hour/Day/Month/Year Chart) — คำท้องถิ่น (จีนกำกับต่อท้ายแยกใน renderHeader) */
-  const QM_SYS_LABEL_I18N = {
-    hour:  { vi:'Bàn Giờ', ja:'時盤', ko:'시반', ru:'Часовая карта', es:'Carta Horaria' },
-    day:   { vi:'Bàn Ngày', ja:'日盤', ko:'일진반', ru:'Дневная карта', es:'Carta Diaria' },
-    month: { vi:'Bàn Tháng', ja:'月盤', ko:'월반', ru:'Месячная карта', es:'Carta Mensual' },
-    year:  { vi:'Bàn Năm', ja:'年盤', ko:'연반', ru:'Годовая карта', es:'Carta Anual' },
-  };
-  /* หัวเรื่อง breadcrumb + hero label · เดิม "奇門遁甲 · QI MEN DUN JIA" (คงจีนนำ + ชื่อท้องถิ่น) */
-  const QM_HEADING_I18N = {
-    vi:'奇門遁甲 · Kỳ Môn Độn Giáp', ja:'奇門遁甲 · きもんとんこう', ko:'기문둔갑 奇門遁甲', ru:'奇門遁甲 · Ци Мэнь Дунь Цзя', es:'奇門遁甲 · Qimen Dunjia',
-  };
-  /* ป้าย .en ของปุ่มสำนัก (置閏/拆補/陰盤/茅山) · คงจีนกำกับ */
-  /* r454 · glyph มาจาก .tc span ในปุ่มแล้ว (置閏/拆補/陰盤/茅山) · caption ไม่ต้องซ้ำ glyph (กันจีนเกิน)
-   * r4 · es เดิม "Zhi Run/Cha Bu/Yin Pan/Mao Shan" = romanization ตรง en → เปลี่ยนเป็นสเปน (vi/ja/ko/ru ไม่แตะ) */
-  const QM_SCHOOL_EN_I18N = {
-    zhirun: { vi:'Trí Nhuận', ja:'ちじゅん', ko:'치윤', ru:'Чжи Жунь', es:'Intercalación' },
-    chaibu: { vi:'Sách Bổ', ja:'たくほ', ko:'탁보', ru:'Чай Бу', es:'Ajuste' },
-    yinpan: { vi:'Âm Bàn', ja:'いんばん', ko:'음반', ru:'Инь Пань', es:'Tablero Yin' },
-    maoshan:{ vi:'Mao Sơn 🚧', ja:'ぼうざん 🚧', ko:'모산 🚧', ru:'Мао Шань 🚧', es:'Monte Mao 🚧' },
-  };
-  /* r4 · 9-lang · label data-i18n เฉพาะ qimen ที่ es overlay ตกหล่น (ยังเป็น en romanization) — override หลัง applyI18N
-   * เงื่อนไข "แสดง en อยู่" = overlay ไม่แปล → เฉพาะ es (vi/ja/ko/ru overlay แปลแล้ว ไม่เข้าเงื่อนไข = ไม่แตะ) */
-  const QM_DATAI18N_OVERRIDE = {
-    'auto.q.005': { vi:'Trí Nhuận', ja:'ちじゅん', ko:'치윤', ru:'Чжи Жунь', es:'Intercalación' },
-    'auto.q.006': { vi:'Sách Bổ', ja:'たくほ', ko:'탁보', ru:'Чай Бу', es:'Ajuste' },
-    'auto.q.007': { vi:'Âm Bàn', ja:'いんばん', ko:'음반', ru:'Инь Пань', es:'Tablero Yin' },
-    'auto.q.008': { vi:'Mao Sơn 🚧', ja:'ぼうざん 🚧', ko:'모산 🚧', ru:'Мао Шань 🚧', es:'Monte Mao 🚧' },
-    'q.stat.yuan': { vi:'Nguyên · 元', ja:'元期(げんき)', ko:'원 元', ru:'Юань · 元', es:'Ciclo · 元' },
-    'q.meta.ju': { vi:'Cục · 局', ja:'局(きょく)', ko:'국 局', ru:'Цзюй · 局', es:'Cuadro · 局' },
-  };
-  /* ป้ายสถิติ 局 (เดิม th 'อิ๋น/หยางจวี้' · en 'Ju · 局') — สั้น ๆ หมายถึงเลขผัง 局 · ห้ามซ้ำ en 'Ju · 局' */
-  const QM_JU_STAT_I18N = { vi:'Cục · 局', ja:'局(きょく)', ko:'국 局', ru:'Цзюй · 局', es:'Cuadro · 局' };
-  /* r454 · 9-lang · ป้ายวิธีวางผัง (qm-context-source bar + palace detail) · คงจีนกำกับ 拆補/置閏/節氣 · ไม่มี "Chaibu" romanization */
-  const QM_ALGO_LABEL_I18N = {
-    vi: { chaibu_lookup:'Sách Bổ 拆補 · lập bàn theo 節氣', chai_bu_lookup:'Sách Bổ 拆補 · lập bàn theo 節氣', chaibu:'Sách Bổ 拆補', chai_bu:'Sách Bổ 拆補', zhirun:'Trí Nhuận 置閏', zhi_run:'Trí Nhuận 置閏', qimen_api:'Hệ thống Kỳ Môn', api:'Hệ thống Kỳ Môn', _default:'Hệ thống Kỳ Môn · phương pháp riêng' },
-    ja: { chaibu_lookup:'拆補(たくほ)法 · 節氣に基づき盤を立てる', chai_bu_lookup:'拆補(たくほ)法 · 節氣に基づき盤を立てる', chaibu:'拆補(たくほ)法', chai_bu:'拆補(たくほ)法', zhirun:'置閏(ちじゅん)法', zhi_run:'置閏(ちじゅん)法', qimen_api:'奇門計算システム', api:'奇門計算システム', _default:'奇門計算システム · 独自方式' },
-    ko: { chaibu_lookup:'탁보 拆補 · 節氣 기준으로 반 세움', chai_bu_lookup:'탁보 拆補 · 節氣 기준으로 반 세움', chaibu:'탁보 拆補', chai_bu:'탁보 拆補', zhirun:'치윤 置閏', zhi_run:'치윤 置閏', qimen_api:'기문 계산 시스템', api:'기문 계산 시스템', _default:'기문 계산 시스템 · 고유 방식' },
-    ru: { chaibu_lookup:'Метод Чай Бу 拆補 · по 節氣', chai_bu_lookup:'Метод Чай Бу 拆補 · по 節氣', chaibu:'Метод Чай Бу 拆補', chai_bu:'Метод Чай Бу 拆補', zhirun:'Метод Чжи Жунь 置閏', zhi_run:'Метод Чжи Жунь 置閏', qimen_api:'Система Ци Мэнь', api:'Система Ци Мэнь', _default:'Система Ци Мэнь · особый метод' },
-    es: { chaibu_lookup:'Método Cha Bu 拆補 · según 節氣', chai_bu_lookup:'Método Cha Bu 拆補 · según 節氣', chaibu:'Método Cha Bu 拆補', chai_bu:'Método Cha Bu 拆補', zhirun:'Método Zhi Run 置閏', zhi_run:'Método Zhi Run 置閏', qimen_api:'Sistema Qi Men', api:'Sistema Qi Men', _default:'Sistema Qi Men · método propio' },
-  };
-  const QM_VARIANT_LABEL_I18N = {
-    vi: { standard:'Bàn chuẩn', chart:'Bàn chuẩn', hour:'Bàn giờ', day:'Bàn ngày', month:'Bàn tháng', year:'Bàn năm', zhuanpan:'Bàn xoay 轉盤', feipan:'Bàn bay 飛盤', _default:'Bàn theo hệ thống' },
-    ja: { standard:'標準盤', chart:'標準盤', hour:'時盤', day:'日盤', month:'月盤', year:'年盤', zhuanpan:'転盤 轉盤', feipan:'飛盤', _default:'システム独自の盤' },
-    ko: { standard:'표준반', chart:'표준반', hour:'시반', day:'일진반', month:'월반', year:'연반', zhuanpan:'전반 轉盤', feipan:'비반 飛盤', _default:'시스템 고유 반' },
-    ru: { standard:'Стандартная карта', chart:'Стандартная карта', hour:'Часовая карта', day:'Дневная карта', month:'Месячная карта', year:'Годовая карта', zhuanpan:'Вращающаяся карта 轉盤', feipan:'Летящая карта 飛盤', _default:'Карта по системе' },
-    es: { standard:'Carta estándar', chart:'Carta estándar', hour:'Carta horaria', day:'Carta diaria', month:'Carta mensual', year:'Carta anual', zhuanpan:'Carta giratoria 轉盤', feipan:'Carta voladora 飛盤', _default:'Carta según sistema' },
-  };
-  /* ตั้งข้อความ el ตามภาษา: new lang = ค่าท้องถิ่น · th/en/zh = ค่าเดิมที่ cache ไว้ (คืนเป๊ะ ไม่สะเทือน baseline) */
-  function qimenSetLocalizedText(el, newLangValue){
-    if (!el) return;
-    if (el.dataset.qmOrig === undefined) el.dataset.qmOrig = el.textContent;
-    const L = qmContentLang();
-    el.textContent = (QM_NEW_LANGS.indexOf(L) >= 0 && newLangValue) ? newLangValue : el.dataset.qmOrig;
-  }
-  /* ป้าย static ที่ overlay ไม่ครอบ (ไม่มี data-i18n): breadcrumb/hero label + .en ปุ่มสำนัก */
-  function qimenApplyStaticNewLangLabels(){
-    try {
-      const L = qmContentLang();
-      document.querySelectorAll('.crumb > span:last-child, .hero-head .label').forEach(function(el){
-        qimenSetLocalizedText(el, QM_HEADING_I18N[L]);
-      });
-      document.querySelectorAll('#school-toggle button[data-school]').forEach(function(btn){
-        const key = btn.getAttribute('data-school');
-        const enSpan = btn.querySelector('.en');
-        if (enSpan && QM_SCHOOL_EN_I18N[key]) qimenSetLocalizedText(enSpan, QM_SCHOOL_EN_I18N[key][L]);
-      });
-      /* qm-stat-ju-th (data-i18n) : applyI18N ยุบ new lang → en 'Ju · 局' · ตั้งทับหลัง applyI18N สำหรับ new lang เท่านั้น
-       * th/en/zh ไม่แตะ (ปล่อย applyI18N คุม → baseline คงเดิม) */
-      if (QM_NEW_LANGS.indexOf(L) >= 0) {
-        const js = document.getElementById('qm-stat-ju-th');
-        if (js) js.textContent = QM_JU_STAT_I18N[L] || 'Ju · 局';
-        /* r4 · label data-i18n ที่ overlay ตกหล่น (es) : override เฉพาะ el ที่ยังแสดงค่า en (overlay ไม่แปล)
-         * → vi/ja/ko/ru overlay แปลแล้ว (ค่า ≠ en) จะไม่โดนแตะ · th/en/zh ไม่เข้า branch นี้ */
-        Object.keys(QM_DATAI18N_OVERRIDE).forEach(function(key){
-          const enVal = (window.HK_I18N[key] || {}).en;
-          const newVal = QM_DATAI18N_OVERRIDE[key][L];
-          if (enVal == null || !newVal) return;
-          document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
-            if (el.textContent === enVal) el.textContent = newVal;
-          });
-        });
-      }
-    } catch(_){}
+    return L === 'th' ? th : (L === 'zh' ? zh : en);
   }
   /* r431-i18n-final-gate: safety net เฉพาะหน้า qimen
    * ข้อความจำนวนมากถูกสร้างจาก helper JS เก่าและไม่ได้ผ่าน data-i18n ทุกจุด
@@ -1339,8 +1157,6 @@ window.__hkOverlayApply=function(l){
     new MutationObserver(qimenScheduleThaiScrub).observe(document.body, { childList:true, subtree:true, characterData:true });
     qimenScheduleThaiScrub();
   } catch (_) {}
-  /* r454 · 9-lang · localize ป้าย static ครั้งแรก (breadcrumb/hero/สำนัก) — ก่อน chart โหลด */
-  try { qimenApplyStaticNewLangLabels(); } catch(_){}
   const STAR_QUALITY = { TIAN_PENG:'bad', TIAN_REN:'good', TIAN_CHONG:'mid', TIAN_FU:'good', TIAN_YING:'bad', TIAN_QIN:'good', TIAN_ZHU:'bad', TIAN_XIN:'good', TIAN_RUI:'bad' };
   function qimenStarZh(p){ return p?.star_zh || STAR_CN[p?.star_code] || ''; }
   function qimenDoorZh(p){ return p?.door_zh || DOOR_CN[p?.door_code]?.zh || ''; }
@@ -1357,13 +1173,9 @@ window.__hkOverlayApply=function(l){
   function qimenDeityZh(p){ return qimenNormalizeDeityZh(p?.deity_zh || DEITY_CN[p?.deity_code] || ''); }
   /* r420 · i18n · จุดเลือกภาษาชื่อประตู/ดาว/เทพ (ripple ทุก build*Html ที่เรียกผ่าน helper เหล่านี้)
    * th = พฤติกรรมเดิมเป๊ะ · en = ศัพท์วงการ · zh = ตัวตำรา (ผู้เรียกส่วนใหญ่แสดง zh คู่แล้ว — qmNamedTerm กันซ้ำให้) */
-  const QIMEN_DOOR_I18N = { vi:[QIMEN_DOOR_VI,QIMEN_DOOR_VI_BY_ZH], ja:[QIMEN_DOOR_JA,QIMEN_DOOR_JA_BY_ZH], ko:[QIMEN_DOOR_KO,QIMEN_DOOR_KO_BY_ZH], ru:[QIMEN_DOOR_RU,QIMEN_DOOR_RU_BY_ZH], es:[QIMEN_DOOR_ES,QIMEN_DOOR_ES_BY_ZH] };
-  const QIMEN_STAR_I18N = { vi:[QIMEN_STAR_VI,QIMEN_STAR_VI_BY_ZH], ja:[QIMEN_STAR_JA,QIMEN_STAR_JA_BY_ZH], ko:[QIMEN_STAR_KO,QIMEN_STAR_KO_BY_ZH], ru:[QIMEN_STAR_RU,QIMEN_STAR_RU_BY_ZH], es:[QIMEN_STAR_ES,QIMEN_STAR_ES_BY_ZH] };
-  const QIMEN_DEITY_I18N = { vi:[QIMEN_DEITY_VI,QIMEN_DEITY_VI_BY_ZH], ja:[QIMEN_DEITY_JA,QIMEN_DEITY_JA_BY_ZH], ko:[QIMEN_DEITY_KO,QIMEN_DEITY_KO_BY_ZH], ru:[QIMEN_DEITY_RU,QIMEN_DEITY_RU_BY_ZH], es:[QIMEN_DEITY_ES,QIMEN_DEITY_ES_BY_ZH] };
   function qimenDoorTh(p){
     const zh = qimenDoorZh(p);
     const L = qmContentLang();
-    if (QIMEN_DOOR_I18N[L]) { const [byCode,byZh] = QIMEN_DOOR_I18N[L]; return byCode[p?.door_code] || byZh[zh] || zh || ''; }
     if (L === 'en') return QIMEN_DOOR_EN[p?.door_code] || QIMEN_DOOR_EN_BY_ZH[zh] || p?.door_name_th || QIMEN_DOOR_TH[p?.door_code] || zh || '';
     if (L === 'zh') return zh || QIMEN_DOOR_TH[p?.door_code] || '';
     return p?.door_name_th || QIMEN_DOOR_TH[p?.door_code] || QIMEN_DOOR_TH_BY_ZH[zh] || '';
@@ -1371,7 +1183,6 @@ window.__hkOverlayApply=function(l){
   function qimenStarTh(p){
     const zh = qimenStarZh(p);
     const L = qmContentLang();
-    if (QIMEN_STAR_I18N[L]) { const [byCode,byZh] = QIMEN_STAR_I18N[L]; return byCode[p?.star_code] || byZh[zh] || zh || ''; }
     if (L === 'en') return QIMEN_STAR_EN[p?.star_code] || QIMEN_STAR_EN_BY_ZH[zh] || p?.star_name_th || QIMEN_STAR_TH[p?.star_code] || zh || '';
     if (L === 'zh') return zh || QIMEN_STAR_TH[p?.star_code] || '';
     return p?.star_name_th || QIMEN_STAR_TH[p?.star_code] || QIMEN_STAR_TH_BY_ZH[zh] || '';
@@ -1379,7 +1190,6 @@ window.__hkOverlayApply=function(l){
   function qimenDeityTh(p){
     const zh = qimenDeityZh(p);
     const L = qmContentLang();
-    if (QIMEN_DEITY_I18N[L]) { const [byCode,byZh] = QIMEN_DEITY_I18N[L]; return byCode[p?.deity_code] || byZh[zh] || zh || ''; }
     if (L === 'en') return QIMEN_DEITY_EN[p?.deity_code] || QIMEN_DEITY_EN_BY_ZH[zh] || qimenNormalizeDeityTh(p?.deity_name_th) || QIMEN_DEITY_TH[p?.deity_code] || zh || '';
     if (L === 'zh') return zh || QIMEN_DEITY_TH[p?.deity_code] || '';
     return qimenNormalizeDeityTh(p?.deity_name_th) || QIMEN_DEITY_TH[p?.deity_code] || QIMEN_DEITY_TH_BY_ZH[zh] || '';
@@ -1465,12 +1275,6 @@ window.__hkOverlayApply=function(l){
   function qimenAlgorithmLabel(value){
     const raw = String(value || '').trim();
     const key = raw.toLowerCase().replace(/[\s-]+/g, '_');
-    /* r454 · 9-lang · vi/ja/ko/ru/es ใช้คำแปล (คงจีนกำกับ) · th/en/zh คงพฤติกรรมเดิม (scrub จัดการ en/zh) */
-    const _L = qmContentLang();
-    if (QM_NEW_LANGS.indexOf(_L) >= 0) {
-      const M = QM_ALGO_LABEL_I18N[_L] || {};
-      return M[key] || M._default || '';
-    }
     const labels = {
       chai_bu_lookup: 'วิธี拆補 Chaibu · อิง節氣แล้วค่อยตั้งผัง',
       chaibu_lookup: 'วิธี拆補 Chaibu · อิง節氣แล้วค่อยตั้งผัง',
@@ -1486,12 +1290,6 @@ window.__hkOverlayApply=function(l){
   function qimenChartVariantLabel(value){
     const raw = String(value || '').trim();
     const key = raw.toLowerCase().replace(/[\s-]+/g, '_');
-    /* r454 · 9-lang · vi/ja/ko/ru/es คำแปล · th/en/zh เดิม */
-    const _L = qmContentLang();
-    if (QM_NEW_LANGS.indexOf(_L) >= 0) {
-      const M = QM_VARIANT_LABEL_I18N[_L] || {};
-      return M[key] || M._default || '';
-    }
     const labels = {
       standard: 'ผังมาตรฐาน',
       chart: 'ผังมาตรฐาน',
@@ -1524,10 +1322,8 @@ window.__hkOverlayApply=function(l){
     if (low.includes('qimen')) return 'แหล่งฉีเหมินในระบบ';
     return 'แหล่งอ้างอิงจากระบบ';
   }
-  const DIR_FULL_I18N = { vi:[DIR_FULL_VI,ZH_DIR_VI,'Trung tâm','Không rõ hướng'], ja:[DIR_FULL_JA,ZH_DIR_JA,'中央','方位不明'], ko:[DIR_FULL_KO,ZH_DIR_KO,'중앙','방위 불명'], ru:[DIR_FULL_RU,ZH_DIR_RU,'Центр','Направление не указано'], es:[DIR_FULL_ES,ZH_DIR_ES,'Centro','Dirección desconocida'] };
   function qimenDirectionFullLabel(code){
     const L = qmContentLang();
-    if (DIR_FULL_I18N[L]) { const [full,byZh,center,unknown] = DIR_FULL_I18N[L]; return full[code] || byZh[code] || (code === 'C' ? center : unknown); }
     if (L === 'zh') return DIR_FULL_ZH[code] || (ZH_DIR_EN[code] ? code : '') || (code === 'C' ? '中' : '方位不明');
     if (L === 'en') return DIR_FULL_EN[code] || ZH_DIR_EN[code] || (code === 'C' ? 'Center' : 'Unknown direction');
     return DIR_FULL_TH[code] || ZH_DIR_TH[code] || (code === 'C' ? 'กลาง' : 'ทิศไม่ระบุ');
@@ -1535,14 +1331,8 @@ window.__hkOverlayApply=function(l){
   function qimenInternalExternalSummary(){
     const inside = ['N','NE','E','SE'].map(qimenDirectionFullLabel).join(' · ');
     const outside = ['S','SW','W','NW'].map(qimenDirectionFullLabel).join(' · ');
-    const L = qmContentLang();
-    if (L === 'zh') return `<span class="tc">內宮</span>: ${qmEsc(inside)} / <span class="tc">外宮</span>: ${qmEsc(outside)}`;
-    if (L === 'en') return `Inner palaces <span class="tc">內</span>: ${qmEsc(inside)} / Outer palaces <span class="tc">外</span>: ${qmEsc(outside)}`;
-    if (L === 'vi') return `Cung Nội <span class="tc">內</span>: ${qmEsc(inside)} / Cung Ngoại <span class="tc">外</span>: ${qmEsc(outside)}`;
-    if (L === 'ja') return `内宮 <span class="tc">內</span>: ${qmEsc(inside)} / 外宮 <span class="tc">外</span>: ${qmEsc(outside)}`;
-    if (L === 'ko') return `내궁 <span class="tc">內</span>: ${qmEsc(inside)} / 외궁 <span class="tc">外</span>: ${qmEsc(outside)}`;
-    if (L === 'ru') return `Внутренний дворец <span class="tc">內</span>: ${qmEsc(inside)} / Внешний дворец <span class="tc">外</span>: ${qmEsc(outside)}`;
-    if (L === 'es') return `Palacio interior <span class="tc">內</span>: ${qmEsc(inside)} / Palacio exterior <span class="tc">外</span>: ${qmEsc(outside)}`;
+    if (qmContentLang() === 'zh') return `<span class="tc">內宮</span>: ${qmEsc(inside)} / <span class="tc">外宮</span>: ${qmEsc(outside)}`;
+    if (qmContentLang() === 'en') return `Inner palaces <span class="tc">內</span>: ${qmEsc(inside)} / Outer palaces <span class="tc">外</span>: ${qmEsc(outside)}`;
     return `วังใน <span class="tc">內</span>: ${qmEsc(inside)} / วังนอก <span class="tc">外</span>: ${qmEsc(outside)}`;
   }
   const QIMEN_SYSTEM_INFO_I18N_KEY = { hour:'q.sys.hour.info', day:'q.sys.day.info', month:'q.sys.month.info', year:'q.sys.year.info' };
@@ -1992,9 +1782,7 @@ window.__hkOverlayApply=function(l){
     const thClean = String(th || '').trim();
     const fallbackTh = zhClean ? (QIMEN_STAR_TH_BY_ZH[zhClean] || QIMEN_DOOR_TH_BY_ZH[zhClean] || QIMEN_DEITY_TH_BY_ZH[zhClean] || '') : '';
     const left = thClean && thClean !== zhClean ? thClean : fallbackTh;
-    /* r454 · 9-lang · กัน glyph ซ้ำ: ภาษาใหม่ (vi/ru/es) ฝังจีนกำกับใน left แล้ว (เช่น "Sao Thiên Phụ 天輔")
-     * ถ้า left ลงท้ายด้วย zhClean แล้ว ห้ามต่อ zh อีก (กันจีนเกิน) · th/en/zh ไม่ลงท้ายด้วย glyph → เดิมเป๊ะ */
-    const safeZh = (fallbackTh && !String(left).endsWith(zhClean)) ? zhClean : '';
+    const safeZh = fallbackTh ? zhClean : '';
     const core = [left, safeZh].filter(Boolean).join(' ') || '—';
     return core + (palaceId ? ` · วัง ${palaceId}` : '');
   }
@@ -2005,19 +1793,8 @@ window.__hkOverlayApply=function(l){
     const name = String(nameTh || '').trim();
     const prefix = name && kind && name.startsWith(kind) ? '' : (kind ? `${kind} ` : '');
     const main = `${prefix}${name || '—'}`.trim();
-    /* r454 · 9-lang · กัน glyph ซ้ำ: ถ้า name ฝังจีนกำกับลงท้ายแล้ว (vi/ru/es เช่น "Cửa Đỗ 杜門") ห้ามต่อ zh อีก */
-    const zhClean = zh ? String(zh).trim() : '';
-    const zhOut = (zhClean && zhClean !== name && !name.endsWith(zhClean)) ? zhClean : '';
+    const zhOut = zh && String(zh).trim() !== name ? zh : '';
     return [main, zhOut].filter(Boolean).join(' ');
-  }
-  /* r454 · 9-lang · คืน zh กำกับเฉพาะเมื่อ name ยังไม่มี (กันจีนเกินใน .cn/.tc div ที่โชว์ glyph แยก)
-   * ภาษาใหม่ name ฝัง glyph แล้ว → คืน '' · th/en (name ไม่มี glyph) → คืน zh เดิม */
-  function qmDropDupZh(name, zh){
-    const z = String(zh || '').trim();
-    if (!z || z === '—') return z;
-    /* th/en/zh: คืน glyph เดิมเป๊ะ (zh baseline โชว์ .th+.cn ซ้ำอยู่แล้ว ห้ามแตะ) · เฉพาะภาษาใหม่จึงตัด dup */
-    if (QM_NEW_LANGS.indexOf(qmContentLang()) < 0) return z;
-    return String(name || '').trim().endsWith(z) ? '' : z;
   }
   function qmZhList(v, sep='·'){
     if (Array.isArray(v)) return v.filter(Boolean).join(sep);
@@ -2857,14 +2634,7 @@ window.__hkOverlayApply=function(l){
     const leadStar = qimenTermLabel(qimenStarTh(fuPalace), fushi.value_star_zh || qimenStarZh(fuPalace) || chart?.chief_star_zh || '', fuPalaceId);
     const leadDoor = qimenTermLabel(qimenDoorTh(shiPalace), fushi.value_door_zh || qimenDoorZh(shiPalace) || chart?.zhi_shi_door_zh || '', shiPalaceId);
     const source = document.getElementById('qm-context-source');
-    if (source) {
-      /* r454 · 9-lang · ป้ายโหมดนำเป็นคำท้องถิ่นสำหรับ vi/ja/ko/ru/es (label_th เดิมเป็นไทย โดน scrub เหลือเศษ) · th/en/zh เดิม */
-      const _cs = qmContentLang();
-      const _sysLead = (QM_NEW_LANGS.indexOf(_cs) >= 0)
-        ? ((QM_SYS_LABEL_I18N[normalizeQimenSystemType(chart?.system_type || getCurrentSystemType())] || {})[_cs] || systemMeta.label_en || systemMeta.label_th)
-        : systemMeta.label_th;
-      source.textContent = `${_sysLead} ${systemMeta.label_zh} · ${qimenAlgorithmLabel(chart?.algorithm_method)} · ${qimenChartVariantLabel(chart?.chart_variant || chart?.chart_type)} · ${chart?.version || chart?.dmy_engine_version || 'v?'}`;
-    }
+    if (source) source.textContent = `${systemMeta.label_th} ${systemMeta.label_zh} · ${qimenAlgorithmLabel(chart?.algorithm_method)} · ${qimenChartVariantLabel(chart?.chart_variant || chart?.chart_type)} · ${chart?.version || chart?.dmy_engine_version || 'v?'}`;
     const pillarHost = document.getElementById('qm-pillar-strip');
     if (pillarHost) {
       const items = [
@@ -3005,10 +2775,9 @@ window.__hkOverlayApply=function(l){
       const pidHtml = qmEsc(p.palace_id);
       const sHHtml = qmEsc(sH);
       const sEHtml = qmEsc(sE);
-      /* r454 · 9-lang · .cn glyph แยก: ตัดออกถ้า name (ภาษาใหม่) ฝัง glyph แล้ว (กันจีนซ้ำ) · th/en/zh คงเดิม */
-      const starHtml = qmEsc(qmDropDupZh(starName, star));
-      const doorHtml = qmEsc(qmDropDupZh(doorName, door));
-      const dtyHtml = qmEsc(qmDropDupZh(deityName, dty));
+      const starHtml = qmEsc(star);
+      const doorHtml = qmEsc(door);
+      const dtyHtml = qmEsc(dty);
       const starNameHtml = qmEsc(starName);
       const doorNameHtml = qmEsc(doorName);
       const deityNameHtml = qmEsc(deityName);
@@ -3718,15 +3487,15 @@ window.__hkOverlayApply=function(l){
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.door.th)}</span>
-        <span class="v">${qmEsc(doorName || '—')} ${qmDropDupZh(doorName,doorCn)?`<span class="tc">${qmEsc(qmDropDupZh(doorName,doorCn))}</span>`:''}</span>
+        <span class="v">${qmEsc(doorName || '—')} ${doorCn?`<span class="tc">${qmEsc(doorCn)}</span>`:''}</span>
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.star.th)}</span>
-        <span class="v">${qmEsc(starName || '—')} ${qmDropDupZh(starName,starCn)?`<span class="tc">${qmEsc(qmDropDupZh(starName,starCn))}</span>`:''}</span>
+        <span class="v">${qmEsc(starName || '—')} ${starCn?`<span class="tc">${qmEsc(starCn)}</span>`:''}</span>
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.deity.th)}</span>
-        <span class="v">${qmEsc(deityName || '—')} ${qmDropDupZh(deityName,deityCn)?`<span class="tc">${qmEsc(qmDropDupZh(deityName,deityCn))}</span>`:''}</span>
+        <span class="v">${qmEsc(deityName || '—')} ${deityCn?`<span class="tc">${qmEsc(deityCn)}</span>`:''}</span>
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.dir.th)}</span>
@@ -3750,8 +3519,6 @@ window.__hkOverlayApply=function(l){
    * + restore yongshen overlay (เพราะ renderPalaces ล้าง innerHTML)
    * ─────────────────────────────────────────────────────────────── */
   function refreshQimenLanguage(){
-    /* r454 · 9-lang · ป้าย static (breadcrumb/hero/สำนัก .en) ต้อง localize ทุกครั้งที่ภาษาเปลี่ยน (ก่อน early return) */
-    try { qimenApplyStaticNewLangLabels(); } catch(_){}
     try { if (typeof setSchoolInfo === 'function') setSchoolInfo(getCurrentSchool()); }
     catch(e1){ /* setSchoolInfo อาจยังไม่ define ตอน early call */ }
     const last = window._qimenLast;
@@ -3790,20 +3557,11 @@ window.__hkOverlayApply=function(l){
     const leadDoorTh = qimenDoorTh(shiPalace) || QIMEN_DOOR_TH_BY_ZH[leadDoorZh] || QIMEN_DOOR_TH[chart.zhi_shi_door_code] || '';
     /* yuanju · header palace-wrap */
     const yEl = document.getElementById('qm-head-ju');
-    if (yEl) {
-      /* r454 · 9-lang · new lang: โชว์ pole+num (เช่น "陰8") ตัด "局" + roman "YIN n" ที่ตกอังกฤษ
-       * (局 มาจากป้าย 元局 ที่นำหน้าใน q.palace.yuanju แล้ว · กันจีนเกินจาก race applyI18N reset "—"↔juZh) · th/en/zh เดิม */
-      yEl.textContent = (QM_NEW_LANGS.indexOf(qmContentLang()) >= 0)
-        ? `${pole}${num}`
-        : juZh + ' · ' + (pole==='陰'?'YIN':'YANG') + ' ' + num;
-    }
+    if (yEl) yEl.textContent = juZh + ' · ' + (pole==='陰'?'YIN':'YANG') + ' ' + num;
     /* stats card · top-right */
     const _set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
     _set('qm-stat-ju',    juZh);
-    /* r454 · 9-lang · new lang: ป้าย 局 ท้องถิ่น (ไม่งั้น overlay ตกอังกฤษ 'Ju · 局') · th/en/zh เดิม (applyI18N ทับ en/zh) */
-    _set('qm-stat-ju-th', (QM_NEW_LANGS.indexOf(qmContentLang()) >= 0)
-      ? (QM_JU_STAT_I18N[qmContentLang()] || 'Ju · 局')
-      : (pole==='陰' ? 'อิ๋นจวี้' : 'หยางจวี้'));
+    _set('qm-stat-ju-th', pole==='陰' ? 'อิ๋นจวี้' : 'หยางจวี้');
     _set('qm-stat-dun',   qmStemLabel(chart.dun_gan_zh) || '—');
     _set('qm-stat-dun-th','遁干 · ตุ้นกัน');
     _set('qm-stat-yuan',  chart.yuan_cycle_zh || '—');
@@ -3827,19 +3585,16 @@ window.__hkOverlayApply=function(l){
     if (h && window._qimenInput){
       const inp = window._qimenInput;
       const d = new Date(inp.date + 'T' + inp.time);
-      /* r454 · 9-lang · ใช้ qmContentLang() (getCurrentLang ยุบ vi/ja/ko/ru/es → en · จะได้วันเป็นอังกฤษ) */
-      const lang = qmContentLang();
+      const lang = getCurrentLang();
       const DAY_NAMES = {
         th: ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'],
         en: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
         zh: ['週日','週一','週二','週三','週四','週五','週六'],
-        ...QM_WEEKDAY_I18N,
       };
       const MONTH_NAMES = {
         th: ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
         en: ['January','February','March','April','May','June','July','August','September','October','November','December'],
         zh: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
-        ...QM_MONTH_I18N,
       };
       const dayNames = DAY_NAMES[lang] || DAY_NAMES.th;
       const monthNames = MONTH_NAMES[lang] || MONTH_NAMES.th;
@@ -3849,10 +3604,6 @@ window.__hkOverlayApply=function(l){
         h.textContent = `${sysLabel} ${systemMeta.label_zh} · ${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${inp.time}`;
       } else if (lang === 'zh') {
         h.textContent = `${systemMeta.label_zh} · ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${dayNames[d.getDay()]} ${inp.time}`;
-      } else if (QM_NEW_LANGS.indexOf(lang) >= 0) {
-        /* ป้ายโหมดท้องถิ่น + จีนกำกับ + วันในสัปดาห์ท้องถิ่น (เดือน/วันแปลแล้ว) */
-        const sysL = (QM_SYS_LABEL_I18N[getCurrentSystemType()] || {})[lang] || systemMeta.label_en || systemMeta.label_th;
-        h.textContent = `${sysL} ${systemMeta.label_zh} · ${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${inp.time}`;
       } else {
         h.textContent = `${sysLabel} ${systemMeta.label_zh} · วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${yyBE} (${d.getFullYear()}) ${inp.time}`;
       }
@@ -4043,40 +3794,25 @@ window.__hkOverlayApply=function(l){
       th: '<b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b>節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b>เหตุการณ์ใหญ่</b> · ใช้ใน 煙波釣叟賦',
       en: '<b>置閏 · ZhiRun</b> — Classical school · uses <b>節氣 boundaries</b> · best for <b>major events</b>',
       zh: '<b>置閏</b> — 經典學派 · 用<b>節氣</b>為界 · 適合 <b>重大事件</b>',
-      vi: '<b>置閏 · Trí Nhuận</b> — Phái cổ điển · lấy <b>節氣</b> làm ranh giới đổi 局 · hợp phân tích <b>sự kiện lớn</b> · dùng trong 煙波釣叟賦',
-      ja: '<b>置閏(ちじゅん)</b> — 古典派 · <b>節氣</b>を境として局を変える · <b>大きな出来事</b>の分析に適す · 煙波釣叟賦に基づく',
-      ko: '<b>치윤 置閏</b> — 고전 학파 · <b>節氣</b>를 경계로 국(局)을 바꿈 · <b>큰 사건</b> 분석에 적합 · 煙波釣叟賦에 근거',
-      ru: '<b>置閏 · Чжи Жунь</b> — Классическая школа · использует границы <b>節氣</b> · лучше всего для <b>крупных событий</b>',
-      es: '<b>置閏 · Zhi Run</b> — Escuela clásica · usa los límites de <b>節氣</b> · ideal para <b>grandes acontecimientos</b>',
     },
     chaibu: {
       th: '<b>拆補 · ChaiBu</b> — สำนักประจุพิเศษ · ปรับ <b>三元局</b> ตามวัน · เหมาะวิเคราะห์ <b>เรื่องเฉพาะหน้า</b>',
       en: '<b>拆補 · ChaiBu</b> — Daily-adjusted school · <b>三元局</b> per day · best for <b>specific decisions</b>',
       zh: '<b>拆補</b> — 逐日調整 · <b>三元局</b> · 適合 <b>具體決策</b>',
-      vi: '<b>拆補 · Sách Bổ</b> — Phái điều chỉnh theo ngày · đổi <b>三元局</b> mỗi ngày · hợp cho <b>quyết định cụ thể</b>',
-      ja: '<b>拆補(たくほ)</b> — 日ごとに調整する派 · 日ごとに<b>三元局</b>を変える · <b>具体的な決断</b>に適す',
-      ko: '<b>탁보 拆補</b> — 매일 조정하는 학파 · 날마다 <b>三元局</b>을 바꿈 · <b>구체적 결정</b>에 적합',
-      ru: '<b>拆補 · Чай Бу</b> — Ежедневно корректируемая школа · <b>三元局</b> на каждый день · лучше для <b>конкретных решений</b>',
-      es: '<b>拆補 · Cha Bu</b> — Escuela de ajuste diario · <b>三元局</b> por día · ideal para <b>decisiones concretas</b>',
     },
     yinpan: {
       th: '<b>陰盤 · YinPan</b> — ผังหยิน · เน้น <b>八神</b> เป็นหลัก · เหมาะหา <b>ของหาย</b> · <b>ฝัน</b> · <b>เรื่องลึก-ลับ</b> · กลับขวาตามตำราเดิม',
       en: '<b>陰盤 · YinPan</b> — Yin-style chart · emphasizes <b>八神</b> · best for <b>lost items</b>, <b>dreams</b>, <b>hidden matters</b>',
       zh: '<b>陰盤</b> — 陰式盤 · 重 <b>八神</b> · 適合 <b>失物</b> · <b>夢境</b> · <b>隱秘事</b>',
-      vi: '<b>陰盤 · Âm Bàn</b> — Bàn kiểu Âm · chú trọng <b>八神</b> · hợp tìm <b>đồ thất lạc</b> · <b>giấc mơ</b> · <b>việc kín</b>',
-      ja: '<b>陰盤(いんばん)</b> — 陰式の盤 · <b>八神</b>を重視 · <b>失せ物</b>・<b>夢</b>・<b>隠し事</b>に適す',
-      ko: '<b>음반 陰盤</b> — 음(陰) 방식 반 · <b>八神</b>을 중시 · <b>분실물</b> · <b>꿈</b> · <b>은밀한 일</b>에 적합',
-      ru: '<b>陰盤 · Инь Пань</b> — Карта в стиле Инь · акцент на <b>八神</b> · лучше для <b>потерянных вещей</b>, <b>снов</b>, <b>скрытых дел</b>',
-      es: '<b>陰盤 · Yin Pan</b> — Carta estilo Yin · enfatiza los <b>八神</b> · ideal para <b>objetos perdidos</b>, <b>sueños</b>, <b>asuntos ocultos</b>',
     },
   };
   function setSchoolInfo(school){
     const info = document.getElementById('school-info');
     if (!info) return;
-    /* r454 · 9-lang · qmContentLang() (getCurrentLang ยุบ vi/ja/ko/ru/es → en) · new lang มีคำแปลตรงแล้ว */
-    const lang = qmContentLang();
+    /* Step 4 · ใช้ getCurrentLang() ที่ normalize zh-Hant → zh */
+    const lang = getCurrentLang();
     const data = SCHOOL_INFO[school] || SCHOOL_INFO.chaibu;
-    info.innerHTML = data[lang] || (lang === 'th' ? data.th : data.en);
+    info.innerHTML = data[lang] || data.th;
   }
   (function bindSchoolToggle(){
     const wrap = document.getElementById('school-toggle');
@@ -4285,14 +4021,14 @@ window.__hkOverlayApply=function(l){
   /* สร้าง chat panel ใต้ qm-ys-summary */
   /* ───── S1+S2 · QiMen Search Panel · 15 พ.ค. 2026 ───── */
   const ACTIVITIES_TH = {
-    work_start: {emoji:'💼', th:'เริ่มงานใหม่', en:'New Work', zh:'開工', vi:'Bắt đầu công việc mới', ja:'新しい仕事を始める', ko:'새 일 시작', ru:'Начало новой работы', es:'Iniciar un nuevo trabajo'},
-    negotiate:  {emoji:'📝', th:'เจรจาสัญญา', en:'Negotiate', zh:'談判', vi:'Đàm phán hợp đồng', ja:'契約交渉', ko:'계약 협상', ru:'Переговоры по контракту', es:'Negociar un contrato'},
-    wealth:     {emoji:'💰', th:'หาเงิน · ลงทุน', en:'Wealth', zh:'求財', vi:'Kiếm tiền · Đầu tư', ja:'資産形成・投資', ko:'재물 · 투자', ru:'Заработок · Инвестиции', es:'Dinero · Inversión'},
-    love:       {emoji:'💞', th:'ความรัก · คู่ครอง', en:'Love', zh:'求姻緣', vi:'Tình yêu · Hôn nhân', ja:'恋愛・結婚', ko:'사랑 · 결혼', ru:'Любовь · Партнёр', es:'Amor · Pareja'},
-    travel:     {emoji:'✈', th:'เดินทาง', en:'Travel', zh:'出行', vi:'Đi lại', ja:'旅行', ko:'여행', ru:'Путешествие', es:'Viaje'},
-    authority:  {emoji:'👑', th:'พบผู้ใหญ่ · ขอความช่วย', en:'Meet Authority', zh:'見貴人', vi:'Gặp cấp trên · Cầu trợ giúp', ja:'目上に会う・助力を求める', ko:'윗사람 만남 · 도움 요청', ru:'Встреча с влиятельным лицом', es:'Ver a una autoridad · Pedir ayuda'},
-    decision:   {emoji:'⚖', th:'ตัดสินใจใหญ่', en:'Big Decision', zh:'大決策', vi:'Quyết định lớn', ja:'重大な決断', ko:'중대한 결정', ru:'Важное решение', es:'Decisión importante'},
-    health:     {emoji:'🏥', th:'รักษา · สุขภาพ', en:'Health', zh:'療病', vi:'Chữa bệnh · Sức khỏe', ja:'治療・健康', ko:'치료 · 건강', ru:'Лечение · Здоровье', es:'Tratamiento · Salud'},
+    work_start: {emoji:'💼', th:'เริ่มงานใหม่', en:'New Work', zh:'開工'},
+    negotiate:  {emoji:'📝', th:'เจรจาสัญญา', en:'Negotiate', zh:'談判'},
+    wealth:     {emoji:'💰', th:'หาเงิน · ลงทุน', en:'Wealth', zh:'求財'},
+    love:       {emoji:'💞', th:'ความรัก · คู่ครอง', en:'Love', zh:'求姻緣'},
+    travel:     {emoji:'✈', th:'เดินทาง', en:'Travel', zh:'出行'},
+    authority:  {emoji:'👑', th:'พบผู้ใหญ่ · ขอความช่วย', en:'Meet Authority', zh:'見貴人'},
+    decision:   {emoji:'⚖', th:'ตัดสินใจใหญ่', en:'Big Decision', zh:'大決策'},
+    health:     {emoji:'🏥', th:'รักษา · สุขภาพ', en:'Health', zh:'療病'},
   };
   const DOOR_OPTS = [
     {c:'KAI_MEN',zh:'開門',th:'ประตูเปิด · ดี'},
@@ -4331,22 +4067,20 @@ window.__hkOverlayApply=function(l){
   function renderQimenActivityGrid(){
     const ag = document.getElementById('qm-act-grid');
     if (!ag) return;
-    /* r454 · 9-lang · qmContentLang() (ไม่ผ่าน HK_LANG_STATE.app() ที่ตรึง vi/ja/ko/ru/es=en) · non-th ห้าม fallback ไทย */
-    const lang = (typeof qmContentLang === 'function') ? qmContentLang() : 'th';
-    const fb = (v) => v[lang] || (lang === 'th' ? v.th : v.en);
+    const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'th';
     const existing = ag.querySelectorAll('.qm-act-btn');
     if (existing.length){
       existing.forEach(b => {
         const v = ACTIVITIES_TH[b.dataset.act];
         if (!v) return;
         const lbl = b.querySelector('span:not(.em)');
-        if (lbl) lbl.textContent = fb(v);
+        if (lbl) lbl.textContent = v[lang] || v.th;
       });
       return;
     }
     const active = window._qmActivity || 'wealth';
     ag.innerHTML = Object.entries(ACTIVITIES_TH).map(([k,v]) =>
-      `<button class="qm-act-btn ${k===active?'on':''}" data-act="${k}"><span class="em">${v.emoji}</span><span>${fb(v)}</span></button>`
+      `<button class="qm-act-btn ${k===active?'on':''}" data-act="${k}"><span class="em">${v.emoji}</span><span>${v[lang]||v.th}</span></button>`
     ).join('');
   }
   window.renderQimenActivityGrid = renderQimenActivityGrid;

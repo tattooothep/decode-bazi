@@ -4,17 +4,21 @@
  * Reactive: refresh ทุก 800ms (ถ้า user กดปุ่ม lang ของหน้า)
  */
 (function(){
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) รองรับด้วย — ปุ่มไม่มี data-<lang> ก็ fallback en (ไม่ใช่ th) กันไทยหลง */
+  var KNOWN = ['th','en','zh','cn','vi','ja','ko','ru','es'];
   function getLang(){
-    var l = (localStorage.getItem('hk_locale') || document.documentElement.lang || 'th');
+    var l = (localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || document.documentElement.lang || 'th');
     l = l.toLowerCase();
     if (l.indexOf('zh') === 0) return 'zh';
     if (l.indexOf('en') === 0) return 'en';
-    return 'th';
+    l = l.split('-')[0];
+    return KNOWN.indexOf(l) !== -1 ? l : 'th';
   }
   function apply(){
     var lang = getLang();
     document.querySelectorAll('.hk-method-link').forEach(function(a){
-      var txt = a.dataset[lang] || a.dataset.th;
+      /* th/en/zh: เดิม · ภาษาใหม่: data-<lang> → data-en (ห้าม data-th) */
+      var txt = a.dataset[lang] || (lang === 'th' ? a.dataset.th : a.dataset.en) || a.dataset.th;
       if (txt) a.textContent = txt;
     });
   }
