@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ทำนายลายมือ 手相 · hourkey</title>
+<meta name="description" content="ทำนายลายมือด้วย AI ตามคัมภีร์ 3 อารยธรรม (จีน·อินเดีย·ตะวันตก) — ถ่ายฝ่ามือแล้วอ่านเส้นชีวิต สมอง หัวใจ โชคชะตา">
+<script src="/js/hk-lang-state.js?v=1"></script>
+<script>
+/* theme init เร็ว (กันกระพริบ) */
+(function(){try{var t=localStorage.getItem('hk-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();
+</script>
+<style>
+  :root{
+    --bg:#0d0f12; --panel:#14181f; --panel2:#1b2029; --line:rgba(200,164,77,.22);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-bright:#e0c98a; --fg:#f6f1e6; --fg-soft:#b6ae9c; --faint:#7c7565;
+    --wood:#8fc37c; --fire:#e26b5d; --earth:#d4a85a; --metal:#c8b88a; --water:#7ba8c8;
+    --shadow:0 18px 50px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f1e6; --panel:#fffdf6; --panel2:#f1ead9; --line:rgba(168,132,45,.30);
+    --gold:#a8842d; --gold-deep:#7a5f20; --gold-bright:#8a6d2a; --fg:#1a1d24; --fg-soft:#5f5847; --faint:#948b74;
+    --wood:#5a8a48; --fire:#b03a2e; --earth:#9a7d3a; --metal:#7a6f4a; --water:#3f6688;
+    --shadow:0 14px 40px rgba(120,90,50,.16);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(1100px 600px at 50% -8%,rgba(200,164,77,.10),transparent 60%),var(--bg);
+    color:var(--fg);font-family:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,"Noto Serif Thai",serif;
+    -webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:14px 15px 60px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 16px}
+  .brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+  .brand .g{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:rgba(200,164,77,.14);color:var(--gold);font-size:14px}
+  .mono{font-family:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace}
+
+  .hero{text-align:center;margin:4px 0 20px}
+  .hero .kick{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);opacity:.9}
+  .hero h1{font-size:clamp(24px,6.5vw,32px);line-height:1.14;margin:11px 0 8px;text-wrap:balance;font-weight:600}
+  .hero h1 .cn{color:var(--gold)}
+  .hero p{color:var(--fg-soft);font-size:14px;line-height:1.6;margin:0}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 16px}
+  h2{font-size:19px;margin:0 0 3px;font-weight:600}
+  .h2sub{color:var(--fg-soft);font-size:13px;line-height:1.55;margin:0 0 16px}
+
+  /* upload */
+  .hands{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px}
+  .hand{position:relative;border:1.5px dashed var(--line);border-radius:16px;aspect-ratio:3/4;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:9px;background:var(--panel2);text-align:center;padding:10px;cursor:pointer;
+    overflow:hidden;transition:.2s}
+  .hand:hover,.hand:focus-visible{border-color:var(--gold);outline:none}
+  .hand.done{border-style:solid;border-color:rgba(200,164,77,.5)}
+  .hand img.prev{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px}
+  .hand .palm{width:46px;height:58px;opacity:.5}
+  .hand small{font-size:12px;color:var(--fg-soft)}
+  .hand .cam{font-size:10px;color:var(--gold);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+  .hand.done .cam{background:rgba(111,174,90,.16);border-color:transparent;color:var(--wood);position:relative;z-index:2}
+  .guide{font-size:12px;color:var(--faint);text-align:center;line-height:1.5;margin:0 0 14px}
+  .cta{width:100%;border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;
+    background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#161310;box-shadow:0 8px 20px rgba(200,164,77,.26);transition:.2s}
+  .cta:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+  .cta.ghost{background:transparent;border:1px solid var(--line);color:var(--fg-soft);box-shadow:none;font-size:13px;padding:11px}
+  .cta:active{transform:translateY(1px)}
+  .tiny{text-align:center;font-size:11px;color:var(--faint);margin-top:11px;line-height:1.5}
+
+  /* analyzing */
+  .ring-wrap{display:grid;place-items:center;margin:12px 0 4px}
+  .ring{width:158px;height:158px;position:relative}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pct{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  .ring .pct b{font-size:36px;color:var(--gold-bright);font-weight:500}
+  .ring .pct small{display:block;font-size:10px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+  .clarity{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px;font-size:12.5px}
+  .clarity .dot{width:8px;height:8px;border-radius:50%;background:var(--wood)}
+  .clarity.low .dot{background:var(--fire)} .clarity.low b{color:var(--fire)}
+  .clarity b{color:var(--wood)}
+  .steps{display:grid;gap:10px}
+  .step{display:flex;gap:11px;align-items:center;font-size:13px;color:var(--fg-soft)}
+  .step .s{width:16px;height:16px;border-radius:50%;border:1.6px solid var(--line);flex:0 0 auto}
+  .step.done .s{background:var(--wood);border-color:var(--wood)}
+  .step.run .s{border-color:var(--gold);border-top-color:transparent;animation:spin 1s linear infinite}
+  .step.run{color:var(--fg)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* coverage / reshoot */
+  .cover{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:15px}
+  .cv{display:flex;align-items:center;gap:8px;font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+  .cv .cd{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .cv .st{margin-left:auto;font-size:10px}
+  .cv.ok .cd{background:var(--wood)} .cv.ok .st{color:var(--wood)}
+  .cv.miss .cd{background:var(--fire)} .cv.miss .st{color:var(--fire)}
+  .reshoot{display:grid;gap:9px;margin-bottom:15px}
+  .rs-card{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);border-radius:12px;
+    padding:11px;background:linear-gradient(160deg,rgba(226,107,93,.08),transparent);cursor:pointer;position:relative;overflow:hidden}
+  .rs-card.done{background:linear-gradient(160deg,rgba(111,174,90,.10),transparent)}
+  .rs-ic{font-size:18px}
+  .rs-card b{display:block;font-size:12.5px} .rs-card span{font-size:11px;color:var(--faint)}
+  .rs-cam{font-size:13px;border:1px solid var(--line);border-radius:9px;padding:5px 9px;color:var(--gold)}
+  .rs-card.done .rs-cam{color:var(--wood)}
+  .rs-card img.prev{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25}
+
+  /* result */
+  .verdict{background:linear-gradient(160deg,rgba(200,164,77,.14),transparent);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:15px}
+  .verdict .lab{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  .verdict p{margin:7px 0 0;font-size:14px;line-height:1.6}
+  .lines{display:grid;gap:9px;margin-bottom:15px}
+  .lrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .lrow .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
+  .lrow .nm b{display:block;font-size:13px} .lrow .nm span{color:var(--faint);font-size:11px}
+  .lrow .obs{font-size:11.5px;color:var(--fg-soft);grid-column:1/-1;margin-top:2px;line-height:1.5}
+  .lrow .st{font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(111,174,90,.16);color:var(--wood);white-space:nowrap}
+  .lrow .st.partial{background:rgba(212,168,90,.16);color:var(--earth)}
+  .lrow .st.unclear{background:rgba(226,107,93,.16);color:var(--fire)}
+  details.tier{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:9px}
+  details.tier summary{list-style:none;cursor:pointer;padding:12px 13px;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600}
+  details.tier summary::-webkit-details-marker{display:none}
+  .tier .flag{font-size:9px;padding:2px 8px;border-radius:20px;letter-spacing:.05em}
+  .flag.t1{background:rgba(200,164,77,.18);color:var(--gold)} .flag.t3{background:rgba(123,168,200,.16);color:var(--water)}
+  .tier .body{padding:0 13px 13px}
+  .tier .item{font-size:12.5px;line-height:1.65;color:var(--fg-soft);padding:8px 0;border-top:1px solid var(--line)}
+  .tier .item:first-child{border-top:none}
+  .tier .item b{color:var(--fg)}
+  .tier .item .src{display:block;margin-top:4px;font-size:9.5px;color:var(--faint)}
+
+  .err{background:rgba(226,107,93,.1);border:1px solid rgba(226,107,93,.35);border-radius:12px;padding:12px 13px;font-size:13px;color:var(--fire);margin-bottom:12px}
+  .hidden{display:none!important}
+  a.homelink{color:var(--faint);font-size:12px;text-decoration:none;display:inline-block;margin-top:22px}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
+  @media(prefers-reduced-motion:reduce){.step.run .s{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span class="g">手</span> hourkey</div>
+    <div id="hk-user-menu-mount"></div>
+  </div>
+
+  <div class="hero">
+    <div class="kick" data-i18n="kick">ศาสตร์ที่ 7 · หัตถศาสตร์</div>
+    <h1><span data-i18n="h1a">ทำนายลายมือหลอมรวม</span> <span class="cn">手相</span></h1>
+    <p data-i18n="hsub">ถ่ายฝ่ามือสองข้าง → AI อ่านเส้นตามคัมภีร์ 3 อารยธรรม (จีน·อินเดีย·ตะวันตก)</p>
+  </div>
+
+  <!-- STATE 1: UPLOAD -->
+  <section id="stUpload" class="card">
+    <h2 data-i18n="up.title">ลายมือของคุณ</h2>
+    <p class="h2sub" data-i18n="up.sub">แบมือ ถ่ายในที่แสงสว่าง ให้เห็นเส้นชัด · แตะการ์ดเพื่อถ่ายหรือเลือกรูป</p>
+    <div class="hands">
+      <div class="hand" id="handL" tabindex="0" role="button">
+        <svg class="palm" viewBox="0 0 40 50" fill="none" stroke="currentColor" stroke-width="1.2" style="color:var(--faint)">
+          <path d="M8 48 V26 M8 26 Q6 10 10 8 Q13 8 13 20 M13 20 V6 Q13 3 16 3 Q19 3 19 20 M19 20 V4 Q19 1 22 1 Q25 1 25 20 M25 20 V8 Q25 5 28 6 Q31 8 30 22 L32 30 Q34 44 26 48"/>
+        </svg>
+        <small data-i18n="up.left">มือซ้าย</small><div class="cam" data-i18n="up.tap">📷 ถ่าย / เลือกรูป</div>
+      </div>
+      <div class="hand" id="handR" tabindex="0" role="button">
+        <svg class="palm" viewBox="0 0 40 50" fill="none" stroke="currentColor" stroke-width="1.2" style="color:var(--faint)">
+          <path d="M32 48 V26 M32 26 Q34 10 30 8 Q27 8 27 20 M27 20 V6 Q27 3 24 3 Q21 3 21 20 M21 20 V4 Q21 1 18 1 Q15 1 15 20 M15 20 V8 Q15 5 12 6 Q9 8 10 22 L8 30 Q6 44 14 48"/>
+        </svg>
+        <small data-i18n="up.right">มือขวา</small><div class="cam" data-i18n="up.tap2">📷 ถ่าย / เลือกรูป</div>
+      </div>
+    </div>
+    <p class="guide" data-i18n="up.guide">💡 มือถนัด = ปัจจุบัน/อนาคต · อีกข้าง = พื้นดวงติดตัว · ถ่ายอย่างน้อย 1 ข้างก็เริ่มได้</p>
+    <button class="cta" id="btnAnalyze" disabled data-i18n="up.btn">✋ วิเคราะห์ลายมือ</button>
+    <p class="tiny" data-i18n="up.privacy">🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก</p>
+    <input type="file" id="fileL" accept="image/*" capture="environment" class="hidden">
+    <input type="file" id="fileR" accept="image/*" capture="environment" class="hidden">
+  </section>
+
+  <!-- STATE 2: ANALYZING -->
+  <section id="stAnalyzing" class="card hidden">
+    <h2 style="text-align:center" data-i18n="an.title">กำลังอ่านลายมือ</h2>
+    <p class="h2sub" style="text-align:center" data-i18n="an.sub">เทียบเส้นกับคัมภีร์ 3 อารยธรรม</p>
+    <div class="ring-wrap"><div class="ring">
+      <svg width="158" height="158">
+        <circle cx="79" cy="79" r="67" fill="none" stroke="rgba(200,164,77,.14)" stroke-width="9"/>
+        <circle id="ringArc" cx="79" cy="79" r="67" fill="none" stroke="var(--gold)" stroke-width="9" stroke-linecap="round" stroke-dasharray="421" stroke-dashoffset="421"/>
+      </svg>
+      <div class="pct"><b id="pctNum">0%</b><small data-i18n="an.analyzing">วิเคราะห์</small></div>
+    </div></div>
+    <div class="clarity" id="clarityBox"><span class="dot"></span><span data-i18n="an.clarity">ความชัดของภาพ</span> <b id="clarityVal">—</b></div>
+    <div class="steps" id="steps">
+      <div class="step" data-k="lines"><span class="s"></span><span data-i18n="an.s1">อ่านเส้นหลัก 4 เส้น</span></div>
+      <div class="step" data-k="mounts"><span class="s"></span><span data-i18n="an.s2">จับเนินและสัญลักษณ์บนฝ่ามือ</span></div>
+      <div class="step" data-k="canon"><span class="s"></span><span data-i18n="an.s3">เทียบ 神相全編 · Samudrika · Cheiro</span></div>
+      <div class="step" data-k="fuse"><span class="s"></span><span data-i18n="an.s4">หาแก่นที่ 3 ศาสตร์เห็นตรงกัน</span></div>
+      <div class="step" data-k="write"><span class="s"></span><span data-i18n="an.s5">เรียบเรียงคำทำนาย</span></div>
+    </div>
+  </section>
+
+  <!-- STATE 2.5: RESHOOT -->
+  <section id="stReshoot" class="card hidden">
+    <h2 data-i18n="rs.title">อ่านได้บางส่วน</h2>
+    <p class="h2sub" data-i18n="rs.sub">เก็บจุดที่ยังไม่ชัดเพิ่ม แล้วผลจะแม่นขึ้น</p>
+    <div class="cover" id="coverBox"></div>
+    <div class="reshoot" id="reshootBox"></div>
+    <button class="cta" id="btnReanalyze" data-i18n="rs.btn">📸 อ่านใหม่พร้อมรูปที่เพิ่ม</button>
+    <button class="cta ghost" id="btnSkip" style="margin-top:9px" data-i18n="rs.skip">ข้าม — อ่านเท่าที่เห็น</button>
+    <p class="tiny" data-i18n="rs.privacy">รูปเสริมรวมกับชุดเดิม ส่งอ่านพร้อมกัน · ไม่เก็บบนเซิร์ฟเวอร์</p>
+    <input type="file" id="fileClose" accept="image/*" capture="environment" class="hidden">
+  </section>
+
+  <!-- STATE 3: RESULT -->
+  <section id="stResult" class="card hidden">
+    <h2 data-i18n="rt.title">คำอ่านลายมือ</h2>
+    <p class="h2sub" id="rtSub"></p>
+    <div class="verdict" id="verdictBox"></div>
+    <div class="lines" id="linesBox"></div>
+    <div id="tiersBox"></div>
+    <button class="cta" id="btnSave" style="margin-top:6px;background:linear-gradient(180deg,var(--gold),var(--gold-deep))" data-i18n="rt.save">💾 บันทึกเป็นศาสตร์ที่ 7</button>
+    <p class="tiny" data-i18n="rt.saveNote">บันทึกแล้ว → ลายมือเข้าไปหลอมรวมกับปาจื้อ/ดาว/จื่อเหวย… ในหน้าดูดวงรวม</p>
+    <button class="cta ghost" id="btnRestart" style="margin-top:9px" data-i18n="rt.restart">↺ เริ่มใหม่</button>
+  </section>
+
+  <div style="text-align:center"><a href="/" class="homelink" data-i18n="home">← กลับหน้าหลัก</a></div>
+</div>
+
+<script src="/js/palmistry-app.js?v=1"></script>
+<script src="/js/hk-user-menu.js?v=20" defer></script>
+</body>
+</html>

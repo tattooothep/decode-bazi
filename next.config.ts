@@ -9,9 +9,18 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: projectRoot,
   async redirects() {
     return [
+      { source: "/landing.html", destination: "/", permanent: true },
+      { source: "/landing-full", destination: "/", permanent: true },
+      { source: "/landing-full.html", destination: "/", permanent: true },
+      { source: "/landing-v2", destination: "/", permanent: true },
+      { source: "/landing-v2.html", destination: "/", permanent: true },
+      { source: "/calendar-m", destination: "/calendar", permanent: false },
       { source: "/calendar-m.html", destination: "/calendar", permanent: false },
+      { source: "/master-m", destination: "/master", permanent: false },
       { source: "/master-m.html", destination: "/master", permanent: false },
+      { source: "/mygoal-m", destination: "/mygoal", permanent: false },
       { source: "/mygoal-m.html", destination: "/mygoal", permanent: false },
+      { source: "/picker-m", destination: "/picker", permanent: false },
       { source: "/picker-m.html", destination: "/picker", permanent: false },
     ];
   },
@@ -26,11 +35,19 @@ const nextConfig: NextConfig = {
       "/landing.html",
       "/signup",
       "/signup.html",
+      "/ask",
+      "/ask.html",
       "/reset-password.html",
+      "/offline",
+      "/offline.html",
       "/input",
       "/input.html",
       "/goal",
       "/goal.html",
+      "/news",
+      "/news.html",
+      "/support",
+      "/support.html",
       "/chart",
       "/chart.html",
       "/today",
@@ -92,13 +109,23 @@ const nextConfig: NextConfig = {
       "/pricing",
       "/pricing.html",
       "/article/geometry",
+      "/article-geometry",
       "/article-geometry.html",
+      "/palmistry",
+      "/palmistry.html",
+      "/article-hourkey-guide",
+      "/article-hourkey-guide.html",
+      "/articles/sciences/:slug",
+      "/articles/sciences/:slug.html",
+      "/admin/community",
     ];
 
     return [
       ...htmlSurfaces.map((source) => ({ source, headers: noStoreHeaders })),
       { source: "/css/mobile-safe.css", headers: noStoreHeaders },
+      { source: "/js/hk-lang-state.js", headers: noStoreHeaders },
       { source: "/js/hk-user-menu.js", headers: noStoreHeaders },
+      { source: "/js/hk-tooltips.js", headers: noStoreHeaders },
       // PWA r376 · no-store: deploy ใหม่ = SW/flag ใหม่ถูกเห็นใน navigation ถัดไป (kill-switch สด)
       { source: "/sw.js", headers: noStoreHeaders },
       { source: "/pwa-flag.json", headers: noStoreHeaders },
@@ -110,9 +137,14 @@ const nextConfig: NextConfig = {
     return [
       { source: "/", destination: "/landing.html" },
       { source: "/signup", destination: "/signup.html" },
+      { source: "/ask", destination: "/ask.html" },
+      { source: "/reset-password", destination: "/reset-password.html" },
       { source: "/reset-password/:token", destination: "/reset-password.html" }, // 31 พ.ค. · หน้าตั้งรหัสใหม่ (ปลายทางลิงก์ลืมรหัส · เดิม 404)
+      { source: "/offline", destination: "/offline.html" },
       { source: "/input", destination: "/input.html" },
       { source: "/goal", destination: "/goal.html" },
+      { source: "/news", destination: "/news.html" },
+      { source: "/support", destination: "/support.html" },
       { source: "/chart", destination: "/chart.html" },
       { source: "/chartv2", destination: "/chart-v2" },
       { source: "/today", destination: "/today.html" },
@@ -122,7 +154,8 @@ const nextConfig: NextConfig = {
       { source: "/calendar", destination: "/calendar.html" },
       { source: "/master", destination: "/master.html" },
       { source: "/master-fusion", destination: "/master-fusion.html" },
-      { source: "/book", destination: "/book.html" }, // r391-book · หนังสือดวงชะตา 6 ศาสตร์ (Natal Book · /book?id=)
+      { source: "/book", destination: "/book.html" },
+      { source: "/palmistry", destination: "/palmistry.html" }, // ศาสตร์ที่ 7 · ลายมือ AI // r391-book · หนังสือดวงชะตา 6 ศาสตร์ (Natal Book · /book?id=)
       { source: "/mygoal", destination: "/mygoal.html" },
       { source: "/picker", destination: "/picker.html" },
       { source: "/heluo", destination: "/heluo.html" },
@@ -149,6 +182,9 @@ const nextConfig: NextConfig = {
       { source: "/why-us", destination: "/accuracy.html" },
       { source: "/methodology", destination: "/methodology.html" },
       { source: "/yongshen-method", destination: "/methodology.html" },
+      { source: "/article-geometry", destination: "/article-geometry.html" },
+      { source: "/article-hourkey-guide", destination: "/article-hourkey-guide.html" },
+      { source: "/articles/sciences/:slug", destination: "/articles/sciences/:slug.html" },
       { source: "/article/geometry", destination: "/article-geometry.html" }, // 3 ก.ค. · บทความ SEO เรขาคณิตร่วม 3 อารยธรรม
       { source: "/uranian", destination: "/uranian.html" }, // 4 ก.ค. r390 · วงล้อ 90° ยูเรเนียน (ศาสตร์ที่ 6 · Halbsumme/Planetenbild interactive)
       { source: "/dial", destination: "/uranian.html" },
