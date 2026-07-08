@@ -26,6 +26,7 @@ import { renderZiweiPrompt } from "../astro/ziwei/render";
 import { DISCIPLINES, type ScienceId } from "./disciplines";
 import { renderPairInteractionPacket } from "./pair-interactions";
 import { loadPromptMd } from "../prompt-md"; // r391-book: โหลด directive "อ่านเต็มดวง" (natal-book · แก้ผ่าน admin ได้ · .default กันพัง)
+import { NEW_LANG_NAME_TH, LANG_ANSWER_DIRECTIVE } from "../sifu-answer-lang"; // r414-i18n9: ภาษาใหม่ 6 ตัว · th/en/zh byte-identical
 
 export type BirthData = {
   name: string;
@@ -2884,7 +2885,7 @@ function truncatePairPacket(block: string, budget: number): string {
   return `${block.slice(0, Math.max(0, budget))}\n[PAIR_PACKET_TRUNCATED_FOR_GROUP_BUDGET]`;
 }
 
-const LANG_NAME: Record<string, string> = { th: "ไทย", en: "อังกฤษ", zh: "จีน" };
+const LANG_NAME: Record<string, string> = { th: "ไทย", en: "อังกฤษ", zh: "จีน", ...NEW_LANG_NAME_TH }; // r414-i18n9: เติมภาษาใหม่แบบ additive (th/en/zh ค่าเดิม)
 const DECISIVE_READING_POLICY = [
   "=== นโยบายคำตอบผู้ใช้จริง ===",
   "นี่คือโหมดอ่านดวง ไม่ใช่โหมด audit ระบบ: ห้ามทำ Gap Register, readiness %, production checklist, หรือสรุปว่าเว็บพร้อม/ไม่พร้อม เว้นแต่คำถามผู้ใช้ถามตรวจระบบโดยตรง",
@@ -3003,6 +3004,7 @@ export function buildSciencePrompt(
     L.push(`คุณคือซินแสผู้เชี่ยวชาญ "${bind.labelTh}" (${bind.labelZh})`);
     L.push(`อ่านดวงจาก "ผังที่ระบบคำนวณ" ด้านล่างเท่านั้น · ⚠️ ${bind.termGuard}`);
     L.push(`ห้ามเดาตำแหน่งดาว/เรือน/ดวง · field ไหนไม่มีจริง (หายจากทั้งบล็อกผังข้อความและ STRUCTURED_CHART_PACKET) จึงบอกว่าไม่มี · ตอบภาษา${LANG_NAME[lang] || "ไทย"}นำ`);
+    if (LANG_ANSWER_DIRECTIVE[lang]) L.push(LANG_ANSWER_DIRECTIVE[lang]); // r414-i18n9: เฉพาะภาษาใหม่ (th/en/zh ไม่มี entry → prompt เดิมไม่เปลี่ยน)
     // r398 · ผ่อนคำสั่ง: เดิมยก STRUCTURED_CHART_PACKET (JSON) เป็นแหล่งเดียว → ค่าที่ engine ส่งมาเป็น prose (=== ผังดวง/TIMING) แต่ไม่อยู่ JSON กลายเป็น "นอก packet" → AI แจ้ง "ส่งไม่ครบ" ทั้งที่มีค่า
     //   แก้: ยึดสองแหล่งคู่กัน (prose + JSON) · ค่าปรากฏแหล่งใดแหล่งหนึ่ง = ระบบส่งมาแล้ว · คง guard เดิม (ห้ามเดา/ห้ามความรู้นอกผัง/NO_PERCENT)
     L.push("คำตอบต้องยึดข้อมูลจากผังที่ระบบส่งมา 2 แหล่งคู่กัน: (1) บล็อกผังที่ render เป็นข้อความ (=== ผังดวง … === และ TIMING/TIMELINE/ชั้นเวลาต่าง ๆ) และ (2) STRUCTURED_CHART_PACKET (JSON) — ถ้าค่าปรากฏในแหล่งใดแหล่งหนึ่ง ถือว่าระบบส่งมาแล้ว ใช้ฟันธงได้ · ให้บอกว่า 'ไม่มีข้อมูล/ยังไม่ได้ส่งมา' เฉพาะเมื่อค่านั้นหายจากทั้งสองแหล่ง · ยังคงห้ามใช้ความรู้ทั่วไป/horoscope นอกผังมาเติม ห้ามเดา/แต่งตำแหน่ง-มุม-ดาว-วัน-ตัวเลขเอง และห้ามใส่ % ความแม่น");
@@ -3103,16 +3105,19 @@ export function buildSciencePrompt(
     const tailBudget = FUSION_PANEL_PROMPT_MAX_CHARS - headBudget - marker.length;
     prompt = `${prompt.slice(0, headBudget)}${marker}${prompt.slice(-tailBudget)}`;
   }
-  return prompt.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  const sciOut = prompt.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  // r414-i18n9: ภาษาใหม่ 6 ตัว ย้ำ directive ท้าย prompt หลัง cap (recency ชนะ prompt ไทยหนัก · เทสจริงแล้วบรรทัดต้นอย่างเดียวเอาไม่อยู่) · th/en/zh ไม่มี entry = byte-identical
+  return LANG_ANSWER_DIRECTIVE[lang] ? `${sciOut}\n\n${LANG_ANSWER_DIRECTIVE[lang]}` : sciOut;
 }
 
 /** prompt judge หลอมรวมทุก panel · resonanceBlock (r369 · optional/additive) = RESONANCE_PACKET จาก engine deterministic
  *  daySniperBlock (r373 · optional/additive) = DAY_SNIPER จาก engine deterministic (วางถัดจาก resonance · shrink priority เดียวกัน) */
-export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[], births: BirthData[], question: string, lang = "th", resonanceBlock?: string, daySniperBlock?: string, multiYearBlock?: string): string {
+export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[], births: BirthData[], question: string, lang = "th", resonanceBlock?: string, daySniperBlock?: string, multiYearBlock?: string, palmBlock?: string): string {
   const L: string[] = [];
   L.push(`คุณคือ "ซินแสใหญ่" ผู้หลอมรวมคำพยากรณ์จากหลายศาสตร์เป็นคำตอบเดียว`);
   L.push(`มี ${panels.length} ศาสตร์อ่านดวง${births.length > 1 ? "คู่" : ""}เดียวกัน · หน้าที่: หา "จุดตรงกัน = ฟันธงหนัก" + "จุดต่าง = เงื่อนไข/ข้อระวัง" + สรุปคำแนะนำ`);
   L.push(`⚠️ ห้ามคำนวณดวงเอง · ใช้เฉพาะคำพยากรณ์ของแต่ละศาสตร์ด้านล่าง · ติดป้ายชื่อศาสตร์ทุกครั้งที่อ้างอิง · ตอบภาษา${LANG_NAME[lang] || "ไทย"}`);
+  if (LANG_ANSWER_DIRECTIVE[lang]) L.push(LANG_ANSWER_DIRECTIVE[lang]); // r414-i18n9: เฉพาะภาษาใหม่
   L.push(`⚠️ ห้ามเอาหลักของศาสตร์หนึ่งไปตัดสิน/หักล้างอีกศาสตร์ (แต่ละศาสตร์มีกติกาของตัวเอง) · หน้าที่คุณคือ "เทียบข้อสรุป" ว่าตรง/ต่างกันอย่างไร ไม่ใช่ชี้ว่าศาสตร์ไหนถูก`);
   L.push(DECISIVE_READING_POLICY);
   L.push(subjectLockLine(births));
@@ -3139,6 +3144,10 @@ export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[]
     L.push(`\n=== MULTI_YEAR (ไทม์ไลน์หลายปี · engine คำนวณ deterministic) ===\n${multiYearBlock}`);
     L.push("ถ้าคำถามครอบหลายปี ให้ใช้ MULTI_YEAR เทียบ 'ปีไหนหนัก/ปีไหนเบา' ประกอบคำฟันธง · อ้างปีจากรายการนี้เท่านั้น ห้ามเดาปีนอกรายการ");
   }
+  if (palmBlock) {
+    L.push(`\n${palmBlock}`);
+    L.push("ศาสตร์ลายมือ (หัตถศาสตร์) = ศาสตร์ที่ 7 อ่านจากฝ่ามือจริงของผู้ถาม · ใช้เป็นข้อมูลเสริมหลอมรวม: ถ้าตรงกับศาสตร์อื่นให้ระบุว่า 'ยืนยันเพิ่มอีกทาง' · ถ้าต่างให้รายงานตรงๆ ไม่กลบ · แต่ห้ามเอาลายมือไปตัดสิน/หักล้างศาสตร์อื่น (คนละกติกา)");
+  }
   L.push(`\n=== คำถาม ===\n${question}`);
   L.push(`\n${answerFormatLine(births, true)}`);
   let out = L.join("\n");
@@ -3160,7 +3169,9 @@ export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[]
     const keep = Math.max(0, multiYearBlock.length - over - 40);
     out = out.replace(multiYearBlock, `${multiYearBlock.slice(0, keep)}\n[MULTI_YEAR_TRUNCATED_FOR_CAP]`);
   }
-  return out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  const judgeOut = out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  // r414-i18n9: ย้ำ directive ท้าย prompt เฉพาะภาษาใหม่ · th/en/zh byte-identical
+  return LANG_ANSWER_DIRECTIVE[lang] ? `${judgeOut}\n\n${LANG_ANSWER_DIRECTIVE[lang]}` : judgeOut;
 }
 
 /* ============================================================================
@@ -3214,6 +3225,7 @@ export function buildJudgeBookPrompt(
   L.push(`คุณคือ "ซินแสใหญ่" ผู้เขียนบทปิดเล่มของ "หนังสือดวงชะตา 6 ศาสตร์" ของ ${name}`);
   L.push(`มี ${chapters.length} บทจากศาสตร์ต่างๆ อ่านดวงเดียวกัน · หน้าที่: หลอมรวมเป็น "บทสังเคราะห์" + "บทจังหวะเวลา"`);
   L.push(`⚠️ ห้ามคำนวณดวงเอง · ใช้เฉพาะเนื้อจาก 6 บท + RESONANCE/DAY_SNIPER/MULTI_YEAR ด้านล่าง · ติดป้ายชื่อศาสตร์ทุกครั้งที่อ้าง · ตอบภาษา${LANG_NAME[lang] || "ไทย"}`);
+  if (LANG_ANSWER_DIRECTIVE[lang]) L.push(LANG_ANSWER_DIRECTIVE[lang]); // r414-i18n9: เฉพาะภาษาใหม่
   L.push(`⚠️ ห้ามเอาหลักของศาสตร์หนึ่งไปตัดสิน/หักล้างอีกศาสตร์ (แต่ละศาสตร์มีกติกาของตัวเอง) · หน้าที่คือ "เทียบข้อสรุป" ว่าตรง/ต่างกันอย่างไร แล้วแปลเป็นชีวิตจริง`);
   L.push(DECISIVE_READING_POLICY);
   L.push(subjectLockLine(births));
@@ -3238,5 +3250,7 @@ export function buildJudgeBookPrompt(
     const keep = Math.max(0, block.length - over - 40);
     out = out.replace(block, `${block.slice(0, keep)}\n[TRUNCATED_FOR_CAP]`);
   }
-  return out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  const bookOut = out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  // r414-i18n9: ย้ำ directive ท้าย prompt เฉพาะภาษาใหม่ · th/en/zh byte-identical
+  return LANG_ANSWER_DIRECTIVE[lang] ? `${bookOut}\n\n${LANG_ANSWER_DIRECTIVE[lang]}` : bookOut;
 }

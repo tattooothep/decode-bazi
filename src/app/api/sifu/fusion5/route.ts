@@ -15,6 +15,7 @@ import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
 import { createHash } from "crypto";
 import { DISCIPLINES, computeYam, JUDGE_MODEL, JUDGE_YAM, type ScienceId } from "@/lib/fusion5/disciplines";
 import { buildSciencePrompt, buildJudgePrompt, resolveFusionTimingReference, type BirthData } from "@/lib/fusion5/build-prompt";
+import { isSifuAnswerLang } from "@/lib/sifu-answer-lang"; // r414-i18n9: allowlist ภาษาคำตอบ 9 ภาษา
 import { renderMultiYearBlock, resolveFusionYearRange, type FusionBirthLike } from "@/lib/fusion5/multi-year";
 import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type FusionResonance } from "@/lib/fusion5/resonance";
 import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
@@ -43,6 +44,29 @@ const BAZI_DECISIVE_READING_NOTE = [
   "ต้องยกหลักฐานจากผังปาจื้อจริงอย่างน้อย 5 จุดในโหมดเดี่ยว หรือ 6 จุดในโหมดคู่ แล้วโยงกับผลชีวิต/คำถามโดยตรง",
   "ถ้าคำถามเป็นตัวอย่าง/demo/ว่าง ให้ตอบแบบโชว์ฝีมือ: ฟันธง 3 เรื่องที่เฉพาะที่สุดจากผังนี้ พร้อมหลักฐานและคำแนะนำที่ทำได้ทันที",
 ].join("\n");
+
+function fusion5FailureReply(lang: string): string {
+  switch (lang) {
+    case "en":
+      return "Sorry, I cannot complete this Fusion reading right now. Please try again.";
+    case "zh":
+      return "抱歉，目前暫時無法完成這次合盤解讀，請稍後再試。";
+    case "cn":
+      return "抱歉，目前暂时无法完成这次合盘解读，请稍后再试。";
+    case "vi":
+      return "Xin lỗi, hiện chưa thể hoàn tất phần luận giải Fusion này. Vui lòng thử lại.";
+    case "ja":
+      return "申し訳ありません。現在このFusion鑑定を完了できません。もう一度お試しください。";
+    case "ko":
+      return "죄송합니다. 현재 이 Fusion 풀이를 완료할 수 없습니다. 다시 시도해 주세요.";
+    case "ru":
+      return "Извините, сейчас не удалось завершить этот Fusion-разбор. Попробуйте еще раз.";
+    case "es":
+      return "Lo siento, ahora no se puede completar esta lectura Fusion. Inténtalo de nuevo.";
+    default:
+      return "ขออภัย ยังไม่สามารถอ่านดวงได้ในขณะนี้ ลองใหม่อีกครั้ง";
+  }
+}
 
 function internalToken(): string {
   const secret = process.env.SIFU_FUSION_INTERNAL_SECRET || process.env.AUTH_SECRET;
@@ -491,6 +515,19 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
 
 /** 🔄 worker เบื้องหลัง · ไม่ผูก req.signal → user ปิดจอ/พับมือถือได้ งานวิ่งต่อบน server → เก็บผลลง DB
  *  เรียกแบบ detached (ไม่ await) · ต้องไม่ throw ออกนอก (อัปเดต job เสมอ ทั้งสำเร็จ/พลาด) */
+/* ศาสตร์ที่ 7 · ลายมือ → block เสริมให้ judge หลอมรวม (additive · user ไม่มีลายมือ = undefined ไม่กระทบ) */
+function renderPalmBlock(reading: Record<string, unknown>, clarity: number | null): string | undefined {
+  const rd = reading as { reading?: { universal?: Array<Record<string, unknown>>; per_school?: Array<Record<string, unknown>> }; universal?: Array<Record<string, unknown>>; per_school?: Array<Record<string, unknown>>; summary?: string };
+  const uni = rd.reading?.universal || rd.universal || [];
+  const per = rd.reading?.per_school || rd.per_school || [];
+  if (!uni.length && !rd.summary) return undefined;
+  const L: string[] = [`=== ศาสตร์ที่ 7 · ลายมือ (หัตถศาสตร์) ว่า ===${clarity != null ? ` (ความชัดภาพ ${clarity}%)` : ""}`];
+  if (rd.summary) L.push(`สรุป: ${String(rd.summary).slice(0, 400)}`);
+  uni.slice(0, 5).forEach((u) => L.push(`• [แก่นสากล] ${u.title ? String(u.title) + ": " : ""}${String(u.text || "").slice(0, 300)}`));
+  per.slice(0, 3).forEach((pp) => L.push(`• [${String(pp.school || "")}] ${String(pp.text || "").slice(0, 300)}`));
+  return L.join("\n").slice(0, 2_000);
+}
+
 async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
   try {
     const { cookie, runSciences, births, profileIds, question, lang, yam, skipped, userId } = p;
@@ -603,7 +640,14 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
           }
           myBlock = parts.length ? parts.join("\n\n").slice(0, 6_000) : undefined;
         }
-        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, resBlock, dsBlock, myBlock);
+        // ศาสตร์ที่ 7: ถ้า user เคยบันทึกลายมือ → ต่อเข้า judge (additive · ไม่มี = ข้าม)
+        let palmBlock: string | undefined;
+        try {
+          const pr = await q1<{ reading: Record<string, unknown>; clarity: number | null }>(
+            `SELECT reading, clarity FROM palm_readings WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1`, [userId]);
+          if (pr?.reading) palmBlock = renderPalmBlock(pr.reading, pr.clarity);
+        } catch { /* ไม่มีตาราง/ลายมือ = ข้าม */ }
+        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, resBlock, dsBlock, myBlock, palmBlock);
         const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL);
         judge = { ...jr, model: JUDGE_MODEL };
       } catch (e) { judge = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "judge_error", model: JUDGE_MODEL }; }
@@ -618,7 +662,7 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     const reply = judge.ok && judge.reply ? judge.reply
       : okPanels.length === 1 ? okPanels[0].reply!
       : okPanels.length ? okPanels.map((x) => `【${x.label}】\n${x.reply}`).join("\n\n")
-      : "ขออภัย ยังไม่สามารถอ่านดวงได้ในขณะนี้ ลองใหม่อีกครั้ง";
+      : fusion5FailureReply(p.lang);
 
     const result = {
       reply, model: "fusion5",
@@ -663,7 +707,7 @@ export async function POST(req: Request) {
       .map((s) => String(s) as ScienceId)
       .filter((s) => DISCIPLINES[s]?.available);
     const question = String(body.question || body.message || "").trim().slice(0, 2000);
-    const lang = ["th", "en", "zh"].includes(String(body.lang)) ? String(body.lang) : "th";
+    const lang = isSifuAnswerLang(body.lang) ? String(body.lang) : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
     const history = cleanHistory(body.history);
     const threadId = cleanThreadId(body.threadId || body.thread_id);
     const threadProfileId = cleanId(body.threadProfileId || body.historyProfileId) || profileIds[0] || null;
