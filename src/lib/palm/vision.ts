@@ -62,9 +62,9 @@ function runCodexVision(imagePaths: string[], prompt: string, signal?: AbortSign
     c.on("error", e => done(() => reject(e)));
     c.on("close", code => done(() => {
       const tail = (lineBuf + dec.end()).trim(); if (tail) parseLine(tail);
-      const out = (finalText || rawOut).trim();
+      const out = finalText.trim(); // ใช้เฉพาะ agent_message · ไม่ resolve rawOut (JSONL ดิบ = ขยะ)
       if (code === 0 && out) resolve(out);
-      else reject(new Error(`codex_exit_${code}: ${(err || "").slice(0, 240)}`));
+      else reject(new Error(`codex_exit_${code}: ${(err || rawOut.slice(0, 120) || "").slice(0, 240)}`));
     }));
   });
 }
@@ -78,9 +78,12 @@ async function runGeminiVision(imagePaths: string[], prompt: string, signal?: Ab
     parts.push({ inline_data: { mime_type: "image/jpeg", data: buf.toString("base64") } });
   }
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
+  // timeout ฝั่ง server (ตัวนำหลัก · req.signal อย่างเดียวไม่พอบน self-host) + ปิด thinking = เร็วขึ้น + ไม่แย่ token กับ output
+  const timeoutSig = AbortSignal.timeout(TIMEOUT_MS);
+  const reqSignal = signal ? AbortSignal.any([signal, timeoutSig]) : timeoutSig;
   const r = await fetch(url, {
-    method: "POST", headers: { "content-type": "application/json" }, signal,
-    body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: { temperature: 0.3, maxOutputTokens: 8000 } }),
+    method: "POST", headers: { "content-type": "application/json" }, signal: reqSignal,
+    body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: { temperature: 0.3, maxOutputTokens: 8000, thinkingConfig: { thinkingBudget: 0 } } }),
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || j.error) throw new Error(`gemini_${r.status}: ${(j.error?.message || "").slice(0, 200)}`);

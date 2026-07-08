@@ -46,6 +46,10 @@ export function buildPalmPrompt(opts: {
 5. **coverage** — สำหรับแต่ละเส้นหลัก 4 เส้น (life/head/heart/fate) บอกว่าเห็นชัดพอทำนายไหม · ถ้าไม่ชัด ตั้ง need_reshoot=true + บอก region + hint การถ่ายซูมเฉพาะจุดนั้น
 6. เขียนค่า text/observation/hint/advice ทั้งหมดเป็น **${langName(lang)}** (แต่ key ของ JSON เป็นอังกฤษตามสคีมา)
 7. ตอบเป็น **JSON เท่านั้น** ไม่มีข้อความอื่นนอก JSON ไม่มี markdown fence
+8. **กับดักห้ามหลง (ดูหมวด 🚫 ในคัมภีร์):** เนินดาว 7 เนิน (Jupiter/Saturn/Apollo/Venus/Mars/Luna) = ของตะวันตกเท่านั้น **ห้ามใส่ใน universal[] (T1) เด็ดขาด** ต้องเป็น per_school school=west (canon T3-west) · features.type=mount ต้อง canon=T3-west เสมอ · **ห้ามใช้คำ 三才紋 / รูปมือ 4 ธาตุ (earth/air/fire/water)** = ของแต่งใหม่ ไม่ใช่ต้นตำรับ
+9. **canon ต้องเป็นรหัสจริงเท่านั้น:** T1.1–T1.7 (แก่นสากล) · T2 (สองสาย) · T3-cn / T3-in / T3-west (รายสาย) — **ห้ามสร้างรหัสใหม่** และเนื้อ reading ต้องตรงกับสิ่งที่รหัสนั้นพูดจริงในคัมภีร์ ห้ามแปะรหัสมั่ว
+10. **เพดานตามความชัด:** ถ้า clarity_overall < 50 ให้ตอบเฉพาะ universal[] ที่มี evidence ชัดจริงเท่านั้น **งด per_school ทั้งหมด** และตั้ง needs_better_photo=true · สัญลักษณ์/รูปนิมิต (ปลา/ดาว/สามเหลี่ยม) ถ้าไม่เห็นเป็นรูปนั้นชัดจริง **ห้ามระบุ** (features ตั้ง seen=false หรือไม่ต้องใส่)
+11. **T1 มาก่อนเสมอ:** per_school[] จะมีได้ก็ต่อเมื่อ universal[] มีอย่างน้อย 1 รายการ และ T3 รวมต้องไม่ยาวกว่า T1 · ส่วนคัมภีร์ที่มี ⚠ หรือหมายเหตุ "ยังไม่ verified" (氣色/八卦九宮) ให้ทำนายแบบสำรวจ ไม่ฟันธง
 
 ═══════════ รูปที่แนบ ═══════════
 ${imgList}
@@ -69,7 +73,7 @@ ${canon}
      "region":"<บริเวณบนฝ่ามือ>","hint":"<วิธีถ่ายซูมเก็บจุดนี้>"}
   ],
   "features": [
-    {"type":"mount|symbol|finger|color|shape","name":"<ชื่อลักษณะ>","observation":"<ที่เห็น>","canon":"<อ้างคัมภีร์>"}
+    {"type":"mount|symbol|finger|color|shape","name":"<ชื่อลักษณะ>","seen":<bool>,"clarity":"clear|partial|unclear","observation":"<ที่เห็นจริง>","canon":"<T3-cn|T3-in|T3-west|T2>"}
   ],
   "reading": {
     "universal": [ {"title":"<หัวข้อ>","text":"<คำอ่าน>","canon":"<T1.x>","evidence":"<ลักษณะที่เห็น>"} ],
@@ -100,7 +104,7 @@ export function parsePalmResult(raw: string): PalmReading {
   const a = s.indexOf("{"), b = s.lastIndexOf("}");
   if (a !== -1 && b > a) s = s.slice(a, b + 1);
   const obj = JSON.parse(s) as PalmReading;
-  if (typeof obj !== "object" || obj === null) throw new Error("palm_parse_not_object");
+  if (typeof obj !== "object" || obj === null || Array.isArray(obj)) throw new Error("palm_parse_not_object");
   return obj;
 }
 

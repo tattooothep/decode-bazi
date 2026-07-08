@@ -34,16 +34,18 @@ function limited(ip: string): boolean {
 function enhance(src: string, stem: string): Promise<{ clarity: number; clear: string; advise: string }> {
   return new Promise((resolve) => {
     const c = spawn("python3", [ENHANCE, src, stem]);
-    let out = "", err = "";
+    let out = "", err = "", settled = false;
+    const finish = (v: { clarity: number; clear: string; advise: string }) => { if (settled) return; settled = true; clearTimeout(timer); resolve(v); };
+    const timer = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} finish({ clarity: 0, clear: src, advise: "enhance_timeout" }); }, 30_000); // กันแฮงก์
     c.stdout.on("data", d => (out += d)); c.stderr.on("data", d => (err += d));
     c.on("close", () => {
       try {
         const j = JSON.parse(out.trim());
-        if (j.ok) return resolve({ clarity: j.clarity, clear: j.clear, advise: j.advise });
+        if (j.ok) return finish({ clarity: j.clarity, clear: j.clear, advise: j.advise });
       } catch { /* fall through */ }
-      resolve({ clarity: 0, clear: src, advise: "enhance_failed" }); // ใช้ต้นฉบับ
+      finish({ clarity: 0, clear: src, advise: "enhance_failed" }); // ใช้ต้นฉบับ
     });
-    c.on("error", () => resolve({ clarity: 0, clear: src, advise: "enhance_error" }));
+    c.on("error", () => finish({ clarity: 0, clear: src, advise: "enhance_error" }));
   });
 }
 
@@ -72,6 +74,7 @@ export async function POST(req: NextRequest) {
     const sendPaths: string[] = [];
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
+      if (!f.size) return NextResponse.json({ ok: false, error: "empty_image", message: `รูปที่ ${i + 1} ว่างเปล่า/ไฟล์เสีย` }, { status: 400 });
       if (f.size > MAX_BYTES) return NextResponse.json({ ok: false, error: "too_big", message: `รูปที่ ${i + 1} ใหญ่เกิน 12MB` }, { status: 400 });
       const buf = Buffer.from(await f.arrayBuffer());
       const src = path.join(dir, `src_${i}.jpg`);
