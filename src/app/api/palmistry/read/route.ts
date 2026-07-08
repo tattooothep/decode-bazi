@@ -1,14 +1,16 @@
-/* POST /api/palmistry/read · ศาสตร์ที่ 7 — อ่านลายมือจากรูป
+/* POST /api/palmistry/read · ศาสตร์ที่ 7 — อ่านลายมือจากรูป (async job · r479)
  * formData: images[] (jpeg) + roles[] (left|right|closeup) + targets[] + lang
- * flow: temp → opencv enhance (+%ความชัด) → codex/gemini อ่านตามคัมภีร์ → JSON + coverage
- * รูป biometric: temp + ลบทันทีเสมอ (ไม่เก็บ server)
+ * flow: validate รูป → เซฟลง job_dir ถาวรชั่วคราว → INSERT palm_jobs(running) → คืน job_id ทันที (202)
+ *       → background: enhance → คัมภีร์ → grok/gemini อ่าน → parse → UPDATE done + ลบรูป (privacy)
+ * รูป biometric: temp + ลบทันทีเสมอ (ไม่เก็บ server) · งานวิ่งต่อบน server แม้ client พับจอ/ปิดแอป
+ * ⚠️ ไม่มี auth (guest ใช้ได้) · session แบบ optional (ผูก user_id ถ้ามี · ไม่มีก็ null)
  */
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
-import { mkdtemp, writeFile, chmod, rm } from "fs/promises";
-import os from "os";
+import { mkdir, writeFile, chmod, rm } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import { q1, q } from "@/lib/db";
 import { readPalmVision } from "@/lib/palm/vision";
 import { loadPalmCanon, buildPalmPrompt, parsePalmResult, reshootTargets, type PalmContext, type PalmImageMeta } from "@/lib/palm/prompt";
 
@@ -16,9 +18,15 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 240;
 
+// ตั้ง process-global "เวลาบูต" ตั้งแต่ read route โหลด (POST มาก่อน poll เสมอ) → job route ใช้ค่าเดียวกัน
+// กัน orphan false-positive: งานแรกหลัง restart ต้องไม่ถูก mark error เพราะ SERVER_STARTED_AT ตั้งช้ากว่า created_at
+((globalThis as unknown as { __palmServerStartedAt?: Date }).__palmServerStartedAt ||= new Date());
+
 const MAX_IMAGES = 6;
 const MAX_BYTES = 12 * 1024 * 1024; // 12MB/รูป
 const ENHANCE = path.join(process.cwd(), "scripts/palm-enhance.py");
+// โฟลเดอร์ถาวรชั่วคราว (ไม่ใช่ os.tmpdir ที่อาจโดนล้าง) เพราะ background อ่านทีหลัง · ลบทิ้งหลังอ่านเสร็จ
+const JOBS_ROOT = "/var/tmp/palm-jobs";
 const ALLOWED_ROLES = new Set(["left", "right", "closeup"]);
 const ALLOWED_TARGETS = new Set(["life", "head", "heart", "fate", "palm", "mount", "finger", "thumb"]); // whitelist กัน prompt injection ผ่าน targets
 const ALLOWED_DOMINANT = new Set(["left", "right", "unknown"]);
@@ -67,8 +75,78 @@ function enhance(src: string, stem: string): Promise<{ clarity: number; clear: s
   });
 }
 
+/* getSession แบบ optional — login แล้วผูก user_id/org_id · guest = null (ห้ามบังคับ login) */
+async function tryGetSession(): Promise<{ userId: string; orgId: string | null } | null> {
+  try {
+    const mod = await import("@/lib/auth");
+    const s = await mod.getSession();
+    return s ? { userId: s.userId, orgId: s.orgId ?? null } : null;
+  } catch { return null; }
+}
+
+type PalmJobParams = {
+  jobId: string;
+  jobDir: string;
+  srcPaths: string[];        // รูปต้นฉบับที่เขียนลง job_dir แล้ว (background enhance ต่อ)
+  metas: PalmImageMeta[];    // role/target/label/hand ต่อรูป (คำนวณตอน POST · cheap)
+  labels: string[];          // ป้ายกำกับสำหรับ clarity hint
+  lang: string;
+  context: PalmContext;
+};
+
+/* 🔄 worker เบื้องหลัง · ไม่ผูก req.signal → user ปิดจอ/พับมือถือได้ งานวิ่งต่อบน server → เก็บผลลง DB
+ * เรียกแบบ detached (ไม่ await) · ต้องไม่ throw ออกนอก (อัปเดต job เสมอ ทั้งสำเร็จ/พลาด) · ลบรูปเสมอ (privacy) */
+async function processPalmJob(p: PalmJobParams): Promise<void> {
+  const { jobId, jobDir, srcPaths, metas, labels, lang, context } = p;
+  try {
+    // 1) enhance ทุกรูป (งานหนัก · อยู่ใน background)
+    const clarityHints: { label: string; clarity: number; advise: string }[] = [];
+    const sendPaths: string[] = [];
+    for (let i = 0; i < srcPaths.length; i++) {
+      const stem = path.join(jobDir, `e_${i}`);
+      const en = await enhance(srcPaths[i], stem);
+      await chmod(en.clear, 0o644).catch(() => {});
+      sendPaths.push(en.clear);
+      clarityHints.push({ label: labels[i] || `image_${i + 1}`, clarity: en.clarity, advise: en.advise });
+    }
+
+    // 2) build prompt + อ่าน (⚠️ ไม่ส่ง signal — งานต้องวิ่งจบแม้ client หลุด)
+    const canon = await loadPalmCanon();
+    const prompt = buildPalmPrompt({ canon, lang, images: metas, clarityHints, context });
+    const vision = await readPalmVision(sendPaths, prompt, undefined);
+
+    // 3) parse
+    let reading;
+    try { reading = parsePalmResult(vision.text); }
+    catch {
+      await q(`UPDATE palm_jobs SET status='error', error=$2, engine=$3, updated_at=now() WHERE id=$1`,
+        [jobId, "parse_failed", vision.engine]).catch(() => {});
+      return;
+    }
+
+    const result = {
+      ok: true,
+      engine: vision.engine,
+      lang,
+      clarity_hints: clarityHints,
+      reading,
+      reshoot: reshootTargets(reading),
+      image_count: srcPaths.length,
+    };
+    await q(`UPDATE palm_jobs SET status='done', result=$2, engine=$3, updated_at=now() WHERE id=$1`,
+      [jobId, JSON.stringify(result), vision.engine]);
+  } catch (e) {
+    const msg = ((e as Error)?.message || "read_failed").slice(0, 200);
+    await q(`UPDATE palm_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1`, [jobId, msg]).catch(() => {});
+  } finally {
+    await rm(jobDir, { recursive: true, force: true }).catch(() => {}); // ลบรูปทันทีหลังอ่านเสร็จ/พลาด (privacy)
+  }
+}
+
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
+  // IP จริงจาก nginx (X-Real-IP=$remote_addr) ก่อน · ถ้าไม่มีใช้ hop ขวาสุดของ XFF (=ที่ proxy เห็น) · ห้ามใช้ตัวซ้ายสุด (client ปลอมได้ → ข้าม rate limit)
+  const _xff = req.headers.get("x-forwarded-for");
+  const ip = req.headers.get("x-real-ip")?.trim() || (_xff ? _xff.split(",").pop()!.trim() : "") || "unknown";
   if (limited(ip)) return NextResponse.json({ ok: false, error: "rate_limited", message: "คำขอถี่เกินไป รอสักครู่แล้วลองใหม่" }, { status: 429 });
 
   let form: FormData;
@@ -93,25 +171,28 @@ export async function POST(req: NextRequest) {
     birthDate: cleanText(form.get("birth_date"), 30),
   };
 
-  const dir = await mkdtemp(path.join(os.tmpdir(), "palm-"));
-  await chmod(dir, 0o755); // ให้ user jarvis (codex) เข้าถึงได้
+  // session optional (guest = null) → ผูก ownership กัน IDOR ที่ GET /job (ถ้ามี user)
+  const sess = await tryGetSession();
+
+  const jobId = randomUUID();
+  const jobDir = path.join(JOBS_ROOT, jobId);
   try {
-    // 1) เขียน temp + enhance ทุกรูป
+    await mkdir(jobDir, { recursive: true });
+    await chmod(jobDir, 0o755); // ให้ user jarvis (codex/grok) เข้าถึงได้
+
+    // 1) validate + เขียนรูปลง job_dir (ถาวรชั่วคราว) · เตรียม metas/labels (background อ่านต่อ)
+    const srcPaths: string[] = [];
     const metas: PalmImageMeta[] = [];
-    const clarityHints: { label: string; clarity: number; advise: string }[] = [];
-    const sendPaths: string[] = [];
+    const labels: string[] = [];
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
-      if (!f.size) return NextResponse.json({ ok: false, error: "empty_image", message: `รูปที่ ${i + 1} ว่างเปล่า/ไฟล์เสีย` }, { status: 400 });
-      if (f.size > MAX_BYTES) return NextResponse.json({ ok: false, error: "too_big", message: `รูปที่ ${i + 1} ใหญ่เกิน 12MB` }, { status: 400 });
+      if (!f.size) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "empty_image", message: `รูปที่ ${i + 1} ว่างเปล่า/ไฟล์เสีย` }, { status: 400 }); }
+      if (f.size > MAX_BYTES) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "too_big", message: `รูปที่ ${i + 1} ใหญ่เกิน 12MB` }, { status: 400 }); }
       const buf = Buffer.from(await f.arrayBuffer());
-      if (!isImageMagic(buf)) return NextResponse.json({ ok: false, error: "not_image", message: `รูปที่ ${i + 1} ไม่ใช่ไฟล์ภาพ (รองรับ JPEG/PNG/WEBP)` }, { status: 400 });
-      const src = path.join(dir, `src_${i}.jpg`);
+      if (!isImageMagic(buf)) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "not_image", message: `รูปที่ ${i + 1} ไม่ใช่ไฟล์ภาพ (รองรับ JPEG/PNG/WEBP)` }, { status: 400 }); }
+      const src = path.join(jobDir, `src_${i}.jpg`);
       await writeFile(src, buf); await chmod(src, 0o644);
-      const stem = path.join(dir, `e_${i}`);
-      const en = await enhance(src, stem);
-      await chmod(en.clear, 0o644).catch(() => {});
-      sendPaths.push(en.clear);
+      srcPaths.push(src);
 
       const role = (ALLOWED_ROLES.has(roles[i]) ? roles[i] : (i === 0 ? "left" : i === 1 ? "right" : "closeup")) as PalmImageMeta["role"];
       const target = ALLOWED_TARGETS.has(targets[i]) ? targets[i] : undefined; // sanitize กัน injection
@@ -122,36 +203,25 @@ export async function POST(req: NextRequest) {
       const label = role === "left" ? "ฝ่ามือซ้าย" : role === "right" ? "ฝ่ามือขวา"
         : `ภาพซูมเสริม${handLabel ? " (" + handLabel + ")" : ""}${target ? " เก็บ" + target : ""}`;
       metas.push({ role, target, label, hand });
-      clarityHints.push({ label, clarity: en.clarity, advise: en.advise });
+      labels.push(label);
     }
 
-    // 2) build prompt + อ่าน
-    const canon = await loadPalmCanon();
-    const prompt = buildPalmPrompt({ canon, lang, images: metas, clarityHints, context });
-    const vision = await readPalmVision(sendPaths, prompt, req.signal);
+    // 2) INSERT palm_jobs (running) → คืน job_id ทันที (user พับจอ/ปิดแอปได้)
+    const job = await q1<{ id: string }>(
+      `INSERT INTO palm_jobs(id, user_id, org_id, status, lang, job_dir, image_count)
+       VALUES ($1,$2,$3,'running',$4,$5,$6) RETURNING id`,
+      [jobId, sess?.userId ?? null, sess?.orgId ?? null, lang, jobDir, files.length]
+    );
+    if (!job) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "job_create_failed" }, { status: 500 }); }
 
-    // 3) parse
-    let reading;
-    try { reading = parsePalmResult(vision.text); }
-    catch {
-      return NextResponse.json({ ok: false, error: "parse_failed", engine: vision.engine, raw: vision.text.slice(0, 800) }, { status: 502 });
-    }
+    // 3) 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
+    void processPalmJob({ jobId, jobDir, srcPaths, metas, labels, lang, context });
 
-    return NextResponse.json({
-      ok: true,
-      engine: vision.engine,
-      lang,
-      clarity_hints: clarityHints,
-      reading,
-      reshoot: reshootTargets(reading),
-      image_count: files.length,
-    });
+    return NextResponse.json({ ok: true, job_id: jobId, status: "running" }, { status: 202 });
   } catch (e) {
+    await rm(jobDir, { recursive: true, force: true }).catch(() => {});
     const msg = (e as Error).message || "error";
-    if (msg === "aborted") return NextResponse.json({ ok: false, error: "aborted" }, { status: 499 });
     console.error("[palmistry/read]", msg);
     return NextResponse.json({ ok: false, error: "read_failed", message: msg.slice(0, 200) }, { status: 500 });
-  } finally {
-    await rm(dir, { recursive: true, force: true }).catch(() => {}); // ลบรูปทันที เสมอ
   }
 }

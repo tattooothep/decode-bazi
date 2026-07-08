@@ -10,6 +10,7 @@
 /* theme init เร็ว (กันกระพริบ) */
 (function(){try{var t=localStorage.getItem('hk-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();
 </script>
+<link rel="stylesheet" href="/css/hk-print.css?v=2">
 <style>
   :root{
     --bg:#0d0f12; --panel:#14181f; --panel2:#1b2029; --line:rgba(200,164,77,.22);
@@ -310,9 +311,9 @@
     </div>
     <button class="cta" id="btnAnalyze" disabled data-i18n="up.btn">✋ วิเคราะห์ลายมือ</button>
     <p class="tiny" data-i18n="up.privacy">🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก</p>
-    <input type="file" id="fileL" class="hidden">
+    <input type="file" id="fileL" class="hidden" accept="image/*">
 
-    <input type="file" id="fileR" class="hidden">
+    <input type="file" id="fileR" class="hidden" accept="image/*">
 
   </section>
 
@@ -346,7 +347,7 @@
     <button class="cta" id="btnReanalyze" data-i18n="rs.btn">📸 อ่านใหม่พร้อมรูปที่เพิ่ม</button>
     <button class="cta ghost" id="btnSkip" style="margin-top:9px" data-i18n="rs.skip">ข้าม — อ่านเท่าที่เห็น</button>
     <p class="tiny" data-i18n="rs.privacy">รูปเสริมรวมกับชุดเดิม ส่งอ่านพร้อมกัน · ไม่เก็บบนเซิร์ฟเวอร์</p>
-    <input type="file" id="fileClose" class="hidden">
+    <input type="file" id="fileClose" class="hidden" accept="image/*">
 
   </section>
 
@@ -366,12 +367,14 @@
     <button class="cta" id="btnSave" style="margin-top:6px;background:linear-gradient(180deg,var(--gold),var(--gold-deep))" data-i18n="rt.save">💾 บันทึกเป็นศาสตร์ที่ 7</button>
     <p class="tiny" data-i18n="rt.saveNote">บันทึกแล้ว → ลายมือเข้าไปหลอมรวมกับปาจื้อ/ดาว/จื่อเหวย… ในหน้าดูดวงรวม</p>
     <button class="cta ghost" id="btnRestart" style="margin-top:9px" data-i18n="rt.restart">↺ เริ่มใหม่</button>
+    <button class="cta noprint" id="btnPalmPdf" type="button" style="margin-top:9px;background:transparent;border:1px solid var(--gold);color:var(--gold)" data-i18n="rt.pdf">⬇ ดาวน์โหลด PDF</button>
   </section>
 
   <div style="text-align:center"><a href="/" class="homelink" data-i18n="home">← กลับหน้าหลัก</a></div>
 </div>
 
-<script src="/js/palmistry-app.js?v=481"></script>
+<script src="/js/hk-print.js?v=2"></script>
+<script src="/js/palmistry-app.js?v=483"></script>
 <script src="/js/hk-user-menu.js?v=20" defer></script>
 <script>
 var p = window.location.pathname.replace(/\/$/,'') || '/chart';

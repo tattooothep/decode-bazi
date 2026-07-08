@@ -6,6 +6,8 @@
   --hkp-gold:#c8a44d; --hkp-gold-deep:#8a6d2a; --hkp-ink:#1a1d24; --hkp-soft:#5f5847;
   --hkp-line:#e5ddc9; --hkp-paper:#fffdf7; --hkp-good:#5a8a48; --hkp-bad:#b03a2e;
 }
+/* root ที่ inject ตอนสั่งพิมพ์ = ซ่อนบนจอ (กัน flash) โผล่เฉพาะตอน print · mockup ใช้ .hkp-page ตรง ไม่มี .hkp-root จึงไม่โดน */
+.hkp-root{display:none}
 /* กระดาษ A4 (แสดงบนจอ = การ์ด · พิมพ์ = เต็มหน้า) */
 .hkp-page{background:var(--hkp-paper);color:var(--hkp-ink);width:100%;max-width:794px;min-height:500px;
   margin:0 auto 20px;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:44px 46px;position:relative;
@@ -66,6 +68,10 @@
   @page land{size:A4 landscape}
   body{background:#fff!important}
   .noprint,.hk-topbar,.topbar,.hkp-toolbar{display:none!important}
+  /* หน้าที่ inject รายงาน (fusion/palm/qimen/chart...) → ซ่อนเนื้อหาเว็บเดิม เหลือแต่ .hkp-root
+     ผูกกับ body.hkp-active (HKPrint.open เติมให้) เท่านั้น → book/หน้าที่พิมพ์ตัวเองไม่โดน */
+  body.hkp-active>*:not(.hkp-root){display:none!important}
+  .hkp-root{display:block!important}
   .hkp-page{box-shadow:none;margin:0;border-radius:0;max-width:100%;min-height:auto;page-break-after:always}
   .hkp-page:last-child{page-break-after:auto}
   .hkp-card,.hkp-page table{break-inside:avoid}

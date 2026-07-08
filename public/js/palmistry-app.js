@@ -63,6 +63,7 @@
     "c.nav.fengshui":{th:"ทิศมงคล",en:"Direction",zh:"方位",cn:"方位",vi:"Hướng tốt",ja:"方位",ko:"방위",ru:"Направление",es:"Dirección"},
     "c.nav.luopan":{th:"หล่อแก",en:"Luopan",zh:"羅盤",cn:"罗盘",vi:"La Bàn",ja:"羅盤",ko:"나경",ru:"Лопань",es:"Luopan"},
     "c.nav.palmistry":{th:"ลายมือ",en:"Palm",zh:"手相",cn:"手相",vi:"Chỉ tay",ja:"手相",ko:"손금",ru:"Ладонь",es:"Mano"},
+    "rt.pdf":{th:"⬇ ดาวน์โหลด PDF",en:"⬇ Download PDF",zh:"⬇ 下載 PDF",cn:"⬇ 下载 PDF",vi:"⬇ Tải PDF",ja:"⬇ PDF をダウンロード",ko:"⬇ PDF 다운로드",ru:"⬇ Скачать PDF",es:"⬇ Descargar PDF"},
     home:{th:"← กลับหน้าหลัก",en:"← Back home",zh:"← 返回首頁",cn:"← 返回首页",vi:"← Về trang chủ",ja:"← ホームへ",ko:"← 홈으로",ru:"← На главную",es:"← Volver al inicio"}
   };
 
@@ -209,15 +210,55 @@
     imgs.closeups.forEach(function (c) { fd.append("images", c.file); fd.append("roles", "closeup"); fd.append("targets", c.target || "undefined"); fd.append("hands", c.hand || "unknown"); });
     return fd;
   }
+  /* ── async job (r479): งานอ่านวิ่งต่อฝั่ง server แม้ user พับจอ/ปิดแอป ──
+   * POST /api/palmistry/read → {job_id} → เก็บ localStorage → poll GET /api/palmistry/job ทุก 3 วิ
+   * เปิดหน้าใหม่/พับจอกลับมา → resume poll ต่อจาก localStorage (ไม่เกิน ~25 นาที) */
+  var PALM_JOB_LS = "hk_palm_job";
+  var PALM_JOB_TTL = 25 * 60 * 1000; // ต้องตรงกับ recovery ฝั่ง server (25 นาที)
+  var pollTimer = null;
+  function saveJobLS(id) { try { localStorage.setItem(PALM_JOB_LS, JSON.stringify({ id: id, ts: Date.now() })); } catch (e) {} }
+  function clearJobLS() { try { localStorage.removeItem(PALM_JOB_LS); } catch (e) {} }
+  function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+  function pollPalmJob(jobId) {
+    stopPoll();
+    var startTs = Date.now();
+    function tick() {
+      if (Date.now() - startTs > PALM_JOB_TTL) { stopPoll(); clearJobLS(); stopProgress(false); onError({ error: "timeout" }); return; }
+      fetch("/api/palmistry/job?id=" + encodeURIComponent(jobId), { credentials: "include", cache: "no-store" })
+        .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+        .then(function (res) {
+          var j = res.j || {};
+          if (res.status === 404 || res.status === 403) { stopPoll(); clearJobLS(); stopProgress(false); onError(j); return; }
+          if (j.status === "running") return; // ยังอ่านอยู่ · progress เดินต่อ
+          if (j.status === "done") { stopPoll(); clearJobLS(); stopProgress(true); setTimeout(function () { onResult(j); }, 350); return; }
+          if (j.status === "error") { stopPoll(); clearJobLS(); stopProgress(false); onError(j); return; }
+          // สถานะไม่รู้จัก → poll ต่อเงียบ ๆ
+        })
+        .catch(function () { /* network แวบ · งานยังวิ่งบน server → poll ต่อ */ });
+    }
+    tick();
+    pollTimer = setInterval(tick, 3000);
+  }
+
+  /* resume: เปิดหน้า/พับจอกลับมา แล้วมีงานค้างใน localStorage → poll ต่อทันที */
+  function resumePalmJob() {
+    var raw; try { raw = localStorage.getItem(PALM_JOB_LS); } catch (e) { return; }
+    if (!raw) return;
+    var o; try { o = JSON.parse(raw); } catch (e) { clearJobLS(); return; }
+    if (!o || !o.id || !o.ts || (Date.now() - o.ts > PALM_JOB_TTL)) { clearJobLS(); return; }
+    show("stAnalyzing"); startProgress(); pollPalmJob(o.id);
+  }
+
   function analyze() {
     show("stAnalyzing");
     startProgress();
     fetch("/api/palmistry/read", { method: "POST", body: buildForm() })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
-        stopProgress(true);
-        if (!res.ok || !res.j.ok) return onError(res.j);
-        setTimeout(function () { onResult(res.j); }, 350);
+        if (!res.ok || !res.j.ok || !res.j.job_id) { stopProgress(false); return onError(res.j); }
+        saveJobLS(res.j.job_id); // งานวิ่งบน server แล้ว · เก็บ id ไว้ resume ตอนพับจอ
+        pollPalmJob(res.j.job_id);
       })
       .catch(function () { stopProgress(false); onError({ error: "network" }); });
   }
@@ -401,6 +442,164 @@
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
 
+  /* ── ดาวน์โหลด PDF (ยกเลย์เอาต์ + รูป SVG ฝ่ามือจาก mockup /export-preview · ครบทุก section ไม่ตัด) ── */
+  /* ภาพวาดฝ่ามือ 4 เส้น (ยกจาก mockup P2 · self-contained · ไม่ใช่รูปถ่ายจริง) */
+  var PALM_SVG_MAIN =
+    '<svg viewBox="0 0 220 250" width="200" role="img" aria-label="palm lines">' +
+    '<path d="M40 250 C25 210 24 150 34 120 C22 118 16 96 26 92 C34 88 44 100 48 112 L48 60 C48 52 60 52 60 60 L62 108 L70 46 C70 38 82 38 82 46 L82 106 L92 40 C92 32 104 32 104 40 L102 108 L114 52 C114 44 126 44 126 52 L120 116 C140 120 150 150 148 190 C147 220 140 240 128 250 Z" fill="#fbf6ea" stroke="#d8caa4" stroke-width="2"/>' +
+    '<path d="M52 108 C60 140 66 175 84 208" fill="none" stroke="#5a8a48" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M52 128 C80 138 108 140 132 132" fill="none" stroke="#8a6d2a" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M56 112 C84 100 112 100 138 110" fill="none" stroke="#b03a2e" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M96 232 C94 190 96 150 98 122" fill="none" stroke="#4a6f8a" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<g font-size="9.5"><text x="150" y="112" fill="#b03a2e">❤ 感情</text><text x="150" y="134" fill="#8a6d2a">🧠 智慧</text><text x="150" y="200" fill="#5a8a48">🌿 生命</text><text x="150" y="230" fill="#4a6f8a">⭐ 事業</text></g>' +
+    '</svg>';
+  /* เส้นหลัก 4 เส้น + ความชัด (ยกจาก mockup P5) */
+  var PALM_SVG_LINES =
+    '<svg viewBox="0 0 300 170" width="300" role="img" aria-label="4 palm lines coverage">' +
+    '<rect x="60" y="10" width="180" height="150" rx="30" fill="#fbf6ea" stroke="#d8caa4" stroke-width="2"/>' +
+    '<path d="M80 40 C95 90 100 130 130 155" fill="none" stroke="#5a8a48" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M78 70 C120 82 165 84 215 74" fill="none" stroke="#8a6d2a" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M84 46 C130 30 180 30 220 44" fill="none" stroke="#b03a2e" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M150 155 C148 110 152 70 156 40" fill="none" stroke="#4a6f8a" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 4"/>' +
+    '<g font-size="10"><circle cx="20" cy="30" r="5" fill="#5a8a48"/><text x="30" y="34" fill="#3a3730">生命</text>' +
+    '<circle cx="20" cy="52" r="5" fill="#8a6d2a"/><text x="30" y="56" fill="#3a3730">智慧</text>' +
+    '<circle cx="20" cy="74" r="5" fill="#b03a2e"/><text x="30" y="78" fill="#3a3730">感情</text>' +
+    '<circle cx="20" cy="96" r="5" fill="#4a6f8a"/><text x="30" y="100" fill="#3a3730">事業</text></g>' +
+    '</svg>';
+  var PDFTXT = {
+    kick:{th:"ศาสตร์ที่ 7 · ลายมือหลอมรวม",en:"7th art · fused palmistry",zh:"第七術 · 融合手相"},
+    title:{th:"คำอ่านลายมือ",en:"Palm reading",zh:"手相解讀"},
+    docT:{th:"คำอ่านลายมือ",en:"Palm reading",zh:"手相解讀"},
+    meta:{th:"อ่านตามคัมภีร์ต้นฉบับ 3 สาย<br>จีน 神相全編 · อินเดีย Samudrika · ตะวันตก Cheiro / Benham",en:"Read from 3 canonical schools<br>China 神相全編 · India Samudrika · West Cheiro / Benham",zh:"依三大原典解讀<br>中國 神相全編 · 印度 Samudrika · 西方 Cheiro / Benham"},
+    badge:{th:"อ่านครบทั้ง 3 สาย",en:"read across all 3 schools",zh:"三派完整解讀"},
+    clarity:{th:"ความชัดภาพรวม",en:"Image clarity",zh:"影像清晰度"},
+    privacy:{th:"🔒 ไม่มีภาพฝ่ามือในเอกสาร (ความเป็นส่วนตัว) — เก็บเฉพาะคำอ่าน",en:"🔒 No palm photo in this document (privacy) — reading only",zh:"🔒 文件不含手掌照片（隱私）— 僅保留解讀"},
+    capMain:{th:"ภาพวาดประกอบ · เส้นหลัก 4 เส้น: ชีวิต/สมอง/ใจ/วาสนา (ไม่ใช่รูปถ่ายจริง)",en:"Illustration · 4 main lines: life/head/heart/fate (not a real photo)",zh:"示意圖 · 四大主線：生命/智慧/感情/事業（非實照）"},
+    capLines:{th:"เส้นหลัก 4 เส้นบนฝ่ามือ · เส้นประ = เห็นบางส่วน",en:"4 main palm lines · dashed = partially seen",zh:"手掌四大主線 · 虛線＝部分可見"},
+    line:{th:"เส้น",en:"Line",zh:"線"},
+    zh:{th:"อักษร",en:"字",zh:"字"},
+    clear:{th:"ความชัด",en:"Clarity",zh:"清晰度"},
+    obs:{th:"สิ่งที่เห็น",en:"Observation",zh:"所見"},
+    identity:{th:"ตัวตนหลัก",en:"Identity",zh:"核心自我"},
+    strength:{th:"จุดแข็ง",en:"Strength",zh:"優勢"},
+    caution:{th:"จุดควรระวัง",en:"Caution",zh:"留意"}
+  };
+  var CONF = {
+    high:{th:"มั่นใจสูง",en:"high confidence",zh:"高信心"},
+    medium:{th:"มั่นใจปานกลาง",en:"medium confidence",zh:"中信心"},
+    low:{th:"มั่นใจต่ำ",en:"low confidence",zh:"低信心"}
+  };
+  function whoLine(lang) {
+    var parts = [];
+    var sel = $("saveProfile");
+    if (sel && sel.options.length && sel.selectedIndex >= 0) {
+      var nm = String(sel.options[sel.selectedIndex].textContent || "").replace(/\s*⭐\s*$/, "").trim();
+      if (nm && nm !== "—") parts.push(nm);
+    }
+    if (profileCtx.gender) parts.push(profileCtx.gender === "F" ? pick({ th: "หญิง", en: "female", zh: "女" }, lang) : pick({ th: "ชาย", en: "male", zh: "男" }, lang));
+    return parts.join(" · ");
+  }
+  function exportPalmPdf() {
+    if (!window.HKPrint || !curResult) return;
+    var lang = getLang();
+    var HP = window.HKPrint, E = HP.esc;
+    var PL = function (k) { return pick(PDFTXT[k], lang); };
+    var LB = function (k) { return pick(MSG[k], lang); };
+    var rd = curResult.reading || {};
+    var sifu = rd.sifu_reading || curResult.sifu_reading || {};
+    var uni = (rd.reading && rd.reading.universal) || rd.universal || [];
+    var per = (rd.reading && rd.reading.per_school) || rd.per_school || [];
+    var lines = rd.lines || [];
+    var secs = Array.isArray(sifu.sections) ? sifu.sections : [];
+    var clar = curResult.clarity_overall != null ? curResult.clarity_overall : "";
+
+    function fig(svg, cap) { return '<div class="fig">' + svg + (cap ? '<div class="cap">' + E(cap) + "</div>" : "") + "</div>"; }
+    function sumGrid(items) {
+      var body = items.filter(function (x) { return x[1]; }).map(function (x) {
+        return '<div class="x"><span class="l">' + E(x[0]) + "</span>" + E(x[1]) + "</div>";
+      }).join("");
+      return body ? '<div class="hkp-sum">' + body + "</div>" : "";
+    }
+    function secCard(sec) {
+      var conf = sec.confidence ? pick(CONF[sec.confidence] || {}, lang) : "";
+      var body =
+        (sec.seen ? "<p><b>" + LB("seen") + ":</b> " + E(sec.seen) + "</p>" : "") +
+        (sec.meaning ? "<p><b>" + LB("meaning") + ":</b> " + E(sec.meaning) + "</p>" : "") +
+        (sec.advice ? "<p><b>" + LB("advice") + ":</b> " + E(sec.advice) + "</p>" : "");
+      return HP.card(sec.title || "", body, conf);
+    }
+
+    var pages = [];
+    /* PAGE 1: แก่นสากล + ภาพฝ่ามือ + ภาพรวม 3 บรรทัด + section แรก ๆ */
+    var p1 = [];
+    p1.push(HP.section(LB("t1"), fig(PALM_SVG_MAIN, PL("capMain"))));
+    var vtext = (uni[0] && (uni[0].text || uni[0].title)) || rd.summary || curResult.reading && curResult.reading.summary || "";
+    if (vtext) p1.push(HP.verdict(LB("t1"), vtext));
+    uni.slice(1).forEach(function (u) {
+      if (u && (u.text || u.title)) p1.push(HP.card(u.title || "", "<p>" + E(u.text || "") + "</p>" + (u.canon ? "<p><b>" + E(u.canon) + "</b></p>" : "")));
+    });
+    var ov = (sifu.overview_3_lines && typeof sifu.overview_3_lines === "object") ? sifu.overview_3_lines : {};
+    var ovGrid = sumGrid([[PL("identity"), ov.identity], [PL("strength"), ov.strength], [PL("caution"), ov.caution]]);
+    if (ovGrid) p1.push(ovGrid);
+    if (sifu.opening) p1.push(HP.card("", "<p>" + E(sifu.opening) + "</p>"));
+    secs.slice(0, 2).forEach(function (s) { p1.push(secCard(s)); });
+    pages.push({ sections: p1 });
+    /* PAGES: section ที่เหลือ (A–H) กลุ่มละ 3 */
+    var rest = secs.slice(2);
+    for (var i = 0; i < rest.length; i += 3) {
+      pages.push({ sections: rest.slice(i, i + 3).map(secCard) });
+    }
+    /* PAGE: 3 สาย + ตารางเส้น 4 เส้น */
+    var p3 = [];
+    if (per.length) {
+      p3.push(HP.section(LB("t3")));
+      per.forEach(function (ps) {
+        var school = pick(MSG.school[ps.school] || {}, lang) || ps.school || "";
+        var title = school + (ps.title ? " · " + ps.title : "");
+        p3.push(HP.card(title, "<p>" + E(ps.text || "") + "</p>" + (ps.canon ? "<p><b>" + E(ps.canon) + "</b></p>" : "")));
+      });
+    }
+    if (lines.length) {
+      p3.push(HP.section(PL("line") + " 4", fig(PALM_SVG_LINES, PL("capLines"))));
+      var rows = lines.map(function (ln) {
+        var L = LINE[ln.key] || {};
+        var nm = pick(L.nm || {}, lang) || ln.key;
+        var st = pick(STCLAR[ln.clarity] || STCLAR.clear, lang);
+        return "<tr><td>" + E(nm) + "</td><td>" + E(L.cn2 || "") + "</td><td>" + E(st) + "</td><td>" + E(ln.observation || "") + "</td></tr>";
+      }).join("");
+      p3.push('<table><thead><tr><th>' + PL("line") + "</th><th>" + PL("zh") + "</th><th>" + PL("clear") + "</th><th>" + PL("obs") + "</th></tr></thead><tbody>" + rows + "</tbody></table>");
+    }
+    if (p3.length) pages.push({ sections: p3 });
+    /* PAGE: สรุปท้าย 7 ช่อง */
+    var fin = (sifu.final_summary && typeof sifu.final_summary === "object") ? sifu.final_summary : {};
+    if (Object.keys(fin).length) {
+      var pf = [];
+      pf.push(HP.section(LB("final")));
+      pf.push(sumGrid([[LB("best"), fin.best_strength], [LB("risk"), fin.main_risk], [LB("work"), fin.suitable_work], [LB("money"), fin.money_style], [LB("love"), fin.love_adjustment]]));
+      if (Array.isArray(fin.advice_3) && fin.advice_3.length) {
+        pf.push(HP.card(LB("adv3"), "<ol>" + fin.advice_3.slice(0, 3).map(function (a) { return "<li>" + E(a) + "</li>"; }).join("") + "</ol>"));
+      }
+      if (fin.sifu_summary) pf.push(HP.verdict(LB("sifuSum"), fin.sifu_summary));
+      pages.push({ sections: pf });
+    }
+
+    var who = whoLine(lang);
+    HP.open({
+      docTitle: "hourkey-" + PL("docT") + (who ? "-" + who : ""),
+      headTitle: who || PL("title"),
+      cover: {
+        kick: PL("kick"),
+        title: PL("title"),
+        who: who,
+        metaHtml: PL("meta"),
+        badge: "✓ " + PL("clarity") + (clar !== "" ? " " + clar + "%" : "") + " · " + PL("badge"),
+        sub: PL("privacy"),
+        qrLabel: "hourkey.io"
+      },
+      pages: pages
+    });
+  }
+
   /* ── ประวัติลายมือของดวงที่เลือก (เพิ่ม/ลบได้ในหน้านี้) ── */
   function fmtDate(s) { try { return new Date(s).toLocaleDateString(getLang() === "th" ? "th-TH" : undefined); } catch (e) { return String(s).slice(0, 10); } }
   function loadPalmHistory(pid) {
@@ -455,6 +654,7 @@
       .catch(function () { btn.disabled = false; alert(pick(MSG.errNet, getLang())); });
   }
   function restart() {
+    stopPoll(); clearJobLS(); // ยกเลิก poll งานเก่า + ล้าง resume (เริ่มใหม่)
     imgs = { left: null, right: null, closeups: [] }; curResult = null; pendingReshoot = null;
     ["handL", "handR"].forEach(function (h) { var el = $(h); var p = el.querySelector("img.prev"); if (p) p.remove(); el.classList.remove("done"); var c = el.querySelector(".cam"); if (c) applyI18N(); });
     $("fileL").value = ""; $("fileR").value = "";
@@ -512,7 +712,9 @@
     $("btnSkip").addEventListener("click", function () { if (pendingReshoot) { renderResult(pendingReshoot); show("stResult"); } });
     $("btnSave").addEventListener("click", save);
     $("btnRestart").addEventListener("click", restart);
+    var pdfBtn = $("btnPalmPdf"); if (pdfBtn) pdfBtn.addEventListener("click", exportPalmPdf);
     applyI18N();
+    resumePalmJob(); // r479: มีงานอ่านค้าง (พับจอ/ปิดแอป) → poll ต่อทันที
     // sync ภาษาเมื่อเปลี่ยนจาก user-menu (same tab: poll · other tab: storage)
     var last = getLang();
     setInterval(function () { var c = getLang(); if (c !== last) { last = c; applyI18N(); } }, 700);

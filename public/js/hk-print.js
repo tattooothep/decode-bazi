@@ -64,9 +64,11 @@
       root.className = "hkp-root";
       root.innerHTML = html;
       document.body.appendChild(root);
-      // ซ่อนเนื้อหาปกติตอนพิมพ์ (print.css: body>*:not(.hkp-root){display:none} — เพิ่มตอน wire หน้าจริง)
+      // ซ่อนเนื้อหาปกติตอนพิมพ์: เติมคลาส hkp-active ให้ body → print.css ซ่อน body.hkp-active>*:not(.hkp-root)
+      // (ผูกกับคลาสนี้เท่านั้น เพื่อไม่กระทบหน้าที่พิมพ์ตัวเอง เช่น book ที่ไม่มี .hkp-root)
       root.setAttribute("data-hkp-print", "1");
-      var cleanup = function () { try { document.body.removeChild(root); } catch (e) {} document.title = prevTitle; window.removeEventListener("afterprint", cleanup); };
+      document.body.classList.add("hkp-active");
+      var cleanup = function () { try { document.body.removeChild(root); } catch (e) {} document.body.classList.remove("hkp-active"); document.title = prevTitle; window.removeEventListener("afterprint", cleanup); };
       window.addEventListener("afterprint", cleanup);
       setTimeout(function () { window.print(); }, 60);
     },

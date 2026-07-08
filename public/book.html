@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@400;500;600;700&display=optional" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/hk-print.css?v=2"/>
 <style>
   /* fonts · matches /article/geometry */
   :root{
@@ -120,6 +121,8 @@
   .badge.degraded{color:#b06a1a;border-color:#e5c48a}
   .notready{color:var(--muted);font-style:italic;padding:8px 0}
   .foot{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 50px}
+  .book-dlbar{display:flex;justify-content:center;padding:8px 0 60px}
+  .book-dlbar .pbtn{height:38px;padding:0 22px;font-size:13px}
   /* ===== modal สร้างเล่มใหม่ (r402 · ย้ายจาก fusion) ===== */
   .cmodal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:18px}
   .cmodal.hidden{display:none}
@@ -163,13 +166,12 @@
 </head>
 <body>
   <div class="topbar noprint">
-    <a class="back" href="/"><span class="seal">幾</span><span>hourkey</span></a>
+    <a class="back" href="/"><span class="seal">時</span><span>hourkey</span></a>
     <div class="top-r">
       <div class="lang-seg" id="langSeg" role="group" aria-label="language">
         <button data-lang="th" class="on">TH</button><button data-lang="en">EN</button><button data-lang="zh-hant">繁</button><button data-lang="cn">简</button><button data-lang="vi">VI</button><button data-lang="ja">JA</button><button data-lang="ru">RU</button><button data-lang="ko">KO</button><button data-lang="es">ES</button>
       </div>
       <button class="tbtn" id="themeBtn" title="Toggle theme" aria-label="toggle theme">☾</button>
-      <button class="pbtn printbtn" id="printBtn" data-i="print">📥 บันทึก PDF</button>
     </div>
   </div>
 
@@ -178,6 +180,11 @@
       <div class="spinner"></div>
       <div data-i="loadingText">กำลังเปิดหนังสือ…</div>
     </div>
+  </div>
+
+  <!-- ปุ่มบันทึก PDF ย้ายมาไว้ล่างสุด (ไม่รบกวน topbar) · noprint · เข้าธีม -->
+  <div class="book-dlbar noprint">
+    <button class="pbtn printbtn" id="printBtn" data-i="print">📥 บันทึก PDF</button>
   </div>
 
   <!-- r402 · หน้าต่างสร้างคัมภีร์เล่มใหม่ (ย้ายจาก fusion) · เลือกดวง + ติ๊กศาสตร์ + หลอมรวม + ยามรวมสด -->

@@ -5,6 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title data-i18n="page.title">ซินแส Fusion · hourkey</title>
+  <link rel="stylesheet" href="/css/hk-print.css?v=2"/>
+  <script src="/js/hk-print.js?v=2" defer></script>
   <style>
     :root{
       --bg:#0e1014;
@@ -967,6 +969,21 @@
       [data-theme="light"] body.hk-answer-mode:not(.hk-ask-open) .composer{background:rgba(255,253,248,.96)}
       body.hk-answer-mode .rb{max-width:94%;font-size:14.5px;line-height:1.75}
     }
+    /* ⬇ ดาวน์โหลด PDF — ปุ่ม inline ล่างสุดของผลลัพธ์ (ไม่แตะ topbar) · เข้าธีม */
+    .dl-pdf-wrap{display:flex;justify-content:center;padding:6px 0 4px}
+    .dl-pdf-wrap .btn{min-height:40px;padding:0 20px;font-size:13px}
+    /* กระดาษ PDF (.hkp-root) ซ่อนบนจอเสมอ · โผล่เฉพาะตอนพิมพ์ผ่านปุ่มดาวน์โหลด */
+    .hkp-root{display:none}
+    /* กระดาษ = พื้นขาว → บังคับสีตัวแปรธีมเป็นชุดพิมพ์ (กันตัวหนังสือธีมมืดจางบนขาว) · ใช้ซ้ำ .md-*/.res-*/.snp- เดิม */
+    .hkp-page{--text:#1a1d24;--muted:#5f5847;--faint:#8a8270;--gold:#8a6d2a;--line:#e5ddc9;--panel:#f5efe0;--panel-2:#fffdf7;--warn:#b03a2e}
+    .hkp-page .md-tw{overflow:visible}
+    .hkp-page .md-h{color:#8a6d2a}
+    .hkp-page .res-details{display:block}
+    .hkp-page .res-details summary{display:none}
+    @media print{
+      body.hkp-printing > *:not(.hkp-root){display:none!important}
+      body.hkp-printing .hkp-root{display:block!important}
+    }
   </style>
 </head>
 <body>
@@ -1100,6 +1117,9 @@
           <div id="fusion5-result"></div>
           <div id="resonance-card" class="hidden"></div>
           <div id="sniper-card" class="hidden"></div>
+          <div class="dl-pdf-wrap hidden noprint" id="download-pdf-wrap">
+            <button class="btn" id="download-pdf" type="button" data-i18n="dl.pdf">⬇ ดาวน์โหลด PDF</button>
+          </div>
           <div class="chat" id="chat"></div>
           <div id="fusion-meta"></div>
           <div class="composer hidden" id="composer">
@@ -1177,7 +1197,7 @@
     // ===== i18n =====
     var I18N = {
       th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 6 ศาสตร์','hero.sub':'หลอมรวม 6 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท · ยูเรเนียน — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยว ดูคู่ หรือกลุ่ม 3-4 ดวง',
-        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','ask.edit':'แก้คำถาม','result.title':'คำพยากรณ์','read.back':'กลับไปดูคำพยากรณ์','book.make':'📜 สร้างคัมภีร์ชะตา','book.pickTitle':'📜 สร้างคัมภีร์ชะตา','book.pickSub':'ติ๊กเลือกศาสตร์ที่จะเขียน · แต่ละบทมีภาพพื้นดวง','book.synth':'บทหลอมรวม (ต้องเลือก ≥2 ศาสตร์)','book.total':'รวมยาม','book.confirm':'สร้างคัมภีร์','book.cancel':'ยกเลิก','book.noSci':'เลือกอย่างน้อย 1 ศาสตร์','book.openExisting':'มีเล่มอยู่แล้ว — 📖 เปิดอ่าน (ไม่หักยาม)','book.chooseSelf':'เลือกดวงของคุณก่อน (คัมภีร์ = ดวงเดี่ยว)','book.singleOnly':'คัมภีร์รองรับดวงเดี่ยว — สลับเป็นโหมดเดี่ยวก่อน','book.creating':'⏳ กำลังสร้างคัมภีร์…',
+        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','ask.edit':'แก้คำถาม','result.title':'คำพยากรณ์','dl.pdf':'⬇ ดาวน์โหลด PDF','read.back':'กลับไปดูคำพยากรณ์','book.make':'📜 สร้างคัมภีร์ชะตา','book.pickTitle':'📜 สร้างคัมภีร์ชะตา','book.pickSub':'ติ๊กเลือกศาสตร์ที่จะเขียน · แต่ละบทมีภาพพื้นดวง','book.synth':'บทหลอมรวม (ต้องเลือก ≥2 ศาสตร์)','book.total':'รวมยาม','book.confirm':'สร้างคัมภีร์','book.cancel':'ยกเลิก','book.noSci':'เลือกอย่างน้อย 1 ศาสตร์','book.openExisting':'มีเล่มอยู่แล้ว — 📖 เปิดอ่าน (ไม่หักยาม)','book.chooseSelf':'เลือกดวงของคุณก่อน (คัมภีร์ = ดวงเดี่ยว)','book.singleOnly':'คัมภีร์รองรับดวงเดี่ยว — สลับเป็นโหมดเดี่ยวก่อน','book.creating':'⏳ กำลังสร้างคัมภีร์…',
         'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','palmScan':'แตะไปสแกนลายมือก่อน','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้',
         'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด',
         'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว','res.struct':'พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ)',
@@ -1200,7 +1220,7 @@
         'prg.ok':'เสร็จ','prg.fail':'ไม่สำเร็จ','prg.skipped':'ข้าม','prg.running':'กำลังอ่าน','prg.queued':'รอคิว','prg.waitAnswer':'กำลังรอคำตอบ','prg.waitStart':'รอเริ่ม','prg.phase.panel':'อ่านรายศาสตร์','prg.phase.judge':'หลอมคำฟันธง','prg.phase.done':'เสร็จสิ้น','prg.phase.queued':'รอคิว',
         'page.title':'ซินแส Fusion · hourkey','modal.aiTitle':'คำตอบ AI','chat.threadNote':'มีบริบทบทสนทนาเดิม {n} รอบสำหรับถามต่อ · คำตอบเก่าจะไม่แสดงจนกดโชว์จากประวัติ' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'6-Science Reading','hero.sub':'Fuse 6 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic · Uranian — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
-        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading','book.make':'📜 Create Book of Destiny','book.pickTitle':'📜 Create Book of Destiny','book.pickSub':'Pick the sciences to include · each chapter shows its natal chart','book.synth':'Synthesis chapter (needs 2+ sciences)','book.total':'Total','book.confirm':'Create book','book.cancel':'Cancel','book.noSci':'Pick at least 1 science','book.openExisting':'A book already exists — 📖 Open it (no charge)','book.chooseSelf':'Pick your chart first (book = single chart)','book.singleOnly':'Book supports a single chart — switch to Single mode first','book.creating':'⏳ Creating your book…',
+        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','dl.pdf':'⬇ Download PDF','read.back':'Back to reading','book.make':'📜 Create Book of Destiny','book.pickTitle':'📜 Create Book of Destiny','book.pickSub':'Pick the sciences to include · each chapter shows its natal chart','book.synth':'Synthesis chapter (needs 2+ sciences)','book.total':'Total','book.confirm':'Create book','book.cancel':'Cancel','book.noSci':'Pick at least 1 science','book.openExisting':'A book already exists — 📖 Open it (no charge)','book.chooseSelf':'Pick your chart first (book = single chart)','book.singleOnly':'Book supports a single chart — switch to Single mode first','book.creating':'⏳ Creating your book…',
         'soon':'soon','needTime':'needs birth time','palmScan':'Tap to scan your palm first','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
         'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure',
         'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability','res.struct':'Structural overlap (same measurement — not counted as extra evidence)',
@@ -1223,7 +1243,7 @@
         'prg.ok':'done','prg.fail':'failed','prg.skipped':'skipped','prg.running':'reading','prg.queued':'queued','prg.waitAnswer':'waiting for answer','prg.waitStart':'waiting to start','prg.phase.panel':'Reading each science','prg.phase.judge':'Fusing the verdict','prg.phase.done':'Done','prg.phase.queued':'Queued',
         'page.title':'Fusion Master · hourkey','modal.aiTitle':'AI answer','chat.threadNote':'This room carries {n} previous turns of context · older answers stay hidden until opened from history' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'六術合參','hero.sub':'融合六種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 · 天王星占星(漢堡學派) — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
-        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷','book.make':'📜 生成命書','book.pickTitle':'📜 生成命書','book.pickSub':'勾選要收錄的術數 · 每章附命盤圖','book.synth':'融合章（需選 2 術以上）','book.total':'合計','book.confirm':'生成命書','book.cancel':'取消','book.noSci':'至少選 1 術','book.openExisting':'已有命書 — 📖 開啟閱讀（不扣時數）','book.chooseSelf':'請先選擇命盤（命書＝單盤）','book.singleOnly':'命書僅支援單盤 — 請先切換為單看','book.creating':'⏳ 正在生成命書…',
+        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','dl.pdf':'⬇ 下載 PDF','read.back':'返回論斷','book.make':'📜 生成命書','book.pickTitle':'📜 生成命書','book.pickSub':'勾選要收錄的術數 · 每章附命盤圖','book.synth':'融合章（需選 2 術以上）','book.total':'合計','book.confirm':'生成命書','book.cancel':'取消','book.noSci':'至少選 1 術','book.openExisting':'已有命書 — 📖 開啟閱讀（不扣時數）','book.chooseSelf':'請先選擇命盤（命書＝單盤）','book.singleOnly':'命書僅支援單盤 — 請先切換為單看','book.creating':'⏳ 正在生成命書…',
         'soon':'即將推出','needTime':'需出生時間','palmScan':'先點此掃描手相','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
         'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓',
         'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定','res.struct':'結構性重合（同一量測 · 不重複計證）',
@@ -2476,7 +2496,7 @@
       var tabs = [];
       if (hasJudge) tabs.push({ key:'judge', label:t('tab.judge'), ai:'Claude', ok:true, judge:true });
       panels.forEach(function(p){ tabs.push({ key:p.science, label:sciLabel(p.science), ai:(DISCIPLINES[p.science]||{}).ai||p.model||'', ok:p.ok, judge:false }); });
-      if (!tabs.length) { els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>'; return; }
+      if (!tabs.length) { els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>'; toggleDownloadPdf(false); return; }
       var keys = tabs.map(function(x){ return x.key; });
       if (keys.indexOf(state.activeTab) === -1) state.activeTab = hasJudge ? 'judge' : keys[0];
       var bar = tabs.map(function(x){
@@ -2491,6 +2511,12 @@
         + (groupSkip.length ? '<div class="skip-note">' + esc(t('skipGroup')) + '</div>' : '');
       els.result.innerHTML = '<div class="result-tabs">' + bar + '</div><div class="result-content" id="rc-body"></div>' + skipHtml;
       renderTabBody(data);
+      toggleDownloadPdf(true); // ⬇ มีคำพยากรณ์แล้ว → โชว์ปุ่มดาวน์โหลด PDF ล่างสุด
+    }
+    // แสดง/ซ่อนปุ่ม ⬇ ดาวน์โหลด PDF (ล่างสุดของผลลัพธ์)
+    function toggleDownloadPdf(show){
+      var w = document.getElementById('download-pdf-wrap');
+      if (w) w.classList.toggle('hidden', !show);
     }
     function renderTabBody(data){
       var body = document.getElementById('rc-body');
@@ -2858,13 +2884,111 @@
       a.remove();
       setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
     }
-    function printPdf(row){
+    // ===== ⬇ ดาวน์โหลด PDF — ประกอบรายงานหลอมรวมเป็นหน้ากระดาษ A4 (HKPrint · window.print · CSP-safe · ไม่แตะ engine) =====
+    // มินิผังต่อศาสตร์ = ภาพประกอบตกแต่งหัวแผง (ยกจาก mockup /export-preview · ไม่ใช่ข้อมูลคำนวณจริง)
+    var FUSION_MINI = {
+      bazi: '<svg viewBox="0 0 300 96" width="280" role="img" aria-label="ภาพประกอบผังปาจื้อ"><g text-anchor="middle" font-size="20" fill="#fff"><g><rect x="10" y="12" width="64" height="72" rx="6" fill="#fefcf5" stroke="#e5ddc9"/><circle cx="42" cy="34" r="15" fill="#5a8a48"/><text x="42" y="41">甲</text><circle cx="42" cy="64" r="15" fill="#4a6f8a"/><text x="42" y="71">子</text></g><g><rect x="82" y="12" width="64" height="72" rx="6" fill="#fefcf5" stroke="#e5ddc9"/><circle cx="114" cy="34" r="15" fill="#b03a2e"/><text x="114" y="41">丙</text><circle cx="114" cy="64" r="15" fill="#4a6f8a"/><text x="114" y="71">子</text></g><g><rect x="154" y="10" width="64" height="76" rx="6" fill="#fbf3dd" stroke="#c8a44d" stroke-width="2"/><circle cx="186" cy="34" r="15" fill="#9a7d3a"/><text x="186" y="41">己</text><circle cx="186" cy="64" r="15" fill="#4a6f8a"/><text x="186" y="71">亥</text></g><g><rect x="226" y="12" width="64" height="72" rx="6" fill="#fefcf5" stroke="#e5ddc9"/><circle cx="258" cy="34" r="15" fill="#c9a94d"/><text x="258" y="41">庚</text><circle cx="258" cy="64" r="15" fill="#b03a2e"/><text x="258" y="71">午</text></g></g></svg>',
+      qizheng: '<svg viewBox="0 0 300 96" width="280" role="img" aria-label="ภาพประกอบดาวจริงบนสุริยวิถี"><rect x="1" y="1" width="298" height="94" rx="8" fill="#161a24"/><path d="M12 68 Q150 20 288 68" fill="none" stroke="#3a4152" stroke-width="2"/><g font-size="12" text-anchor="middle"><circle cx="48" cy="60" r="10" fill="#f0c14b"/><text x="48" y="64" font-size="11" fill="#161a24">☉</text><text x="48" y="84" font-size="8" fill="#c8a44d">磨羯</text><circle cx="110" cy="40" r="8" fill="#d8d8e0"/><text x="110" y="44" font-size="10" fill="#161a24">☽</text><text x="110" y="28" font-size="8" fill="#8fb0c4">財</text><circle cx="176" cy="34" r="8" fill="#9a7d3a"/><text x="176" y="38" font-size="9" fill="#fff">木</text><text x="176" y="22" font-size="8" fill="#c9b06a">官</text><circle cx="228" cy="52" r="7" fill="#b03a2e"/><text x="228" y="56" font-size="9" fill="#fff">火</text><circle cx="264" cy="62" r="6" fill="#8fb0c4"/><text x="264" y="66" font-size="8" fill="#161a24">水</text></g></svg>',
+      ziwei: '<svg viewBox="0 0 160 160" width="150" role="img" aria-label="ภาพประกอบ 12 เรือนจื่อเวย"><circle cx="80" cy="80" r="70" fill="#fefcf5" stroke="#c8a44d"/><circle cx="80" cy="80" r="30" fill="#fbf3dd" stroke="#e5ddc9"/><g stroke="#e5ddc9"><line x1="80" y1="10" x2="80" y2="150"/><line x1="10" y1="80" x2="150" y2="80"/><line x1="30" y1="30" x2="130" y2="130"/><line x1="130" y1="30" x2="30" y2="130"/><line x1="45" y1="14" x2="115" y2="146"/><line x1="115" y1="14" x2="45" y2="146"/><line x1="14" y1="45" x2="146" y2="115"/><line x1="14" y1="115" x2="146" y2="45"/></g><text x="80" y="78" text-anchor="middle" font-size="12" fill="#8a6d2a">命宮</text><text x="80" y="92" text-anchor="middle" font-size="12" fill="#b03a2e">天府</text><g font-size="8" fill="#5f5847" text-anchor="middle"><text x="80" y="24">財帛</text><text x="128" y="52">官祿</text><text x="140" y="84">遷移</text><text x="128" y="120">交友</text><text x="80" y="146">田宅</text><text x="32" y="120">福德</text><text x="20" y="84">父母</text><text x="32" y="52">兄弟</text></g></svg>',
+      western: '<svg viewBox="0 0 160 160" width="150" role="img" aria-label="ภาพประกอบวงล้อราศีตะวันตก"><circle cx="80" cy="80" r="70" fill="none" stroke="#c8a44d" stroke-width="2"/><circle cx="80" cy="80" r="52" fill="none" stroke="#e5ddc9"/><g stroke="#e5ddc9"><line x1="80" y1="10" x2="80" y2="150"/><line x1="10" y1="80" x2="150" y2="80"/><line x1="30" y1="30" x2="130" y2="130"/><line x1="130" y1="30" x2="30" y2="130"/><line x1="46" y1="16" x2="114" y2="144"/><line x1="114" y1="16" x2="46" y2="144"/><line x1="16" y1="46" x2="144" y2="114"/><line x1="16" y1="114" x2="144" y2="46"/></g><g font-size="13" text-anchor="middle" fill="#8a6d2a"><text x="112" y="130">☉</text><text x="52" y="40">♃</text><text x="128" y="70">♄</text></g><circle cx="80" cy="80" r="10" fill="#fbf3dd" stroke="#c8a44d"/><text x="80" y="84" text-anchor="middle" font-size="9" fill="#8a6d2a">♑</text></svg>',
+      vedic: '<svg viewBox="0 0 150 150" width="140" role="img" aria-label="ภาพประกอบผังเวท"><rect x="8" y="8" width="134" height="134" fill="#fefcf5" stroke="#c8a44d" stroke-width="2"/><path d="M8 8 L142 142 M142 8 L8 142" stroke="#e5ddc9"/><path d="M75 8 L142 75 L75 142 L8 75 Z" stroke="#e5ddc9" fill="none"/><g font-size="9" fill="#5f5847" text-anchor="middle"><text x="75" y="30">Lagna</text><text x="128" y="78">7</text><text x="22" y="78">Guru</text><text x="75" y="128">6</text></g><text x="75" y="78" text-anchor="middle" font-size="11" fill="#8a6d2a">Mahadasha</text></svg>',
+      uranian: '<svg viewBox="0 0 200 150" width="190" role="img" aria-label="ภาพประกอบหน้าปัด 90 องศา"><path d="M20 130 A110 110 0 0 1 130 20" fill="none" stroke="#c8a44d" stroke-width="2"/><path d="M20 130 A70 70 0 0 1 90 60" fill="none" stroke="#e5ddc9"/><g stroke="#8a6d2a"><line x1="20" y1="130" x2="34" y2="130"/><line x1="26" y1="96" x2="40" y2="100"/><line x1="45" y1="66" x2="56" y2="76"/><line x1="76" y1="42" x2="84" y2="54"/><line x1="112" y1="27" x2="116" y2="41"/><line x1="130" y1="20" x2="130" y2="34"/></g><line x1="20" y1="130" x2="98" y2="52" stroke="#b03a2e" stroke-width="2.5"/><circle cx="98" cy="52" r="6" fill="#b03a2e"/><text x="104" y="46" font-size="9" fill="#b03a2e">จุดไว</text><g font-size="9" fill="#5f5847"><text x="8" y="145">0°</text><text x="132" y="18">90°</text></g><text x="70" y="110" font-size="10" fill="#8a6d2a">☉/☊/♀</text><text x="50" y="140" font-size="9" fill="#8a6d2a">Halbsumme</text></svg>'
+    };
+    function fusionOwnerNames(){
+      if (state.historyView && state.historyView.names) return String(state.historyView.names);
+      var names = (typeof selectedProfileIds === 'function' ? selectedProfileIds() : []).map(function(id){
+        var p = profileById(id); return p ? String(p.nickname || p.name || '') : '';
+      }).filter(Boolean);
+      if (typeof selectedGuests === 'function') selectedGuests().forEach(function(g){ names.push('🎴' + (g.name ? String(g.name) : t('guest.namePh'))); });
+      return names.join(' + ') || '—';
+    }
+    function hkSciCard(title, ai, bodyHtml, mini){
+      return HKPrint.section(title + (ai ? '  ·  AI ' + ai : ''), '') +
+        (mini ? '<div style="text-align:center;margin:2px 0 10px">' + mini + '</div>' : '') +
+        '<div class="hkp-card">' + bodyHtml + '</div>';
+    }
+    function hkOpenDetails(html){ return String(html == null ? '' : html).replace(/<details/g, '<details open'); } // ตาราง res/sniper อยู่ใน <details> พับ — กางให้เห็นครบตอนพิมพ์
+    function hkPrintOpen(opts){
+      document.body.classList.add('hkp-printing');
+      window.addEventListener('afterprint', function h(){ document.body.classList.remove('hkp-printing'); window.removeEventListener('afterprint', h); });
+      HKPrint.open(opts);
+    }
+    function printPdfFallback(title, md){ // เผื่อ hk-print.js โหลดไม่ทัน — ยังได้ไฟล์ (ไม่ค้าง)
       var w = window.open('', '_blank');
-      if (!w) { setStatus('เปิดหน้าพิมพ์ PDF ไม่สำเร็จ', 'err'); return; }
-      w.document.write('<!doctype html><title>Fusion History</title><style>body{font-family:system-ui,sans-serif;line-height:1.65;padding:28px;max-width:900px;margin:auto}pre{white-space:pre-wrap}</style><h1>Fusion History</h1><pre>' + esc(markdownForHistory(row)) + '</pre>');
-      w.document.close();
-      w.focus();
+      if (!w) { setStatus(t('jobError'), 'err'); return; }
+      w.document.write('<!doctype html><title>' + esc(title) + '</title><style>body{font-family:"Noto Serif Thai","Noto Serif TC",serif;line-height:1.65;padding:28px;max-width:900px;margin:auto}pre{white-space:pre-wrap}</style><h1>' + esc(title) + '</h1><pre>' + esc(md) + '</pre>');
+      w.document.close(); w.focus();
       setTimeout(function(){ w.print(); }, 250);
+    }
+    // ⬇ ดาวน์โหลด PDF ของคำพยากรณ์ปัจจุบัน (judge + 6 แผงศาสตร์ + Resonance + Day Sniper + ศาสตร์ที่ข้าม)
+    function exportFusionPdf(){
+      var data = state.result, f = (data && data.fusion5) || {};
+      var panels = Array.isArray(f.panels) ? f.panels : [];
+      if (!data || (!data.reply && !panels.length)) { setStatus(t('resultEmpty'), 'err'); return; }
+      if (!window.HKPrint) { printPdfFallback(t('result.title'), (data.reply || '')); return; }
+      var res = state.resonance;
+      var names = fusionOwnerNames();
+      var q = (typeof summaryQuestionText === 'function') ? summaryQuestionText() : '';
+      var sciLine = panels.map(function(p){ return sciLabel(p.science); }).join(' · ');
+      var pages = [];
+      // หน้า Judge (คำฟันธงหลอมรวม)
+      if (data.reply && f.judge && f.judge.ok) {
+        pages.push({ sections:[ HKPrint.section(t('judgeTitle'), ''), '<div class="hkp-card">' + mdSafe(data.reply) + '</div>' ] });
+      }
+      // แผงศาสตร์ (2 ศาสตร์ต่อหน้า เหมือน mockup) — ครบทุกศาสตร์ที่รัน
+      var cards = panels.map(function(p){
+        var ai = (DISCIPLINES[p.science] || {}).ai || p.model || '';
+        var body = (p.ok && p.reply) ? mdSafe(p.reply)
+          : '<div class="md-p">' + esc((state.locale === 'th' ? 'ศาสตร์นี้อ่านไม่สำเร็จ: ' : 'panel failed: ') + (p.error || 'error')) + '</div>';
+        return hkSciCard(sciLabel(p.science), ai, body, FUSION_MINI[p.science] || '');
+      });
+      for (var i = 0; i < cards.length; i += 2) pages.push({ sections: cards.slice(i, i + 2) });
+      // Resonance R1–R6
+      if (res && resonanceHasContent(res)) {
+        pages.push({ sections:[ HKPrint.section(t('res.title'), ''), hkOpenDetails(resonanceBodyHtml(res)) ] });
+      }
+      // Day Sniper (วันลั่นไก)
+      var ds = res && res.daySniper;
+      if (ds && sniperHasContent(ds)) {
+        var p0 = (Array.isArray(ds.perPerson) ? ds.perPerson : []).filter(Boolean)[0];
+        if (p0) pages.push({ sections:[ HKPrint.section(t('ds.title'), ''), hkOpenDetails(sniperPersonHtml(ds, p0, false)) ] });
+      }
+      // ศาสตร์ที่ข้าม (transparency)
+      var skip = Array.isArray(f.skipped) ? f.skipped : [];
+      if (skip.length) {
+        pages.push({ sections:[ HKPrint.section(t('skipPrefix'), '<div class="hkp-card"><p>' + esc(skip.map(sciLabel).join(', ')) + '</p></div>') ] });
+      }
+      var cover = {
+        kick: 'ดูดวงรวม · Fusion',
+        title: t('result.title'),
+        who: names,
+        metaHtml: esc(sciLine) + (q ? '<br>' + esc(t('ask.question') + ': ' + q) : ''),
+        badge: '✓ hourkey · TST verified',
+        qrLabel: 'hourkey.io'
+      };
+      hkPrintOpen({ docTitle: names + ' · ' + t('result.title'), headTitle: 'ดูดวงรวม · ' + names, cover: cover, pages: pages });
+    }
+    // ดาวน์โหลด PDF จากประวัติ (คำฟันธง + คำตอบรายศาสตร์เท่าที่บันทึกไว้) — แทน <pre> dump เดิม
+    function printPdf(row){
+      if (!window.HKPrint) { printPdfFallback(t('hist.title'), markdownForHistory(row)); return; }
+      var fusion = fusionFromHistory(row);
+      var answers = fusionAnswers(fusion);
+      var profile = metaObj(row.profile_snapshot || fusion.profile_snapshot);
+      var who = profile.nickname || profile.name || profile.name_line || '—';
+      var pages = [];
+      if (row.answer) pages.push({ sections:[ HKPrint.section(t('judgeTitle'), ''), '<div class="hkp-card">' + mdSafe(row.answer) + '</div>' ] });
+      var cards = answers.map(function(item){ return hkSciCard(answerName(item), modelShortName(item.model), mdSafe(item.reply || ''), ''); });
+      for (var i = 0; i < cards.length; i += 2) pages.push({ sections: cards.slice(i, i + 2) });
+      var cover = {
+        kick: 'ดูดวงรวม · Fusion',
+        title: t('hist.title'),
+        who: who,
+        metaHtml: esc(rowDate(row)) + '<br>' + esc(runReceipt(row)),
+        sub: String(row.question || '').slice(0, 200),
+        badge: '✓ hourkey · TST verified',
+        qrLabel: 'hourkey.io'
+      };
+      hkPrintOpen({ docTitle: who + ' · ' + t('hist.title'), headTitle: 'ดูดวงรวม · ' + who, cover: cover, pages: pages });
     }
     // ===== r385 · ห้องแชทต่อเนื่อง (chat room) — UI ล้วน · ใช้กลไก context เดิม (history 6 รอบ + threadId) · backend ไม่แตะ =====
     var roomEls = { head:$('room-head'), log:$('room-log'), composer:$('composer'), composerInput:$('composer-input'), composerSend:$('composer-send') };
@@ -3696,6 +3820,7 @@
     }
     if (els.progress) els.progress.addEventListener('click', toggleProgressFold);
     els.send.addEventListener('click', send);
+    (function(){ var dl = $('download-pdf'); if (dl) dl.addEventListener('click', exportFusionPdf); })(); // ⬇ ดาวน์โหลด PDF ผลปัจจุบัน
     document.addEventListener('click', function(e){
       var btn = e.target && e.target.closest ? e.target.closest('[data-answer-id]') : null;
       if (btn) {
@@ -3765,6 +3890,7 @@
       state.result = null;
       renderResonance(null);
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+      toggleDownloadPdf(false); // ⬇ ล้างผล → ซ่อนปุ่มดาวน์โหลด PDF
       setStatus('');
       setRunState(t('state.idle'));
       setAnswerMode(false); // r374: ล้าง → การ์ดถามกลับเต็ม

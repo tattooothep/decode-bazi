@@ -346,6 +346,7 @@
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 <script src="/js/hk-tongshu-dict.js?v=1" defer></script>
+<link rel="stylesheet" href="/css/hk-print.css?v=2">
 </head>
 <body>
 
@@ -362,6 +363,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="cal.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="cal.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="cal.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="cal.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -453,6 +455,12 @@
     <div class="side-panel" id="side-panel">
       <!-- dynamic -->
     </div>
+  </div>
+
+  <!-- 8 ก.ค. · ปุ่ม export PDF · ล่างสุดของบล็อกผลลัพธ์ (ไม่รบกวน layout เดิม) · additive -->
+  <div class="cal-pdf-row noprint" style="text-align:center;margin:26px 0 10px;">
+    <button id="cal-pdf-btn" onclick="exportCalendarPdf()" data-i18n="cal.pdf.btn"
+      style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">⬇ ดาวน์โหลด PDF (ทั้งเดือน)</button>
   </div>
 </div>
 
@@ -2154,6 +2162,187 @@
       await loadMonth(CUR_YEAR, CUR_MONTH);
     }
   })();
+
+  /* ═══ 8 ก.ค. · Export PDF (A4 แนวนอน · land:true) · additive · ดึงจาก MONTH_DATA/state จริง · ไม่ re-fetch ═══ */
+  function exportCalendarPdf(){
+    var lang = (function(){ var l = getRawLang(); return (l==='th'||l==='zh') ? l : 'en'; })();
+    var L = function(o){ return (o && (o[lang]!=null ? o[lang] : o.en)) || ''; };
+    var md = MONTH_DATA || {};
+    var days = md.days || [];
+    if (!days.length){
+      alert(L({ th:'ยังไม่มีข้อมูลเดือนนี้ — กรุณาเลือก/โหลดเดือนก่อนดาวน์โหลด PDF',
+                en:'No month data yet — please pick/load a month before downloading the PDF.',
+                zh:'尚無本月資料 — 請先選擇/載入月份再下載 PDF。' }));
+      return;
+    }
+    if (typeof window.HKPrint === 'undefined'){
+      alert(L({ th:'ตัวช่วย PDF ยังโหลดไม่เสร็จ ลองใหม่อีกครั้ง',
+                en:'PDF helper not ready yet, please try again.',
+                zh:'PDF 元件尚未就緒，請稍後再試。' }));
+      return;
+    }
+    var esc = window.HKPrint.esc;
+    var isTongshu = state.overlay === 'tongshu';
+    var tpLang = (lang==='th'||lang==='zh') ? lang : 'en';
+    var term1 = function(t){
+      if(!t) return '';
+      var p = window.HK_termPair ? window.HK_termPair(t, tpLang) : { han:t, th:'' };
+      return lang==='zh' ? (p.han||t) : (p.th || p.han || t);
+    };
+    var starName = function(s){ try { return _calStarName(s, lang); } catch(_){ return (s&&(s.name_th||s.han||s.key))||''; } };
+
+    /* ── หัวเรื่อง/ปก ── */
+    var MONTH_EN = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+    var monthName = L({ th: MONTH_TH[md.month] || ('เดือน '+md.month), en: MONTH_EN[md.month] || ('Month '+md.month), zh: (md.month||'')+'月' });
+    var yearShown = lang==='th' ? ((md.year||0)+543) : md.year;
+    var monthYearTitle = monthName + ' ' + yearShown;
+    var jqList = md.jieqi_list || [];
+    var jqMeta = jqList.length
+      ? jqList.map(function(j){ return esc(j.name)+' ('+esc((md.month||'?')+'/'+j.day)+')'; }).join(' · ')
+      : esc((md.jieqi_current||'—')+' → '+(md.jieqi_next||'—'));
+    var metaHtml = L({th:'干支ปี: ',en:'Year pillar: ',zh:'年柱：'}) + esc(md.year_pillar||'—')
+      + ' · ' + L({th:'เสาเดือน: ',en:'Month pillar: ',zh:'月柱：'}) + esc(md.month_pillar||'—')
+      + '<br>' + L({th:'節氣ในเดือน: ',en:'Solar terms: ',zh:'本月節氣：'}) + jqMeta;
+    var overlayWho = isTongshu
+      ? L({th:'โหมด: ทั่วไป 黃曆 (ทุกคนเหมือนกัน)',en:'Mode: Universal 黃曆 (same for all)',zh:'模式：通用黃曆（人人相同）'})
+      : L({th:'โหมด: ดวงฉัน · 日主 ',en:'Mode: Personal · Day Master ',zh:'模式：個人 · 日主'}) + (SELF_DM||'');
+
+    /* ── สไตล์ตารางปฏิทินสี (self-contained · print colors) ── */
+    var GRID_CSS = '<style>'
+      + '.hkpc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:6px 0 10px}'
+      + '.hkpc-h{background:#f5efe0;color:#8a6d2a;font-weight:700;text-align:center;font-size:11px;padding:5px 0;border-radius:4px;font-family:"Noto Serif Thai","Noto Serif TC",serif}'
+      + '.hkpc-d{border:1px solid #e5ddc9;border-radius:5px;min-height:72px;padding:4px 6px;background:#fefcf5;font-size:9.5px;color:#5f5847;position:relative;font-family:"Noto Serif Thai","Noto Serif TC",serif}'
+      + '.hkpc-d.good{background:rgba(90,138,72,.11);border-color:rgba(90,138,72,.45)}'
+      + '.hkpc-d.mid{background:rgba(154,125,58,.11);border-color:rgba(154,125,58,.45)}'
+      + '.hkpc-d.bad{background:rgba(176,58,46,.10);border-color:rgba(176,58,46,.45)}'
+      + '.hkpc-d.dim{background:#f4f1e8;color:#b8b09a}'
+      + '.hkpc-n{font-size:14px;font-weight:700;color:#1a1d24}'
+      + '.hkpc-lun{color:#8a6d2a;font-family:"Noto Serif TC",serif}'
+      + '.hkpc-sc{position:absolute;right:4px;top:3px;font-size:9px;color:#fff;background:#5a8a48;border-radius:8px;padding:0 5px}'
+      + '.hkpc-d.bad .hkpc-sc{background:#b03a2e}.hkpc-d.mid .hkpc-sc{background:#9a7d3a}'
+      + '.hkpc-gz{font-family:"Noto Serif TC",serif;font-size:12px;color:#1a1d24;margin-top:2px}'
+      + '.hkpc-jq{color:#4a6f8a;font-weight:700;margin-top:1px}'
+      + '.hkpc-yj{margin-top:1px}.hkpc-yi{color:#5a8a48}.hkpc-ji{color:#b03a2e}'
+      + '.hkpc-legend{display:flex;gap:14px;justify-content:center;font-size:10px;color:#5f5847;margin:2px 0 8px;flex-wrap:wrap}'
+      + '.hkpc-legend span{display:inline-flex;align-items:center;gap:5px}'
+      + '.hkpc-legend i{width:13px;height:13px;border-radius:3px;display:inline-block}'
+      + '.hkpc-chip{display:inline-block;border:1px solid #e5ddc9;border-radius:14px;padding:3px 10px;margin:3px 4px 0 0;font-size:11px;color:#3a3730;background:#fefcf5}'
+      + '.hkpc-chip b{color:#8a6d2a}'
+      + '</style>';
+
+    /* ── ตารางปฏิทินทั้งเดือน (visual grid สี) ── */
+    var WD = { th:['อา','จ','อ','พ','พฤ','ศ','ส'], en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], zh:['日','一','二','三','四','五','六'] }[lang] || ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var jqByDay = {}; jqList.forEach(function(j){ jqByDay[j.day] = j.name; });
+    var firstDay = new Date(md.year, (md.month||1)-1, 1).getDay();
+    var cells = WD.map(function(w){ return '<div class="hkpc-h">'+esc(w)+'</div>'; });
+    for (var i=0;i<firstDay;i++) cells.push('<div class="hkpc-d dim"></div>');
+    days.forEach(function(d){
+      var sc = isTongshu ? (d.universal_verdict ? d.universal_verdict.score : null) : (d.verdict ? d.verdict.score : null);
+      var scNum = (sc==null ? 50 : sc);
+      var cls = scNum>=65 ? 'good' : (scNum>=45 ? 'mid' : 'bad');
+      var scLbl = (sc==null ? '—' : Math.round(sc));
+      var lunShort = (d.lunar||'').match(/[初廿卅三十一二三四五六七八九十]+$/);
+      var lun = lunShort ? lunShort[0] : (d.lunar||'').slice(-3);
+      var off = d.day_officer || '';
+      var jq = jqByDay[d.day];
+      var yiFirst = (d.yi && d.yi[0]) ? '宜 '+term1(d.yi[0]) : '';
+      var jiFirst = (d.ji && d.ji[0]) ? '忌 '+term1(d.ji[0]) : '';
+      var yj = yiFirst ? '<span class="hkpc-yi">'+esc(yiFirst)+'</span>'
+             : (jiFirst ? '<span class="hkpc-ji">'+esc(jiFirst)+'</span>' : '');
+      cells.push(
+        '<div class="hkpc-d '+cls+'">'
+        + '<span class="hkpc-sc">'+esc(scLbl)+'</span>'
+        + '<span class="hkpc-n">'+esc(d.day)+'</span> <span class="hkpc-lun">'+esc(lun)+'</span>'
+        + '<div class="hkpc-gz">'+esc((d.stem||'')+(d.branch||''))+(off?'·'+esc(off):'')+'</div>'
+        + (jq ? '<div class="hkpc-jq">🌙'+esc(jq)+'</div>' : '')
+        + '<div class="hkpc-yj">'+yj+'</div>'
+        + '</div>'
+      );
+    });
+    var totalCells = firstDay + days.length;
+    var pad = (Math.ceil(totalCells/7)*7) - totalCells;
+    for (var k=0;k<pad;k++) cells.push('<div class="hkpc-d dim"></div>');
+    var legend = '<div class="hkpc-legend">'
+      + '<span><i style="background:#5a8a48"></i>'+esc(L({th:'วันดี 65+',en:'Good 65+',zh:'吉 65+'}))+'</span>'
+      + '<span><i style="background:#9a7d3a"></i>'+esc(L({th:'ปานกลาง',en:'Neutral',zh:'中等'}))+'</span>'
+      + '<span><i style="background:#b03a2e"></i>'+esc(L({th:'ระวัง',en:'Caution',zh:'謹慎'}))+'</span>'
+      + '<span>🌙 '+esc(L({th:'วัน節氣',en:'Solar term',zh:'節氣'}))+'</span>'
+      + '</div>';
+    var gridNote = '<p style="font-size:10.5px;color:#5f5847;margin-top:4px">'+L({
+        th:'แต่ละช่อง: เลขวัน · จันทรคติ · 干支·建除 · คะแนนมงคล (มุมขวา) · 宜/忌 ย่อ · 🌙=節氣',
+        en:'Each cell: day · lunar · pillar·officer · score (top-right) · yi/ji · 🌙=solar term',
+        zh:'每格：日 · 農曆 · 干支·建除 · 分數(右上) · 宜/忌 · 🌙=節氣' })+'</p>';
+    var gridSection = window.HKPrint.section(
+      L({ th:'🗓 ปฏิทินทั้งเดือน · 建除 + 干支 + 宜忌 + คะแนน', en:'🗓 Full-month calendar · officer + pillar + yi/ji + score', zh:'🗓 全月曆 · 建除 + 干支 + 宜忌 + 分數' }),
+      GRID_CSS + legend + '<div class="hkpc-grid">' + cells.join('') + '</div>' + gridNote
+    );
+
+    /* ── รายการ 節氣 ของเดือน ── */
+    var jqHtml;
+    if (jqList.length){
+      jqHtml = '<table><thead><tr><th>'+esc(L({th:'節氣',en:'Solar term',zh:'節氣'}))+'</th><th>'+esc(L({th:'วันที่',en:'Date',zh:'日期'}))+'</th></tr></thead><tbody>'
+        + jqList.map(function(j){ return '<tr><td><span class="zh">'+esc(j.name)+'</span></td><td>'+esc((md.month||'?')+'/'+j.day)+'</td></tr>'; }).join('')
+        + '</tbody></table>';
+    } else {
+      jqHtml = '<p style="font-size:12px">'+esc(L({th:'節氣 ปัจจุบัน: ',en:'Current term: ',zh:'目前節氣：'}))+esc(md.jieqi_current||'—')+' → '+esc(md.jieqi_next||'—')+'</p>';
+    }
+    var jqSection = window.HKPrint.section(L({ th:'🌗 節氣 ประจำเดือน', en:'🌗 Solar terms of the month', zh:'🌗 本月節氣' }), jqHtml);
+
+    /* ── panel วันที่เลือก (神煞 / 宜忌 เต็ม) ── */
+    var sel = days.find(function(x){ return x.day===state.selected; }) || days[0];
+    var off2 = sel.day_officer || '—';
+    var star12 = sel.twelve_star || '';
+    var uScore = sel.universal_verdict ? sel.universal_verdict.score : '—';
+    var pScore = sel.verdict ? sel.verdict.score : '—';
+    var yiFull = (sel.yi||[]).map(term1).filter(Boolean).join(' · ') || '—';
+    var jiFull = (sel.ji||[]).map(term1).filter(Boolean).join(' · ') || '—';
+    var sd = sel.stars_detail || { good:[], bad:[] };
+    var goodStars = (sd.good||[]).map(starName).filter(Boolean).join(' · ') || '—';
+    var badStars = (sd.bad||[]).map(starName).filter(Boolean).join(' · ') || '—';
+    var goalsObj = isTongshu ? (sel.universal_goals||{}) : (sel.goals||{});
+    var GOAL_LBL = { wealth:{th:'เงิน',en:'Wealth',zh:'財'}, career:{th:'งาน',en:'Career',zh:'業'}, love:{th:'รัก',en:'Love',zh:'情'}, family:{th:'ครอบครัว',en:'Family',zh:'家'}, health:{th:'สุขภาพ',en:'Health',zh:'健'}, travel:{th:'เดินทาง',en:'Travel',zh:'出'} };
+    var goalChips = Object.keys(GOAL_LBL).map(function(g){
+      var gv = goalsObj[g]; if (gv && typeof gv==='object') gv = gv.score;
+      if (gv==null) return '';
+      return '<span class="hkpc-chip"><b>'+esc(L(GOAL_LBL[g]))+'</b> '+esc(Math.round(gv))+'</span>';
+    }).filter(Boolean).join('');
+    var sumHtml = GRID_CSS + '<div class="hkp-sum">'
+      + '<div class="x"><span class="l">'+esc(L({th:'干支 · 建除',en:'Pillar · Officer',zh:'干支·建除'}))+'</span>'+esc((sel.stem||'')+(sel.branch||'')+' · '+off2)+'</div>'
+      + '<div class="x"><span class="l">'+esc(L({th:'黃黑道 (12 星)',en:'12-god (yellow/black road)',zh:'黃黑道'}))+'</span>'+esc(star12||'—')+'</div>'
+      + '<div class="x"><span class="l">'+esc(L({th:'คะแนน สากล / ดวงคุณ',en:'Score · Universal / Personal',zh:'分數 通用/個人'}))+'</span>'+esc(uScore+' / '+pScore)+'</div>'
+      + '<div class="x"><span class="l">'+esc(L({th:'จันทรคติ',en:'Lunar',zh:'農曆'}))+'</span>'+esc(sel.lunar||'—')+'</div>'
+      + '<div class="x"><span class="l">宜 '+esc(L({th:'(เหมาะทำ)',en:'(auspicious)',zh:'(宜)'}))+'</span>'+esc(yiFull)+'</div>'
+      + '<div class="x"><span class="l">忌 '+esc(L({th:'(ห้ามทำ)',en:'(avoid)',zh:'(忌)'}))+'</span>'+esc(jiFull)+'</div>'
+      + '<div class="x"><span class="l">'+esc(L({th:'神煞 มงคล',en:'Auspicious stars',zh:'吉神'}))+'</span>'+esc(goodStars)+'</div>'
+      + '<div class="x"><span class="l">'+esc(L({th:'神煞 อัปมงคล',en:'Inauspicious stars',zh:'凶煞'}))+'</span>'+esc(badStars)+'</div>'
+      + '</div>'
+      + (goalChips ? '<div style="margin-top:8px">'+goalChips+'</div>' : '');
+    var selDateStr = sel.date || ((md.month||'?')+'/'+sel.day+'/'+md.year);
+    var panelSection = window.HKPrint.section(
+      L({ th:'📋 รายละเอียดวันที่เลือก · ', en:'📋 Selected day · ', zh:'📋 所選日期 · ' }) + esc(selDateStr) + ' (' + esc((sel.stem||'')+(sel.branch||'')) + ')',
+      sumHtml
+    );
+
+    /* ── สร้าง PDF · A4 แนวนอน ── */
+    window.HKPrint.open({
+      docTitle: L({ th:'ปฏิทินมงคล ', en:'Tongshu Calendar ', zh:'通勝黃曆 ' }) + monthYearTitle,
+      headTitle: L({ th:'ปฏิทินมงคล 黃曆', en:'Tongshu Almanac', zh:'通勝黃曆' }),
+      cover: {
+        kick: L({ th:'ปฏิทินมงคล · 通勝黃曆', en:'Tongshu Almanac · 通勝黃曆', zh:'通勝黃曆' }),
+        title: monthYearTitle,
+        who: overlayWho,
+        metaHtml: metaHtml,
+        badge: L({ th:'✓ 建除 + 黃黑道 + 神煞 + 宜忌 ครบทุกวัน', en:'✓ Officer + 12-god + stars + yi/ji, every day', zh:'✓ 建除 + 黃黑道 + 神煞 + 宜忌 每日齊全' }),
+        qrLabel: 'hourkey.io/calendar'
+      },
+      pages: [
+        { sections: [ gridSection ] },
+        { sections: [ jqSection, panelSection ] }
+      ],
+      land: true
+    });
+  }
+  window.exportCalendarPdf = exportCalendarPdf;
 </script>
 
 
@@ -2175,6 +2364,7 @@
 /* hourkey · cal · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
   'cal.page.title':  { th:'hourkey · ปฏิทินมงคล · 黃曆', en:'hourkey · Tongshu Calendar', zh:'hourkey · 通書' },
+  'cal.pdf.btn':     { th:'⬇ ดาวน์โหลด PDF (ทั้งเดือน)', en:'⬇ Download PDF (whole month)', zh:'⬇ 下載 PDF（整月）' },
   'cal.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'cal.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
   'cal.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
@@ -2352,5 +2542,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
   [300,900,1800,3000].forEach(function(ms){ setTimeout(fix, ms); });
 })();
 </script>
+<script src="/js/hk-print.js?v=2" defer></script>
 </body>
 </html>

@@ -562,6 +562,8 @@
 </style>
 <link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
+<link rel="stylesheet" href="/css/hk-print.css">
+<script src="/js/hk-print.js"></script>
 </head>
 <body>
 
@@ -578,6 +580,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="q.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="q.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="q.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="q.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -759,6 +762,15 @@
       <!-- 16 พ.ค. 2026: FORECAST panel ลบออก · ย้ายไปหน้า /forecast แล้ว (3 method ritual + AI sifu) -->
     </div>
 
+  </div>
+
+  <!-- ⬇ ดาวน์โหลด PDF · additive · noprint · ท้ายผลลัพธ์ (ไม่แตะ engine/api) -->
+  <div class="qm-pdf-bar noprint" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin:26px 0 8px;">
+    <button type="button" id="qm-pdf-btn"
+      style="display:inline-flex;align-items:center;gap:9px;background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:12px 26px;border-radius:99px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:.2s;font-weight:700;">
+      <span style="font-size:15px;">⬇</span><span data-i18n="q.pdf.download">ดาวน์โหลด PDF</span>
+    </button>
+    <div id="qm-pdf-hint" style="font-family:var(--thai);font-size:11px;color:var(--fg-faint);letter-spacing:0;text-align:center;" data-i18n="q.pdf.hint">พิมพ์ผังฉีเหมิน + คำทำนายซินแส เป็น PDF (A4)</div>
   </div>
 </div>
 
@@ -962,6 +974,10 @@ window.HK_I18N = {
   'q.err.retry':         { th:'กดคำนวณใหม่อีกครั้ง', en:'Tap recalculate to try again', zh:'請按重新計算再試一次' },
   'q.err.pleaseRetry':   { th:'請重試', en:'請重試', zh:'請重試' },
   'q.srch.reading':      { th:'⏳ ซินแสกำลังอ่านผัง...', en:'⏳ Sifu is reading the chart...', zh:'⏳ 師父正在解盤...' },
+  'q.pdf.download':      { th:'ดาวน์โหลด PDF', en:'Download PDF', zh:'下載 PDF' },
+  'q.pdf.hint':          { th:'พิมพ์ผังฉีเหมิน + คำทำนายซินแส เป็น PDF (A4)', en:'Print the Qi Men chart + master reading as PDF (A4)', zh:'將奇門盤 + 師父解讀列印為 PDF（A4）' },
+  'q.pdf.preparing':     { th:'⏳ กำลังเตรียม PDF...', en:'⏳ Preparing PDF...', zh:'⏳ 正在準備 PDF...' },
+  'q.pdf.noChart':       { th:'กรุณาคำนวณผังก่อนดาวน์โหลด', en:'Please calculate a chart first', zh:'請先計算盤局再下載' },
   'q.srch.searching':    { th:'⏳ ค้นหา...', en:'⏳ Searching...', zh:'⏳ 搜尋中...' },
   'q.srch.needOne':      { th:'กรุณาเลือกอย่างน้อย 1 องค์ประกอบ · 門/星/神/三奇', en:'Please pick at least 1 component · 門/星/神/三奇', zh:'請至少選擇 1 項組件 · 門/星/神/三奇' },
   'q.srch.scanRanked':   { th:'สแกน {scanned} ชั่วยาม · จัดอันดับ {matched} ชั่วยาม · top {top}', en:'Scanned {scanned} hours · ranked {matched} hours · top {top}', zh:'掃描 {scanned} 個時辰 · 排序 {matched} 個 · top {top}' },
@@ -4740,6 +4756,263 @@ window.__hkOverlayApply=function(l){
     if (inp) inp.addEventListener('keydown', e => { if (e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); doSend(); }});
   }
   setTimeout(ensureSifuPanel, 1400);
+
+  /* ═══ ⬇ Export PDF (client window.print · HKPrint · additive) ═══════════════
+   * ประกอบรายงานจาก state จริงที่หน้าคำนวณไว้แล้ว = window._qimenLast (chart/palaces)
+   * + window._qimenInput (เวลาตั้งผัง) — ไม่ re-fetch / ไม่ re-stream / ไม่ hardcode ค่า
+   * ทุกค่า (ผัง 9 วัง / ประตู / ดาว / เทพ / ก้าน / คะแนน / คำอ่าน) เปลี่ยนตามผัง user แต่ละคน */
+  function qmPdfWord(th, en, zh){ try { return qmUiWord(th, en, zh); } catch(e){ return th; } }
+  function qmPdfScore(p){ const n = Number(p?.display_score ?? p?.score); return Number.isFinite(n) ? n : null; }
+  function qmPdfVerdict(p, chart){
+    const scoreVC = qimenVerdictClass(p);
+    const reading = qimenApplyChartContextGuard(qimenBeginnerReading(p), chart);
+    const vc = qimenBeginnerVerdictClass(reading, scoreVC);
+    return { vc, label: qimenBeginnerVerdictLabel(reading, vc), reading };
+  }
+  function qmPdfReasonText(r){
+    if (!r) return '';
+    if (typeof r === 'string') return r;
+    return r.text_th || r.th || r.label_th || r.summary_th || r.text || '';
+  }
+  function qmPdfDirLabel(p){
+    return qimenDirectionFullLabel(p.direction) || DIR_TH[p.direction] || p.direction || '';
+  }
+  function exportQimenPdf(){
+    const last = window._qimenLast;
+    if (!last || !Array.isArray(last.palaces) || !last.palaces.length){
+      alert(_qtx('q.pdf.noChart', 'กรุณาคำนวณผังก่อนดาวน์โหลด'));
+      return;
+    }
+    if (!window.HKPrint || typeof HKPrint.open !== 'function'){
+      alert(_qtx('q.pdf.noChart', 'กรุณาคำนวณผังก่อนดาวน์โหลด'));
+      return;
+    }
+    const hintEl = document.getElementById('qm-pdf-hint');
+    const prevHint = hintEl ? hintEl.textContent : '';
+    if (hintEl) hintEl.textContent = _qtx('q.pdf.preparing', '⏳ กำลังเตรียม PDF...');
+    try {
+      const E = HKPrint.esc;
+      const chart = last.chart || {};
+      const palaces = last.palaces;
+      const input = window._qimenInput || {};
+
+      const pole = (chart.dun_type === 'yin' || chart.dun_type === 'YIN') ? '陰' : '陽';
+      const juZh = `${pole}${chart.ju_number || '?'}局`;
+      const dun = (typeof qmStemLabel === 'function' ? qmStemLabel(chart.dun_gan_zh) : chart.dun_gan_zh) || '—';
+      const yuan = chart.yuan_cycle_zh || '—';
+      const dtLabel = (document.getElementById('qm-datetime-th')?.textContent
+        || `${input.date || ''} ${input.time || ''}`).trim();
+      const systemMeta = (typeof qimenSystemMeta === 'function')
+        ? qimenSystemMeta(chart.system_type || input.system_type) : null;
+      const sysLabel = systemMeta ? `${systemMeta.label_th || ''} ${systemMeta.label_zh || ''}`.trim() : '';
+
+      /* ── cover ── */
+      const cover = {
+        kick: qmPdfWord('ฉีเหมินตุ้นเจี่ย · 奇門遁甲', 'Qi Men Dun Jia · 奇門遁甲', '奇門遁甲'),
+        title: qmPdfWord('รายงานผังฉีเหมิน', 'Qi Men Chart Report', '奇門盤報告'),
+        who: dtLabel,
+        meta: [sysLabel, juZh, qmPdfWord('遁干', 'Dun', '遁干') + ' ' + dun,
+               qmPdfWord('ห้วง 元', 'Cycle 元', '元') + ' ' + yuan].filter(Boolean).join(' · '),
+        big: juZh,
+        badge: qmPdfWord('✓ ผังจริงจาก engine ฉีเหมิน', '✓ Real chart from Qi Men engine', '✓ 引擎真實盤局'),
+      };
+
+      /* ── page 2: บริบทเวลา + ผัง 9 วัง ── */
+      const metaSum = `<div class="hkp-sum">
+        <div class="x"><span class="l">${E(qmPdfWord('เวลาตั้งผัง', 'Chart time', '起局時間'))}</span>${E(dtLabel || '—')}</div>
+        <div class="x"><span class="l">${E(qmPdfWord('局', 'Ju', '局'))}</span>${E(juZh)}</div>
+        <div class="x"><span class="l">${E(qmPdfWord('遁干', 'Dun stem', '遁干'))}</span>${E(dun)}</div>
+        <div class="x"><span class="l">${E(qmPdfWord('ห้วง 元', 'Cycle 元', '元'))}</span>${E(yuan)}</div>
+      </div>`;
+
+      const pillars = chart.pillars || {};
+      const pillZh = (k) => { try { return qmPillarDisplay(pillars[k], chart, k).zh; } catch(e){ return '—'; } };
+      let pillarTable = '';
+      if (['year', 'month', 'day', 'hour'].some(k => pillars[k])) {
+        pillarTable = `<table><thead><tr>
+          <th>${E(qmPdfWord('ปี 年', 'Year 年', '年'))}</th><th>${E(qmPdfWord('เดือน 月', 'Month 月', '月'))}</th>
+          <th>${E(qmPdfWord('วัน 日', 'Day 日', '日'))}</th><th>${E(qmPdfWord('ยาม 時', 'Hour 時', '時'))}</th></tr></thead>
+          <tbody><tr>
+          <td class="zh">${E(pillZh('year'))}</td><td class="zh">${E(pillZh('month'))}</td>
+          <td class="zh">${E(pillZh('day'))}</td><td class="zh">${E(pillZh('hour'))}</td></tr></tbody></table>`;
+      }
+
+      const LUOSHU_ORDER = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+      const byId = {}; palaces.forEach(p => { byId[Number(p.palace_id)] = p; });
+      const cells = LUOSHU_ORDER.map(pid => {
+        const p = byId[pid];
+        if (!p) return `<div class="c"><span class="g">—</span></div>`;
+        const { vc } = qmPdfVerdict(p, chart);
+        const isCenter = Number(pid) === 5;
+        const trig = p.trigram_zh || '';
+        const dirTh = qmPdfDirLabel(p);
+        const stem = [p.heaven_stem_zh, p.earth_stem_zh].filter(Boolean).join('/') || '·';
+        const score = qmPdfScore(p);
+        const mainGlyph = isCenter ? (qimenStarZh(p) || '寄坤') : (qimenDoorZh(p) || '—');
+        const starDeity = isCenter
+          ? qmPdfWord('中宮 寄宮', 'Center 寄宮', '中宮·寄')
+          : ([qimenStarZh(p), qimenDeityZh(p)].filter(Boolean).join(' · ') || '—');
+        const scoreLine = (score != null) ? ' · ' + qmPdfWord('คะแนน', 'Score', '分') + ' ' + score : '';
+        return `<div class="c${vc === 'good' ? ' good' : ''}">
+          <span style="display:block;font-size:9px;color:#5f5847">${E(trig)}${trig ? ' ' : ''}${E(pid)} · ${E(dirTh)}</span>
+          <span class="g">${E(mainGlyph)}</span>
+          <span style="display:block;font-size:9.5px;color:#3a3730">${E(starDeity)}</span>
+          <span style="display:block;font-size:10px;color:#8a6d2a">${E(stem)}${E(scoreLine)}</span>
+        </div>`;
+      }).join('');
+      const pal9 = `<div class="hkp-pal9">${cells}</div>`;
+
+      const page2 = { sections: [
+        HKPrint.section(qmPdfWord('บริบทเวลาของผัง · 時空', 'Chart time context · 時空', '時空'), metaSum + pillarTable),
+        HKPrint.section(
+          qmPdfWord('ผัง 9 วัง · 九宮 · ประตู/ดาว/เทพ/ก้าน', 'Nine Palaces · 九宮 · Door/Star/Deity/Stem', '九宮 · 門/星/神/干'),
+          pal9 + `<p style="font-size:11px;color:#5f5847">${E(qmPdfWord(
+            'แต่ละวัง: ทิศ · ประตู(門) · ดาว(星)/เทพ(神) · ก้าน天干 · คะแนน · เขียว = วังเด่น',
+            'Each cell: direction · Door · Star/Deity · Stem · Score · green = strong palace',
+            '每宮：方位·門·星/神·干·分 · 綠=突出之宮'))}</p>`),
+      ]};
+
+      /* ── page 3: เข็มทิศ (visual) + สรุปผัง + caveat ── */
+      const COMPASS = {
+        S:  { x: 100, y: 20,  th: 'ใต้',   zh: '離' }, SW: { x: 156, y: 44,  th: 'หรดี',   zh: '坤' },
+        W:  { x: 180, y: 100, th: 'ตต.',   zh: '兌' }, NW: { x: 156, y: 156, th: 'พายัพ', zh: '乾' },
+        N:  { x: 100, y: 180, th: 'เหนือ', zh: '坎' }, NE: { x: 44,  y: 156, th: 'อีสาน', zh: '艮' },
+        E:  { x: 20,  y: 100, th: 'ตอ.',   zh: '震' }, SE: { x: 44,  y: 44,  th: 'อาคเนย์', zh: '巽' },
+      };
+      let compassNodes = '';
+      Object.keys(COMPASS).forEach(code => {
+        const c = COMPASS[code];
+        const p = palaces.find(x => x.direction === code);
+        let fill = '#efe9d8', txt = '#5f5847';
+        if (p) {
+          const vc = qmPdfVerdict(p, chart).vc;
+          if (vc === 'good') { fill = '#5a8a48'; txt = '#fff'; }
+          else if (vc === 'bad') { fill = '#b03a2e'; txt = '#fff'; }
+        }
+        compassNodes += `<circle cx="${c.x}" cy="${c.y}" r="16" fill="${fill}"/>`
+          + `<text x="${c.x}" y="${c.y + 4}" font-size="9" text-anchor="middle" fill="${txt}">${E(c.th)}${E(c.zh)}</text>`;
+      });
+      const compassSvg = `<div style="text-align:center;margin:8px 0 6px">
+        <svg viewBox="0 0 200 200" width="200" role="img" aria-label="เข็มทิศ 8 ทิศฉีเหมิน">
+          <circle cx="100" cy="100" r="94" fill="#fefcf5" stroke="#c8a44d" stroke-width="2"/>
+          <circle cx="100" cy="100" r="58" fill="none" stroke="#e5ddc9"/>${compassNodes}
+          <circle cx="100" cy="100" r="7" fill="#8a6d2a"/></svg>
+        <div style="font-size:11px;color:#5f5847;margin-top:4px">${E(qmPdfWord(
+          'เขียว = ทิศเด่น (ใช้ได้ดี) · แดง = ทิศเลี่ยง · เทา = ปานกลาง',
+          'Green = strong direction · Red = avoid · Grey = neutral',
+          '綠=吉方 · 紅=避 · 灰=平'))}</div></div>`;
+
+      const outer = palaces.filter(p => Number(p.palace_id) !== 5);
+      const goodDirs = outer.filter(p => qmPdfVerdict(p, chart).vc === 'good')
+        .map(p => `${qmPdfDirLabel(p)}(${qimenDoorZh(p) || ''})`);
+      const badDirs = outer.filter(p => qmPdfVerdict(p, chart).vc === 'bad')
+        .map(p => `${qmPdfDirLabel(p)}(${qimenDoorZh(p) || ''})`);
+      let summaryText;
+      if (goodDirs.length) {
+        summaryText = `${qmPdfWord('ทิศ/วังเด่นในผังนี้', 'Strong directions in this chart', '本盤突出之方位')}: ${goodDirs.join(', ')}.`;
+        if (badDirs.length) summaryText += ` ${qmPdfWord('ควรเลี่ยง', 'Avoid', '宜避')}: ${badDirs.join(', ')}.`;
+      } else if (badDirs.length) {
+        summaryText = `${qmPdfWord('ผังนี้ยังไม่มีทิศ "เด่น" ชัด · ทิศที่ควรเลี่ยง', 'No clearly strong direction; directions to avoid', '本盤無明顯吉方 · 宜避之方位')}: ${badDirs.join(', ')}.`;
+      } else {
+        summaryText = qmPdfWord(
+          'ผังนี้ไม่มีวังที่ให้ฟันธง "เด่น" ชัดเจน ควรอ่านประกอบกับดวงและคำถามจริง',
+          'No palace in this chart is clearly "strong"; read together with the destiny chart and the actual question.',
+          '本盤無明顯突出之宮，宜配合命局與實際問題參看。');
+      }
+      const summaryBlock = HKPrint.verdict(qmPdfWord('สรุปผัง', 'Chart summary', '總結'), summaryText);
+
+      const caveat = HKPrint.card('', `<p>${E(qmPdfWord(
+        'ฉีเหมินเป็นศาสตร์ "จังหวะ + ทิศ" ใช้เสริมการตัดสินใจ ไม่ใช่คำพยากรณ์ตายตัว · ผังนี้ผูกกับเวลาตั้งผัง หากเปลี่ยนเวลา/คำถาม ผังเปลี่ยน · ควรใช้คู่กับดวงปาจื้อและฤกษ์ทงซูเพื่อความรอบด้าน',
+        'Qi Men reads timing and direction to support decisions, not as fixed fate. This chart is tied to its cast time; changing the time or question changes the chart. Use it alongside BaZi and the almanac for a full picture.',
+        '奇門為「時機＋方位」之學，輔助決策而非鐵口直斷。此盤繫於起局之時，時間或問題一改，盤即不同，宜與八字、通書並參。'))}</p>`);
+
+      const page3 = { sections: [
+        HKPrint.section(qmPdfWord('ทิศทำกินในผังนี้', 'Auspicious directions in this chart', '本盤方位'), compassSvg),
+        summaryBlock,
+        HKPrint.section(qmPdfWord('ขอบเขต/ข้อจำกัด', 'Scope & caveats', '範圍與限制'), caveat),
+      ]};
+
+      /* ── page 4: คะแนนวังเด่น (visual) + การ์ดคำอ่านซินแสต่อวัง ── */
+      let cardPalaces = outer.filter(p => {
+        const v = qmPdfVerdict(p, chart).vc;
+        const isLead = (chart.zhi_fu_palace_id === p.palace_id) || (chart.zhi_shi_palace_id === p.palace_id);
+        return v === 'good' || isLead || p.is_yongshen_target;
+      });
+      if (!cardPalaces.length) cardPalaces = outer.slice();
+      cardPalaces = cardPalaces
+        .sort((a, b) => (qmPdfScore(b) ?? -1) - (qmPdfScore(a) ?? -1))
+        .slice(0, 4);
+
+      let scoreBars = '';
+      const barRows = cardPalaces.map((p, i) => {
+        const s = qmPdfScore(p); if (s == null) return null;
+        const vc = qmPdfVerdict(p, chart).vc;
+        const col = vc === 'good' ? '#5a8a48' : vc === 'bad' ? '#b03a2e' : '#c8a44d';
+        const w = Math.max(4, Math.min(100, s)) * 1.55;
+        const y = 8 + i * 26;
+        return `<text x="0" y="${y + 13}" font-size="10" fill="#3a3730">${E(qmPdfDirLabel(p))} ${E(qimenDoorZh(p) || '')}</text>`
+          + `<rect x="92" y="${y}" width="${w.toFixed(1)}" height="16" rx="3" fill="${col}"/>`
+          + `<text x="${(96 + w).toFixed(1)}" y="${y + 13}" font-size="10" fill="#5f5847">${s}</text>`;
+      }).filter(Boolean);
+      if (barRows.length) {
+        const bh = 8 + barRows.length * 26 + 6;
+        scoreBars = `<div style="margin:6px 0 12px"><svg viewBox="0 0 300 ${bh}" width="300" role="img" aria-label="คะแนนวังเด่น">${barRows.join('')}</svg></div>`;
+      }
+
+      const cards = cardPalaces.map(p => {
+        const { label, reading } = qmPdfVerdict(p, chart);
+        const title = `${qmPdfWord('วัง ', 'Palace ', '')}${p.palace_id}${qmContentLang() === 'zh' ? '宮' : ''} · ${qmPdfDirLabel(p)} · `
+          + [qimenDoorZh(p), qimenStarZh(p), qimenDeityZh(p)].filter(Boolean).join(' ')
+          + (qmPdfScore(p) != null ? ` (${qmPdfScore(p)})` : '');
+        const reasons = (reading.reasons || []).map(qmPdfReasonText).filter(Boolean).slice(0, 3);
+        let body = `<p>${E(reading.summary_th || '—')}</p>`;
+        if (reasons.length) body += `<p>${reasons.map(r => '• ' + E(r)).join('<br>')}</p>`;
+        return HKPrint.card(title, body, label.th);
+      }).join('');
+
+      /* คำปรึกษาซินแส AI ถ้ามีในหน้าจอแล้ว (อ่านจาก DOM · ไม่ re-stream) */
+      let sifuBlock = '';
+      const logEl = document.getElementById('qm-sifu-log');
+      if (logEl) {
+        const txt = (logEl.innerText || '').trim();
+        const thinking = _qtx('q.sifu.thinking', 'ซินแสกำลังคิด...');
+        if (txt && txt.length > 24 && txt !== thinking) {
+          sifuBlock = HKPrint.card(
+            qmPdfWord('คำปรึกษาซินแส AI (จากการสนทนา)', 'AI Sifu consultation (from chat)', 'AI 師父問答'),
+            `<p style="white-space:pre-wrap">${E(txt)}</p>`);
+        }
+      }
+
+      const page4sections = [];
+      if (cards) {
+        page4sections.push(HKPrint.section(
+          qmPdfWord('คำอ่านซินแสต่อวัง (วังเด่น)', 'Master reading per palace (notable)', '宮位解讀'),
+          scoreBars + cards));
+      }
+      if (sifuBlock) page4sections.push(sifuBlock);
+
+      const pages = [page2, page3];
+      if (page4sections.length) pages.push({ sections: page4sections });
+
+      HKPrint.open({
+        docTitle: qmPdfWord('รายงานฉีเหมิน', 'QiMen Report', '奇門報告') + (dtLabel ? ' · ' + dtLabel : ''),
+        headTitle: qmPdfWord('ฉีเหมินตุ้นเจี่ย', 'Qi Men Dun Jia', '奇門遁甲'),
+        cover,
+        pages,
+        land: false,
+      });
+    } catch (e) {
+      console.warn('[qimen] export pdf failed', e);
+      alert(_qtx('q.pdf.noChart', 'กรุณาคำนวณผังก่อนดาวน์โหลด'));
+    } finally {
+      if (hintEl) setTimeout(() => { hintEl.textContent = _qtx('q.pdf.hint', prevHint); }, 800);
+    }
+  }
+  window.exportQimenPdf = exportQimenPdf;
+  (function wireQimenPdfBtn(){
+    const btn = document.getElementById('qm-pdf-btn');
+    if (btn && !btn._qmPdfWired){ btn._qmPdfWired = true; btn.addEventListener('click', exportQimenPdf); }
+  })();
 })();
 </script>
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>

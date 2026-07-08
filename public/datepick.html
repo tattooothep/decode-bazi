@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<!-- 📄 8 ก.ค. 2569 · เทมเพลต PDF ร่วม (client window.print · additive · ไม่กระทบ engine หน้า) -->
+<link rel="stylesheet" href="/css/hk-print.css?v=2"/>
 <style>
 :root{
   --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
@@ -408,6 +410,11 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .match-tag.t-good{background:rgba(125,211,123,.16);border-color:rgba(125,211,123,.5);color:#7dd37b;font-weight:700;}
 .match-tag.t-bad{background:rgba(226,107,93,.16);border-color:rgba(226,107,93,.55);color:#e26b5d;font-weight:700;}
 .match-tag.t-neutral{opacity:.55;}
+/* 📄 ปุ่มดาวน์โหลด PDF · ล่างสุดของผลลัพธ์ (8 ก.ค. 2569 · additive · noprint) */
+.dp-pdf-bar{display:none;justify-content:center;margin:26px 0 4px;padding-top:20px;border-top:1px solid var(--line);}
+.dp-pdf-btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;padding:12px 26px;background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:var(--bg);border:1px solid var(--gold-line);border-radius:99px;cursor:pointer;font-weight:700;text-transform:uppercase;box-shadow:0 3px 12px rgba(180,144,82,.28);transition:.2s;}
+.dp-pdf-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(180,144,82,.42);}
+.dp-pdf-btn:disabled{opacity:.55;cursor:default;transform:none;}
 /* AI sifu */
 .dp-sifu-bar{display:flex;justify-content:center;margin:16px 0;}
 .dp-sifu-btn{display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;padding:10px 20px;background:linear-gradient(135deg,var(--gold),#8b6e2f);color:var(--bg);border:none;border-radius:99px;cursor:pointer;font-weight:700;text-transform:uppercase;box-shadow:0 2px 8px rgba(180,144,82,.3);}
@@ -489,6 +496,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="hk.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="hk.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="hk-top-r">
     <!-- 16 พ.ค. 2026: lang+theme switch ย้ายเข้า avatar menu (hk-user-menu) อย่างเดียว · เอา duplicate นอก avatar ออก -->
@@ -1004,6 +1012,11 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
       </div>
       <!-- r418 · โซนช่วงเวลาที่ตำราห้าม (veto/cutSlots) -->
       <div id="cutSlotsZone"></div>
+
+      <!-- 📄 8 ก.ค. 2569 · ดาวน์โหลดรายงานฤกษ์เป็น PDF (โผล่หลังค้นหา · additive) -->
+      <div class="dp-pdf-bar noprint" id="dp-pdf-bar">
+        <button class="dp-pdf-btn" id="dp-pdf-btn" type="button" data-i18n="dp.pdf.btn" onclick="dpExportPdf()">⬇ ดาวน์โหลด PDF</button>
+      </div>
 
     </section>
   </div>
@@ -2979,6 +2992,9 @@ async function performSearch(){
     /* show AI Sifu button */
     const sifuBtn = document.getElementById('dp-sifu-btn');
     if (sifuBtn) sifuBtn.style.display = 'inline-flex';
+    /* 📄 show PDF download bar (มีผลลัพธ์จริงแล้ว) */
+    const pdfBar = document.getElementById('dp-pdf-bar');
+    if (pdfBar) { pdfBar.style.display = (data.top && data.top.length) ? 'flex' : 'none'; dpSetPdfBtnLabel(); }
   } catch (e) {
     document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</p></div>`;
     console.warn('[datepick] performSearch failed:', e);
@@ -3885,6 +3901,234 @@ function formatThaiDate(d){
   const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return `${m[mo]} ${dy}, ${yr}`;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+ * 📄 8 ก.ค. 2569 · Export PDF รายงานฤกษ์ (additive · client window.print ผ่าน HKPrint)
+ *   - ดึงจาก window._dpLastSearch (ผลจริงจาก /api/auspicious) เท่านั้น · ไม่ re-fetch · ไม่ hardcode
+ *   - ทุก section มี visual (score bar SVG / gauge SVG / grid สี / timeline / diagram)
+ *   - 3 ภาษา (th/en/zh · ภาษาใหม่ตก en) ตาม getCurrentLang() เหมือนทั้งหน้า
+ * ═══════════════════════════════════════════════════════════════ */
+function dpSetPdfBtnLabel(){
+  const b = document.getElementById('dp-pdf-btn'); if (!b) return;
+  const L = getCurrentLang();
+  b.textContent = L === 'zh' ? '⬇ 下載 PDF' : L === 'th' ? '⬇ ดาวน์โหลด PDF' : '⬇ Download PDF';
+}
+
+function dpExportPdf(){
+  const data = window._dpLastSearch;
+  const L = getCurrentLang();
+  const L3 = (th, en, zh) => L === 'zh' ? zh : L === 'th' ? th : en;
+  if (!window.HKPrint || !data || !Array.isArray(data.top) || !data.top.length){
+    alert(L3('ยังไม่มีผลฤกษ์ให้บันทึก กรุณากด “ค้นหาฤกษ์” ก่อน','No results to export yet — please run a search first.','尚無擇日結果，請先搜尋。'));
+    return;
+  }
+  const top = data.top;
+  const SHICHEN = {子:'子時',丑:'丑時',寅:'寅時',卯:'卯時',辰:'辰時',巳:'巳時',午:'午時',未:'未時',申:'申時',酉:'酉時',戌:'戌時',亥:'亥時'};
+  const DIR = {
+    N:L3('เหนือ','North','北'),NE:L3('ตะวันออกเฉียงเหนือ','Northeast','東北'),E:L3('ตะวันออก','East','東'),
+    SE:L3('ตะวันออกเฉียงใต้','Southeast','東南'),S:L3('ใต้','South','南'),SW:L3('ตะวันตกเฉียงใต้','Southwest','西南'),
+    W:L3('ตะวันตก','West','西'),NW:L3('ตะวันตกเฉียงเหนือ','Northwest','西北')};
+  const esc = (typeof escHtml === 'function') ? escHtml : (s => String(s == null ? '' : s));
+  const medal = (i) => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+  const scColor = (s) => s >= 70 ? '#5a8a48' : s >= 50 ? '#c8a44d' : '#b03a2e';
+  const lvl = (s) => s >= 80 ? L3('ยอดเยี่ยม','Excellent','極佳') : s >= 70 ? L3('ดีมาก','Very good','甚吉')
+                    : s >= 55 ? L3('ดี','Good','吉') : s >= 50 ? L3('ใช้ได้','Usable','可用') : L3('ควรระวัง','Caution','慎用');
+  const dateOf = (t) => { const p = (t.date || '').split('-').map(Number); return p[0] ? new Date(p[0], p[1] - 1, p[2]) : new Date(t.datetime); };
+  const cleanTxt = (x) => {
+    if (x && typeof x === 'object') return String(x.text || x.thai || '');
+    return (typeof displayReasonText === 'function') ? displayReasonText(String(x)) : String(x || '');
+  };
+  const maxSc = Math.max(...top.map(t => t.score || 0), 100);
+
+  /* ── cover meta ── */
+  const am = (typeof currentActivityMeta === 'function') ? currentActivityMeta() : { name:'', han:'' };
+  const actTitle = `${am.name || L3('กิจกรรมที่เลือก','Chosen activity','所選事項')}${am.han ? ` · ${am.han}` : ''}`;
+  const winLabel = (data.search_window && data.search_window.label) || (window._dpLastPageContext && window._dpLastPageContext.search_window && window._dpLastPageContext.search_window.label) || '';
+  let placeStr = '';
+  try { if (typeof dpReadEventLocation === 'function') { const loc = dpReadEventLocation(); placeStr = (loc && loc.place) || ''; } } catch(_){}
+  const hostNames = (state.people || []).filter(p => p.enabled).map(p => p.name || p.label).filter(Boolean);
+  const hostStr = hostNames.length ? hostNames.join(', ') : L3('ไม่ได้ระบุ','—','未指定');
+  const metaHtml = [
+    winLabel ? `${L3('ช่วงที่ค้นหา','Search window','搜尋區間')}: ${esc(winLabel)}` : '',
+    placeStr ? `${L3('สถานที่','Venue','地點')}: ${esc(placeStr)}` : '',
+    `${L3('เจ้าภาพดวง','Chart owner','命主')}: ${esc(hostStr)}`,
+  ].filter(Boolean).join('<br>');
+
+  const cover = {
+    kick: L3('รายงานฤกษ์มงคล','Auspicious Date Report','擇日吉時報告'),
+    title: actTitle,
+    who: winLabel || actTitle,
+    metaHtml,
+    badge: L3('✓ ตัดด้วยตำราจริง (董公擇日 + 黃曆) · เตือนด้วยดวงบุคคล','✓ Cut by real canon (Dong Gong + Almanac) · warned by personal charts','✓ 依典籍實裁（董公擇日＋黃曆）· 命盤示警'),
+    qrLabel: 'hourkey.io',
+  };
+
+  /* ── SECTION 1 · สรุป + อันดับ (score-bar SVG + timeline + ตาราง) ── */
+  const sumGrid = `<div class="hkp-sum">
+    <div class="x"><span class="l">${L3('กิจกรรม','Activity','事項')}</span>${esc(actTitle)}</div>
+    <div class="x"><span class="l">${L3('ช่วงที่ค้นหา','Window','區間')}</span>${esc(winLabel || '—')}</div>
+    <div class="x"><span class="l">${L3('สแกนทั้งหมด','Scanned','掃描')}</span>${esc(data.total_scanned ?? '—')} ${L3('ยาม','slots','時')}</div>
+    <div class="x"><span class="l">${L3('เข้ารอบ','Candidate pool','候選')}</span>${esc(data.candidate_pool ?? '—')} ${L3('ยาม','slots','時')}</div>
+    <div class="x"><span class="l">${L3('พบฤกษ์','Found','命中')}</span>${top.length} ${L3('ฤกษ์','timings','吉時')}</div>
+    <div class="x"><span class="l">${L3('เจ้าภาพดวง','Chart owner','命主')}</span>${esc(hostStr)}</div>
+  </div>`;
+
+  const barItems = top.slice(0, 8);
+  const barH = barItems.length * 26 + 12;
+  const barSvg = `<svg viewBox="0 0 380 ${barH}" width="380" role="img" aria-label="${esc(L3('แถบคะแนนอันดับฤกษ์','Ranking score bars','擇日評分條'))}">
+    <g font-size="11" font-family="'Noto Serif Thai',sans-serif">
+    ${barItems.map((t, i) => {
+      const y = i * 26 + 8; const s = t.score || 0; const w = Math.max(6, Math.round(170 * s / 100));
+      return `<text x="0" y="${y + 11}" fill="#5f5847">${medal(i)} ${esc(formatThaiDate(dateOf(t)))}</text>`
+        + `<rect x="200" y="${y}" width="170" height="15" rx="7" fill="#eee"/>`
+        + `<rect x="200" y="${y}" width="${w}" height="15" rx="7" fill="${scColor(s)}"/>`
+        + `<text x="${200 + w - 4}" y="${y + 12}" text-anchor="end" font-size="9" fill="#fff">${s}</text>`;
+    }).join('')}
+    </g></svg>`;
+
+  const timeline = `<div class="hkp-tl">${top.slice(0, 10).map((t, i) =>
+    `<div class="it"><b>${medal(i)} ${esc(formatThaiDate(dateOf(t)))}</b> · ${esc(t.time || '')} ${esc(SHICHEN[t.earth_stem] || '')} — ${t.score}/100 · ${esc(lvl(t.score))}</div>`
+  ).join('')}</div>`;
+
+  const rankTable = `<table>
+    <thead><tr><th>#</th><th>${L3('วันที่','Date','日期')}</th><th>${L3('ยามดี','Hour','吉時')}</th><th>${L3('เสายาม','Hour pillar','時柱')}</th><th>${L3('คะแนน','Score','分')}</th><th>${L3('ระดับ','Grade','評')}</th></tr></thead>
+    <tbody>${top.map((t, i) =>
+      `<tr><td>${medal(i)}</td><td>${esc(formatThaiDate(dateOf(t)))}</td><td>${esc(t.time || '')} <span class="zh">${esc(SHICHEN[t.earth_stem] || '')}</span></td>`
+      + `<td class="zh">${esc((t.heaven_stem || '·') + (t.earth_stem || '·'))}時</td><td><b style="color:${scColor(t.score)}">${t.score}</b></td><td>${esc(lvl(t.score))}</td></tr>`
+    ).join('')}</tbody></table>`;
+
+  const secSummary = `<h2 class="sec">🏆 ${L3('วันมงคลยอดเยี่ยม · อันดับ','Auspicious dates · ranking','擇日排名')} (${top.length})</h2>`
+    + sumGrid
+    + `<div class="fig"><div class="figrow">${barSvg}<div style="flex:1;min-width:180px">${timeline}</div></div>`
+    + `<div class="cap">${L3('แถบคะแนน + ไทม์ไลน์วันดี · คะแนนหลอมรวมเต็ม 100 (通書黃曆 + 董公 + ปฏิกิริยาดวงเจ้าภาพ)','Score bars + auspicious-day timeline · fused 0–100 (Almanac + Dong Gong + host-chart reaction)','評分條＋吉日時間軸 · 融合滿分100（黃曆＋董公＋命主互動）')}</div></div>`
+    + rankTable
+    + `<p class="lead">${L3('คะแนนทั้งหมดมาจาก engine deterministic · ตำรา = ตัดจริง · ดวงบุคคล = เตือน · ไม่ปล่อยให้ AI เดา','All scores from a deterministic engine · canon = hard cut · personal chart = warning only · no AI guessing','所有分數皆由確定性引擎計算 · 典籍＝實裁 · 命盤＝示警 · 非AI臆測')}</p>`;
+
+  /* ── SECTION per-day · เจาะเหตุผลรายวัน (gauge SVG + grid module + การ์ด宜/忌/警) ── */
+  const gauge = (s) => {
+    const f = Math.max(0, Math.min(1, s / 100)); const ang = (180 - 180 * f) * Math.PI / 180;
+    const x = (110 + 90 * Math.cos(ang)).toFixed(1); const y = (118 - 90 * Math.sin(ang)).toFixed(1);
+    return `<svg viewBox="0 0 220 132" width="200" role="img" aria-label="${esc(L3('เกจคะแนนวัน','Day score gauge','日評分表'))} ${s}">
+      <path d="M20 118 A90 90 0 0 1 200 118" fill="none" stroke="#eee" stroke-width="16"/>
+      <path d="M20 118 A90 90 0 0 1 ${x} ${y}" fill="none" stroke="${scColor(s)}" stroke-width="16" stroke-linecap="round"/>
+      <text x="110" y="102" text-anchor="middle" font-size="34" fill="#8a6d2a" font-weight="700">${s}</text>
+      <text x="110" y="122" text-anchor="middle" font-size="11" fill="#5f5847">${esc(lvl(s))}</text>
+      <text x="16" y="130" font-size="9" fill="#b03a2e">0</text><text x="196" y="130" font-size="9" fill="#5a8a48">100</text>
+    </svg>`;
+  };
+  const moduleGrid = (t) => {
+    const entries = Object.entries(t.moduleScores || {});
+    if (!entries.length) return '';
+    const cells = entries.map(([k, v]) => {
+      const m = (typeof MODULE_LABELS !== 'undefined' && MODULE_LABELS[k]) || { th:k, zh:k, en:k };
+      const lab = L === 'zh' ? (m.zh || m.th) : (L !== 'th' && m.en ? m.en : m.th);
+      return `<div class="x"><span class="l">${esc(lab)}${m.zh && m.zh !== lab ? ` ${esc(m.zh)}` : ''}</span><b style="color:${scColor(Math.round(v))}">${Math.round(v)}</b></div>`;
+    }).join('');
+    return `<div class="hkp-sum">${cells}</div>`;
+  };
+  const reasonCards = (t) => {
+    const raw = (Array.isArray(t.science_reasons) && t.science_reasons.length) ? t.science_reasons : (t.matches || []);
+    const up = [], down = [], warn = [];
+    raw.forEach((r) => {
+      const isObj = r && typeof r === 'object';
+      const d = isObj ? Number(r.delta || 0) : (typeof reasonDelta === 'function' ? reasonDelta(String(r)) : 0);
+      const isWarn = (isObj && r.warn === true) || /ระวัง|⚠/.test(cleanTxt(r));
+      const txt = cleanTxt(r);
+      if (!txt) return;
+      if (isWarn) warn.push(txt); else if (d < 0) down.push(txt); else up.push(txt);
+    });
+    // tongshu / donggong verdict
+    if (t.donggong) {
+      const dg = t.donggong;
+      const dv = L === 'zh' ? dg.zh : L === 'th' ? dg.verdictTh : dg.en;
+      if (dv) up.push(`${L3('ตงกงวันนี้','Dong Gong verdict','董公斷')}: ${dv}${dg.jianchuTh ? ` · ${L === 'th' ? dg.jianchuTh : ''} ${dg.jianchu || ''}` : ''}`);
+    }
+    if (t.huangdao) {
+      const hd = t.huangdao;
+      (hd.good ? up : down).push(`${L3('ยามทอง 黃道','Golden hour 黃道','黃道')}: ${esc(hd.deity_zh || '')}${esc(hd.path_zh || '')}`);
+    }
+    if (t.richong && t.richong.zodiac_zh) {
+      const rc = t.richong; const zod = L === 'zh' ? rc.zodiac_zh : L === 'th' ? rc.zodiac_th : rc.zodiac_en;
+      warn.push(`${L3('วันชง 沖','Day clash 沖','日沖')}: ${esc(zod)} ${esc(rc.zodiac_zh)} · ${L3('เลี่ยงคนปี','avoid people born','忌歲')} ${esc((rc.ages || []).slice(0, 6).join(', '))}`);
+    }
+    const list = (arr) => arr.length ? arr.map(x => `• ${esc(x)}`).join('<br>') : `<span style="color:#a89e86">${L3('— ไม่มีรายการเด่น','— none notable','— 無顯著項')}</span>`;
+    return `<div class="hkp-card"><h3>✅ ${L3('เหตุหนุน','Supporting factors','助力')}</h3><p>${list(up)}</p></div>`
+      + `<div class="hkp-card"><h3>⚠️ ${L3('เหตุถ่วง','Weighing factors','扣分')}</h3><p>${list(down)}</p></div>`
+      + `<div class="hkp-card"><h3>🚫 ${L3('ข้อควรระวัง','Cautions','慎')}</h3><p>${list(warn)}</p></div>`;
+  };
+  const dayDetail = (t, i) => {
+    const dLabel = `${esc(formatThaiDate(dateOf(t)))} · ${esc(t.time || '')} (${L3('ยาม','hour','時')} ${esc(SHICHEN[t.earth_stem] || t.earth_stem || '')})`;
+    const dirTxt = t.direction && DIR[t.direction] ? `${DIR[t.direction]} (${t.direction})` : (t.direction || '·');
+    const pole = t.ju_pole === 'yin' ? '陰' : '陽';
+    const verdict = (typeof explainScore === 'function') ? explainScore(t.score, i + 1, top.length) : '';
+    const qmGrid = `<div class="hkp-sum">
+      <div class="x"><span class="l">${L3('ประตู 門','Door 門','門')}</span>${esc(t.door_label || (typeof qimenLabel === 'function' ? qimenLabel('door', t.door) : t.door) || '·')}</div>
+      <div class="x"><span class="l">${L3('ดาว 星','Star 星','星')}</span>${esc(t.star_label || (typeof qimenLabel === 'function' ? qimenLabel('star', t.star) : t.star) || '·')}</div>
+      <div class="x"><span class="l">${L3('เทพ 神','Deity 神','神')}</span>${esc(t.deity_label || (typeof qimenLabel === 'function' ? qimenLabel('deity', t.deity) : t.deity) || '·')}</div>
+      <div class="x"><span class="l">${L3('ทิศเด่น','Best direction','吉方')}</span>${esc(dirTxt)}</div>
+      <div class="x"><span class="l">${L3('ผังฉีเหมิน','Qi Men chart','奇門局')}</span>${pole}${esc(t.ju_number || '?')}局 · ${L3('วัง','Palace','宮')} ${esc(t.palace_id || '·')}</div>
+      <div class="x"><span class="l">${L3('เสายาม 時柱','Hour pillar 時柱','時柱')}</span><span class="zh">${esc((t.heaven_stem || '·') + (t.earth_stem || '·'))}</span></div>
+    </div>`;
+    return `<h2 class="sec">${medal(i)} ${L3('เจาะวัน','Focus day','擇日詳解')} ${i + 1} · ${dLabel}</h2>`
+      + `<div class="fig"><div class="figrow">${gauge(t.score)}<div style="flex:1;min-width:200px">${qmGrid}</div></div>`
+      + `<div class="cap">${esc(verdict)}</div></div>`
+      + `<div style="font-size:11px;color:#8a6d2a;font-weight:700;margin:4px 0 6px">${L3('น้ำหนักคะแนนตามศาสตร์ (แต่ละชั้น)','Score weight by science (per module)','各學科計分權重')}</div>`
+      + moduleGrid(t)
+      + reasonCards(t)
+      + (t.hex_num ? `<div class="hkp-card"><h3>${L3('หกสิบสี่ข่วย','64 Hexagrams','六十四卦')} · <span class="zh">卦${esc(t.hex_num)} ${esc(t.hex_name || '')}</span></h3><p>${L3('เส้นเปลี่ยน','Changing line','變爻')}: ${esc(t.changing_line || '-')}</p></div>` : '');
+  };
+
+  /* ── SECTION สุดท้าย · โซนตำราห้าม (cut slots) + วิธีคิด (diagram) ── */
+  const cuts = Array.isArray(data.cutSlots) ? data.cutSlots : [];
+  const cutTable = cuts.length ? `<table>
+    <thead><tr><th>${L3('วันที่','Date','日期')}</th><th>${L3('ยาม','Hour','時')}</th><th>${L3('เหตุที่ตำราตัด','Canon veto reason','裁禁事由')}</th></tr></thead>
+    <tbody>${cuts.slice(0, 24).map(s => {
+      const p = (s.date || '').split('-').map(Number); const d = p[0] ? new Date(p[0], p[1] - 1, p[2]) : null;
+      const reasons = (s.vetoes || []).map(v => esc((L === 'zh' ? v.reasonZh : L === 'th' ? v.reasonTh : v.reasonEn) || v.reasonTh || '')).join(' · ');
+      return `<tr><td>${esc(d ? formatThaiDate(d) : s.date)}</td><td>${esc(s.time || '')} <span class="zh">${esc(SHICHEN[s.earth_stem] || '')}</span></td><td class="th" style="text-align:left">${reasons}</td></tr>`;
+    }).join('')}</tbody></table>` : `<div class="hkp-card"><p>${L3('ไม่มีช่วงที่ถูกตำราห้ามในผลค้นครั้งนี้','No canon-vetoed slots in this search','本次搜尋無典籍禁時')}</p></div>`;
+
+  const layers = Array.isArray(data.layers) ? data.layers : [];
+  const layerTable = layers.length ? `<h2 class="sec">🔍 ${L3('ขั้นตอนการกรอง','Filtering steps','篩選漏斗')}</h2>
+    <table><thead><tr><th>${L3('ชั้นศาสตร์','Science layer','學科層')}</th><th>${L3('โหมด','Mode','模式')}</th><th>${L3('ผ่าน/ทั้งหมด','Passed/Total','通過/總')}</th></tr></thead>
+    <tbody>${layers.map(x => `<tr><td class="th" style="text-align:left">${esc(x.th || x.name || x.key || '')}${x.zh ? ` <span class="zh">${esc(x.zh)}</span>` : ''}</td><td>${esc(x.mode || '·')}</td><td>${x.passed ?? '·'}${x.total != null ? ` / ${x.total}` : ''}</td></tr>`).join('')}</tbody></table>` : '';
+
+  const methodSvg = `<svg viewBox="0 0 540 78" width="540" role="img" aria-label="${esc(L3('ขั้นตอนการตัดสินฤกษ์','Date-vetting steps','擇日判定步驟'))}">
+    <g font-size="10" text-anchor="middle" font-family="'Noto Serif Thai',sans-serif">
+      <rect x="6" y="20" width="120" height="40" rx="8" fill="#b03a2e"/><text x="66" y="38" fill="#fff">1. ${esc(L3('ตัดวันต้องห้าม','Cut forbidden','裁禁日'))}</text><text x="66" y="52" fill="#fbdad4" font-size="8">${esc(L3('ทงซู+ตงกง','Almanac+DongGong','通書+董公'))}</text>
+      <rect x="146" y="20" width="120" height="40" rx="8" fill="#9a7d3a"/><text x="206" y="38" fill="#fff">2. ${esc(L3('ให้คะแนน','Score','評分'))}</text><text x="206" y="52" fill="#f3e6c4" font-size="8">建除+黃黑道+神煞</text>
+      <rect x="286" y="20" width="120" height="40" rx="8" fill="#4a6f8a"/><text x="346" y="38" fill="#fff">3. ${esc(L3('เทียบดวง','Compare chart','比對命盤'))}</text><text x="346" y="52" fill="#d4e2ee" font-size="8">${esc(L3('เจ้าภาพ (เตือน)','host (warn)','命主（示警）'))}</text>
+      <rect x="426" y="20" width="108" height="40" rx="8" fill="#5a8a48"/><text x="480" y="38" fill="#fff">4. ${esc(L3('เลือกยาม','Pick hour','選時'))}</text><text x="480" y="52" fill="#dcecd0" font-size="8">用神</text>
+      <g fill="#c8a44d"><path d="M126 40 l12 0 -4 -4 8 4 -8 4 4 -4z"/><path d="M266 40 l12 0 -4 -4 8 4 -8 4 4 -4z"/><path d="M406 40 l12 0 -4 -4 8 4 -8 4 4 -4z"/></g>
+    </g></svg>`;
+
+  const secMethod = `<h2 class="sec">⛔ ${L3('โซนตำราตัดออก (ห้ามใช้)','Canon-vetoed slots (do not use)','典籍裁禁（勿用）')} (${cuts.length})</h2>`
+    + cutTable
+    + `<h2 class="sec">📐 ${L3('วิธีคิด','Methodology','方法論')}</h2>`
+    + `<div class="fig">${methodSvg}<div class="cap">${L3('ลำดับตัดสินฤกษ์ · ตำรา=ตัดจริง (แดง) · ดวงบุคคล=เตือน (น้ำเงิน) · เลือกยากด้วย用神','Date-vetting order · canon = hard cut (red) · personal chart = warning (blue) · pick hour by 用神','擇日次序 · 典籍＝實裁(紅) · 命盤＝示警(藍) · 用神選時')}</div></div>`
+    + layerTable
+    + `<div class="hkp-card"><p><b>${L3('หลักการ','Principle','原則')}:</b> ${L3('ตำรา = ตัดจริง · ดวงบุคคล = เตือน · ทุกคะแนนมาจาก engine deterministic ไม่ให้ AI เดาตัวเลข','Canon = hard cut · personal chart = warning · every score comes from a deterministic engine, never AI-guessed','典籍＝實裁 · 命盤＝示警 · 每個分數皆出自確定性引擎，非AI臆測')}</p></div>`;
+
+  /* ── ประกอบหน้า (ปก + สรุป + เจาะวัน top≤6 หน้าละ 2 + วิธีคิด) ── */
+  const pages = [{ sections: [secSummary] }];
+  const deepN = Math.min(top.length, 6);
+  for (let i = 0; i < deepN; i += 2) {
+    const secs = [dayDetail(top[i], i)];
+    if (i + 1 < deepN) secs.push(dayDetail(top[i + 1], i + 1));
+    pages.push({ sections: secs });
+  }
+  pages.push({ sections: [secMethod] });
+
+  const headTitle = L3('วางฤกษ์','Date Picking','擇日') + ' · ' + (hostNames[0] || am.name || '');
+  HKPrint.open({
+    docTitle: `${L3('รายงานฤกษ์','Auspicious-Date','擇日報告')}-${(am.name || 'datepick')}-${(top[0] && top[0].date) || ''}`,
+    headTitle,
+    cover,
+    pages,
+    land: false,
+  });
+}
+
 // init
 init();
 console.log('🐉 Date Picking · 擇吉 · loaded');
@@ -4276,5 +4520,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 }catch(_){}})();
 </script>
 <script src="/js/hk-nonthai-page-guard.js?v=1"></script>
+<!-- 📄 8 ก.ค. 2569 · ตัวช่วยสร้าง PDF ร่วม (window.HKPrint · additive) -->
+<script src="/js/hk-print.js?v=2" defer></script>
 </body>
 </html>
