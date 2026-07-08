@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title data-i18n="page.title">ซินแส Fusion · hourkey</title>
@@ -979,7 +980,7 @@
         <a href="/master"><span class="glyph">師</span><span class="lbl" data-i18n="nav.master">ซินแส</span></a>
         <a class="keep active" href="/master-fusion" aria-current="page"><span class="glyph">融</span><span class="lbl" data-i18n="nav.fusion">Fusion</span></a>
       </nav>
-      <button class="theme-btn" id="theme-toggle" type="button" title="สลับธีม / Theme">◐</button>
+      <button class="theme-btn" id="theme-toggle" type="button" title="Toggle theme">◐</button>
       <div id="hk-user-menu-mount"></div>
     </div>
   </header>
@@ -1056,9 +1057,15 @@
             <div style="min-width:90px">
               <label for="lang" data-i18n="ask.lang">ภาษา</label>
               <select id="lang">
-                <option value="th">ไทย TH</option>
+                <option value="th">Thai TH</option>
                 <option value="en">EN</option>
                 <option value="zh">中文 ZH</option>
+                <option value="cn">简体 CN</option>
+                <option value="vi">Tiếng Việt VI</option>
+                <option value="ja">日本語 JA</option>
+                <option value="ko">한국어 KO</option>
+                <option value="ru">Русский RU</option>
+                <option value="es">Español ES</option>
               </select>
             </div>
           </div>
@@ -1140,7 +1147,7 @@
   (function(){
     var $ = function(id){ return document.getElementById(id); };
     var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', historyView:null, preHistoryView:null, compareIds:[],
-      mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false, uranian:false }, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null,
+      mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false, uranian:false, palmistry:false }, hasPalm:false, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null,
       guests:{}, guestEdit:{} }; // r383: ดวงชั่วคราวรายช่อง 1-4 (ไม่บันทึกโปรไฟล์)
     var els = {
       profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), profile3:$('profile3'), profile3Field:$('profile3-field'), profile4:$('profile4'), profile4Field:$('profile4-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
@@ -1160,11 +1167,13 @@
       ziwei:   { id:'ziwei',   th:'จื่อเวยโต่วซู 紫微斗數', en:'Zi Wei 紫微斗數',    zh:'紫微斗數', ai:'Gemini', costYam:12, needsBirthTime:true,  available:true },
       western: { id:'western', th:'โหราตะวันตก',          en:'Western Astrology',  zh:'西洋占星', ai:'Claude', costYam:10, needsBirthTime:false, available:true },
       vedic:   { id:'vedic',   th:'โหราพระเวท (ฮินดู)',   en:'Vedic Astrology',    zh:'吠陀占星', ai:'Codex',  costYam:10, needsBirthTime:false, available:true },
-      uranian: { id:'uranian', th:'โหราศาสตร์ยูเรเนียน',  en:'Uranian Astrology',  zh:'天王星占星(漢堡學派)', ai:'Claude', costYam:12, needsBirthTime:false, available:true }
+      uranian: { id:'uranian', th:'โหราศาสตร์ยูเรเนียน',  en:'Uranian Astrology',  zh:'天王星占星(漢堡學派)', ai:'Claude', costYam:12, needsBirthTime:false, available:true },
+      // ศาสตร์ที่ 7 · ลายมือ (ไม่ birth-based · ดึงจากที่สแกนไว้ · ส่งผ่าน includePalm ไม่ใช่ sciences[])
+      palmistry:{ id:'palmistry', th:'ลายมือ 手相', en:'Palmistry 手相', zh:'手相', ai:'Gemini', costYam:0, needsBirthTime:false, available:true, isPalm:true }
     };
-    var SCI_ORDER = ['bazi','qizheng','ziwei','western','vedic','uranian'];
+    var SCI_ORDER = ['bazi','qizheng','ziwei','western','vedic','uranian','palmistry'];
     var JUDGE_YAM = 5;
-    function sciLabel(s){ var b = DISCIPLINES[s]; return b ? (b[state.locale] || b.th) : s; }
+    function sciLabel(s){ var b = DISCIPLINES[s]; return b ? (b[state.locale] || (state.locale === 'cn' ? b.zh : b.en) || b.th) : s; }
     // ===== i18n =====
     var I18N = {
       th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 6 ศาสตร์','hero.sub':'หลอมรวม 6 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท · ยูเรเนียน — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยว ดูคู่ หรือกลุ่ม 3-4 ดวง',
@@ -1238,7 +1247,7 @@
         'page.title':'合參命師 · hourkey','modal.aiTitle':'AI 答案','chat.threadNote':'此房間帶有 {n} 輪先前對話脈絡 · 舊答案需從紀錄開啟才顯示' }
     };
     /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
-    function t(key){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('master-fusion.html',key,state.locale);if(ov!=null)return ov;}catch(_){} var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
+    function t(key){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('master-fusion.html',key,state.locale);if(ov!=null)return ov;}catch(_){} var d = I18N[state.locale] || (state.locale==='cn' ? I18N.zh : I18N.en); /* r414-i18n9: ภาษาใหม่ไม่มี dict ในหน้า → UI fallback EN (cn→ZH) · overlay กลางมาก่อนเสมอ · th/en/zh เดิมไม่เปลี่ยน */ return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
       document.querySelectorAll('[data-i18n]').forEach(function(el){ el.textContent = t(el.getAttribute('data-i18n')); });
       document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph'))); });
@@ -1437,7 +1446,7 @@
       if (b.needsBirthTime && !allSelectedHaveTime()) return false;
       return true;
     }
-    function activeSciences(){ return SCI_ORDER.filter(function(s){ return state.sci[s] && isSciSelectable(s); }); }
+    function activeSciences(){ return SCI_ORDER.filter(function(s){ return s !== 'palmistry' && state.sci[s] && isSciSelectable(s); }); }
     function currentYam(){
       var n = profileCount();
       var list = activeSciences();
@@ -1508,7 +1517,7 @@
         return '<label class="sci-item' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '" data-sci="' + s + '">' +
           '<input type="checkbox" data-sci-cb="' + s + '"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '>' +
           '<div class="sci-main"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' +
-            '<div class="sci-sub"><span class="ai-badge">AI · ' + esc(b.ai) + '</span>' + (b.needsBirthTime ? '<span title="ต้องมีเวลาเกิด">⏰</span>' : '') + '</div></div>' +
+            '<div class="sci-sub"><span class="ai-badge">AI · ' + esc(b.ai) + '</span>' + (b.needsBirthTime ? '<span title="' + esc(t('needTime')) + '">⏰</span>' : '') + '</div></div>' +
           (note ? '<div class="sci-note">' + esc(note) + '</div>' : '<div class="sci-cost">' + b.costYam + ' 時</div>') +
         '</label>';
       }).join('');
@@ -1998,7 +2007,7 @@
       var waitPct = (els.result && els.result.querySelector) ? els.result.querySelector('.run-wait-pct') : null; // r385: % จริงบนฟองรอห้องแชท (guard: เทส stub els.result)
       if (waitPct) waitPct.textContent = t('chat.wait') + ' ' + pct + '%';
       setRunPill('running', pct); // r383: pill % เดินตาม tick เดียวกับแถบ
-      setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
+      setStatus((status.message || t('running')) + ' · ' + pct + '%');
     }
     function renderProgress(status){
       if (!els.progress) return;
@@ -2036,7 +2045,7 @@
         '<div class="progress-message">' + esc(status.message || t('running')) + '</div>' +
         '<div class="progress-models">' + rows + '</div>';
       setRunPill(status.phase === 'done' ? 'done' : 'running', pct); // r383: เสร็จ → "✅ คำพยากรณ์พร้อมแล้ว · แตะดู"
-      setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
+      setStatus((status.message || t('running')) + ' · ' + pct + '%');
       var waitPct0 = (els.result && els.result.querySelector) ? els.result.querySelector('.run-wait-pct') : null; // r385: เติม % ตั้งแต่ render แรก ไม่รอ tick
       if (waitPct0 && status.phase !== 'done') waitPct0.textContent = t('chat.wait') + ' ' + pct + '%';
       ensureProgressTicker(status);
@@ -2514,7 +2523,7 @@
       });
       var judge = {};
       if (f.judge) judge.judge = { model:'Claude judge', role:'judge', state: f.judge.ok ? 'ok' : 'fail', ok:f.judge.ok };
-      renderProgress({ phase:'done', percent:100, message:'เสร็จสิ้น', startedAt:Date.now(), phaseStartedAt:Date.now(), panel:panel, judge:judge });
+      renderProgress({ phase:'done', percent:100, message:t('prg.phase.done'), startedAt:Date.now(), phaseStartedAt:Date.now(), panel:panel, judge:judge });
     }
     function selectedProfileId(){
       return els.profile && els.profile.value ? els.profile.value : '';
@@ -3221,6 +3230,7 @@
       if (Array.isArray(meta.sciences) && meta.sciences.length) {
         SCI_ORDER.forEach(function(s){ state.sci[s] = meta.sciences.indexOf(s) !== -1; });
       }
+      if (typeof meta.includePalm === 'boolean') state.sci.palmistry = meta.includePalm; // ศาสตร์ที่ 7: resume จำ toggle (palm ไม่อยู่ใน sciences[])
       renderSciList();
       updateYam();
     }
@@ -3265,6 +3275,7 @@
         profileIds: ids,
         guests: (job && Array.isArray(job.guestBirths) && job.guestBirths.length) ? job.guestBirths : (Array.isArray(fallback.guests) ? fallback.guests : []), // r383: GET คืน guestBirths → read-bar/chip เห็นชื่อ
         sciences: sciences,
+        includePalm: (typeof (job && job.includePalm) === 'boolean') ? job.includePalm : (typeof fallback.includePalm === 'boolean' ? fallback.includePalm : !!state.sci.palmistry), // ศาสตร์ที่ 7
         question: String((job && job.question) || fallback.question || '').trim(),
         lang: fallback.lang || state.locale,
         history: Array.isArray(fallback.history) ? fallback.history : payloadHistory(),
@@ -3546,7 +3557,7 @@
       if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('running')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
       renderResonance(null); // ล้างการ์ดรอบก่อน · การ์ดใหม่มากับ POST response ทันที
       if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: ฟองคำถามชิดขวา + ฟองรอโผล่ทันที (typeof-guard: เทส extract ฟังก์ชันเดี่ยว)
-      var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0] || '', profileIds:profileIds, guests:guests.map(guestPayload), sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true }; // r383: guests เข้า meta → snapshot/read-bar/resume เห็นชื่อ guest
+      var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0] || '', profileIds:profileIds, guests:guests.map(guestPayload), sciences:sciences, includePalm:!!state.sci.palmistry, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true }; // r383: guests เข้า meta → snapshot/read-bar/resume เห็นชื่อ guest
       saveDraft();
       saveJob(pendingMeta);
       clearSnap(); // r381: งานใหม่ = snapshot ใหม่ ไม่ปนของเก่า
@@ -3564,6 +3575,7 @@
               profileIds:profileIds,
               guestBirths:guests.length ? guests.map(guestPayload) : undefined, // r383: [{name?,birthDate,birthTime|null,gender,lat,lng,place?}] ตามลำดับช่อง (undefined = JSON ตัดทิ้ง · additive)
               sciences:sciences,
+              includePalm: !!state.sci.palmistry, // ศาสตร์ที่ 7: ลายมือ (ดึงที่สแกนไว้)
               question:message,
               lang:state.locale,
               history:priorHistory,
@@ -3809,7 +3821,7 @@
       if (e.key === 'Enter') { state.activeHistoryId=''; loadFusionHistory(); }
     });
     // ===== locale + theme init =====
-    state.locale = (function(){ try { var l = localStorage.getItem('hk_locale') || 'th'; return ['th','en','zh'].indexOf(l) !== -1 ? l : 'th'; } catch(_) { return 'th'; } })();
+    state.locale = (function(){ try { var st=window.HK_LANG_STATE || (window.HK&&window.HK.langState); var l=(st&&typeof st.sifu==='function')?st.sifu():(localStorage.getItem('hk_locale') || 'th'); return ['th','en','zh','cn','vi','ja','ko','ru','es'].indexOf(l) !== -1 ? l : 'th'; } catch(_) { return 'th'; } })(); /* r414-i18n9: รับ hk_locale ภาษาใหม่ → ส่งเป็น lang คำตอบ AI */
     state.theme = (function(){ try { return localStorage.getItem('hk_theme') === 'light' ? 'light' : 'dark'; } catch(_) { return 'dark'; } })();
     els.lang.value = state.locale;
     applyTheme();
@@ -3818,8 +3830,11 @@
     updateYam();
     if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
     els.lang.addEventListener('change', function(){
-      state.locale = ['th','en','zh'].indexOf(els.lang.value) !== -1 ? els.lang.value : 'th';
-      try { localStorage.setItem('hk_locale', state.locale); } catch(_){}
+      state.locale = ['th','en','zh','cn','vi','ja','ko','ru','es'].indexOf(els.lang.value) !== -1 ? els.lang.value : 'th'; /* r414-i18n9 */
+      try {
+        if(window.HK_LANG_STATE&&window.HK_LANG_STATE.set) window.HK_LANG_STATE.set(state.locale==='cn'?'zh-cn':state.locale);
+        else { localStorage.setItem('hk_locale', state.locale); localStorage.setItem('hk_lang', state.locale); }
+      } catch(_){}
       applyI18n();
       [els.profile3, els.profile4].forEach(function(sel){
         var o = sel && sel.options && sel.options[0];

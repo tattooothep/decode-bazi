@@ -567,16 +567,17 @@
     ziwei:   { th:"จื่อเวยโต่วซู 紫微斗數", en:"Zi Wei 紫微斗數",    zh:"紫微斗數", cn:"紫微斗数", vi:"Tử Vi 紫微斗數", ja:"紫微斗数", ru:"Цзы Вэй 紫微斗數", ko:"자미두수 紫微斗數", es:"Zi Wei 紫微斗數", needsBirthTime:true,  available:true },
     western: { th:"โหราตะวันตก",          en:"Western Astrology",  zh:"西洋占星", cn:"西洋占星", vi:"Chiêm tinh Tây phương", ja:"西洋占星術", ru:"Западная астрология", ko:"서양 점성술", es:"Astrología occidental", needsBirthTime:false, available:true },
     vedic:   { th:"โหราพระเวท (ฮินดู)",   en:"Vedic Astrology",    zh:"吠陀占星", cn:"吠陀占星", vi:"Chiêm tinh Vệ Đà", ja:"ヴェーダ占星術", ru:"Ведическая астрология", ko:"베다 점성술", es:"Astrología védica", needsBirthTime:false, available:true },
-    uranian: { th:"โหราศาสตร์ยูเรเนียน",  en:"Uranian Astrology",  zh:"天王星占星(漢堡學派)", cn:"天王星占星(汉堡学派)", vi:"Chiêm tinh Uranian", ja:"ウラニアン占星術", ru:"Уранианская астрология", ko:"우라니안 점성술", es:"Astrología uraniana", needsBirthTime:false, available:true }
+    uranian: { th:"โหราศาสตร์ยูเรเนียน",  en:"Uranian Astrology",  zh:"天王星占星(漢堡學派)", cn:"天王星占星(汉堡学派)", vi:"Chiêm tinh Uranian", ja:"ウラニアン占星術", ru:"Уранианская астрология", ko:"우라니안 점성술", es:"Astrología uraniana", needsBirthTime:false, available:true },
+    palmistry:{ th:"ลายมือ 手相", en:"Palmistry 手相", zh:"手相", cn:"手相", vi:"Xem chỉ tay 手相", ja:"手相", ru:"Хиромантия 手相", ko:"손금 手相", es:"Quiromancia 手相", needsBirthTime:false, available:true, isPalm:true }
   };
-  var SCI_ORDER = ["bazi","qizheng","ziwei","western","vedic","uranian"];
+  var SCI_ORDER = ["bazi","qizheng","ziwei","western","vedic","uranian","palmistry"];
   var BOOK_SCI_YAM = 50, BOOK_SYNTH_YAM = 50;
   var cProfiles = [], cProfileId = "", cSel = {}, cSynth = true, cSubmitting = false;
   function sciLabel(s){ var b=DISCIPLINES[s]; return b?(b[lang]||b.en||b.th):s; }
   function cProfileById(id){ return cProfiles.find(function(p){ return String(p.id)===String(id); })||null; }
   function cProfileHasTime(p){ return !p || p.birth_time_known !== false; }
   function cSelectable(){ var has=cProfileHasTime(cProfileById(cProfileId)); return SCI_ORDER.filter(function(s){ var b=DISCIPLINES[s]; return b&&b.available&&(!b.needsBirthTime||has); }); }
-  function cSelectedList(){ return cSelectable().filter(function(s){ return cSel[s]; }); }
+  function cSelectedList(){ return cSelectable().filter(function(s){ return s!=="palmistry" && cSel[s]; }); } // palm แยก (includePalm · ไม่นับ yam/ไม่ใช่ ScienceId)
   function cComputeYam(){ var n=cSelectedList().length; return n*BOOK_SCI_YAM+(cSynth&&n>=2?BOOK_SYNTH_YAM:0); }
   function cRenderSci(){
     var list=document.getElementById("cmodal-sci"); if(!list) return;
@@ -586,7 +587,7 @@
       var blockedTime=b.needsBirthTime&&!has;
       var disabled=!b.available||blockedTime;
       var checked=!!cSel[s]&&!disabled;
-      var note=!b.available?t("soon"):(blockedTime?t("needTime"):(BOOK_SCI_YAM+" 時"));
+      var note=!b.available?t("soon"):(blockedTime?t("needTime"):(s==="palmistry"?"0 時":(BOOK_SCI_YAM+" 時")));
       return '<label class="sci-item'+(checked?" checked":"")+(disabled?" disabled":"")+'" data-sci="'+s+'">'+
         '<input type="checkbox" data-sci-cb="'+s+'"'+(checked?" checked":"")+(disabled?" disabled":"")+'>'+
         '<span class="sci-name">'+esc(sciLabel(s))+'</span>'+
@@ -646,7 +647,7 @@
     cSubmitting=true; if(conf) conf.disabled=true;
     if(msg){ msg.className="cmodal-msg ok"; msg.textContent=t("creating"); }
     fetch("/api/book",{ method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin",
-      body: JSON.stringify({ profileId:cProfileId, sciences:sciences, includeSynthesis:includeSynth, lang:lang, force:1 }) })
+      body: JSON.stringify({ profileId:cProfileId, sciences:sciences, includeSynthesis:includeSynth, includePalm:!!cSel.palmistry, lang:lang, force:1 }) })
       .then(function(r){ return r.json().then(function(j){ return { status:r.status, j:j }; }); })
       .then(function(res){
         var j=res.j||{};
