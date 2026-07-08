@@ -3219,6 +3219,7 @@ export function buildJudgeBookPrompt(
   resonanceBlock?: string,
   daySniperBlock?: string,
   multiYearBlock?: string,
+  palmBlock?: string,
 ): string {
   const name = births[0]?.name || "เจ้าชะตา";
   const L: string[] = [];
@@ -3240,6 +3241,10 @@ export function buildJudgeBookPrompt(
   if (resonanceBlock) L.push(`\n${resonanceBlock}`);
   if (daySniperBlock) L.push(`\n${daySniperBlock}`);
   if (multiYearBlock) L.push(`\n=== MULTI_YEAR (ไทม์ไลน์หลายปี · engine คำนวณ) ===\n${multiYearBlock}`);
+  if (palmBlock) {
+    L.push(`\n${palmBlock}`);
+    L.push("บทลายมือ (หัตถศาสตร์) = ศาสตร์ที่ 7 อ่านจากฝ่ามือจริง · หลอมรวมเป็นบทหนึ่งของหนังสือ: ตรงกับศาสตร์อื่น=ยืนยันเพิ่ม, ต่าง=รายงานตรง · ห้ามเอาลายมือไปหักล้างศาสตร์อื่น");
+  }
   L.push(`\n=== คำสั่งเขียนบทปิดเล่ม (หนังสือดวงชะตา) ===\n${loadBookJudgeDirective(name)}`);
   L.push(`\n${MARKDOWN_FORMAT_CONTRACT}`);
   let out = L.join("\n");

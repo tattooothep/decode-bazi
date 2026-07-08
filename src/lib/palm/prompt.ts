@@ -114,3 +114,16 @@ export function reshootTargets(r: PalmReading): Array<{ target: string; region: 
     .filter(c => c.need_reshoot && c.target)
     .map(c => ({ target: c.target!, region: c.region || "", hint: c.hint || "" }));
 }
+
+/* ศาสตร์ที่ 7 · ลายมือ → block/บท สำหรับ judge (fusion + book ใช้ร่วม) · ไม่มีลายมือ = undefined */
+export function renderPalmBlock(reading: Record<string, unknown>, clarity: number | null): string | undefined {
+  const rd = reading as { reading?: { universal?: Array<Record<string, unknown>>; per_school?: Array<Record<string, unknown>> }; universal?: Array<Record<string, unknown>>; per_school?: Array<Record<string, unknown>>; summary?: string };
+  const uni = rd.reading?.universal || rd.universal || [];
+  const per = rd.reading?.per_school || rd.per_school || [];
+  if (!uni.length && !rd.summary) return undefined;
+  const L: string[] = [`=== ศาสตร์ที่ 7 · ลายมือ (หัตถศาสตร์) ว่า ===${clarity != null ? ` (ความชัดภาพ ${clarity}%)` : ""}`];
+  if (rd.summary) L.push(`สรุป: ${String(rd.summary).slice(0, 400)}`);
+  uni.slice(0, 5).forEach((u) => L.push(`• [แก่นสากล] ${u.title ? String(u.title) + ": " : ""}${String(u.text || "").slice(0, 300)}`));
+  per.slice(0, 3).forEach((pp) => L.push(`• [${String(pp.school || "")}] ${String(pp.text || "").slice(0, 300)}`));
+  return L.join("\n").slice(0, 2_000);
+}

@@ -11,9 +11,11 @@
 import { NextResponse } from "next/server";
 import { getSession, signSession, type Session } from "@/lib/auth";
 import { q1, q } from "@/lib/db";
+import { renderPalmBlock } from "@/lib/palm/prompt";
 import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
 import { createHash } from "crypto";
 import { DISCIPLINES, JUDGE_MODEL, type ScienceId } from "@/lib/fusion5/disciplines";
+import { isSifuAnswerLang } from "@/lib/sifu-answer-lang"; // r414-i18n9
 import {
   buildSciencePrompt, buildJudgeBookPrompt, loadBookDirective, resolveFusionTimingReference,
   BOOK_CHAPTER_ORDER, type BirthData,
@@ -194,6 +196,7 @@ type WorkerParams = {
   cookie: string;
   runSciences: ScienceId[];
   includeSynthesis: boolean;
+  includePalm: boolean;                // ศาสตร์ที่ 7: ลายมือ (toggle · ดึงที่บันทึก)
   birth: BookBirth;
   lang: string;
   yam: number;
@@ -310,11 +313,20 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
       ? renderResonanceBlockTh(p.resonance) : undefined;
     const dsBlock = p.resonance?.daySniper ? renderDaySniperTh(p.resonance.daySniper) : undefined;
     const multiYearBlock = buildBookMultiYear(runSciences, birth);
+    // ศาสตร์ที่ 7: ถ้าเลือกลายมือ → ดึงที่บันทึก → เข้าบทหลอมรวม
+    let palmBlock: string | undefined;
+    if (p.includePalm) {
+      try {
+        const pr = await q1<{ reading: Record<string, unknown>; clarity: number | null }>(
+          `SELECT reading, clarity FROM palm_readings WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1`, [p.userId]);
+        if (pr?.reading) palmBlock = renderPalmBlock(pr.reading, pr.clarity);
+      } catch { /* ไม่มีลายมือ = ข้าม */ }
+    }
     if (p.includeSynthesis && okChapters.length >= 2) {
       try {
         const jp = buildJudgeBookPrompt(
           okChapters.map((c) => ({ science: c.science, reply: c.markdown! })),
-          [birth], lang, resBlock, dsBlock, multiYearBlock || undefined,
+          [birth], lang, resBlock, dsBlock, multiYearBlock || undefined, palmBlock,
         );
         const jr = await callSifu(cookie, { message: name, externalPrompt: jp, lang }, JUDGE_MODEL);
         if (jr.ok && jr.reply) { synthesisMd = jr.reply; judgeOk = true; }
@@ -386,7 +398,7 @@ export async function POST(req: Request) {
 
     const profileId = cleanId(body.profileId || body.profile_id);
     if (!profileId) return NextResponse.json({ error: "profile_required" }, { status: 400 });
-    const lang = ["th", "en", "zh"].includes(String(body.lang)) ? String(body.lang) : "th";
+    const lang = isSifuAnswerLang(body.lang) ? String(body.lang) : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
 
     const birth = await loadBirth(profileId, orgId);
     if (!birth) return NextResponse.json({ error: "profile_not_found" }, { status: 404 });
@@ -410,6 +422,7 @@ export async function POST(req: Request) {
     const includeSynthesis = body.includeSynthesis === undefined
       ? true
       : (body.includeSynthesis === true || body.includeSynthesis === 1 || body.includeSynthesis === "1");
+    const includePalm = body.includePalm === true; // ศาสตร์ที่ 7: ลายมือ
 
     // ศาสตร์ที่รัน (r401 · ติ๊กเลือกได้): ส่ง sciences[] มา = validate ⊆ 6 available (ว่าง/ไม่ถูก = error)
     //   ไม่ส่ง sciences เลย = default ทุกศาสตร์ available (backward compat)
@@ -464,7 +477,7 @@ export async function POST(req: Request) {
     if (!row) { await refundHoursForUser(userId, yam, FEATURE).catch(() => {}); return NextResponse.json({ error: "book_create_failed" }, { status: 500 }); }
     chargedYam = 0; // worker รับช่วง refund แล้ว
 
-    void processBook(row.id, { userId, orgId, cookie, runSciences, includeSynthesis, birth, lang, yam, skipped, skippedReasons, resonance, started: Date.now() });
+    void processBook(row.id, { userId, orgId, cookie, runSciences, includeSynthesis, includePalm, birth, lang, yam, skipped, skippedReasons, resonance, started: Date.now() });
 
     return NextResponse.json({ bookId: row.id, status: "running", yam: { charged: yam }, sciences: runSciences, includeSynthesis, skipped, skippedReasons, profileName: birth.name });
   } catch {
@@ -517,7 +530,7 @@ export async function GET(req: Request) {
   // ?profileId=&lang= → คืน bookId ล่าสุดของ profile นั้น (frontend เช็คว่ามีเล่มแล้วหรือยัง · ไม่หักยาม)
   const qProfileId = cleanId(url.searchParams.get("profileId") || url.searchParams.get("profile_id"));
   if (qProfileId) {
-    const qpLang = ["th", "en", "zh"].includes(String(url.searchParams.get("lang"))) ? String(url.searchParams.get("lang")) : null;
+    const qpLang = isSifuAnswerLang(url.searchParams.get("lang")) ? String(url.searchParams.get("lang")) : null; // r414-i18n9
     const latest = await q1<{ id: string; status: string }>(
       `SELECT id, status FROM natal_books WHERE user_id=$1 AND profile_id=$2 ${qpLang ? "AND lang=$3" : ""} ORDER BY created_at DESC LIMIT 1`,
       qpLang ? [session.userId, qProfileId, qpLang] : [session.userId, qProfileId]);

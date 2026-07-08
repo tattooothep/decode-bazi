@@ -11,6 +11,7 @@
 import { NextResponse } from "next/server";
 import { getSession, signSession, type Session } from "@/lib/auth";
 import { q1, q } from "@/lib/db";
+import { renderPalmBlock } from "@/lib/palm/prompt";
 import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
 import { createHash } from "crypto";
 import { DISCIPLINES, computeYam, JUDGE_MODEL, JUDGE_YAM, type ScienceId } from "@/lib/fusion5/disciplines";
@@ -328,6 +329,7 @@ type WorkerParams = {
   threadProfileId: string | null;
   started: number;
   resonance: FusionResonance | null;   // r369: RESONANCE_PACKET (deterministic · คำนวณตอน POST)
+  includePalm: boolean;                // ศาสตร์ที่ 7: ลายมือ (toggle · ดึง palm_readings ที่บันทึก · ไม่ birth-based)
 };
 
 type Fusion5JobRow = {
@@ -515,19 +517,6 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
 
 /** 🔄 worker เบื้องหลัง · ไม่ผูก req.signal → user ปิดจอ/พับมือถือได้ งานวิ่งต่อบน server → เก็บผลลง DB
  *  เรียกแบบ detached (ไม่ await) · ต้องไม่ throw ออกนอก (อัปเดต job เสมอ ทั้งสำเร็จ/พลาด) */
-/* ศาสตร์ที่ 7 · ลายมือ → block เสริมให้ judge หลอมรวม (additive · user ไม่มีลายมือ = undefined ไม่กระทบ) */
-function renderPalmBlock(reading: Record<string, unknown>, clarity: number | null): string | undefined {
-  const rd = reading as { reading?: { universal?: Array<Record<string, unknown>>; per_school?: Array<Record<string, unknown>> }; universal?: Array<Record<string, unknown>>; per_school?: Array<Record<string, unknown>>; summary?: string };
-  const uni = rd.reading?.universal || rd.universal || [];
-  const per = rd.reading?.per_school || rd.per_school || [];
-  if (!uni.length && !rd.summary) return undefined;
-  const L: string[] = [`=== ศาสตร์ที่ 7 · ลายมือ (หัตถศาสตร์) ว่า ===${clarity != null ? ` (ความชัดภาพ ${clarity}%)` : ""}`];
-  if (rd.summary) L.push(`สรุป: ${String(rd.summary).slice(0, 400)}`);
-  uni.slice(0, 5).forEach((u) => L.push(`• [แก่นสากล] ${u.title ? String(u.title) + ": " : ""}${String(u.text || "").slice(0, 300)}`));
-  per.slice(0, 3).forEach((pp) => L.push(`• [${String(pp.school || "")}] ${String(pp.text || "").slice(0, 300)}`));
-  return L.join("\n").slice(0, 2_000);
-}
-
 async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
   try {
     const { cookie, runSciences, births, profileIds, question, lang, yam, skipped, userId } = p;
@@ -640,13 +629,15 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
           }
           myBlock = parts.length ? parts.join("\n\n").slice(0, 6_000) : undefined;
         }
-        // ศาสตร์ที่ 7: ถ้า user เคยบันทึกลายมือ → ต่อเข้า judge (additive · ไม่มี = ข้าม)
+        // ศาสตร์ที่ 7: ถ้า user ติ๊กเลือกลายมือ (includePalm) → ดึงลายมือที่บันทึก → ต่อเข้า judge เป็นบทที่ 7
         let palmBlock: string | undefined;
-        try {
-          const pr = await q1<{ reading: Record<string, unknown>; clarity: number | null }>(
-            `SELECT reading, clarity FROM palm_readings WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1`, [userId]);
-          if (pr?.reading) palmBlock = renderPalmBlock(pr.reading, pr.clarity);
-        } catch { /* ไม่มีตาราง/ลายมือ = ข้าม */ }
+        if (p.includePalm) {
+          try {
+            const pr = await q1<{ reading: Record<string, unknown>; clarity: number | null }>(
+              `SELECT reading, clarity FROM palm_readings WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1`, [userId]);
+            if (pr?.reading) palmBlock = renderPalmBlock(pr.reading, pr.clarity);
+          } catch { /* ไม่มีตาราง/ลายมือ = ข้าม */ }
+        }
         const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, resBlock, dsBlock, myBlock, palmBlock);
         const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL);
         judge = { ...jr, model: JUDGE_MODEL };
@@ -706,6 +697,7 @@ export async function POST(req: Request) {
     const sciences = (Array.isArray(body.sciences) ? body.sciences : [])
       .map((s) => String(s) as ScienceId)
       .filter((s) => DISCIPLINES[s]?.available);
+    const includePalm = body.includePalm === true; // ศาสตร์ที่ 7: ลายมือ (toggle · ดึงที่บันทึกไว้)
     const question = String(body.question || body.message || "").trim().slice(0, 2000);
     const lang = isSifuAnswerLang(body.lang) ? String(body.lang) : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
     const history = cleanHistory(body.history);
@@ -813,7 +805,7 @@ export async function POST(req: Request) {
     chargedYam = 0; // job รับช่วงดูแล refund แล้ว (outer catch ไม่ต้องคืนซ้ำ)
 
     // 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
-    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, guestBirths: guestInputs, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance });
+    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, guestBirths: guestInputs, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance, includePalm });
 
     return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, skippedReasons, profileNames: births.map((b) => b.name), pairMode: births.length > 1, guestBirths: guestInputs, resonance });
   } catch {
