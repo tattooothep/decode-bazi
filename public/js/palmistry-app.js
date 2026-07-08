@@ -18,6 +18,15 @@
     "up.tap":{th:"📷 ถ่าย / เลือกรูป",en:"📷 Shoot / pick",zh:"📷 拍照 / 選圖",cn:"📷 拍照 / 选图",vi:"📷 Chụp / chọn",ja:"📷 撮影 / 選択",ko:"📷 촬영 / 선택",ru:"📷 Снять / выбрать",es:"📷 Capturar / elegir"},
     "up.tap2":{th:"📷 ถ่าย / เลือกรูป",en:"📷 Shoot / pick",zh:"📷 拍照 / 選圖",cn:"📷 拍照 / 选图",vi:"📷 Chụp / chọn",ja:"📷 撮影 / 選択",ko:"📷 촬영 / 선택",ru:"📷 Снять / выбрать",es:"📷 Capturar / elegir"},
     "up.guide":{th:"💡 มือถนัด = ปัจจุบัน/อนาคต · อีกข้าง = พื้นดวงติดตัว · ถ่ายอย่างน้อย 1 ข้างก็เริ่มได้",en:"💡 Dominant hand = present/future · other = inborn nature · at least 1 hand to start",zh:"💡 慣用手＝現在/未來 · 另一手＝與生俱來 · 至少拍一隻手即可開始",cn:"💡 惯用手＝现在/未来 · 另一手＝与生俱来 · 至少拍一只手即可开始",vi:"💡 Tay thuận = hiện tại/tương lai · tay kia = bẩm sinh · chụp ít nhất 1 tay để bắt đầu",ja:"💡 利き手＝現在/未来 · もう一方＝生まれ持った性質 · 片手だけでも開始可",ko:"💡 주로 쓰는 손 = 현재/미래 · 다른 손 = 타고난 기질 · 한 손만으로도 시작 가능",ru:"💡 Ведущая рука = настоящее/будущее · другая = врождённое · достаточно 1 руки",es:"💡 Mano dominante = presente/futuro · la otra = naturaleza innata · basta 1 mano para empezar"},
+    "ctx.title":{th:"ข้อมูลสำหรับซินแส",en:"Sifu context",zh:"師傅參考資料",cn:"师傅参考资料",vi:"Thông tin cho thầy",ja:"鑑定の参考情報",ko:"풀이 참고 정보",ru:"Данные для мастера",es:"Contexto para el maestro"},
+    "ctx.dom":{th:"มือถนัด",en:"Dominant hand",zh:"慣用手",cn:"惯用手",vi:"Tay thuận",ja:"利き手",ko:"주로 쓰는 손",ru:"Ведущая рука",es:"Mano dominante"},
+    "ctx.dom_unknown":{th:"ไม่ระบุ",en:"Not specified",zh:"未指定",cn:"未指定",vi:"Không nêu",ja:"未指定",ko:"미지정",ru:"Не указано",es:"No especificada"},
+    "ctx.dom_right":{th:"มือขวา",en:"Right hand",zh:"右手",cn:"右手",vi:"Tay phải",ja:"右手",ko:"오른손",ru:"Правая",es:"Derecha"},
+    "ctx.dom_left":{th:"มือซ้าย",en:"Left hand",zh:"左手",cn:"左手",vi:"Tay trái",ja:"左手",ko:"왼손",ru:"Левая",es:"Izquierda"},
+    "ctx.age":{th:"ช่วงวัย/อายุโดยประมาณ",en:"Age range",zh:"年齡範圍",cn:"年龄范围",vi:"Khoảng tuổi",ja:"年齢の目安",ko:"연령대",ru:"Возрастной диапазон",es:"Rango de edad"},
+    "ctx.age_ph":{th:"เช่น 30-40",en:"e.g. 30-40",zh:"例如 30-40",cn:"例如 30-40",vi:"ví dụ 30-40",ja:"例 30-40",ko:"예: 30-40",ru:"например 30-40",es:"p. ej. 30-40"},
+    "ctx.q":{th:"คำถามหลัก",en:"Main question",zh:"主要問題",cn:"主要问题",vi:"Câu hỏi chính",ja:"主な質問",ko:"주요 질문",ru:"Главный вопрос",es:"Pregunta principal"},
+    "ctx.q_ph":{th:"งาน เงิน ความรัก หรือภาพรวมชีวิต",en:"career, money, love, or life overview",zh:"事業、財運、感情或人生總覽",cn:"事业、财运、感情或人生总览",vi:"sự nghiệp, tiền bạc, tình cảm hoặc tổng quan",ja:"仕事、金運、恋愛、人生全体",ko:"일, 돈, 사랑 또는 인생 전반",ru:"работа, деньги, любовь или обзор жизни",es:"trabajo, dinero, amor o panorama vital"},
     "up.btn":{th:"✋ วิเคราะห์ลายมือ",en:"✋ Read my palm",zh:"✋ 解讀掌紋",cn:"✋ 解读掌纹",vi:"✋ Xem chỉ tay",ja:"✋ 手相を読む",ko:"✋ 손금 보기",ru:"✋ Прочитать ладонь",es:"✋ Leer mi mano"},
     "up.privacy":{th:"🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก",en:"🔒 Photos are deleted right after reading, never stored · saved only if you choose",zh:"🔒 圖片解讀後立即刪除，不存伺服器 · 你選擇才會保存",cn:"🔒 图片解读后立即删除，不存服务器 · 你选择才会保存",vi:"🔒 Ảnh bị xóa ngay sau khi đọc, không lưu trên máy chủ · chỉ lưu nếu bạn chọn",ja:"🔒 画像は読み取り後すぐ削除、サーバー保存なし · 選択時のみ保存",ko:"🔒 사진은 판독 후 즉시 삭제, 서버 저장 안 함 · 선택 시에만 저장",ru:"🔒 Фото удаляются сразу после чтения, не хранятся · сохраняются только по вашему выбору",es:"🔒 Las fotos se borran tras la lectura, no se almacenan · se guardan solo si eliges"},
     "an.title":{th:"กำลังอ่านลายมือ",en:"Reading your palm",zh:"正在解讀掌紋",cn:"正在解读掌纹",vi:"Đang đọc chỉ tay",ja:"手相を読み取り中",ko:"손금 읽는 중",ru:"Читаем ладонь",es:"Leyendo tu mano"},
@@ -38,6 +47,17 @@
     "rt.save":{th:"💾 บันทึกเป็นศาสตร์ที่ 7",en:"💾 Save as the 7th art",zh:"💾 存為第七術",cn:"💾 存为第七术",vi:"💾 Lưu thành môn thứ 7",ja:"💾 第七の術として保存",ko:"💾 제7의 술로 저장",ru:"💾 Сохранить как 7-е искусство",es:"💾 Guardar como el 7.º arte"},
     "rt.saveNote":{th:"บันทึกแล้ว → ลายมือเข้าไปหลอมรวมกับปาจื้อ/ดาว/จื่อเหวย… ในหน้าดูดวงรวม",en:"Once saved → your palm fuses with BaZi/astrology/Ziwei… in the unified reading",zh:"保存後 → 掌紋與八字/星盤/紫微…在合盤中融合",cn:"保存后 → 掌纹与八字/星盘/紫微…在合盘中融合",vi:"Sau khi lưu → chỉ tay hợp nhất với Bát Tự/chiêm tinh/Tử Vi… trong lá số tổng hợp",ja:"保存後 → 手相が八字/占星/紫微…と統合鑑定で融合",ko:"저장 후 → 손금이 사주/점성/자미…와 통합 풀이에서 융합",ru:"После сохранения → ладонь объединится с Бацзы/астрологией/Цзывэй… в общем чтении",es:"Al guardar → tu mano se fusiona con BaZi/astrología/Ziwei… en la lectura unificada"},
     "rt.restart":{th:"↺ เริ่มใหม่",en:"↺ Start over",zh:"↺ 重新開始",cn:"↺ 重新开始",vi:"↺ Bắt đầu lại",ja:"↺ 最初から",ko:"↺ 다시 시작",ru:"↺ Заново",es:"↺ Empezar de nuevo"},
+    "c.nav.chart":{th:"ดวง",en:"Chart",zh:"命盤",cn:"命盘",vi:"Lá số",ja:"命式",ko:"사주",ru:"Карта",es:"Carta"},
+    "c.nav.today":{th:"วันนี้",en:"Today",zh:"今日",cn:"今日",vi:"Hôm nay",ja:"今日",ko:"오늘",ru:"Сегодня",es:"Hoy"},
+    "c.nav.calendar":{th:"ปฏิทิน",en:"Calendar",zh:"吉曆",cn:"吉历",vi:"Lịch",ja:"暦",ko:"달력",ru:"Календарь",es:"Calendario"},
+    "c.nav.network":{th:"เครือข่าย",en:"Network",zh:"人脈",cn:"人脉",vi:"Mạng lưới",ja:"人脈",ko:"네트워크",ru:"Сеть",es:"Red"},
+    "c.nav.qimen":{th:"ฉีเหมิน",en:"Qi Men",zh:"奇門",cn:"奇门",vi:"Kỳ Môn",ja:"奇門",ko:"기문",ru:"Ци Мэнь",es:"Qi Men"},
+    "hk.nav.forecast":{th:"พยากรณ์",en:"Forecast",zh:"占卜",cn:"占卜",vi:"Dự đoán",ja:"占い",ko:"운세",ru:"Прогноз",es:"Pronóstico"},
+    "c.nav.master":{th:"ซินแส",en:"Sifu",zh:"老師",cn:"老师",vi:"Sư phụ",ja:"老師",ko:"스승",ru:"Мастер",es:"Sifu"},
+    "c.nav.picker":{th:"วางฤกษ์",en:"Picker",zh:"擇日",cn:"择日",vi:"Trạch Nhật",ja:"択日",ko:"택일",ru:"Дата",es:"Fecha"},
+    "c.nav.fengshui":{th:"ทิศมงคล",en:"Direction",zh:"方位",cn:"方位",vi:"Hướng tốt",ja:"方位",ko:"방위",ru:"Направление",es:"Dirección"},
+    "c.nav.luopan":{th:"หล่อแก",en:"Luopan",zh:"羅盤",cn:"罗盘",vi:"La Bàn",ja:"羅盤",ko:"나경",ru:"Лопань",es:"Luopan"},
+    "c.nav.palmistry":{th:"ลายมือ",en:"Palm",zh:"手相",cn:"手相",vi:"Chỉ tay",ja:"手相",ko:"손금",ru:"Ладонь",es:"Mano"},
     home:{th:"← กลับหน้าหลัก",en:"← Back home",zh:"← 返回首頁",cn:"← 返回首页",vi:"← Về trang chủ",ja:"← ホームへ",ko:"← 홈으로",ru:"← На главную",es:"← Volver al inicio"}
   };
 
@@ -62,7 +82,18 @@
     errBlur:{th:"รูปเบลอเกินไป อ่านไม่ได้ กรุณาถ่ายใหม่ให้ชัด",en:"Photo too blurry to read — please retake it sharper",zh:"圖片太模糊無法解讀，請重拍清楚",cn:"图片太模糊无法解读，请重拍清楚",vi:"Ảnh quá mờ không đọc được — chụp lại rõ hơn",ja:"画像がぼやけて読めません — 鮮明に撮り直してください",ko:"사진이 너무 흐려 판독 불가 — 선명하게 다시 촬영하세요",ru:"Фото слишком размыто — переснимите чётче",es:"Foto demasiado borrosa — vuelve a tomarla más nítida"},
     saved:{th:"บันทึกแล้ว ✓",en:"Saved ✓",zh:"已保存 ✓",cn:"已保存 ✓",vi:"Đã lưu ✓",ja:"保存しました ✓",ko:"저장됨 ✓",ru:"Сохранено ✓",es:"Guardado ✓"},
     goFusion:{th:"🔮 เอาไปรวมกับดวง 7 ศาสตร์",en:"🔮 Fuse into your 7-art reading",zh:"🔮 融入七術合盤",cn:"🔮 融入七术合盘",vi:"🔮 Hợp nhất lá số 7 môn",ja:"🔮 7つの術で統合鑑定",ko:"🔮 7술 통합 풀이로",ru:"🔮 В чтение 7 искусств",es:"🔮 Fusionar con las 7 artes"},
-    loginSave:{th:"เข้าสู่ระบบก่อนบันทึก",en:"Please log in to save",zh:"請先登入再保存",cn:"请先登录再保存",vi:"Đăng nhập để lưu",ja:"保存にはログインが必要",ko:"저장하려면 로그인",ru:"Войдите, чтобы сохранить",es:"Inicia sesión para guardar"}
+    loginSave:{th:"เข้าสู่ระบบก่อนบันทึก",en:"Please log in to save",zh:"請先登入再保存",cn:"请先登录再保存",vi:"Đăng nhập để lưu",ja:"保存にはログインが必要",ko:"저장하려면 로그인",ru:"Войдите, чтобы сохранить",es:"Inicia sesión para guardar"},
+    seen:{th:"สิ่งที่เห็นบนมือ",en:"Seen on the hand",zh:"手上所見",cn:"手上所见",vi:"Điều thấy trên tay",ja:"手に見える点",ko:"손에서 보이는 점",ru:"Что видно на руке",es:"Lo visto en la mano"},
+    meaning:{th:"ความหมาย",en:"Meaning",zh:"含義",cn:"含义",vi:"Ý nghĩa",ja:"意味",ko:"의미",ru:"Смысл",es:"Significado"},
+    advice:{th:"คำแนะนำ",en:"Advice",zh:"建議",cn:"建议",vi:"Lời khuyên",ja:"助言",ko:"조언",ru:"Совет",es:"Consejo"},
+    final:{th:"สรุปท้ายคำอ่าน",en:"Final summary",zh:"總結",cn:"总结",vi:"Tổng kết",ja:"まとめ",ko:"최종 요약",ru:"Итог",es:"Resumen final"},
+    best:{th:"จุดแข็งที่สุด",en:"Best strength",zh:"最強優勢",cn:"最强优势",vi:"Điểm mạnh nhất",ja:"最大の強み",ko:"가장 큰 강점",ru:"Главная сила",es:"Mayor fortaleza"},
+    risk:{th:"จุดที่ต้องระวังที่สุด",en:"Main caution",zh:"最需留意",cn:"最需留意",vi:"Điểm cần lưu ý nhất",ja:"最大の注意点",ko:"가장 주의할 점",ru:"Главный риск",es:"Mayor cuidado"},
+    work:{th:"งานที่เหมาะ",en:"Suitable work",zh:"適合工作",cn:"适合工作",vi:"Công việc hợp",ja:"向く仕事",ko:"맞는 일",ru:"Подходящая работа",es:"Trabajo adecuado"},
+    money:{th:"วิธีหาเงินที่เหมาะ",en:"Money style",zh:"財路方式",cn:"财路方式",vi:"Cách kiếm tiền hợp",ja:"合う稼ぎ方",ko:"맞는 돈 버는 방식",ru:"Способ заработка",es:"Forma adecuada de ganar dinero"},
+    love:{th:"ความรักควรปรับตรงไหน",en:"Love adjustment",zh:"感情調整",cn:"感情调整",vi:"Điều chỉnh tình cảm",ja:"恋愛で整える点",ko:"관계에서 조정할 점",ru:"Что настроить в отношениях",es:"Ajuste en el amor"},
+    adv3:{th:"คำแนะนำ 3 ข้อ",en:"3 practical steps",zh:"三點建議",cn:"三点建议",vi:"3 lời khuyên",ja:"3つの助言",ko:"실천 조언 3가지",ru:"3 практических шага",es:"3 consejos prácticos"},
+    sifuSum:{th:"สรุปซินแส",en:"Sifu summary",zh:"師傅總結",cn:"师傅总结",vi:"Tổng kết của thầy",ja:"師傅のまとめ",ko:"스승 요약",ru:"Итог мастера",es:"Resumen del maestro"}
   };
 
   function getLang() {
@@ -83,6 +114,10 @@
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       var v = I18N[el.getAttribute("data-i18n")];
       if (v) el.textContent = pick(v, lang);
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var v = I18N[el.getAttribute("data-i18n-placeholder")];
+      if (v) el.setAttribute("placeholder", pick(v, lang));
     });
     if (curResult) renderResult(curResult); // re-render dynamic ถ้าเปลี่ยนภาษาหลังอ่าน
   }
@@ -158,9 +193,12 @@
   function buildForm() {
     var fd = new FormData();
     fd.append("lang", getLang());
-    if (imgs.left) { fd.append("images", imgs.left); fd.append("roles", "left"); fd.append("targets", "undefined"); }
-    if (imgs.right) { fd.append("images", imgs.right); fd.append("roles", "right"); fd.append("targets", "undefined"); }
-    imgs.closeups.forEach(function (c) { fd.append("images", c.file); fd.append("roles", "closeup"); fd.append("targets", c.target || "undefined"); });
+    fd.append("dominant_hand", ($("dominantHand") && $("dominantHand").value) || "unknown");
+    fd.append("age_range", (($("ageRange") && $("ageRange").value) || "").slice(0, 40));
+    fd.append("question", (($("mainQuestion") && $("mainQuestion").value) || "").slice(0, 180));
+    if (imgs.left) { fd.append("images", imgs.left); fd.append("roles", "left"); fd.append("targets", "undefined"); fd.append("hands", "left"); }
+    if (imgs.right) { fd.append("images", imgs.right); fd.append("roles", "right"); fd.append("targets", "undefined"); fd.append("hands", "right"); }
+    imgs.closeups.forEach(function (c) { fd.append("images", c.file); fd.append("roles", "closeup"); fd.append("targets", c.target || "undefined"); fd.append("hands", c.hand || "unknown"); });
     return fd;
   }
   function analyze() {
@@ -187,7 +225,8 @@
   function onResult(j) {
     curResult = j;
     var reshoot = (j.reshoot || []);
-    if (reshoot.length && !j.needs_better_photo && j.reading) { pendingReshoot = j; renderReshoot(j); show("stReshoot"); }
+    var needsBetter = !!(j.needs_better_photo || (j.reading && j.reading.needs_better_photo));
+    if (reshoot.length && !needsBetter && j.reading) { pendingReshoot = j; renderReshoot(j); show("stReshoot"); }
     else { renderResult(j); show("stResult"); }
   }
 
@@ -221,17 +260,18 @@
     (j.reshoot || []).forEach(function (rs, idx) {
       var L = LINE[rs.target] || {};
       var card = document.createElement("div"); card.className = "rs-card"; card.setAttribute("tabindex", "0"); card.setAttribute("role", "button");
-      card.innerHTML = '<div class="rs-ic">🔍</div><div><b>' + (rs.region || pick(L.nm || {}, lang)) + '</b><span>' + (rs.hint || "") + '</span></div><div class="rs-cam">📷</div>';
-      card.addEventListener("click", function () { captureCloseup(rs.target, card); });
-      card.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); captureCloseup(rs.target, card); } });
+      var handTxt = (rs.hand === "left" || rs.hand === "right") ? ' · <i class="rs-hand">' + t("up." + rs.hand) + '</i>' : "";
+      card.innerHTML = '<div class="rs-ic">🔍</div><div><b>' + (rs.region || pick(L.nm || {}, lang)) + handTxt + '</b><span>' + (rs.hint || "") + '</span></div><div class="rs-cam">📷</div>';
+      card.addEventListener("click", function () { captureCloseup(rs.target, rs.hand, card); });
+      card.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); captureCloseup(rs.target, rs.hand, card); } });
       rb.appendChild(card);
     });
   }
-  function captureCloseup(target, card) {
+  function captureCloseup(target, hand, card) {
     var f = $("fileClose");
     f.onchange = function () {
       if (!f.files || !f.files[0]) return;
-      imgs.closeups.push({ file: f.files[0], target: target });
+      imgs.closeups.push({ file: f.files[0], target: target, hand: (hand === "left" || hand === "right") ? hand : "unknown" });
       var url = URL.createObjectURL(f.files[0]);
       var img = document.createElement("img"); img.className = "prev"; img.src = url; img.alt = "";
       card.insertBefore(img, card.firstChild); card.classList.add("done");
@@ -253,6 +293,8 @@
     var vb = $("verdictBox");
     if (uni[0]) vb.innerHTML = '<span class="lab">' + pick(MSG.t1, lang) + '</span><p>' + esc(uni[0].text || uni[0].title || "") + '</p>';
     else vb.innerHTML = '<span class="lab">' + pick(MSG.t1, lang) + '</span><p>' + esc(rd.summary || j.reading.summary || "") + '</p>';
+
+    renderSifu(rd.sifu_reading || j.sifu_reading);
 
     // lines
     var lb = $("linesBox"); lb.innerHTML = "";
@@ -279,6 +321,67 @@
     }), false));
 
     setClarity();
+  }
+  function renderSifu(sifu) {
+    var lang = getLang();
+    var box = $("sifuBox");
+    if (!box) return;
+    box.innerHTML = "";
+    if (!sifu) { box.classList.add("hidden"); return; }
+    box.classList.remove("hidden");
+    if (sifu.opening) {
+      var open = document.createElement("div");
+      open.className = "sifu-card sifu-open";
+      open.textContent = sifu.opening;
+      box.appendChild(open);
+    }
+    var ov = (sifu.overview_3_lines && typeof sifu.overview_3_lines === "object") ? sifu.overview_3_lines : {};
+    if (ov.identity || ov.strength || ov.caution) {
+      var card = document.createElement("div");
+      card.className = "sifu-card overview";
+      card.innerHTML = [
+        ov.identity ? '<div class="ovline"><b>1.</b> ' + esc(ov.identity) + '</div>' : "",
+        ov.strength ? '<div class="ovline"><b>2.</b> ' + esc(ov.strength) + '</div>' : "",
+        ov.caution ? '<div class="ovline"><b>3.</b> ' + esc(ov.caution) + '</div>' : "",
+      ].join("");
+      box.appendChild(card);
+    }
+    var sections = Array.isArray(sifu.sections) ? sifu.sections : [];
+    sections.forEach(function (sec) {
+      var card = document.createElement("div");
+      var conf = ["high", "medium", "low"].indexOf(sec.confidence) !== -1 ? sec.confidence : "medium";
+      card.className = "sifu-card ssec";
+      card.innerHTML =
+        '<h3>' + esc(sec.title || "") + '<span class="confidence ' + conf + '">' + esc(conf) + '</span></h3>' +
+        rowHtml("seen", sec.seen) +
+        rowHtml("meaning", sec.meaning) +
+        rowHtml("advice", sec.advice);
+      box.appendChild(card);
+    });
+    var fin = (sifu.final_summary && typeof sifu.final_summary === "object") ? sifu.final_summary : {};
+    if (Object.keys(fin).length) {
+      var f = document.createElement("div");
+      f.className = "sifu-card sfinal";
+      var advice = Array.isArray(fin.advice_3) ? fin.advice_3 : [];
+      f.innerHTML =
+        '<div class="ctx-title">' + esc(pick(MSG.final, lang)) + '</div>' +
+        sumLine("best", fin.best_strength) +
+        sumLine("risk", fin.main_risk) +
+        sumLine("work", fin.suitable_work) +
+        sumLine("money", fin.money_style) +
+        sumLine("love", fin.love_adjustment) +
+        (advice.length ? '<div class="sumline"><b>' + esc(pick(MSG.adv3, lang)) + '</b><ul>' + advice.slice(0, 3).map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ul></div>' : "") +
+        sumLine("sifuSum", fin.sifu_summary);
+      box.appendChild(f);
+    }
+  }
+  function rowHtml(k, v) {
+    if (!v) return "";
+    return '<div class="srow"><b>' + esc(pick(MSG[k], getLang())) + ":</b> " + esc(v) + '</div>';
+  }
+  function sumLine(k, v) {
+    if (!v) return "";
+    return '<div class="sumline"><b>' + esc(pick(MSG[k], getLang())) + ":</b> " + esc(v) + '</div>';
   }
   function tierEl(name, flag, badge, items, open) {
     var d = document.createElement("details"); d.className = "tier"; if (open) d.open = true;

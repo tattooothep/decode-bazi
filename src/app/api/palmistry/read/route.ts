@@ -10,7 +10,7 @@ import os from "os";
 import path from "path";
 import { randomUUID } from "crypto";
 import { readPalmVision } from "@/lib/palm/vision";
-import { loadPalmCanon, buildPalmPrompt, parsePalmResult, reshootTargets, type PalmImageMeta } from "@/lib/palm/prompt";
+import { loadPalmCanon, buildPalmPrompt, parsePalmResult, reshootTargets, type PalmContext, type PalmImageMeta } from "@/lib/palm/prompt";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,12 +21,21 @@ const MAX_BYTES = 12 * 1024 * 1024; // 12MB/รูป
 const ENHANCE = path.join(process.cwd(), "scripts/palm-enhance.py");
 const ALLOWED_ROLES = new Set(["left", "right", "closeup"]);
 const ALLOWED_TARGETS = new Set(["life", "head", "heart", "fate", "palm", "mount", "finger", "thumb"]); // whitelist กัน prompt injection ผ่าน targets
+const ALLOWED_DOMINANT = new Set(["left", "right", "unknown"]);
 function isImageMagic(b: Buffer): boolean {
   if (b.length < 12) return false;
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return true; // JPEG
   if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return true; // PNG
   if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42) return true; // WEBP (RIFF..WEB)
   return false;
+}
+
+function cleanText(v: FormDataEntryValue | null, max: number): string {
+  return String(v || "")
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
 }
 
 /* rate limit เบา ๆ in-memory: 15 คำขอ/นาที/ip */
@@ -72,7 +81,14 @@ export async function POST(req: NextRequest) {
 
   const roles = form.getAll("roles").map(String);
   const targets = form.getAll("targets").map(String);
+  const hands = form.getAll("hands").map(String); // มือของแต่ละรูป (โดยเฉพาะ closeup: ซูมนี้ของมือซ้าย/ขวา)
   const lang = (String(form.get("lang") || "th").toLowerCase().split("-")[0]) || "th";
+  const rawDominant = cleanText(form.get("dominant_hand"), 12).toLowerCase();
+  const context: PalmContext = {
+    dominantHand: (ALLOWED_DOMINANT.has(rawDominant) ? rawDominant : "unknown") as PalmContext["dominantHand"],
+    ageRange: cleanText(form.get("age_range"), 40),
+    question: cleanText(form.get("question"), 180),
+  };
 
   const dir = await mkdtemp(path.join(os.tmpdir(), "palm-"));
   await chmod(dir, 0o755); // ให้ user jarvis (codex) เข้าถึงได้
@@ -96,14 +112,19 @@ export async function POST(req: NextRequest) {
 
       const role = (ALLOWED_ROLES.has(roles[i]) ? roles[i] : (i === 0 ? "left" : i === 1 ? "right" : "closeup")) as PalmImageMeta["role"];
       const target = ALLOWED_TARGETS.has(targets[i]) ? targets[i] : undefined; // sanitize กัน injection
-      const label = role === "left" ? "ฝ่ามือซ้าย" : role === "right" ? "ฝ่ามือขวา" : `ภาพซูมเสริม${target ? " เก็บ" + target : ""}`;
-      metas.push({ role, target, label });
+      // มือของรูปนี้: closeup อ่านจาก hands[] (frontend ส่งมาว่าซูมมือไหน) · รูปเต็มซ้าย/ขวา = มือตาม role เอง
+      const hand = (hands[i] === "left" || hands[i] === "right") ? hands[i] as "left" | "right"
+        : (role === "left" || role === "right") ? role as "left" | "right" : undefined;
+      const handLabel = hand === "left" ? "มือซ้าย" : hand === "right" ? "มือขวา" : "";
+      const label = role === "left" ? "ฝ่ามือซ้าย" : role === "right" ? "ฝ่ามือขวา"
+        : `ภาพซูมเสริม${handLabel ? " (" + handLabel + ")" : ""}${target ? " เก็บ" + target : ""}`;
+      metas.push({ role, target, label, hand });
       clarityHints.push({ label, clarity: en.clarity, advise: en.advise });
     }
 
     // 2) build prompt + อ่าน
     const canon = await loadPalmCanon();
-    const prompt = buildPalmPrompt({ canon, lang, images: metas, clarityHints });
+    const prompt = buildPalmPrompt({ canon, lang, images: metas, clarityHints, context });
     const vision = await readPalmVision(sendPaths, prompt, req.signal);
 
     // 3) parse
