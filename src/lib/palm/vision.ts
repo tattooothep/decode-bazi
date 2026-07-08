@@ -100,7 +100,13 @@ async function runGeminiVision(imagePaths: string[], prompt: string, signal?: Ab
 /* ── grok-4.3 vision (ตัวนำ): xAI API + OAuth token จาก grok CLI login ──
  * token อ่านสดทุก request (grok CLI refresh ให้เอง · service รันเป็น root อ่าน /root/.grok/auth.json ได้) */
 function grokToken(): string {
-  const raw = JSON.parse(readFileSync(GROK_AUTH_PATH, "utf8")) as Record<string, { key?: string }>;
+  let raw: Record<string, { key?: string }>;
+  try {
+    raw = JSON.parse(readFileSync(GROK_AUTH_PATH, "utf8")) as Record<string, { key?: string }>;
+  } catch {
+    // ห้ามให้ SyntaxError ฝังเนื้อ auth.json/token ลง log — โยน error กลางแทน
+    throw new Error("grok_auth_parse_fail");
+  }
   const entry = Object.values(raw)[0];
   const tok = entry?.key;
   if (!tok) throw new Error("grok_no_token");

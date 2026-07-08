@@ -25,6 +25,7 @@
     "ctx.dom_left":{th:"มือซ้าย",en:"Left hand",zh:"左手",cn:"左手",vi:"Tay trái",ja:"左手",ko:"왼손",ru:"Левая",es:"Izquierda"},
     "ctx.age":{th:"ช่วงวัย/อายุโดยประมาณ",en:"Age range",zh:"年齡範圍",cn:"年龄范围",vi:"Khoảng tuổi",ja:"年齢の目安",ko:"연령대",ru:"Возрастной диапазон",es:"Rango de edad"},
     "ctx.age_ph":{th:"เช่น 30-40",en:"e.g. 30-40",zh:"例如 30-40",cn:"例如 30-40",vi:"ví dụ 30-40",ja:"例 30-40",ko:"예: 30-40",ru:"например 30-40",es:"p. ej. 30-40"},
+    "ctx.fromProfile":{th:"ใช้วันเกิด/เพศจากโปรไฟล์",en:"Using birth date/gender from your profile",zh:"已套用個人檔案的生日/性別",cn:"已套用个人档案的生日/性别",vi:"Dùng ngày sinh/giới tính từ hồ sơ",ja:"プロフィールの生年月日・性別を使用",ko:"프로필의 생년월일·성별 사용",ru:"Дата рождения/пол из профиля",es:"Usando fecha de nacimiento/sexo del perfil"},
     "ctx.q":{th:"คำถามหลัก",en:"Main question",zh:"主要問題",cn:"主要问题",vi:"Câu hỏi chính",ja:"主な質問",ko:"주요 질문",ru:"Главный вопрос",es:"Pregunta principal"},
     "ctx.q_ph":{th:"งาน เงิน ความรัก หรือภาพรวมชีวิต",en:"career, money, love, or life overview",zh:"事業、財運、感情或人生總覽",cn:"事业、财运、感情或人生总览",vi:"sự nghiệp, tiền bạc, tình cảm hoặc tổng quan",ja:"仕事、金運、恋愛、人生全体",ko:"일, 돈, 사랑 또는 인생 전반",ru:"работа, деньги, любовь или обзор жизни",es:"trabajo, dinero, amor o panorama vital"},
     "up.btn":{th:"✋ วิเคราะห์ลายมือ",en:"✋ Read my palm",zh:"✋ 解讀掌紋",cn:"✋ 解读掌纹",vi:"✋ Xem chỉ tay",ja:"✋ 手相を読む",ko:"✋ 손금 보기",ru:"✋ Прочитать ладонь",es:"✋ Leer mi mano"},
@@ -45,6 +46,10 @@
     "rs.privacy":{th:"รูปเสริมรวมกับชุดเดิม ส่งอ่านพร้อมกัน · ไม่เก็บบนเซิร์ฟเวอร์",en:"Extra photos join the set, read together · never stored",zh:"補充圖與原圖一起解讀 · 不存伺服器",cn:"补充图与原图一起解读 · 不存服务器",vi:"Ảnh bổ sung ghép cùng bộ, đọc chung · không lưu trữ",ja:"追加画像は元の組と一緒に読み取り · 保存なし",ko:"추가 사진은 기존 세트와 함께 판독 · 저장 안 함",ru:"Доп. фото добавляются к набору, читаются вместе · не хранятся",es:"Las fotos extra se unen al conjunto, se leen juntas · no se almacenan"},
     "rt.title":{th:"คำอ่านลายมือ",en:"Your palm reading",zh:"掌紋解讀",cn:"掌纹解读",vi:"Lời giải chỉ tay",ja:"手相の結果",ko:"손금 풀이",ru:"Чтение вашей ладони",es:"Tu lectura de mano"},
     "rt.save":{th:"💾 บันทึกเป็นศาสตร์ที่ 7",en:"💾 Save as the 7th art",zh:"💾 存為第七術",cn:"💾 存为第七术",vi:"💾 Lưu thành môn thứ 7",ja:"💾 第七の術として保存",ko:"💾 제7의 술로 저장",ru:"💾 Сохранить как 7-е искусство",es:"💾 Guardar como el 7.º arte"},
+    "rt.saveAs":{th:"บันทึกเป็นลายมือของ",en:"Save this palm reading for",zh:"儲存這份手相給",cn:"储存这份手相给",vi:"Lưu chỉ tay này cho",ja:"この手相を保存する対象",ko:"이 손금을 저장할 대상",ru:"Сохранить это чтение ладони для",es:"Guardar esta lectura para"},
+    "palm.hist.title":{th:"ลายมือที่บันทึกของดวงนี้",en:"Saved palm readings for this person",zh:"此人已存的手相",cn:"此人已存的手相",vi:"Chỉ tay đã lưu của người này",ja:"この人の保存済み手相",ko:"이 사람의 저장된 손금",ru:"Сохранённые чтения ладони",es:"Lecturas guardadas de esta persona"},
+    "palm.hist.delete":{th:"ลบ",en:"Delete",zh:"刪除",cn:"删除",vi:"Xóa",ja:"削除",ko:"삭제",ru:"Удалить",es:"Eliminar"},
+    "palm.del.confirm":{th:"ลบลายมือที่บันทึกนี้?",en:"Delete this saved reading?",zh:"刪除這份已存手相？",cn:"删除这份已存手相？",vi:"Xóa bản lưu này?",ja:"この保存を削除しますか？",ko:"이 저장을 삭제할까요?",ru:"Удалить это сохранение?",es:"¿Eliminar esta lectura guardada?"},
     "rt.saveNote":{th:"บันทึกแล้ว → ลายมือเข้าไปหลอมรวมกับปาจื้อ/ดาว/จื่อเหวย… ในหน้าดูดวงรวม",en:"Once saved → your palm fuses with BaZi/astrology/Ziwei… in the unified reading",zh:"保存後 → 掌紋與八字/星盤/紫微…在合盤中融合",cn:"保存后 → 掌纹与八字/星盘/紫微…在合盘中融合",vi:"Sau khi lưu → chỉ tay hợp nhất với Bát Tự/chiêm tinh/Tử Vi… trong lá số tổng hợp",ja:"保存後 → 手相が八字/占星/紫微…と統合鑑定で融合",ko:"저장 후 → 손금이 사주/점성/자미…와 통합 풀이에서 융합",ru:"После сохранения → ладонь объединится с Бацзы/астрологией/Цзывэй… в общем чтении",es:"Al guardar → tu mano se fusiona con BaZi/astrología/Ziwei… en la lectura unificada"},
     "rt.restart":{th:"↺ เริ่มใหม่",en:"↺ Start over",zh:"↺ 重新開始",cn:"↺ 重新开始",vi:"↺ Bắt đầu lại",ja:"↺ 最初から",ko:"↺ 다시 시작",ru:"↺ Заново",es:"↺ Empezar de nuevo"},
     "c.nav.chart":{th:"ดวง",en:"Chart",zh:"命盤",cn:"命盘",vi:"Lá số",ja:"命式",ko:"사주",ru:"Карта",es:"Carta"},
@@ -125,6 +130,7 @@
   /* ── state ── */
   var $ = function (id) { return document.getElementById(id); };
   var imgs = { left: null, right: null, closeups: [] }; // File objects (ในเครื่อง ไม่อัปถาวร)
+  var profileCtx = { gender: "", birthDate: "" }; // login แล้ว auto จาก /api/profile (วันเกิด/เพศ)
   var curResult = null, pendingReshoot = null, progTimer = null;
 
   function show(id) {
@@ -196,6 +202,8 @@
     fd.append("dominant_hand", ($("dominantHand") && $("dominantHand").value) || "unknown");
     fd.append("age_range", (($("ageRange") && $("ageRange").value) || "").slice(0, 40));
     fd.append("question", (($("mainQuestion") && $("mainQuestion").value) || "").slice(0, 180));
+    if (profileCtx.gender) fd.append("gender", profileCtx.gender);
+    if (profileCtx.birthDate) fd.append("birth_date", profileCtx.birthDate);
     if (imgs.left) { fd.append("images", imgs.left); fd.append("roles", "left"); fd.append("targets", "undefined"); fd.append("hands", "left"); }
     if (imgs.right) { fd.append("images", imgs.right); fd.append("roles", "right"); fd.append("targets", "undefined"); fd.append("hands", "right"); }
     imgs.closeups.forEach(function (c) { fd.append("images", c.file); fd.append("roles", "closeup"); fd.append("targets", c.target || "undefined"); fd.append("hands", c.hand || "unknown"); });
@@ -393,15 +401,46 @@
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
 
+  /* ── ประวัติลายมือของดวงที่เลือก (เพิ่ม/ลบได้ในหน้านี้) ── */
+  function fmtDate(s) { try { return new Date(s).toLocaleDateString(getLang() === "th" ? "th-TH" : undefined); } catch (e) { return String(s).slice(0, 10); } }
+  function loadPalmHistory(pid) {
+    var box = $("palmHistory"); if (!box) return;
+    fetch("/api/palmistry/list" + (pid ? "?profile_id=" + encodeURIComponent(pid) : ""), { credentials: "include", cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var rs = (j && j.ok && j.readings) || [];
+        if (!rs.length) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+        box.classList.remove("hidden");
+        box.innerHTML = '<div class="ph-title">' + t("palm.hist.title") + " (" + rs.length + ")</div>";
+        rs.forEach(function (it) {
+          var row = document.createElement("div"); row.className = "ph-item";
+          var info = document.createElement("span");
+          info.textContent = fmtDate(it.created_at) + (it.clarity != null ? " · " + it.clarity + "%" : "") + (it.engine ? " · " + it.engine : "");
+          var del = document.createElement("button"); del.className = "ph-del"; del.type = "button"; del.textContent = "🗑";
+          del.setAttribute("aria-label", t("palm.hist.delete"));
+          del.onclick = function () { if (window.confirm(t("palm.del.confirm"))) deletePalm(it.id, pid); };
+          row.appendChild(info); row.appendChild(del); box.appendChild(row);
+        });
+      })
+      .catch(function () {});
+  }
+  function deletePalm(id, pid) {
+    fetch("/api/palmistry/" + encodeURIComponent(id), { method: "DELETE", credentials: "include" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (j && j.ok) loadPalmHistory(pid); })
+      .catch(function () {});
+  }
+
   /* ── save (Phase 3) ── */
   function save() {
     var btn = $("btnSave"); btn.disabled = true;
     fetch("/api/palmistry/save", { method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ lang: getLang(), reading: curResult && curResult.reading, clarity: curResult && curResult.clarity_overall }) })
+      body: JSON.stringify({ lang: getLang(), reading: curResult && curResult.reading, clarity: curResult && curResult.clarity_overall, engine: curResult && curResult.engine, profile_id: ($("saveProfile") && $("saveProfile").value) || undefined }) })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
         if (res.ok && res.j.ok) {
           btn.textContent = pick(MSG.saved, getLang());
+          loadPalmHistory($("saveProfile") && $("saveProfile").value); // refresh หลังเพิ่ม
           if (!document.getElementById("goFusion")) { // เด้งปุ่มไปดูดวงรวม (ติ๊กลายมือให้อัตโนมัติ)
             var go = document.createElement("a");
             go.id = "goFusion"; go.href = "/master-fusion?palm=1"; go.className = "cta";
@@ -420,12 +459,52 @@
     ["handL", "handR"].forEach(function (h) { var el = $(h); var p = el.querySelector("img.prev"); if (p) p.remove(); el.classList.remove("done"); var c = el.querySelector(".cam"); if (c) applyI18N(); });
     $("fileL").value = ""; $("fileR").value = "";
     $("btnAnalyze").disabled = true;
+    var bs = $("btnSave"); if (bs) bs.disabled = false; // คืนปุ่มบันทึก (กันบันทึกครั้งที่ 2 ไม่ได้)
+    var gf = document.getElementById("goFusion"); if (gf) gf.remove(); // ลบลิงก์ดูดวงรวมเก่า
+    var ph = $("palmHistory"); if (ph) { ph.classList.add("hidden"); ph.innerHTML = ""; }
     var er = $("stUpload").querySelector(".err"); if (er) er.remove();
     show("stUpload"); applyI18N();
   }
 
   /* ── init ── */
+  /* login แล้ว → ดึงวันเกิด/เพศ/อายุ จากโปรไฟล์ ให้ AI (ไม่ต้องกรอกอายุเอง) */
+  function prefillFromProfile() {
+    fetch("/api/profile", { credentials: "include", cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var p = j && j.active_profile;
+        if (!p) { var sf = $("saveProfile"); if (sf && sf.closest(".field")) sf.closest(".field").style.display = "none"; return; } // guest: ซ่อน dropdown ว่าง
+        if (p.gender) { var g = String(p.gender).trim().toUpperCase().charAt(0); profileCtx.gender = (g === "F" ? "F" : "M"); }
+        if (p.birth_datetime) {
+          profileCtx.birthDate = String(p.birth_datetime).slice(0, 10);
+          var by = parseInt(profileCtx.birthDate.slice(0, 4), 10);
+          var ar = $("ageRange");
+          if (by && ar && !ar.value) ar.value = String(new Date().getFullYear() - by); // อายุ auto
+        }
+        var badge = $("profBadge");
+        if (badge && (profileCtx.gender || profileCtx.birthDate)) {
+          badge.textContent = "✓ " + t("ctx.fromProfile") + (p.name ? " · " + p.name : "");
+          badge.classList.remove("hidden");
+        }
+        // เติม dropdown เลือกดวงปลายทางตอนบันทึก (ดูให้คนอื่นได้) · default = ตัวเอง
+        var sel = $("saveProfile");
+        if (sel && Array.isArray(j.profiles)) {
+          sel.innerHTML = "";
+          j.profiles.forEach(function (pr) {
+            var o = document.createElement("option");
+            o.value = pr.id;
+            o.textContent = (pr.name || pr.nickname || "—") + (pr.is_self ? " ⭐" : "");
+            if (pr.id === p.id) o.selected = true;
+            sel.appendChild(o);
+          });
+          sel.onchange = function () { loadPalmHistory(sel.value); };
+          loadPalmHistory(sel.value); // แสดงลายมือเก่าของดวงที่เลือก (default = ตัวเอง)
+        }
+      })
+      .catch(function () {});
+  }
   function init() {
+    prefillFromProfile();
     wireHand("handL", "fileL", "left");
     wireHand("handR", "fileR", "right");
     $("btnAnalyze").addEventListener("click", analyze);

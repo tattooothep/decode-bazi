@@ -57,6 +57,13 @@
   .hand .cam{font-size:10px;color:var(--gold);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
   .hand.done .cam{background:rgba(111,174,90,.16);border-color:transparent;color:var(--wood);position:relative;z-index:2}
   .guide{font-size:12px;color:var(--faint);text-align:center;line-height:1.5;margin:0 0 14px}
+  .context{border:1px solid var(--line);border-radius:14px;background:rgba(200,164,77,.06);padding:12px;margin:0 0 14px}
+  .context .ctx-title{font-size:12px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:9px}
+  .ctx-grid{display:grid;gap:9px}
+  .field{display:grid;gap:5px}
+  .field label{font-size:11px;color:var(--fg-soft)}
+  .field select,.field input{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--fg);font:inherit;font-size:13px;padding:10px 11px}
+  .field input::placeholder{color:var(--faint)}
   .cta{width:100%;border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;
     background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#161310;box-shadow:0 8px 20px rgba(200,164,77,.26);transition:.2s}
   .cta:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
@@ -69,8 +76,8 @@
   .ring{width:158px;height:158px;position:relative}
   .ring svg{transform:rotate(-90deg)}
   .ring .pct{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
-  .ring .pct b{font-size:36px;color:var(--gold-bright);font-weight:500}
-  .ring .pct small{display:block;font-size:10px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+  .ring .pct b{font-size:34px;color:var(--gold-bright);font-weight:500;line-height:1}
+  .ring .pct small{position:absolute;left:0;right:0;top:calc(50% + 15px);font-size:10px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase}
   .clarity{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px;font-size:12.5px}
   .clarity .dot{width:8px;height:8px;border-radius:50%;background:var(--wood)}
   .clarity.low .dot{background:var(--fire)} .clarity.low b{color:var(--fire)}
@@ -99,11 +106,37 @@
   .rs-cam{font-size:13px;border:1px solid var(--line);border-radius:9px;padding:5px 9px;color:var(--gold)}
   .rs-card.done .rs-cam{color:var(--wood)}
   .rs-card img.prev{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25}
+  /* pill มือซ้าย/ขวา บนการ์ดถ่ายใหม่ — ต้องเด่นชัด (เจ้านายเน้น: แยกมือให้ชัด) */
+  .rs-hand{display:inline-block;font-style:normal;font-size:10px;font-weight:700;padding:1.5px 9px;border-radius:999px;
+    background:rgba(200,164,77,.16);color:var(--gold);border:1px solid var(--gold);margin-left:4px;letter-spacing:.03em;vertical-align:middle}
+  .prof-badge{font-size:11.5px;color:var(--wood);background:rgba(111,174,90,.10);border:1px solid var(--line);border-radius:9px;padding:7px 10px;margin-bottom:10px}
+  /* ประวัติลายมือของดวงที่เลือก (เพิ่ม/ลบในหน้านี้) */
+  .palm-hist{margin:2px 0 10px;display:grid;gap:6px}
+  .palm-hist .ph-title{font-size:11px;color:var(--faint);letter-spacing:.05em}
+  .ph-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 10px}
+  .ph-del{background:none;border:none;cursor:pointer;font-size:14px;opacity:.6;padding:2px 4px;color:var(--fg)}
+  .ph-del:hover{opacity:1}
 
   /* result */
   .verdict{background:linear-gradient(160deg,rgba(200,164,77,.14),transparent);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:15px}
   .verdict .lab{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
   .verdict p{margin:7px 0 0;font-size:14px;line-height:1.6}
+  .sifu{display:grid;gap:11px;margin-bottom:15px}
+  .sifu-card{border:1px solid var(--line);border-radius:14px;background:var(--panel2);padding:13px}
+  .sifu-open{font-size:13.5px;line-height:1.65;color:var(--fg)}
+  .overview{display:grid;gap:8px}
+  .ovline{font-size:12.5px;line-height:1.55;color:var(--fg-soft)}
+  .ovline b{color:var(--gold);font-weight:600}
+  .ssec h3{font-size:14px;margin:0 0 8px;color:var(--fg);font-weight:600}
+  .srow{font-size:12.5px;line-height:1.65;color:var(--fg-soft);margin-top:7px}
+  .srow b{color:var(--gold);font-weight:600}
+  .confidence{display:inline-block;margin-left:6px;font-size:9px;border-radius:20px;padding:2px 7px;background:rgba(123,168,200,.14);color:var(--water);vertical-align:middle}
+  .confidence.high{background:rgba(111,174,90,.14);color:var(--wood)}
+  .confidence.low{background:rgba(226,107,93,.14);color:var(--fire)}
+  .sfinal{display:grid;gap:7px}
+  .sfinal .sumline{font-size:12.5px;line-height:1.55;color:var(--fg-soft)}
+  .sfinal b{color:var(--fg)}
+  .sfinal ul{margin:3px 0 0 18px;padding:0;color:var(--fg-soft);font-size:12.5px;line-height:1.6}
   .lines{display:grid;gap:9px;margin-bottom:15px}
   .lrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
   .lrow .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
@@ -128,14 +161,90 @@
   a.homelink{color:var(--faint);font-size:12px;text-decoration:none;display:inline-block;margin-top:22px}
   :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
   @media(prefers-reduced-motion:reduce){.step.run .s{animation:none}}
+
+
+/* navbar+header จาก chart (รวม @media ครบ · 5-agent fix) */
+/* topbar */
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(13,15,18,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+body.light .topbar{background:rgba(246,241,230,.85);}
+.logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+.logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+.nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+.nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+.nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+.nav a .lbl{font-size:12px;}
+.nav a.on,.nav a.active{color:var(--gold);}
+.nav a:hover{color:var(--fg);}
+.nav a:hover .glyph{color:var(--gold-deep);}
+.top-r{display:flex;align-items:center;gap:14px;}
+.tag .glyph{font-family:var(--tc);color:var(--gold);font-size:13px;font-weight:700;}
+.dm-glyph{display:inline-flex;align-items:center;justify-content:center;width:128px;height:128px;background:var(--earth-bg);border:2px solid var(--earth);border-radius:14px;font-family:var(--tc);font-size:84px;font-weight:700;color:var(--earth);box-shadow:0 6px 0 var(--earth-deep);margin-bottom:14px;}
+/* DM glyph สีตามธาตุของเจ้าชะตา · ตรงกับเสาในหมวด 02 */
+  .dm-glyph.wood{background:var(--wood-bg);border-color:var(--wood);color:var(--wood);box-shadow:0 6px 0 var(--wood-deep);}
+.dm-glyph.fire{background:var(--fire-bg);border-color:var(--fire);color:var(--fire);box-shadow:0 6px 0 var(--fire-deep);}
+.dm-glyph.earth{background:var(--earth-bg);border-color:var(--earth);color:var(--earth);box-shadow:0 6px 0 var(--earth-deep);}
+.dm-glyph.metal{background:var(--metal-bg);border-color:var(--metal);color:var(--metal);box-shadow:0 6px 0 var(--metal-deep);}
+.dm-glyph.water{background:var(--water-bg);border-color:var(--water);color:var(--water);box-shadow:0 6px 0 var(--water-deep);}
+.el-glyph{font-family:var(--tc);font-size:32px;text-align:center;}
+.yong-glyph{flex-shrink:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:26px;font-weight:700;border-radius:8px;}
+.yong-glyph.fire{background:var(--fire-bg);color:var(--fire);border:1px solid var(--fire);}
+.yong-glyph.wood{background:var(--wood-bg);color:var(--wood);border:1px solid var(--wood);}
+.yong-glyph.water{background:var(--water-bg);color:var(--water);border:1px solid var(--water);}
+.yong-glyph.metal{background:var(--metal-bg);color:var(--metal);border:1px solid var(--metal);}
+.yong-glyph.earth{background:var(--earth-bg);color:var(--earth);border:1px solid var(--earth);}
+.pt-glyph{font-family:var(--tc);font-size:30px;font-weight:700;line-height:1.1;display:block;}
+.pt-glyph.wood{color:var(--wood);}
+.pt-glyph.fire{color:var(--fire);}
+.pt-glyph.earth{color:var(--earth);}
+.pt-glyph.metal{color:var(--metal);}
+.pt-glyph.water{color:var(--water);}
+.inter-card .glyphs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-family:var(--thai);font-size:12px;color:var(--gold);}
+.inter-card .glyphs > span{padding:4px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--tile-bd);line-height:1.45;}
+.inter-card .glyphs .zh{font-family:var(--tc);opacity:.62;font-size:11px;margin-left:3px;padding:0;background:transparent;border:0;}
+.inter-card .glyphs .el-wood{color:var(--wood);font-weight:700;padding:0;background:transparent;border:0;}
+.inter-card .glyphs .el-fire{color:var(--fire);font-weight:700;padding:0;background:transparent;border:0;}
+.inter-card .glyphs .el-earth{color:var(--earth);font-weight:700;padding:0;background:transparent;border:0;}
+.inter-card .glyphs .el-metal{color:var(--metal);font-weight:700;padding:0;background:transparent;border:0;}
+.inter-card .glyphs .el-water{color:var(--water);font-weight:700;padding:0;background:transparent;border:0;}
+.hk-sifu-preset .lbl{font-size:12px;color:var(--fg);font-weight:600;}
+.hk-sifu-preset .lbl .tc{font-family:var(--tc);color:var(--gold);margin-left:4px;font-size:10px;}
+.hk-viewas-bar .glyph{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;border:1.5px solid var(--gold);background:var(--gold-soft);color:var(--gold);flex-shrink:0;}
+.hk-people-btn .glyph{font-family:var(--tc);font-size:15px;}
+/* มือถือ: โชว์ป้ายตามภาษา (ไทย=เปลี่ยนดวง · EN=Switch chart · ZH=換盤) แทน glyph 換 + กันทับ avatar (2 มิ.ย.) */
+  @media(max-width:600px){.hk-people-btn .glyph{display:none;} .hk-people-btn .lbl{display:inline;white-space:nowrap;} .hk-people-btn{padding:7px 12px;flex-shrink:0;} .top-r #hk-user-menu-mount{flex-shrink:0;}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand"><span class="g">手</span> hourkey</div>
+<header class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <nav class="nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="c.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="c.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="c.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="c.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="c.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="c.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="c.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="c.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="c.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="c.nav.palmistry">ลายมือ</span></a>
+  </nav>
+  <div class="top-r">
+    
     <div id="hk-user-menu-mount"></div>
   </div>
+<style>
+.hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+.hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+.hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
+@media(max-width:768px){.hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}}
+/* 20 พ.ค. Codex รอบ 44 fix · force [hidden] respect inline display:flex */
+#hk-3p-banner[hidden]{display:none !important;}
+</style>
+</header>
+<div class="wrap">
+  
 
   <div class="hero">
     <div class="kick" data-i18n="kick">ศาสตร์ที่ 7 · หัตถศาสตร์</div>
@@ -162,10 +271,32 @@
       </div>
     </div>
     <p class="guide" data-i18n="up.guide">💡 มือถนัด = ปัจจุบัน/อนาคต · อีกข้าง = พื้นดวงติดตัว · ถ่ายอย่างน้อย 1 ข้างก็เริ่มได้</p>
+    <div class="context">
+      <div class="ctx-title" data-i18n="ctx.title">ข้อมูลสำหรับซินแส</div>
+      <div id="profBadge" class="prof-badge hidden"></div>
+      <div class="ctx-grid">
+        <div class="field">
+          <label for="dominantHand" data-i18n="ctx.dom">มือถนัด</label>
+          <select id="dominantHand">
+            <option value="unknown" data-i18n="ctx.dom_unknown">ไม่ระบุ</option>
+            <option value="right" data-i18n="ctx.dom_right">มือขวา</option>
+            <option value="left" data-i18n="ctx.dom_left">มือซ้าย</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ageRange" data-i18n="ctx.age">ช่วงวัย/อายุโดยประมาณ</label>
+          <input id="ageRange" maxlength="40" placeholder="เช่น 30-40" data-i18n-placeholder="ctx.age_ph">
+        </div>
+        <div class="field">
+          <label for="mainQuestion" data-i18n="ctx.q">คำถามหลัก</label>
+          <input id="mainQuestion" maxlength="180" placeholder="งาน เงิน ความรัก หรือภาพรวมชีวิต" data-i18n-placeholder="ctx.q_ph">
+        </div>
+      </div>
+    </div>
     <button class="cta" id="btnAnalyze" disabled data-i18n="up.btn">✋ วิเคราะห์ลายมือ</button>
     <p class="tiny" data-i18n="up.privacy">🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก</p>
-    <input type="file" id="fileL" accept="image/*" capture="environment" class="hidden">
-    <input type="file" id="fileR" accept="image/*" capture="environment" class="hidden">
+    <input type="file" id="fileL" accept="image/*" class="hidden">
+    <input type="file" id="fileR" accept="image/*" class="hidden">
   </section>
 
   <!-- STATE 2: ANALYZING -->
@@ -198,7 +329,7 @@
     <button class="cta" id="btnReanalyze" data-i18n="rs.btn">📸 อ่านใหม่พร้อมรูปที่เพิ่ม</button>
     <button class="cta ghost" id="btnSkip" style="margin-top:9px" data-i18n="rs.skip">ข้าม — อ่านเท่าที่เห็น</button>
     <p class="tiny" data-i18n="rs.privacy">รูปเสริมรวมกับชุดเดิม ส่งอ่านพร้อมกัน · ไม่เก็บบนเซิร์ฟเวอร์</p>
-    <input type="file" id="fileClose" accept="image/*" capture="environment" class="hidden">
+    <input type="file" id="fileClose" accept="image/*" class="hidden">
   </section>
 
   <!-- STATE 3: RESULT -->
@@ -206,8 +337,14 @@
     <h2 data-i18n="rt.title">คำอ่านลายมือ</h2>
     <p class="h2sub" id="rtSub"></p>
     <div class="verdict" id="verdictBox"></div>
+    <div class="sifu" id="sifuBox"></div>
     <div class="lines" id="linesBox"></div>
     <div id="tiersBox"></div>
+    <div class="field" style="margin:2px 0 8px">
+      <label for="saveProfile" data-i18n="rt.saveAs">บันทึกเป็นลายมือของ</label>
+      <select id="saveProfile"></select>
+    </div>
+    <div id="palmHistory" class="palm-hist hidden"></div>
     <button class="cta" id="btnSave" style="margin-top:6px;background:linear-gradient(180deg,var(--gold),var(--gold-deep))" data-i18n="rt.save">💾 บันทึกเป็นศาสตร์ที่ 7</button>
     <p class="tiny" data-i18n="rt.saveNote">บันทึกแล้ว → ลายมือเข้าไปหลอมรวมกับปาจื้อ/ดาว/จื่อเหวย… ในหน้าดูดวงรวม</p>
     <button class="cta ghost" id="btnRestart" style="margin-top:9px" data-i18n="rt.restart">↺ เริ่มใหม่</button>
@@ -218,5 +355,12 @@
 
 <script src="/js/palmistry-app.js?v=1"></script>
 <script src="/js/hk-user-menu.js?v=20" defer></script>
+<script>
+var p = window.location.pathname.replace(/\/$/,'') || '/chart';
+    p = p.replace(/-m$/, '');
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+</script>
 </body>
 </html>

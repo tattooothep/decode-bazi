@@ -84,10 +84,13 @@ export async function POST(req: NextRequest) {
   const hands = form.getAll("hands").map(String); // มือของแต่ละรูป (โดยเฉพาะ closeup: ซูมนี้ของมือซ้าย/ขวา)
   const lang = (String(form.get("lang") || "th").toLowerCase().split("-")[0]) || "th";
   const rawDominant = cleanText(form.get("dominant_hand"), 12).toLowerCase();
+  const rawGender = cleanText(form.get("gender"), 4).toUpperCase().charAt(0); // profile ส่ง M/F (login แล้ว auto)
   const context: PalmContext = {
     dominantHand: (ALLOWED_DOMINANT.has(rawDominant) ? rawDominant : "unknown") as PalmContext["dominantHand"],
     ageRange: cleanText(form.get("age_range"), 40),
     question: cleanText(form.get("question"), 180),
+    gender: rawGender === "M" || rawGender === "F" ? rawGender as "M" | "F" : undefined,
+    birthDate: cleanText(form.get("birth_date"), 30),
   };
 
   const dir = await mkdtemp(path.join(os.tmpdir(), "palm-"));
