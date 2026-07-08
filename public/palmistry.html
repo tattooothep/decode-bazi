@@ -28,7 +28,8 @@
   body{background:radial-gradient(1100px 600px at 50% -8%,rgba(200,164,77,.10),transparent 60%),var(--bg);
     color:var(--fg);font-family:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,"Noto Serif Thai",serif;
     -webkit-font-smoothing:antialiased;min-height:100vh}
-  .wrap{max-width:520px;margin:0 auto;padding:14px 15px 60px}
+  .wrap{max-width:640px;margin:0 auto;padding:14px 15px 60px}
+  @media(max-width:480px){.wrap{padding:12px 12px 48px}.card{padding:16px 13px}.hands{gap:9px}}
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 16px}
   .brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
   .brand .g{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:rgba(200,164,77,.14);color:var(--gold);font-size:14px}
@@ -166,7 +167,12 @@
 /* navbar+header จาก chart (รวม @media ครบ · 5-agent fix) */
 /* topbar */
   .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(13,15,18,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
-body.light .topbar{background:rgba(246,241,230,.85);}
+/* navbar ตัวแปรที่ก็อปจาก chart มาแต่ไม่ได้นิยาม (เส้น/ฟอนต์เพี้ยน) — เติมให้ครบ */
+:root{--gold-line:rgba(200,164,77,.22);--serif:'Cormorant Garamond','Noto Serif TC',serif;--tc:'Noto Serif TC',serif;--thai:'Noto Serif Thai',serif}
+:root[data-theme="light"]{--gold-line:rgba(138,109,42,.3)}
+:root[data-theme="light"] .topbar{background:rgba(246,241,230,.85);}
+/* navbar 11 เมนู เลื่อนแนวนอนบนมือถือ (ไม่ล้น/ไม่ตัด) */
+@media(max-width:600px){.nav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px}.nav::-webkit-scrollbar{display:none}}
 .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
 .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
 .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
@@ -295,8 +301,10 @@ body.light .topbar{background:rgba(246,241,230,.85);}
     </div>
     <button class="cta" id="btnAnalyze" disabled data-i18n="up.btn">✋ วิเคราะห์ลายมือ</button>
     <p class="tiny" data-i18n="up.privacy">🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก</p>
-    <input type="file" id="fileL" accept="image/*" class="hidden">
-    <input type="file" id="fileR" accept="image/*" class="hidden">
+    <input type="file" id="fileL" class="hidden">
+
+    <input type="file" id="fileR" class="hidden">
+
   </section>
 
   <!-- STATE 2: ANALYZING -->
@@ -329,7 +337,8 @@ body.light .topbar{background:rgba(246,241,230,.85);}
     <button class="cta" id="btnReanalyze" data-i18n="rs.btn">📸 อ่านใหม่พร้อมรูปที่เพิ่ม</button>
     <button class="cta ghost" id="btnSkip" style="margin-top:9px" data-i18n="rs.skip">ข้าม — อ่านเท่าที่เห็น</button>
     <p class="tiny" data-i18n="rs.privacy">รูปเสริมรวมกับชุดเดิม ส่งอ่านพร้อมกัน · ไม่เก็บบนเซิร์ฟเวอร์</p>
-    <input type="file" id="fileClose" accept="image/*" class="hidden">
+    <input type="file" id="fileClose" class="hidden">
+
   </section>
 
   <!-- STATE 3: RESULT -->
@@ -353,7 +362,7 @@ body.light .topbar{background:rgba(246,241,230,.85);}
   <div style="text-align:center"><a href="/" class="homelink" data-i18n="home">← กลับหน้าหลัก</a></div>
 </div>
 
-<script src="/js/palmistry-app.js?v=478"></script>
+<script src="/js/palmistry-app.js?v=479"></script>
 <script src="/js/hk-user-menu.js?v=20" defer></script>
 <script>
 var p = window.location.pathname.replace(/\/$/,'') || '/chart';
