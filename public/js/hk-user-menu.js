@@ -87,6 +87,17 @@
     });
   }, 1200);
 
+  /* Global glossary tooltips · fallback loader for private pages that mount the user menu. */
+  try {
+    if (!window.__HK_TOOLTIPS_LOADER__) {
+      window.__HK_TOOLTIPS_LOADER__ = true;
+      var hkTipScript = document.createElement('script');
+      hkTipScript.src = '/js/hk-tooltips.js?v=20260707';
+      hkTipScript.defer = true;
+      document.head.appendChild(hkTipScript);
+    }
+  } catch (_) {}
+
   var SINSAE_INTRO_VERSION = 'sinsae_intro_20260517';
   function maybeOpenSinsaeGate(){
     return;
@@ -94,24 +105,48 @@
 
   /* ── i18n ── */
   var I18N = {
-    today:    { th:'หน้าวันนี้',     en:'Today',           zh:'今日' },
-    chart:    { th:'ดวงของฉัน',      en:'My Chart',        zh:'我的命盤' },
-    network:  { th:'เครือข่ายดวง',    en:'Network',         zh:'人脈網' },
-    books:    { th:'หนังสือของฉัน',   en:'My Books',        zh:'我的命書' },
-    topup:    { th:'เติมยาม · แพ็กเกจ', en:'Top Up · Plans',  zh:'充值 · 方案' },
-    account:  { th:'บัญชีของฉัน',       en:'My Account',      zh:'我的帳戶' },
-    language: { th:'ภาษา',           en:'Language',        zh:'語言' },
-    theme:    { th:'ธีม',            en:'Theme',           zh:'主題' },
-    settings: { th:'ตั้งค่า',         en:'Settings',        zh:'設定' },
-    logout:   { th:'ออกจากระบบ',     en:'Sign out',        zh:'登出' },
-    light:    { th:'สว่าง',           en:'Light',           zh:'明亮' },
-    dark:     { th:'มืด',            en:'Dark',            zh:'暗色' },
-    signin:   { th:'เข้าสู่ระบบ',     en:'Sign in',         zh:'登入' },
+    today:    { th:'หน้าวันนี้', en:'Today', zh:'今日', cn:'今日', vi:'Hôm nay', ja:'今日', ru:'Сегодня', ko:'오늘', es:'Hoy' },
+    chart:    { th:'ดวงของฉัน', en:'My Chart', zh:'我的命盤', cn:'我的命盘', vi:'Lá số của tôi', ja:'私の命盤', ru:'Моя карта', ko:'내 차트', es:'Mi carta' },
+    network:  { th:'เครือข่ายดวง', en:'Network', zh:'人脈網', cn:'人脉网', vi:'Mạng lưới', ja:'ネットワーク', ru:'Сеть', ko:'네트워크', es:'Red' },
+    books:    { th:'หนังสือของฉัน', en:'My Books', zh:'我的命書', cn:'我的命书', vi:'Sách của tôi', ja:'私の本', ru:'Мои книги', ko:'내 책', es:'Mis libros' },
+    topup:    { th:'เติมยาม · แพ็กเกจ', en:'Top Up · Plans', zh:'充值 · 方案', cn:'充值 · 套餐', vi:'Nạp · Gói', ja:'チャージ · プラン', ru:'Пополнить · Планы', ko:'충전 · 플랜', es:'Recarga · Planes' },
+    account:  { th:'บัญชีของฉัน', en:'My Account', zh:'我的帳戶', cn:'我的账户', vi:'Tài khoản', ja:'アカウント', ru:'Аккаунт', ko:'내 계정', es:'Mi cuenta' },
+    news:     { th:'ข่าวสาร · โปรโมชั่น', en:'News · Offers', zh:'消息 · 優惠', cn:'新闻 · 优惠', vi:'Tin tức · Ưu đãi', ja:'ニュース · 特典', ru:'Новости · Акции', ko:'소식 · 혜택', es:'Noticias · Ofertas' },
+    support:  { th:'แจ้งปัญหาการใช้งาน', en:'Report an issue', zh:'回報使用問題', cn:'反馈使用问题', vi:'Báo lỗi sử dụng', ja:'問題を報告', ru:'Сообщить о проблеме', ko:'문제 신고', es:'Reportar problema' },
+    language: { th:'ภาษา', en:'Language', zh:'語言', cn:'语言', vi:'Ngôn ngữ', ja:'言語', ru:'Язык', ko:'언어', es:'Idioma' },
+    theme:    { th:'ธีม', en:'Theme', zh:'主題', cn:'主题', vi:'Giao diện', ja:'テーマ', ru:'Тема', ko:'테마', es:'Tema' },
+    settings: { th:'ตั้งค่า', en:'Settings', zh:'設定', cn:'设置', vi:'Cài đặt', ja:'設定', ru:'Настройки', ko:'설정', es:'Ajustes' },
+    logout:   { th:'ออกจากระบบ', en:'Sign out', zh:'登出', cn:'退出登录', vi:'Đăng xuất', ja:'ログアウト', ru:'Выйти', ko:'로그아웃', es:'Salir' },
+    light:    { th:'สว่าง', en:'Light', zh:'明亮', cn:'浅色', vi:'Sáng', ja:'ライト', ru:'Светлая', ko:'라이트', es:'Claro' },
+    dark:     { th:'มืด', en:'Dark', zh:'暗色', cn:'深色', vi:'Tối', ja:'ダーク', ru:'Темная', ko:'다크', es:'Oscuro' },
+    signin:   { th:'เข้าสู่ระบบ', en:'Sign in', zh:'登入', cn:'登录', vi:'Đăng nhập', ja:'ログイン', ru:'Войти', ko:'로그인', es:'Entrar' },
   };
+  function langState() {
+    return window.HK_LANG_STATE || (window.HK && window.HK.langState) || null;
+  }
+  function normalizeLang(raw) {
+    var st = langState();
+    if (st && typeof st.normalize === 'function') return st.normalize(raw);
+    var x = String(raw || '').toLowerCase();
+    if (x.indexOf('zh') === 0) return { raw:'zh', storage:'zh', app:'zh', html:'zh-Hant', variant:'hant' };
+    if (x === 'th' || x.indexOf('th-') === 0) return { raw:'th', storage:'th', app:'th', html:'th' };
+    if (x === 'en' || x.indexOf('en-') === 0) return { raw:'en', storage:'en', app:'en', html:'en' };
+    return x ? { raw:x, storage:x, app:'en', html:x } : { raw:'th', storage:'th', app:'th', html:'th' };
+  }
+  function currentState() {
+    var st = langState();
+    if (st && typeof st.current === 'function') return st.current();
+    return normalizeLang(localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th');
+  }
   function t(key) {
-    var loc = (localStorage.getItem('hk_locale') || 'th');
+    var state = currentState();
+    var loc = state.raw || 'th';
     var bag = I18N[key]; if (!bag) return key;
-    return bag[loc] || bag.th || key;
+    if (loc === 'zh' && zhVariantFromStorage(state.variant) === 'cn' && bag.cn) return bag.cn;
+    if (bag[loc]) return bag[loc];
+    /* 🌐 locale ใหม่ (vi/ja/ko/ru/es) ที่ยังไม่มีคำแปลในเมนู → ตกอังกฤษ ไม่ตกไทย (6 ก.ค. 2569) */
+    if (loc !== 'th' && bag.en) return bag.en;
+    return bag.th || key;
   }
 
   /* ── 🌐 โครงรายชื่อภาษาในเมนู (6 ก.ค. 2569) ──
@@ -120,27 +155,60 @@
    * ถ้าไม่เซ็ต = รายการเดิม th/en/繁/简 เป๊ะ — หน้าตาปัจจุบันไม่เปลี่ยน */
   var B = '<sup style="font-size:8px;opacity:.75;margin-left:1px;">β</sup>';
   var DEFAULT_LANGS = [
-    { value:'th', label:'TH' },
-    { value:'en', label:'EN' },
-    { value:'zh-hant', label:'繁' },
-    { value:'zh-cn', label:'简' + B, title:'简体中文 (β · อยู่ระหว่างตรวจสอบ)' },
-    { value:'vi', label:'VI' + B, title:'Tiếng Việt (β · đang được thẩm định)' },
-    { value:'ja', label:'JA' + B, title:'日本語 (β · 検証中)' },
-    { value:'ru', label:'RU' + B, title:'Русский (β · на проверке)' },
-    { value:'ko', label:'KO' + B, title:'한국어 (β · 검증 중)' },
-    { value:'es', label:'ES' + B, title:'Español (β · en revisión)' },
+    { value:'th', label:'TH', name:'ไทย' },
+    { value:'en', label:'EN', name:'English' },
+    { value:'zh-hant', label:'繁', name:'繁體' },
+    { value:'zh-cn', label:'简' + B, name:'简体', title:'简体中文 (beta · under review)' },
+    { value:'vi', label:'VI' + B, name:'Tiếng Việt', title:'Tiếng Việt (β · đang được thẩm định)' },
+    { value:'ja', label:'JA' + B, name:'日本語', title:'日本語 (β · 検証中)' },
+    { value:'ru', label:'RU' + B, name:'Русский', title:'Русский (β · на проверке)' },
+    { value:'ko', label:'KO' + B, name:'한국어', title:'한국어 (β · 검증 중)' },
+    { value:'es', label:'ES' + B, name:'Español', title:'Español (β · en revisión)' },
   ];
   function langList() {
     var ls = window.HK_LANGS_LIVE;
     return (Object.prototype.toString.call(ls) === '[object Array]' && ls.length) ? ls : DEFAULT_LANGS;
+  }
+  function zhVariantFromStorage(fallback) {
+    try {
+      var saved = localStorage.getItem('hk_zh_variant');
+      if (saved === 'cn' || saved === 'hant') return saved;
+    } catch(_) {}
+    return fallback || 'hant';
+  }
+  function stateLangValue(state) {
+    state = state || currentState();
+    if (state.raw === 'zh') return zhVariantFromStorage(state.variant) === 'cn' ? 'zh-cn' : 'zh-hant';
+    return state.raw || 'th';
+  }
+  function langOptionName(L) {
+    if (L && L.name) return L.name;
+    var map = { th:'ไทย', en:'English', 'zh-hant':'繁體', 'zh-cn':'简体', vi:'Tiếng Việt', ja:'日本語', ko:'한국어', ru:'Русский', es:'Español' };
+    return map[L && L.value] || (L && L.value ? String(L.value).toUpperCase() : '');
+  }
+  function findLangOption(value) {
+    var list = langList();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].value === value) return list[i];
+    }
+    return null;
+  }
+  function langCurrentHtml(savedLang, savedZhVariant) {
+    var value = savedLang === 'zh' ? (savedZhVariant === 'cn' ? 'zh-cn' : 'zh-hant') : savedLang;
+    var L = findLangOption(value);
+    return L ? L.label : escapeHtml(String(value || 'th').toUpperCase());
   }
   function langBtnsHtml(savedLang, savedZhVariant) {
     return langList().map(function (L) {
       var on = (L.value === savedLang) ||
         (L.value === 'zh-hant' && savedLang === 'zh' && savedZhVariant !== 'cn') ||
         (L.value === 'zh-cn' && savedLang === 'zh' && savedZhVariant === 'cn');
-      return '<button data-value="' + L.value + '" class="' + (on ? 'on' : '') + '"' +
-        (L.title ? ' title="' + L.title + '"' : '') + '>' + L.label + '</button>';
+      return '<button type="button" data-value="' + escapeHtml(L.value) + '" class="hk-um-lang-opt ' + (on ? 'on' : '') + '"' +
+        (L.title ? ' title="' + escapeHtml(L.title) + '"' : '') +
+        ' aria-pressed="' + (on ? 'true' : 'false') + '">' +
+        '<span class="hk-um-lang-code">' + L.label + '</span>' +
+        '<span class="hk-um-lang-name">' + escapeHtml(langOptionName(L)) + '</span>' +
+        '</button>';
     }).join('\n              ');
   }
 
@@ -148,11 +216,11 @@
   var CSS = `
 	  .hk-um-wrap{position:fixed;top:20px;right:20px;z-index:9999;font-family:'JetBrains Mono','SF Mono',monospace;}
 	  .hk-um-wrap.inline{position:relative;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 40px;z-index:9999;line-height:0;}
-  .hk-um-trigger{position:relative;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#c8a44d,#8a6d2a);border:1px solid rgba(200,164,77,.5);color:#0d0f12;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .2s,box-shadow .2s;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;padding:0;overflow:hidden;line-height:1;}
-  .hk-um-trigger:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(200,164,77,.4);}
-  .hk-um-trigger.has-avatar{background:transparent;color:transparent;border-color:rgba(200,164,77,.45);border-radius:50%;box-shadow:0 0 0 1px rgba(200,164,77,.22),0 4px 12px rgba(0,0,0,.3);}
+  .hk-um-trigger{position:relative;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#e5bd69,#9f7436);border:1px solid rgba(232,197,128,.5);color:#130d09;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .2s,box-shadow .2s;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;padding:0;overflow:hidden;line-height:1;}
+  .hk-um-trigger:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(232,197,128,.32);}
+  .hk-um-trigger.has-avatar{background:transparent;color:transparent;border-color:rgba(232,197,128,.45);border-radius:50%;box-shadow:0 0 0 1px rgba(232,197,128,.22),0 4px 12px rgba(0,0,0,.3);}
   .hk-um-trigger.has-avatar img{display:block;width:100%;height:100%;border-radius:inherit;object-fit:cover;}
-	  .hk-um-panel{position:absolute;top:48px;right:0;width:260px;max-width:calc(100vw - 24px);max-height:80vh;overflow-y:auto;background:rgba(15,17,21,.96);border:1px solid rgba(200,164,77,.25);border-radius:14px;backdrop-filter:blur(20px);box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px) scale(.98);pointer-events:none;transition:.2s cubic-bezier(.2,.8,.2,1);z-index:9999;}
+	  .hk-um-panel{position:absolute;top:48px;right:0;width:300px;max-width:calc(100vw - 24px);max-height:80vh;overflow-y:auto;background:rgba(18,16,14,.96);border:1px solid rgba(232,197,128,.22);border-radius:8px;backdrop-filter:blur(20px);box-shadow:0 18px 54px rgba(0,0,0,.48);opacity:0;transform:translateY(-4px) scale(.98);pointer-events:none;transition:.2s cubic-bezier(.2,.8,.2,1);z-index:9999;}
   .hk-um-panel.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
   [data-theme="light"] .hk-um-panel{background:rgba(255,250,238,.97);border-color:rgba(138,109,42,.3);}
   .hk-um-head{padding:18px 18px 14px;border-bottom:1px solid rgba(200,164,77,.15);}
@@ -169,6 +237,19 @@
   .hk-um-row{display:flex;align-items:center;justify-content:space-between;padding:8px 18px;}
   .hk-um-rowlbl{font-size:10px;color:rgba(246,241,230,.55);letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
   [data-theme="light"] .hk-um-rowlbl{color:rgba(26,22,18,.55);}
+  .hk-um-lang-block{padding:12px 14px 10px;}
+  .hk-um-lang-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;padding:0 4px;}
+  .hk-um-lang-current{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:24px;padding:0 10px;border-radius:6px;background:rgba(232,197,128,.12);border:1px solid rgba(232,197,128,.3);color:#e5bd69;font-size:10px;font-weight:700;letter-spacing:.05em;line-height:1;white-space:nowrap;}
+  [data-theme="light"] .hk-um-lang-current{background:rgba(138,109,42,.1);border-color:rgba(138,109,42,.28);color:#8a6d2a;}
+  .hk-um-lang-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .hk-um-lang-opt{min-width:0;height:46px;padding:6px 5px;border:1px solid rgba(232,197,128,.18);border-radius:6px;background:rgba(247,239,227,.035);color:rgba(247,239,227,.74);font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:background .15s,border-color .15s,color .15s,box-shadow .15s;}
+  .hk-um-lang-opt:hover{background:rgba(232,197,128,.09);border-color:rgba(232,197,128,.38);color:#f7efe3;}
+  .hk-um-lang-opt.on{background:linear-gradient(135deg,#e5bd69,#9f7436);border-color:rgba(232,197,128,.8);color:#130d09;box-shadow:0 6px 16px rgba(232,197,128,.16);}
+  .hk-um-lang-code{font-size:11px;font-weight:800;letter-spacing:.04em;line-height:1;}
+  .hk-um-lang-name{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8.5px;font-weight:500;letter-spacing:0;color:inherit;opacity:.72;line-height:1.1;}
+  [data-theme="light"] .hk-um-lang-opt{background:rgba(26,22,18,.03);border-color:rgba(138,109,42,.18);color:rgba(26,22,18,.7);}
+  [data-theme="light"] .hk-um-lang-opt:hover{background:rgba(138,109,42,.08);border-color:rgba(138,109,42,.34);color:#1a1612;}
+  [data-theme="light"] .hk-um-lang-opt.on{background:linear-gradient(135deg,#8a6d2a,#6e5420);border-color:rgba(138,109,42,.72);color:#f5efe2;box-shadow:0 6px 16px rgba(138,109,42,.16);}
   .hk-um-segs{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid rgba(200,164,77,.25);border-radius:99px;padding:3px;gap:0;}
   [data-theme="light"] .hk-um-segs{background:rgba(255,250,238,.5);border-color:rgba(138,109,42,.3);}
   .hk-um-segs button{min-width:30px;height:24px;padding:0 8px;border:none;background:transparent;color:rgba(246,241,230,.55);font-family:inherit;font-size:10px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.2s;}
@@ -179,11 +260,14 @@
   .hk-um-item.danger:hover{background:rgba(231,76,60,.08);color:#e74c3c;}
 	  /* mobile + tablet portrait: drop-down เด้งใต้ avatar · ขนาดพอดีจอเล็ก */
 	  @media (max-width: 768px){
-	    .hk-um-panel{width:240px;max-height:75vh;right:0;border-radius:12px;}
+	    .hk-um-panel{width:min(320px, calc(100vw - 24px));max-height:75vh;right:0;border-radius:8px;}
 	    .hk-um-wrap:not(.inline){top:16px;right:16px;}
 	    .hk-um-wrap.inline{top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;width:36px;height:36px;flex-basis:36px;}
 	    .hk-um-trigger{width:36px;height:36px;font-size:12px;}
 	  }
+    @media (max-width: 360px){
+      .hk-um-lang-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
   `;
 
   /* ── inject CSS ── */
@@ -214,20 +298,35 @@
     });
   }
   function applyLang(lang) {
-    try { localStorage.setItem('hk_locale', lang); } catch(_){}
-    // ถ้าหน้านี้มี HK_I18N → re-apply
-    if (window.HK_I18N) {
-      document.querySelectorAll('[data-i18n]').forEach(function(el){
-        var k = el.getAttribute('data-i18n');
-        var bag = window.HK_I18N[k];
-        if (bag && bag[lang]) el.innerHTML = bag[lang];
-      });
-      document.documentElement.lang = (lang === 'zh') ? 'zh-Hant' : lang;
+    var state;
+    var st = langState();
+    if (st && typeof st.set === 'function') state = st.set(lang);
+    else {
+      state = normalizeLang(lang);
+      try { localStorage.setItem('hk_locale', state.storage); localStorage.setItem('hk_lang', state.storage); } catch(_){}
+      document.documentElement.lang = state.html;
+      document.documentElement.setAttribute('data-lang', state.app);
     }
-    // update buttons
-    document.querySelectorAll('.hk-um-segs.lang button').forEach(function(b){
-      b.classList.toggle('on', b.dataset.value === lang);
+    var pageLang = state.raw === 'zh' ? stateLangValue(state) : state.raw;
+    if (typeof window.__hkOverlayApply === 'function') {
+      try { window.__hkOverlayApply(pageLang); } catch(_) {}
+    } else if (typeof window.applyI18N === 'function') {
+      try { window.applyI18N(state.raw); } catch(_) {}
+    } else if (window.HK && window.HK.i18n && typeof window.HK.i18n.apply === 'function') {
+      try { window.HK.i18n.apply(); } catch(_) {}
+    }
+    // update language buttons + compact badge
+    var currentValue = stateLangValue(state);
+    document.querySelectorAll('.hk-um-lang-opt,.hk-um-segs.lang button').forEach(function(b){
+      var value = b.dataset.value;
+      var on = value === currentValue || value === state.raw ||
+        (value === 'zh-hant' && state.raw === 'zh' && currentValue === 'zh-hant') ||
+        (value === 'zh-cn' && state.raw === 'zh' && currentValue === 'zh-cn');
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
+    var current = document.getElementById('hk-um-lang-current');
+    if (current) current.innerHTML = langCurrentHtml(state.raw, state.raw === 'zh' ? zhVariantFromStorage(state.variant) : state.variant);
     // re-render menu labels
     renderLabels();
   }
@@ -237,6 +336,10 @@
       '.hk-um-i-chart': t('chart'),
       '.hk-um-i-books': t('books'),
       '.hk-um-i-network': t('network'),
+      '.hk-um-i-topup': t('topup'),
+      '.hk-um-i-account': t('account'),
+      '.hk-um-i-news': t('news'),
+      '.hk-um-i-support': t('support'),
       '.hk-um-i-lang': t('language'),
       '.hk-um-i-theme': t('theme'),
       '.hk-um-i-settings': t('settings'),
@@ -263,8 +366,9 @@
   /* ── build menu ── */
   function buildMenu(user) {
     var savedTheme = (localStorage.getItem('hk-theme') || 'dark');
-    var savedLang  = (localStorage.getItem('hk_locale') || 'th');
-    var savedZhVariant = (localStorage.getItem('hk_zh_variant') || 'hant'); // 'hant'=繁(เดิม) · 'cn'=简(β · เฟส ข 6 ก.ค. 2569)
+    var savedState = currentState();
+    var savedLang  = savedState.raw || 'th';
+    var savedZhVariant = savedLang === 'zh' ? zhVariantFromStorage(savedState.variant) : (savedState.variant || 'hant'); // 'hant'=繁(เดิม) · 'cn'=简(β · เฟส ข 6 ก.ค. 2569)
     var displayName = user.name || (user.email || '').split('@')[0] || 'user';
     var hasAvatar = !!user.avatar_url;
     var avatar = user.avatar_url
@@ -297,16 +401,21 @@
           <a class="hk-um-item" href="/today"><span class="hk-um-ico">📊</span><span class="hk-um-i-today">${t('today')}</span></a>
           <a class="hk-um-item" href="/chart"><span class="hk-um-ico">📜</span><span class="hk-um-i-chart">${t('chart')}</span></a>
           <a class="hk-um-item" href="/book"><span class="hk-um-ico">📖</span><span class="hk-um-i-books">${t('books')}</span></a>
-	          <a class="hk-um-item" href="/network"><span class="hk-um-ico">👥</span><span class="hk-um-i-network">${t('network')}</span></a>
+          <a class="hk-um-item" href="/network"><span class="hk-um-ico">👥</span><span class="hk-um-i-network">${t('network')}</span></a>
           <a class="hk-um-item" href="/pricing"><span class="hk-um-ico">💎</span><span class="hk-um-i-topup">${t('topup')}</span></a>
           <a class="hk-um-item" href="/account.html"><span class="hk-um-ico">⚙️</span><span class="hk-um-i-account">${t('account')}</span></a>
+          <a class="hk-um-item" href="/news"><span class="hk-um-ico">📰</span><span class="hk-um-i-news">${t('news')}</span></a>
+          <a class="hk-um-item" href="/support" id="hk-um-support-link"><span class="hk-um-ico">🛟</span><span class="hk-um-i-support">${t('support')}</span></a>
         </div>
         <div class="hk-um-sec">
-          <div class="hk-um-row">
-            <span class="hk-um-rowlbl"><span>🌐</span><span class="hk-um-i-lang">${t('language')}</span></span>
-            <span class="hk-um-segs lang">
+          <div class="hk-um-lang-block">
+            <div class="hk-um-lang-head">
+              <span class="hk-um-rowlbl"><span>🌐</span><span class="hk-um-i-lang">${t('language')}</span></span>
+              <span class="hk-um-lang-current" id="hk-um-lang-current">${langCurrentHtml(savedLang, savedZhVariant)}</span>
+            </div>
+            <div class="hk-um-lang-grid" role="group" aria-label="${escapeHtml(t('language'))}">
               ${langBtnsHtml(savedLang, savedZhVariant)}
-            </span>
+            </div>
           </div>
           <div class="hk-um-row">
             <span class="hk-um-rowlbl"><span>🌓</span><span class="hk-um-i-theme">${t('theme')}</span></span>
@@ -334,6 +443,10 @@
     /* events */
     var trigger = wrap.querySelector('#hk-um-trigger');
     var panel = wrap.querySelector('#hk-um-panel');
+    var supportLink = wrap.querySelector('#hk-um-support-link');
+    if (supportLink) {
+      supportLink.href = '/support?from=' + encodeURIComponent(location.pathname + location.search);
+    }
 
     /* 📜 fetch tier + 時 balance · cached 30s · 16 พ.ค. */
     window.__hkFetchAccountMe()
@@ -369,28 +482,11 @@
     panel.querySelectorAll('.hk-um-segs.theme button').forEach(function(b){
       b.addEventListener('click', function(){ applyTheme(b.dataset.value); });
     });
-    panel.querySelectorAll('.hk-um-segs.lang button').forEach(function(b){
+    panel.querySelectorAll('.hk-um-lang-opt,.hk-um-segs.lang button').forEach(function(b){
       b.addEventListener('click', function(){
         var v = b.dataset.value;
-        // 繁/简 = ตัวแปรของ zh เดียวกัน (hk_zh_variant) — ต้อง reload เพื่อให้ hk-zhcn.js
-        // แปลง/ไม่แปลงตัวอักษรใหม่ทั้งหน้าอย่างสะอาด (แปลงกลับ 简→繁 แบบ live ทำไม่ได้)
-        if (v === 'zh-hant' || v === 'zh-cn') {
-          try {
-            localStorage.setItem('hk_locale', 'zh');
-            localStorage.setItem('hk_lang', 'zh');
-            localStorage.setItem('hk_zh_variant', v === 'zh-cn' ? 'cn' : 'hant');
-          } catch(_) {}
-          location.reload();
-          return;
-        }
-        /* 🌐 ภาษาใหม่ (vi/ja/ko/ru/es — เข้าถึงได้เฉพาะเมื่อเปิดใน HK_LANGS_LIVE): reload ให้
-         * hk-overlay-boot ของหน้าโหลด /i18n/<locale>.json แล้ว re-apply ทั้งหน้าอย่างสะอาด */
-        if (v !== 'th' && v !== 'en') {
-          try { localStorage.setItem('hk_locale', v); localStorage.setItem('hk_lang', v); } catch(_) {}
-          location.reload();
-          return;
-        }
         applyLang(v);
+        location.reload();
       });
     });
     wrap.querySelector('#hk-um-logout').addEventListener('click', async function(){

@@ -1,2033 +1,812 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
-  <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · landing</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
-<style>
-  :root{
-    --ink:#0d0f12; --paper:#f6f1e6; --paper2:#efe8d4; --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:#e8d8a8;
-    --wood:#3f7d3a; --fire:#c0392b; --earth:#a07a2b; --metal:#6e6244; --water:#2c5a7a;
-    --serif:'Cormorant Garamond', 'Noto Serif TC', serif;
-    --tc:'Noto Serif TC', serif;
-    --thai:'Noto Serif Thai', serif;
-    --mono:'JetBrains Mono', monospace;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{background:var(--ink);color:var(--paper);font-family:var(--thai);overflow-x:hidden;}
-  body{min-height:100vh;}
-
-  /* ── Cursor ring ──────────────────────────────────────── */
-  .cursor{position:fixed;width:32px;height:32px;border:1px solid var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transition:transform .25s cubic-bezier(.2,.8,.2,1), width .25s, height .25s, background .25s;mix-blend-mode:difference;transform:translate(-50%,-50%);}
-  .cursor.hover{width:64px;height:64px;background:rgba(200,164,77,.15);}
-
-  /* ── Top nav ──────────────────────────────────────────── */
-  nav.top{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:24px 48px;z-index:100;mix-blend-mode:difference;}
-  .logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:.02em;color:var(--paper);}
-  .logo .seal{width:28px;height:28px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:14px;color:var(--gold);transform:rotate(0deg);transition:transform .6s;}
-  .logo:hover .seal{transform:rotate(360deg);}
-  nav.top ul{display:flex;gap:36px;list-style:none;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;}
-  nav.top ul a{color:var(--paper);text-decoration:none;opacity:.7;transition:opacity .25s;position:relative;padding:4px 0;}
-  nav.top ul a:hover{opacity:1;}
-  nav.top ul a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--gold);transition:right .35s cubic-bezier(.2,.8,.2,1);}
-  nav.top ul a:hover::after{right:0;}
-  nav.top .auth{display:flex;gap:8px;align-items:center;}
-  nav.top .auth .login{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--paper);text-decoration:none;opacity:.8;}
-  nav.top .auth .signup{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;padding:10px 18px;border:1px solid var(--gold);color:var(--gold);text-decoration:none;border-radius:99px;transition:all .3s;position:relative;overflow:hidden;}
-  nav.top .auth .signup span{position:relative;z-index:2;}
-  nav.top .auth .signup::before{content:'';position:absolute;inset:0;background:var(--gold);transform:translateY(101%);transition:transform .35s cubic-bezier(.2,.8,.2,1);z-index:1;}
-  nav.top .auth .signup:hover{color:var(--ink);}
-  nav.top .auth .signup:hover::before{transform:translateY(0);}
-
-  /* ── HERO ─────────────────────────────────────────────── */
-  .hero{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;padding:0 48px;overflow:hidden;}
-  .hero .stars{position:absolute;inset:0;background:radial-gradient(circle at 20% 30%, rgba(200,164,77,.08), transparent 40%), radial-gradient(circle at 80% 70%, rgba(44,90,122,.12), transparent 40%);}
-  .hero .grain{position:absolute;inset:0;opacity:.4;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 .78 0 0 0 0 .64 0 0 0 0 .3 0 0 0 .12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");}
-  /* concentric rings */
-  .rings{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:1200px;height:1200px;pointer-events:none;}
-  .rings .ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid rgba(200,164,77,.12);border-radius:50%;}
-  .rings .ring.r1{width:300px;height:300px;animation:spin 60s linear infinite;}
-  .rings .ring.r2{width:600px;height:600px;border-style:dashed;animation:spin 120s linear infinite reverse;}
-  .rings .ring.r3{width:900px;height:900px;animation:spin 180s linear infinite;}
-  .rings .ring.r4{width:1200px;height:1200px;border-style:dotted;animation:spin 240s linear infinite reverse;}
-  /* zodiac glyphs around middle ring */
-  .zodiac{position:absolute;left:50%;top:50%;width:600px;height:600px;transform:translate(-50%,-50%);animation:spin 80s linear infinite;}
-  .zodiac span{position:absolute;left:50%;top:0;transform:translate(-50%,0);font-family:var(--tc);font-size:18px;color:rgba(200,164,77,.4);}
-  .zodiac span:nth-child(1){transform:rotate(0deg) translateY(-300px);}
-  .zodiac span:nth-child(2){transform:rotate(30deg) translateY(-300px);}
-  .zodiac span:nth-child(3){transform:rotate(60deg) translateY(-300px);}
-  .zodiac span:nth-child(4){transform:rotate(90deg) translateY(-300px);}
-  .zodiac span:nth-child(5){transform:rotate(120deg) translateY(-300px);}
-  .zodiac span:nth-child(6){transform:rotate(150deg) translateY(-300px);}
-  .zodiac span:nth-child(7){transform:rotate(180deg) translateY(-300px);}
-  .zodiac span:nth-child(8){transform:rotate(210deg) translateY(-300px);}
-  .zodiac span:nth-child(9){transform:rotate(240deg) translateY(-300px);}
-  .zodiac span:nth-child(10){transform:rotate(270deg) translateY(-300px);}
-  .zodiac span:nth-child(11){transform:rotate(300deg) translateY(-300px);}
-  .zodiac span:nth-child(12){transform:rotate(330deg) translateY(-300px);}
-
-  @keyframes spin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
-
-  /* center stem stack */
-  .center-stem{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:6px;pointer-events:none;}
-  .center-stem .glyph{font-family:var(--tc);font-size:96px;font-weight:700;color:var(--gold);text-align:center;line-height:1;opacity:.18;animation:breathe 4s ease-in-out infinite;}
-  .center-stem .glyph:nth-child(2){animation-delay:.2s;color:rgba(200,164,77,.12);}
-
-  @keyframes breathe{0%,100%{transform:scale(1);opacity:.18;}50%{transform:scale(1.03);opacity:.28;}}
-
-  .hero-content{position:relative;z-index:5;text-align:center;max-width:980px;}
-  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:32px;display:inline-flex;align-items:center;gap:14px;opacity:0;animation:fadeUp 1s .3s forwards;}
-  .eyebrow::before,.eyebrow::after{content:'';width:32px;height:1px;background:var(--gold);}
-  .hero h1{font-family:var(--serif);font-size:clamp(56px, 9vw, 124px);font-weight:300;line-height:1;letter-spacing:-.02em;margin-bottom:24px;}
-  .hero h1 .tc{font-family:var(--tc);font-weight:700;color:var(--gold);font-style:normal;display:inline-block;animation:none;}
-  .hero h1 .word{display:inline-block;opacity:0;transform:translateY(40px);animation:fadeUp .9s forwards;}
-  .hero h1 .word:nth-child(1){animation-delay:.5s;}
-  .hero h1 .word:nth-child(2){animation-delay:.7s;}
-  .hero h1 .word:nth-child(3){animation-delay:.9s;}
-  .hero h1 .word:nth-child(4){animation-delay:1.1s;}
-  .hero p.sub{font-family:var(--thai);font-size:18px;line-height:1.7;color:rgba(246,241,230,.7);max-width:560px;margin:0 auto 40px;opacity:0;animation:fadeUp 1s 1.4s forwards;}
-  .hero .ctas{display:flex;gap:14px;justify-content:center;opacity:0;animation:fadeUp 1s 1.6s forwards;flex-wrap:wrap;}
-  .btn-primary{display:inline-flex;align-items:center;gap:10px;padding:18px 32px;background:var(--gold);color:var(--ink);text-decoration:none;border-radius:99px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;transition:transform .3s, box-shadow .3s;position:relative;overflow:hidden;}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(200,164,77,.4);}
-  .btn-primary .arrow{display:inline-block;transition:transform .3s;}
-  .btn-primary:hover .arrow{transform:translateX(4px);}
-  .btn-ghost{display:inline-flex;align-items:center;gap:10px;padding:18px 32px;background:transparent;color:var(--paper);text-decoration:none;border-radius:99px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;border:1px solid rgba(246,241,230,.25);transition:border-color .3s, background .3s;}
-  .btn-ghost:hover{border-color:var(--gold);background:rgba(200,164,77,.06);}
-
-  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
-
-  /* scroll indicator */
-  .scroll-ind{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(246,241,230,.5);text-transform:uppercase;opacity:0;animation:fadeUp 1s 2s forwards;}
-  .scroll-ind .line{width:1px;height:48px;background:linear-gradient(to bottom, var(--gold) 0%, var(--gold) 50%, transparent 50%);background-size:1px 12px;animation:slide 1.4s linear infinite;}
-  @keyframes slide{from{background-position:0 -24px;}to{background-position:0 24px;}}
-
-  /* ── Marquee ────────────────────────────────────────── */
-  .marquee{position:relative;border-top:1px solid rgba(200,164,77,.18);border-bottom:1px solid rgba(200,164,77,.18);overflow:hidden;background:rgba(13,15,18,.4);padding:22px 0;}
-  .marquee-track{display:flex;gap:64px;white-space:nowrap;animation:marquee 30s linear infinite;}
-  .marquee-track span{font-family:var(--serif);font-style:italic;font-size:22px;color:rgba(246,241,230,.5);display:inline-flex;align-items:center;gap:64px;}
-  .marquee-track span::after{content:'✦';color:var(--gold);font-style:normal;font-size:14px;}
-  @keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-
-  /* ── 5 Elements section ─────────────────────────────── */
-  .elements{padding:140px 48px;background:linear-gradient(180deg, var(--ink) 0%, #14171c 100%);position:relative;}
-  .section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:80px;gap:48px;flex-wrap:wrap;}
-  .section-head .l{flex:1;min-width:300px;}
-  .section-head .l .label{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:16px;}
-  .section-head .l h2{font-family:var(--serif);font-size:clamp(40px, 5vw, 72px);font-weight:300;line-height:1.05;letter-spacing:-.02em;}
-  .section-head .l h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
-  .section-head .r{max-width:380px;font-size:14px;line-height:1.7;color:rgba(246,241,230,.6);padding-bottom:8px;}
-
-  .el-grid{display:grid;grid-template-columns:repeat(5, 1fr);gap:0;border-top:1px solid rgba(200,164,77,.15);}
-  .el-card{padding:48px 28px 36px;border-right:1px solid rgba(200,164,77,.1);border-bottom:1px solid rgba(200,164,77,.15);position:relative;transition:background .4s;cursor:pointer;min-height:340px;display:flex;flex-direction:column;}
-  .el-card:last-child{border-right:none;}
-  .el-card .index{font-family:var(--mono);font-size:10px;color:rgba(246,241,230,.4);letter-spacing:.2em;}
-  .el-card .glyph{font-family:var(--tc);font-size:120px;font-weight:700;line-height:1;margin:24px 0 12px;transition:transform .5s cubic-bezier(.2,.8,.2,1), color .4s;}
-  .el-card:hover .glyph{transform:translateY(-6px) scale(1.08);}
-  .el-card .name-th{font-family:var(--thai);font-size:18px;font-weight:600;}
-  .el-card .name-en{font-family:var(--mono);font-size:11px;color:rgba(246,241,230,.5);letter-spacing:.2em;text-transform:uppercase;margin-top:4px;}
-  .el-card .desc{font-size:13px;line-height:1.6;color:rgba(246,241,230,.6);margin-top:auto;padding-top:24px;}
-  .el-card[data-el="wood"]  .glyph{color:#8fc37c;}
-  .el-card[data-el="fire"]  .glyph{color:#e26b5d;}
-  .el-card[data-el="earth"] .glyph{color:#d4a85a;}
-  .el-card[data-el="metal"] .glyph{color:#c8b88a;}
-  .el-card[data-el="water"] .glyph{color:#7ba8c8;}
-  .el-card[data-el="wood"]:hover  {background:linear-gradient(180deg,rgba(63,125,58,.08),transparent);}
-  .el-card[data-el="fire"]:hover  {background:linear-gradient(180deg,rgba(192,57,43,.08),transparent);}
-  .el-card[data-el="earth"]:hover {background:linear-gradient(180deg,rgba(160,122,43,.10),transparent);}
-  .el-card[data-el="metal"]:hover {background:linear-gradient(180deg,rgba(110,98,68,.08),transparent);}
-  .el-card[data-el="water"]:hover {background:linear-gradient(180deg,rgba(44,90,122,.10),transparent);}
-
-  /* ── Decision marquee · pillars showcase ────────────────────── */
-  .pillars-show{padding:140px 48px;background:#14171c;position:relative;overflow:hidden;}
-  .pillars-row{display:flex;justify-content:center;gap:24px;margin-top:60px;perspective:1000px;flex-wrap:wrap;}
-  .pillar{width:200px;background:linear-gradient(180deg, rgba(38,42,50,.8), rgba(20,23,28,.6));border:1px solid rgba(200,164,77,.18);border-radius:6px;padding:32px 18px;text-align:center;transition:transform .5s cubic-bezier(.2,.8,.2,1), border-color .4s, box-shadow .5s;position:relative;}
-  .pillar:hover{transform:translateY(-12px) rotateX(4deg);border-color:var(--gold);box-shadow:0 24px 60px rgba(200,164,77,.18);}
-  .pillar .col-name{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
-  .pillar .stem,.pillar .branch{display:flex;align-items:center;justify-content:center;width:80px;height:80px;margin:18px auto 0;border-radius:6px;font-family:var(--tc);font-size:48px;font-weight:700;border:1.5px solid;}
-  .pillar.s-fire  .stem{background:rgba(192,57,43,.14);color:#e26b5d;border-color:rgba(192,57,43,.4);}
-  .pillar.s-earth .stem{background:rgba(160,122,43,.18);color:#d4a85a;border-color:rgba(160,122,43,.5);}
-  .pillar.s-water .stem{background:rgba(44,90,122,.18);color:#7ba8c8;border-color:rgba(44,90,122,.4);}
-  .pillar.s-metal .stem{background:rgba(110,98,68,.18);color:#c8b88a;border-color:rgba(110,98,68,.4);}
-  .pillar.b-earth .branch{background:rgba(160,122,43,.18);color:#d4a85a;border-color:rgba(160,122,43,.5);}
-  .pillar.b-wood  .branch{background:rgba(63,125,58,.16);color:#8fc37c;border-color:rgba(63,125,58,.4);}
-  .pillar.b-water .branch{background:rgba(44,90,122,.18);color:#7ba8c8;border-color:rgba(44,90,122,.4);}
-  .pillar.b-fire  .branch{background:rgba(192,57,43,.14);color:#e26b5d;border-color:rgba(192,57,43,.4);}
-  .pillar .meta{font-family:var(--mono);font-size:10px;color:rgba(246,241,230,.45);margin-top:14px;letter-spacing:.1em;}
-  .pillar.dm{border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,164,77,.4) inset, 0 12px 40px rgba(200,164,77,.15);}
-  .pillar.dm::before{content:'DAY MASTER · 日主';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--ink);font-family:var(--mono);font-size:9px;letter-spacing:.2em;padding:3px 12px;border-radius:99px;font-weight:700;}
-
-  /* ── Features grid · 3 cols ──────────────────────────────── */
-  .features{padding:140px 48px;background:var(--ink);}
-  .feat-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:24px;}
-  .feat{background:linear-gradient(180deg, rgba(38,42,50,.5), rgba(20,23,28,.4));border:1px solid rgba(200,164,77,.12);border-radius:14px;padding:36px;position:relative;overflow:hidden;transition:border-color .4s, transform .5s;}
-  .feat::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(200,164,77,.08), transparent 50%);opacity:0;transition:opacity .4s;pointer-events:none;}
-  .feat:hover{border-color:rgba(200,164,77,.4);transform:translateY(-4px);}
-  .feat:hover::before{opacity:1;}
-  .feat .num{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--gold);margin-bottom:24px;}
-  .feat h3{font-family:var(--serif);font-size:32px;font-weight:400;line-height:1.15;margin-bottom:12px;}
-  .feat h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
-  .feat p{font-size:14px;line-height:1.7;color:rgba(246,241,230,.6);margin-bottom:20px;}
-  .feat .icon{width:56px;height:56px;border:1px solid rgba(200,164,77,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:24px;color:var(--gold);margin-top:auto;}
-
-  /* ── CTA strip ─────────────────────────────────────── */
-  .cta{padding:140px 48px;background:linear-gradient(180deg, var(--ink) 0%, #1a1d24 100%);text-align:center;position:relative;overflow:hidden;}
-  .cta .big{font-family:var(--serif);font-size:clamp(48px, 7vw, 96px);font-weight:300;line-height:1.05;letter-spacing:-.02em;margin-bottom:32px;max-width:900px;margin-left:auto;margin-right:auto;}
-  .cta .big .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
-  .cta .big i{font-family:var(--serif);color:var(--gold);}
-  .cta .stamp{position:absolute;top:50%;right:8%;transform:translateY(-50%) rotate(-12deg);width:120px;height:120px;border:2px solid var(--fire);color:var(--fire);font-family:var(--tc);font-size:40px;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:8px;opacity:.55;}
-
-  /* ── Footer ────────────────────────────────────────── */
-  footer{padding:64px 48px 32px;background:#0a0c0f;border-top:1px solid rgba(200,164,77,.15);}
-  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px;}
-  .foot-grid h4{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
-  .foot-grid ul{list-style:none;}
-  .foot-grid li{margin-bottom:8px;}
-  .foot-grid a{color:rgba(246,241,230,.6);text-decoration:none;font-size:13px;transition:color .25s;}
-  .foot-grid a:hover{color:var(--gold);}
-  .foot-grid .brand p{font-size:13px;line-height:1.7;color:rgba(246,241,230,.5);margin-top:14px;max-width:340px;}
-  .foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid rgba(200,164,77,.1);font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:rgba(246,241,230,.4);text-transform:uppercase;}
-
-  /* ── Hamburger + Drawer (mobile only) ─────────────── */
-  .hk-burger{display:none;width:38px;height:38px;border:1px solid rgba(200,164,77,.3);border-radius:8px;background:transparent;color:#c8a44d;cursor:pointer;align-items:center;justify-content:center;font-size:18px;padding:0;margin-left:8px;}
-  .hk-burger:hover{border-color:#c8a44d;}
-  [data-theme="light"] .hk-burger{border-color:rgba(138,109,42,.4);color:#8a6d2a;}
-  .hk-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9997;opacity:0;pointer-events:none;transition:opacity .3s;}
-  .hk-drawer-overlay.on{opacity:1;pointer-events:auto;}
-  .hk-drawer{position:fixed;top:0;right:0;bottom:0;width:280px;max-width:85vw;background:rgba(15,17,21,.97);backdrop-filter:blur(20px);border-left:1px solid rgba(200,164,77,.25);transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:9998;display:flex;flex-direction:column;padding:60px 24px 30px;gap:6px;overflow-y:auto;}
-  .hk-drawer.on{transform:translateX(0);}
-  [data-theme="light"] .hk-drawer{background:rgba(255,250,238,.97);border-color:rgba(138,109,42,.3);}
-  .hk-drawer-close{position:absolute;top:14px;right:18px;background:none;border:none;color:#f6f1e6;font-size:22px;cursor:pointer;padding:6px;line-height:1;}
-  [data-theme="light"] .hk-drawer-close{color:#1a1612;}
-  .hk-drawer-link{color:#f6f1e6;text-decoration:none;font-family:'Cormorant Garamond','Noto Serif Thai',serif;font-size:18px;padding:14px 0;border-bottom:1px solid rgba(200,164,77,.15);transition:color .2s;}
-  .hk-drawer-link:hover{color:#c8a44d;}
-  [data-theme="light"] .hk-drawer-link{color:#1a1612;border-bottom-color:rgba(138,109,42,.2);}
-  .hk-drawer-sep{height:6px;}
-  .hk-drawer-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;gap:12px;}
-  .hk-drawer-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(246,241,230,.55);}
-  [data-theme="light"] .hk-drawer-lbl{color:rgba(26,22,18,.55);}
-  .hk-drawer-cta{display:block;margin-top:8px;padding:14px;background:#c8a44d;color:#0d0f12;text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;text-align:center;border-radius:99px;}
-  [data-theme="light"] .hk-drawer-cta{background:#8a6d2a;color:#f5efe2;}
-  .hk-drawer-cta-text{text-align:center;border-bottom:none;font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:rgba(246,241,230,.65);}
-  [data-theme="light"] .hk-drawer-cta-text{color:rgba(26,22,18,.65);}
-
-  /* ── Reveal on scroll ──────────────────────────────── */
-  .reveal{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);}
-  .reveal.in{opacity:1;transform:translateY(0);}
-
-  @media (max-width: 880px){
-    nav.top{padding:18px 24px;}
-    nav.top ul{display:none;}
-    .hero,.elements,.pillars-show,.features,.cta{padding-left:24px;padding-right:24px;}
-    .el-grid{grid-template-columns:repeat(2, 1fr);}
-    .el-card:nth-child(odd){border-right:1px solid rgba(200,164,77,.1);}
-    .feat-grid{grid-template-columns:1fr;}
-    .foot-grid{grid-template-columns:1fr 1fr;}
-    .cta .stamp{display:none;}
-  }
-
-  /* ─────────────── MOBILE PHONE (≤640px) ─────────────── */
-  @media (max-width: 640px){
-    nav.top{padding:14px 18px;}
-    nav.top ul{display:none;}
-    nav.top .auth .login{display:none;}
-    nav.top .auth .signup{display:none;}
-    nav.top .auth .hk-lang-switch,
-    nav.top .auth .hk-theme-switch{display:none;}
-    .hk-burger{display:inline-flex;}
-    .logo{font-size:20px;}
-    .logo .seal{width:24px;height:24px;font-size:12px;}
-
-    .hero{padding:14px 22px;min-height:50vh;}
-    .hero h1{font-size:42px;line-height:1.05;}
-    .hero p.sub{font-size:14px;line-height:1.65;margin:0 auto 28px;}
-    .eyebrow{font-size:9px;letter-spacing:.3em;margin-bottom:20px;gap:8px;}
-    .eyebrow::before, .eyebrow::after{width:18px;}
-    .ctas{gap:8px;}
-    .btn-primary, .btn-ghost{padding:14px 22px;font-size:10px;letter-spacing:.15em;}
-
-    .rings{width:600px;height:600px;}
-    .rings .ring.r1{width:200px;height:200px;}
-    .rings .ring.r2{width:340px;height:340px;}
-    .rings .ring.r3{width:480px;height:480px;}
-    .rings .ring.r4{width:600px;height:600px;}
-    .zodiac{width:380px;height:380px;}
-    .zodiac span{font-size:12px;}
-    .zodiac span:nth-child(1){transform:translate(-50%,0) rotate(0deg) translateY(-190px);}
-    .zodiac span:nth-child(2){transform:translate(-50%,0) rotate(30deg) translateY(-190px);}
-    .zodiac span:nth-child(3){transform:translate(-50%,0) rotate(60deg) translateY(-190px);}
-    .zodiac span:nth-child(4){transform:translate(-50%,0) rotate(90deg) translateY(-190px);}
-    .zodiac span:nth-child(5){transform:translate(-50%,0) rotate(120deg) translateY(-190px);}
-    .zodiac span:nth-child(6){transform:translate(-50%,0) rotate(150deg) translateY(-190px);}
-    .zodiac span:nth-child(7){transform:translate(-50%,0) rotate(180deg) translateY(-190px);}
-    .zodiac span:nth-child(8){transform:translate(-50%,0) rotate(210deg) translateY(-190px);}
-    .zodiac span:nth-child(9){transform:translate(-50%,0) rotate(240deg) translateY(-190px);}
-    .zodiac span:nth-child(10){transform:translate(-50%,0) rotate(270deg) translateY(-190px);}
-    .zodiac span:nth-child(11){transform:translate(-50%,0) rotate(300deg) translateY(-190px);}
-    .zodiac span:nth-child(12){transform:translate(-50%,0) rotate(330deg) translateY(-190px);}
-    .center-stem .glyph{font-size:64px;}
-
-    .marquee{padding:14px 0;}
-    .marquee-track{gap:32px;}
-    .marquee-track span{font-size:14px;gap:32px;}
-
-    .pillars-show, .elements, .features, .cta{padding:60px 22px;}
-    .section-head{margin-bottom:32px;gap:14px;}
-    .section-head .r{max-width:none;font-size:13px;}
-
-    .pillars-row{gap:10px;}
-    .pillar{width:calc(50% - 8px);min-width:0;padding:18px 10px;}
-    .pillar .stem, .pillar .branch{width:48px;height:48px;font-size:28px;margin:10px auto 0;}
-    .pillar.dm::before{font-size:7px;padding:2px 8px;letter-spacing:.15em;}
-    .pillar .col-name{font-size:9px;}
-    .pillar .meta{font-size:9px;}
-
-    .el-grid{grid-template-columns:repeat(2, 1fr);}
-    .el-card{padding:24px 18px;min-height:auto;}
-    .el-card .glyph{font-size:64px;margin:14px 0 8px;}
-    .el-card .name-th{font-size:15px;}
-    .el-card .name-en{font-size:9px;}
-    .el-card .desc{font-size:11px;padding-top:14px;}
-    .el-card[data-el="water"]{grid-column:span 2;}
-
-    .feat-grid{grid-template-columns:1fr;gap:14px;}
-    .feat{padding:24px 22px;}
-    .feat h3{font-size:24px;}
-    .feat p{font-size:13px;}
-
-    .cta .big{font-size:36px;line-height:1.1;}
-    .cta .stamp{display:none;}
-
-    .foot-grid{grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;}
-    .foot-grid .brand{grid-column:span 2;}
-    .foot-bot{flex-direction:column;gap:8px;text-align:center;}
-
-    .cursor{display:none !important;}
-  }
-</style>
-<link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
-<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+<script src="/js/hk-lang-state.js?v=2"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Hourkey | ระบบวิเคราะห์ดวงจีนเพื่อการตัดสินใจ</title>
+  <meta name="description" content="Hourkey ผูกวันเวลาเกิด ฤกษ์ ทิศ พื้นที่ และบริบทคำถามเข้าด้วยกัน แล้วให้ AI Sifu สรุปเป็นคำตอบที่ตรวจสอบเหตุผลและนำไปใช้ต่อได้" />
+  <link rel="canonical" href="https://hourkey.io/" />
+  <meta name="theme-color" content="#090706" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Hourkey" />
+  <meta property="og:title" content="Hourkey | ระบบวิเคราะห์ดวงจีนเพื่อการตัดสินใจ" />
+  <meta property="og:description" content="จากวันเวลาเกิด ฤกษ์ ทิศ และบริบทจริง สู่คำตอบเดียวที่ใช้วางแผนได้" />
+  <meta property="og:url" content="https://hourkey.io/" />
+  <meta property="og:image" content="https://hourkey.io/assets/landing-v2/hourkey-og-v2.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Hourkey luopan and AI Sifu reading system" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Hourkey | ระบบวิเคราะห์ดวงจีนเพื่อการตัดสินใจ" />
+  <meta name="twitter:description" content="AI Sifu ที่อ่านจากดวง เวลา ทิศ และบริบทจริงของคุณ" />
+  <meta name="twitter:image" content="https://hourkey.io/assets/landing-v2/hourkey-og-v2.jpg" />
+  <link rel="alternate" hreflang="th" href="https://hourkey.io/?lang=th" />
+  <link rel="alternate" hreflang="en" href="https://hourkey.io/?lang=en" />
+  <link rel="alternate" hreflang="zh" href="https://hourkey.io/?lang=zh" />
+  <link rel="alternate" hreflang="vi" href="https://hourkey.io/?lang=vi" />
+  <link rel="alternate" hreflang="ja" href="https://hourkey.io/?lang=ja" />
+  <link rel="alternate" hreflang="ko" href="https://hourkey.io/?lang=ko" />
+  <link rel="alternate" hreflang="ru" href="https://hourkey.io/?lang=ru" />
+  <link rel="alternate" hreflang="es" href="https://hourkey.io/?lang=es" />
+  <link rel="alternate" hreflang="x-default" href="https://hourkey.io/" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+  <link rel="apple-touch-icon" href="/favicon.svg?v=2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=optional" rel="stylesheet" />
+  <link rel="preload" as="image" href="assets/landing-v2/hourkey-hero-poster-v2.jpg" fetchpriority="high" />
+  <script>document.documentElement.classList.add('js');</script>
+  <style>
+    :root{
+      --ink:#f7efe3;
+      --muted:#cdbfa9;
+      --faint:#8f806c;
+      --bg:#090706;
+      --panel:#12100e;
+      --panel-2:#181310;
+      --line:rgba(232,197,128,.18);
+      --line-strong:rgba(232,197,128,.38);
+      --gold:#e5bd69;
+      --red:#a82f24;
+      --jade:#6aa98c;
+      --blue:#6f93b8;
+      --shadow:0 24px 80px rgba(0,0,0,.48);
+      --thai:"Noto Sans Thai","Inter","Segoe UI",system-ui,sans-serif;
+      --serif:"Noto Serif Thai","Noto Serif TC",Georgia,serif;
+      --tc:"Noto Serif TC","Noto Serif Thai",serif;
+      --mono:"JetBrains Mono","SFMono-Regular","Cascadia Mono",monospace;
+    }
+    :lang(en),:lang(vi),:lang(ru),:lang(es){--thai:"Noto Sans","Noto Sans Thai","Inter","Segoe UI",system-ui,sans-serif;--serif:"Noto Sans","Noto Serif Thai",Georgia,serif}
+    :lang(zh-Hant){--thai:"Noto Sans TC","Noto Sans Thai","Noto Sans",system-ui,sans-serif;--serif:"Noto Serif TC","Noto Serif Thai",serif}
+    :lang(ja){--thai:"Noto Sans JP","Noto Sans",system-ui,sans-serif;--serif:"Noto Sans JP","Noto Serif TC",serif}
+    :lang(ko){--thai:"Noto Sans KR","Noto Sans",system-ui,sans-serif;--serif:"Noto Sans KR","Noto Serif TC",serif}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--bg);color:var(--ink)}
+    body{margin:0;font-family:var(--thai);background:var(--bg);color:var(--ink);letter-spacing:0;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button,input{font:inherit}
+    a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .skip-link{position:fixed;left:14px;top:12px;z-index:80;transform:translateY(-140%);background:#fff;color:#130d09;padding:10px 12px;border-radius:6px;font-weight:700}
+    .skip-link:focus{transform:none}
+    .page{min-height:100vh;background:linear-gradient(180deg,rgba(8,6,5,.18),#090706 92vh),#090706}
+    main section,.final-cta{scroll-margin-top:86px}
+    @keyframes heroPosterJitter{
+      0%,100%{background-position:center}
+      12%{background-position:calc(50% - 1px) calc(50% + 1px)}
+      24%{background-position:calc(50% + 1px) calc(50% - 1px)}
+      38%{background-position:calc(50% - 1px) 50%}
+      52%{background-position:calc(50% + 1px) calc(50% + 1px)}
+      68%{background-position:50% calc(50% - 1px)}
+      84%{background-position:calc(50% + 1px) 50%}
+    }
+    @keyframes heroVideoJitter{
+      0%,100%{transform:translate3d(0,0,0) scale(1.018)}
+      10%{transform:translate3d(-1px,.6px,0) scale(1.019)}
+      21%{transform:translate3d(1px,-.7px,0) scale(1.018)}
+      33%{transform:translate3d(-.6px,-.4px,0) scale(1.02)}
+      47%{transform:translate3d(.8px,.8px,0) scale(1.018)}
+      61%{transform:translate3d(-.8px,.2px,0) scale(1.019)}
+      78%{transform:translate3d(.5px,-.6px,0) scale(1.018)}
+    }
+    @keyframes heroRingJitter{
+      0%,100%{transform:translate3d(0,0,0) rotate(0deg);opacity:.34}
+      16%{transform:translate3d(1px,-1px,0) rotate(.06deg);opacity:.39}
+      34%{transform:translate3d(-1px,.5px,0) rotate(-.05deg);opacity:.31}
+      56%{transform:translate3d(.6px,1px,0) rotate(.04deg);opacity:.37}
+      76%{transform:translate3d(-.5px,-.5px,0) rotate(-.04deg);opacity:.33}
+    }
+    .hero{position:relative;min-height:92svh;overflow:hidden;isolation:isolate;background:url("assets/landing-v2/hourkey-hero-poster-v2.jpg") center/cover no-repeat;animation:heroPosterJitter 5.8s steps(2,end) infinite}
+    .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.04) contrast(1.05);z-index:0;transform:scale(1.018);animation:heroVideoJitter 4.8s steps(2,end) infinite;will-change:transform}
+    .hero:before{content:"";position:absolute;inset:0;background:
+      linear-gradient(90deg,rgba(5,4,3,.92) 0%,rgba(5,4,3,.62) 36%,rgba(5,4,3,.2) 62%,rgba(5,4,3,.75) 100%),
+      linear-gradient(180deg,rgba(5,4,3,.44) 0%,rgba(5,4,3,.1) 48%,#090706 100%);z-index:1}
+    .hero:after{content:"";position:absolute;inset:0;background:
+      repeating-radial-gradient(circle at 62% 56%,rgba(229,189,105,.16) 0 1px,transparent 1px 74px),
+      conic-gradient(from 28deg at 62% 56%,transparent 0 11deg,rgba(229,189,105,.08) 11deg 12deg,transparent 12deg 30deg);
+      mask-image:linear-gradient(180deg,transparent 0%,#000 18%,#000 54%,transparent 100%);opacity:.34;z-index:2;pointer-events:none;animation:heroRingJitter 6.6s steps(2,end) infinite;will-change:transform,opacity}
+    .nav{position:fixed;top:0;left:0;right:0;z-index:30;padding:16px clamp(16px,4vw,44px);transition:background .25s,border-color .25s}
+    .nav.scrolled{background:rgba(9,7,6,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+    .nav-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .brand-mark{width:34px;height:34px;border:1px solid var(--line-strong);display:grid;place-items:center;color:var(--gold);background:rgba(12,10,8,.54);box-shadow:inset 0 0 22px rgba(229,189,105,.11);border-radius:6px}
+    .brand-mark span{font-family:var(--tc);font-size:19px;line-height:1}
+    .brand-name{font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:.16em;color:#fff}
+    .nav-links{display:flex;align-items:center;gap:20px;color:var(--muted);font-size:13px}
+    .nav-links a:hover{color:#fff}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-select{height:42px;min-width:74px;border:1px solid var(--line-strong);border-radius:6px;background:rgba(14,12,10,.72);color:#fff;padding:0 9px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .lang-select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .lang-select option{background:#120f0d;color:#fff}
+    .link-muted{font-size:13px;color:var(--muted)}
+    .link-muted:hover{color:#fff}
+    .btn{height:46px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 18px;border:1px solid var(--line-strong);background:rgba(14,12,10,.64);color:var(--ink);border-radius:6px;transition:transform .18s,border-color .18s,background .18s;white-space:nowrap}
+    .btn:hover{transform:translateY(-1px);border-color:rgba(229,189,105,.62);background:rgba(28,20,15,.84)}
+    .btn-primary{background:linear-gradient(180deg,#d74b36,#8e231b);border-color:rgba(255,172,128,.42);box-shadow:0 16px 38px rgba(130,22,18,.34),inset 0 1px rgba(255,255,255,.22);color:#fff}
+    .btn-primary:hover{background:linear-gradient(180deg,#eb5b42,#98261e)}
+    .menu-toggle{display:none;width:42px;height:42px;padding:0;border:1px solid var(--line-strong);border-radius:6px;background:rgba(14,12,10,.72);color:#fff;align-items:center;justify-content:center}
+    .menu-toggle span{width:18px;height:12px;display:block;position:relative;border-top:1px solid currentColor;border-bottom:1px solid currentColor}
+    .menu-toggle span:before{content:"";position:absolute;left:0;right:0;top:5px;border-top:1px solid currentColor}
+    .mobile-drawer{display:none;position:fixed;top:66px;left:14px;right:14px;z-index:29;border:1px solid var(--line-strong);background:rgba(9,7,6,.94);backdrop-filter:blur(18px);border-radius:8px;padding:10px;box-shadow:var(--shadow)}
+    .mobile-drawer.open{display:grid;gap:4px}
+    .mobile-drawer a{padding:12px;border-radius:6px;color:#eadfce}
+    .mobile-drawer a:hover,.mobile-drawer a:focus-visible{background:rgba(255,255,255,.055);color:#fff}
+    .mobile-drawer .drawer-primary{background:linear-gradient(180deg,#d74b36,#8e231b);color:#fff;text-align:center;margin-top:4px}
+    .hero-content{position:relative;z-index:3;max-width:1180px;margin:0 auto;min-height:92svh;padding:128px clamp(16px,4vw,44px) 50px;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);align-items:end;gap:42px}
+    .hero-copy{padding-bottom:min(6vh,54px)}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px}
+    .eyebrow:before{content:"";width:26px;height:1px;background:var(--gold)}
+    h1{margin:0;font-family:var(--serif);font-size:clamp(56px,11vw,136px);line-height:.84;font-weight:700;letter-spacing:0;color:#fff;text-shadow:0 18px 70px rgba(0,0,0,.7)}
+    .hero-sub{max-width:690px;margin:24px 0 0;color:#eadfce;font-size:clamp(18px,2.2vw,28px);line-height:1.35;font-weight:600}
+    .hero-desc{max-width:590px;margin:18px 0 0;color:var(--muted);font-size:15.5px;line-height:1.85}
+    .hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+    .hero-proof{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}
+    .proof-chip{border:1px solid rgba(229,189,105,.17);background:rgba(9,7,6,.46);color:#d8c8aa;font-size:12px;padding:8px 10px;border-radius:6px;backdrop-filter:blur(8px)}
+    .oracle-panel{align-self:end;margin-bottom:min(5vh,46px);border:1px solid var(--line);background:rgba(10,8,7,.6);backdrop-filter:blur(18px);box-shadow:var(--shadow);border-radius:8px;overflow:hidden}
+    .oracle-top{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:14px 16px;background:rgba(255,255,255,.035)}
+    .oracle-title{font-family:var(--mono);font-size:11px;letter-spacing:.17em;color:var(--gold);text-transform:uppercase}
+    .oracle-state{font-family:var(--mono);font-size:11px;color:var(--jade)}
+    .oracle-body{padding:18px}
+    .reading{display:grid;gap:12px}
+    .reading-row{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:start;border-bottom:1px solid rgba(232,197,128,.1);padding-bottom:12px}
+    .reading-row:last-child{border-bottom:0;padding-bottom:0}
+    .reading-k{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase}
+    .reading-v{color:#f3e8d6;font-size:14px;line-height:1.55}
+    .meter{height:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.07);overflow:hidden;border-radius:999px;margin-top:9px}
+    .meter span{display:block;height:100%;width:88%;background:linear-gradient(90deg,var(--jade),var(--gold),var(--red))}
+    .sample-answer{display:grid;gap:12px}
+    .sample-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .pillar-mini{border:1px solid rgba(232,197,128,.16);background:rgba(0,0,0,.2);border-radius:6px;padding:8px;text-align:center}
+    .pillar-mini small{display:block;color:var(--faint);font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em}
+    .pillar-mini b{display:block;color:#fff;font-family:var(--tc);font-size:21px;line-height:1.1;margin-top:3px}
+    .sample-result{border:1px solid rgba(106,169,140,.26);background:rgba(106,169,140,.075);border-radius:8px;padding:14px}
+    .sample-result strong{display:block;color:#fff;font-size:15px;margin-bottom:6px}
+    .sample-result p{margin:0;color:#d8cdbd;font-size:13.5px;line-height:1.66}
+    .sample-tags{display:flex;flex-wrap:wrap;gap:7px}
+    .sample-tags span{border:1px solid rgba(229,189,105,.18);background:rgba(0,0,0,.18);color:#d8c8aa;border-radius:999px;padding:6px 8px;font-family:var(--mono);font-size:10px}
+    .trust-strip{padding:18px clamp(16px,4vw,44px);border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#0c0908}
+    .trust-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .trust-item{border:1px solid rgba(232,197,128,.14);border-radius:8px;background:rgba(255,255,255,.025);padding:14px 15px}
+    .trust-item b{display:block;color:#fff;font-size:14px;margin-bottom:4px}
+    .trust-item span{display:block;color:var(--muted);font-size:12.5px;line-height:1.55}
+    .section{padding:84px clamp(16px,4vw,44px)}
+    .section-inner{max-width:1180px;margin:0 auto}
+    .section-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:26px}
+    .label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+    h2{margin:0;font-family:var(--serif);font-size:clamp(30px,5vw,62px);line-height:1.05;font-weight:700;color:#fff;letter-spacing:0}
+    .section-note{max-width:470px;color:var(--muted);font-size:15px;line-height:1.75;margin:0}
+    .paths{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+    .path-card{min-height:340px;padding:10px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));border-radius:8px;display:flex;flex-direction:column;gap:14px;overflow:hidden;transition:transform .18s,border-color .18s,background .18s}
+    .path-card:hover{transform:translateY(-3px);border-color:var(--line-strong);background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.025))}
+    .path-card-featured{grid-column:span 2;min-height:392px;background:linear-gradient(180deg,rgba(229,189,105,.095),rgba(168,47,36,.04))}
+    .path-card-featured .path-media{aspect-ratio:16/8.8}
+    .path-card-featured h3{font-size:30px}
+    .path-card-featured p{font-size:15px;max-width:560px}
+    .path-media{position:relative;aspect-ratio:16/9;border:1px solid rgba(232,197,128,.16);border-radius:6px;overflow:hidden;background:#080605}
+    .path-media img,.path-media video{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(1.06) contrast(1.04)}
+    .path-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 34%,rgba(5,4,3,.62));pointer-events:none}
+    .media-tag{position:absolute;left:10px;bottom:9px;z-index:1;border:1px solid rgba(229,189,105,.26);background:rgba(7,5,4,.58);backdrop-filter:blur(10px);border-radius:999px;padding:5px 8px;color:#f3dfad;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase}
+    .path-content{display:flex;flex-direction:column;justify-content:space-between;gap:14px;flex:1;padding:0 8px 8px}
+    .path-title{display:flex;align-items:center;gap:10px;margin-top:2px}
+    .path-icon{width:36px;height:36px;flex:0 0 36px;border:1px solid var(--line);display:grid;place-items:center;color:var(--gold);font-family:var(--tc);font-size:18px;background:rgba(0,0,0,.24);border-radius:6px}
+    .path-card h3{font-family:var(--serif);font-size:23px;line-height:1.12;margin:0;color:#fff;font-weight:700;letter-spacing:0}
+    .path-card p{margin:10px 0 0;color:var(--muted);font-size:13.5px;line-height:1.62}
+    .path-card .go{margin-top:18px;color:var(--gold);font-size:13px}
+    .result-band{background:#0c0908;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .result-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:24px;align-items:stretch}
+    .question-stack{display:grid;gap:12px;align-content:start}
+    .question{padding:18px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.035);color:#eadfce;line-height:1.55}
+    .question b{display:block;color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+    .answer{border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,rgba(25,20,17,.8),rgba(12,9,8,.86));box-shadow:var(--shadow);overflow:hidden}
+    .answer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.035)}
+    .answer-head b{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .answer-head span{font-size:12px;color:var(--jade)}
+    .answer-body{padding:22px;display:grid;gap:14px}
+    .answer-line{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+    .answer-line i{font-style:normal;width:34px;height:34px;border:1px solid var(--line);display:grid;place-items:center;color:var(--gold);font-family:var(--mono);font-size:12px;background:rgba(0,0,0,.22);border-radius:6px}
+    .answer-line strong{display:block;color:#fff;margin-bottom:4px;font-size:15px}
+    .answer-line p{margin:0;color:var(--muted);font-size:14px;line-height:1.62}
+    .fusion-band{position:relative;overflow:hidden;background:
+      radial-gradient(circle at 82% 18%,rgba(111,147,184,.18),transparent 30%),
+      linear-gradient(180deg,#090706,#0f0b09 48%,#090706)}
+    .fusion-band:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,7,6,.18),rgba(9,7,6,.7));pointer-events:none}
+    .fusion-grid{position:relative;z-index:1;display:grid;grid-template-columns:.86fr 1.14fr;gap:28px;align-items:center}
+    .fusion-copy{display:grid;gap:18px;align-content:center}
+    .fusion-copy h2{max-width:660px}
+    .fusion-copy .section-note{max-width:620px;margin:0}
+    .fusion-line{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#f2d28b;border-left:2px solid var(--gold);padding:10px 0 10px 14px}
+    .fusion-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .fusion-lenses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:2px}
+    .fusion-lens{border:1px solid rgba(232,197,128,.15);background:rgba(255,255,255,.032);border-radius:8px;padding:12px;min-height:84px}
+    .fusion-lens b{display:block;color:#fff;font-size:14px;margin-bottom:5px}
+    .fusion-lens span{display:block;color:var(--muted);font-size:12.5px;line-height:1.55}
+    .fusion-visual{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#060504;box-shadow:var(--shadow);min-height:360px}
+    .fusion-visual img{display:block;width:100%;height:100%;min-height:360px;object-fit:cover;filter:saturate(1.06) contrast(1.05)}
+    .fusion-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,4,3,.62),transparent 42%),linear-gradient(180deg,transparent 54%,rgba(5,4,3,.58));pointer-events:none}
+    .fusion-caption{position:absolute;left:14px;right:14px;bottom:14px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#eadfce;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .fusion-caption span{border:1px solid rgba(229,189,105,.22);background:rgba(7,5,4,.52);backdrop-filter:blur(10px);border-radius:999px;padding:7px 9px;color:#f0d99b}
+    .surface-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .surface{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.026);padding:18px;min-height:172px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .18s,border-color .18s}
+    .surface:hover{transform:translateY(-2px);border-color:var(--line-strong)}
+    .surface em{font-style:normal;color:var(--gold);font-family:var(--tc);font-size:28px;line-height:1}
+    .surface b{display:block;color:#fff;font-family:var(--serif);font-size:21px;margin:16px 0 8px}
+    .surface p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.58}
+    .surface small{display:inline-flex;width:max-content;margin-bottom:12px;border:1px solid rgba(229,189,105,.18);border-radius:999px;padding:4px 7px;color:#d7c290;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+    .sciences{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .science{border:1px solid var(--line);border-radius:8px;padding:10px;background:rgba(255,255,255,.026);min-height:252px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+    .science-media{aspect-ratio:16/9;border:1px solid rgba(232,197,128,.14);border-radius:6px;overflow:hidden;background:#080605}
+    .science-media img{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(1.04) contrast(1.03)}
+    .science-body{padding:0 8px 8px}
+    .science b{display:block;color:#fff;font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:10px}
+    .science p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.62}
+    .science em{font-style:normal;color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+    .process{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .step{border:1px solid var(--line);border-radius:8px;padding:22px;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.014));min-height:210px}
+    .step .num{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.14em;text-transform:uppercase}
+    .step h3{font-family:var(--serif);font-size:26px;color:#fff;margin:16px 0 10px}
+    .step p{color:var(--muted);font-size:14px;line-height:1.7;margin:0}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+    .media-frame{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#080605;box-shadow:var(--shadow)}
+    .media-frame img{display:block;width:100%;height:auto}
+    .quote-list{display:grid;gap:12px}
+    .quote{border-left:2px solid var(--gold);padding:14px 16px;background:rgba(255,255,255,.03);color:#eadfce;line-height:1.7}
+    .quote small{display:block;color:var(--faint);font-family:var(--mono);font-size:11px;margin-top:8px;letter-spacing:.12em;text-transform:uppercase}
+    .faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .faq-item{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.026);padding:18px}
+    .faq-item b{display:block;color:#fff;margin-bottom:8px}
+    .faq-item p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+    .pricing-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;align-items:stretch}
+    .pricing-panel{border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.018));padding:22px}
+    .pricing-panel h3{margin:0 0 10px;color:#fff;font-family:var(--serif);font-size:30px}
+    .pricing-panel p{margin:0;color:var(--muted);line-height:1.75}
+    .pricing-list{display:grid;gap:8px;margin-top:18px}
+    .pricing-list span{display:flex;gap:9px;color:#eadfce;font-size:14px}
+    .pricing-list span:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);margin-top:8px;flex:0 0 7px}
+    .pricing-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .final-cta{min-height:54svh;display:grid;place-items:center;text-align:center;background:#090706;border-top:1px solid var(--line);position:relative;overflow:hidden}
+    .final-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.48;z-index:0}
+    .final-cta:before{content:"";position:absolute;inset:0;background:rgba(5,4,3,.72);z-index:1}
+    .final-cta .section-inner{position:relative;z-index:2}
+    .final-cta h2{font-size:clamp(42px,8vw,92px)}
+    .final-cta p{max-width:620px;margin:18px auto 28px;color:var(--muted);line-height:1.78}
+    .seal-lock{width:68px;height:68px;margin:0 auto 18px;border:1px solid rgba(229,189,105,.46);border-radius:8px;display:grid;place-items:center;background:rgba(168,47,36,.28);box-shadow:inset 0 0 28px rgba(229,189,105,.14);font-family:var(--tc);font-size:32px;color:var(--gold)}
+    footer{padding:28px clamp(16px,4vw,44px);border-top:1px solid var(--line);color:var(--faint);font-size:12px}
+    .footer-inner{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a:hover{color:#fff}
+    .reveal{opacity:1;transform:none}
+    .js .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+    .js .reveal.on{opacity:1;transform:none}
+    @media (max-width:1060px){
+      .paths{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .path-card-featured{grid-column:span 2}
+      .surface-grid,.sciences,.trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:900px){
+      .nav-links{display:none}
+      .menu-toggle{display:inline-flex}
+      .hero,.hero-content{min-height:90svh}
+      .hero-content{grid-template-columns:1fr;align-items:end;padding-top:104px}
+      .oracle-panel{margin-bottom:0}
+      .result-grid,.fusion-grid,.split,.process,.pricing-grid{grid-template-columns:1fr}
+      .faq{grid-template-columns:1fr}
+    }
+    @media (max-width:620px){
+      .nav{padding:12px 14px}
+      .brand-name{font-size:12px}
+      .link-muted{display:none}
+      .lang-select{height:38px;min-width:62px;padding:0 6px;font-size:10px}
+      .btn{height:42px;padding:0 13px;font-size:13px}
+      .hero-content{padding:96px 14px 30px;gap:22px}
+      h1{font-size:clamp(52px,20vw,64px)}
+      .hero-sub{font-size:20px}
+      .hero-desc{font-size:14px}
+      .oracle-body{padding:14px}
+      .reading-row{grid-template-columns:74px 1fr}
+      .section{padding:62px 14px}
+      .section-head{display:block}
+      .section-note{margin-top:14px}
+      .fusion-lenses{grid-template-columns:1fr}
+      .fusion-visual,.fusion-visual img{min-height:280px}
+      .fusion-caption{display:block}
+      .fusion-caption span{display:inline-flex;margin-top:8px}
+      .paths,.surface-grid,.sciences,.trust-grid{grid-template-columns:1fr}
+      .path-card-featured{grid-column:span 1}
+      .path-card-featured h3{font-size:25px}
+      .path-card{min-height:0}
+      .answer-body{padding:16px}
+      .final-cta{min-height:60svh}
+      .footer-inner{display:block}
+      .footer-links{margin-top:12px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      .reveal,.btn,.path-card,.surface{transition:none}
+      .hero,.hero:after,.hero-video{animation:none}
+      .hero-video{transform:none}
+      .hero-video,.path-media video{display:none}
+      .hero{background:url("assets/landing-v2/hourkey-hero-poster-v2.jpg") center/cover no-repeat}
+    }
+  </style>
 </head>
 <body>
-
-<div class="cursor" id="cursor"></div>
-
-<nav class="top">
-  <a href="#" class="logo" data-hover>
-    <span class="seal">時</span>
-    hourkey
-  </a>
-  <ul>
-    <li><a href="#elements" data-hover data-i18n="nav.howread">วิธีอ่าน</a></li>
-    <li><a href="#features" data-hover data-i18n="nav.features">ฟีเจอร์</a></li>
-    <li><a href="#" data-hover data-i18n="nav.18sciences" onclick="document.getElementById('hk-18modal').classList.add('show');return false;">18 ศาสตร์</a></li>
-  </ul>
-  <div class="auth">
-    <div class="hk-lang-switch" id="hk-lang-switch">
-      <button data-lang="en" title="English">EN</button>
-      <button data-lang="zh" title="中文">中</button>
-      <button data-lang="th" class="on" title="ไทย">TH</button>
-    </div>
-    <div class="hk-theme-switch" id="hk-theme-switch">
-      <button data-theme="dark" class="on" title="โหมดมืด · 陰">☾</button>
-      <button data-theme="light" title="โหมดสว่าง · 陽">☀</button>
-    </div>
-    <a href="/signup?tab=login" class="login" data-hover data-i18n="nav.login">เข้าสู่ระบบ</a>
-    <a href="/signup?tab=signup" class="signup" data-hover><span data-i18n="nav.signup">เริ่มดูดวง →</span></a>
-    <button class="hk-burger" id="hk-burger" aria-label="เมนู">☰</button>
-  </div>
-</nav>
-
-<!-- hamburger drawer (mobile only) -->
-<div class="hk-drawer-overlay" id="hk-drawer-overlay"></div>
-<aside class="hk-drawer" id="hk-drawer" aria-label="เมนูมือถือ">
-  <button class="hk-drawer-close" id="hk-drawer-close" aria-label="ปิด">✕</button>
-  <a href="#elements" data-i18n="nav.howread" class="hk-drawer-link">วิธีอ่าน</a>
-  <a href="#features" data-i18n="nav.features" class="hk-drawer-link">ฟีเจอร์</a>
-  <a href="#" onclick="document.getElementById('hk-18modal').classList.add('show');document.getElementById('hk-drawer').classList.remove('on');document.getElementById('hk-drawer-overlay').classList.remove('on');return false;" data-i18n="nav.18sciences" class="hk-drawer-link">18 ศาสตร์</a>
-  <div class="hk-drawer-sep"></div>
-  <div class="hk-drawer-row">
-    <span class="hk-drawer-lbl" data-i18n="drawer.lang">ภาษา</span>
-    <span class="hk-lang-switch">
-      <button data-lang="en">EN</button>
-      <button data-lang="zh">中</button>
-      <button data-lang="th" class="on">TH</button>
-    </span>
-  </div>
-  <div class="hk-drawer-row">
-    <span class="hk-drawer-lbl" data-i18n="drawer.theme">ธีม</span>
-    <span class="hk-theme-switch">
-      <button data-theme="dark" class="on">☾</button>
-      <button data-theme="light">☀</button>
-    </span>
-  </div>
-  <div class="hk-drawer-sep"></div>
-  <a href="/signup?tab=login" data-i18n="nav.login" class="hk-drawer-link hk-drawer-cta-text">เข้าสู่ระบบ</a>
-  <a href="/signup?tab=signup" class="hk-drawer-cta" data-i18n="nav.signup">เริ่มดูดวง →</a>
-</aside>
-
-
-<style>
-.el-yy{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;color:rgba(246,241,230,.55);margin-top:8px;line-height:1.5;}
-.el-yy b{color:#c8a44d;font-weight:700;margin-right:2px;}
-[data-theme="light"] .el-yy{color:rgba(26,22,18,.6);}
-[data-theme="light"] .el-yy b{color:#8a6d2a;}
-
-.hk-lang-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid rgba(200,164,77,.3);border-radius:99px;padding:3px;margin-right:8px;}
-.hk-lang-switch button{min-width:30px;height:28px;padding:0 8px;border:none;background:transparent;color:rgba(246,241,230,.55);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
-.hk-lang-switch button.on{background:#c8a44d;color:#0d0f12;}
-[data-theme="light"] .hk-lang-switch{background:rgba(255,250,238,.6);border-color:rgba(138,109,42,.35);}
-[data-theme="light"] .hk-lang-switch button{color:rgba(26,22,18,.5);}
-[data-theme="light"] .hk-lang-switch button.on{background:#8a6d2a;color:#f5efe2;}
-
-.hk-theme-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid rgba(200,164,77,.3);border-radius:99px;padding:3px;margin-right:8px;}
-.hk-theme-switch button{width:30px;height:28px;border:none;background:transparent;color:rgba(246,241,230,.55);font-size:11px;border-radius:99px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
-.hk-theme-switch button.on{background:#c8a44d;color:#0d0f12;}
-[data-theme="light"] .hk-theme-switch{background:rgba(255,250,238,.6);border-color:rgba(138,109,42,.35);}
-[data-theme="light"] .hk-theme-switch button{color:rgba(26,22,18,.5);}
-[data-theme="light"] .hk-theme-switch button.on{background:#8a6d2a;color:#f5efe2;}
-
-[data-theme="light"] body, [data-theme="light"] html{background:#f5efe2;color:#1a1612;}
-[data-theme="light"] .stars{filter:invert(.3) hue-rotate(20deg) brightness(.85);opacity:.4;}
-[data-theme="light"] .grain{opacity:.18;mix-blend-mode:multiply;}
-[data-theme="light"] .rings .ring{border-color:rgba(138,109,42,.18);}
-[data-theme="light"] .zodiac span{color:rgba(138,109,42,.55);}
-[data-theme="light"] .center-stem .glyph{color:#8a6d2a;opacity:.22;}
-[data-theme="light"] nav.top{mix-blend-mode:normal;}
-[data-theme="light"] nav.top .logo{color:#1a1612;}
-[data-theme="light"] nav.top ul a{color:rgba(26,22,18,.7);}
-[data-theme="light"] nav.top ul a:hover{color:#1a1612;}
-[data-theme="light"] nav.top .auth .login{color:rgba(26,22,18,.75);}
-[data-theme="light"] nav.top .auth .signup{color:#8a6d2a;border-color:#8a6d2a;}
-[data-theme="light"] .hero h1{color:#1a1612;}
-[data-theme="light"] .hero h1 .tc{color:#8a6d2a;}
-[data-theme="light"] .hero p.sub{color:rgba(26,22,18,.65);}
-[data-theme="light"] .marquee{background:rgba(255,250,238,.5);border-color:rgba(138,109,42,.25);}
-[data-theme="light"] .marquee-track span{color:rgba(26,22,18,.55);}
-[data-theme="light"] .pillars-show{background:#ede5d6;}
-[data-theme="light"] .pillar{background:linear-gradient(180deg,rgba(255,250,238,.85),rgba(245,239,226,.85));}
-[data-theme="light"] .elements{background:linear-gradient(180deg,#f5efe2 0%,#ede5d6 100%);}
-[data-theme="light"] .el-card .glyph{filter:brightness(.85);}
-[data-theme="light"] .features{background:#f5efe2;}
-[data-theme="light"] .feat{background:linear-gradient(180deg,rgba(255,250,238,.7),rgba(245,239,226,.7));}
-[data-theme="light"] .cta{background:linear-gradient(180deg,#f5efe2 0%,#ede5d6 100%);}
-[data-theme="light"] footer{background:#e5dccb;border-top-color:rgba(138,109,42,.3);}
-[data-theme="light"] .foot-grid a{color:rgba(26,22,18,.65);}
-[data-theme="light"] .foot-bot{color:rgba(26,22,18,.5);}
-[data-theme="light"] .section-head .l h2{color:#1a1612;}
-[data-theme="light"] .section-head .r{color:rgba(26,22,18,.65);}
-[data-theme="light"] .feat h3{color:#1a1612;}
-[data-theme="light"] .feat p{color:rgba(26,22,18,.65);}
-[data-theme="light"] .cta .big{color:#1a1612;}
-</style>
-<script>
-(function(){
-  // catch ปุ่มทั้ง nav บนและ drawer · class เดียวกัน
-  var btns = document.querySelectorAll('.hk-theme-switch button[data-theme]');
-  if (!btns.length) return;
-  function apply(mode){
-    document.documentElement.setAttribute('data-theme', mode);
-    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.theme === mode); });
-    try{ localStorage.setItem('hourkey-theme', mode); }catch(e){}
-  }
-  btns.forEach(function(b){
-    b.addEventListener('click', function(){ apply(b.dataset.theme); });
-  });
-  try{
-    var saved = localStorage.getItem('hourkey-theme');
-    if (saved) apply(saved);
-    else apply('dark');
-  }catch(e){}
-})();
-
-/* ── i18n · TH/EN/ZH content map ── */
-window.HK_I18N = {
-  'nav.howread':   { th: 'วิธีอ่าน',           en: 'How to read',     zh: '解讀指南' },
-  'nav.features':  { th: 'ฟีเจอร์',            en: 'Features',        zh: '功能' },
-  'nav.18sciences':{ th: '18 ศาสตร์',          en: '18 Sciences',     zh: '十八术' },
-  'drawer.lang':   { th: 'ภาษา',                en: 'Language',        zh: '語言' },
-  'drawer.theme':  { th: 'ธีม',                  en: 'Theme',           zh: '主題' },
-  'nav.login':     { th: 'เข้าสู่ระบบ',         en: 'Sign in',         zh: '登入' },
-  'nav.signup':    { th: 'เริ่มดูดวง →',       en: 'Read your chart →', zh: '開始解讀 →' },
-  'hero.eyebrow':  { th: 'BAZI · 八字 · FOR DECISIONS', en: 'BAZI · 八字 · FOR DECISIONS', zh: '八字 · 抉擇引擎' },
-  'hero.h1':       {
-    th: '<span class="word">เวลา</span> <span class="word"><span class="tc">是</span></span> <span class="word">กุญแจ</span> <span class="word">ของทุกการตัดสินใจ</span>',
-    en: '<span class="word">Time</span> <span class="word"><span class="tc">是</span></span> <span class="word">the</span> <span class="word">key.</span>',
-    zh: '<span class="word"><span class="tc">時</span></span> <span class="word"><span class="tc">是</span></span> <span class="word"><span class="tc">抉擇之鑰</span></span>'
-  },
-  'hero.sub': {
-    th: 'hourkey ใช้ภูมิปัญญาปาจื้อดั้งเดิม 18 ศาสตร์ + ฉีเหมินตุ้นเจี่ย 3,000 ปี + ปฏิทินมงคล 黃曆 ผสานกับ AI เพื่อบอกคุณว่า<br/><i style="color:var(--gold);">เมื่อไหร่ควรลงมือ · เมื่อไหร่ควรรอ · ใครคือคนของคุณ</i>',
-    en: 'hourkey blends 18 classical BaZi sciences + 3,000-year Qi Men Dun Jia + Tongshu almanac with AI to tell you<br/><i style="color:var(--gold);">when to act · when to wait · who is for you</i>',
-    zh: 'hourkey 融合八字十八術 + 三千年奇門遁甲 + 黃曆，結合 AI 告訴您<br/><i style="color:var(--gold);">何時行動 · 何時等候 · 誰是您的貴人</i>'
-  },
-  'hero.18cta':    { th: '✦ ดูครบ 18 ศาสตร์ที่ใช้', en: '✦ See all 18 sciences', zh: '✦ 查看十八術全集' },
-  'hero.tst.row':  {
-    th: '<b>✓</b> True Solar Time · <b>✓</b> Equation of Time · <b>✓</b> Longitude · <b>✓</b> 24 節氣 precision',
-    en: '<b>✓</b> True Solar Time · <b>✓</b> Equation of Time · <b>✓</b> Longitude · <b>✓</b> 24 Solar Terms',
-    zh: '<b>✓</b> 真太陽時 · <b>✓</b> 時差方程式 · <b>✓</b> 經度校正 · <b>✓</b> 24 節氣精準'
-  },
-  'hero.tst.tag':  {
-    th: '🎯 เดือน BaZi เริ่มที่ <b>節 (jieqi)</b> ไม่ใช่วันที่ 1 · ปีจีนเริ่มที่ <b>立春</b> ไม่ใช่ตรุษจีน · ตรงซินแสจริง 100%',
-    en: '🎯 BaZi months start at <b>jieqi (節)</b> not the 1st · Chinese year starts at <b>立春</b> not Lunar New Year · matches real sifus 100%',
-    zh: '🎯 八字月始於<b>節氣</b> · 非朔日 · 中國年始<b>立春</b> · 非農曆新年 · 100% 對應命理師'
-  },
-  'hero.cta.primary': {
-    th: 'เปิดดวงฟรี <span class="arrow">→</span>',
-    en: 'Free reading <span class="arrow">→</span>',
-    zh: '免費解讀 <span class="arrow">→</span>'
-  },
-  'hero.cta.ghost':{ th: 'ดูวิธีอ่าน', en: 'How to read', zh: '解讀指南' },
-  'hero.hint.try': {
-    th: '<span class="han">試</span> กดค้างที่ใดก็ได้',
-    en: '<span class="han">試</span> Press and hold anywhere',
-    zh: '<span class="han">試</span> 按住任意位置'
-  },
-  'hero.hint.treasure': {
-    th: 'ดูชั่วยามที่ <b>ขุมทรัพย์ซ่อนอยู่</b>',
-    en: 'See which hour <b>hides the treasure</b>',
-    zh: '探尋藏於 <b>何時辰之寶</b>'
-  },
-  'hero.now': {
-    th: 'ตอนนี้',
-    en: 'Now',
-    zh: '此刻'
-  },
-
-  'pillars.label':{ th:'EXAMPLE READING · ดวงตัวอย่าง', en:'EXAMPLE READING · BAZI CHART', zh:'示例命盤 · 例證' },
-  'pillars.h2':   { th:'<span class="tc">四柱</span> · เสาทั้งสี่<br/>หัวใจของปาจื้อ', en:'<span class="tc">四柱</span> · Four Pillars<br/>The heart of BaZi', zh:'<span class="tc">四柱</span><br/>八字之核心' },
-  'pillars.desc': { th:'เวลาเกิดหนึ่งจุด แตกออกเป็นเสา 4 ต้น — ปี · เดือน · วัน · ชั่วโมง<br/>เสาวันคือ "Day Master" ตัวคุณ ที่เหลือคือสภาพแวดล้อม', en:'One moment of birth · four pillars — Year · Month · Day · Hour<br/>The Day pillar is your "Day Master"; the rest is your environment', zh:'一個出生時刻分為四柱 — 年 · 月 · 日 · 時<br/>日柱是您的「日主」，其餘為環境' },
-
-  'el.label':     { th:'FIVE ELEMENTS · 五行', en:'FIVE ELEMENTS · 五行', zh:'五行 · WU XING' },
-  'el.h2':        { th:'ห้าธาตุ <span class="tc">五行</span><br/>ห้ารากของชีวิต', en:'Five elements <span class="tc">五行</span><br/>five roots of life', zh:'<span class="tc">五行</span><br/>萬物之五本' },
-  'el.desc':      { th:'ทุกอย่างในจักรวาลเกิดจากการสมดุลของห้าธาตุ — เมื่อรู้ว่าตัวคุณคือธาตุอะไร และขาดเหลืออะไร การตัดสินใจก็จะคมขึ้น', en:'Everything in the universe arises from the balance of five elements. Once you know your element and what you lack, decisions sharpen.', zh:'宇宙萬物源於五行平衡 — 知曉自身屬性與所缺，抉擇便清晰' },
-  'el.wood.th':   { th:'ไม้', en:'Wood', zh:'木' },
-  'el.wood.desc': { th:'เติบโต · ขยาย · ความคิดริเริ่ม · ฤดูใบไม้ผลิ · ทิศตะวันออก', en:'Growth · expansion · initiative · spring · east', zh:'成長 · 擴展 · 開創 · 春 · 東方' },
-  'el.fire.th':   { th:'ไฟ', en:'Fire', zh:'火' },
-  'el.fire.desc': { th:'เปลี่ยนแปลง · ความสว่าง · เสน่ห์ · ฤดูร้อน · ทิศใต้', en:'Transformation · light · charisma · summer · south', zh:'蛻變 · 光明 · 魅力 · 夏 · 南方' },
-  'el.earth.th':  { th:'ดิน', en:'Earth', zh:'土' },
-  'el.earth.desc':{ th:'มั่นคง · เชื่อมต่อ · ความซื่อตรง · ปลายฤดู · ทิศกลาง', en:'Stability · connection · integrity · transitions · center', zh:'穩定 · 連結 · 誠信 · 季末 · 中央' },
-  'el.metal.th':  { th:'ทอง', en:'Metal', zh:'金' },
-  'el.metal.desc':{ th:'ตัด · ตัดสินใจ · ระเบียบ · ฤดูใบไม้ร่วง · ทิศตะวันตก', en:'Cut · decide · order · autumn · west', zh:'切割 · 決斷 · 規律 · 秋 · 西方' },
-  'el.water.th':  { th:'น้ำ', en:'Water', zh:'水' },
-  'el.water.desc':{ th:'ลึก · ยืดหยุ่น · ปัญญา · ฤดูหนาว · ทิศเหนือ', en:'Depth · flexibility · wisdom · winter · north', zh:'深邃 · 柔順 · 智慧 · 冬 · 北方' },
-
-  'feat.label':   { th:'FEATURES · เครื่องมือ', en:'FEATURES · TOOLS', zh:'功能 · 工具' },
-  'feat.h2':      { th:'เครื่องมือ <span class="tc">八件</span><br/>ทำดวงเป็นเรื่องใช้งานได้', en:'Eight <span class="tc">八件</span> tools<br/>turn destiny into action', zh:'<span class="tc">八件</span>工具<br/>讓命理化為行動' },
-  'feat.desc':    { th:'ปาจื้อไม่ได้มีไว้แค่ "เปิดอ่านเล่น" — ใน hourkey มันคือ dashboard ที่บอกคุณว่าวันไหน-ใคร-ทิศไหน', en:'BaZi is not just casual reading — in hourkey it is a dashboard telling you which day, person, direction', zh:'八字不僅供閒讀 — hourkey 將其化為儀表板，告訴您何日、何人、何方' },
-  'feat.calendar.h':{ th:'<span class="tc">大運</span><br/>ปฏิทินมงคล', en:'<span class="tc">大運</span><br/>Auspicious Calendar', zh:'<span class="tc">大運</span><br/>吉曆' },
-  'feat.calendar.p':{ th:'ดูชั่วโมง-วัน-เดือน-ปีไหนเอื้อต่อการตัดสินใจของคุณ พร้อมคำแนะนำสั้นๆ ทุกเช้า', en:'See which hour, day, month, year favors your decisions — with daily morning briefs', zh:'查看哪些時辰、日、月、年有利於您的抉擇，附晨間簡報' },
-  'feat.picker.h':{ th:'<span class="tc">擇吉</span><br/>วางฤกษ์มงคล', en:'<span class="tc">擇吉</span><br/>Date Picking', zh:'<span class="tc">擇吉</span><br/>擇吉日' },
-  'feat.picker.p':{ th:'เลือกวันเวลามงคลสำหรับงานสำคัญ — เปิดร้าน · เซ็นสัญญา · ขึ้นบ้าน · เริ่มงาน', en:'Pick auspicious dates — opening · signing · housewarming · starting', zh:'為大事擇吉日 — 開店 · 簽約 · 入宅 · 動工' },
-  'feat.network.h':{ th:'<span class="tc">用神</span><br/>ยงเสินเครือข่าย', en:'<span class="tc">用神</span><br/>Yongshen Network', zh:'<span class="tc">用神</span><br/>用神網絡' },
-  'feat.network.p':{ th:'คนรอบตัวคุณ ใครหนุน-ใครชน-ใครเสริม วิเคราะห์จากธาตุของแต่ละคนอย่างเป็นระบบ', en:'Who supports, clashes or boosts you — analyzed from each person\'s elements', zh:'周遭之人誰相助、誰相剋、誰相扶 — 由五行系統分析' },
-  'feat.master.h':{ th:'<span class="tc">師父</span><br/>AI ทำนายดวง', en:'<span class="tc">師父</span><br/>AI Master', zh:'<span class="tc">師父</span><br/>AI 命理師' },
-  'feat.master.p':{ th:'ซินแสในกระเป๋า — ถามได้ทุกเรื่อง ตอบจากดวงคุณ + ภูมิปัญญา 3,000 ปี + AI', en:'A master in your pocket — ask anything, answers from your chart + 3,000 years + AI', zh:'隨身命理師 — 任您詢問，依您命盤 + 三千年智慧 + AI 解答' },
-  'feat.qimen.h': { th:'<span class="tc">奇門</span><br/>ฉีเหมินพยากรณ์', en:'<span class="tc">奇門</span><br/>Qi Men Forecast', zh:'<span class="tc">奇門</span><br/>奇門遁甲' },
-  'feat.qimen.p': { th:'ถามคำถามเฉพาะหน้า — ระบบ 9 ช่องโบราณบอกทิศและจังหวะที่ดีที่สุดในขณะนี้', en:'Ask immediate questions — the ancient 9-grid reveals direction and timing now', zh:'即時提問 — 九宮古法揭示當下方位與時機' },
-  'feat.compass.h':{ th:'<span class="tc">羅盤</span><br/>เข็มทิศมงคล', en:'<span class="tc">羅盤</span><br/>Lucky Compass', zh:'<span class="tc">羅盤</span><br/>吉向羅盤' },
-  'feat.compass.p':{ th:'หาทิศที่หนุนดวงคุณ — เซ็นสัญญา ตั้งโต๊ะ นั่งประชุม นอนหัวไหน · พลังเอื้อตลอดวัน', en:'Find directions that boost your chart — signing, desk facing, meeting seat, head of bed', zh:'尋找助運方位 — 簽約 · 坐席 · 會議 · 床向 · 全日助力' },
-  'feat.flying.h':{ th:'<span class="tc">飛星</span><br/>ฮวงจุ้ยดาวเหิน', en:'<span class="tc">飛星</span><br/>Flying Star Feng Shui', zh:'<span class="tc">飛星</span><br/>玄空飛星' },
-  'feat.flying.p':{ th:'Flying Star Feng Shui · ตำแหน่งดวงดาว 9 ดวง ในบ้าน/ออฟฟิศ · ปีไหนทิศไหนเฮง', en:'Flying Star Feng Shui · 9 stars in home/office · which year, direction is lucky', zh:'玄空飛星 · 家宅/辦公九星位置 · 哪年哪方旺' },
-  'feat.path.h':  { th:'<span class="tc">方違</span><br/>เส้นทางมงคล', en:'<span class="tc">方違</span><br/>Auspicious Path', zh:'<span class="tc">方違</span><br/>吉路擇向' },
-  'feat.path.p':  { th:'Katakagae · ตำราเดินทางญี่ปุ่นโบราณ · ก่อนเดินทางไกล หลีกทิศต้องห้าม เสริมโชค', en:'Katakagae · ancient Japanese travel rule · avoid forbidden directions before journeys', zh:'方違 · 日本古老旅行擇向 · 出遠門前避忌方位、助福' },
-  'feat.tst.h':   { th:'<span class="tc">真太陽</span><br/>True Solar Time', en:'<span class="tc">真太陽</span><br/>True Solar Time', zh:'<span class="tc">真太陽</span><br/>真太陽時' },
-  'feat.tst.p':   { th:'Hour pillar คำนวณตามตำแหน่งดวงอาทิตย์จริง ไม่ใช่นาฬิกา · longitude · EOT · TST · ลึกระดับตำราโบราณ', en:'Hour pillar from real sun position, not the clock · longitude · EOT · TST · classical depth', zh:'時柱依太陽真實位置計算 · 經度 · 時差方程式 · TST · 古法精度' },
-
-  'cta.iskey':    { th:'คือกุญแจ.', en:'is the key.', zh:'即鑰匙。' },
-  'cta.start':    { th:'เริ่มจาก<i> วันเกิด </i>ของคุณ.', en:'Start from your<i> birthday </i>.', zh:'由您的<i>生辰</i>開始。' },
-  'cta.freebtn':  { th:'เริ่มดูดวงฟรี', en:'Start your free reading', zh:'免費開始解讀' },
-  'el.wood.yy':   { th:'<b>陽</b> 甲 หยางไม้ · <b>陰</b> 乙 หยินไม้', en:'<b>陽</b> 甲 Yang Wood · <b>陰</b> 乙 Yin Wood', zh:'<b>陽</b> 甲 陽木 · <b>陰</b> 乙 陰木' },
-  'el.fire.yy':   { th:'<b>陽</b> 丙 หยางไฟ · <b>陰</b> 丁 หยินไฟ', en:'<b>陽</b> 丙 Yang Fire · <b>陰</b> 丁 Yin Fire', zh:'<b>陽</b> 丙 陽火 · <b>陰</b> 丁 陰火' },
-  'el.earth.yy':  { th:'<b>陽</b> 戊 หยางดิน · <b>陰</b> 己 หยินดิน', en:'<b>陽</b> 戊 Yang Earth · <b>陰</b> 己 Yin Earth', zh:'<b>陽</b> 戊 陽土 · <b>陰</b> 己 陰土' },
-  'el.metal.yy':  { th:'<b>陽</b> 庚 หยางทอง · <b>陰</b> 辛 หยินทอง', en:'<b>陽</b> 庚 Yang Metal · <b>陰</b> 辛 Yin Metal', zh:'<b>陽</b> 庚 陽金 · <b>陰</b> 辛 陰金' },
-  'el.water.yy':  { th:'<b>陽</b> 壬 หยางน้ำ · <b>陰</b> 癸 หยินน้ำ', en:'<b>陽</b> 壬 Yang Water · <b>陰</b> 癸 Yin Water', zh:'<b>陽</b> 壬 陽水 · <b>陰</b> 癸 陰水' },
-  'footer.brand':   { th:'ภูมิปัญญาปาจื้อ + ฉีเหมิน 3,000 ปี ในรูปแบบเครื่องมือสำหรับนักตัดสินใจ', en:'3,000 years of BaZi + Qi Men · a tool for decision makers', zh:'三千年八字 + 奇門 · 為抉擇者打造的工具' },
-  'footer.tools':   { th:'เครื่องมือ', en:'Tools', zh:'工具' },
-  'footer.learn':   { th:'เรียนรู้', en:'Learn', zh:'學習' },
-  'footer.method':  { th:'วิธีคิดธาตุให้คุณ-ให้โทษ', en:'Yongshen Methodology', zh:'用神方法論' },
-  'footer.accuracy':{ th:'ความแม่นยำ', en:'Accuracy', zh:'真精準' },
-  'footer.co':      { th:'บริษัท', en:'Company', zh:'公司' },
-  'footer.chart':   { th:'ดวงปาจื้อ', en:'BaZi Chart', zh:'八字命盤' },
-  'footer.calendar':{ th:'ปฏิทินมงคล', en:'Auspicious Calendar', zh:'吉曆' },
-  'footer.network': { th:'เครือข่ายธาตุ', en:'Element Network', zh:'用神網絡' },
-  'footer.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門遁甲' },
-  'footer.howread': { th:'วิธีอ่านดวง', en:'How to read', zh:'解讀指南' },
-  'footer.glossary':{ th:'คำศัพท์', en:'Glossary', zh:'術語' },
-  'footer.journal': { th:'Journal', en:'Journal', zh:'日誌' },
-  'footer.podcast': { th:'Podcast', en:'Podcast', zh:'播客' },
-  'footer.about':   { th:'เกี่ยวกับเรา', en:'About', zh:'關於我們' },
-  'footer.contact': { th:'ติดต่อ', en:'Contact', zh:'聯絡' },
-  'footer.privacy': { th:'Privacy', en:'Privacy', zh:'隱私' },
-  'footer.terms':   { th:'Terms', en:'Terms', zh:'條款' },
-  'footer.copyright':{ th:'© 2026 hourkey · made in Bangkok', en:'© 2026 hourkey · made in Bangkok', zh:'© 2026 hourkey · 曼谷出品' },
-  'm18.eye': { th:'CORE OF BAZI · 八字 · 18 ศาสตร์ดั้งเดิม', en:'CORE OF BAZI · 八字 · 18 Classical Sciences', zh:'八字之核 · 十八術' },
-  'm18.h3':  { th:'ภายใน hourkey ประกอบด้วย', en:'Inside hourkey', zh:'hourkey 內含' },
-  'm18.sub': { th:'ตำราปาจื้อสายโบราณรวบรวมมาเป็น engine คำนวณ + AI สรุปภาษาไทย', en:'Classical BaZi compendium → calculation engine + AI summary', zh:'古代八字典籍 → 計算引擎 + AI 解語' },
-  'm18.pillars.t':  { th:'สี่หลัก', en:'Four Pillars', zh:'四柱' },
-  'm18.pillars.d':  { th:'ปี · เดือน · วัน · ชั่วโมง', en:'Year · Month · Day · Hour', zh:'年 · 月 · 日 · 時' },
-  'm18.stems.t':    { th:'สิบฟ้า', en:'Ten Heavenly Stems', zh:'十天干' },
-  'm18.stems.d':    { th:'10 Heavenly Stems · 甲乙丙丁戊己庚辛壬癸', en:'甲乙丙丁戊己庚辛壬癸', zh:'甲乙丙丁戊己庚辛壬癸' },
-  'm18.branches.t': { th:'สิบสองดิน', en:'Twelve Earthly Branches', zh:'十二地支' },
-  'm18.branches.d': { th:'12 Earthly Branches · 子丑寅卯辰巳午未申酉戌亥', en:'子丑寅卯辰巳午未申酉戌亥', zh:'子丑寅卯辰巳午未申酉戌亥' },
-  'm18.el.t':       { th:'ห้าธาตุ', en:'Five Elements', zh:'五行' },
-  'm18.el.d':       { th:'木火土金水 · ไม้ · ไฟ · ดิน · ทอง · น้ำ', en:'木火土金水 · Wood Fire Earth Metal Water', zh:'木火土金水' },
-  'm18.tengods.t':  { th:'สิบเทพ', en:'Ten Gods', zh:'十神' },
-  'm18.tengods.d':  { th:'官殺·財·印·比劫·食傷', en:'Officer · Wealth · Resource · Friend · Output', zh:'官殺·財·印·比劫·食傷' },
-  'm18.yongshen.t': { th:'เทพพึ่งพา', en:'Useful God', zh:'用神' },
-  'm18.yongshen.d': { th:'Useful God · ธาตุที่ดวงขาด', en:'The element your chart needs', zh:'命局所需之神' },
-  'm18.geju.t':     { th:'โครงสร้าง', en:'Structure', zh:'格局' },
-  'm18.geju.d':     { th:'從財·正格·偏格', en:'Follow Wealth · Normal · Special', zh:'從財·正格·偏格' },
-  'm18.strength.t': { th:'กำลัง', en:'Strength', zh:'旺衰' },
-  'm18.strength.d': { th:'weak / balanced / strong', en:'weak / balanced / strong', zh:'弱 / 平 / 旺' },
-  'm18.luck.t':     { th:'ดวง 10 ปี', en:'10-Year Luck', zh:'大運' },
-  'm18.luck.d':     { th:'Luck Pillars · 大運', en:'Luck Pillars', zh:'十年大運' },
-  'm18.annual.t':   { th:'ดวงปี', en:'Annual Transits', zh:'流年' },
-  'm18.annual.d':   { th:'Annual Transits · 流年', en:'Year-by-year transits', zh:'每年流轉' },
-  'm18.stars.t':    { th:'ดาวมงคล/อัปมงคล', en:'Symbolic Stars', zh:'神煞' },
-  'm18.stars.d':    { th:'25+ Symbolic Stars · 神煞', en:'25+ symbolic stars', zh:'神煞二十五星' },
-  'm18.nayin.t':    { th:'นายิน', en:'Na Yin', zh:'納音' },
-  'm18.nayin.d':    { th:'60 Na Yin · 納音 60', en:'60 Na Yin · sound elements', zh:'六十甲子納音' },
-  'm18.phases.t':   { th:'12 ระยะชีวิต', en:'12 Life Phases', zh:'十二長生' },
-  'm18.phases.d':   { th:'長生·沐浴·...·絕·胎·養', en:'長生·沐浴·...·絕·胎·養', zh:'長生·沐浴·...·絕·胎·養' },
-  'm18.hidden.t':   { th:'ฟ้าซ่อนในดิน', en:'Hidden Stems', zh:'藏干' },
-  'm18.hidden.d':   { th:'Hidden Stems · 藏干', en:'Stems hidden inside branches', zh:'地支所藏天干' },
-  'm18.dhhs.t':     { th:'DHHS', en:'DHHS', zh:'司令藏干' },
-  'm18.dhhs.d':     { th:'Dominant Hidden Stem', en:'Dominant Hidden Stem', zh:'司令當權之干' },
-  'm18.tiaohou.t':  { th:'ปรับอากาศ', en:'Climate Tuning', zh:'調候' },
-  'm18.tiaohou.d':  { th:'Tiao Hou · hot/cold balance', en:'Tiao Hou · hot/cold balance', zh:'寒暖燥濕之調節' },
-  'm18.combo.t':    { th:'การจับคู่', en:'Combinations', zh:'三合·三會·六合' },
-  'm18.combo.d':    { th:'Combinations · 三合 三會 六合', en:'Three Harmony · Three Meeting · Six Combine', zh:'三合 · 三會 · 六合' },
-  'm18.fanfu.t':    { th:'สะท้อน·สะกด', en:'Self-clash', zh:'反吟·伏吟' },
-  'm18.fanfu.d':    { th:'Self-clash patterns', en:'Self-clash patterns', zh:'反吟伏吟之局' },
-  'm18.foot':       { th:'+ ฉีเหมินตุ้นเจี่ย 奇門遁甲 · ปฏิทินมงคล 黃曆 · AI สรุปภาษาไทย',
-                      en:'+ Qi Men Dun Jia 奇門遁甲 · Tongshu Almanac 黃曆 · AI summary',
-                      zh:'+ 奇門遁甲 · 黃曆 · AI 解語' },
-  'm18.foot.tst':   { th:'+ ✓ True Solar Time · เวลาจริงของดวงอาทิตย์ →',
-                      en:'+ ✓ True Solar Time · real time of the sun →',
-                      zh:'+ ✓ 真太陽時 · 太陽真實之時 →' },
-  'mtst.eye':     { th:'TRUE SOLAR TIME · 真太陽時 · 太陽時差', en:'TRUE SOLAR TIME · 真太陽時', zh:'真太陽時 · 太陽時差' },
-  'mtst.h3':      { th:'เวลาจริงของดวงอาทิตย์', en:'Real time of the sun', zh:'太陽真實之時' },
-  'mtst.sub':     { th:'หัวใจของ BaZi · ที่แอปดูดวงทั่วไปไม่ทำ', en:'The heart of BaZi · which generic apps skip', zh:'八字之核 · 一般命理應用未實作' },
-  'mtst.why':     { th:'ทำไมต้องใช้ TST', en:'Why TST matters', zh:'為何需用真太陽時' },
-  'mtst.formula': { th:'สูตร TST · 3 ส่วน', en:'TST formula · 3 components', zh:'真太陽時公式 · 三項' },
-  'mtst.example': { th:'ตัวอย่าง · Demo 1990-01-15 10:30 Bangkok', en:'Example · Demo 1990-01-15 10:30 Bangkok', zh:'例 · Demo 1990-01-15 10:30 曼谷' },
-  'mtst.why.p1': { th:'Hour pillar 時柱 อิง <b>ตำแหน่งดวงอาทิตย์จริง</b> ในแต่ละพิกัด · ไม่ใช่เวลานาฬิกา (Standard Time) ที่อิง meridian ของ timezone',
-                   en:'The Hour pillar 時柱 follows <b>the real sun position</b> at each location · not the clock (Standard Time) that follows a timezone meridian',
-                   zh:'時柱依各地<b>太陽真實位置</b>而定 · 並非依時區子午線之鐘錶時間' },
-  'mtst.why.p2': { th:'Bangkok อยู่ที่ลองจิจูด <b>100.5°E</b> · timezone GMT+7 ใช้ meridian <b>105°E</b> → ต่างกัน <b>~18 นาที</b>',
-                   en:'Bangkok sits at <b>100.5°E</b> · GMT+7 uses meridian <b>105°E</b> → off by <b>~18 minutes</b>',
-                   zh:'曼谷位於東經 <b>100.5°</b> · GMT+7 採用東經 <b>105°</b> 子午線 → 相差 <b>約 18 分鐘</b>' },
-  'mtst.why.p3': { th:'ถ้าไม่ adjust · Hour pillar ผิด → DM, Yongshen, ทุกอย่างเพี้ยน',
-                   en:'Without adjustment · Hour pillar is wrong → DM, Yongshen, everything skews',
-                   zh:'若不校正 · 時柱出錯 → 日主、用神、全盤皆偏' },
-  'mtst.step1.t':{ th:'Standard Time', en:'Standard Time', zh:'標準時' },
-  'mtst.step1.d':{ th:'เวลานาฬิกา (Asia/Bangkok)', en:'Clock time (Asia/Bangkok)', zh:'鐘錶時間（亞洲/曼谷）' },
-  'mtst.step2.t':{ th:'Longitude Shift', en:'Longitude Shift', zh:'經度校正' },
-  'mtst.step2.d':{ th:'(lng − meridian) × 4 นาที/องศา', en:'(lng − meridian) × 4 min/deg', zh:'（經度 − 子午線）× 4 分鐘/度' },
-  'mtst.step3.t':{ th:'Equation of Time', en:'Equation of Time', zh:'時差方程式' },
-  'mtst.step3.d':{ th:'ค่าแก้ EOT · ตามวันในปี', en:'EOT correction · per day of year', zh:'EOT 修正 · 依年內日數' },
-  'mtst.row.std':{ th:'Standard Time', en:'Standard Time', zh:'標準時' },
-  'mtst.row.lng':{ th:'Longitude shift · (100.5018 − 105) × 4', en:'Longitude shift · (100.5018 − 105) × 4', zh:'經度校正 · (100.5018 − 105) × 4' },
-  'mtst.row.lng.v':{ th:'−18 นาที', en:'−18 min', zh:'−18 分鐘' },
-  'mtst.row.eot':{ th:'Equation of Time (Dec 31)', en:'Equation of Time (Dec 31)', zh:'時差方程式（12/31）' },
-  'mtst.row.eot.v':{ th:'−2.9 นาที', en:'−2.9 min', zh:'−2.9 分鐘' },
-  'mtst.row.sum':{ th:'รวม', en:'Total', zh:'總計' },
-  'mtst.row.sum.v':{ th:'−20.9 นาที', en:'−20.9 min', zh:'−20.9 分鐘' },
-  'mtst.row.pillar':{ th:'Hour pillar', en:'Hour pillar', zh:'時柱' },
-  'mtst.row.pillar.v':{ th:'(午時 11:00-13:00 TST)', en:'(午時 11:00-13:00 TST)', zh:'（午時 11:00-13:00 TST）' },
-  'mtst.foot':{ th:'นี่คือ Layer 0 ของ engine · รากของทุกการคำนวณ ที่ตำราโบราณยึดมั่น',
-                en:'This is Layer 0 of the engine · the root of every calculation · what classical texts insist upon',
-                zh:'此乃引擎之 Layer 0 · 一切計算之本 · 古籍堅守之根' }
-};
-function applyI18N(lang){
-  if (!window.HK_I18N) return;
-  Object.entries(window.HK_I18N).forEach(function(entry){
-    var key = entry[0], t = entry[1];
-    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('landing.html',key,lang);}catch(_){}
-    var v=(ov!=null)?ov:t[lang];
-    var els = document.querySelectorAll('[data-i18n="'+key+'"]');
-    els.forEach(function(el){
-      if (v !== undefined) {
-        if (v.indexOf('<') >= 0) el.innerHTML = v;
-        else el.textContent = v;
-      }
-    });
-  });
-}
-window.applyI18N = applyI18N;
-window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
-
-/* ── Language switcher · EN/ZH/TH ── */
-(function(){
-  // catch ปุ่มทั้ง nav บนและ drawer · class เดียวกัน
-  var btns = document.querySelectorAll('.hk-lang-switch button[data-lang]');
-  if (!btns.length) return;
-  function apply(lang){
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
-    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
-    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
-    applyI18N(lang);
-  }
-  btns.forEach(function(b){
-    b.addEventListener('click', function(){ apply(b.dataset.lang); });
-  });
-  try{
-    var saved = localStorage.getItem('hk_locale');
-    if (saved) apply(saved);
-    else apply('th');
-  }catch(e){ apply('th'); }
-})();</script>
-
-<!-- ── HERO (Three.js treasure · STEP 3) ─────────────────── -->
-<style id="hero-treasure-styles">
-  /* ── HERO: 3D treasure key reveal ── */
-  .hero{position:relative;min-height:78vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 40px 0;text-align:center;overflow:hidden;}
-  .hero-canvas-bg{position:absolute;inset:0;z-index:0;cursor:grab;}
-  .hero-canvas-bg:active{cursor:grabbing;}
-  .hero-canvas-bg canvas{width:100%;height:100%;display:block;}
-  .hero-vignette{position:absolute;inset:0;z-index:1;pointer-events:none;background:
-    radial-gradient(ellipse 50% 38% at 50% 50%, color-mix(in srgb, var(--bg) 35%, transparent) 0%, transparent 70%),
-    linear-gradient(180deg, color-mix(in srgb, var(--bg) 50%, transparent) 0%, transparent 18%, transparent 82%, color-mix(in srgb, var(--bg) 75%, transparent) 100%);
-  }
-  .hero-marquee-top{position:absolute;top:90px;left:0;right:0;z-index:2;font-family:var(--tc);font-size:13px;letter-spacing:.5em;color:var(--gold-soft, rgba(200,164,77,.12));white-space:nowrap;overflow:hidden;animation:heroMarquee 80s linear infinite;pointer-events:none;}
-  @keyframes heroMarquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-
-  .hero-content{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;max-width:780px;pointer-events:none;}
-  .hero-content > *{pointer-events:auto;}
-
-  .hero-tag{font-family:var(--mono);font-size:10px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:24px;display:inline-flex;align-items:center;gap:14px;animation:heroFadeIn 1s .4s both ease-out;}
-  .hero-tag::before, .hero-tag::after{content:'';width:32px;height:1px;background:var(--gold);}
-  .hero-tag .han{font-family:var(--tc);font-size:13px;color:var(--gold-bright, var(--gold));letter-spacing:.05em;font-weight:700;}
-  @keyframes heroFadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-
-  .hero h1{font-family:var(--serif);font-size:68px;font-weight:300;line-height:1.05;letter-spacing:-.025em;margin-bottom:20px;animation:heroFadeIn 1s .6s both ease-out;text-shadow:0 4px 30px rgba(0,0,0,.4), 0 0 60px color-mix(in srgb, var(--bg) 60%, transparent);}
-  .hero h1 .han{font-family:var(--tc);color:var(--gold);font-weight:500;}
-  .hero h1 i{font-style:italic;color:var(--gold);font-weight:400;}
-  [data-theme="light"] .hero h1{text-shadow:0 4px 30px rgba(26,22,18,.15), 0 0 60px color-mix(in srgb, var(--bg) 60%, transparent);}
-
-  .hero p{font-family:var(--thai);font-size:16px;line-height:1.75;color:var(--fg-soft, rgba(246,241,230,.7));max-width:560px;margin-bottom:24px;animation:heroFadeIn 1s .8s both ease-out;text-shadow:0 2px 10px rgba(0,0,0,.4);}
-  .hero p i{font-style:italic;color:var(--gold-bright, var(--gold));}
-  .hero p b{color:var(--gold-bright, var(--gold));font-weight:500;}
-  [data-theme="light"] .hero p{text-shadow:0 2px 10px rgba(26,22,18,.1);}
-
-  .hero-features{display:inline-flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--fg-soft, rgba(246,241,230,.7));margin-bottom:30px;padding:10px 18px;background:color-mix(in srgb, var(--bg) 70%, transparent);backdrop-filter:blur(8px);border:1px solid var(--gold-line, rgba(200,164,77,.2));border-radius:10px;animation:heroFadeIn 1s 1s both ease-out;}
-  .hero-features .checks{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;letter-spacing:.05em;}
-  .hero-features .checks span{display:inline-flex;align-items:center;gap:5px;color:var(--gold-bright, var(--gold));}
-  .hero-features .checks span::before{content:'✓';color:var(--gold);font-weight:700;}
-  .hero-features .note{font-family:var(--thai);font-size:11px;color:var(--fg-faint, rgba(246,241,230,.4));letter-spacing:0;}
-  .hero-features .note b{color:var(--gold);font-weight:500;}
-
-  .hero-cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:heroFadeIn 1s 1.2s both ease-out;}
-  .hero .btn-primary{background:var(--gold);color:var(--bg);padding:15px 28px;border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(200,164,77,.25);border:none;}
-  .hero .btn-primary:hover{background:var(--gold-bright, var(--gold));transform:translateY(-1px);}
-  .hero .btn-ghost{color:var(--fg-soft, rgba(246,241,230,.7));padding:15px 28px;border:1px solid var(--gold-line, rgba(200,164,77,.2));border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;transition:.2s;background:color-mix(in srgb, var(--bg) 50%, transparent);backdrop-filter:blur(6px);}
-  .hero .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
-
-  .hero-hint{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);z-index:3;font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--fg-faint, rgba(246,241,230,.4));text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px;animation:heroFadeIn 1s 1.6s both ease-out;text-align:center;pointer-events:none;}
-  .hero-hint .han{font-family:var(--tc);font-size:14px;color:var(--gold);letter-spacing:0;font-weight:600;}
-  .hero-hint .pulse{display:inline-flex;align-items:center;gap:6px;}
-  .hero-hint .pulse::before{content:'';width:5px;height:5px;background:var(--gold);border-radius:50%;animation:heroPulse 2s ease-in-out infinite;}
-  @keyframes heroPulse{0%,100%{opacity:.3;transform:scale(1);}50%{opacity:1;transform:scale(1.4);}}
-
-  .now-shichen{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:3;font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--fg-faint, rgba(246,241,230,.4));text-transform:uppercase;display:flex;align-items:center;gap:10px;animation:heroFadeIn 1s 1.8s both ease-out;}
-  .now-shichen .han{font-family:var(--tc);font-size:18px;color:var(--gold);font-weight:700;letter-spacing:0;}
-  .now-shichen .time{font-family:var(--mono);font-size:11px;color:var(--gold-bright, var(--gold));letter-spacing:.1em;}
-
-  /* RESPONSIVE override */
-  @media (max-width:980px){
-    .hero{padding:90px 20px 110px;}
-    .hero h1{font-size:36px;line-height:1.15;}
-    .hero p{font-size:14px;}
-    .hero-tag::before, .hero-tag::after{width:18px;}
-    .hero-features{font-size:9px;padding:8px 14px;}
-    .hero-features .checks{gap:8px;}
-    .hero-features .note{font-size:10px;}
-    .hero-hint{bottom:75px;font-size:8px;}
-    .now-shichen{bottom:25px;}
-  }
-  @media (max-width:560px){
-    .hero h1{font-size:30px;}
-    .hero-cta{flex-direction:column;width:100%;}
-    .hero-cta a{width:100%;justify-content:center;}
-  }
-</style>
-<section class="hero">
-  <div class="hero-canvas-bg" id="canvas-3d"></div>
-  <div class="hero-vignette"></div>
-</section>
-
-<!-- ── HERO-SUB · ใต้วงราศี 3D · STEP-EXTRA ── -->
-<style>
-  .hero-sub-strip{padding:14px 24px 56px;text-align:center;background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:-30px;}
-  .hero-tst-badge{display:inline-flex;flex-direction:column;align-items:center;gap:6px;padding:12px 22px;background:rgba(143,195,124,.08);border:1px solid rgba(143,195,124,.35);border-radius:12px;cursor:pointer;transition:.25s;backdrop-filter:blur(8px);}
-  .hero-tst-badge:hover{background:rgba(143,195,124,.14);border-color:rgba(143,195,124,.6);transform:translateY(-1px);}
-  .hero-tst-badge .row{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:#9ad07a;display:inline-flex;flex-wrap:wrap;justify-content:center;gap:14px;}
-  .hero-tst-badge .row b{color:#9ad07a;font-weight:700;margin-right:2px;}
-  .hero-tst-badge .tag{font-family:var(--thai);font-size:11px;color:rgba(154,208,122,.78);}
-  [data-theme="light"] .hero-tst-badge{background:rgba(90,138,72,.06);border-color:rgba(90,138,72,.4);}
-  [data-theme="light"] .hero-tst-badge .row, [data-theme="light"] .hero-tst-badge .row b{color:#5a8a48;}
-  [data-theme="light"] .hero-tst-badge .tag{color:rgba(90,138,72,.85);}
-  .hero-sub-strip .hero-tag{font-family:var(--mono);font-size:10px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;display:inline-flex;align-items:center;gap:14px;}
-  .hero-sub-strip .hero-tag::before, .hero-sub-strip .hero-tag::after{content:'';width:32px;height:1px;background:var(--gold);}
-  .hero-sub-strip .hero-tag .han{font-family:var(--tc);font-size:13px;color:var(--gold-bright, var(--gold));letter-spacing:.05em;font-weight:700;}
-  .hero-sub-strip p{font-family:var(--thai);font-size:17px;line-height:1.8;color:var(--fg-soft, rgba(246,241,230,.7));max-width:720px;margin:0 auto;}
-  .hero-sub-strip p i{font-style:italic;color:var(--gold);}
-  .hero-sub-strip p b{color:var(--gold);font-weight:600;}
-  .hero-sub-strip .hero-cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
-  @media (max-width:768px){
-    .hero-sub-strip{padding:8px 18px 36px;gap:14px;margin-top:-20px;}
-    .hero-tst-badge{padding:10px 16px;}
-    .hero-tst-badge .row{font-size:9px;gap:8px;}
-    .hero-tst-badge .tag{font-size:10px;}
-    .hero-sub-strip .hero-tag::before, .hero-sub-strip .hero-tag::after{width:18px;}
-    .hero-sub-strip p{font-size:14px;line-height:1.7;}
-    .hero-sub-strip .hero-cta{flex-direction:column;width:100%;}
-    .hero-sub-strip .hero-cta a{width:100%;justify-content:center;}
-  }
-</style>
-<div class="hero-sub-strip">
-  <div class="hero-tag" data-i18n="hero.eyebrow"><span class="han">時鑰</span>· BAZI · 八字 · FOR DECISIONS</div>
-  <p data-i18n="hero.sub"><b>hourkey</b> = <i>กุญแจของชั่วยาม</i> · ใช้ <b>ปาจื้อ + ฉีเหมิน + ปฏิทินมงคล</b> 3,000 ปี ผสาน AI<br/>บอก<i>เมื่อไหร่ลงมือ</i> · <i>เมื่อไหร่รอ</i> · <i>ใครคือคนของคุณ</i></p>
-  <div class="hero-tst-badge" onclick="document.getElementById('hk-tst-modal').classList.add('show')" title="กดดูรายละเอียด">
-    <span class="row" data-i18n="hero.tst.row"><b>✓</b> True Solar Time · <b>✓</b> Equation of Time · <b>✓</b> Longitude Correction</span>
-    <span class="tag" data-i18n="hero.tst.tag">ระบบคำนวณตามตำแหน่งดวงอาทิตย์จริง · ไม่ใช่นาฬิกา</span>
-  </div>
-  <div class="hero-cta">
-    <a href="/signup" class="btn-primary" data-hover data-i18n="hero.cta.primary">🗝 เปิดดวงฟรี →</a>
-    <a href="#elements" class="btn-ghost" data-hover data-i18n="hero.cta.ghost">ดูวิธีอ่าน</a>
-  </div>
-</div>
-
-<!-- ── Marquee ────────────────────────────────────────── -->
-<div class="marquee">
-  <div class="marquee-track">
-    <span>四柱</span><span>Four Pillars of Destiny</span><span>奇門遁甲</span><span>Qi Men Dun Jia</span><span>用神</span><span>Yongshen Network</span><span>大運</span><span>10-Year Luck</span>
-    <span>四柱</span><span>Four Pillars of Destiny</span><span>奇門遁甲</span><span>Qi Men Dun Jia</span><span>用神</span><span>Yongshen Network</span><span>大運</span><span>10-Year Luck</span>
-  </div>
-</div>
-
-<!-- ── Pillars showcase ───────────────────────────────── -->
-<section class="pillars-show">
-  <div class="section-head reveal">
-    <div class="l">
-      <div class="label" data-i18n="pillars.label">EXAMPLE READING · ดวงตัวอย่าง</div>
-      <h2 data-i18n="pillars.h2"><span class="tc">四柱</span> · เสาทั้งสี่<br/>หัวใจของปาจื้อ</h2>
-    </div>
-    <div class="r" data-i18n="pillars.desc">เวลาเกิดหนึ่งจุด แตกออกเป็นเสา 4 ต้น — ปี · เดือน · วัน · ชั่วโมง<br/>เสาวันคือ "Day Master" ตัวคุณ ที่เหลือคือสภาพแวดล้อม</div>
-  </div>
-  <div class="pillars-row reveal">
-    <div class="pillar s-fire b-earth"><div class="col-name">時 Hour</div><div class="stem">丁</div><div class="branch">丑</div><div class="meta">FIRE · EARTH</div></div>
-    <div class="pillar dm s-earth b-wood"><div class="col-name">日 Day</div><div class="stem">己</div><div class="branch">寅</div><div class="meta">YIN EARTH</div></div>
-    <div class="pillar s-water b-water"><div class="col-name">月 Month</div><div class="stem">壬</div><div class="branch">子</div><div class="meta">WATER · WATER</div></div>
-    <div class="pillar s-metal b-fire"><div class="col-name">年 Year</div><div class="stem">庚</div><div class="branch">午</div><div class="meta">METAL · FIRE</div></div>
-  </div>
-</section>
-
-<!-- ── 5 Elements ─────────────────────────────────────── -->
-<section class="elements" id="elements">
-  <div class="section-head reveal">
-    <div class="l">
-      <div class="label" data-i18n="el.label">FIVE ELEMENTS · 五行</div>
-      <h2 data-i18n="el.h2">ห้าธาตุ <span class="tc">五行</span><br/>ห้ารากของชีวิต</h2>
-    </div>
-    <div class="r" data-i18n="el.desc">ทุกอย่างในจักรวาลเกิดจากการสมดุลของห้าธาตุ — เมื่อรู้ว่าตัวคุณคือธาตุอะไร และขาดเหลืออะไร การตัดสินใจก็จะคมขึ้น</div>
-  </div>
-  <div class="el-grid">
-    <div class="el-card reveal" data-el="wood" data-hover>
-      <div class="index">01</div>
-      <div class="glyph">木</div>
-      <div class="name-th" data-i18n="el.wood.th">ไม้</div>
-      <div class="name-en">WOOD · 木</div>
-      <div class="el-yy" data-i18n="el.wood.yy">陽 甲 · 陰 乙 · หยางไม้ · หยินไม้</div>
-      <div class="desc" data-i18n="el.wood.desc">เติบโต · ขยาย · ความคิดริเริ่ม · ฤดูใบไม้ผลิ · ทิศตะวันออก</div>
-    </div>
-    <div class="el-card reveal" data-el="fire" data-hover>
-      <div class="index">02</div>
-      <div class="glyph">火</div>
-      <div class="name-th" data-i18n="el.fire.th">ไฟ</div>
-      <div class="name-en">FIRE · 火</div>
-      <div class="el-yy" data-i18n="el.fire.yy">陽 丙 · 陰 丁 · หยางไฟ · หยินไฟ</div>
-      <div class="desc" data-i18n="el.fire.desc">เปลี่ยนแปลง · ความสว่าง · เสน่ห์ · ฤดูร้อน · ทิศใต้</div>
-    </div>
-    <div class="el-card reveal" data-el="earth" data-hover>
-      <div class="index">03</div>
-      <div class="glyph">土</div>
-      <div class="name-th" data-i18n="el.earth.th">ดิน</div>
-      <div class="name-en">EARTH · 土</div>
-      <div class="el-yy" data-i18n="el.earth.yy">陽 戊 · 陰 己 · หยางดิน · หยินดิน</div>
-      <div class="desc" data-i18n="el.earth.desc">มั่นคง · เชื่อมต่อ · ความซื่อตรง · ปลายฤดู · ทิศกลาง</div>
-    </div>
-    <div class="el-card reveal" data-el="metal" data-hover>
-      <div class="index">04</div>
-      <div class="glyph">金</div>
-      <div class="name-th" data-i18n="el.metal.th">ทอง</div>
-      <div class="name-en">METAL · 金</div>
-      <div class="el-yy" data-i18n="el.metal.yy">陽 庚 · 陰 辛 · หยางทอง · หยินทอง</div>
-      <div class="desc" data-i18n="el.metal.desc">ตัด · ตัดสินใจ · ระเบียบ · ฤดูใบไม้ร่วง · ทิศตะวันตก</div>
-    </div>
-    <div class="el-card reveal" data-el="water" data-hover>
-      <div class="index">05</div>
-      <div class="glyph">水</div>
-      <div class="name-th" data-i18n="el.water.th">น้ำ</div>
-      <div class="name-en">WATER · 水</div>
-      <div class="el-yy" data-i18n="el.water.yy">陽 壬 · 陰 癸 · หยางน้ำ · หยินน้ำ</div>
-      <div class="desc" data-i18n="el.water.desc">ลึก · ยืดหยุ่น · ปัญญา · ฤดูหนาว · ทิศเหนือ</div>
-    </div>
-  </div>
-</section>
-
-<!-- ── Features ────────────────────────────────────────── -->
-<section class="features" id="features">
-  <div class="section-head reveal">
-    <div class="l">
-      <div class="label" data-i18n="feat.label">FEATURES · เครื่องมือ</div>
-      <h2 data-i18n="feat.h2">เครื่องมือ <span class="tc">八件</span><br/>ทำดวงเป็นเรื่องใช้งานได้</h2>
-    </div>
-    <div class="r" data-i18n="feat.desc">ปาจื้อไม่ได้มีไว้แค่ "เปิดอ่านเล่น" — ใน hourkey มันคือ dashboard ที่บอกคุณว่าวันไหน-ใคร-ทิศไหน</div>
-  </div>
-  <a href="#" class="hk-18-cta" data-i18n="hero.18cta" onclick="document.getElementById('hk-18modal').classList.add('show');return false;">✦ ดูครบ 18 ศาสตร์ที่ใช้</a>
-  <div class="feat-grid feat-grid-8">
-    <a href="/calendar" class="feat reveal" data-hover>
-      <div class="num"><i>i.</i></div>
-      <h3 data-i18n="feat.calendar.h">大運<br/>ปฏิทินมงคล</h3>
-      <p data-i18n="feat.calendar.p">ดูชั่วโมง-วัน-เดือน-ปีไหนเอื้อต่อการตัดสินใจของคุณ พร้อมคำแนะนำสั้นๆ ทุกเช้า</p>
-      <div class="icon">曆</div>
-    </a>
-    <a href="/datepick" class="feat reveal" data-hover>
-      <div class="num"><i>ii.</i></div>
-      <h3 data-i18n="feat.picker.h">擇吉<br/>วางฤกษ์มงคล</h3>
-      <p data-i18n="feat.picker.p">เลือกวันเวลามงคลสำหรับงานสำคัญ — เปิดร้าน · เซ็นสัญญา · ขึ้นบ้าน · เริ่มงาน</p>
-      <div class="icon">擇</div>
-    </a>
-    <a href="/yongsennetwork" class="feat reveal" data-hover>
-      <div class="num"><i>iii.</i></div>
-      <h3 data-i18n="feat.network.h">用神<br/>ยงเสินเครือข่าย</h3>
-      <p data-i18n="feat.network.p">คนรอบตัวคุณ ใครหนุน-ใครชน-ใครเสริม วิเคราะห์จากธาตุของแต่ละคนอย่างเป็นระบบ</p>
-      <div class="icon">人</div>
-    </a>
-    <a href="/master" class="feat reveal" data-hover>
-      <div class="num"><i>iv.</i></div>
-      <h3 data-i18n="feat.master.h">師父<br/>AI ทำนายดวง</h3>
-      <p data-i18n="feat.master.p">ซินแสในกระเป๋า — ถามได้ทุกเรื่อง ตอบจากดวงคุณ + ภูมิปัญญา 3,000 ปี + AI</p>
-      <div class="icon">師</div>
-    </a>
-    <a href="/qimen" class="feat reveal" data-hover>
-      <div class="num"><i>v.</i></div>
-      <h3 data-i18n="feat.qimen.h">奇門<br/>ฉีเหมินพยากรณ์</h3>
-      <p data-i18n="feat.qimen.p">ถามคำถามเฉพาะหน้า — ระบบ 9 ช่องโบราณบอกทิศและจังหวะที่ดีที่สุดในขณะนี้</p>
-      <div class="icon">門</div>
-    </a>
-    <a href="#" class="feat reveal soon" data-hover>
-      <div class="num"><i>vi.</i></div>
-      <h3 data-i18n="feat.compass.h">羅盤<br/>เข็มทิศมงคล</h3>
-      <p data-i18n="feat.compass.p">หาทิศที่หนุนดวงคุณ — เซ็นสัญญา ตั้งโต๊ะ นั่งประชุม นอนหัวไหน · พลังเอื้อตลอดวัน</p>
-      <div class="icon">盤</div>
-    </a>
-    <a href="#" class="feat reveal soon" data-hover>
-      <div class="num"><i>vii.</i></div>
-      <h3 data-i18n="feat.flying.h">飛星<br/>ฮวงจุ้ยดาวเหิน</h3>
-      <p data-i18n="feat.flying.p">Flying Star Feng Shui · ตำแหน่งดวงดาว 9 ดวง ในบ้าน/ออฟฟิศ · ปีไหนทิศไหนเฮง</p>
-      <div class="icon">飛</div>
-    </a>
-    <a href="#" class="feat reveal soon" data-hover>
-      <div class="num"><i>viii.</i></div>
-      <h3 data-i18n="feat.path.h">方違<br/>เส้นทางมงคล</h3>
-      <p data-i18n="feat.path.p">Katakagae · ตำราเดินทางญี่ปุ่นโบราณ · ก่อนเดินทางไกล หลีกทิศต้องห้าม เสริมโชค</p>
-      <div class="icon">方</div>
-    </a>
-    <a href="#" class="feat reveal" data-hover onclick="document.getElementById('hk-tst-modal').classList.add('show');return false;">
-      <div class="num"><i>ix.</i></div>
-      <h3 data-i18n="feat.tst.h">真太陽<br/>True Solar Time</h3>
-      <p data-i18n="feat.tst.p">Hour pillar คำนวณตามตำแหน่งดวงอาทิตย์จริง ไม่ใช่นาฬิกา · longitude · EOT · TST · ลึกระดับตำราโบราณ</p>
-      <div class="icon">日</div>
-    </a>
-  </div>
-</section>
-
-<style>
-.feat-grid-8{display:grid;grid-template-columns:repeat(4,1fr) !important;gap:18px;}
-@media(max-width:1100px){.feat-grid-8{grid-template-columns:repeat(3,1fr) !important;}}
-@media(max-width:760px){.feat-grid-8{grid-template-columns:repeat(2,1fr) !important;}}
-@media(max-width:480px){.feat-grid-8{grid-template-columns:1fr !important;}}
-.feat-grid-8 .feat{padding:24px 22px;text-decoration:none;color:inherit;display:block;}
-.feat-grid-8 .feat h3{font-size:22px;line-height:1.2;margin-bottom:10px;}
-.feat-grid-8 .feat h3 .tc{font-size:24px;}
-.feat-grid-8 .feat p{font-size:12px;line-height:1.6;margin-bottom:16px;}
-.feat-grid-8 .feat .icon{width:40px;height:40px;font-size:18px;}
-.feat-grid-8 .feat.soon{position:relative;opacity:.65;}
-.feat-grid-8 .feat.soon::after{content:'เร็วๆนี้';position:absolute;top:14px;right:14px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.18em;padding:3px 7px;background:rgba(200,164,77,.18);color:#c8a44d;border-radius:99px;}
-[data-theme="light"] .feat-grid-8 .feat.soon::after{background:rgba(138,109,42,.15);color:#8a6d2a;}
-</style>
-
-<!-- ── CTA ─────────────────────────────────────────────── -->
-<section class="cta">
-  <div class="big reveal">
-    <span class="tc">時</span> <span data-i18n="cta.iskey">คือกุญแจ.</span><br/>
-    <span data-i18n="cta.start">เริ่มจาก<i> วันเกิด </i>ของคุณ.</span>
-  </div>
-  <a href="/signup" class="btn-primary reveal" data-hover><span data-i18n="cta.freebtn">เริ่มดูดวงฟรี</span> <span class="arrow">→</span></a>
-  <div class="stamp">時</div>
-</section>
-
-<!-- ── Footer ──────────────────────────────────────────── -->
-<footer>
-  <div class="foot-grid">
-    <div class="brand">
-      <div class="logo">
-        <span class="seal">時</span>
-        hourkey
+  <a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+  <div class="page">
+    <nav class="nav" id="nav">
+      <div class="nav-inner">
+        <a class="brand" href="/" aria-label="Hourkey">
+          <div class="brand-mark"><span>時</span></div>
+          <div class="brand-name">hourkey</div>
+        </a>
+        <div class="nav-links">
+          <a href="#paths">เริ่มจากคำถาม</a>
+          <a href="#answer">คำตอบ</a>
+          <a href="#fusion">Fusion</a>
+          <a href="#process">วิธีทำงาน</a>
+          <a href="#products">ฟีเจอร์</a>
+          <a href="#pricing">แพ็กเกจ</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="nav-actions">
+          <select class="lang-select" id="landingLang" aria-label="ภาษา">
+            <option value="th">TH</option>
+            <option value="en">EN</option>
+            <option value="zh">中文</option>
+            <option value="vi">VI</option>
+            <option value="ja">JP</option>
+            <option value="ko">KO</option>
+            <option value="ru">RU</option>
+            <option value="es">ES</option>
+          </select>
+          <a class="link-muted" href="/signup?tab=login">เข้าสู่ระบบ</a>
+          <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถาม</a>
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="mobileDrawer"><span></span></button>
+        </div>
       </div>
-      <p data-i18n="footer.brand">ภูมิปัญญาปาจื้อ + ฉีเหมิน 3,000 ปี ในรูปแบบเครื่องมือสำหรับนักตัดสินใจ</p>
-    </div>
-    <div>
-      <h4 data-i18n="footer.tools">เครื่องมือ</h4>
-      <ul><li><a href="/chart" data-hover data-i18n="footer.chart">ดวงปาจื้อ</a></li><li><a href="/calendar" data-hover data-i18n="footer.calendar">ปฏิทินมงคล</a></li><li><a href="/yongsennetwork" data-hover data-i18n="footer.network">เครือข่ายธาตุ</a></li><li><a href="/qimen" data-hover data-i18n="footer.qimen">ฉีเหมิน</a></li></ul>
-    </div>
-    <div>
-      <h4 data-i18n="footer.learn">เรียนรู้</h4>
-      <ul><li><a href="/methodology" data-hover data-i18n="footer.method">วิธีคิดธาตุให้คุณ-ให้โทษ</a></li><li><a href="/accuracy" data-hover data-i18n="footer.accuracy">ความแม่นยำ</a></li><li><a href="#" data-hover data-i18n="footer.howread">วิธีอ่านดวง</a></li><li><a href="#" data-hover data-i18n="footer.glossary">คำศัพท์</a></li></ul>
-    </div>
-    <div>
-      <h4 data-i18n="footer.co">บริษัท</h4>
-      <ul><li><a href="#" data-hover data-i18n="footer.about">เกี่ยวกับเรา</a></li><li><a href="#" data-hover data-i18n="footer.contact">ติดต่อ</a></li><li><a href="#" data-hover data-i18n="footer.privacy">Privacy</a></li><li><a href="#" data-hover data-i18n="footer.terms">Terms</a></li></ul>
-    </div>
-  </div>
-  <div class="foot-bot">
-    <span data-i18n="footer.copyright">© 2026 hourkey · made in Bangkok</span>
-    <span>時 · BAZI · 八字</span>
-  </div>
-</footer>
-
-<script>
-  // cursor follow
-  const cur = document.getElementById('cursor');
-  let mx=0,my=0,cx=0,cy=0;
-  window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
-  function tick(){
-    cx += (mx-cx)*.18;
-    cy += (my-cy)*.18;
-    cur.style.transform=`translate(${cx}px,${cy}px) translate(-50%,-50%)`;
-    requestAnimationFrame(tick);
-  }
-  tick();
-  document.querySelectorAll('[data-hover]').forEach(el=>{
-    el.addEventListener('mouseenter', ()=>cur.classList.add('hover'));
-    el.addEventListener('mouseleave', ()=>cur.classList.remove('hover'));
-  });
-
-  // reveal on scroll
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-  },{threshold:.12});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-
-  // feature card mouse spotlight
-  document.querySelectorAll('.feat').forEach(card=>{
-    card.addEventListener('mousemove', e=>{
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
-      card.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
-    });
-  });
-
-  // hide custom cursor on touch
-  if(matchMedia('(pointer: coarse)').matches) cur.style.display='none';
-</script>
-
-<div id="hk-tst-modal" class="hk-18-modal" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="hk-18-card hk-tst-card">
-    <button class="hk-18-close" onclick="document.getElementById('hk-tst-modal').classList.remove('show')">×</button>
-    <div class="hk-18-eye" data-i18n="mtst.eye">TRUE SOLAR TIME · 真太陽時 · 太陽時差</div>
-    <h3 data-i18n="mtst.h3">เวลาจริงของดวงอาทิตย์</h3>
-    <p class="hk-18-sub" data-i18n="mtst.sub">หัวใจของ BaZi · ที่แอปดูดวงทั่วไปไม่ทำ</p>
-
-    <div class="hk-tst-why">
-      <h4 data-i18n="mtst.why">ทำไมต้องใช้ TST</h4>
-      <p data-i18n="mtst.why.p1">Hour pillar 時柱 อิง <b>ตำแหน่งดวงอาทิตย์จริง</b> ในแต่ละพิกัด · ไม่ใช่เวลานาฬิกา (Standard Time) ที่อิง meridian ของ timezone</p>
-      <p data-i18n="mtst.why.p2">Bangkok อยู่ที่ลองจิจูด <b>100.5°E</b> · timezone GMT+7 ใช้ meridian <b>105°E</b> → ต่างกัน <b>~18 นาที</b></p>
-      <p data-i18n="mtst.why.p3">ถ้าไม่ adjust · Hour pillar ผิด → DM, Yongshen, ทุกอย่างเพี้ยน</p>
+    </nav>
+    <div class="mobile-drawer" id="mobileDrawer">
+      <a href="#paths">เริ่มจากคำถาม</a>
+      <a href="#answer">ตัวอย่างคำตอบ</a>
+      <a href="#fusion">Fusion</a>
+      <a href="#process">วิธีทำงาน</a>
+      <a href="#products">ฟีเจอร์</a>
+      <a href="#pricing">แพ็กเกจ</a>
+      <a href="#faq">FAQ</a>
+      <a href="/signup?tab=login">เข้าสู่ระบบ</a>
+      <a class="drawer-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
     </div>
 
-    <div class="hk-tst-formula">
-      <h4 data-i18n="mtst.formula">สูตร TST · 3 ส่วน</h4>
-      <div class="hk-tst-row-flex">
-        <div class="hk-tst-step"><span class="zh">1</span><b data-i18n="mtst.step1.t">Standard Time</b><div data-i18n="mtst.step1.d">เวลานาฬิกา (Asia/Bangkok)</div></div>
-        <div class="hk-tst-step"><span class="zh">2</span><b data-i18n="mtst.step2.t">Longitude Shift</b><div data-i18n="mtst.step2.d">(lng − meridian) × 4 นาที/องศา</div></div>
-        <div class="hk-tst-step"><span class="zh">3</span><b data-i18n="mtst.step3.t">Equation of Time</b><div data-i18n="mtst.step3.d">ค่าแก้ EOT · ตามวันในปี</div></div>
+    <header class="hero">
+      <video class="hero-video lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/hourkey-hero-poster-v2.jpg" data-src="assets/landing-v2/hourkey-hero-loop-v2.mp4" aria-hidden="true"></video>
+      <div class="hero-content">
+        <div class="hero-copy reveal">
+          <div class="eyebrow">BAZI · QI MEN · LUOPAN · AI SIFU</div>
+          <h1>Hourkey</h1>
+          <div class="hero-sub">ระบบวิเคราะห์ดวงจีนที่รวมเวลา ทิศ พื้นที่ และบริบทชีวิตเป็นคำตอบเดียว</div>
+          <p class="hero-desc">ถามเรื่องงาน ความสัมพันธ์ ฤกษ์ บ้าน ทิศ หรือจังหวะสำคัญ แล้วให้ AI Sifu อ่านจากชั้นข้อมูลที่ระบบคำนวณไว้ ไม่ใช่คำทำนายกว้าง ๆ</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
+            <a class="btn" href="#answer">ดูตัวอย่างคำตอบ</a>
+          </div>
+          <div class="hero-proof" aria-label="Core calculation signals">
+            <span class="proof-chip">True Solar Time · ปรับเวลาเกิดตามพื้นที่จริง</span>
+            <span class="proof-chip">用神 / 喜忌 · รู้ธาตุหนุนและควรเลี่ยง</span>
+            <span class="proof-chip">Qi Men · อ่านจังหวะและทิศเฉพาะหน้า</span>
+          </div>
+        </div>
+        <aside class="oracle-panel reveal" aria-label="Hourkey reading context">
+          <div class="oracle-top">
+            <div class="oracle-title">ตัวอย่างคำตอบจากบริบทจริง</div>
+            <div class="oracle-state">traceable</div>
+          </div>
+          <div class="oracle-body">
+            <div class="sample-answer">
+              <div class="sample-pillars" aria-label="sample bazi pillars">
+                <div class="pillar-mini"><small>Year</small><b>癸卯</b></div>
+                <div class="pillar-mini"><small>Month</small><b>甲寅</b></div>
+                <div class="pillar-mini"><small>Day</small><b>己亥</b></div>
+                <div class="pillar-mini"><small>Hour</small><b>壬申</b></div>
+              </div>
+              <div class="sample-result">
+                <strong>สรุป: ทำได้ แต่ต้องเลือกจังหวะและวัสดุให้ถูก</strong>
+                <p>ทิศนี้มีตัวหนุนเรื่องการใช้งานและการคุยงาน แต่มีปัจจัยดินที่ควรระบายก่อนลงมือ จึงควรใช้โลหะ/น้ำเป็นตัวปรับ และเลี่ยงช่วงไฟแรง</p>
+              </div>
+              <div class="sample-tags">
+                <span>Useful God: Wood</span>
+                <span>Luopan: NW</span>
+                <span>Timing: avoid fire day</span>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
-    </div>
+    </header>
 
-    <div class="hk-tst-example">
-      <h4 data-i18n="mtst.example">ตัวอย่าง · Demo 1990-01-15 10:30 Bangkok</h4>
-      <table class="hk-tst-table">
-        <tr><td data-i18n="mtst.row.std">Standard Time</td><td><b>10:30</b></td></tr>
-        <tr><td data-i18n="mtst.row.lng">Longitude shift · (100.5018 − 105) × 4</td><td><b data-i18n="mtst.row.lng.v">−18 นาที</b></td></tr>
-        <tr><td data-i18n="mtst.row.eot">Equation of Time (Dec 31)</td><td><b data-i18n="mtst.row.eot.v">−2.9 นาที</b></td></tr>
-        <tr><td data-i18n="mtst.row.sum">รวม</td><td><b data-i18n="mtst.row.sum.v">−20.9 นาที</b></td></tr>
-        <tr class="hk-tst-result"><td><b>TST</b></td><td><b>12:54</b></td></tr>
-        <tr><td data-i18n="mtst.row.pillar">Hour pillar</td><td><b>庚午</b> <span data-i18n="mtst.row.pillar.v">(午時 11:00-13:00 TST)</span></td></tr>
-      </table>
-    </div>
-    <p class="hk-18-foot" data-i18n="mtst.foot">นี่คือ Layer 0 ของ engine · รากของทุกการคำนวณ ที่ตำราโบราณยึดมั่น</p>
+    <main id="main">
+      <section class="trust-strip" aria-label="Hourkey trust signals">
+        <div class="trust-grid">
+          <div class="trust-item"><b>เห็นเหตุผลของคำตอบ</b><span>บอกว่าคำแนะนำอ้างอิงข้อมูลชั้นใด ไม่ใช่ตอบลอย ๆ</span></div>
+          <div class="trust-item"><b>เริ่มจากคำถามจริง</b><span>เลือกเรื่องก่อน แล้วระบบค่อยดึงดวง เวลา ทิศ และบริบทที่เกี่ยวข้อง</span></div>
+          <div class="trust-item"><b>บอกข้อจำกัดเมื่อข้อมูลไม่ครบ</b><span>ถ้าไม่มีเวลาเกิดหรือข้อมูลพื้นที่ คำตอบจะระบุความไม่แน่นอนให้รู้</span></div>
+          <div class="trust-item"><b>ใช้โปรไฟล์เดียวกันข้ามหน้า</b><span>Chart, Timing, Luopan และ AI Sifu ไม่แยกกันเป็นคนละเรื่อง</span></div>
+        </div>
+      </section>
+      <section class="section" id="paths">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">ทางเข้าการวิเคราะห์</div>
+              <h2>เริ่มจากเรื่องที่ต้องตัดสินใจ</h2>
+            </div>
+            <p class="section-note">เลือกทางเข้าให้ตรงกับคำถาม ระบบจะดึงข้อมูลดวง เวลา ทิศ และบริบทที่เกี่ยวข้องไปให้ AI Sifu เอง</p>
+          </div>
+          <div class="paths">
+            <a class="path-card path-card-featured reveal" href="/master">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-sifu-v2.webp" data-src="assets/landing-v2/card-sifu-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">AI Sifu</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">師</div><h3>ถาม AI Sifu</h3></div>
+                  <p>ถามคำถามเฉพาะเรื่อง แล้วรับคำตอบที่อ้างอิงดวง เวลา ทิศ และบริบทของคุณ</p>
+                </div>
+                <div class="go">เข้าไปถาม →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/today">
+              <div class="path-media">
+                <img src="assets/landing-v2/card-timing-v2.webp" alt="" loading="lazy" decoding="async" />
+                <span class="media-tag">Today</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">日</div><h3>ดูวันนี้</h3></div>
+                  <p>ดูว่าวันนี้เหมาะกับงานแบบไหน ควรใช้จังหวะไหน และควรเลี่ยงอะไร</p>
+                </div>
+                <div class="go">เปิดวันนี้ →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/picker">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-picker-v2.webp" data-src="assets/landing-v2/card-picker-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">Picker</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">擇</div><h3>วางฤกษ์</h3></div>
+                  <p>เลือกวันและช่วงเวลาที่สัมพันธ์กับงานสำคัญและดวงเจ้าของเรื่อง</p>
+                </div>
+                <div class="go">เลือกวัน →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/luopan">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-luopan-v2.webp" data-src="assets/landing-v2/card-luopan-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">Luopan</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">羅</div><h3>Luopan บ้านและทิศ</h3></div>
+                  <p>อ่านทิศ บ้าน ห้อง ประตู โต๊ะ เตียง และจุดพลังในพื้นที่จริง</p>
+                </div>
+                <div class="go">เปิดเข็ม →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/yongsennetwork">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-network-v2.webp" data-src="assets/landing-v2/card-network-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">Network</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">人</div><h3>คนรอบตัว</h3></div>
+                  <p>อ่านแรงหนุน แรงปะทะ และความเหมาะสมในการร่วมงานจากดวงสัมพันธ์</p>
+                </div>
+                <div class="go">ดูเครือข่าย →</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section result-band" id="answer">
+        <div class="section-inner">
+          <div class="result-grid">
+            <div class="question-stack reveal">
+              <div class="label">คำตอบจากบริบทจริง</div>
+              <h2>คำถามเดียว ต้องได้คำตอบที่เอาไปใช้ได้</h2>
+              <div class="question"><b>คำถาม</b> “จะกั้นห้องทางตะวันตกเฉียงเหนือเป็นห้องนั่งเล่นได้ไหม?”</div>
+              <div class="question"><b>บริบทที่ระบบแนบ</b> ดวงเจ้าของบ้าน · ผังบ้าน · องศาเข็ม · ดาวเหิน · ดาวปี · จุดปักในแปลน</div>
+              <div class="question"><b>ผลลัพธ์ที่ควรได้</b> สรุปทิศทาง · แยกปัจจัยหนุน/เสี่ยง · เงื่อนไขลงมือ · วิธีแก้ที่ไม่ทำให้จุดอื่นเสีย</div>
+            </div>
+            <div class="answer reveal">
+              <div class="answer-head">
+                <b>AI Sifu Answer</b>
+                <span>อ้างอิงข้อมูลคำนวณ</span>
+              </div>
+              <div class="answer-body">
+                <div class="answer-line">
+                  <i>01</i>
+                  <div><strong>สรุปทิศทางให้ชัด</strong><p>อ่านว่าองศานั้นตกภูเขาใด วังใด ธาตุใด และสัมพันธ์กับดวงเจ้าของบ้านอย่างไร</p></div>
+                </div>
+                <div class="answer-line">
+                  <i>02</i>
+                  <div><strong>แยกปัจจัยหนุนและเสี่ยง</strong><p>บอกว่าดาว/ธาตุไหนช่วย จุดไหนต้องระวัง และอะไรคือเงื่อนไขที่ทำให้ใช้ได้จริง</p></div>
+                </div>
+                <div class="answer-line">
+                  <i>03</i>
+                  <div><strong>สรุปเป็นขั้นตอนลงมือ</strong><p>แนะนำเวลา สี วัสดุ ตำแหน่ง การใช้งาน และข้อควรเลี่ยงตามบริบทจริง</p></div>
+                </div>
+                <div class="answer-line">
+                  <i>04</i>
+                  <div><strong>ถามต่อได้ทันที</strong><p>คุยต่อจากคำตอบเดิมโดยไม่ต้องเล่าดวงใหม่ เพราะบริบทถูกผูกไว้กับ profile และพื้นที่จริง</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section fusion-band" id="fusion">
+        <div class="section-inner fusion-grid">
+          <div class="fusion-copy reveal">
+            <div class="label">AI Sifu Fusion</div>
+            <h2>6 ศาสตร์ Fusion · ฟ้าเดียวกัน คนละภาษา</h2>
+            <p class="section-note">จีน อินเดีย กรีก และศาสตร์โบราณหลายสายไม่ได้เริ่มจากตำราเดียวกัน แต่เริ่มจากฟ้าเดียวกัน: เวลา ฤดูกาล ทิศ วงกลม 360° จังหวะดาว และความสัมพันธ์ของมุม</p>
+            <p class="section-note">Hourkey ให้แต่ละศาสตร์อ่านด้วยภาษาของตัวเอง แล้วให้ AI Sifu รวมหลักฐานเป็นคำตอบเดียว พร้อมบอกว่าชั้นไหนเห็นตรงกัน ชั้นไหนเตือนต่างกัน และควรตัดสินใจอย่างไร</p>
+            <div class="fusion-line">One sky. Six classical lenses. One decision.</div>
+            <div class="fusion-lenses" aria-label="AI Sifu Fusion sciences">
+              <div class="fusion-lens"><b>BaZi · 八字</b><span>โครงสร้างดวงและธาตุประจำตัว</span></div>
+              <div class="fusion-lens"><b>Zi Wei · 紫微斗數</b><span>ดาวประจำวังและจังหวะชีวิต</span></div>
+              <div class="fusion-lens"><b>Real-Star · 七政四餘</b><span>ตำแหน่งดาวจริงบนฟ้า</span></div>
+              <div class="fusion-lens"><b>Western Astrology</b><span>มุมดาว เรือน และ dignity</span></div>
+              <div class="fusion-lens"><b>Vedic Astrology</b><span>นักษัตร ราศี sidereal และ dasha</span></div>
+              <div class="fusion-lens"><b>Uranian Astrology</b><span>midpoint และ planetary pictures</span></div>
+            </div>
+            <div class="fusion-actions">
+              <a class="btn btn-primary" href="/master-fusion">เปิด AI Sifu Fusion</a>
+              <a class="btn" href="/article-hourkey-guide.html">อ่านคู่มือศาสตร์ Hourkey</a>
+              <a class="btn" href="/article/geometry">อ่านบทความดวงดาว</a>
+            </div>
+          </div>
+          <div class="fusion-visual reveal">
+            <img src="assets/landing-v2/one-sky-six-lenses-v1.webp" alt="Luopan and six glass lenses under a shared starry sky" width="1672" height="941" loading="lazy" decoding="async" />
+            <div class="fusion-caption">
+              <span>generated for Hourkey</span>
+              <span>6 lenses · one sky</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="products">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">ฟีเจอร์ที่อ่านจากบริบทเดียวกัน</div>
+              <h2>ทุกเครื่องมืออ่านจากบริบทชุดเดียวกัน</h2>
+            </div>
+            <p class="section-note">โปรไฟล์ดวง เวลา ทิศ และคำถามของคุณถูกใช้ร่วมกันในแต่ละหน้า ทำให้ Chart, Timing, Luopan และ AI Sifu ไม่แยกกันเป็นคนละเรื่อง</p>
+          </div>
+          <div class="surface-grid">
+            <a class="surface reveal" href="/chart"><div><small>needs profile</small><em>命</em><b>ดวงปาจื้อ</b><p>โครงสร้างดวง ธาตุที่เป็นยา ธาตุที่ควรเลี่ยง และวัยจร</p></div><span class="go">เปิดดวง →</span></a>
+            <a class="surface reveal" href="/today"><div><small>daily context</small><em>日</em><b>วันนี้</b><p>จังหวะรายวัน ชั่วโมงดี ทิศหนุน และกิจที่เหมาะกับดวงคุณ</p></div><span class="go">ดูวันนี้ →</span></a>
+            <a class="surface reveal" href="/calendar"><div><small>month view</small><em>曆</em><b>ปฏิทินมงคล</b><p>ดูวันทั้งเดือน พร้อมคะแนนและเหตุผลที่อ่านออกง่าย</p></div><span class="go">เปิดปฏิทิน →</span></a>
+            <a class="surface reveal" href="/qimen"><div><small>situation</small><em>奇</em><b>Qi Men</b><p>อ่านสถานการณ์เฉพาะหน้า ทิศ ประตู ดาว เทพ และวังที่ใช้ได้</p></div><span class="go">เปิดฉีเหมิน →</span></a>
+            <a class="surface reveal" href="/book"><div><small>report</small><em>書</em><b>Natal Book</b><p>รวมรายงานดวงเชิงลึกสำหรับอ่านเป็นเล่มและเก็บอ้างอิง</p></div><span class="go">เปิดหนังสือ →</span></a>
+            <a class="surface reveal" href="/datepick"><div><small>important date</small><em>擇</em><b>Date Picking</b><p>เลือกฤกษ์ให้ตรงกับงานสำคัญและดวงเจ้าของงาน</p></div><span class="go">วางฤกษ์ →</span></a>
+            <a class="surface reveal" href="/luopan"><div><small>space data</small><em>羅</em><b>Luopan AI</b><p>องศาทิศจริง วงแหวนหล่อแก ดาวเหิน และ pin ในแปลน</p></div><span class="go">เปิดหล่อแก →</span></a>
+            <a class="surface reveal" href="/master"><div><small>ask anything</small><em>師</em><b>AI Sifu</b><p>ถามต่อจากข้อมูลจริง ไม่ใช่ chatbot ทั่วไปที่ตอบจาก prompt ลอย ๆ</p></div><span class="go">ถามซินแส →</span></a>
+            <a class="surface reveal" href="/palmistry"><div><small>ศาสตร์ที่ 7 · your hand</small><em>手</em><b>ทำนายลายมือ</b><p>ถ่ายฝ่ามือสองข้าง AI อ่านเส้นตามคัมภีร์ 3 อารยธรรม จีน อินเดีย ตะวันตก แล้วหลอมรวมกับดวง</p></div><span class="go">ดูลายมือ →</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section result-band" id="process">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">หลังจากกดเริ่ม</div>
+              <h2>จากข้อมูลส่วนตัว ไปจนถึงคำแนะนำที่ลงมือได้</h2>
+            </div>
+            <p class="section-note">ยิ่งบริบทครบ คำตอบยิ่งเฉพาะตัว: วันเกิด เวลาเกิด สถานที่เกิด ความสัมพันธ์ งานที่ถาม และพื้นที่จริง</p>
+          </div>
+          <div class="process">
+            <div class="step reveal"><div class="num">01 · Profile</div><h3>ใส่วัน เวลา และสถานที่เกิด</h3><p>ระบบคำนวณด้วยเวลาสุริยะจริง แล้วสร้างโครงสร้างดวง ยงเสิน ธาตุหนุน และธาตุที่ควรระวัง</p></div>
+            <div class="step reveal"><div class="num">02 · Context</div><h3>เลือกเรื่องที่อยากถาม</h3><p>เมื่อถามเรื่องฤกษ์ ทิศ บ้าน หรือคนรอบตัว ระบบจะเพิ่มข้อมูลเฉพาะหน้าก่อนส่งเข้า AI Sifu</p></div>
+            <div class="step reveal"><div class="num">03 · Decision</div><h3>ได้คำตอบพร้อมเหตุผล</h3><p>ถ้าข้อมูลบางชั้นยังไม่ครบ ระบบจะบอกข้อจำกัดของคำตอบ ไม่สรุปเกินกว่าข้อมูลที่มี</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="sciences">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">ชั้นข้อมูลที่ใช้คำนวณ</div>
+              <h2>หลายศาสตร์ แต่ต้องกลายเป็นคำตอบเดียว</h2>
+            </div>
+            <p class="section-note">AI Sifu อ่านจากข้อมูลที่ระบบคำนวณไว้ ไม่ใช่แค่คำสวย ๆ จากโมเดลภาษา</p>
+          </div>
+          <div class="sciences">
+            <a class="science reveal" href="/articles/sciences/bazi.html">
+              <div class="science-media"><img src="assets/landing-v2/card-sifu-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>命理</em><b>BaZi</b><p>อ่านโครงสร้างดวง ธาตุที่หนุน ธาตุที่ควรระวัง วัยจร และปีจร เพื่อเข้าใจพื้นฐานของเจ้าของดวง</p></div>
+            </a>
+            <a class="science reveal" href="/articles/sciences/qimen.html">
+              <div class="science-media"><img src="assets/landing-v2/card-network-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>奇門</em><b>Qi Men</b><p>ประตู ดาว เทพ วัง ทิศ และจังหวะเฉพาะคำถามที่ต้องตัดสินใจตอนนี้</p></div>
+            </a>
+            <a class="science reveal" href="/articles/sciences/fengshui-luopan.html">
+              <div class="science-media"><img src="assets/landing-v2/card-luopan-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>羅盤</em><b>Luopan</b><p>อ่าน 24 ภูเขา ดาวเหิน ยุค องศาเข็ม ทิศบ้าน และตำแหน่งสำคัญในแปลนจริง</p></div>
+            </a>
+            <a class="science reveal" href="/articles/sciences/date-picking.html">
+              <div class="science-media"><img src="assets/landing-v2/card-timing-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>通書</em><b>Tong Shu</b><p>วัน ชั่วโมง กิจที่เหมาะ ข้อควรเลี่ยง และการจับฤกษ์ตามบริบทผู้ใช้</p></div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="trust">
+        <div class="section-inner split">
+          <div class="media-frame reveal">
+            <img src="assets/landing-v2/hourkey-hero-v2.webp" alt="Hourkey luopan and AI reading desk" loading="lazy" decoding="async" />
+          </div>
+          <div class="quote-list reveal">
+            <div class="label">ทำไมคำตอบตรวจสอบได้</div>
+            <h2>สร้างมาเพื่อคำถามที่มีผลกับชีวิตจริง</h2>
+            <div class="quote">แสดงว่าคำตอบอ้างอิงข้อมูลชั้นใด เช่น ดวง เวลา ฤกษ์ ทิศ หรือข้อมูลพื้นที่<small>traceable layers</small></div>
+            <div class="quote">แยกคำแนะนำออกจากคำทำนายทั่วไป พร้อมบอกเงื่อนไขและข้อควรเลี่ยงก่อนลงมือ<small>decision support</small></div>
+            <div class="quote">ใช้โปรไฟล์เดียวกันข้ามหน้า เพื่อลดคำตอบที่ขัดกันเองระหว่าง Chart, Timing, Luopan และ AI Sifu<small>one context</small></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pricing">
+        <div class="section-inner">
+          <div class="pricing-grid">
+            <div class="pricing-panel reveal">
+              <div class="label">แพ็กเกจและการเริ่มใช้งาน</div>
+              <h2>เริ่มจากคำถามก่อน แล้วค่อยเลือกเครื่องมือที่ต้องใช้</h2>
+              <p>Hourkey เหมาะกับทั้งคนที่อยากถาม AI Sifu เป็นครั้งคราว และคนที่ต้องใช้ฤกษ์ ทิศ หรือรายงานดวงหลายชั้นเป็นประจำ</p>
+              <div class="pricing-actions">
+                <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
+                <a class="btn" href="/pricing">ดูแพ็กเกจ</a>
+              </div>
+            </div>
+            <div class="pricing-panel reveal">
+              <h3>สิ่งที่ควรรู้ก่อนเริ่ม</h3>
+              <div class="pricing-list">
+                <span>ต้องมีวันเกิดเป็นอย่างน้อย เวลาเกิดช่วยให้คำตอบละเอียดขึ้น</span>
+                <span>คำถามเรื่องบ้าน/ทิศจะชัดขึ้นเมื่อมีองศาเข็มหรือแปลน</span>
+                <span>ระบบจะแจ้งเมื่อข้อมูลบางชั้นยังไม่พอสำหรับสรุปแบบละเอียด</span>
+                <span>คำตอบใช้เป็นเครื่องมือช่วยคิด ไม่ใช่คำแนะนำทางแพทย์ กฎหมาย หรือการเงิน</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section result-band" id="faq">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">FAQ</div>
+              <h2>คำถามที่เจอบ่อย</h2>
+            </div>
+          </div>
+          <div class="faq">
+            <div class="faq-item reveal"><b>ต้องรู้ดวงจีนก่อนใช้ไหม?</b><p>ไม่จำเป็น เลือกเรื่องที่อยากถามได้เลย ระบบจะแปลงข้อมูลเชิงเทคนิคเป็นภาษาที่ใช้ตัดสินใจได้</p></div>
+            <div class="faq-item reveal"><b>AI Sifu ต่างจาก chatbot ทั่วไปยังไง?</b><p>คำตอบผูกกับข้อมูลดวง เวลา ทิศ และโปรไฟล์ของคุณ ไม่ใช่การถามแบบไม่มีบริบท</p></div>
+            <div class="faq-item reveal"><b>ใช้กับเรื่องบ้านและทิศได้ไหม?</b><p>ได้ หน้า Luopan อ่านองศาจริงและส่งข้อมูลทิศเข้าบริบท AI Sifu เพื่อวิเคราะห์ต่อ</p></div>
+            <div class="faq-item reveal"><b>ถ้าไม่มีเวลาเกิดทำได้ไหม?</b><p>เริ่มได้ แต่คำตอบบางส่วนจะกว้างขึ้น ระบบจะบอกเมื่อข้อมูลบางชั้นยังไม่ครบ</p></div>
+            <div class="faq-item reveal"><b>คำตอบเชื่อถือได้แค่ไหน?</b><p>Hourkey แสดงเหตุผลและชั้นข้อมูลที่ใช้ประกอบคำตอบ แต่ผลลัพธ์ควรใช้เป็นเครื่องมือช่วยคิด ไม่ใช่การรับประกันเหตุการณ์ในอนาคต</p></div>
+            <div class="faq-item reveal"><b>ข้อมูลของฉันถูกใช้ยังไง?</b><p>ข้อมูลโปรไฟล์และบริบทคำถามถูกใช้เพื่อคำนวณและสร้างคำตอบเฉพาะตัวในระบบ Hourkey</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <img class="final-bg" src="assets/landing-v2/hourkey-hero-v2.webp" alt="" loading="lazy" decoding="async" />
+        <div class="section-inner reveal">
+          <div class="seal-lock">時</div>
+          <div class="label">เริ่มจากโปรไฟล์ดวงจีนของคุณ</div>
+          <h2>ให้ Hourkey อ่านบริบทก่อนตัดสินใจ</h2>
+          <p>สร้างคำตอบจากวันเวลาเกิด ฤกษ์ ทิศ พื้นที่ และข้อมูลจริงของคำถามที่คุณกำลังตัดสินใจ</p>
+          <div class="hero-cta" style="justify-content:center">
+            <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
+            <a class="btn" href="#answer">ดูตัวอย่างคำตอบ</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>hourkey · ระบบวิเคราะห์ดวงจีนเพื่อช่วยตัดสินใจ</span>
+        <div class="footer-links">
+          <a href="/article-hourkey-guide.html">คู่มือศาสตร์</a>
+          <a href="/article/geometry">ดวงดาว</a>
+          <a href="/methodology">วิธีคำนวณ</a>
+          <a href="/accuracy">ความแม่นยำ</a>
+          <a href="/pricing">แพ็กเกจ</a>
+          <a href="/signup?tab=login">เข้าสู่ระบบ</a>
+        </div>
+        <span>ใช้เพื่อประกอบการตัดสินใจ ไม่ใช่คำแนะนำทางแพทย์ กฎหมาย หรือการเงิน</span>
+      </div>
+    </footer>
   </div>
-</div>
 
-<style>
-.hk-tst-badge{display:block;width:max-content;max-width:100%;margin:14px auto 28px;padding:10px 18px;background:linear-gradient(135deg,rgba(143,195,124,.12),rgba(200,164,77,.10));border:1px solid rgba(143,195,124,.4);border-radius:12px;cursor:pointer;text-align:center;opacity:0;animation:hkfup 1s 2s forwards;transition:all .25s;}
-.hk-tst-badge:hover{border-color:#8fc37c;background:linear-gradient(135deg,rgba(143,195,124,.2),rgba(200,164,77,.15));}
-.hk-tst-row{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:#8fc37c;}
-.hk-tst-row b{color:#c8a44d;font-weight:700;margin-right:2px;}
-.hk-tst-tag{display:block;font-family:'Noto Serif Thai',serif;font-size:11px;color:rgba(246,241,230,.6);margin-top:6px;}
-[data-theme="light"] .hk-tst-tag{color:rgba(26,22,18,.6);}
-[data-theme="light"] .hk-tst-row{color:#5a8a48;}
-[data-theme="light"] .hk-tst-row b{color:#8a6d2a;}
-
-.hk-tst-card h4{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#c8a44d;margin:18px 0 10px;}
-.hk-tst-why p,.hk-tst-formula p,.hk-tst-example p{font-size:13px;line-height:1.7;color:rgba(246,241,230,.75);margin-bottom:8px;}
-[data-theme="light"] .hk-tst-why p,[data-theme="light"] .hk-tst-formula p,[data-theme="light"] .hk-tst-example p{color:rgba(26,22,18,.75);}
-.hk-tst-why p b,.hk-tst-formula p b{color:#c8a44d;}
-.hk-tst-row-flex{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0 22px;}
-@media(max-width:640px){.hk-tst-row-flex{grid-template-columns:1fr;}}
-.hk-tst-step{padding:14px;background:rgba(38,42,50,.5);border:1px solid rgba(200,164,77,.18);border-radius:10px;text-align:left;font-size:11px;}
-[data-theme="light"] .hk-tst-step{background:rgba(255,250,238,.7);border-color:rgba(138,109,42,.22);}
-.hk-tst-step .zh{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;background:#c8a44d;color:#0d0f12;border-radius:50%;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;margin-bottom:6px;}
-.hk-tst-step b{display:block;font-family:'Cormorant Garamond',serif;font-size:14px;color:#f6f1e6;margin-top:4px;}
-[data-theme="light"] .hk-tst-step b{color:#1a1612;}
-.hk-tst-step div{font-size:11px;color:rgba(246,241,230,.65);line-height:1.5;margin-top:4px;font-family:'Noto Serif Thai',serif;}
-[data-theme="light"] .hk-tst-step div{color:rgba(26,22,18,.65);}
-.hk-tst-table{width:100%;border-collapse:collapse;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12px;}
-.hk-tst-table td{padding:8px 0;border-bottom:1px solid rgba(200,164,77,.12);color:rgba(246,241,230,.75);}
-[data-theme="light"] .hk-tst-table td{color:rgba(26,22,18,.75);}
-.hk-tst-table td:nth-child(2){text-align:right;}
-.hk-tst-table td b{color:#f6f1e6;}
-[data-theme="light"] .hk-tst-table td b{color:#1a1612;}
-.hk-tst-table tr.hk-tst-result td{background:rgba(200,164,77,.08);font-size:14px;color:#c8a44d;}
-.hk-tst-table tr.hk-tst-result td b{color:#c8a44d;font-size:16px;}
-</style>
-
-<div id="hk-18modal" class="hk-18-modal" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="hk-18-card">
-    <button class="hk-18-close" onclick="document.getElementById('hk-18modal').classList.remove('show')">×</button>
-    <div class="hk-18-eye" data-i18n="m18.eye">CORE OF BAZI · 八字 · 18 ศาสตร์ดั้งเดิม</div>
-    <h3 data-i18n="m18.h3">ภายใน hourkey ประกอบด้วย</h3>
-    <p class="hk-18-sub" data-i18n="m18.sub">ตำราปาจื้อสายโบราณรวบรวมมาเป็น engine คำนวณ + AI สรุปภาษาไทย</p>
-    <div class="hk-18-grid">
-      <div class="hk-18-item"><span class="zh">四柱</span><div class="th" data-i18n="m18.pillars.t">สี่หลัก</div><div class="en" data-i18n="m18.pillars.d">ปี · เดือน · วัน · ชั่วโมง</div></div>
-      <div class="hk-18-item"><span class="zh">十天干</span><div class="th" data-i18n="m18.stems.t">สิบฟ้า</div><div class="en" data-i18n="m18.stems.d">10 Heavenly Stems</div></div>
-      <div class="hk-18-item"><span class="zh">十二地支</span><div class="th" data-i18n="m18.branches.t">สิบสองดิน</div><div class="en" data-i18n="m18.branches.d">12 Earthly Branches</div></div>
-      <div class="hk-18-item"><span class="zh">五行</span><div class="th" data-i18n="m18.el.t">ห้าธาตุ</div><div class="en" data-i18n="m18.el.d">木火土金水</div></div>
-      <div class="hk-18-item"><span class="zh">十神</span><div class="th" data-i18n="m18.tengods.t">สิบเทพ</div><div class="en" data-i18n="m18.tengods.d">官殺·財·印·比劫·食傷</div></div>
-      <div class="hk-18-item"><span class="zh">用神</span><div class="th" data-i18n="m18.yongshen.t">เทพพึ่งพา</div><div class="en" data-i18n="m18.yongshen.d">Useful God · ธาตุที่ดวงขาด</div></div>
-      <div class="hk-18-item"><span class="zh">格局</span><div class="th" data-i18n="m18.geju.t">โครงสร้าง</div><div class="en" data-i18n="m18.geju.d">從財·正格·偏格</div></div>
-      <div class="hk-18-item"><span class="zh">旺衰</span><div class="th" data-i18n="m18.strength.t">กำลัง</div><div class="en" data-i18n="m18.strength.d">strength: weak/balanced/strong</div></div>
-      <div class="hk-18-item"><span class="zh">大運</span><div class="th" data-i18n="m18.luck.t">ดวง 10 ปี</div><div class="en" data-i18n="m18.luck.d">Luck Pillars</div></div>
-      <div class="hk-18-item"><span class="zh">流年</span><div class="th" data-i18n="m18.annual.t">ดวงปี</div><div class="en" data-i18n="m18.annual.d">Annual Transits</div></div>
-      <div class="hk-18-item"><span class="zh">神煞</span><div class="th" data-i18n="m18.stars.t">ดาวมงคล/อัปมงคล</div><div class="en" data-i18n="m18.stars.d">25+ Symbolic Stars</div></div>
-      <div class="hk-18-item"><span class="zh">納音</span><div class="th" data-i18n="m18.nayin.t">นายิน</div><div class="en" data-i18n="m18.nayin.d">60 Na Yin</div></div>
-      <div class="hk-18-item"><span class="zh">十二長生</span><div class="th" data-i18n="m18.phases.t">12 ระยะชีวิต</div><div class="en" data-i18n="m18.phases.d">長生·沐浴·...·絕·胎·養</div></div>
-      <div class="hk-18-item"><span class="zh">藏干</span><div class="th" data-i18n="m18.hidden.t">ฟ้าซ่อนในดิน</div><div class="en" data-i18n="m18.hidden.d">Hidden Stems</div></div>
-      <div class="hk-18-item"><span class="zh">司令藏干</span><div class="th" data-i18n="m18.dhhs.t">DHHS</div><div class="en" data-i18n="m18.dhhs.d">Dominant Hidden Stem</div></div>
-      <div class="hk-18-item"><span class="zh">調候</span><div class="th" data-i18n="m18.tiaohou.t">ปรับอากาศ</div><div class="en" data-i18n="m18.tiaohou.d">Tiao Hou · hot/cold balance</div></div>
-      <div class="hk-18-item"><span class="zh">三合·三會·六合</span><div class="th" data-i18n="m18.combo.t">การจับคู่</div><div class="en" data-i18n="m18.combo.d">Combinations</div></div>
-      <div class="hk-18-item"><span class="zh">反吟·伏吟</span><div class="th" data-i18n="m18.fanfu.t">สะท้อน·สะกด</div><div class="en" data-i18n="m18.fanfu.d">Self-clash patterns</div></div>
-    </div>
-    <p class="hk-18-foot"><span data-i18n="m18.foot">+ ฉีเหมินตุ้นเจี่ย 奇門遁甲 · ปฏิทินมงคล 黃曆 · AI สรุปภาษาไทย</span><br/><a href="#" onclick="document.getElementById('hk-18modal').classList.remove('show');setTimeout(function(){document.getElementById('hk-tst-modal').classList.add('show');},200);return false;" style="color:#c8a44d;text-decoration:none;font-weight:600;"><span data-i18n="m18.foot.tst">+ ✓ True Solar Time · เวลาจริงของดวงอาทิตย์ →</span></a></p>
-  </div>
-</div>
-<style>
-.hk-18-cta{display:block;width:max-content;margin:24px auto 0;padding:10px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#c8a44d;text-decoration:none;border:1px solid rgba(200,164,77,.4);border-radius:99px;transition:all .25s;background:rgba(200,164,77,.06);opacity:0;animation:hkfup 1s 1.8s forwards;}
-.hk-18-cta:hover{border-color:#c8a44d;background:rgba(200,164,77,.14);}
-@keyframes hkfup{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-.hk-18-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
-.hk-18-modal.show{display:flex;}
-.hk-18-card{background:linear-gradient(160deg,#14171c 0%,#0d0f12 100%);border:1px solid rgba(200,164,77,.3);border-radius:18px;padding:36px 32px;max-width:920px;width:100%;max-height:88vh;overflow-y:auto;position:relative;color:#f6f1e6;font-family:'Noto Serif Thai',serif;}
-[data-theme="light"] .hk-18-card{background:linear-gradient(160deg,#f9f4e6 0%,#f5efe2 100%);border-color:rgba(138,109,42,.35);color:#1a1612;}
-.hk-18-close{position:absolute;top:14px;right:18px;background:transparent;border:none;color:#c8a44d;font-size:28px;cursor:pointer;line-height:1;}
-.hk-18-eye{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.32em;color:#c8a44d;text-transform:uppercase;margin-bottom:12px;}
-.hk-18-card h3{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;margin-bottom:6px;}
-.hk-18-sub{font-size:13px;color:rgba(246,241,230,.65);margin-bottom:24px;}
-[data-theme="light"] .hk-18-sub{color:rgba(26,22,18,.65);}
-.hk-18-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
-@media(max-width:640px){.hk-18-grid{grid-template-columns:1fr 1fr;gap:8px;} .hk-18-card{padding:24px 18px;} .hk-18-card h3{font-size:24px;}}
-@media(max-width:380px){.hk-18-grid{grid-template-columns:1fr;}}
-.hk-18-item{padding:12px 14px;background:rgba(38,42,50,.5);border:1px solid rgba(200,164,77,.18);border-radius:10px;}
-[data-theme="light"] .hk-18-item{background:rgba(255,250,238,.7);border-color:rgba(138,109,42,.22);}
-.hk-18-item .zh{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:#c8a44d;display:block;margin-bottom:4px;}
-.hk-18-item .th{font-family:'Noto Serif Thai',serif;font-size:13px;font-weight:600;color:#f6f1e6;}
-[data-theme="light"] .hk-18-item .th{color:#1a1612;}
-.hk-18-item .en{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(246,241,230,.55);letter-spacing:.05em;margin-top:4px;}
-[data-theme="light"] .hk-18-item .en{color:rgba(26,22,18,.55);}
-.hk-18-foot{font-size:12px;color:rgba(246,241,230,.55);text-align:center;padding-top:14px;border-top:1px solid rgba(200,164,77,.15);}
-[data-theme="light"] .hk-18-foot{color:rgba(26,22,18,.55);border-top-color:rgba(138,109,42,.2);}
-</style>
-
-
-<!-- ── Three.js · STEP 7 (treasure key 3D) ── -->
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
-// ═══════════ THEME ═══════════
-const root = document.documentElement;
-function getTheme() {
-  return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-}
-
-let sceneReady = false;   // guard — applyThemeToScene only runs after scene is built
-
-function setTheme(t) {
-  const mode = t === 'light' ? 'light' : 'dark';
-  root.setAttribute('data-theme', mode);
-  localStorage.setItem('hk-theme', mode);
-  localStorage.setItem('hourkey-theme', mode);
-  document.querySelectorAll('.hk-theme-switch button[data-theme]').forEach(b => {
-    b.classList.toggle('on', b.dataset.theme === mode);
-  });
-  if (sceneReady) applyThemeToScene();
-}
-const savedTheme = localStorage.getItem('hourkey-theme') || localStorage.getItem('hk-theme') || getTheme();
-setTheme(savedTheme);
-
-document.querySelectorAll('.hk-theme-switch button[data-theme]').forEach(b => {
-  b.addEventListener('click', () => setTheme(b.dataset.theme));
-});
-
-// ═══════════ DEVICE TIER ═══════════
-const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-const cores = navigator.hardwareConcurrency || 4;
-
-let TIER;
-if (!isMobile && cores >= 8) TIER = 'desktop-high';
-else if (!isMobile)           TIER = 'desktop-low';
-else if (cores >= 6)          TIER = 'mobile-high';
-else                          TIER = 'mobile-low';
-
-const QUALITY = {
-  'desktop-high': { particles:100, stars:600, pixelRatio:2 },
-  'desktop-low':  { particles:60,  stars:400, pixelRatio:1.5 },
-  'mobile-high':  { particles:25,  stars:180, pixelRatio:1.5 },
-  'mobile-low':   { particles:12,  stars:80,  pixelRatio:1 }
-};
-const q = QUALITY[TIER];
-
-// ═══════════ SCENE ═══════════
-const container = document.getElementById('canvas-3d');
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-// mobile = ดึงกล้องถอยหลังให้รูปเล็กลง พอดีจอ
-camera.position.set(0, 0, window.innerWidth < 640 ? 11 : 9);
-
-const renderer = new THREE.WebGLRenderer({
-  antialias: TIER !== 'mobile-low',
-  alpha: true,
-  powerPreference: isMobile ? 'low-power' : 'high-performance'
-});
-renderer.setPixelRatio(q.pixelRatio);
-renderer.setSize(container.clientWidth, container.clientHeight);
-renderer.setClearColor(0x000000, 0);
-container.appendChild(renderer.domElement);
-
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-const goldLight = new THREE.PointLight(0xc8a04a, 1.4, 20);
-goldLight.position.set(2, 3, 4);
-scene.add(goldLight);
-
-// ═══════════ COLORS by THEME ═══════════
-const COLORS = {
-  dark: {
-    keyBody:    '#d4b25c',
-    keyShadow:  '#5a4818',
-    keyHighlight:'#fde9a8',
-    keyAccent:  '#c95c4a',     // red bow accent
-    keyJade:    '#5a8a72',     // jade green tassel
-    branchDim:  '#7a6438',
-    branchLit:  '#ffd76a',
-    branchTreasure: '#ffeaa0',
-    ringDim:    'rgba(200,160,74,0.18)',
-    treasureGlow: '#ffd76a',
-    particle:   0xc8a04a,
-    star:       0xffffff,
-    starOpacity:0.4
-  },
-  light: {
-    keyBody:    '#a8852f',
-    keyShadow:  '#4a3a18',
-    keyHighlight:'#d4a04a',
-    keyAccent:  '#a83a2c',
-    keyJade:    '#3f6b54',
-    branchDim:  '#8a6d2a',
-    branchLit:  '#c9962a',
-    branchTreasure: '#a8852f',
-    ringDim:    'rgba(138,109,42,0.32)',
-    treasureGlow: '#c9962a',
-    particle:   0x8a6d2a,
-    star:       0x8a6d2a,
-    starOpacity:0.25
-  }
-};
-function pal() { return COLORS[getTheme()]; }
-
-// ═══════════ SVG KEY TEXTURE GENERATOR ═══════════
-function makeKeyTexture(palette) {
-  const SIZE = 1024;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = SIZE;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, SIZE, SIZE);
-
-  // SVG-style ornate Chinese key, drawn with canvas paths
-  // Key oriented vertical: bow (head ring) at top, bit (teeth) at bottom
-
-  // Soft outer glow
-  const glowGrad = ctx.createRadialGradient(SIZE/2, SIZE/2, 100, SIZE/2, SIZE/2, 500);
-  glowGrad.addColorStop(0, palette.treasureGlow + '30');
-  glowGrad.addColorStop(0.5, palette.keyBody + '15');
-  glowGrad.addColorStop(1, palette.keyBody + '00');
-  ctx.fillStyle = glowGrad;
-  ctx.fillRect(0, 0, SIZE, SIZE);
-
-  // ═══ BOW (ornate head ring) ═══
-  const cx = SIZE / 2;
-  const bowY = SIZE * 0.28;
-  const bowR = 130;
-
-  // outer ring shadow
-  ctx.beginPath();
-  ctx.arc(cx + 6, bowY + 8, bowR, 0, Math.PI*2);
-  ctx.lineWidth = 38;
-  ctx.strokeStyle = palette.keyShadow;
-  ctx.stroke();
-
-  // outer ring main
-  ctx.beginPath();
-  ctx.arc(cx, bowY, bowR, 0, Math.PI*2);
-  ctx.lineWidth = 36;
-  const ringGrad = ctx.createLinearGradient(cx - bowR, bowY - bowR, cx + bowR, bowY + bowR);
-  ringGrad.addColorStop(0, palette.keyHighlight);
-  ringGrad.addColorStop(0.5, palette.keyBody);
-  ringGrad.addColorStop(1, palette.keyShadow);
-  ctx.strokeStyle = ringGrad;
-  ctx.stroke();
-
-  // inner ring (decorative groove)
-  ctx.beginPath();
-  ctx.arc(cx, bowY, bowR - 22, 0, Math.PI*2);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = palette.keyShadow;
-  ctx.stroke();
-
-  // 4 ornament dots around the bow
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-    const ox = cx + Math.cos(a) * (bowR + 22);
-    const oy = bowY + Math.sin(a) * (bowR + 22);
-    ctx.beginPath();
-    ctx.arc(ox, oy, 12, 0, Math.PI*2);
-    ctx.fillStyle = palette.keyBody;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(ox, oy, 5, 0, Math.PI*2);
-    ctx.fillStyle = palette.keyAccent;
-    ctx.fill();
-  }
-
-  // 時 character in middle of bow
-  ctx.fillStyle = palette.keyBody;
-  ctx.font = `900 130px "Noto Serif TC", serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('時', cx, bowY + 8);
-
-  // ═══ NECK ornament (between bow and shaft) ═══
-  const neckY = bowY + bowR + 30;
-  // bead shape
-  ctx.beginPath();
-  ctx.ellipse(cx, neckY, 32, 22, 0, 0, Math.PI*2);
-  const neckGrad = ctx.createLinearGradient(cx - 30, neckY, cx + 30, neckY);
-  neckGrad.addColorStop(0, palette.keyShadow);
-  neckGrad.addColorStop(0.5, palette.keyHighlight);
-  neckGrad.addColorStop(1, palette.keyShadow);
-  ctx.fillStyle = neckGrad;
-  ctx.fill();
-
-  // small jade accent stone (green)
-  ctx.beginPath();
-  ctx.arc(cx, neckY, 8, 0, Math.PI*2);
-  ctx.fillStyle = palette.keyJade;
-  ctx.fill();
-
-  // ═══ SHAFT (the stem) ═══
-  const shaftTop = neckY + 25;
-  const shaftBot = SIZE * 0.78;
-  const shaftW = 24;
-
-  // shadow
-  ctx.fillStyle = palette.keyShadow;
-  ctx.fillRect(cx - shaftW/2 + 4, shaftTop + 4, shaftW, shaftBot - shaftTop);
-
-  // body with gradient
-  const shaftGrad = ctx.createLinearGradient(cx - shaftW/2, 0, cx + shaftW/2, 0);
-  shaftGrad.addColorStop(0, palette.keyShadow);
-  shaftGrad.addColorStop(0.5, palette.keyHighlight);
-  shaftGrad.addColorStop(1, palette.keyBody);
-  ctx.fillStyle = shaftGrad;
-  ctx.fillRect(cx - shaftW/2, shaftTop, shaftW, shaftBot - shaftTop);
-
-  // ═══ BIT (teeth at the bottom) ═══
-  const bitY = shaftBot;
-  const bitW = 130;
-  const bitH = 60;
-
-  // shadow
-  ctx.fillStyle = palette.keyShadow;
-  ctx.fillRect(cx - shaftW/2 + 4, bitY + 4, bitW, bitH);
-
-  // main bit body
-  ctx.fillStyle = shaftGrad;
-  ctx.fillRect(cx - shaftW/2, bitY, bitW, bitH);
-
-  // 3 teeth (notches cut into the bit)
-  const teethY = bitY + bitH;
-  const teethConfig = [
-    { x: cx - shaftW/2 + 22, w: 22, h: 30 },
-    { x: cx - shaftW/2 + 60, w: 22, h: 42 },
-    { x: cx - shaftW/2 + 98, w: 22, h: 24 }
-  ];
-  teethConfig.forEach(t => {
-    // shadow
-    ctx.fillStyle = palette.keyShadow;
-    ctx.fillRect(t.x + 3, teethY + 3, t.w, t.h);
-    // body
-    ctx.fillStyle = shaftGrad;
-    ctx.fillRect(t.x, teethY, t.w, t.h);
-  });
-
-  // ═══ TASSEL (red+jade silk hanging from bow) ═══
-  // small string
-  ctx.beginPath();
-  ctx.moveTo(cx + bowR - 5, bowY + bowR - 30);
-  ctx.lineTo(cx + bowR + 50, bowY + bowR + 80);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = palette.keyAccent;
-  ctx.stroke();
-  // tassel knot
-  ctx.beginPath();
-  ctx.arc(cx + bowR + 50, bowY + bowR + 80, 12, 0, Math.PI*2);
-  ctx.fillStyle = palette.keyAccent;
-  ctx.fill();
-  // tassel strings
-  for (let i = -3; i <= 3; i++) {
-    ctx.beginPath();
-    ctx.moveTo(cx + bowR + 50, bowY + bowR + 90);
-    ctx.lineTo(cx + bowR + 50 + i * 4, bowY + bowR + 130);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = palette.keyAccent;
-    ctx.stroke();
-  }
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  return tex;
-}
-
-// ═══════════ KEY MESH ═══════════
-const keyMat = new THREE.MeshBasicMaterial({
-  map: makeKeyTexture(pal()),
-  transparent: true,
-  depthWrite: false,
-  side: THREE.DoubleSide
-});
-const keyMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(2.0, 2.0),
-  keyMat
-);
-scene.add(keyMesh);
-
-// soft halo behind key
-function makeHaloTex(color) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 512;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
-  g.addColorStop(0, color + 'aa');
-  g.addColorStop(0.4, color + '44');
-  g.addColorStop(1, color + '00');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 512, 512);
-  return new THREE.CanvasTexture(c);
-}
-const haloMat = new THREE.MeshBasicMaterial({
-  map: makeHaloTex(pal().treasureGlow),
-  transparent: true,
-  opacity: 0.35,
-  depthWrite: false,
-  blending: THREE.AdditiveBlending
-});
-const halo = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), haloMat);
-halo.position.z = -0.3;
-scene.add(halo);
-
-// ═══════════ 12 SHICHEN CLOCK ═══════════
-const branches = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-const branchHours = ['23:00–01:00','01:00–03:00','03:00–05:00','05:00–07:00','07:00–09:00','09:00–11:00','11:00–13:00','13:00–15:00','15:00–17:00','17:00–19:00','19:00–21:00','21:00–23:00'];
-
-const clockGroup = new THREE.Group();
-const clockR = 2.3;
-
-function makeBranchTexture(text, color) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d');
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 20;
-  ctx.fillStyle = color;
-  ctx.font = `900 180px "Noto Serif TC", serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, 128, 140);
-  const t = new THREE.CanvasTexture(c);
-  t.minFilter = THREE.LinearFilter;
-  return t;
-}
-
-function makeBranchGlow(color) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-  g.addColorStop(0,    color + 'ff');
-  g.addColorStop(0.3,  color + '99');
-  g.addColorStop(0.7,  color + '22');
-  g.addColorStop(1,    color + '00');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 256);
-  return new THREE.CanvasTexture(c);
-}
-
-const branchSprites = [];
-const treasureGlows = [];
-const branchTextures = { dim: [], lit: [] };
-const treasureGlowTextures = { dim: null, lit: null };
-
-function buildClock() {
-  // clear
-  while (clockGroup.children.length) clockGroup.remove(clockGroup.children[0]);
-  branchSprites.length = 0;
-  treasureGlows.length = 0;
-  branchTextures.dim = [];
-  branchTextures.lit = [];
-
-  const palette = pal();
-  treasureGlowTextures.dim = makeBranchGlow(palette.treasureGlow);
-
-  branches.forEach((b, i) => {
-    const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    const x = Math.cos(angle) * clockR;
-    const y = Math.sin(angle) * clockR;
-
-    const dimTex = makeBranchTexture(b, palette.branchDim);
-    const litTex = makeBranchTexture(b, palette.branchLit);
-    branchTextures.dim.push(dimTex);
-    branchTextures.lit.push(litTex);
-
-    // treasure glow disc (behind branch, hidden by default)
-    const glow = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.0, 1.0),
-      new THREE.MeshBasicMaterial({
-        map: treasureGlowTextures.dim,
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-      })
-    );
-    glow.position.set(x, y, -0.1);
-    glow.userData = { idx: i, targetOpacity: 0, flicker: 0 };
-    clockGroup.add(glow);
-    treasureGlows.push(glow);
-
-    // branch sprite
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: dimTex,
-      transparent: true,
-      opacity: 0.55,
-      depthWrite: false
-    }));
-    sprite.position.set(x, y, 0);
-    sprite.scale.set(0.32, 0.32, 1);
-    sprite.userData = { idx: i, lit: false };
-    clockGroup.add(sprite);
-    branchSprites.push(sprite);
-  });
-
-  // ring guides
-  const ringGeom = new THREE.RingGeometry(clockR - 0.015, clockR + 0.015, 96);
-  const ring = new THREE.Mesh(ringGeom, new THREE.MeshBasicMaterial({
-    color: getTheme() === 'dark' ? 0xc8a04a : 0x8a6d2a,
-    transparent: true,
-    opacity: 0.18,
-    side: THREE.DoubleSide
-  }));
-  clockGroup.add(ring);
-
-  // tick marks
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    const inner = clockR - 0.18;
-    const outer = clockR - 0.05;
-    const tg = new THREE.BufferGeometry();
-    tg.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-      Math.cos(a) * inner, Math.sin(a) * inner, 0,
-      Math.cos(a) * outer, Math.sin(a) * outer, 0
-    ]), 3));
-    clockGroup.add(new THREE.Line(tg, new THREE.LineBasicMaterial({
-      color: getTheme() === 'dark' ? 0xc8a04a : 0x8a6d2a,
-      transparent: true,
-      opacity: 0.4
-    })));
-  }
-}
-buildClock();
-clockGroup.position.z = -0.5;
-scene.add(clockGroup);
-
-// ═══════════ CURRENT SHICHEN INDICATOR ═══════════
-function getCurShichen() {
-  const h = new Date().getHours();
-  const m = {23:0,0:0,1:1,2:1,3:2,4:2,5:3,6:3,7:4,8:4,9:5,10:5,11:6,12:6,13:7,14:7,15:8,16:8,17:9,18:9,19:10,20:10,21:11,22:11};
-  return m[h] ?? 7;
-}
-const curIdx = getCurShichen();
-const _nowHan = document.getElementById('nowHan');
-const _nowTime = document.getElementById('nowTime');
-if (_nowHan) _nowHan.textContent = branches[curIdx];
-if (_nowTime) _nowTime.textContent = `${branches[curIdx]}時 · ${branchHours[curIdx].replace(/:00/g, ':')}`;
-
-// ═══════════ PARTICLES ═══════════
-const particleGeom = new THREE.BufferGeometry();
-const positions = new Float32Array(q.particles * 3);
-const particleData = [];
-for (let i = 0; i < q.particles; i++) {
-  const a = Math.random() * Math.PI * 2;
-  const r = 1.8 + Math.random() * 2.2;
-  positions[i*3] = Math.cos(a) * r;
-  positions[i*3+1] = (Math.random() - 0.5) * 4;
-  positions[i*3+2] = Math.sin(a) * r * 0.5;
-  particleData.push({ angle: a, radius: r, ySpeed: 0.0015 + Math.random()*0.0025, speed: 0.0006 + Math.random()*0.0012 });
-}
-particleGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-const particleMat = new THREE.PointsMaterial({
-  color: pal().particle,
-  size: isMobile ? 0.06 : 0.04,
-  transparent: true,
-  opacity: 0.45,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false,
-  sizeAttenuation: true
-});
-const particles = new THREE.Points(particleGeom, particleMat);
-scene.add(particles);
-
-// ═══════════ STARS ═══════════
-const starGeom = new THREE.BufferGeometry();
-const starPos = new Float32Array(q.stars * 3);
-for (let i = 0; i < q.stars; i++) {
-  const r = 18 + Math.random() * 22;
-  const t = Math.random() * Math.PI * 2;
-  const p = Math.acos(2 * Math.random() - 1);
-  starPos[i*3]   = r * Math.sin(p) * Math.cos(t);
-  starPos[i*3+1] = r * Math.sin(p) * Math.sin(t);
-  starPos[i*3+2] = r * Math.cos(p);
-}
-starGeom.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-const starMat = new THREE.PointsMaterial({
-  color: pal().star,
-  size: 0.12,
-  transparent: true,
-  opacity: pal().starOpacity,
-  sizeAttenuation: true
-});
-scene.add(new THREE.Points(starGeom, starMat));
-
-// ═══════════ APPLY THEME (re-skin) ═══════════
-function applyThemeToScene() {
-  const palette = pal();
-  // re-make key texture
-  keyMat.map.dispose();
-  keyMat.map = makeKeyTexture(palette);
-  keyMat.needsUpdate = true;
-  // re-make halo
-  haloMat.map.dispose();
-  haloMat.map = makeHaloTex(palette.treasureGlow);
-  haloMat.needsUpdate = true;
-  // rebuild clock
-  buildClock();
-  clockGroup.position.z = -0.5;
-  // particles + stars
-  particleMat.color.setHex(palette.particle);
-  starMat.color.setHex(palette.star);
-  starMat.opacity = palette.starOpacity;
-}
-
-// scene + functions all defined now → safe to apply theme
-sceneReady = true;
-// re-apply if user had saved a non-default theme
-if (savedTheme && savedTheme !== 'dark') applyThemeToScene();
-
-// ═══════════ INTERACTION: TREASURE REVEAL ═══════════
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-let isUnlocked = false;
-let unlockFlash = 0;
-let nextRevealTime = 0;
-let currentSet = [];
-let revealIdx = 0;
-
-function pickHit(clientX, clientY) {
-  // เฉพาะตรงตัวกุญแจกลาง canvas (radius ~14% ของจอ) เท่านั้น
-  // นอกพื้นที่นี้ปล่อย scroll/touch ปกติ
-  const rect = container.getBoundingClientRect();
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-  const dx = clientX - cx;
-  const dy = clientY - cy;
-  const radius = Math.min(rect.width, rect.height) * 0.14;
-  return Math.sqrt(dx*dx + dy*dy) <= radius;
-}
-
-function unlock() {
-  if (isUnlocked) return;
-  isUnlocked = true;
-  unlockFlash = 1;
-  currentSet = [];
-  revealIdx = 0;
-  nextRevealTime = performance.now() + 150;
-}
-function lockKey() {
-  if (!isUnlocked) return;
-  isUnlocked = false;
-}
-function pickRandom() {
-  const count = 3 + Math.floor(Math.random() * 2); // 3 or 4
-  const all = [...Array(12).keys()];
-  for (let i = all.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [all[i], all[j]] = [all[j], all[i]];
-  }
-  return all.slice(0, count);
-}
-
-// PRESS-AND-HOLD interaction:
-//  - Mouse: hover key shows "grab" cursor → press (mousedown) to unlock → release to lock
-//  - Touch: tap on key + HOLD to unlock → release to lock
-//  - Move outside while holding = still unlocked (so user can drag)
-let pointerInsideKey = false;   // for cursor feedback only
-let pointerDown = false;
-let pointerOnKeyAtDown = false;
-
-function updateCursor() {
-  // Whole hero is clickable now
-  renderer.domElement.style.cursor = pointerDown ? 'grabbing' : 'pointer';
-}
-
-container.addEventListener('mousemove', e => {
-  pointerInsideKey = pickHit(e.clientX, e.clientY);
-  updateCursor();
-});
-
-container.addEventListener('mousedown', e => {
-  pointerDown = true;
-  pointerOnKeyAtDown = pickHit(e.clientX, e.clientY);
-  if (pointerOnKeyAtDown) {
-    unlock();
-    e.preventDefault();
-  }
-  updateCursor();
-});
-
-// release anywhere = lock
-window.addEventListener('mouseup', () => {
-  pointerDown = false;
-  pointerOnKeyAtDown = false;
-  lockKey();
-  updateCursor();
-});
-
-container.addEventListener('mouseleave', () => {
-  pointerInsideKey = false;
-  if (!pointerDown) lockKey();
-  updateCursor();
-});
-
-// TOUCH: hold to unlock — ต้องแตะตรงตัวกุญแจเท่านั้น · นอกพื้นที่ปล่อย scroll
-container.addEventListener('touchstart', e => {
-  if (e.touches.length === 0) return;
-  const t = e.touches[0];
-  if (pickHit(t.clientX, t.clientY)) {
-    pointerDown = true;
-    pointerOnKeyAtDown = true;
-    unlock();
-    e.preventDefault(); // กันเฉพาะตอนแตะถูกกุญแจ
-  }
-  // ถ้าไม่โดนกุญแจ ไม่ preventDefault → scroll ทำงานปกติ
-}, { passive: false });
-
-container.addEventListener('touchend', () => {
-  pointerDown = false;
-  pointerOnKeyAtDown = false;
-  lockKey();
-});
-
-container.addEventListener('touchcancel', () => {
-  pointerDown = false;
-  pointerOnKeyAtDown = false;
-  lockKey();
-});
-
-// mouse parallax (smoothed in tick)
-let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
-window.addEventListener('mousemove', e => {
-  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-});
-window.addEventListener('deviceorientation', e => {
-  if (e.gamma !== null) {
-    mouseX = Math.max(-1, Math.min(1, e.gamma / 30));
-    mouseY = Math.max(-1, Math.min(1, e.beta / 30));
-  }
-}, true);
-
-// ═══════════ FRAME LOOP ═══════════
-let isInView = true;
-new IntersectionObserver(([entry]) => { isInView = entry.isIntersecting; }, { threshold: 0.05 }).observe(container);
-
-const startTime = performance.now();
-const ENTRANCE = 1500;
-
-// rotation accumulators (independent — never reset)
-let keyRotY = 0;
-let clockRotZ = 0;
-
-// smoothed states
-let mouseSmoothX = 0, mouseSmoothY = 0;
-let unlockSmooth = 0;       // 0..1 — lerps to isUnlocked
-let lastTime = performance.now();
-
-function tick(time) {
-  if (!isInView) { lastTime = time; requestAnimationFrame(tick); return; }
-  const dt = time * 0.001;
-
-  // ─── DELTA TIME (cap to 1/30 to avoid jumps after tab-switch) ───
-  let delta = (time - lastTime) / 1000;
-  if (delta > 1/30) delta = 1/30;
-  lastTime = time;
-
-  // entrance fade
-  let entranceScale = 1, entranceOpacity = 1;
-  const elapsed = time - startTime;
-  if (elapsed < ENTRANCE) {
-    const t = elapsed / ENTRANCE;
-    const eased = 1 - Math.pow(1 - t, 3);
-    entranceScale = 0.5 + 0.5 * eased;
-    entranceOpacity = eased;
-  }
-
-  // ─── SMOOTH STATES (lerp every frame) ───
-  // mouse parallax — smooth slow follow
-  mouseSmoothX += (mouseX - mouseSmoothX) * Math.min(1, delta * 4);
-  mouseSmoothY += (mouseY - mouseSmoothY) * Math.min(1, delta * 4);
-
-  // unlock state — smooth crossfade
-  const targetUnlock = isUnlocked ? 1 : 0;
-  unlockSmooth += (targetUnlock - unlockSmooth) * Math.min(1, delta * 6);
-
-  // unlock flash decay (delta-based)
-  if (unlockFlash > 0) {
-    unlockFlash *= Math.pow(0.001, delta);  // ~99.9%/sec decay
-    if (unlockFlash < 0.01) unlockFlash = 0;
-  }
-
-  // ─── KEY rotation Y (delta-based — frame-rate independent) ───
-  const baseRotSpeed = 0.18;          // rad/sec
-  const unlockBoost = 0.22;           // extra speed when unlocked
-  keyRotY += (baseRotSpeed + unlockBoost * unlockSmooth) * delta;
-  keyMesh.rotation.y = keyRotY;
-
-  // gentle X tilt — driven by smoothed mouse only (no oscillation conflict)
-  keyMesh.rotation.x = mouseSmoothY * 0.05;
-
-  // breath scale — pure sin (smooth, no accumulation)
-  const breath = 1 + Math.sin(dt * 0.7) * 0.02;
-  const flashBoost = unlockFlash * 0.15;
-  keyMesh.scale.setScalar(breath * entranceScale * (1 + flashBoost));
-
-  // hover Y — pure sin
-  keyMesh.position.y = Math.sin(dt * 0.5) * 0.06;
-  keyMesh.material.opacity = entranceOpacity;
-
-  // halo — smooth opacity + scale lerp
-  const targetHaloOp = 0.35 + unlockSmooth * 0.4;
-  halo.material.opacity += (targetHaloOp - halo.material.opacity) * Math.min(1, delta * 5);
-  const haloPulse = 1 + Math.sin(dt * 1.1) * 0.04;
-  const haloScale = haloPulse * (1 + unlockSmooth * 0.3);
-  halo.scale.setScalar(haloScale);
-
-  // ─── CLOCK rotates COUNTER-CLOCKWISE (delta-based) ───
-  const clockSpeed = -(0.05 + unlockSmooth * 0.08);   // rad/sec
-  clockRotZ += clockSpeed * delta;
-  clockGroup.rotation.z = clockRotZ;
-
-  // current shichen pulses (live indicator)
-  const cur = branchSprites[curIdx];
-  if (cur) {
-    cur.material.opacity = 0.85 + Math.sin(dt * 2) * 0.15;
-  }
-
-  // ─── TREASURE REVEAL CASCADE ───
-  if (isUnlocked) {
-    if (time > nextRevealTime) {
-      if (revealIdx === 0 || revealIdx >= currentSet.length) {
-        currentSet = pickRandom();
-        revealIdx = 0;
-        // dim previous
-        treasureGlows.forEach(g => g.userData.targetOpacity = 0);
-        branchSprites.forEach((s, i) => {
-          if (i !== curIdx) {
-            s.userData.lit = false;
-            s.material.map = branchTextures.dim[i];
-            s.material.opacity = 0.55;
+  <script src="assets/landing-v2/landing-i18n.js"></script>
+  <script>
+    const nav = document.getElementById('nav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 18);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive:true });
+
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    if(menuToggle && mobileDrawer){
+      const closeDrawer = () => {
+        mobileDrawer.classList.remove('open');
+        menuToggle.setAttribute('aria-expanded','false');
+      };
+      menuToggle.addEventListener('click', () => {
+        const open = mobileDrawer.classList.toggle('open');
+        menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      mobileDrawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeDrawer));
+      window.addEventListener('keydown', (event) => {
+        if(event.key === 'Escape') closeDrawer();
+      });
+    }
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+    const canPlayVideo = !reducedMotion && !saveData;
+    const attachVideo = (video) => {
+      if(!canPlayVideo || video.dataset.loaded === '1') return;
+      const src = video.dataset.src;
+      if(!src) return;
+      const source = document.createElement('source');
+      source.src = src;
+      source.type = 'video/mp4';
+      video.appendChild(source);
+      video.dataset.loaded = '1';
+      video.load();
+      video.play().catch(() => {});
+    };
+
+    const revealEls = Array.from(document.querySelectorAll('.reveal'));
+    const videoEls = Array.from(document.querySelectorAll('.lazy-video'));
+    if(!('IntersectionObserver' in window)){
+      revealEls.forEach((el) => el.classList.add('on'));
+      videoEls.forEach(attachVideo);
+    }else{
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('on');
+            revealObserver.unobserve(entry.target);
           }
         });
-      }
-      const idx = currentSet[revealIdx];
-      treasureGlows[idx].userData.targetOpacity = 0.95;
-      treasureGlows[idx].userData.flicker = 1;
-      branchSprites[idx].userData.lit = true;
-      branchSprites[idx].material.map = branchTextures.lit[idx];
-      branchSprites[idx].material.needsUpdate = true;
-      branchSprites[idx].material.opacity = 1;
-      // scale pop
-      branchSprites[idx].scale.set(0.55, 0.55, 1);
+      }, { threshold:.12 });
+      revealEls.forEach((el) => revealObserver.observe(el));
 
-      revealIdx++;
-      nextRevealTime = time + 500 + Math.random() * 300;
-      if (revealIdx >= currentSet.length) {
-        nextRevealTime = time + 2200;
-        revealIdx = 0;
-      }
+      const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if(entry.isIntersecting){
+            attachVideo(entry.target);
+            videoObserver.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin:'260px 0px', threshold:.01 });
+      videoEls.forEach((video) => videoObserver.observe(video));
     }
-  } else {
-    // not unlocked — fade everything
-    treasureGlows.forEach(g => g.userData.targetOpacity = 0);
-    branchSprites.forEach((s, i) => {
-      if (s.userData.lit) {
-        s.userData.lit = false;
-        s.material.map = branchTextures.dim[i];
-        s.material.needsUpdate = true;
-      }
-      // restore size
-      s.scale.x += (0.4 - s.scale.x) * 0.1;
-      s.scale.y += (0.4 - s.scale.y) * 0.1;
-      if (i !== curIdx) {
-        s.material.opacity += (0.55 - s.material.opacity) * 0.08;
-      }
-    });
-  }
-
-  // animate treasure glows
-  treasureGlows.forEach(g => {
-    const ud = g.userData;
-    const flickerJitter = ud.flicker * Math.sin(dt * 25 + g.userData.idx) * 0.15;
-    const target = ud.targetOpacity + flickerJitter;
-    g.material.opacity += (target - g.material.opacity) * 0.15;
-    if (ud.flicker > 0) {
-      ud.flicker *= 0.94;
-      if (ud.flicker < 0.05) ud.flicker = 0;
-    }
-    if (g.material.opacity > 0.1) {
-      const s = 1 + Math.sin(dt * 2.5 + ud.idx) * 0.08;
-      g.scale.setScalar(s);
-    }
-  });
-
-  // particles
-  const arr = particles.geometry.attributes.position.array;
-  particleData.forEach((p, i) => {
-    p.angle += p.speed;
-    arr[i*3+1] += p.ySpeed;
-    if (arr[i*3+1] > 2.5) arr[i*3+1] = -2.5;
-    arr[i*3] = Math.cos(p.angle) * p.radius;
-    arr[i*3+2] = Math.sin(p.angle) * p.radius * 0.5;
-  });
-  particles.geometry.attributes.position.needsUpdate = true;
-
-  // camera parallax (uses already-smoothed mouse)
-  targetX += (mouseSmoothX * 0.25 - targetX) * Math.min(1, delta * 4);
-  targetY += (mouseSmoothY * 0.18 - targetY) * Math.min(1, delta * 4);
-  camera.position.x = targetX;
-  camera.position.y = -targetY;
-  camera.lookAt(0, 0, 0);
-
-  renderer.render(scene, camera);
-  requestAnimationFrame(tick);
-}
-requestAnimationFrame(tick);
-
-// resize
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    const w = container.clientWidth;
-    const h = container.clientHeight;
-    camera.aspect = w / h;
-    camera.position.z = window.innerWidth < 640 ? 11 : 9;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-  }, 200);
-});
-
-console.log(`🗝 hourkey · tier:${TIER} · current:${branches[curIdx]} · theme:${getTheme()}`);
-</script>
-
-<!-- ── /Three.js ── -->
-
-<script>
-/* hamburger drawer toggle (mobile) */
-(function(){
-  var burger  = document.getElementById('hk-burger');
-  var drawer  = document.getElementById('hk-drawer');
-  var overlay = document.getElementById('hk-drawer-overlay');
-  var close   = document.getElementById('hk-drawer-close');
-  if (!burger || !drawer || !overlay) return;
-  function open(){ drawer.classList.add('on'); overlay.classList.add('on'); }
-  function shut(){ drawer.classList.remove('on'); overlay.classList.remove('on'); }
-  burger.addEventListener('click', open);
-  overlay.addEventListener('click', shut);
-  close && close.addEventListener('click', shut);
-  drawer.querySelectorAll('.hk-drawer-link, .hk-drawer-cta').forEach(function(a){
-    a.addEventListener('click', function(){ setTimeout(shut, 100); });
-  });
-})();
-</script>
-<script defer src="/js/hk-zhcn.js?v=1"></script>
-<script src="/js/hk-i18n-core.js?v=1" defer></script>
-<script>
-/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
-(function(){try{
-var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
-if(!l||['th','en','zh'].indexOf(l)!==-1)return;
-var n=0;(function boot(){
-if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
-window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
-})();
-}catch(_){}})();
-</script>
+  </script>
 </body>
 </html>

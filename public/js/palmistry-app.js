@@ -61,6 +61,7 @@
     errNet:{th:"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง",en:"Connection failed, please try again",zh:"連線失敗，請重試",cn:"连接失败，请重试",vi:"Kết nối thất bại, thử lại",ja:"接続に失敗、再試行してください",ko:"연결 실패, 다시 시도하세요",ru:"Ошибка связи, попробуйте снова",es:"Fallo de conexión, inténtalo de nuevo"},
     errBlur:{th:"รูปเบลอเกินไป อ่านไม่ได้ กรุณาถ่ายใหม่ให้ชัด",en:"Photo too blurry to read — please retake it sharper",zh:"圖片太模糊無法解讀，請重拍清楚",cn:"图片太模糊无法解读，请重拍清楚",vi:"Ảnh quá mờ không đọc được — chụp lại rõ hơn",ja:"画像がぼやけて読めません — 鮮明に撮り直してください",ko:"사진이 너무 흐려 판독 불가 — 선명하게 다시 촬영하세요",ru:"Фото слишком размыто — переснимите чётче",es:"Foto demasiado borrosa — vuelve a tomarla más nítida"},
     saved:{th:"บันทึกแล้ว ✓",en:"Saved ✓",zh:"已保存 ✓",cn:"已保存 ✓",vi:"Đã lưu ✓",ja:"保存しました ✓",ko:"저장됨 ✓",ru:"Сохранено ✓",es:"Guardado ✓"},
+    goFusion:{th:"🔮 เอาไปรวมกับดวง 7 ศาสตร์",en:"🔮 Fuse into your 7-art reading",zh:"🔮 融入七術合盤",cn:"🔮 融入七术合盘",vi:"🔮 Hợp nhất lá số 7 môn",ja:"🔮 7つの術で統合鑑定",ko:"🔮 7술 통합 풀이로",ru:"🔮 В чтение 7 искусств",es:"🔮 Fusionar con las 7 artes"},
     loginSave:{th:"เข้าสู่ระบบก่อนบันทึก",en:"Please log in to save",zh:"請先登入再保存",cn:"请先登录再保存",vi:"Đăng nhập để lưu",ja:"保存にはログインが必要",ko:"저장하려면 로그인",ru:"Войдите, чтобы сохранить",es:"Inicia sesión para guardar"}
   };
 
@@ -296,7 +297,16 @@
       body: JSON.stringify({ lang: getLang(), reading: curResult && curResult.reading, clarity: curResult && curResult.clarity_overall }) })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
-        if (res.ok && res.j.ok) { btn.textContent = pick(MSG.saved, getLang()); }
+        if (res.ok && res.j.ok) {
+          btn.textContent = pick(MSG.saved, getLang());
+          if (!document.getElementById("goFusion")) { // เด้งปุ่มไปดูดวงรวม (ติ๊กลายมือให้อัตโนมัติ)
+            var go = document.createElement("a");
+            go.id = "goFusion"; go.href = "/master-fusion?palm=1"; go.className = "cta";
+            go.style.cssText = "display:block;text-align:center;text-decoration:none;margin-top:10px;line-height:1.4";
+            go.textContent = pick(MSG.goFusion, getLang());
+            btn.parentNode.insertBefore(go, btn.nextSibling);
+          }
+        }
         else if (res.j && res.j.error === "auth_required") { btn.disabled = false; alert(pick(MSG.loginSave, getLang())); location.href = "/signup"; }
         else { btn.disabled = false; alert(pick(MSG.errNet, getLang())); }
       })
