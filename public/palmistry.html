@@ -172,7 +172,16 @@
 :root[data-theme="light"]{--gold-line:rgba(138,109,42,.3)}
 :root[data-theme="light"] .topbar{background:rgba(246,241,230,.85);}
 /* navbar 11 เมนู เลื่อนแนวนอนบนมือถือ (ไม่ล้น/ไม่ตัด) */
-@media(max-width:600px){.topbar{padding:12px 14px}.nav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:14px;flex:1;min-width:0}.nav::-webkit-scrollbar{display:none}}
+@media(max-width:767px){
+  .topbar{padding:14px 14px;flex-wrap:wrap;gap:10px}
+  .logo{order:1;font-size:18px}
+  .top-r{order:2}
+  .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{padding:4px 0;font-size:11px;flex-shrink:0}
+  .nav a .glyph{font-size:14px}
+  .nav a .lbl{font-size:11px}
+}
 .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
 .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
 .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
@@ -362,7 +371,7 @@
   <div style="text-align:center"><a href="/" class="homelink" data-i18n="home">← กลับหน้าหลัก</a></div>
 </div>
 
-<script src="/js/palmistry-app.js?v=480"></script>
+<script src="/js/palmistry-app.js?v=481"></script>
 <script src="/js/hk-user-menu.js?v=20" defer></script>
 <script>
 var p = window.location.pathname.replace(/\/$/,'') || '/chart';
