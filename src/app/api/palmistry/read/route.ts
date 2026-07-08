@@ -19,6 +19,15 @@ export const maxDuration = 240;
 const MAX_IMAGES = 6;
 const MAX_BYTES = 12 * 1024 * 1024; // 12MB/รูป
 const ENHANCE = path.join(process.cwd(), "scripts/palm-enhance.py");
+const ALLOWED_ROLES = new Set(["left", "right", "closeup"]);
+const ALLOWED_TARGETS = new Set(["life", "head", "heart", "fate", "palm", "mount", "finger", "thumb"]); // whitelist กัน prompt injection ผ่าน targets
+function isImageMagic(b: Buffer): boolean {
+  if (b.length < 12) return false;
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return true; // JPEG
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return true; // PNG
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42) return true; // WEBP (RIFF..WEB)
+  return false;
+}
 
 /* rate limit เบา ๆ in-memory: 15 คำขอ/นาที/ip */
 const hits = new Map<string, number[]>();
@@ -77,6 +86,7 @@ export async function POST(req: NextRequest) {
       if (!f.size) return NextResponse.json({ ok: false, error: "empty_image", message: `รูปที่ ${i + 1} ว่างเปล่า/ไฟล์เสีย` }, { status: 400 });
       if (f.size > MAX_BYTES) return NextResponse.json({ ok: false, error: "too_big", message: `รูปที่ ${i + 1} ใหญ่เกิน 12MB` }, { status: 400 });
       const buf = Buffer.from(await f.arrayBuffer());
+      if (!isImageMagic(buf)) return NextResponse.json({ ok: false, error: "not_image", message: `รูปที่ ${i + 1} ไม่ใช่ไฟล์ภาพ (รองรับ JPEG/PNG/WEBP)` }, { status: 400 });
       const src = path.join(dir, `src_${i}.jpg`);
       await writeFile(src, buf); await chmod(src, 0o644);
       const stem = path.join(dir, `e_${i}`);
@@ -84,8 +94,8 @@ export async function POST(req: NextRequest) {
       await chmod(en.clear, 0o644).catch(() => {});
       sendPaths.push(en.clear);
 
-      const role = (roles[i] as PalmImageMeta["role"]) || (i === 0 ? "left" : i === 1 ? "right" : "closeup");
-      const target = targets[i] && targets[i] !== "undefined" ? targets[i] : undefined;
+      const role = (ALLOWED_ROLES.has(roles[i]) ? roles[i] : (i === 0 ? "left" : i === 1 ? "right" : "closeup")) as PalmImageMeta["role"];
+      const target = ALLOWED_TARGETS.has(targets[i]) ? targets[i] : undefined; // sanitize กัน injection
       const label = role === "left" ? "ฝ่ามือซ้าย" : role === "right" ? "ฝ่ามือขวา" : `ภาพซูมเสริม${target ? " เก็บ" + target : ""}`;
       metas.push({ role, target, label });
       clarityHints.push({ label, clarity: en.clarity, advise: en.advise });
