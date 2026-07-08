@@ -3,198 +3,1421 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ตัวอย่าง PDF · hourkey export</title>
+<title>ตัวอย่าง PDF · hourkey export (ครบทุกหน้า)</title>
+<link rel="stylesheet" href="/css/hk-print.css">
 <style>
-  :root{--gold:#c8a44d;--gold-deep:#8a6d2a;--ink:#1a1d24;--soft:#5f5847;--line:#e5ddc9;--paper:#fffdf7;--bg:#0d0f12;--good:#5a8a48;--bad:#b03a2e}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0d0f12;font-family:"Noto Serif Thai","Noto Serif TC",serif;color:#f6f1e6;padding:0 0 60px}
-  /* แถบเลือกดู (ไม่พิมพ์) */
-  .bar{position:sticky;top:0;z-index:10;background:rgba(13,15,18,.94);backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,164,77,.25);padding:14px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .bar .brand{font-size:15px;font-weight:700;color:var(--gold);margin-right:auto;display:flex;align-items:center;gap:8px}
-  .bar .brand .seal{width:26px;height:26px;border:1px solid var(--gold);display:grid;place-items:center;font-size:13px}
-  .bar button{border:1px solid rgba(200,164,77,.4);background:transparent;color:#f6f1e6;font-family:inherit;font-size:13px;padding:8px 15px;border-radius:9px;cursor:pointer;transition:.2s}
-  .bar button.on{background:var(--gold);color:#161310;font-weight:700;border-color:var(--gold)}
-  .bar .note{width:100%;font-size:11.5px;color:#b6ae9c;line-height:1.5;margin-top:2px}
-  .stage{max-width:820px;margin:22px auto;padding:0 14px}
+  /* แถบเครื่องมือ + เวที (ไม่พิมพ์) — โครงหน้ากระดาษใช้ /css/hk-print.css */
+  *{box-sizing:border-box}
+  body{background:#0d0f12;font-family:"Noto Serif Thai","Noto Serif TC",serif;color:#f6f1e6;margin:0;padding:0 0 70px}
+  .hkp-toolbar{position:sticky;top:0;z-index:20;background:rgba(13,15,18,.94);backdrop-filter:blur(12px);
+    border-bottom:1px solid rgba(200,164,77,.25);padding:14px 18px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .hkp-toolbar .brand{font-size:15px;font-weight:700;color:#c8a44d;margin-right:auto;display:flex;align-items:center;gap:8px}
+  .hkp-toolbar .brand .seal{width:26px;height:26px;border:1px solid #c8a44d;display:grid;place-items:center;font-size:13px}
+  .hkp-toolbar button{border:1px solid rgba(200,164,77,.4);background:transparent;color:#f6f1e6;font-family:inherit;
+    font-size:13px;padding:8px 13px;border-radius:9px;cursor:pointer;transition:.2s}
+  .hkp-toolbar button.on{background:#c8a44d;color:#161310;font-weight:700;border-color:#c8a44d}
+  .hkp-toolbar button.pr{border-color:#c8a44d;color:#c8a44d}
+  .hkp-toolbar .note{width:100%;font-size:11.5px;color:#b6ae9c;line-height:1.55;margin-top:2px}
+  .stage{max-width:860px;margin:22px auto;padding:0 14px}
   .hint{text-align:center;color:#b6ae9c;font-size:12.5px;margin:0 0 16px;line-height:1.6}
-  /* กระดาษ A4 (จำลอง) */
-  .page{background:var(--paper);color:var(--ink);width:100%;max-width:794px;min-height:500px;margin:0 auto 20px;border-radius:6px;
-    box-shadow:0 20px 60px rgba(0,0,0,.55);padding:44px 46px;position:relative;overflow:hidden}
-  .page.land{max-width:900px}
   .doc{display:none}
   .doc.show{display:block}
-  /* header/footer วิ่ง */
-  .ph{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;font-size:11px;color:var(--soft)}
-  .ph .lg{display:flex;align-items:center;gap:7px;font-weight:700;color:var(--gold-deep)}
-  .ph .lg .seal{width:20px;height:20px;border:1px solid var(--gold-deep);display:grid;place-items:center;font-size:11px}
-  .pf{position:absolute;left:46px;right:46px;bottom:20px;display:flex;justify-content:space-between;font-size:10px;color:#a89e86;border-top:1px solid var(--line);padding-top:8px}
-  /* cover */
-  .cover{text-align:center;padding:30px 0}
-  .cover .seal-lg{width:64px;height:64px;border:2px solid var(--gold);display:grid;place-items:center;font-size:34px;color:var(--gold-deep);margin:0 auto 16px}
-  .cover .kick{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-deep)}
-  .cover h1{font-size:30px;margin:10px 0 6px;color:var(--ink);font-weight:700}
-  .cover .who{font-size:17px;color:var(--ink);margin:18px 0 4px;font-weight:600}
-  .cover .meta{font-size:13px;color:var(--soft);line-height:1.9}
-  .cover .big-el{font-size:52px;color:var(--gold-deep);margin:14px 0 4px;font-family:"Noto Serif TC",serif}
-  .cover .tst{display:inline-block;margin-top:14px;font-size:11px;color:var(--good);border:1px solid var(--good);border-radius:20px;padding:4px 14px}
-  .cover .qr{width:74px;height:74px;margin:22px auto 0;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;font-size:9px;color:#a89e86;background:repeating-linear-gradient(45deg,#eee,#eee 3px,#fff 3px,#fff 6px)}
-  /* sections */
-  h2.sec{font-size:17px;color:var(--gold-deep);border-left:3px solid var(--gold);padding-left:10px;margin:22px 0 12px}
-  table{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0 14px}
-  th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
-  th{background:#f5efe0;color:var(--gold-deep);font-weight:700}
-  td .zh{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--ink);display:block}
-  td .th{font-size:10px;color:var(--soft)}
+  /* กราฟแท่งธาตุ (เสริมนอก hk-print.css) */
   .bars{display:flex;gap:6px;margin:8px 0 14px}
-  .bars .b{flex:1;text-align:center;font-size:11px}
-  .bars .track{height:60px;background:#f0e9d8;border-radius:5px;position:relative;overflow:hidden;margin-bottom:4px}
+  .bars .b{flex:1;text-align:center;font-size:11px;color:#3a3730}
+  .bars .track{height:64px;background:#f0e9d8;border-radius:5px;position:relative;overflow:hidden;margin-bottom:4px}
   .bars .fill{position:absolute;bottom:0;left:0;right:0;border-radius:5px}
-  .card{border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin:0 0 10px;background:#fefcf5;break-inside:avoid}
-  .card h3{font-size:13.5px;color:var(--ink);margin-bottom:6px}
-  .card .conf{float:right;font-size:9px;color:#fff;background:var(--good);border-radius:10px;padding:1px 8px}
-  .card p{font-size:12px;color:#3a3730;line-height:1.65;margin:3px 0}
-  .card p b{color:var(--gold-deep)}
-  .tl{border-left:2px solid var(--gold);padding-left:14px;margin:6px 0}
-  .tl .it{margin-bottom:9px;font-size:12px}
-  .tl .it b{color:var(--gold-deep)}
-  .sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-  .sum .x{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:11.5px;background:#fefcf5}
-  .sum .x .l{color:var(--gold-deep);font-weight:700;font-size:10px;display:block;margin-bottom:2px}
-  .pal9{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0 14px}
-  .pal9 .c{border:1px solid var(--line);border-radius:7px;padding:9px 4px;text-align:center;background:#fefcf5;min-height:74px}
-  .pal9 .c .g{font-family:"Noto Serif TC";font-size:16px;color:var(--gold-deep);display:block}
-  .pal9 .c .s{font-size:9px;color:var(--soft)}
-  .pal9 .c.good{border-color:var(--good);background:rgba(90,138,72,.08)}
-  .verdict{background:linear-gradient(160deg,rgba(200,164,77,.14),transparent);border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin:6px 0 14px}
-  .verdict .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep)}
-  .verdict p{font-size:13.5px;line-height:1.7;margin-top:6px;color:var(--ink)}
-  @media(max-width:560px){.page{padding:26px 20px}.pf{left:20px;right:20px}.cover h1{font-size:23px}}
-  @media print{body{background:#fff;padding:0}.bar,.hint,.stage>.doc:not(.show){display:none}.page{box-shadow:none;margin:0;border-radius:0;page-break-after:always}}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 14px}
+  .chips .c{font-size:10.5px;border:1px solid #e5ddc9;border-radius:14px;padding:2px 9px;background:#fefcf5;color:#5f5847}
+  .chips .c b{color:#8a6d2a}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .lead{font-size:12px;color:#5f5847;line-height:1.6;margin:2px 0 10px}
+  .toc{list-style:none;padding:0;margin:8px 0}
+  .toc li{display:flex;justify-content:space-between;border-bottom:1px dotted #e5ddc9;padding:7px 2px;font-size:12.5px;color:#3a3730}
+  .toc li b{color:#8a6d2a}
+  /* calendar grid */
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:8px 0 12px}
+  .cal .h{background:#f5efe0;color:#8a6d2a;font-weight:700;text-align:center;font-size:11px;padding:5px 0;border-radius:4px}
+  .cal .d{border:1px solid #e5ddc9;border-radius:5px;min-height:76px;padding:4px 5px;background:#fefcf5;font-size:9.5px;color:#5f5847;position:relative}
+  .cal .d .n{font-size:14px;font-weight:700;color:#1a1d24}
+  .cal .d .lun{color:#8a6d2a;font-family:"Noto Serif TC"}
+  .cal .d .sc{position:absolute;right:4px;top:3px;font-size:9px;color:#fff;background:#5a8a48;border-radius:8px;padding:0 5px}
+  .cal .d.bad .sc{background:#b03a2e}
+  .cal .d.mid .sc{background:#9a7d3a}
+  .cal .d.dim{background:#f4f1e8;color:#b8b09a}
+  .cal .d .yi{color:#5a8a48}.cal .d .ji{color:#b03a2e}
+  /* รูปประกอบ (inline SVG · self-contained · โทนทอง-ดำ) */
+  .fig{margin:8px 0 14px;text-align:center;break-inside:avoid}
+  .fig svg{max-width:100%;height:auto;display:block;margin:0 auto}
+  .fig .cap{font-size:9.5px;color:#a89e86;margin-top:4px}
+  .figrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .card h3 .ic,h2.sec .ic{margin-right:4px}
+  svg text{font-family:"Noto Serif TC","Noto Serif Thai",serif}
+  @media print{ .hkp-toolbar,.hint{display:none!important} .stage>.doc:not(.show){display:none!important}
+    .stage{max-width:100%;margin:0;padding:0} }
 </style>
 </head>
 <body>
-<div class="bar">
+<div class="hkp-toolbar">
   <span class="brand"><span class="seal">時</span>hourkey · ตัวอย่าง PDF</span>
   <button class="on" data-doc="chart">📜 ดวงปาจื้อ</button>
   <button data-doc="palm">🖐 ลายมือ</button>
   <button data-doc="fusion">🔮 ดูดวงรวม</button>
-  <button onclick="window.print()" style="border-color:var(--gold);color:var(--gold)">🖨 ทดสอบพิมพ์</button>
-  <div class="note">👀 นี่คือ <b>ตัวอย่างหน้าตา PDF</b> (mockup · ข้อมูลสมมติ) ที่จะได้เมื่อกด "ดาวน์โหลด PDF" ในแต่ละหน้า — เจ้านายดูเลย์เอาต์/ปก/ฟอนต์/สี ก่อนสั่งทำจริง · A4 · โลโก้ 時 · เลขหน้า · QR ครบ</div>
+  <button data-doc="datepick">🗓 วางฤกษ์</button>
+  <button data-doc="calendar">📅 ปฏิทิน</button>
+  <button data-doc="qimen">🧭 ฉีเหมิน</button>
+  <button data-doc="book">📖 คัมภีร์ชะตา</button>
+  <button class="pr" onclick="window.print()">🖨 ทดสอบพิมพ์</button>
+  <div class="note">👀 นี่คือ <b>ตัวอย่างหน้าตา PDF จริง</b> (mockup · ข้อมูลสมมติดวง "คุณอาเอว") — แสดง <b>ครบทุก section ของทุกหน้า</b> เพื่อให้เห็นว่า PDF จริงข้อมูลครบแบบนี้ · A4 · โลโก้ 時 · header/footer + เลขหน้า + QR ครบทุกแผ่น</div>
 </div>
 
 <div class="stage">
-  <p class="hint">เลือกดูแต่ละแบบจากปุ่มด้านบน · กด "ทดสอบพิมพ์" เพื่อดู PDF จริงจากเบราว์เซอร์</p>
+  <p class="hint">เลือกเอกสารจากปุ่มด้านบน · กด "ทดสอบพิมพ์" เพื่อดู PDF จริงจากเบราว์เซอร์ (window.print)</p>
 
-  <!-- ═══ CHART (ดวงปาจื้อ) ═══ -->
+  <!-- ═══════════════════════════════════ 1) CHART · ดวงปาจื้อ ═══════════════════════════════════ -->
   <div class="doc show" id="d-chart">
-    <div class="page">
-      <div class="ph"><span class="lg"><span class="seal">時</span>hourkey · รายงานดวงปาจื้อ</span><span>ออกเอกสาร 8 ก.ค. 2569</span></div>
-      <div class="cover">
+
+    <!-- P1 ปก -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>hourkey · รายงานดวงปาจื้อ</span><span>ออกเอกสาร 8 ก.ค. 2569</span></div>
+      <div class="hkp-cover">
         <div class="seal-lg">時</div>
         <div class="kick">รายงานดวงจีน · 八字命盤</div>
         <h1>ดวงชะตากำเนิด</h1>
         <div class="who">คุณ อาเอว · หญิง</div>
-        <div class="meta">31 ธ.ค. 2527 · 13:15 น. · กรุงเทพฯ<br>วันเกิด 己亥 · เดือน 丙子 · ปี 甲子 · ยาม 庚午</div>
-        <div class="big-el">土 己</div>
-        <div class="meta">ธาตุประจำวัน: ดิน (己) · โครงสร้าง: 正財格 · พลัง: อ่อน (弱)</div>
-        <div class="tst">✓ TST เวลาสุริยะแท้ · แม่นระดับนาที (tyme4ts + 紫金山天文臺)</div>
-        <div class="qr">QR<br>กลับเว็บ</div>
+        <div class="meta">31 ธันวาคม 2527 · 13:15 น. · กรุงเทพมหานคร (lng 100.50°)<br>
+          ปี 甲子 · เดือน 丙子 · วัน 己亥 · ยาม 庚午</div>
+        <div class="big">土 己</div>
+        <div class="meta">ธาตุประจำวัน: ดิน (己土) · โครงสร้าง: 正財格 · ความแรง: อ่อน (身弱)</div>
+        <div class="badge">✓ TST เวลาสุริยะแท้ · แม่นระดับนาที (tyme4ts + 紫金山天文臺)</div>
+        <div class="qr">QR<br>hourkey.io</div>
       </div>
-      <div class="pf"><span>hourkey.io · TST verified</span><span>หน้า 1 / 5</span></div>
+      <div class="hkp-foot"><span>hourkey.io · TST verified</span><span>หน้า 1 / 7</span></div>
     </div>
-    <div class="page">
-      <div class="ph"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>四柱八字</span></div>
-      <h2 class="sec">四柱 · สี่เสาหลัก</h2>
-      <table><thead><tr><th>เสา</th><th>ปี 年</th><th>เดือน 月</th><th>วัน 日</th><th>ยาม 時</th></tr></thead><tbody>
-        <tr><td>ก้าน+กิ่ง</td><td><span class="zh">甲子</span><span class="th">ไม้-หนู</span></td><td><span class="zh">丙子</span><span class="th">ไฟ-หนู</span></td><td><span class="zh">己亥</span><span class="th">ดิน-หมู</span></td><td><span class="zh">庚午</span><span class="th">ทอง-ม้า</span></td></tr>
-        <tr><td>สิบเทพ</td><td>正官</td><td>正印</td><td>ตัวเรา</td><td>傷官</td></tr>
-        <tr><td>นาอิน</td><td>海中金</td><td>澗下水</td><td>平地木</td><td>路旁土</td></tr>
-      </tbody></table>
-      <h2 class="sec">五行 · ธาตุ + 用神</h2>
+
+    <!-- P2 สี่เสา 9 แถว -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>四柱八字</span></div>
+      <h2 class="sec"><span class="ic">🀄</span>四柱 · สี่เสาหลัก (ตารางเต็ม 9 มิติ)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 560 176" width="560" role="img" aria-label="ภาพพื้นดวงสี่เสา">
+          <rect x="1" y="1" width="558" height="174" rx="10" fill="#fffdf7" stroke="#e5ddc9"/>
+          <!-- pillars -->
+          <g font-size="11" text-anchor="middle">
+            <!-- headers -->
+            <text x="76" y="20" fill="#8a6d2a">เสาปี 年</text>
+            <text x="208" y="20" fill="#8a6d2a">เสาเดือน 月</text>
+            <text x="345" y="20" fill="#8a6d2a">เสาวัน 日 ★</text>
+            <text x="480" y="20" fill="#8a6d2a">เสายาม 時</text>
+          </g>
+          <!-- YEAR 甲子 -->
+          <g><rect x="20" y="30" width="112" height="130" rx="8" fill="#fefcf5" stroke="#e5ddc9"/>
+            <circle cx="76" cy="66" r="24" fill="#5a8a48"/><text x="76" y="73" text-anchor="middle" font-size="26" fill="#fff">甲</text>
+            <circle cx="76" cy="122" r="24" fill="#4a6f8a"/><text x="76" y="129" text-anchor="middle" font-size="26" fill="#fff">子</text>
+            <text x="76" y="152" text-anchor="middle" font-size="10" fill="#5f5847">正官 · หนู</text></g>
+          <!-- MONTH 丙子 -->
+          <g><rect x="152" y="30" width="112" height="130" rx="8" fill="#fefcf5" stroke="#e5ddc9"/>
+            <circle cx="208" cy="66" r="24" fill="#b03a2e"/><text x="208" y="73" text-anchor="middle" font-size="26" fill="#fff">丙</text>
+            <circle cx="208" cy="122" r="24" fill="#4a6f8a"/><text x="208" y="129" text-anchor="middle" font-size="26" fill="#fff">子</text>
+            <text x="208" y="152" text-anchor="middle" font-size="10" fill="#5f5847">正印 · หนู</text></g>
+          <!-- DAY 己亥 (highlight) -->
+          <g><rect x="289" y="26" width="112" height="138" rx="8" fill="#fbf3dd" stroke="#c8a44d" stroke-width="2"/>
+            <circle cx="345" cy="66" r="24" fill="#9a7d3a"/><text x="345" y="73" text-anchor="middle" font-size="26" fill="#fff">己</text>
+            <circle cx="345" cy="122" r="24" fill="#4a6f8a"/><text x="345" y="129" text-anchor="middle" font-size="26" fill="#fff">亥</text>
+            <text x="345" y="152" text-anchor="middle" font-size="10" fill="#8a6d2a">ตัวเรา · หมู</text></g>
+          <!-- HOUR 庚午 -->
+          <g><rect x="426" y="30" width="112" height="130" rx="8" fill="#fefcf5" stroke="#e5ddc9"/>
+            <circle cx="482" cy="66" r="24" fill="#c9a94d"/><text x="482" y="73" text-anchor="middle" font-size="26" fill="#fff">庚</text>
+            <circle cx="482" cy="122" r="24" fill="#b03a2e"/><text x="482" y="129" text-anchor="middle" font-size="26" fill="#fff">午</text>
+            <text x="482" y="152" text-anchor="middle" font-size="10" fill="#5f5847">傷官 · ม้า</text></g>
+        </svg>
+        <div class="cap">ภาพพื้นดวงสี่เสา · สีวงกลม = ธาตุ (เขียว木 แดง火 ทอง土 เหลืองทอง金 น้ำเงิน水) · เสาวันไฮไลต์ = ตัวเรา 己土</div>
+      </div>
+      <table>
+        <thead><tr><th>มิติ</th><th>เสาปี 年</th><th>เสาเดือน 月</th><th>เสาวัน 日 (ตัวเรา)</th><th>เสายาม 時</th></tr></thead>
+        <tbody>
+          <tr><td>ก้านฟ้า+กิ่งดิน</td>
+            <td><span class="zh">甲子</span><span class="th">ไม้หยาง-หนู</span></td>
+            <td><span class="zh">丙子</span><span class="th">ไฟหยาง-หนู</span></td>
+            <td><span class="zh">己亥</span><span class="th">ดินหยิน-หมู</span></td>
+            <td><span class="zh">庚午</span><span class="th">ทองหยาง-ม้า</span></td></tr>
+          <tr><td>สิบเทพ (ก้าน)</td><td>正官</td><td>正印</td><td>日主 · ตัวเรา</td><td>傷官</td></tr>
+          <tr><td>สาขาซ่อน 藏干</td><td>癸</td><td>癸</td><td>壬 · 甲</td><td>丁 · 己</td></tr>
+          <tr><td>สิบเทพ (สาขาซ่อน)</td><td>偏財</td><td>偏財</td><td>正財 · 正官</td><td>偏印 · 比肩</td></tr>
+          <tr><td>นาอิน 納音</td><td>海中金</td><td>澗下水</td><td>平地木</td><td>路旁土</td></tr>
+          <tr><td>12 ช่วงชีวิต 長生</td><td>絕</td><td>絕</td><td>胎</td><td>臨官</td></tr>
+          <tr><td>空亡 (ว่างศูนย์)</td><td colspan="4">日柱 己亥 อยู่ 甲午旬 → ว่างที่ 辰 · 巳 (辰巳空亡)</td></tr>
+          <tr><td>ดาวประจำเสา</td><td>將星</td><td>桃花</td><td>驛馬</td><td>天乙貴人</td></tr>
+          <tr><td>ช่วงอายุที่เสาปกครอง</td><td>0–16 ปี</td><td>17–32 ปี</td><td>33–48 ปี</td><td>49 ปีขึ้นไป</td></tr>
+        </tbody>
+      </table>
+      <div class="hkp-verdict"><span class="lab">อ่านโครงสร้าง · 格局 + 強弱</span>
+        <p>ธาตุประจำวัน 己土 เกิดเดือน 子 (ฤดูหนาว น้ำเด่น) ดินเปียกเย็น ขาดไฟอบอุ่น · ทรัพย์ (財=น้ำ) แรงแต่ตัวเราอ่อน จึงเป็น <b>正財格 身弱</b> — เก่งเรื่องเงินและระบบ แต่ต้องเสริมพลังตัวเองก่อนจึงจะ "คุมทรัพย์" ได้จริง</p></div>
+      <div class="hkp-foot"><span>hourkey.io · TST verified</span><span>หน้า 2 / 7</span></div>
+    </div>
+
+    <!-- P3 ธาตุ + 用神 v1/v2 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>五行 · 用神</span></div>
+      <h2 class="sec">五行 · สมดุลห้าธาตุ</h2>
       <div class="bars">
-        <div class="b"><div class="track"><div class="fill" style="height:70%;background:var(--good)"></div></div>น้ำ 30%</div>
-        <div class="b"><div class="track"><div class="fill" style="height:40%;background:#b03a2e"></div></div>ไฟ 18%</div>
-        <div class="b"><div class="track"><div class="fill" style="height:55%;background:#9a7d3a"></div></div>ดิน 24%</div>
-        <div class="b"><div class="track"><div class="fill" style="height:30%;background:#7a6f4a"></div></div>ทอง 14%</div>
-        <div class="b"><div class="track"><div class="fill" style="height:28%;background:#5a8a48"></div></div>ไม้ 14%</div>
+        <div class="b"><div class="track"><div class="fill" style="height:74%;background:#4a6f8a"></div></div>น้ำ 水 30%</div>
+        <div class="b"><div class="track"><div class="fill" style="height:44%;background:#b03a2e"></div></div>ไฟ 火 18%</div>
+        <div class="b"><div class="track"><div class="fill" style="height:58%;background:#9a7d3a"></div></div>ดิน 土 24%</div>
+        <div class="b"><div class="track"><div class="fill" style="height:34%;background:#7a6f4a"></div></div>ทอง 金 14%</div>
+        <div class="b"><div class="track"><div class="fill" style="height:34%;background:#5a8a48"></div></div>ไม้ 木 14%</div>
       </div>
-      <div class="card"><h3>用神 (ธาตุอุปถัมภ์): ไฟ 火 + ดิน 土</h3><p>เนื่องจากธาตุประจำวัน 己 (ดิน) อ่อน ต้องเสริมไฟให้ดินอบอุ่น + ดินหนุนตัวเอง · <b>忌神</b> (ธาตุเลี่ยง): น้ำมากไป ทำให้ดินเปียกเย็น</p></div>
-      <div class="pf"><span>hourkey.io</span><span>หน้า 2 / 5</span></div>
+      <div class="fig">
+        <svg viewBox="0 0 300 200" width="300" role="img" aria-label="วงจรห้าธาตุ 生剋">
+          <!-- pentagon nodes: 木(top) 火(right) 土(br) 金(bl) 水(left) generating clockwise -->
+          <g stroke="#c8a44d" stroke-width="1.5" fill="none">
+            <path d="M150 34 L246 104 L209 178 L91 178 L54 104 Z"/>
+          </g>
+          <g font-size="20" text-anchor="middle" font-weight="700">
+            <circle cx="150" cy="34" r="21" fill="#5a8a48"/><text x="150" y="41" fill="#fff">木</text>
+            <circle cx="246" cy="104" r="21" fill="#b03a2e"/><text x="246" y="111" fill="#fff">火</text>
+            <circle cx="209" cy="178" r="21" fill="#9a7d3a"/><text x="209" y="185" fill="#fff">土</text>
+            <circle cx="91" cy="178" r="21" fill="#c9a94d"/><text x="91" y="185" fill="#fff">金</text>
+            <circle cx="54" cy="104" r="21" fill="#4a6f8a"/><text x="54" y="111" fill="#fff">水</text>
+          </g>
+          <text x="150" y="112" text-anchor="middle" font-size="11" fill="#8a6d2a">生 →</text>
+        </svg>
+        <div class="cap">วงจรก่อเกิด 相生 (木→火→土→金→水→木) · 用神ของดวงนี้ = 火 อบอุ่นดิน 土</div>
+      </div>
+      <h2 class="sec"><span class="ic">🌱</span>用神 / 忌神 · ธาตุอุปถัมภ์และธาตุเลี่ยง</h2>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">用神 (ธาตุอุปถัมภ์)</span>ไฟ 火 (อบอุ่นดิน) + ดิน 土 (หนุนตัวเอง)</div>
+        <div class="x"><span class="l">忌神 (ธาตุเลี่ยง)</span>น้ำ 水 มากไป (ดินเย็นเปียก) + ไม้ 木 (ยิ่งกดดิน)</div>
+        <div class="x"><span class="l">喜神 (ธาตุชอบรอง)</span>ทอง 金 น้อย (ระบายทรัพย์เป็นผลงาน)</div>
+        <div class="x"><span class="l">ฤดู 調候</span>เกิดหนาว → ต้องการไฟปรับอากาศเป็นด่วน</div>
+      </div>
+      <h2 class="sec">用神 v2 (wrapper-7) · โครงสร้าง–โรค–ยา–สะพาน</h2>
+      <div class="hkp-card"><h3>โครงสร้างพลัง (โครง)</h3><p>แกน 己土 พึ่งไฟจากเสาเดือน 丙 และดาว 午 ในเสายาม เป็นเสาหลักที่ค้ำตัวเรา</p></div>
+      <div class="hkp-card"><h3>จุดอ่อน (โรค)</h3><p>น้ำ (財) ท่วมเดือนหนาว ทำให้ดินเย็น ตัดสินใจเรื่องเงินแล้วลังเลตอนกลางคัน · พลังใจตกง่ายช่วงเจอความกดดันจากคนใกล้ตัว</p></div>
+      <div class="hkp-card"><h3>ทางแก้ (ยา)</h3><p>ใช้ไฟ 火 (แดง/พลังใจ/ผู้ใหญ่ที่เป็นแรงบันดาลใจ) นำ แล้วเสริมดิน 土 (ความมั่นคง/อสังหา) เป็นฐาน · เลี่ยงตัดสินใจการเงินช่วงค่ำ/ฤดูหนาวของปี</p></div>
+      <div class="hkp-card"><h3>สะพานเชื่อม (通關)</h3><p>ธาตุไฟทำหน้าที่ "สะพาน" คลายน้ำที่ท่วม แล้วส่งพลังกลับเข้าดิน — เป็นกุญแจของดวงนี้</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 3 / 7</span></div>
     </div>
-    <div class="page">
-      <div class="ph"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>大運 วัยจร</span></div>
-      <h2 class="sec">大運 · คลื่นโชค 8 รอบ</h2>
-      <div class="tl">
-        <div class="it"><b>อายุ 3-12 (乙亥):</b> วัยเรียนรู้ พื้นฐานมั่นคง</div>
-        <div class="it"><b>อายุ 23-32 (丁丑):</b> ไฟหนุน — จังหวะตั้งตัว งานก้าวหน้า</div>
-        <div class="it"><b>อายุ 33-42 (戊寅) ← ปัจจุบัน:</b> ดินแกร่ง การเงินเริ่มมีโครงสร้างชัด</div>
-        <div class="it"><b>อายุ 43-52 (己卯):</b> สร้างฐานะมั่นคง มีบริวาร</div>
+
+    <!-- P4 ปฏิกิริยา + 大運 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>合冲刑害 · 大運</span></div>
+      <h2 class="sec"><span class="ic">⚔️</span>ปฏิกิริยาในดวง · 合 冲 刑 害</h2>
+      <div class="fig">
+        <svg viewBox="0 0 420 96" width="420" role="img" aria-label="แผนภาพปฏิกิริยา 子午沖">
+          <circle cx="70" cy="48" r="30" fill="#4a6f8a"/><text x="70" y="55" text-anchor="middle" font-size="24" fill="#fff">子</text>
+          <circle cx="210" cy="48" r="30" fill="#b03a2e"/><text x="210" y="55" text-anchor="middle" font-size="24" fill="#fff">午</text>
+          <line x1="104" y1="48" x2="176" y2="48" stroke="#b03a2e" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#ah)" marker-start="url(#ah)"/>
+          <text x="140" y="34" text-anchor="middle" font-size="13" fill="#b03a2e">沖</text>
+          <circle cx="350" cy="48" r="30" fill="#9a7d3a"/><text x="350" y="55" text-anchor="middle" font-size="20" fill="#fff">甲己</text>
+          <text x="285" y="34" text-anchor="middle" font-size="12" fill="#5a8a48">合(暗)</text>
+          <path d="M240 48 Q285 20 320 48" stroke="#5a8a48" stroke-width="2.5" fill="none"/>
+          <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#b03a2e"/></marker></defs>
+        </svg>
+        <div class="cap">子午沖 (น้ำ↔ไฟ · แกนพลังใจ↔ทรัพย์) · 甲己暗合 (เชื่อมตัวเรากับผลงานแบบลับ)</div>
       </div>
-      <h2 class="sec">流年 · ปี 2569</h2>
-      <div class="card"><p>ปีนี้ธาตุน้ำเด่น — ควรระวังการตัดสินใจเรื่องเงินช่วงกลางปี · ครึ่งปีหลังจังหวะดีขึ้น เหมาะขยายงาน</p></div>
-      <div class="pf"><span>hourkey.io · TST verified</span><span>หน้า 3 / 5</span></div>
+      <table>
+        <thead><tr><th>คู่</th><th>ชนิด</th><th>ธาตุที่กระทบ</th><th>ความหมาย</th></tr></thead>
+        <tbody>
+          <tr><td>子 (ปี) — 午 (ยาม)</td><td class="th">子午沖</td><td>น้ำ ↔ ไฟ</td><td>แกนพลังใจ↔ทรัพย์สั่นไหว จังหวะเปลี่ยนที่พีคแรง</td></tr>
+          <tr><td>子 (ปี) — 子 (เดือน)</td><td class="th">比肩/伏吟</td><td>น้ำ+น้ำ</td><td>ทรัพย์ซ้ำชั้น มีทั้งโอกาสและคู่แข่งเรื่องเงิน</td></tr>
+          <tr><td>亥 (วัน) — 午 (ยาม)</td><td class="th">暗合(甲己)</td><td>ไม้-ดิน</td><td>เชื่อมตัวเรากับผลงาน/ผู้ใหญ่แบบลับ ๆ</td></tr>
+        </tbody>
+      </table>
+      <h2 class="sec"><span class="ic">🌊</span>大運 · คลื่นโชค 8 รอบ (10 ปี/รอบ · หญิงปีหยาง เดินถอย)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 560 88" width="560" role="img" aria-label="ไทม์ไลน์วัยจร 8 รอบ">
+          <line x1="24" y1="46" x2="536" y2="46" stroke="#e5ddc9" stroke-width="3"/>
+          <line x1="24" y1="46" x2="248" y2="46" stroke="#c8a44d" stroke-width="3"/>
+          <g font-size="13" text-anchor="middle" fill="#fff">
+            <g><circle cx="30" cy="46" r="13" fill="#c9b06a"/><text x="30" y="51" font-size="11">乙</text><text x="30" y="74" fill="#5f5847" font-size="9">3</text></g>
+            <g><circle cx="92" cy="46" r="13" fill="#c9b06a"/><text x="92" y="51" font-size="11">甲</text><text x="92" y="74" fill="#5f5847" font-size="9">13</text></g>
+            <g><circle cx="154" cy="46" r="13" fill="#8fb0c4"/><text x="154" y="51" font-size="11">癸</text><text x="154" y="74" fill="#5f5847" font-size="9">23</text></g>
+            <g><circle cx="216" cy="46" r="17" fill="#8a6d2a" stroke="#c8a44d" stroke-width="2"/><text x="216" y="51" font-size="12">壬</text><text x="216" y="78" fill="#8a6d2a" font-size="9" font-weight="700">33 ◄ ตอนนี้</text></g>
+            <g><circle cx="286" cy="46" r="13" fill="#c9a94d"/><text x="286" y="51" font-size="11">辛</text><text x="286" y="74" fill="#5f5847" font-size="9">43</text></g>
+            <g><circle cx="348" cy="46" r="13" fill="#c9a94d"/><text x="348" y="51" font-size="11">庚</text><text x="348" y="74" fill="#5f5847" font-size="9">53</text></g>
+            <g><circle cx="410" cy="46" r="13" fill="#cf7a6a"/><text x="410" y="51" font-size="11">己</text><text x="410" y="74" fill="#5f5847" font-size="9">63</text></g>
+            <g><circle cx="472" cy="46" r="13" fill="#b39a5a"/><text x="472" y="51" font-size="11">戊</text><text x="472" y="74" fill="#5f5847" font-size="9">73</text></g>
+          </g>
+        </svg>
+        <div class="cap">เส้นวัยจร 8 รอบ · จุดใหญ่ทอง = รอบปัจจุบัน 壬申 (33–42) · สีจุด = ธาตุนำของรอบ</div>
+      </div>
+      <table>
+        <thead><tr><th>รอบ</th><th>干支</th><th>ช่วงอายุ</th><th>ธาตุนำ</th><th>สาระ</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="zh">乙亥</td><td>3–12</td><td>ไม้/น้ำ</td><td>วัยเรียน พื้นฐานครอบครัว</td></tr>
+          <tr><td>2</td><td class="zh">甲戌</td><td>13–22</td><td>ไม้/ดิน</td><td>ตั้งต้นตัวตน เริ่มมีทิศ</td></tr>
+          <tr><td>3</td><td class="zh">癸酉</td><td>23–32</td><td>น้ำ/ทอง</td><td>ทำงานจริง สะสมทักษะ+ทุน</td></tr>
+          <tr><td style="background:#f5efe0"><b>4 ◄</b></td><td class="zh">壬申</td><td>33–42 <b>(ปัจจุบัน)</b></td><td>น้ำ/ทอง</td><td>การเงินเป็นโครงสร้าง แต่ต้องคุมความลังเล</td></tr>
+          <tr><td>5</td><td class="zh">辛未</td><td>43–52</td><td>ทอง/ดิน</td><td>ดินแกร่งขึ้น ฐานะมั่นคง มีบริวาร</td></tr>
+          <tr><td>6</td><td class="zh">庚午</td><td>53–62</td><td>ทอง/ไฟ</td><td>ไฟหนุนดิน ช่วงเก็บเกี่ยว ชื่อเสียง</td></tr>
+          <tr><td>7</td><td class="zh">己巳</td><td>63–72</td><td>ดิน/ไฟ</td><td>รอบทองของดวง มั่งคั่งมั่นคง</td></tr>
+          <tr><td>8</td><td class="zh">戊辰</td><td>73–82</td><td>ดิน/ดิน</td><td>วางมือ ส่งต่อ ให้คำปรึกษา</td></tr>
+        </tbody>
+      </table>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 4 / 7</span></div>
+    </div>
+
+    <!-- P5 流年 + ดาว神煞 + 命宮/身宮 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>流年 · 神煞 · 命宮</span></div>
+      <h2 class="sec"><span class="ic">🔥</span>流年 · ปีปัจจุบัน 2569 (丙午)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 70" width="300" role="img" aria-label="เสาปีจร 丙午">
+          <rect x="1" y="1" width="298" height="68" rx="8" fill="#fff6f3" stroke="#e6c6bf"/>
+          <circle cx="40" cy="35" r="22" fill="#b03a2e"/><text x="40" y="42" text-anchor="middle" font-size="22" fill="#fff">丙</text>
+          <circle cx="92" cy="35" r="22" fill="#cf7a6a"/><text x="92" y="42" text-anchor="middle" font-size="22" fill="#fff">午</text>
+          <text x="150" y="30" font-size="12" fill="#8a6d2a">丙午 = ไฟ+ไฟ</text>
+          <text x="150" y="48" font-size="11" fill="#5a8a48">= 用神ของดวง ✓ (ปีวางฐาน)</text>
+          <path d="M270 22 q8 8 0 16 q-8 -4 0 -16z" fill="#b03a2e"/><path d="M282 20 q10 10 0 20 q-10 -5 0 -20z" fill="#e08a3a"/>
+        </svg>
+        <div class="cap">เสาปีจร 丙午 (ม้าไฟ) = ไฟล้วน ตรงกับ用神 · ปีที่พลังใจกลับมา เหมาะวางฐานการเงิน</div>
+      </div>
+      <div class="hkp-card"><p>ปี 丙午 ไฟแรง — เป็น <b>用神</b> ของดวงพอดี · เป็นปี "อบอุ่นดิน" พลังใจกลับมา เหมาะวางฐานการเงินระยะยาว · ระวังช่วง 子 (เดือน 11–12) ที่ 子午沖 กับปีเกิด อาจมีเรื่องตัดสินใจเงินก้อน</p></div>
+      <h2 class="sec"><span class="ic">✨</span>ดาวประจำตัว 14 ดวง (personal stars)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 540 84" width="540" role="img" aria-label="แผนที่ดาวประจำตัว">
+          <rect x="1" y="1" width="538" height="82" rx="8" fill="#161a24"/>
+          <g fill="#c8a44d">
+            <path d="M60 24 l3 8 8 0 -6.5 5 2.5 8 -7-5 -7 5 2.5-8 -6.5-5 8 0 z"/>
+            <path d="M150 50 l2.4 6.4 6.6 0 -5.3 4 2 6.4-5.7-4-5.7 4 2-6.4-5.3-4 6.6 0z"/>
+            <path d="M250 30 l3 8 8 0 -6.5 5 2.5 8 -7-5 -7 5 2.5-8 -6.5-5 8 0 z"/>
+            <path d="M360 55 l2.4 6.4 6.6 0 -5.3 4 2 6.4-5.7-4-5.7 4 2-6.4-5.3-4 6.6 0z"/>
+            <path d="M450 26 l3 8 8 0 -6.5 5 2.5 8 -7-5 -7 5 2.5-8 -6.5-5 8 0 z"/>
+          </g>
+          <g stroke="#8a6d2a" stroke-width="1" opacity=".6"><line x1="63" y1="30" x2="150" y2="52"/><line x1="150" y1="52" x2="253" y2="36"/><line x1="253" y1="36" x2="360" y2="57"/><line x1="360" y1="57" x2="453" y2="32"/></g>
+          <g font-size="10" fill="#d8c98a" text-anchor="middle">
+            <text x="63" y="16">天乙貴人</text><text x="152" y="76">桃花</text><text x="253" y="18">驛馬</text><text x="360" y="80">將星</text><text x="453" y="16">紅鸞</text>
+          </g>
+        </svg>
+        <div class="cap">ดาวมงคลเด่น 5 ดวงในดวง · เต็ม 14 ดวงในตารางด้านล่าง</div>
+      </div>
+      <table>
+        <thead><tr><th>ดาว</th><th>สถานะ</th><th>ดาว</th><th>สถานะ</th></tr></thead>
+        <tbody>
+          <tr><td>天乙貴人</td><td>มี (ยาม 午)</td><td>桃花</td><td>มี (เดือน 子)</td></tr>
+          <tr><td>驛馬</td><td>มี (วัน 亥)</td><td>將星</td><td>มี (ปี 子)</td></tr>
+          <tr><td>文昌</td><td>มี</td><td>華蓋</td><td>ไม่มี</td></tr>
+          <tr><td>祿神</td><td>—</td><td>羊刃</td><td>ไม่มี</td></tr>
+          <tr><td>金輿</td><td>มี</td><td>紅鸞</td><td>มี</td></tr>
+          <tr><td>天德</td><td>มี</td><td>月德</td><td>มี</td></tr>
+          <tr><td>孤辰</td><td>ไม่มี</td><td>寡宿</td><td>ไม่มี</td></tr>
+        </tbody>
+      </table>
+      <h2 class="sec">神煞 62 ดวง (แสดง 12 เด่น จากทั้งหมด 62)</h2>
+      <div class="chips">
+        <span class="c"><b>天乙貴人</b> ผู้ใหญ่อุปถัมภ์</span><span class="c"><b>桃花</b> เสน่ห์</span>
+        <span class="c"><b>驛馬</b> เดินทาง/เปลี่ยน</span><span class="c"><b>將星</b> ผู้นำ</span>
+        <span class="c"><b>金輿</b> พาหนะ/สมบัติ</span><span class="c"><b>文昌</b> ปัญญา</span>
+        <span class="c"><b>紅鸞</b> วิวาห์</span><span class="c"><b>天德</b> คุ้มภัย</span>
+        <span class="c"><b>月德</b> เมตตา</span><span class="c"><b>福星貴人</b> วาสนา</span>
+        <span class="c"><b>太極貴人</b> ศาสตร์เร้นลับ</span><span class="c"><b>金匱</b> คลังทรัพย์</span>
+      </div>
+      <h2 class="sec"><span class="ic">🏛</span>五宮 · เรือนปาจื้อ (命宮/身宮/胎元/司令/小運)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 150" width="300" role="img" aria-label="ห้าเรือนปาจื้อ">
+          <g text-anchor="middle">
+            <circle cx="150" cy="30" r="26" fill="#8a6d2a"/><text x="150" y="28" font-size="11" fill="#fff">命宮</text><text x="150" y="41" font-size="13" fill="#fff">乙亥</text>
+            <circle cx="60" cy="90" r="24" fill="#9a7d3a"/><text x="60" y="88" font-size="10" fill="#fff">身宮</text><text x="60" y="101" font-size="12" fill="#fff">己巳</text>
+            <circle cx="240" cy="90" r="24" fill="#b03a2e"/><text x="240" y="88" font-size="10" fill="#fff">胎元</text><text x="240" y="101" font-size="12" fill="#fff">丁卯</text>
+            <circle cx="110" cy="132" r="20" fill="#4a6f8a"/><text x="110" y="130" font-size="9" fill="#fff">司令</text><text x="110" y="142" font-size="11" fill="#fff">壬</text>
+            <circle cx="190" cy="132" r="20" fill="#c9a94d"/><text x="190" y="130" font-size="9" fill="#fff">小運</text><text x="190" y="142" font-size="11" fill="#fff">庚午</text>
+          </g>
+          <g stroke="#e5ddc9"><line x1="150" y1="56" x2="60" y2="66"/><line x1="150" y1="56" x2="240" y2="66"/></g>
+        </svg>
+        <div class="cap">ห้าเรือนกำเนิด · 命宮 (เรือนชะตา) เป็นแกน · แต่ละเรือนคำนวณจากสูตร 子平 เฉพาะ</div>
+      </div>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">命宮 (เรือนชะตา)</span>乙亥 — แกนชีวิต ไม้บนน้ำ ใฝ่เติบโต</div>
+        <div class="x"><span class="l">身宮 (เรือนกาย)</span>己巳 — ตัวตนภายนอก ดินบนไฟ มั่นคง</div>
+        <div class="x"><span class="l">胎元 (เรือนปฏิสนธิ)</span>丁卯 — ต้นทุนติดตัว ไฟไม้ ความคิดสร้างสรรค์</div>
+        <div class="x"><span class="l">司令 (ผู้บัญชาการ)</span>壬水 (7 วันแรกของ 子 → 癸 ต่อ)</div>
+        <div class="x"><span class="l">小運 (ดวงจรเล็ก)</span>เริ่ม 庚午 เดินตามลำดับ (順行)</div>
+        <div class="x"><span class="l">空亡ของเรือน</span>命宮ตก 辰巳空 — โฟกัสสร้างของจริงมากกว่าฝัน</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 5 / 7</span></div>
+    </div>
+
+    <!-- P6 คู่ครอง/อาชีพ/สุขภาพ + 河洛 + 24節氣 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>คู่ครอง · อาชีพ · สุขภาพ</span></div>
+      <h2 class="sec">มิติชีวิต · คู่ครอง / อาชีพ / สุขภาพ</h2>
+      <div class="hkp-card"><h3>💑 คู่ครอง (夫妻宮 = เสาวัน 亥)</h3><p>คู่มาจากธาตุ 官 (ไม้) · เนื้อคู่มักเป็นคนมีหลักการ อายุ/วุฒิภาวะมากกว่า · 亥午暗合 บอกความผูกพันลึกแบบไม่โฉ่งฉ่าง · จังหวะดีเรื่องคู่คือรอบ 辛未 (43–52)</p></div>
+      <div class="hkp-card"><h3>💼 อาชีพ (財官)</h3><p>เหมาะงานที่ผูกกับเงิน+ระบบ: การเงิน บัญชี อสังหา ค้าขายที่มีโครงสร้าง · ธาตุไฟช่วยให้เด่นในงานที่ต้องใช้ชื่อเสียง/ผู้คน · ไม่เหมาะงานน้ำล้วน (เก็งกำไรเสี่ยงสูง)</p></div>
+      <div class="hkp-card"><h3>🩺 สุขภาพ (五行 ↔ อวัยวะ)</h3><p>น้ำเกิน–ดินอ่อน: เฝ้าระบบย่อย/ม้าม-กระเพาะ (土) และไต/ทางเดินปัสสาวะ (水) · หน้าหนาว/ช่วงเครียดควรรักษาความอบอุ่น พักให้พอ</p></div>
+      <h2 class="sec"><span class="ic">☯</span>河洛理數 · 64 卦 (ก่อน/หลังฟ้า)</h2>
+      <div class="fig"><div class="figrow">
+        <svg viewBox="0 0 120 140" width="120" role="img" aria-label="卦先天 山水蒙">
+          <text x="60" y="14" text-anchor="middle" font-size="11" fill="#8a6d2a">先天 · 山水蒙 ䷃</text>
+          <g fill="#3a3730">
+            <rect x="20" y="26" width="80" height="9"/>
+            <rect x="20" y="42" width="35" height="9"/><rect x="65" y="42" width="35" height="9"/>
+            <rect x="20" y="58" width="35" height="9"/><rect x="65" y="58" width="35" height="9"/>
+            <rect x="20" y="74" width="80" height="9"/>
+            <rect x="20" y="90" width="35" height="9"/><rect x="65" y="90" width="35" height="9"/>
+            <rect x="20" y="106" width="35" height="9"/><rect x="65" y="106" width="35" height="9"/>
+          </g>
+          <text x="60" y="132" text-anchor="middle" font-size="9" fill="#5f5847">วัยต้นต้องเรียนรู้</text>
+        </svg>
+        <svg viewBox="0 0 120 140" width="120" role="img" aria-label="卦後天 水風井">
+          <text x="60" y="14" text-anchor="middle" font-size="11" fill="#8a6d2a">後天 · 水風井 ䷯</text>
+          <g fill="#3a3730">
+            <rect x="20" y="26" width="35" height="9"/><rect x="65" y="26" width="35" height="9"/>
+            <rect x="20" y="42" width="80" height="9"/>
+            <rect x="20" y="58" width="35" height="9"/><rect x="65" y="58" width="35" height="9"/>
+            <rect x="20" y="74" width="80" height="9"/>
+            <rect x="20" y="90" width="80" height="9"/>
+            <rect x="20" y="106" width="35" height="9"/><rect x="65" y="106" width="35" height="9"/>
+          </g>
+          <text x="60" y="132" text-anchor="middle" font-size="9" fill="#5f5847">บ่อน้ำหล่อเลี้ยง</text>
+        </svg>
+      </div><div class="cap">แท่งเต็ม = หยาง (⚊) · แท่งขาด = หยิน (⚋) · อ่านจากล่างขึ้นบน 6 爻</div></div>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">卦กำเนิด (先天)</span>山水蒙 ䷃ — วัยต้นต้องเรียนรู้ ครูดี</div>
+        <div class="x"><span class="l">卦แปร (後天)</span>水風井 ䷯ — บ่อน้ำหล่อเลี้ยง ยั่งยืนถ้าดูแล</div>
+      </div>
+      <p class="lead">爻辭 ประจำปีนี้: "井冽,寒泉食" — น้ำในบ่อใส ดื่มได้ · แปลว่าผลงานที่สั่งสมเริ่มให้ผลจริงในปีนี้</p>
+      <h2 class="sec"><span class="ic">🌗</span>24 節氣 · จุดเกิดในปีสุริยคติ</h2>
+      <div class="fig">
+        <svg viewBox="0 0 240 130" width="240" role="img" aria-label="วงล้อ 24 節氣">
+          <circle cx="120" cy="65" r="52" fill="none" stroke="#e5ddc9" stroke-width="10"/>
+          <!-- season arcs -->
+          <path d="M120 13 A52 52 0 0 1 172 65" fill="none" stroke="#5a8a48" stroke-width="10"/>
+          <path d="M172 65 A52 52 0 0 1 120 117" fill="none" stroke="#b03a2e" stroke-width="10"/>
+          <path d="M120 117 A52 52 0 0 1 68 65" fill="none" stroke="#c9a94d" stroke-width="10"/>
+          <path d="M68 65 A52 52 0 0 1 120 13" fill="none" stroke="#4a6f8a" stroke-width="10"/>
+          <!-- birth marker near 冬至 (bottom) -->
+          <circle cx="120" cy="117" r="7" fill="#8a6d2a"/><text x="120" y="103" text-anchor="middle" font-size="10" fill="#8a6d2a">冬至 ★</text>
+          <text x="120" y="60" text-anchor="middle" font-size="11" fill="#5f5847">จุดเกิด</text>
+          <text x="120" y="74" text-anchor="middle" font-size="10" fill="#5f5847">子月 (หนาว)</text>
+          <text x="196" y="30" font-size="9" fill="#5a8a48">春</text><text x="196" y="106" font-size="9" fill="#b03a2e">夏</text>
+          <text x="34" y="106" font-size="9" fill="#c9a94d">秋</text><text x="34" y="30" font-size="9" fill="#4a6f8a">冬</text>
+        </svg>
+        <div class="cap">วงล้อ 24 節氣 · ดาว★ = จุดเกิด (冬至 กลางฤดูหนาว) · สีส่วนโค้ง = ฤดู</div>
+      </div>
+      <div class="chips">
+        <span class="c">節氣เกิด: <b>冬至</b> (22 ธ.ค. 2527)</span>
+        <span class="c">節氣ถัดไป: <b>小寒</b> (6 ม.ค. 2528)</span>
+        <span class="c">เสาเดือนคุม: <b>大雪→冬至</b> (子月)</span>
+        <span class="c">ห่างต้น節氣: 9 วัน (อยู่กลางฤดู)</span>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 6 / 7</span></div>
+    </div>
+
+    <!-- P7 คำอ่านซินแส 13 ข้อ -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดวงปาจื้อ · คุณอาเอว</span><span>คำอ่านซินแส 13 ข้อ</span></div>
+      <h2 class="sec"><span class="ic">🧑‍🏫</span>คำอ่านซินแส · 13 ประเด็นฟันธง</h2>
+      <div class="fig">
+        <svg viewBox="0 0 260 210" width="260" role="img" aria-label="เรดาร์บุคลิก 6 ด้าน">
+          <g stroke="#e5ddc9" fill="none">
+            <polygon points="130,20 225,75 225,155 130,205 35,155 35,75"/>
+            <polygon points="130,55 190,90 190,140 130,170 70,140 70,90"/>
+          </g>
+          <polygon points="130,26 218,78 205,150 130,192 55,140 62,84" fill="rgba(200,164,77,.28)" stroke="#c8a44d" stroke-width="2"/>
+          <g font-size="10" fill="#5f5847" text-anchor="middle">
+            <text x="130" y="14">การงาน</text><text x="245" y="76">การเงิน</text><text x="245" y="162">ความรัก</text>
+            <text x="130" y="205" dy="14">สุขภาพ</text><text x="18" y="162">ครอบครัว</text><text x="18" y="76">พลังใจ</text>
+          </g>
+        </svg>
+        <div class="cap">โปรไฟล์ 6 ด้านของดวง · การงาน/การเงินเด่น · พลังใจต้องเสริมด้วยไฟ用神</div>
+      </div>
+      <div class="hkp-tl">
+        <div class="it"><b>1. แก่นตัวตน:</b> คนดิน 己 อ่อนโยนแต่หนักแน่นข้างใน เก็บเงินเก่ง มองการณ์ไกลเรื่องมั่นคง</div>
+        <div class="it"><b>2. จุดแข็ง:</b> วางระบบเงินได้ดี มี 天乙貴人 หนุน ผู้ใหญ่เมตตา</div>
+        <div class="it"><b>3. จุดต้องระวัง:</b> น้ำ (財) ท่วม ทำให้ลังเลตอนตัดสินใจก้อนใหญ่ ใจอ่อนกับคนใกล้ตัวเรื่องเงิน</div>
+        <div class="it"><b>4. การงาน:</b> รุ่งในสายการเงิน/อสังหา/ค้าขายมีระบบ — ยิ่งมีชื่อ (ไฟ) ยิ่งไปได้ไกล</div>
+        <div class="it"><b>5. การเงิน:</b> รวยแบบสะสม ไม่ใช่รวยเร็ว · เลี่ยงเก็งกำไรน้ำล้วน</div>
+        <div class="it"><b>6. ความรัก:</b> คู่เป็นคนมีหลักการ วุฒิภาวะสูง · ผูกพันลึกแบบเงียบ</div>
+        <div class="it"><b>7. ครอบครัว:</b> เป็นเสาหลักเรื่องเงินของบ้าน ดูแลคนรอบตัว</div>
+        <div class="it"><b>8. สุขภาพ:</b> ดูแลม้าม-กระเพาะ/ไต · รักษาความอบอุ่น พักให้พอ</div>
+        <div class="it"><b>9. วัยจรปัจจุบัน (壬申 33–42):</b> การเงินลงหลัก แต่ต้องฝึกตัดใจให้เด็ดขาด</div>
+        <div class="it"><b>10. รอบทองข้างหน้า:</b> 辛未→己巳 (43–72) คือช่วงมั่งคั่งมั่นคงที่สุด</div>
+        <div class="it"><b>11. ปีนี้ 2569 (丙午):</b> ไฟหนุนพอดี — ปีวางฐาน พลังใจกลับมา</div>
+        <div class="it"><b>12. ธาตุมงคล/ทางแก้:</b> ไฟนำ (แดง/ผู้ใหญ่/พลังใจ) + ดินเสริม (อสังหา/ความมั่นคง)</div>
+        <div class="it"><b>13. คำฝากซินแส:</b> "เธอสร้างของจริงได้ อย่าให้ความลังเลกินโอกาส — ตัดสินใจตอนใจอุ่น อย่ารอตอนใจเย็น"</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io · TST verified</span><span>หน้า 7 / 7</span></div>
     </div>
   </div>
 
-  <!-- ═══ PALMISTRY (ลายมือ) ═══ -->
+  <!-- ═══════════════════════════════════ 2) PALMISTRY · ลายมือ ═══════════════════════════════════ -->
   <div class="doc" id="d-palm">
-    <div class="page">
-      <div class="ph"><span class="lg"><span class="seal">時</span>hourkey · คำอ่านลายมือ</span><span>手相 · 3 อารยธรรม</span></div>
-      <div class="cover">
+
+    <!-- P1 ปก -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>hourkey · คำอ่านลายมือ</span><span>手相 · 3 อารยธรรม</span></div>
+      <div class="hkp-cover">
         <div class="seal-lg">手</div>
         <div class="kick">ศาสตร์ที่ 7 · ลายมือหลอมรวม</div>
         <h1>คำอ่านลายมือ</h1>
-        <div class="who">คุณ อาเอว · หญิง</div>
-        <div class="meta">อ่านตามคัมภีร์ต้นฉบับ จีน 神相全編 · อินเดีย Samudrika · ตะวันตก Cheiro/Benham</div>
-        <div class="tst">✓ ความชัดภาพ 64% · อ่านครบ 3 สาย</div>
-        <div class="meta" style="margin-top:14px;font-size:11px;color:#a89e86">🔒 ไม่มีภาพฝ่ามือในเอกสาร (ความเป็นส่วนตัว biometric) — เก็บเฉพาะคำอ่าน</div>
-        <div class="qr">QR<br>กลับเว็บ</div>
+        <div class="who">คุณ อาเอว · หญิง · มือถนัดขวา</div>
+        <div class="meta">อ่านตามคัมภีร์ต้นฉบับ 3 สาย<br>จีน 神相全編 · อินเดีย Samudrika · ตะวันตก Cheiro / Benham (+ ชั้นเสริม Mesopotamia)</div>
+        <div class="badge">✓ ความชัดภาพรวม 64% · อ่านครบ A–H + 3 สาย</div>
+        <div class="meta" style="margin-top:14px;font-size:11px;color:#a89e86">🔒 ไม่มีภาพฝ่ามือในเอกสาร (ข้อมูลชีวมิติ/ความเป็นส่วนตัว) — เก็บเฉพาะคำอ่าน</div>
+        <div class="qr">QR<br>hourkey.io</div>
       </div>
-      <div class="pf"><span>hourkey.io</span><span>หน้า 1 / 3</span></div>
+      <div class="hkp-foot"><span>hourkey.io · privacy-safe</span><span>หน้า 1 / 6</span></div>
     </div>
-    <div class="page">
-      <div class="ph"><span class="lg"><span class="seal">時</span>คำอ่านลายมือ · คุณอาเอว</span><span>A–H</span></div>
-      <div class="verdict"><span class="lab">แก่นสากล · 3 อารยธรรมเห็นตรงกัน</span><p>เส้นหลักทั้งสี่ชัดเจนต่อเนื่อง — มือที่มีพื้นฐานชีวิตมั่นคง พลังชีวิตต่อเนื่อง อารมณ์ชัดเจน</p></div>
-      <div class="card"><span class="conf">ชัดเจน</span><h3>A. พื้นนิสัยและวิธีคิด</h3><p><b>เห็น:</b> เส้นสมองแตกปลายเป็นง่ามใต้นิ้วนาง เส้นตรงลึก</p><p><b>หมาย:</b> คิดเป็นระบบแต่มีมุมสร้างสรรค์ · ในชีวิตจริงมักตัดสินใจเรื่องใหญ่ได้เด็ดขาด แต่ลังเลกับรายละเอียดเล็กช่วงกลางทาง</p><p><b>แนะ:</b> ตั้งเส้นตายให้ตัวเองในงานที่ต้องเลือก</p></div>
-      <div class="card"><span class="conf">ชัดเจน</span><h3>D. การเงินและโอกาสทรัพย์</h3><p><b>เห็น:</b> เส้นวาสนาชัดตั้งตรงจากข้อมือถึงกลางฝ่ามือ</p><p><b>หมาย:</b> หาเงินจากความมั่นคงและระบบ · ช่วงอายุ 38-42 การเงินเริ่มมีโครงสร้างชัดขึ้นเด่นจริง</p></div>
-      <div class="pf"><span>hourkey.io</span><span>หน้า 2 / 3</span></div>
+
+    <!-- P2 universal + overview + A,B -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ลายมือ · คุณอาเอว</span><span>แก่นสากล + A–B</span></div>
+      <h2 class="sec"><span class="ic">🖐</span>แก่นสากล · 3 อารยธรรมเห็นตรงกัน (universal)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 220 250" width="200" role="img" aria-label="ผังฝ่ามือแสดงเส้นหลัก 4 เส้น">
+          <!-- palm + fingers outline -->
+          <path d="M40 250 C25 210 24 150 34 120 C22 118 16 96 26 92 C34 88 44 100 48 112
+                   L48 60 C48 52 60 52 60 60 L62 108
+                   L70 46 C70 38 82 38 82 46 L82 106
+                   L92 40 C92 32 104 32 104 40 L102 108
+                   L114 52 C114 44 126 44 126 52 L120 116
+                   C140 120 150 150 148 190 C147 220 140 240 128 250 Z"
+                fill="#fbf6ea" stroke="#d8caa4" stroke-width="2"/>
+          <!-- LIFE line (green) arcs around thumb -->
+          <path d="M52 108 C60 140 66 175 84 208" fill="none" stroke="#5a8a48" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- HEAD line (gold) across -->
+          <path d="M52 128 C80 138 108 140 132 132" fill="none" stroke="#8a6d2a" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- HEART line (red) upper -->
+          <path d="M56 112 C84 100 112 100 138 110" fill="none" stroke="#b03a2e" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- FATE line (blue) vertical -->
+          <path d="M96 232 C94 190 96 150 98 122" fill="none" stroke="#4a6f8a" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 0"/>
+          <g font-size="9.5" fill="#3a3730">
+            <text x="150" y="112" fill="#b03a2e">ใจ 感情</text>
+            <text x="150" y="134" fill="#8a6d2a">สมอง 智慧</text>
+            <text x="150" y="200" fill="#5a8a48">ชีวิต 生命</text>
+            <text x="150" y="230" fill="#4a6f8a">วาสนา 事業</text>
+          </g>
+        </svg>
+        <div class="cap">🔒 ภาพวาดประกอบ (ไม่ใช่รูปถ่ายจริง · ความเป็นส่วนตัว) · เส้นหลัก 4 เส้น: ชีวิต/สมอง/ใจ/วาสนา</div>
+      </div>
+      <div class="hkp-verdict"><span class="lab">T1 · cross-source agreement</span>
+        <p>เส้นหลักทั้งสี่ (ชีวิต/สมอง/ใจ/วาสนา) ต่อเนื่องชัด — มือที่มีพื้นชีวิตมั่นคง พลังกายสม่ำเสมอ · เส้นสมองยาวถึงเนินจันทร์ = คิดลึกและมีจินตนาการควบคู่เหตุผล</p></div>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">ตัวตนหลัก (identity)</span>คนคิดเป็นระบบ + มีมุมสร้างสรรค์ หนักแน่นข้างใน</div>
+        <div class="x"><span class="l">จุดแข็ง (strength)</span>อึด อดทน วางแผนการเงินระยะยาวได้</div>
+        <div class="x"><span class="l">จุดควรระวัง (caution)</span>ลังเลกับรายละเอียดเล็ก ๆ ตอนกลางทาง</div>
+      </div>
+      <div class="hkp-card"><span class="conf">มั่นใจสูง</span><h3><span class="ic">🧠</span>A. พื้นนิสัยและวิธีคิด</h3>
+        <p><b>เห็น:</b> เส้นสมองยาวลึก แตกปลายเป็นง่ามใต้นิ้วนาง ปลายเฉียงลงเนินจันทร์เล็กน้อย · นิ้วชี้ตรงยาวได้สัดส่วน</p>
+        <p><b>หมาย:</b> เพราะเส้นสมองยาว+ปลายง่าม ตามสาย 神相全編 → คุณคิดเป็นระบบแต่ตัดสินใจใหญ่ได้เด็ดขาด ในชีวิตจริงมักวางกรอบงานได้ไว แต่ไปติดตรงรายละเอียดปลีกย่อยตอนกลางทางจนงานช้าลง</p>
+        <p><b>แนะ:</b> ตั้งเส้นตายให้ "การเลือก" ไม่ใช่แค่ "การทำ" — เมื่อครบเวลาให้ตัดสินใจทันที</p></div>
+      <div class="hkp-card"><span class="conf">มั่นใจปานกลาง</span><h3><span class="ic">⚡</span>B. พลังชีวิตและความเครียด</h3>
+        <p><b>เห็น:</b> เส้นชีวิตโค้งกว้างโอบเนินศุกร์ ไม่มีเกาะใหญ่ · มีเส้นเครียดเล็กตัดขวางช่วงกลางฝ่ามือ 2–3 เส้น</p>
+        <p><b>หมาย:</b> พลังกายพื้นฐานดีและฟื้นเร็ว แต่เส้นตัดขวางบอกช่วงที่แบกความเครียดจากงาน/คนใกล้ตัวเป็นระลอก มักเก็บไว้คนเดียวจนหลับไม่สนิท</p>
+        <p><b>แนะ:</b> จัดช่วง "ปล่อยของ" ประจำสัปดาห์ก่อนความเครียดสะสมข้ามเดือน</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 2 / 6</span></div>
+    </div>
+
+    <!-- P3 C,D,E -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ลายมือ · คุณอาเอว</span><span>C–E</span></div>
+      <div class="fig">
+        <svg viewBox="0 0 300 130" width="270" role="img" aria-label="เส้นวาสนา/สมองสำหรับงาน-เงิน-รัก">
+          <rect x="70" y="8" width="160" height="116" rx="26" fill="#fbf6ea" stroke="#d8caa4" stroke-width="2"/>
+          <path d="M150 120 C148 84 152 52 155 30" fill="none" stroke="#4a6f8a" stroke-width="5" stroke-linecap="round"/>
+          <path d="M86 58 C124 68 168 70 214 62" fill="none" stroke="#8a6d2a" stroke-width="3" stroke-linecap="round"/>
+          <path d="M90 38 C130 24 178 24 216 36" fill="none" stroke="#b03a2e" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="185" cy="42" r="5" fill="#c9a94d"/><text x="192" y="46" font-size="9" fill="#8a6d2a">เส้นทรัพย์ (Sun)</text>
+          <text x="8" y="70" font-size="9" fill="#4a6f8a">วาสนาตรง = อาชีพมีแกน</text>
+        </svg>
+        <div class="cap">เส้นวาสนา (น้ำเงิน) ตั้งตรง + เส้นทรัพย์เล็ก (ทอง) ใต้นิ้วนาง = งาน/เงินมีโครงสร้าง</div>
+      </div>
+      <div class="hkp-card"><span class="conf">มั่นใจสูง</span><h3><span class="ic">💼</span>C. งานและเส้นทางอาชีพ</h3>
+        <p><b>เห็น:</b> เส้นวาสนาตั้งตรงจากข้อมือขึ้นถึงเนินเสาร์ ไม่ขาดตอน · มีเส้นแยกเล็กเสริมช่วงกลาง</p>
+        <p><b>หมาย:</b> เส้นวาสนาตรงยาว = อาชีพมีแกนชัด เดินสายที่ต้องรับผิดชอบและมีโครงสร้าง · เส้นแยกเสริมบอกช่วงที่มีงานที่สอง/โอกาสข้างเคียงเข้ามาแล้วกลายเป็นรายได้จริง</p>
+        <p><b>แนะ:</b> เลือกองค์กร/งานที่ให้คุณ "ถือระบบ" จะโดดเด่นกว่างานที่ต้องพลิกแพลงรายวัน</p></div>
+      <div class="hkp-card"><span class="conf">มั่นใจสูง</span><h3><span class="ic">💰</span>D. การเงินและโอกาสทรัพย์</h3>
+        <p><b>เห็น:</b> เนินศุกร์อิ่ม เส้นวาสนาชัด มีเส้นทรัพย์ (line of Sun) สั้นแต่ตรงใต้นิ้วนาง</p>
+        <p><b>หมาย:</b> หาเงินจากความมั่นคงและความน่าเชื่อถือ ไม่ใช่การเสี่ยง · ช่วงอายุ 38–42 การเงินเริ่มมีโครงสร้างชัดขึ้นเด่นจริง สอดคล้องเส้นวาสนาที่หนาขึ้นช่วงกลางฝ่ามือ</p>
+        <p><b>แนะ:</b> ตั้งกฎ "เงินก้อนใหญ่ต้องนอนหนึ่งคืนก่อนตัดสินใจ" เพื่อกันความใจอ่อน</p></div>
+      <div class="hkp-card"><span class="conf">มั่นใจปานกลาง</span><h3><span class="ic">❤️</span>E. ความรักและความสัมพันธ์</h3>
+        <p><b>เห็น:</b> เส้นใจเริ่มใต้นิ้วชี้ โค้งขึ้นชัด ปลายไม่แตกฝอย · เส้นสมรส (ขอบมือใต้นิ้วก้อย) เส้นเดียวชัดลึก</p>
+        <p><b>หมาย:</b> รักจริงจังและเลือกคน ไม่เล่นหลายใจ · เส้นสมรสเดี่ยวลึก = ผูกพันลึกกับคนเดียวมากกว่าเปลี่ยนบ่อย ในชีวิตจริงมักทุ่มให้คู่แล้วคาดหวังความจริงใจกลับ</p>
+        <p><b>แนะ:</b> บอกความคาดหวังเป็นคำพูด อย่าให้คู่เดา จะลดความน้อยใจสะสม</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 3 / 6</span></div>
+    </div>
+
+    <!-- P4 F, G + timeline วัยจร -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ลายมือ · คุณอาเอว</span><span>F–G + วัยจร</span></div>
+      <div class="fig">
+        <svg viewBox="0 0 300 130" width="270" role="img" aria-label="เนินพฤหัส/เส้นบริวารและจุดเปลี่ยน">
+          <rect x="70" y="8" width="160" height="116" rx="26" fill="#fbf6ea" stroke="#d8caa4" stroke-width="2"/>
+          <ellipse cx="100" cy="40" rx="18" ry="14" fill="rgba(200,164,77,.28)"/><text x="100" y="44" text-anchor="middle" font-size="9" fill="#8a6d2a">เนิน木星</text>
+          <path d="M100 46 C118 56 132 62 150 66" fill="none" stroke="#5a8a48" stroke-width="3" stroke-linecap="round"/>
+          <path d="M150 120 C148 84 152 52 155 30" fill="none" stroke="#4a6f8a" stroke-width="4" stroke-linecap="round"/>
+          <line x1="140" y1="80" x2="168" y2="72" stroke="#b03a2e" stroke-width="2.5"/><circle cx="168" cy="72" r="4" fill="#b03a2e"/>
+          <text x="8" y="70" font-size="9" fill="#5a8a48">เส้นเล็กเข้าหาวาสนา = ผู้ใหญ่ดึง</text>
+          <text x="176" y="72" font-size="9" fill="#b03a2e">จุดตัด = จังหวะเปลี่ยน</text>
+        </svg>
+        <div class="cap">เนินพฤหัส (木星丘) นูน + เส้นเล็กวิ่งเข้าเส้นวาสนา = ผู้ใหญ่หนุน · จุดตัดแดง = จังหวะเปลี่ยนงาน</div>
+      </div>
+      <div class="hkp-card"><span class="conf">มั่นใจปานกลาง</span><h3><span class="ic">🤝</span>F. ผู้ใหญ่ / บริวาร / คนสนับสนุน</h3>
+        <p><b>เห็น:</b> มีเส้นเล็กวิ่งจากเนินพฤหัส (ใต้นิ้วชี้) เข้าหาเส้นวาสนา · เนินพฤหัสนูนพอควร</p>
+        <p><b>หมาย:</b> มักมีผู้ใหญ่/รุ่นพี่ที่เชื่อถือคุณและดึงขึ้น โดยเฉพาะในงานที่ต้องใช้ความไว้ใจเรื่องเงิน · คนสนับสนุนมาจากความน่าเชื่อถือที่คุณสะสม ไม่ใช่การประจบ</p>
+        <p><b>แนะ:</b> รักษาสายสัมพันธ์กับผู้ใหญ่เก่า ๆ ไว้ พวกเขาคือประตูโอกาสรอบหน้า</p></div>
+      <div class="hkp-card"><span class="conf">มั่นใจสูง</span><h3><span class="ic">🔀</span>G. จุดเปลี่ยนชีวิต (ไล่วัยจร)</h3>
+        <p><b>เห็น:</b> เส้นชีวิตมีเส้นเสริมขนานช่วงต้น · เส้นวาสนาหนาขึ้นชัดช่วงกลางฝ่ามือ · มีเส้นตัดเล็ก 1 จุดก่อนถึงเนินเสาร์</p></div>
+      <div class="hkp-tl">
+        <div class="it"><b>วัยเด็ก (0–17):</b> พื้นครอบครัวมั่นคง เรียนรู้จากผู้ใหญ่ (อดีต)</div>
+        <div class="it"><b>วัยต้นทำงาน (20–27):</b> ลองผิดลองถูก สะสมทักษะ+ทุน มีจุดเปลี่ยนงานหนึ่งครั้ง (อดีต)</div>
+        <div class="it"><b>ช่วง 30 ต้น (30–35):</b> จังหวะเปลี่ยนงาน/ตั้งหลักการเงินครั้งใหญ่ (ผ่านมาไม่นาน)</div>
+        <div class="it"><b>ปัจจุบัน (38–42):</b> การเงินเริ่มมีโครงสร้างชัด เส้นวาสนาหนาขึ้น (ปัจจุบัน)</div>
+        <div class="it"><b>แนวโน้มข้างหน้า (หลัง 43):</b> ฐานะมั่นคงขึ้นเป็นขั้น มีบริวาร/ทีมของตัวเอง (แนวโน้ม)</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 4 / 6</span></div>
+    </div>
+
+    <!-- P5 H + 3 สาย + 4 เส้น -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ลายมือ · คุณอาเอว</span><span>H + 3 สาย + 4 เส้น</span></div>
+      <div class="hkp-card"><span class="conf">มั่นใจสูง</span><h3><span class="ic">🧭</span>H. คำแนะนำเฉพาะตัว</h3>
+        <p><b>เห็น:</b> โครงมือกระชับ นิ้วโป้งแข็งตั้งได้ (เจตจำนงแรง) แต่เส้นสมองปลายง่าม (ลังเลรายละเอียด)</p>
+        <p><b>หมาย:</b> คุณมีทั้งพลังตัดสินใจและความรอบคอบในคนเดียว จุดที่ทำให้พลาดคือ "รอความชัด 100%" · เมื่อผูกกับเนินศุกร์อิ่ม = ใจอ่อนกับคนใกล้ตัวเรื่องเงิน</p>
+        <p><b>แนะ:</b> ใช้กฎ 80% — พอมั่นใจ 80% ให้ลงมือ · แยกบัญชี "ช่วยคน" ออกจากบัญชีหลักไว้ล่วงหน้า</p></div>
+      <h2 class="sec">3 สาย · การอ่านต่างสำนัก (per_school)</h2>
+      <div class="hkp-card"><h3>🇨🇳 จีน 神相全編 (T3-cn)</h3><p>เส้นวาสนา (事業線) ตรงลึก = "命有主骨" มีแกนชีวิตชัด · เนินศุกร์ (金星丘) อิ่ม = ทรัพย์และไมตรีดี · เตือนเรื่องเส้นตัดขวาง = 勞心 คิดมาก</p></div>
+      <div class="hkp-card"><h3>🇮🇳 อินเดีย Samudrika (T3-in)</h3><p>เส้นสมอง (Mastishka Rekha) ยาวถึงเนินจันทร์ = ปัญญาผสานสัญชาตญาณ · เส้นวาสนา (Bhagya Rekha) ตั้งตรง = โชคจากความเพียร ไม่ใช่โชคลม</p></div>
+      <div class="hkp-card"><h3>🇬🇧 ตะวันตก Cheiro / Benham (T3-west)</h3><p>Fate line ชัด + Sun line สั้นตรง = ความสำเร็จมาช้าแต่มั่นคง · Mount of Venus นูน = อบอุ่น รักครอบครัว · Head line ปลายแยก = "double talent" เหตุผล+สร้างสรรค์</p></div>
+      <h2 class="sec"><span class="ic">〰️</span>เส้นหลัก 4 เส้น · ความชัดในภาพ (coverage)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 170" width="300" role="img" aria-label="เส้นหลัก 4 เส้นบนฝ่ามือ">
+          <rect x="60" y="10" width="180" height="150" rx="30" fill="#fbf6ea" stroke="#d8caa4" stroke-width="2"/>
+          <path d="M80 40 C95 90 100 130 130 155" fill="none" stroke="#5a8a48" stroke-width="4" stroke-linecap="round"/>
+          <path d="M78 70 C120 82 165 84 215 74" fill="none" stroke="#8a6d2a" stroke-width="4" stroke-linecap="round"/>
+          <path d="M84 46 C130 30 180 30 220 44" fill="none" stroke="#b03a2e" stroke-width="4" stroke-linecap="round"/>
+          <path d="M150 155 C148 110 152 70 156 40" fill="none" stroke="#4a6f8a" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 4"/>
+          <g font-size="10">
+            <circle cx="20" cy="30" r="5" fill="#5a8a48"/><text x="30" y="34" fill="#3a3730">ชีวิต ✓</text>
+            <circle cx="20" cy="52" r="5" fill="#8a6d2a"/><text x="30" y="56" fill="#3a3730">สมอง ✓</text>
+            <circle cx="20" cy="74" r="5" fill="#b03a2e"/><text x="30" y="78" fill="#3a3730">ใจ ◐</text>
+            <circle cx="20" cy="96" r="5" fill="#4a6f8a"/><text x="30" y="100" fill="#3a3730">วาสนา ✓</text>
+          </g>
+        </svg>
+        <div class="cap">เส้นใจ (แดง) เป็นเส้นประ = เห็นบางส่วน (แสงจับปลายเส้น แนะถ่ายซูมเพิ่ม)</div>
+      </div>
+      <table>
+        <thead><tr><th>เส้น</th><th>ชื่อ</th><th>เห็นชัด</th><th>คุณภาพ</th></tr></thead>
+        <tbody>
+          <tr><td>ชีวิต</td><td class="zh">生命線 / Life</td><td>✓ ชัด</td><td>ต่อเนื่อง โค้งกว้าง</td></tr>
+          <tr><td>สมอง</td><td class="zh">智慧線 / Head</td><td>✓ ชัด</td><td>ยาว ปลายง่าม</td></tr>
+          <tr><td>ใจ</td><td class="zh">感情線 / Heart</td><td>◐ บางส่วน</td><td>โค้งชัด ปลายเงา (แสงจับ)</td></tr>
+          <tr><td>วาสนา</td><td class="zh">事業線 / Fate</td><td>✓ ชัด</td><td>ตั้งตรง หนาขึ้นช่วงกลาง</td></tr>
+        </tbody>
+      </table>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 5 / 6</span></div>
+    </div>
+
+    <!-- P6 final_summary 7 ช่อง -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ลายมือ · คุณอาเอว</span><span>สรุปซินแส</span></div>
+      <h2 class="sec"><span class="ic">📋</span>สรุปคำอ่าน · 7 หัวใจ (final summary)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 96" width="300" role="img" aria-label="จุดแข็ง vs จุดระวัง">
+          <g font-size="11" fill="#5f5847">
+            <text x="0" y="20">จุดแข็ง</text><rect x="72" y="10" width="200" height="16" rx="8" fill="#eee"/><rect x="72" y="10" width="176" height="16" rx="8" fill="#5a8a48"/><text x="256" y="22" font-size="9" fill="#5a8a48">88</text>
+            <text x="0" y="50">จุดระวัง</text><rect x="72" y="40" width="200" height="16" rx="8" fill="#eee"/><rect x="72" y="40" width="96" height="16" rx="8" fill="#b03a2e"/><text x="176" y="52" font-size="9" fill="#b03a2e">48</text>
+            <text x="0" y="80">ความชัดภาพ</text><rect x="72" y="70" width="200" height="16" rx="8" fill="#eee"/><rect x="72" y="70" width="128" height="16" rx="8" fill="#9a7d3a"/><text x="208" y="82" font-size="9" fill="#8a6d2a">64%</text>
+          </g>
+        </svg>
+        <div class="cap">โปรไฟล์สรุป · จุดแข็ง (วางระบบเงิน) เด่นกว่าจุดระวัง (ลังเล) · ภาพชัด 64%</div>
+      </div>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">จุดแข็งที่สุด</span>วางระบบและวางแผนการเงินระยะยาวได้เหนือคนทั่วไป</div>
+        <div class="x"><span class="l">จุดต้องระวังที่สุด</span>ลังเลรอความชัด 100% + ใจอ่อนเรื่องเงินกับคนใกล้ตัว</div>
+        <div class="x"><span class="l">งานที่เหมาะ</span>การเงิน/บัญชี/อสังหา/บริหารระบบ ที่ให้ "ถือโครงสร้าง"</div>
+        <div class="x"><span class="l">วิธีหาเงินที่เหมาะ</span>สะสมจากความน่าเชื่อถือ เลี่ยงเก็งกำไรเสี่ยงสูง</div>
+        <div class="x"><span class="l">ความรักควรปรับ</span>พูดความคาดหวังออกมา อย่าให้คู่เดา</div>
+        <div class="x"><span class="l">ความชัดของภาพ</span>รวม 64% · เส้นใจแนะถ่ายซูมเพิ่ม (แสงจับปลายเส้น)</div>
+      </div>
+      <div class="hkp-card"><h3>3 คำแนะนำลงมือได้ทันที</h3>
+        <p>1. กฎ 80% — พอมั่นใจ 80% ให้ตัดสินใจ อย่ารอ 100%</p>
+        <p>2. เงินก้อนใหญ่ต้อง "นอนหนึ่งคืน" ก่อนโอน</p>
+        <p>3. แยกบัญชี "ช่วยคน" ออกจากบัญชีหลักไว้ล่วงหน้า</p></div>
+      <div class="hkp-verdict"><span class="lab">คำฝากซินแส</span>
+        <p>"มือคุณเป็นมือของคนที่สร้างของจริงได้ พลังตัดสินใจมี ความรอบคอบก็มี — เหลือแค่กล้าลงมือตอนมั่นใจ 80% แล้วชีวิตจะเดินได้เต็มสปีด"</p></div>
+      <div class="hkp-foot"><span>hourkey.io · privacy-safe</span><span>หน้า 6 / 6</span></div>
     </div>
   </div>
 
-  <!-- ═══ FUSION (ดูดวงรวม) ═══ -->
+  <!-- ═══════════════════════════════════ 3) FUSION · ดูดวงรวม ═══════════════════════════════════ -->
   <div class="doc" id="d-fusion">
-    <div class="page">
-      <div class="ph"><span class="lg"><span class="seal">時</span>hourkey · ดูดวงรวม</span><span>6 ศาสตร์หลอมรวม</span></div>
-      <div class="cover">
+
+    <!-- P1 ปก -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>hourkey · ดูดวงรวม</span><span>6 ศาสตร์หลอมรวม</span></div>
+      <div class="hkp-cover">
         <div class="seal-lg">時</div>
-        <div class="kick">ดูดวงรวม · Fusion</div>
+        <div class="kick">ดูดวงรวม · Fusion 5+1</div>
         <h1>รายงานหลอมรวม 6 ศาสตร์</h1>
         <div class="who">คุณ อาเอว · หญิง</div>
-        <div class="meta">八字 · 七政四餘 · 紫微斗數 · Western · Vedic · Uranian<br>คำถาม: ภาพรวมชีวิตปีนี้</div>
-        <div class="qr">QR<br>กลับเว็บ</div>
+        <div class="meta">八字 · 七政四餘 · 紫微斗數 · Western · Vedic · Uranian<br>คำถามหลัก: "ภาพรวมชีวิตและจังหวะสำคัญปีนี้"</div>
+        <div class="badge">✓ ดาวจริง (astronomy-engine) + ปาจื้อ TST</div>
+        <div class="qr">QR<br>hourkey.io</div>
       </div>
-      <div class="pf"><span>hourkey.io</span><span>หน้า 1 / 8</span></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 1 / 8</span></div>
     </div>
-    <div class="page">
-      <div class="ph"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>บทสรุปหลอมรวม</span></div>
+
+    <!-- P2 Judge -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>บทสรุปหลอมรวม</span></div>
       <h2 class="sec">⚖️ บทสรุปหลอมรวม (Judge)</h2>
-      <div class="card"><p>ทั้ง 6 ศาสตร์เห็นตรงกันว่าปีนี้เป็นจังหวะ "จัดระบบฐานราก" — ดาวจริงชี้ครึ่งปีหลังพลังงานขาขึ้น สอดคล้องปาจื้อที่ธาตุดินแกร่งช่วง 38-42 · ยูเรเนียนจับจุดไว 21 พ.ย. เป็นวันตัดสินใจสำคัญ</p></div>
-      <h2 class="sec">🔗 Resonance · จุดที่ศาสตร์ตรงกัน</h2>
-      <div class="sum">
-        <div class="x"><span class="l">R1 · ธีมปีตรงกัน</span>3/6 ศาสตร์ชี้ "ขยายฐาน"</div>
-        <div class="x"><span class="l">R6 · ปีชง 3 อารยธรรม</span>ไม่มีชงหนักปีนี้</div>
+      <div class="fig">
+        <svg viewBox="0 0 300 230" width="300" role="img" aria-label="6 ศาสตร์บรรจบ">
+          <circle cx="150" cy="115" r="34" fill="#8a6d2a"/><text x="150" y="112" text-anchor="middle" font-size="12" fill="#fff">หลอมรวม</text><text x="150" y="127" text-anchor="middle" font-size="10" fill="#fbecc4">2569</text>
+          <g stroke="#c8a44d" stroke-width="1.5" opacity=".7">
+            <line x1="150" y1="115" x2="150" y2="34"/><line x1="150" y1="115" x2="220" y2="75"/><line x1="150" y1="115" x2="220" y2="155"/>
+            <line x1="150" y1="115" x2="150" y2="196"/><line x1="150" y1="115" x2="80" y2="155"/><line x1="150" y1="115" x2="80" y2="75"/>
+          </g>
+          <g text-anchor="middle" font-size="11" fill="#fff">
+            <circle cx="150" cy="26" r="20" fill="#b03a2e"/><text x="150" y="30">八字</text>
+            <circle cx="228" cy="72" r="20" fill="#4a6f8a"/><text x="228" y="76">七政</text>
+            <circle cx="228" cy="158" r="20" fill="#5a8a48"/><text x="228" y="162">紫微</text>
+            <circle cx="150" cy="204" r="20" fill="#9a7d3a"/><text x="150" y="208" font-size="9">Western</text>
+            <circle cx="72" cy="158" r="20" fill="#7a5a8a"/><text x="72" y="162" font-size="10">Vedic</text>
+            <circle cx="72" cy="72" r="20" fill="#c9a94d"/><text x="72" y="76" font-size="8">Uranian</text>
+          </g>
+        </svg>
+        <div class="cap">6 ศาสตร์ป้อนเข้าแกนกลาง · 5/6 ชี้ทางเดียวกัน = ความเห็นพ้องสูง</div>
       </div>
-      <h2 class="sec">🎯 Day Sniper · วันลั่นไก</h2>
-      <div class="card"><p><b>21 พ.ย. 2569</b> — เข็ม A/B/C ยิงตรงกัน (ยูเรเนียน midpoint + ดาวจร + วัยจร) เหมาะตัดสินใจเรื่องใหญ่</p></div>
-      <div class="pf"><span>hourkey.io</span><span>หน้า 2 / 8</span></div>
+      <div class="hkp-verdict"><span class="lab">6 ศาสตร์ตัดสินร่วม</span>
+        <p>ทั้ง 6 ศาสตร์เห็นตรงกันว่าปี 2569 เป็นจังหวะ <b>"จัดระบบฐานราก แล้วขยายอย่างมั่นคง"</b> — ปาจื้อชี้ธาตุไฟหนุนดินช่วงวางฐานการเงิน · ดาวจริง (七政/Western) ชี้ครึ่งปีหลังพลังงานขาขึ้น · 紫微 มีดาวทรัพย์เข้าเรือนการเงิน · ยูเรเนียนจับจุดไว <b>21 พ.ย. 2569</b> เป็นวันตัดสินใจสำคัญ · Vedic เตือนช่วง Saturn transit ให้ไม่รีบก้อนใหญ่กลางปี</p></div>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">ความเห็นพ้อง</span>สูง (5 จาก 6 ศาสตร์ชี้ทางเดียวกัน)</div>
+        <div class="x"><span class="l">ธีมปี</span>ฐานราก → ขยาย</div>
+        <div class="x"><span class="l">โซนระวัง</span>กลางปี (การเงินก้อนใหญ่)</div>
+        <div class="x"><span class="l">โซนโอกาส</span>ครึ่งปีหลัง โดยเฉพาะ พ.ย.</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 2 / 8</span></div>
+    </div>
+
+    <!-- P3 panels 八字 + 七政 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>ศาสตร์ 1–2</span></div>
+      <h2 class="sec"><span class="ic">🀄</span>แผงศาสตร์ · 1) 八字 ปาจื้อ</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 96" width="300" role="img" aria-label="mini ผังปาจื้อ 4 เสา">
+          <g text-anchor="middle" font-size="20" fill="#fff">
+            <g><rect x="10" y="12" width="64" height="72" rx="6" fill="#fefcf5" stroke="#e5ddc9"/><circle cx="42" cy="34" r="15" fill="#5a8a48"/><text x="42" y="41">甲</text><circle cx="42" cy="64" r="15" fill="#4a6f8a"/><text x="42" y="71">子</text></g>
+            <g><rect x="82" y="12" width="64" height="72" rx="6" fill="#fefcf5" stroke="#e5ddc9"/><circle cx="114" cy="34" r="15" fill="#b03a2e"/><text x="114" y="41">丙</text><circle cx="114" cy="64" r="15" fill="#4a6f8a"/><text x="114" y="71">子</text></g>
+            <g><rect x="154" y="10" width="64" height="76" rx="6" fill="#fbf3dd" stroke="#c8a44d" stroke-width="2"/><circle cx="186" cy="34" r="15" fill="#9a7d3a"/><text x="186" y="41">己</text><circle cx="186" cy="64" r="15" fill="#4a6f8a"/><text x="186" y="71">亥</text></g>
+            <g><rect x="226" y="12" width="64" height="72" rx="6" fill="#fefcf5" stroke="#e5ddc9"/><circle cx="258" cy="34" r="15" fill="#c9a94d"/><text x="258" y="41">庚</text><circle cx="258" cy="64" r="15" fill="#b03a2e"/><text x="258" y="71">午</text></g>
+          </g>
+        </svg>
+      </div>
+      <div class="hkp-card"><h3>ปาจื้อ · 己土身弱 正財格</h3><p>ธาตุประจำวันดินอ่อน 用神 = ไฟ+ดิน · ปีนี้ 丙午 ไฟหนุนพอดี พลังใจกลับมา · วัยจร 壬申 การเงินลงหลัก ควรฝึกตัดสินใจเด็ดขาด</p></div>
+      <h2 class="sec"><span class="ic">🌌</span>แผงศาสตร์ · 2) 七政四餘 (ดาวจริง)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 96" width="300" role="img" aria-label="แผนที่ดาวจริงบนสุริยวิถี">
+          <rect x="1" y="1" width="298" height="94" rx="8" fill="#161a24"/>
+          <path d="M12 68 Q150 20 288 68" fill="none" stroke="#3a4152" stroke-width="2"/>
+          <g font-size="12" text-anchor="middle">
+            <circle cx="48" cy="60" r="10" fill="#f0c14b"/><text x="48" y="64" font-size="11" fill="#161a24">☉</text><text x="48" y="84" font-size="8" fill="#c8a44d">磨羯</text>
+            <circle cx="110" cy="40" r="8" fill="#d8d8e0"/><text x="110" y="44" font-size="10" fill="#161a24">☽</text><text x="110" y="28" font-size="8" fill="#8fb0c4">財</text>
+            <circle cx="176" cy="34" r="8" fill="#9a7d3a"/><text x="176" y="38" font-size="9" fill="#fff">木</text><text x="176" y="22" font-size="8" fill="#c9b06a">官</text>
+            <circle cx="228" cy="52" r="7" fill="#b03a2e"/><text x="228" y="56" font-size="9" fill="#fff">火</text>
+            <circle cx="264" cy="62" r="6" fill="#8fb0c4"/><text x="264" y="66" font-size="8" fill="#161a24">水</text>
+          </g>
+        </svg>
+        <div class="cap">ตำแหน่งดาวจริง ณ วันเกิดบนเส้นสุริยวิถี · จันทร์เด่นเรือนทรัพย์ · พฤหัสเล็งการงาน</div>
+      </div>
+      <div class="hkp-card"><h3>七政 · ดาวจริงเชิงฟ้า</h3><p>ตำแหน่งดาวจริง ณ วันเกิด: อาทิตย์ในราศีมังกร (磨羯) · จันทร์เด่นเรือนทรัพย์ · 木(พฤหัส) เล็งเรือนการงาน = โอกาสจากผู้ใหญ่ · ปีนี้ 火曜 (อังคาร) หนุนพลังลงมือครึ่งปีหลัง</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 3 / 8</span></div>
+    </div>
+
+    <!-- P4 panels 紫微 + Western -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>ศาสตร์ 3–4</span></div>
+      <h2 class="sec"><span class="ic">⭐</span>แผงศาสตร์ · 3) 紫微斗數</h2>
+      <div class="fig">
+        <svg viewBox="0 0 160 160" width="150" role="img" aria-label="12 เรือน紫微">
+          <circle cx="80" cy="80" r="70" fill="#fefcf5" stroke="#c8a44d"/>
+          <circle cx="80" cy="80" r="30" fill="#fbf3dd" stroke="#e5ddc9"/>
+          <g stroke="#e5ddc9">
+            <line x1="80" y1="10" x2="80" y2="150"/><line x1="10" y1="80" x2="150" y2="80"/>
+            <line x1="30" y1="30" x2="130" y2="130"/><line x1="130" y1="30" x2="30" y2="130"/>
+            <line x1="45" y1="14" x2="115" y2="146"/><line x1="115" y1="14" x2="45" y2="146"/>
+            <line x1="14" y1="45" x2="146" y2="115"/><line x1="14" y1="115" x2="146" y2="45"/>
+          </g>
+          <text x="80" y="78" text-anchor="middle" font-size="12" fill="#8a6d2a">命宮</text>
+          <text x="80" y="92" text-anchor="middle" font-size="12" fill="#b03a2e">天府</text>
+          <g font-size="8" fill="#5f5847" text-anchor="middle">
+            <text x="80" y="24">財帛·武曲</text><text x="128" y="52">官祿</text><text x="140" y="84">遷移·擎羊</text>
+            <text x="128" y="120">交友</text><text x="80" y="146">田宅</text><text x="32" y="120">福德</text>
+            <text x="20" y="84">父母</text><text x="32" y="52">兄弟</text>
+          </g>
+        </svg>
+        <div class="cap">12 เรือน紫微 · 命宮 มี 天府 (คลังทรัพย์) · 財帛宮 武曲 · เตือน 遷移宮 擎羊</div>
+      </div>
+      <div class="hkp-card"><h3>紫微 · เรือนชะตา命宮</h3><p>命宮 มีดาว 天府 (คลังทรัพย์) นั่ง → มั่นคง เก็บออมเก่ง · 財帛宮 มี 武曲+祿存 = ทรัพย์จากการงานจริง · 大限 ปัจจุบันเข้าเรือนที่หนุนการเงิน · เตือน 遷移宮 มี 擎羊 ระวังการเดินทาง/ย้ายกลางปี</p></div>
+      <h2 class="sec"><span class="ic">♑</span>แผงศาสตร์ · 4) Western (Tropical)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 160 160" width="150" role="img" aria-label="วงล้อราศีตะวันตก">
+          <circle cx="80" cy="80" r="70" fill="none" stroke="#c8a44d" stroke-width="2"/>
+          <circle cx="80" cy="80" r="52" fill="none" stroke="#e5ddc9"/>
+          <g stroke="#e5ddc9">
+            <line x1="80" y1="10" x2="80" y2="150"/><line x1="10" y1="80" x2="150" y2="80"/>
+            <line x1="30" y1="30" x2="130" y2="130"/><line x1="130" y1="30" x2="30" y2="130"/>
+            <line x1="46" y1="16" x2="114" y2="144"/><line x1="114" y1="16" x2="46" y2="144"/>
+            <line x1="16" y1="46" x2="144" y2="114"/><line x1="16" y1="114" x2="144" y2="46"/>
+          </g>
+          <!-- planet glyphs -->
+          <g font-size="13" text-anchor="middle" fill="#8a6d2a">
+            <text x="112" y="130">☉</text><text x="52" y="40">♃</text><text x="128" y="70">♄</text>
+          </g>
+          <circle cx="80" cy="80" r="10" fill="#fbf3dd" stroke="#c8a44d"/><text x="80" y="84" text-anchor="middle" font-size="9" fill="#8a6d2a">♑</text>
+        </svg>
+        <div class="cap">Sun ♑ มังกร · Jupiter ♃ trine ทรัพย์ (โอกาสขยาย) · Saturn ♄ return ผ่านแล้ว</div>
+      </div>
+      <div class="hkp-card"><h3>Western · Sun Capricorn</h3><p>อาทิตย์มังกร–จันทร์ราศีที่หนุนความมั่นคง · Saturn return ผ่านไปแล้ว วางรากเสร็จ · ปีนี้ Jupiter trine ทรัพย์ = โอกาสขยาย · Mercury retrograde 2 ช่วง (ระวังสัญญา ต้น มี.ค. + ปลาย ก.ค.)</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 4 / 8</span></div>
+    </div>
+
+    <!-- P5 panels Vedic + Uranian -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>ศาสตร์ 5–6</span></div>
+      <h2 class="sec"><span class="ic">🕉</span>แผงศาสตร์ · 5) Vedic (Jyotish)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 150 150" width="140" role="img" aria-label="ผังเวท North Indian">
+          <rect x="8" y="8" width="134" height="134" fill="#fefcf5" stroke="#c8a44d" stroke-width="2"/>
+          <path d="M8 8 L142 142 M142 8 L8 142" stroke="#e5ddc9"/>
+          <path d="M75 8 L142 75 L75 142 L8 75 Z" stroke="#e5ddc9" fill="none"/>
+          <g font-size="9" fill="#5f5847" text-anchor="middle">
+            <text x="75" y="30">1 Lagna</text><text x="42" y="20">2 धन</text><text x="108" y="20">12</text>
+            <text x="128" y="78">7</text><text x="22" y="78">Guru</text>
+            <text x="75" y="128">6</text><text x="42" y="135">5</text><text x="108" y="135">11</text>
+          </g>
+          <text x="75" y="78" text-anchor="middle" font-size="11" fill="#8a6d2a">Mahadasha</text>
+        </svg>
+        <div class="cap">ผังเวท (North Indian) · Lagna หนุนความอดทน · Dasha ของ Guru (ครู/ความรู้) · ทรัพย์เรือน 2/11 แข็ง</div>
+      </div>
+      <div class="hkp-card"><h3>Vedic · Sidereal + Dasha</h3><p>ลัคนา (Lagna) หนุนความอดทน · ช่วง Mahadasha ปัจจุบันของ 木(Guru) = ครู/ที่ปรึกษา/ความรู้พาไปข้างหน้า · Sade Sati ของเสาร์ช่วงท้ายเตือนให้ไม่รีบก้อนใหญ่กลางปี · ทรัพย์ (2nd/11th house) แข็งแรง</p></div>
+      <h2 class="sec"><span class="ic">🛰</span>แผงศาสตร์ · 6) Uranian (Hamburg)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 200 150" width="190" role="img" aria-label="หน้าปัด 90 องศายูเรเนียน">
+          <path d="M20 130 A110 110 0 0 1 130 20" fill="none" stroke="#c8a44d" stroke-width="2"/>
+          <path d="M20 130 A70 70 0 0 1 90 60" fill="none" stroke="#e5ddc9"/>
+          <!-- ticks -->
+          <g stroke="#8a6d2a">
+            <line x1="20" y1="130" x2="34" y2="130"/><line x1="26" y1="96" x2="40" y2="100"/>
+            <line x1="45" y1="66" x2="56" y2="76"/><line x1="76" y1="42" x2="84" y2="54"/>
+            <line x1="112" y1="27" x2="116" y2="41"/><line x1="130" y1="20" x2="130" y2="34"/>
+          </g>
+          <!-- pointer to sensitive point -->
+          <line x1="20" y1="130" x2="98" y2="52" stroke="#b03a2e" stroke-width="2.5"/>
+          <circle cx="98" cy="52" r="6" fill="#b03a2e"/>
+          <text x="104" y="46" font-size="9" fill="#b03a2e">จุดไว</text>
+          <g font-size="9" fill="#5f5847"><text x="8" y="145">0°</text><text x="132" y="18">90°</text></g>
+          <text x="70" y="110" font-size="10" fill="#8a6d2a">☉/☊/♀</text>
+          <text x="50" y="140" font-size="9" fill="#8a6d2a">Halbsumme</text>
+        </svg>
+        <div class="cap">หน้าปัด 90° · จุดไว (แดง) ถูกกระตุ้นราว 21 พ.ย. 2569 = วันตัดสินใจ/เซ็นสำคัญ</div>
+      </div>
+      <div class="hkp-card"><h3>Uranian · Halbsumme + Dial 90°</h3><p>ภาพดาว (Planetenbild): อาทิตย์=โหนด/ดาวศุกร์ → คนที่ผูกคุณค่ากับความสัมพันธ์ที่จริงใจ · จุดไว (sensitive point) กระตุ้นแรงราว <b>21 พ.ย. 2569</b> (จันทร์/เมริเดียน midpoint) = วันตัดสินใจ/เซ็นเรื่องสำคัญ</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 5 / 8</span></div>
+    </div>
+
+    <!-- P6 Resonance R1-R6 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>Resonance R1–R6</span></div>
+      <h2 class="sec">🔗 Resonance · จุดที่ศาสตร์สั่นพ้อง</h2>
+      <div class="fig">
+        <svg viewBox="0 0 520 96" width="520" role="img" aria-label="โหนดเรโซแนนซ์ R1-R6">
+          <line x1="40" y1="48" x2="480" y2="48" stroke="#e5ddc9" stroke-width="2"/>
+          <g text-anchor="middle" font-size="12" fill="#fff">
+            <g><circle cx="50" cy="48" r="18" fill="#5a8a48"/><text x="50" y="52">R1</text><text x="50" y="84" fill="#5f5847" font-size="9">ธีมปี</text></g>
+            <g><circle cx="136" cy="48" r="18" fill="#5a8a48"/><text x="136" y="52">R2</text><text x="136" y="84" fill="#5f5847" font-size="9">เวลา</text></g>
+            <g><circle cx="222" cy="48" r="18" fill="#8a6d2a"/><text x="222" y="52">R3</text><text x="222" y="84" fill="#5f5847" font-size="9">ทรัพย์</text></g>
+            <g><circle cx="308" cy="48" r="18" fill="#8a6d2a"/><text x="308" y="52">R4</text><text x="308" y="84" fill="#5f5847" font-size="9">คู่</text></g>
+            <g><circle cx="394" cy="48" r="18" fill="#b03a2e"/><text x="394" y="52">R5</text><text x="394" y="84" fill="#5f5847" font-size="9">สะพานธาตุ</text></g>
+            <g><circle cx="470" cy="48" r="18" fill="#9a7d3a"/><text x="470" y="52">R6</text><text x="470" y="84" fill="#5f5847" font-size="9">ปีชง</text></g>
+          </g>
+        </svg>
+        <div class="cap">6 โหนดสั่นพ้อง · เขียว/ทอง = พ้องแรง · R6 (ปีชง) เตือนเบา ๆ เดือน子</div>
+      </div>
+      <table>
+        <thead><tr><th>โหนด</th><th>หัวข้อ</th><th>ผลสั่นพ้อง</th></tr></thead>
+        <tbody>
+          <tr><td>R1</td><td>ธีมปีตรงกัน</td><td>5/6 ศาสตร์ชี้ "จัดฐาน→ขยาย"</td></tr>
+          <tr><td>R2</td><td>โซนเวลาเด่น</td><td>4 ศาสตร์ชี้ครึ่งปีหลังพลังขึ้น</td></tr>
+          <tr><td>R3</td><td>มิติทรัพย์</td><td>ปาจื้อ財 + 紫微武曲 + Vedic 2nd house หนุนตรงกัน</td></tr>
+          <tr><td>R4</td><td>คู่ 4 สำนัก</td><td>เนื้อคู่มีหลักการ/วุฒิภาวะ (八字官 + Western Saturn + 紫微)</td></tr>
+          <tr><td>R5</td><td>สะพานธาตุ</td><td>ไฟเป็นสะพานคลายน้ำท่วม (สอดคล้อง 火曜หนุนปีนี้)</td></tr>
+          <tr><td>R6</td><td>ปีชง 3 อารยธรรม</td><td>ไม่มีชงหนักปีนี้ (เตือนเบา ๆ เดือน子)</td></tr>
+        </tbody>
+      </table>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 6 / 8</span></div>
+    </div>
+
+    <!-- P7 Day Sniper A-D -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>Day Sniper</span></div>
+      <h2 class="sec">🎯 Day Sniper · เข็ม 4 ตัวยิงหาวันลั่นไก</h2>
+      <div class="fig">
+        <svg viewBox="0 0 520 150" width="520" role="img" aria-label="เข็ม 4 ตัวยิงวันเป้าหมาย">
+          <!-- date axis -->
+          <line x1="30" y1="120" x2="500" y2="120" stroke="#c8a44d" stroke-width="2"/>
+          <g font-size="9" fill="#5f5847" text-anchor="middle">
+            <text x="90" y="138">7 พ.ค.</text><text x="250" y="138">ก.ย.</text><text x="410" y="138">21 พ.ย. ★</text>
+          </g>
+          <!-- target zone -->
+          <rect x="396" y="30" width="28" height="90" fill="rgba(200,164,77,.2)"/>
+          <!-- needles converge to x=410 -->
+          <g stroke-width="2.5" fill="none">
+            <line x1="60" y1="24" x2="410" y2="118" stroke="#b03a2e"/><text x="52" y="20" font-size="10" fill="#b03a2e">A</text>
+            <line x1="180" y1="24" x2="410" y2="118" stroke="#4a6f8a"/><text x="172" y="20" font-size="10" fill="#4a6f8a">B</text>
+            <line x1="300" y1="24" x2="410" y2="118" stroke="#5a8a48"/><text x="292" y="20" font-size="10" fill="#5a8a48">C</text>
+            <line x1="90" y1="118" x2="90" y2="60" stroke="#9a7d3a" stroke-dasharray="4 3"/><text x="90" y="52" font-size="10" fill="#9a7d3a" text-anchor="middle">D</text>
+          </g>
+          <circle cx="410" cy="118" r="7" fill="#8a6d2a"/>
+        </svg>
+        <div class="cap">เข็ม A/B/C ยิงบรรจบ 21 พ.ย. 2569 (วันทอง) · เข็ม D (7 พ.ค.) = จุดเตรียมการอิสระ</div>
+      </div>
+      <div class="hkp-card"><h3>เข็ม A · ยูเรเนียน midpoint (dial 90°)</h3><p>จับ <b>21 พ.ย. 2569</b> — จุดไวถูกจันทร์/เมริเดียนกระตุ้น พีค ±1 วัน</p></div>
+      <div class="hkp-card"><h3>เข็ม B · ดาวจร (七政/Western transit)</h3><p>จับ <b>19–22 พ.ย.</b> — Jupiter trine ทรัพย์ + Sun หนุน</p></div>
+      <div class="hkp-card"><h3>เข็ม C · วัยจรปาจื้อ (大運/流年)</h3><p>จับ <b>ครึ่งหลัง พ.ย.</b> — ไฟ用神 ของเดือนหนุนดินตัวเรา</p></div>
+      <div class="hkp-card"><h3>เข็ม D · ยูเรเนียน dial 90° (midpoint คู่)</h3><p>จับ <b>7 พ.ค.</b> (เข็มอิสระตัวที่สอง) — จุดเปลี่ยนเล็กกลางปี เหมาะเริ่มเตรียมการ ไม่ใช่ปิดดีล</p></div>
+      <div class="hkp-verdict"><span class="lab">ข้อสรุปเข็ม</span><p>เข็ม A/B/C ยิงตรงกันที่ <b>21 พ.ย. 2569</b> = วันที่แนะนำสำหรับการตัดสินใจ/เซ็นเรื่องใหญ่ · เข็ม D (7 พ.ค.) = จุดเตรียมการ ไม่ใช่วันปิด</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 7 / 8</span></div>
+    </div>
+
+    <!-- P8 ศาสตร์ที่ข้าม + สรุป -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ดูดวงรวม · คุณอาเอว</span><span>ขอบเขต + สรุป</span></div>
+      <h2 class="sec"><span class="ic">📊</span>ศาสตร์ที่ข้าม / ข้อจำกัด (transparency)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 320 120" width="320" role="img" aria-label="ความครบของแต่ละศาสตร์">
+          <g font-size="10" fill="#5f5847">
+            <text x="0" y="16">八字</text><rect x="60" y="6" width="240" height="12" rx="6" fill="#eee"/><rect x="60" y="6" width="238" height="12" rx="6" fill="#5a8a48"/>
+            <text x="0" y="36">七政 (ดาวจริง)</text><rect x="60" y="26" width="240" height="12" rx="6" fill="#eee"/><rect x="60" y="26" width="216" height="12" rx="6" fill="#5a8a48"/>
+            <text x="0" y="56">紫微</text><rect x="60" y="46" width="240" height="12" rx="6" fill="#eee"/><rect x="60" y="46" width="228" height="12" rx="6" fill="#5a8a48"/>
+            <text x="0" y="76">Western</text><rect x="60" y="66" width="240" height="12" rx="6" fill="#eee"/><rect x="60" y="66" width="220" height="12" rx="6" fill="#5a8a48"/>
+            <text x="0" y="96">Vedic</text><rect x="60" y="86" width="240" height="12" rx="6" fill="#eee"/><rect x="60" y="86" width="204" height="12" rx="6" fill="#9a7d3a"/>
+            <text x="0" y="116">Uranian</text><rect x="60" y="106" width="240" height="12" rx="6" fill="#eee"/><rect x="60" y="106" width="168" height="12" rx="6" fill="#9a7d3a"/>
+          </g>
+        </svg>
+        <div class="cap">น้ำหนักความครบต่อศาสตร์ · Uranian ถ่วงต่ำ (TNP รอ ephemeris) · 七政 สี่餘บางส่วน baseline</div>
+      </div>
+      <div class="hkp-card"><p><b>七政四餘:</b> ดาวจริง 90% แต่ 紫氣/月孛 (สี่餘) บางส่วนยังใช้ baseline · <b>Uranian:</b> TNP (Cupido–Poseidon) รอ ephemeris เพิ่ม จึงถ่วงน้ำหนักต่ำในรอบนี้ · <b>Vedic:</b> ใช้ Lahiri ayanamsa เป็นหลัก</p></div>
+      <h2 class="sec">สรุปฟันธงรวม (สำหรับตัดสินใจ)</h2>
+      <div class="hkp-tl">
+        <div class="it"><b>ทำอะไรปีนี้:</b> วางระบบการเงิน/ลงหลักอสังหา ครึ่งปีหลังค่อยขยาย</div>
+        <div class="it"><b>เลี่ยงอะไร:</b> เซ็นก้อนใหญ่กลางปี (Mercury retro + เตือน紫微遷移)</div>
+        <div class="it"><b>วันทอง:</b> 21 พ.ย. 2569 (3 เข็มยิงตรง)</div>
+        <div class="it"><b>ธาตุ/สีมงคล:</b> ไฟ (แดง/ส้ม) นำ · ดิน (น้ำตาล/เหลือง) เสริม</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 8 / 8</span></div>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════ 4) DATEPICK · วางฤกษ์ ═══════════════════════════════════ -->
+  <div class="doc" id="d-datepick">
+
+    <!-- P1 ปก -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>hourkey · วางฤกษ์</span><span>擇日 · เลือกวันมงคล</span></div>
+      <div class="hkp-cover">
+        <div class="seal-lg">擇</div>
+        <div class="kick">วางฤกษ์ · ตงกง + ทงซู + ดวงบุคคล</div>
+        <h1>รายงานฤกษ์มงคล</h1>
+        <div class="who">กิจกรรม: เปิดกิจการ / เซ็นสัญญา</div>
+        <div class="meta">ช่วงที่ค้นหา: 1 พ.ย. – 31 ธ.ค. 2569<br>สถานที่: กรุงเทพมหานคร · เจ้าภาพดวง: คุณอาเอว (己亥)</div>
+        <div class="badge">✓ ตัดด้วยตำราจริง (董公擇日 + 黃曆) · เตือนด้วยดวงบุคคล</div>
+        <div class="qr">QR<br>hourkey.io</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 1 / 4</span></div>
+    </div>
+
+    <!-- P2 Top 10 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>วางฤกษ์ · คุณอาเอว</span><span>วันดี Top 10</span></div>
+      <h2 class="sec">🏆 วันมงคลยอดเยี่ยม · 10 อันดับ</h2>
+      <div class="fig"><div class="figrow">
+        <svg viewBox="0 0 150 150" width="128" role="img" aria-label="ปฏิทินไฮไลต์วันดี">
+          <rect x="6" y="6" width="138" height="138" rx="8" fill="#fefcf5" stroke="#e5ddc9"/>
+          <rect x="6" y="6" width="138" height="26" rx="8" fill="#8a6d2a"/>
+          <text x="75" y="24" text-anchor="middle" font-size="12" fill="#fff">พฤศจิกายน 69</text>
+          <g font-size="10" fill="#5f5847" text-anchor="middle">
+            <g id="grid">
+              <text x="26" y="52">อา</text><text x="50" y="52">จ</text><text x="74" y="52">อ</text><text x="98" y="52">พ</text><text x="122" y="52">พฤ</text>
+            </g>
+            <text x="26" y="72">1</text><text x="50" y="72">2</text><text x="74" y="72">3</text><text x="98" y="72">4</text><text x="122" y="72">5</text>
+            <text x="26" y="92">8</text><text x="50" y="92">9</text><text x="74" y="92">10</text><text x="98" y="92">11</text><text x="122" y="92">12</text>
+            <circle cx="122" cy="108" r="12" fill="#5a8a48"/><text x="26" y="112">15</text><text x="50" y="112">16</text><text x="74" y="112">17</text><text x="98" y="112">18</text><text x="122" y="112" fill="#fff">19</text>
+            <circle cx="50" cy="128" r="13" fill="#c8a44d"/><text x="26" y="132">22</text><text x="50" y="132" fill="#161310" font-weight="700">21★</text><text x="74" y="132">23</text><text x="98" y="132">24</text><text x="122" y="132">25</text>
+          </g>
+        </svg>
+        <div style="flex:1;min-width:220px">
+          <svg viewBox="0 0 240 96" width="240" role="img" aria-label="แถบคะแนน 3 อันดับ">
+            <g font-size="11">
+              <text x="0" y="18" fill="#5f5847">🥇 21 พ.ย.</text><rect x="70" y="8" width="160" height="14" rx="7" fill="#eee"/><rect x="70" y="8" width="154" height="14" rx="7" fill="#5a8a48"/><text x="200" y="19" fill="#fff" font-size="9">96</text>
+              <text x="0" y="46" fill="#5f5847">🥈 3 ธ.ค.</text><rect x="70" y="36" width="160" height="14" rx="7" fill="#eee"/><rect x="70" y="36" width="149" height="14" rx="7" fill="#5a8a48"/><text x="196" y="47" fill="#fff" font-size="9">93</text>
+              <text x="0" y="74" fill="#5f5847">🥉 15 พ.ย.</text><rect x="70" y="64" width="160" height="14" rx="7" fill="#eee"/><rect x="70" y="64" width="144" height="14" rx="7" fill="#8fae5a"/><text x="192" y="75" fill="#fff" font-size="9">90</text>
+            </g>
+          </svg>
+          <div style="font-size:10px;color:#5f5847;margin-top:4px;text-align:center">
+            🏪 เปิดกิจการ &nbsp; 📝 เซ็นสัญญา &nbsp; 💍 มงคลสมรส &nbsp; 🏠 ขึ้นบ้านใหม่
+          </div>
+        </div>
+      </div><div class="cap">ปฏิทินไฮไลต์วันดี (🟡 อันดับ 1 · 🟢 วันดีรอง) + แถบคะแนน 3 อันดับแรก</div></div>
+      <table>
+        <thead><tr><th>#</th><th>วันที่</th><th>ยามดี</th><th>4 เสาของวัน</th><th>คะแนน</th><th>ระดับ</th></tr></thead>
+        <tbody>
+          <tr><td>🥇1</td><td>21 พ.ย. 69 (ศ.)</td><td>สายๆ 巳時</td><td class="zh">丙午·己亥·庚子·辛巳</td><td>96</td><td>ยอดเยี่ยม</td></tr>
+          <tr><td>🥈2</td><td>3 ธ.ค. 69 (พ.)</td><td>เช้า 辰時</td><td class="zh">丙午·辛丑·壬子·甲辰</td><td>93</td><td>ยอดเยี่ยม</td></tr>
+          <tr><td>🥉3</td><td>15 พ.ย. 69 (ส.)</td><td>บ่าย 未時</td><td class="zh">丙午·己亥·甲午·辛未</td><td>90</td><td>ดีมาก</td></tr>
+          <tr><td>4</td><td>9 พ.ย. 69 (จ.)</td><td>สาย 巳時</td><td class="zh">丙午·己亥·戊子·丁巳</td><td>87</td><td>ดีมาก</td></tr>
+          <tr><td>5</td><td>27 พ.ย. 69 (ศ.)</td><td>เช้า 辰時</td><td class="zh">丙午·己亥·丙午·壬辰</td><td>85</td><td>ดีมาก</td></tr>
+          <tr><td>6</td><td>11 ธ.ค. 69 (ศ.)</td><td>บ่าย 未時</td><td class="zh">丙午·辛丑·庚申·癸未</td><td>82</td><td>ดี</td></tr>
+          <tr><td>7</td><td>5 พ.ย. 69 (พฤ.)</td><td>สาย 巳時</td><td class="zh">丙午·己亥·甲申·己巳</td><td>80</td><td>ดี</td></tr>
+          <tr><td>8</td><td>19 ธ.ค. 69 (ส.)</td><td>เช้า 辰時</td><td class="zh">丙午·庚子·戊辰·丙辰</td><td>78</td><td>ดี</td></tr>
+          <tr><td>9</td><td>23 พ.ย. 69 (จ.)</td><td>บ่าย 未時</td><td class="zh">丙午·己亥·壬寅·丁未</td><td>75</td><td>ใช้ได้</td></tr>
+          <tr><td>10</td><td>7 ธ.ค. 69 (จ.)</td><td>สาย 巳時</td><td class="zh">丙午·辛丑·丙辰·癸巳</td><td>73</td><td>ใช้ได้</td></tr>
+        </tbody>
+      </table>
+      <p class="lead">คะแนนหลอมรวม: ทงซู黃曆 (建除/黃黑道/神煞/宜忌) + ตงกง董公 + ปฏิกิริยากับดวงเจ้าภาพ 己亥 · เต็ม 100</p>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 2 / 4</span></div>
+    </div>
+
+    <!-- P3 การ์ดเหตุผลรายวัน -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>วางฤกษ์ · คุณอาเอว</span><span>เหตุผลรายวัน</span></div>
+      <h2 class="sec">🥇 เจาะวันที่ 1 · 21 พ.ย. 2569 (ยาม 巳)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 220 130" width="200" role="img" aria-label="เกจคะแนนวัน 96">
+          <path d="M20 118 A90 90 0 0 1 200 118" fill="none" stroke="#eee" stroke-width="16"/>
+          <path d="M20 118 A90 90 0 0 1 188 78" fill="none" stroke="#5a8a48" stroke-width="16" stroke-linecap="round"/>
+          <text x="110" y="100" text-anchor="middle" font-size="34" fill="#8a6d2a" font-weight="700">96</text>
+          <text x="110" y="120" text-anchor="middle" font-size="11" fill="#5f5847">คะแนนมงคล · ยอดเยี่ยม</text>
+          <text x="16" y="128" font-size="9" fill="#b03a2e">0</text><text x="196" y="128" font-size="9" fill="#5a8a48">100</text>
+        </svg>
+        <div class="cap">คะแนนหลอมรวม 96/100 · 黃道青龍 + 成日 + 天德/月德 + 巳時ไฟ用神หนุนเจ้าภาพ</div>
+      </div>
+      <div class="hkp-card"><h3>✅ เหตุหนุน (reasons up)</h3>
+        <p>• 黃道 "青龍" วันมังกรเขียว มงคลสูงสุด<br>• 建除 = "成日" เหมาะเปิด/ตั้ง/เริ่มการ<br>• 神煞: 天德+月德+天喜 คุ้มครองพร้อม<br>• 宜: 開市·立券·交易·納財 (เปิดร้าน/เซ็นสัญญา/รับทรัพย์)<br>• ต่อดวงเจ้าภาพ: 巳時 เป็นไฟ用神 หนุน己土 พอดี</p></div>
+      <div class="hkp-card"><h3>⚠️ เหตุถ่วง (reasons down)</h3>
+        <p>• 子 (ยามดึก) ของวันนี้ 沖 กับปีเกิด 午 — เลี่ยงทำพิธีช่วงดึก<br>• ธาตุน้ำของวัน 庚子 ค่อนข้างเย็น จึงเลือกยาม 巳 (ไฟ) มาถ่วงให้อุ่น</p></div>
+      <div class="hkp-card"><h3>🚫 ข้อควรระวัง (warnings)</h3>
+        <p>• หลีกเลี่ยงคนปีชง: ปีหนู (子) ไม่ควรเป็นประธานพิธี<br>• ทิศห้ามวันนี้ (胎神占方): อยู่ทางทิศเหนือ — เลี่ยงตอก/เจาะผนังด้านนั้น</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 3 / 4</span></div>
+    </div>
+
+    <!-- P4 โซนตำราห้าม + methodology -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>วางฤกษ์ · คุณอาเอว</span><span>วันต้องห้าม + วิธีคิด</span></div>
+      <h2 class="sec">⛔ โซนตำราตัดออก (cut slots · ห้ามใช้เด็ดขาด)</h2>
+      <table>
+        <thead><tr><th>วันที่</th><th>ตำราที่ตัด</th><th>เหตุผล</th></tr></thead>
+        <tbody>
+          <tr><td>13 พ.ย. 69</td><td class="th">楊公忌 / 四絕</td><td>วันต้องห้ามใหญ่ ห้ามมงคลทุกชนิด</td></tr>
+          <tr><td>25 พ.ย. 69</td><td class="th">受死日</td><td>ตงกงตัด — ห้ามเปิดกิจการ/แต่งงาน</td></tr>
+          <tr><td>1 ธ.ค. 69</td><td class="th">月破 (破日)</td><td>黃黑道 黑道 วันแตก ทำลายล้าง</td></tr>
+          <tr><td>17 ธ.ค. 69</td><td class="th">歲破 (沖太歲)</td><td>ชงไท่ส่วย 丙午 ปีนี้โดยตรง</td></tr>
+        </tbody>
+      </table>
+      <h2 class="sec">📐 วิธีคิด (methodology)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 540 78" width="540" role="img" aria-label="ขั้นตอนการตัดสินฤกษ์">
+          <g font-size="10" text-anchor="middle">
+            <rect x="6" y="20" width="120" height="40" rx="8" fill="#b03a2e"/><text x="66" y="38" fill="#fff">1. ตัดวันต้องห้าม</text><text x="66" y="52" fill="#fbdad4" font-size="8">ทงซู+ตงกง</text>
+            <rect x="146" y="20" width="120" height="40" rx="8" fill="#9a7d3a"/><text x="206" y="38" fill="#fff">2. ให้คะแนน</text><text x="206" y="52" fill="#f3e6c4" font-size="8">建除+黃黑道+神煞</text>
+            <rect x="286" y="20" width="120" height="40" rx="8" fill="#4a6f8a"/><text x="346" y="38" fill="#fff">3. เทียบดวง</text><text x="346" y="52" fill="#d4e2ee" font-size="8">เจ้าภาพ (เตือน)</text>
+            <rect x="426" y="20" width="108" height="40" rx="8" fill="#5a8a48"/><text x="480" y="38" fill="#fff">4. เลือกยาม</text><text x="480" y="52" fill="#dcecd0" font-size="8">用神เจ้าภาพ</text>
+            <g fill="#c8a44d"><path d="M126 40 l12 0 -4 -4 8 4 -8 4 4 -4z"/><path d="M266 40 l12 0 -4 -4 8 4 -8 4 4 -4z"/><path d="M406 40 l12 0 -4 -4 8 4 -8 4 4 -4z"/></g>
+          </g>
+        </svg>
+        <div class="cap">ลำดับตัดสินฤกษ์ · ตำรา=ตัดจริง (แดง) · ดวงบุคคล=เตือน (น้ำเงิน) · ไม่ปล่อยให้ AI เดา</div>
+      </div>
+      <div class="hkp-card"><p><b>ลำดับการตัดสิน:</b> (1) ตัดด้วยตำราจริงก่อน — ทงซู黃曆 + ตงกง董公 วันต้องห้าม = ตัดทิ้งเด็ดขาด · (2) ให้คะแนนวันที่เหลือด้วย 建除十二神 + 黃黑道 + 神煞 + 宜忌 · (3) ปรับด้วยปฏิกิริยากับดวงเจ้าภาพ (己亥) เป็น "คำเตือน" ไม่ใช่ตัวตัด · (4) เลือกยามดีในวันนั้นด้วย 用神 ของเจ้าภาพ</p>
+        <p><b>หลักการ:</b> ตำรา = ตัดจริง · ดวงบุคคล = เตือน · ไม่ปล่อยให้ AI เดาตัวเลข ทุกคะแนนมาจาก engine deterministic</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 4 / 4</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ 5) CALENDAR · ปฏิทิน黃曆 (แนวนอน) ═══════════════════════════════════ -->
+  <div class="doc" id="d-calendar">
+
+    <!-- P1 ปก -->
+    <div class="hkp-page land">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>hourkey · ปฏิทินมงคล</span><span>黃曆 · Tongshu สากล</span></div>
+      <div class="hkp-cover">
+        <div class="seal-lg">曆</div>
+        <div class="kick">ปฏิทินมงคล · 通勝黃曆</div>
+        <h1>ปฏิทินฤกษ์ · พฤศจิกายน 2569</h1>
+        <div class="meta">干支ปี: 丙午 (ม้าไฟ) · เสาเดือน: 己亥 (立冬→大雪)<br>節氣ในเดือน: 立冬 (7 พ.ย.) · 小雪 (22 พ.ย.)</div>
+        <div class="badge">✓ 建除 + 黃黑道 + 神煞 + 宜忌 ครบทุกวัน</div>
+        <div class="qr">QR<br>hourkey.io</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 1 / 3</span></div>
+    </div>
+
+    <!-- P2 grid เดือน -->
+    <div class="hkp-page land">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ปฏิทินมงคล · พ.ย. 2569</span><span>丙午年 · 己亥月</span></div>
+      <div class="fig"><div class="figrow" style="gap:18px">
+        <svg viewBox="0 0 300 34" width="300" role="img" aria-label="คำอธิบายสีคะแนน">
+          <g font-size="11" fill="#5f5847">
+            <rect x="0" y="8" width="18" height="18" rx="4" fill="#5a8a48"/><text x="24" y="22">วันดี (75+)</text>
+            <rect x="108" y="8" width="18" height="18" rx="4" fill="#9a7d3a"/><text x="132" y="22">ปานกลาง</text>
+            <rect x="210" y="8" width="18" height="18" rx="4" fill="#b03a2e"/><text x="234" y="22">ระวัง</text>
+          </g>
+        </svg>
+        <svg viewBox="0 0 220 34" width="220" role="img" aria-label="สัญลักษณ์ 節氣">
+          <g font-size="11" fill="#5f5847">
+            <circle cx="12" cy="17" r="9" fill="#4a6f8a"/><text x="12" y="21" text-anchor="middle" font-size="11" fill="#fff">立</text><text x="26" y="21">立冬 7 พ.ย.</text>
+            <circle cx="130" cy="17" r="9" fill="#8fb0c4"/><text x="130" y="21" text-anchor="middle" font-size="11" fill="#161a24">雪</text><text x="146" y="21">小雪 22 พ.ย.</text>
+          </g>
+        </svg>
+      </div></div>
+      <div class="cal">
+        <div class="h">อา</div><div class="h">จ</div><div class="h">อ</div><div class="h">พ</div><div class="h">พฤ</div><div class="h">ศ</div><div class="h">ส</div>
+        <div class="d dim"><span class="n">·</span></div><div class="d dim"><span class="n">·</span></div><div class="d dim"><span class="n">·</span></div>
+        <div class="d mid"><span class="n">1</span><span class="sc">62</span><span class="lun">初二</span><br>甲午·危<br><span class="yi">宜 祭祀</span></div>
+        <div class="d"><span class="n">2</span><span class="sc">71</span><span class="lun">初三</span><br>乙未·成<br><span class="yi">宜 開市</span></div>
+        <div class="d"><span class="n">3</span><span class="sc">74</span><span class="lun">初四</span><br>丙申·收<br><span class="yi">宜 納財</span></div>
+        <div class="d bad"><span class="n">4</span><span class="sc">40</span><span class="lun">初五</span><br>丁酉·開<br><span class="ji">忌 動土</span></div>
+
+        <div class="d"><span class="n">5</span><span class="sc">80</span><span class="lun">初六</span><br>戊戌·閉<br><span class="yi">宜 交易</span></div>
+        <div class="d mid"><span class="n">6</span><span class="sc">66</span><span class="lun">初七</span><br>己亥·建<br><span class="yi">宜 出行</span></div>
+        <div class="d"><span class="n">7</span><span class="sc">78</span><span class="lun">初八</span><br>庚子·除<br>🌙立冬</div>
+        <div class="d mid"><span class="n">8</span><span class="sc">60</span><span class="lun">初九</span><br>辛丑·滿<br><span class="ji">忌 安葬</span></div>
+        <div class="d"><span class="n">9</span><span class="sc">87</span><span class="lun">初十</span><br>壬寅·平<br><span class="yi">宜 立券</span></div>
+        <div class="d"><span class="n">10</span><span class="sc">72</span><span class="lun">十一</span><br>癸卯·定<br><span class="yi">宜 嫁娶</span></div>
+        <div class="d bad"><span class="n">11</span><span class="sc">45</span><span class="lun">十二</span><br>甲辰·執<br><span class="ji">忌 開市</span></div>
+
+        <div class="d"><span class="n">12</span><span class="sc">70</span><span class="lun">十三</span><br>乙巳·破<br><span class="yi">宜 破屋</span></div>
+        <div class="d bad"><span class="n">13</span><span class="sc">28</span><span class="lun">十四</span><br>丙午·危<br><span class="ji">楊公忌</span></div>
+        <div class="d"><span class="n">14</span><span class="sc">76</span><span class="lun">十五</span><br>丁未·成<br><span class="yi">宜 祈福</span></div>
+        <div class="d"><span class="n">15</span><span class="sc">90</span><span class="lun">十六</span><br>戊申·收<br><span class="yi">宜 納財</span></div>
+        <div class="d mid"><span class="n">16</span><span class="sc">64</span><span class="lun">十七</span><br>己酉·開<br><span class="yi">宜 開光</span></div>
+        <div class="d"><span class="n">17</span><span class="sc">73</span><span class="lun">十八</span><br>庚戌·閉<br><span class="ji">忌 出行</span></div>
+        <div class="d"><span class="n">18</span><span class="sc">79</span><span class="lun">十九</span><br>辛亥·建<br><span class="yi">宜 交易</span></div>
+
+        <div class="d"><span class="n">19</span><span class="sc">77</span><span class="lun">二十</span><br>壬子·除<br><span class="yi">宜 沐浴</span></div>
+        <div class="d"><span class="n">20</span><span class="sc">75</span><span class="lun">廿一</span><br>癸丑·滿<br><span class="yi">宜 會親</span></div>
+        <div class="d"><span class="n">21</span><span class="sc">96</span><span class="lun">廿二</span><br>甲寅·平<br><span class="yi">宜 開市 ★</span></div>
+        <div class="d mid"><span class="n">22</span><span class="sc">61</span><span class="lun">廿三</span><br>乙卯·定<br>🌙小雪</div>
+        <div class="d"><span class="n">23</span><span class="sc">75</span><span class="lun">廿四</span><br>丙辰·執<br><span class="yi">宜 立券</span></div>
+        <div class="d bad"><span class="n">24</span><span class="sc">42</span><span class="lun">廿五</span><br>丁巳·破<br><span class="ji">忌 諸事</span></div>
+        <div class="d bad"><span class="n">25</span><span class="sc">30</span><span class="lun">廿六</span><br>戊午·危<br><span class="ji">受死</span></div>
+
+        <div class="d"><span class="n">26</span><span class="sc">74</span><span class="lun">廿七</span><br>己未·成<br><span class="yi">宜 修造</span></div>
+        <div class="d"><span class="n">27</span><span class="sc">85</span><span class="lun">廿八</span><br>庚申·收<br><span class="yi">宜 納財</span></div>
+        <div class="d"><span class="n">28</span><span class="sc">72</span><span class="lun">廿九</span><br>辛酉·開<br><span class="yi">宜 祈福</span></div>
+        <div class="d mid"><span class="n">29</span><span class="sc">63</span><span class="lun">三十</span><br>壬戌·閉<br><span class="ji">忌 安床</span></div>
+        <div class="d"><span class="n">30</span><span class="sc">70</span><span class="lun">十月</span><br>癸亥·建<br><span class="yi">宜 出行</span></div>
+        <div class="d dim"><span class="n">·</span></div><div class="d dim"><span class="n">·</span></div>
+      </div>
+      <p class="lead">แต่ละช่อง: เลขวัน · จันทรคติ (初/廿) · 干支 · 建除十二神 · คะแนนมงคล (มุมขวา สีเขียว=ดี ทอง=กลาง แดง=ระวัง) · 宜/忌 ย่อ · 🌙=節氣 · ★=วันเด่นสุด</p>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 2 / 3</span></div>
+    </div>
+
+    <!-- P3 วันเด่น + รายละเอียดรายวัน -->
+    <div class="hkp-page land">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ปฏิทินมงคล · พ.ย. 2569</span><span>วันเด่น + รายละเอียด</span></div>
+      <h2 class="sec">⭐ วันเด่นประจำเดือน</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 96" width="300" role="img" aria-label="คะแนนวันเด่น 3 วัน">
+          <g font-size="11" fill="#5f5847">
+            <text x="0" y="20">21 พ.ย.</text><rect x="66" y="9" width="200" height="15" rx="7" fill="#eee"/><rect x="66" y="9" width="192" height="15" rx="7" fill="#5a8a48"/><text x="236" y="21" font-size="9" fill="#fff">96</text>
+            <text x="0" y="48">15 พ.ย.</text><rect x="66" y="37" width="200" height="15" rx="7" fill="#eee"/><rect x="66" y="37" width="180" height="15" rx="7" fill="#5a8a48"/><text x="224" y="49" font-size="9" fill="#fff">90</text>
+            <text x="0" y="76">27 พ.ย.</text><rect x="66" y="65" width="200" height="15" rx="7" fill="#eee"/><rect x="66" y="65" width="170" height="15" rx="7" fill="#8fae5a"/><text x="214" y="77" font-size="9" fill="#fff">85</text>
+          </g>
+        </svg>
+        <div class="cap">3 วันเด่นสุดของเดือน · ทุกวันเป็น 黃道 (มงคลใหญ่)</div>
+      </div>
+      <table>
+        <thead><tr><th>วันที่</th><th>干支·建除</th><th>黃黑道</th><th>คะแนน</th><th>เหมาะ (宜)</th></tr></thead>
+        <tbody>
+          <tr><td>21 พ.ย. (ศ.)</td><td class="zh">甲寅·平</td><td>青龍(黃道)</td><td>96</td><td>เปิดร้าน·เซ็นสัญญา·รับทรัพย์</td></tr>
+          <tr><td>15 พ.ย. (ส.)</td><td class="zh">戊申·收</td><td>金匱(黃道)</td><td>90</td><td>เก็บทรัพย์·เข้าของ·เปิดคลัง</td></tr>
+          <tr><td>27 พ.ย. (ศ.)</td><td class="zh">庚申·收</td><td>司命(黃道)</td><td>85</td><td>ซ่อมสร้าง·รับทรัพย์·จัดของ</td></tr>
+        </tbody>
+      </table>
+      <h2 class="sec">📋 รายละเอียดวันเด่น · 21 พ.ย. 2569</h2>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">宜 (เหมาะทำ)</span>開市 · 立券 · 交易 · 納財 · 開光 · 祈福</div>
+        <div class="x"><span class="l">忌 (ห้ามทำ)</span>安葬 · 破土 · 行喪</div>
+        <div class="x"><span class="l">神煞 (ดาววันนี้)</span>天德 · 月德 · 天喜 · 三合 · 天醫</div>
+        <div class="x"><span class="l">胎神占方</span>ทิศเหนือ (占門碓外) — เลี่ยงตอก/เจาะ</div>
+        <div class="x"><span class="l">彭祖百忌</span>甲不開倉 · 寅不祭祀 (คำเตือนโบราณ)</div>
+        <div class="x"><span class="l">ปีชง (沖煞)</span>ชงปีวอก (沖猴) · เลี่ยงคนปีนั้นเป็นประธาน</div>
+      </div>
+      <h2 class="sec">🎯 6 เป้าหมายวันนี้ (ten-god goals)</h2>
+      <div class="chips">
+        <span class="c"><b>ค้าขาย</b> ดีมาก</span><span class="c"><b>เซ็นสัญญา</b> ดีมาก</span>
+        <span class="c"><b>ขึ้นบ้าน</b> ดี</span><span class="c"><b>แต่งงาน</b> ปานกลาง</span>
+        <span class="c"><b>เดินทาง</b> ดี</span><span class="c"><b>รักษาโรค</b> ดี (天醫)</span>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 3 / 3</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ 6) QIMEN · ฉีเหมิน ═══════════════════════════════════ -->
+  <div class="doc" id="d-qimen">
+
+    <!-- P1 ปก -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>hourkey · ฉีเหมินตุ้นเจี่ย</span><span>奇門遁甲</span></div>
+      <div class="hkp-cover">
+        <div class="seal-lg">奇</div>
+        <div class="kick">ฉีเหมินตุ้นเจี่ย · 奇門遁甲</div>
+        <h1>ผังฉีเหมิน · ถามการงาน</h1>
+        <div class="who">ผู้ถาม: คุณอาเอว (己亥)</div>
+        <div class="meta">ระบบ: 時家奇門 (รายชั่วยาม) · 陽遁九局<br>เวลาตั้งผัง: 21 พ.ย. 2569 巳時 · ขอบเขต: การงาน/การเงิน</div>
+        <div class="badge">✓ ผังจริงจาก ref_qimen_charts (1,080 ผัง)</div>
+        <div class="qr">QR<br>hourkey.io</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 1 / 3</span></div>
+    </div>
+
+    <!-- P2 แถบ4เสา + ผัง 9 วัง -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ฉีเหมิน · คุณอาเอว</span><span>ผัง 9 วัง</span></div>
+      <h2 class="sec">แถบ 4 เสา (時空)</h2>
+      <table>
+        <thead><tr><th>ปี 年</th><th>เดือน 月</th><th>วัน 日</th><th>ยาม 時</th></tr></thead>
+        <tbody><tr><td class="zh">丙午</td><td class="zh">己亥</td><td class="zh">甲寅</td><td class="zh">己巳</td></tr>
+        <tr><td class="th">陽遁九局</td><td class="th">旬首 甲寅(戊)</td><td class="th">值符 天心</td><td class="th">值使 開門</td></tr></tbody>
+      </table>
+      <h2 class="sec">ผัง 9 วัง (九宮) · เทพ/ดาว/ประตู/ก้าน</h2>
+      <div class="hkp-pal9">
+        <div class="c"><span class="s">巽 4 · ทิศ อาคเนย์</span><span class="g">杜門</span><span class="s">天輔·太陰</span><span class="s">辛</span><span class="s">คะแนน 70</span></div>
+        <div class="c good"><span class="s">離 9 · ทิศ ใต้</span><span class="g">景門</span><span class="s">天英·六合</span><span class="s">乙+丙 奇</span><span class="s">คะแนน 85 ★</span></div>
+        <div class="c"><span class="s">坤 2 · ทิศ หรดี</span><span class="g">死門</span><span class="s">天芮·勾陳</span><span class="s">癸</span><span class="s">คะแนน 42</span></div>
+        <div class="c good"><span class="s">震 3 · ทิศ ตะวันออก</span><span class="g">傷門</span><span class="s">天沖·螣蛇</span><span class="s">庚</span><span class="s">คะแนน 55</span></div>
+        <div class="c"><span class="s">中 5 · กลาง</span><span class="g">— 寄坤 —</span><span class="s">天禽·(寄)</span><span class="s">戊</span><span class="s">—</span></div>
+        <div class="c good"><span class="s">兌 7 · ทิศ ตะวันตก</span><span class="g">驚門</span><span class="s">天柱·朱雀</span><span class="s">丁 奇</span><span class="s">คะแนน 60</span></div>
+        <div class="c good"><span class="s">艮 8 · ทิศ อีสาน</span><span class="g">生門</span><span class="s">天任·九地</span><span class="s">丙 奇</span><span class="s">คะแนน 88 ★</span></div>
+        <div class="c"><span class="s">坎 1 · ทิศ เหนือ</span><span class="g">休門</span><span class="s">天蓬·白虎</span><span class="s">壬</span><span class="s">คะแนน 66</span></div>
+        <div class="c good"><span class="s">乾 6 · ทิศ พายัพ</span><span class="g">開門</span><span class="s">天心·九天</span><span class="s">戊(值符)</span><span class="s">คะแนน 82 ★</span></div>
+      </div>
+      <p class="lead">แต่ละวัง: ทิศ · ประตู(門) · ดาว(星)+เทพ(神) · ก้าน天干/สามอัศจรรย์(奇) · คะแนน · ★ = วังเด่น</p>
+      <div class="fig">
+        <svg viewBox="0 0 200 200" width="180" role="img" aria-label="เข็มทิศ 8 ทิศฉีเหมิน">
+          <circle cx="100" cy="100" r="92" fill="#fefcf5" stroke="#c8a44d" stroke-width="2"/>
+          <circle cx="100" cy="100" r="60" fill="none" stroke="#e5ddc9"/>
+          <!-- good directions highlighted -->
+          <g font-size="11" text-anchor="middle">
+            <circle cx="100" cy="20" r="15" fill="#eee"/><text x="100" y="24" fill="#5f5847">ใต้離</text>
+            <circle cx="156" cy="44" r="15" fill="#eee"/><text x="156" y="48" fill="#5f5847" font-size="9">หรดี坤</text>
+            <circle cx="180" cy="100" r="15" fill="#5a8a48"/><text x="180" y="104" fill="#fff" font-size="9">ตต.兌</text>
+            <circle cx="156" cy="156" r="15" fill="#5a8a48"/><text x="156" y="160" fill="#fff" font-size="9">พายัพ乾</text>
+            <circle cx="100" cy="180" r="15" fill="#eee"/><text x="100" y="184" fill="#5f5847" font-size="9">เหนือ坎</text>
+            <circle cx="44" cy="156" r="15" fill="#5a8a48"/><text x="44" y="160" fill="#fff" font-size="9">อีสาน艮★</text>
+            <circle cx="20" cy="100" r="15" fill="#eee"/><text x="20" y="104" fill="#5f5847" font-size="9">ตอ.震</text>
+            <circle cx="44" cy="44" r="15" fill="#b03a2e"/><text x="44" y="48" fill="#fff" font-size="9">อาคเนย์</text>
+          </g>
+          <!-- pointer to 艮 (best) -->
+          <line x1="100" y1="100" x2="52" y2="148" stroke="#8a6d2a" stroke-width="3"/>
+          <circle cx="100" cy="100" r="8" fill="#8a6d2a"/>
+          <text x="100" y="104" text-anchor="middle" font-size="9" fill="#fff">奇</text>
+        </svg>
+        <div class="cap">เข็มทิศ 8 ทิศ · เขียว = ทิศทำกินดี (อีสาน艮★/พายัพ乾/ตะวันตก兌) · แดง = ทิศเลี่ยง · เข็มชี้ทิศอีสาน (生門)</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 2 / 3</span></div>
+    </div>
+
+    <!-- P3 ป้ายอ่าน + ทำนาย + caveat -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>ฉีเหมิน · คุณอาเอว</span><span>คำอ่าน</span></div>
+      <h2 class="sec"><span class="ic">🚪</span>ป้ายอ่านต่อวัง (วังเด่น)</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 84" width="300" role="img" aria-label="ประตูมงคล 3 วัง">
+          <g text-anchor="middle">
+            <g><rect x="20" y="14" width="66" height="50" rx="8" fill="rgba(90,138,72,.12)" stroke="#5a8a48" stroke-width="2"/><text x="53" y="38" font-size="16" fill="#5a8a48">生門</text><text x="53" y="56" font-size="9" fill="#5f5847">艮·อีสาน 88</text></g>
+            <g><rect x="117" y="14" width="66" height="50" rx="8" fill="rgba(200,164,77,.14)" stroke="#c8a44d" stroke-width="2"/><text x="150" y="38" font-size="16" fill="#8a6d2a">開門</text><text x="150" y="56" font-size="9" fill="#5f5847">乾·พายัพ 82</text></g>
+            <g><rect x="214" y="14" width="66" height="50" rx="8" fill="rgba(74,111,138,.12)" stroke="#4a6f8a" stroke-width="2"/><text x="247" y="38" font-size="16" fill="#4a6f8a">景門</text><text x="247" y="56" font-size="9" fill="#5f5847">離·ใต้ 85</text></g>
+          </g>
+        </svg>
+        <div class="cap">3 ประตูมงคลประชุมในผัง · 生門 (ทรัพย์) + 開門 (ผู้ใหญ่) + 景門乙丙奇 (เจรจา)</div>
+      </div>
+      <div class="hkp-card"><h3>艮 8 · 生門+天任+九地 (88 ★)</h3><p>ประตูเกิด (生門) คือประตูทรัพย์+เริ่มต้น · 天任ดาวมั่นคง + 九地 = ฐานลึกมั่นคง · <b>ทิศอีสาน</b> เป็นทิศทำมาหากินของงานนี้ เหมาะลงหลักปักฐาน</p></div>
+      <div class="hkp-card"><h3>乾 6 · 開門+天心+九天 (82 ★)</h3><p>值符 (天心) นั่งประตูเปิด (開門) + 九天 = พลังผู้ใหญ่/โอกาสจากเบื้องบน · เหมาะเปิดตัว/ติดต่อรายใหญ่ · <b>ทิศพายัพ</b></p></div>
+      <div class="hkp-card"><h3>離 9 · 景門+乙丙奇+六合 (85 ★)</h3><p>乙+丙 สองอัศจรรย์ประชุม + 六合 = การเจรจา/ร่วมมือราบรื่น เห็นผลไว · <b>ทิศใต้</b> เหมาะเจรจาดีล</p></div>
+      <h2 class="sec">คำทำนายซินแส (สรุปผัง)</h2>
+      <div class="hkp-verdict"><span class="lab">ฟันธง</span>
+        <p>ผังนี้ "ประตูทรัพย์ (生門) + ผู้ใหญ่หนุน (開門天心九天) + เจรจาราบรื่น (乙丙六合)" ประชุมพร้อม — <b>เป็นผังเปิดกิจการที่ดีเด่น</b> · แนะเริ่มงาน/ตั้งโต๊ะรับแขกทาง <b>ทิศอีสาน</b> และติดต่อรายใหญ่ทาง <b>ทิศพายัพ</b> · เลี่ยงทิศหรดี (坤2 死門勾陳 = ติดขัด)</p></div>
+      <h2 class="sec">ขอบเขต/ข้อจำกัด (caveat)</h2>
+      <div class="hkp-card"><p>ฉีเหมินเป็นศาสตร์ "จังหวะ+ทิศ" ใช้เสริมการตัดสินใจ ไม่ใช่คำพยากรณ์ตายตัว · ผังนี้ผูกกับเวลาตั้งผัง (21 พ.ย. 巳時) หากเปลี่ยนเวลา/คำถาม ผังเปลี่ยน · ควรใช้คู่กับดวงปาจื้อและฤกษ์ทงซูเพื่อความรอบด้าน</p></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 3 / 3</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ 7) BOOK · คัมภีร์ชะตา ═══════════════════════════════════ -->
+  <div class="doc" id="d-book">
+
+    <!-- P1 ปก -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>hourkey · คัมภีร์ชะตา</span><span>命書 · Book of Destiny</span></div>
+      <div class="hkp-cover">
+        <div class="seal-lg">命</div>
+        <div class="kick">คัมภีร์ชะตา · 命書 6 ศาสตร์</div>
+        <h1>หนังสือดวงชะตา</h1>
+        <div class="who">คุณ อาเอว · หญิง</div>
+        <div class="meta">31 ธ.ค. 2527 · 13:15 · กรุงเทพฯ<br>八字 · 七政四餘 · 紫微斗數 · Western · Vedic · Uranian</div>
+        <div class="badge">✓ เล่มสมบูรณ์ 6 ศาสตร์ + บทหลอมรวม</div>
+        <div class="qr">QR<br>hourkey.io</div>
+      </div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 1 / 5</span></div>
+    </div>
+
+    <!-- P2 สารบัญ + บทนำ -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>คัมภีร์ชะตา · คุณอาเอว</span><span>สารบัญ + บทนำ</span></div>
+      <h2 class="sec"><span class="ic">📑</span>สารบัญ</h2>
+      <div class="fig">
+        <svg viewBox="0 0 300 74" width="300" role="img" aria-label="โครงเล่ม 6 ศาสตร์ + หลอมรวม">
+          <g text-anchor="middle" font-size="10" fill="#fff">
+            <rect x="6" y="16" width="40" height="42" rx="6" fill="#b03a2e"/><text x="26" y="41">八字</text>
+            <rect x="52" y="16" width="40" height="42" rx="6" fill="#4a6f8a"/><text x="72" y="41">七政</text>
+            <rect x="98" y="16" width="40" height="42" rx="6" fill="#5a8a48"/><text x="118" y="41">紫微</text>
+            <rect x="144" y="16" width="40" height="42" rx="6" fill="#9a7d3a"/><text x="164" y="38" font-size="8">West</text>
+            <rect x="190" y="16" width="40" height="42" rx="6" fill="#7a5a8a"/><text x="210" y="38" font-size="8">Vedic</text>
+            <rect x="236" y="16" width="40" height="42" rx="6" fill="#c9a94d"/><text x="256" y="35" font-size="7">Uran</text>
+            <text x="150" y="12" fill="#8a6d2a" font-size="10">6 บทศาสตร์ → บทหลอมรวม</text>
+            <text x="150" y="72" fill="#5f5847" font-size="9">แต่ละบท: ภาพพื้นดวง + 10 มิติ</text>
+          </g>
+        </svg>
+        <div class="cap">โครงเล่ม 命書 · 6 บทศาสตร์เรียงสีธาตุ แล้วปิดด้วยบทหลอมรวม + ภาคผนวก</div>
+      </div>
+      <h2 class="sec">สารบัญ</h2>
+      <ul class="toc">
+        <li><span>บทนำ · ตัวตนและวิธีอ่านเล่มนี้</span><b>3</b></li>
+        <li><span>บทที่ 1 · 八字 ปาจื้อ (ภาพพื้นดวง + 10 มิติ)</span><b>5</b></li>
+        <li><span>บทที่ 2 · 七政四餘 ดาวจริง</span><b>18</b></li>
+        <li><span>บทที่ 3 · 紫微斗數</span><b>27</b></li>
+        <li><span>บทที่ 4 · Western Astrology</span><b>36</b></li>
+        <li><span>บทที่ 5 · Vedic (Jyotish)</span><b>44</b></li>
+        <li><span>บทที่ 6 · Uranian (Hamburg)</span><b>52</b></li>
+        <li><span>บทหลอมรวม · 6 ศาสตร์บรรจบ</span><b>60</b></li>
+        <li><span>ภาคผนวก · ตารางดวง/ศัพท์/ที่มา</span><b>68</b></li>
+      </ul>
+      <h2 class="sec">บทนำ</h2>
+      <p class="lead">เล่มนี้เล่าชะตาของคุณอาเอวผ่าน 6 ศาสตร์ที่พัฒนาอิสระจาก 6 อารยธรรม แล้วนำมาวางเทียบกัน · จุดที่หลายศาสตร์พูดตรงกันคือ "แก่นที่เชื่อถือได้" ส่วนจุดที่ต่างกันคือมุมมองเสริม · อ่านทีละบทเพื่อเข้าใจแต่ละศาสตร์ แล้วจบด้วย "บทหลอมรวม" ที่สรุปภาพเดียว · ทุกตัวเลข干支/ดาว มาจาก engine คำนวณจริง (TST + astronomy-engine) ไม่ใช่การเดา</p>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 2 / 5</span></div>
+    </div>
+
+    <!-- P3 บทศาสตร์ 1-3 (ย่อ + ภาพพื้นดวง + 10 มิติ) -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>คัมภีร์ชะตา · คุณอาเอว</span><span>บท 1–3</span></div>
+      <h2 class="sec">บทที่ 1 · 八字 ปาจื้อ</h2>
+      <p class="lead"><b>ภาพพื้นดวง:</b> 甲子 / 丙子 / 己亥 / 庚午 · ธาตุวัน 己土 อ่อน ฤดูหนาว 用神=ไฟ+ดิน · 正財格</p>
+      <div class="chips">
+        <span class="c"><b>1.ตัวตน</b> ดินหนักแน่น</span><span class="c"><b>2.ความคิด</b> เป็นระบบ</span>
+        <span class="c"><b>3.การงาน</b> การเงิน/ระบบ</span><span class="c"><b>4.ทรัพย์</b> สะสม</span>
+        <span class="c"><b>5.ความรัก</b> คู่มีหลักการ</span><span class="c"><b>6.ครอบครัว</b> เสาหลัก</span>
+        <span class="c"><b>7.สุขภาพ</b> ม้าม-ไต</span><span class="c"><b>8.วัยจร</b> 壬申ลงหลัก</span>
+        <span class="c"><b>9.ปีนี้</b> 丙午ไฟหนุน</span><span class="c"><b>10.มงคล</b> ไฟ+ดิน</span>
+      </div>
+      <h2 class="sec">บทที่ 2 · 七政四餘 (ดาวจริง)</h2>
+      <p class="lead"><b>ภาพพื้นดวง:</b> อาทิตย์ราศีมังกร · จันทร์เด่นเรือนทรัพย์ · พฤหัสเล็งการงาน · <b>10 มิติ</b> ครบตั้งแต่ตัวตน→มงคล เช่นเดียวบทที่ 1 (โอกาสจากผู้ใหญ่ ทรัพย์จันทร์หนุน ปีนี้อังคารหนุนครึ่งหลัง)</p>
+      <h2 class="sec">บทที่ 3 · 紫微斗數</h2>
+      <p class="lead"><b>ภาพพื้นดวง:</b> 命宮天府 (คลังทรัพย์) · 財帛宮武曲+祿存 · <b>10 มิติ</b> ครบ — มั่นคง เก็บออมเก่ง ทรัพย์จากงานจริง เตือน遷移宮擎羊ระวังย้าย/เดินทางกลางปี</p>
+      <div class="fig"><div class="figrow" style="gap:16px">
+        <svg viewBox="0 0 110 110" width="96" role="img" aria-label="ผังปาจื้อ บทที่1">
+          <g text-anchor="middle" font-size="15" fill="#fff">
+            <rect x="4" y="10" width="48" height="90" rx="5" fill="#fefcf5" stroke="#e5ddc9"/>
+            <rect x="58" y="8" width="48" height="94" rx="5" fill="#fbf3dd" stroke="#c8a44d"/>
+            <circle cx="28" cy="34" r="12" fill="#5a8a48"/><text x="28" y="39">甲</text><circle cx="28" cy="76" r="12" fill="#4a6f8a"/><text x="28" y="81">子</text>
+            <circle cx="82" cy="34" r="12" fill="#9a7d3a"/><text x="82" y="39">己</text><circle cx="82" cy="76" r="12" fill="#4a6f8a"/><text x="82" y="81">亥</text>
+          </g>
+          <text x="55" y="108" text-anchor="middle" font-size="9" fill="#8a6d2a">บท1 · 八字</text>
+        </svg>
+        <svg viewBox="0 0 130 110" width="110" role="img" aria-label="ดาวจริง บทที่2">
+          <rect x="1" y="1" width="128" height="90" rx="6" fill="#161a24"/>
+          <path d="M10 60 Q65 24 120 60" fill="none" stroke="#3a4152" stroke-width="2"/>
+          <circle cx="34" cy="54" r="8" fill="#f0c14b"/><circle cx="70" cy="36" r="6" fill="#d8d8e0"/><circle cx="100" cy="46" r="6" fill="#9a7d3a"/>
+          <text x="65" y="106" text-anchor="middle" font-size="9" fill="#8a6d2a">บท2 · 七政</text>
+        </svg>
+        <svg viewBox="0 0 110 110" width="96" role="img" aria-label="紫微 บทที่3">
+          <circle cx="52" cy="46" r="42" fill="#fefcf5" stroke="#c8a44d"/>
+          <g stroke="#e5ddc9"><line x1="52" y1="4" x2="52" y2="88"/><line x1="10" y1="46" x2="94" y2="46"/><line x1="22" y1="16" x2="82" y2="76"/><line x1="82" y1="16" x2="22" y2="76"/></g>
+          <circle cx="52" cy="46" r="14" fill="#fbf3dd" stroke="#e5ddc9"/><text x="52" y="43" text-anchor="middle" font-size="8" fill="#8a6d2a">命</text><text x="52" y="53" text-anchor="middle" font-size="9" fill="#b03a2e">府</text>
+          <text x="52" y="108" text-anchor="middle" font-size="9" fill="#8a6d2a">บท3 · 紫微</text>
+        </svg>
+      </div><div class="cap">ภาพพื้นดวงย่อประจำแต่ละบท (บทเต็มในเล่มมีผังใหญ่ + คำอธิบาย 10 มิติ)</div></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 3 / 5</span></div>
+    </div>
+
+    <!-- P4 บทศาสตร์ 4-6 -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>คัมภีร์ชะตา · คุณอาเอว</span><span>บท 4–6</span></div>
+      <h2 class="sec">บทที่ 4 · Western Astrology</h2>
+      <p class="lead"><b>ภาพพื้นดวง:</b> Sun Capricorn · Saturn return ผ่านแล้ว · <b>10 มิติ</b> ครบ — วางรากเสร็จ ปีนี้ Jupiter trine ทรัพย์ (โอกาสขยาย) เตือน Mercury retrograde 2 ช่วง (สัญญา)</p>
+      <h2 class="sec">บทที่ 5 · Vedic (Jyotish)</h2>
+      <p class="lead"><b>ภาพพื้นดวง:</b> Lagna อดทน · Mahadasha ของ Guru (ครู/ความรู้) · <b>10 มิติ</b> ครบ — ทรัพย์เรือน 2/11 แข็ง เตือน Sade Sati ปลายเฟส ไม่รีบก้อนใหญ่กลางปี</p>
+      <h2 class="sec">บทที่ 6 · Uranian (Hamburg)</h2>
+      <p class="lead"><b>ภาพพื้นดวง:</b> Halbsumme อาทิตย์=โหนด/ศุกร์ · Dial 90° · <b>10 มิติ</b> ครบ — ผูกคุณค่ากับความจริงใจ จุดไวกระตุ้นแรง 21 พ.ย. 2569 (วันตัดสินใจ/เซ็นสำคัญ)</p>
+      <div class="fig"><div class="figrow" style="gap:16px">
+        <svg viewBox="0 0 110 110" width="96" role="img" aria-label="Western บทที่4">
+          <circle cx="52" cy="46" r="42" fill="none" stroke="#c8a44d" stroke-width="2"/>
+          <g stroke="#e5ddc9"><line x1="52" y1="4" x2="52" y2="88"/><line x1="10" y1="46" x2="94" y2="46"/><line x1="22" y1="16" x2="82" y2="76"/><line x1="82" y1="16" x2="22" y2="76"/></g>
+          <text x="78" y="76" font-size="12" fill="#8a6d2a">☉</text><text x="26" y="26" font-size="11" fill="#8a6d2a">♃</text>
+          <text x="52" y="50" text-anchor="middle" font-size="11" fill="#8a6d2a">♑</text>
+          <text x="52" y="108" text-anchor="middle" font-size="9" fill="#8a6d2a">บท4 · Western</text>
+        </svg>
+        <svg viewBox="0 0 110 110" width="96" role="img" aria-label="Vedic บทที่5">
+          <rect x="8" y="6" width="88" height="88" fill="#fefcf5" stroke="#c8a44d" stroke-width="2"/>
+          <path d="M8 6 L96 94 M96 6 L8 94" stroke="#e5ddc9"/>
+          <path d="M52 6 L96 50 L52 94 L8 50 Z" stroke="#e5ddc9" fill="none"/>
+          <text x="52" y="52" text-anchor="middle" font-size="8" fill="#8a6d2a">Lagna</text>
+          <text x="52" y="108" text-anchor="middle" font-size="9" fill="#8a6d2a">บท5 · Vedic</text>
+        </svg>
+        <svg viewBox="0 0 130 110" width="110" role="img" aria-label="Uranian บทที่6">
+          <path d="M14 88 A74 74 0 0 1 88 14" fill="none" stroke="#c8a44d" stroke-width="2"/>
+          <g stroke="#8a6d2a"><line x1="14" y1="88" x2="24" y2="88"/><line x1="30" y1="52" x2="40" y2="58"/><line x1="60" y1="26" x2="66" y2="36"/><line x1="88" y1="14" x2="88" y2="24"/></g>
+          <line x1="14" y1="88" x2="66" y2="36" stroke="#b03a2e" stroke-width="2"/><circle cx="66" cy="36" r="5" fill="#b03a2e"/>
+          <text x="10" y="102" font-size="8" fill="#5f5847">0°</text><text x="86" y="102" font-size="8" fill="#5f5847">90°</text>
+          <text x="70" y="108" text-anchor="middle" font-size="9" fill="#8a6d2a">บท6 · Uranian</text>
+        </svg>
+      </div><div class="cap">ภาพพื้นดวงย่อประจำแต่ละบท · Western วงล้อราศี · Vedic ผังสี่เหลี่ยม · Uranian หน้าปัด 90°</div></div>
+      <div class="hkp-foot"><span>hourkey.io</span><span>หน้า 4 / 5</span></div>
+    </div>
+
+    <!-- P5 บทหลอมรวม + ภาคผนวก -->
+    <div class="hkp-page">
+      <div class="hkp-head"><span class="lg"><span class="seal">時</span>คัมภีร์ชะตา · คุณอาเอว</span><span>หลอมรวม + ภาคผนวก</span></div>
+      <h2 class="sec"><span class="ic">🔮</span>บทหลอมรวม · 6 ศาสตร์บรรจบ</h2>
+      <div class="fig">
+        <svg viewBox="0 0 240 150" width="220" role="img" aria-label="6 ศาสตร์บรรจบเป็นภาพเดียว">
+          <circle cx="120" cy="75" r="26" fill="#8a6d2a"/><text x="120" y="72" text-anchor="middle" font-size="10" fill="#fff">ภาพเดียว</text><text x="120" y="86" text-anchor="middle" font-size="9" fill="#fbecc4">2569</text>
+          <g stroke="#c8a44d" stroke-width="1.3" opacity=".7">
+            <line x1="120" y1="75" x2="120" y2="26"/><line x1="120" y1="75" x2="176" y2="50"/><line x1="120" y1="75" x2="176" y2="100"/>
+            <line x1="120" y1="75" x2="120" y2="124"/><line x1="120" y1="75" x2="64" y2="100"/><line x1="120" y1="75" x2="64" y2="50"/>
+          </g>
+          <g text-anchor="middle" font-size="10" fill="#fff">
+            <circle cx="120" cy="20" r="14" fill="#b03a2e"/><text x="120" y="24">八字</text>
+            <circle cx="182" cy="48" r="14" fill="#4a6f8a"/><text x="182" y="52">七政</text>
+            <circle cx="182" cy="102" r="14" fill="#5a8a48"/><text x="182" y="106">紫微</text>
+            <circle cx="120" cy="130" r="14" fill="#9a7d3a"/><text x="120" y="134" font-size="8">West</text>
+            <circle cx="58" cy="102" r="14" fill="#7a5a8a"/><text x="58" y="106" font-size="9">Vedic</text>
+            <circle cx="58" cy="48" r="14" fill="#c9a94d"/><text x="58" y="52" font-size="7">Uran</text>
+          </g>
+        </svg>
+        <div class="cap">ทุกศาสตร์บรรจบเป็นภาพเดียว: "คนดินที่สร้างของจริง · ปีวางฐานแล้วขยายมั่นคง"</div>
+      </div>
+      <div class="hkp-verdict"><span class="lab">ภาพเดียวจากทุกศาสตร์</span>
+        <p>ทุกศาสตร์บรรจบที่ภาพเดียวกัน: <b>"คนดินที่สร้างของจริงได้ ปีนี้คือปีวางฐานแล้วขยายอย่างมั่นคง"</b> — เก่งเรื่องเงินและระบบ มีผู้ใหญ่หนุน คู่ครองมีหลักการ · จุดต้องฝึกคือความเด็ดขาด (ตัดความลังเล) · วันทองคือ 21 พ.ย. 2569 · ธาตุมงคลไฟนำ ดินเสริม</p></div>
+      <div class="hkp-sum">
+        <div class="x"><span class="l">แก่นตัวตน</span>ดินหนักแน่น สร้างของจริง</div>
+        <div class="x"><span class="l">ธีมปีนี้</span>วางฐาน → ขยาย</div>
+        <div class="x"><span class="l">สิ่งที่ต้องฝึก</span>ตัดสินใจเด็ดขาด (กฎ 80%)</div>
+        <div class="x"><span class="l">มงคล</span>ไฟ (แดง) นำ · ดิน (เหลือง/น้ำตาล) เสริม</div>
+      </div>
+      <h2 class="sec">ภาคผนวก</h2>
+      <div class="hkp-card"><p><b>ตารางดวง:</b> ปาจื้อ 4 เสา + 5 เรือน + 大運 8 รอบ (ดูบทที่ 1) · <b>ศัพท์:</b> 用神=ธาตุอุปถัมภ์ · 忌神=ธาตุเลี่ยง · 建除=สิบสองเทพวัน · Halbsumme=ผลรวมครึ่ง · <b>ที่มา/ความแม่น:</b> ปาจื้อ TST (tyme4ts+紫金山) · ดาวจริง astronomy-engine (MIT) · ตำราต้นฉบับ 5 ศาสตร์ (source of truth ไม่ดัดแปลง)</p></div>
+      <div class="hkp-foot"><span>hourkey.io · 命書</span><span>หน้า 5 / 5</span></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-document.querySelectorAll('.bar button[data-doc]').forEach(function(b){
+document.querySelectorAll('.hkp-toolbar button[data-doc]').forEach(function(b){
   b.onclick=function(){
-    document.querySelectorAll('.bar button[data-doc]').forEach(function(x){x.classList.remove('on')});
+    document.querySelectorAll('.hkp-toolbar button[data-doc]').forEach(function(x){x.classList.remove('on')});
     b.classList.add('on');
     document.querySelectorAll('.doc').forEach(function(d){d.classList.remove('show')});
     document.getElementById('d-'+b.dataset.doc).classList.add('show');

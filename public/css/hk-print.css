@@ -1,0 +1,72 @@
+/* hk-print.css · เทมเพลต PDF ร่วมทุกหน้า (client window.print) · ยกจาก mockup /export-preview
+ * ใช้: หน้าไหนจะ export ให้โหลดไฟล์นี้ + ครอบ DOM print ด้วย .hkp-root แล้ว window.print()
+ * ⚠️ ห้าม jsPDF/html2pdf (CSP) · ฟอนต์ไทย+จีนพึ่ง browser (Noto Serif Thai/TC)
+ */
+:root{
+  --hkp-gold:#c8a44d; --hkp-gold-deep:#8a6d2a; --hkp-ink:#1a1d24; --hkp-soft:#5f5847;
+  --hkp-line:#e5ddc9; --hkp-paper:#fffdf7; --hkp-good:#5a8a48; --hkp-bad:#b03a2e;
+}
+/* กระดาษ A4 (แสดงบนจอ = การ์ด · พิมพ์ = เต็มหน้า) */
+.hkp-page{background:var(--hkp-paper);color:var(--hkp-ink);width:100%;max-width:794px;min-height:500px;
+  margin:0 auto 20px;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:44px 46px;position:relative;
+  overflow:hidden;font-family:"Noto Serif Thai","Noto Serif TC",serif}
+.hkp-page.land{max-width:1050px}                 /* A4 แนวนอน (calendar) */
+/* header/footer วิ่งทุกหน้า */
+.hkp-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--hkp-line);
+  padding-bottom:10px;margin-bottom:20px;font-size:11px;color:var(--hkp-soft)}
+.hkp-head .lg{display:flex;align-items:center;gap:7px;font-weight:700;color:var(--hkp-gold-deep)}
+.hkp-head .lg .seal{width:20px;height:20px;border:1px solid var(--hkp-gold-deep);display:grid;place-items:center;font-size:11px}
+.hkp-foot{position:absolute;left:46px;right:46px;bottom:20px;display:flex;justify-content:space-between;
+  font-size:10px;color:#a89e86;border-top:1px solid var(--hkp-line);padding-top:8px}
+/* หน้าปก */
+.hkp-cover{text-align:center;padding:30px 0}
+.hkp-cover .seal-lg{width:64px;height:64px;border:2px solid var(--hkp-gold);display:grid;place-items:center;
+  font-size:34px;color:var(--hkp-gold-deep);margin:0 auto 16px}
+.hkp-cover .kick{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--hkp-gold-deep)}
+.hkp-cover h1{font-size:30px;margin:10px 0 6px;color:var(--hkp-ink);font-weight:700}
+.hkp-cover .who{font-size:17px;color:var(--hkp-ink);margin:18px 0 4px;font-weight:600}
+.hkp-cover .meta{font-size:13px;color:var(--hkp-soft);line-height:1.9}
+.hkp-cover .big{font-size:52px;color:var(--hkp-gold-deep);margin:14px 0 4px;font-family:"Noto Serif TC",serif}
+.hkp-cover .badge{display:inline-block;margin-top:14px;font-size:11px;color:var(--hkp-good);
+  border:1px solid var(--hkp-good);border-radius:20px;padding:4px 14px}
+.hkp-cover .qr{width:74px;height:74px;margin:22px auto 0;border:1px solid var(--hkp-line);border-radius:8px;
+  display:grid;place-items:center;font-size:9px;color:#a89e86}
+/* section/ตาราง/การ์ด */
+.hkp-page h2.sec{font-size:17px;color:var(--hkp-gold-deep);border-left:3px solid var(--hkp-gold);padding-left:10px;margin:22px 0 12px}
+.hkp-page table{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0 14px}
+.hkp-page th,.hkp-page td{border:1px solid var(--hkp-line);padding:6px 8px;text-align:center}
+.hkp-page th{background:#f5efe0;color:var(--hkp-gold-deep);font-weight:700}
+.hkp-page td .zh{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--hkp-ink);display:block}
+.hkp-page td .th{font-size:10px;color:var(--hkp-soft)}
+.hkp-card{border:1px solid var(--hkp-line);border-radius:9px;padding:12px 14px;margin:0 0 10px;background:#fefcf5;break-inside:avoid}
+.hkp-card h3{font-size:13.5px;color:var(--hkp-ink);margin-bottom:6px}
+.hkp-card .conf{float:right;font-size:9px;color:#fff;background:var(--hkp-good);border-radius:10px;padding:1px 8px}
+.hkp-card p{font-size:12px;color:#3a3730;line-height:1.65;margin:3px 0}
+.hkp-card p b{color:var(--hkp-gold-deep)}
+.hkp-verdict{background:linear-gradient(160deg,rgba(200,164,77,.14),transparent);border:1px solid var(--hkp-line);
+  border-radius:11px;padding:14px 16px;margin:6px 0 14px}
+.hkp-verdict .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--hkp-gold-deep)}
+.hkp-verdict p{font-size:13.5px;line-height:1.7;margin-top:6px;color:var(--hkp-ink)}
+/* ผัง 9 วัง (qimen) */
+.hkp-pal9{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0 14px}
+.hkp-pal9 .c{border:1px solid var(--hkp-line);border-radius:7px;padding:9px 4px;text-align:center;background:#fefcf5;min-height:74px}
+.hkp-pal9 .c .g{font-family:"Noto Serif TC";font-size:16px;color:var(--hkp-gold-deep);display:block}
+.hkp-pal9 .c.good{border-color:var(--hkp-good);background:rgba(90,138,72,.08)}
+/* สรุป grid */
+.hkp-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.hkp-sum .x{border:1px solid var(--hkp-line);border-radius:8px;padding:9px 11px;font-size:11.5px;background:#fefcf5}
+.hkp-sum .x .l{color:var(--hkp-gold-deep);font-weight:700;font-size:10px;display:block;margin-bottom:2px}
+/* timeline */
+.hkp-tl{border-left:2px solid var(--hkp-gold);padding-left:14px;margin:6px 0}
+.hkp-tl .it{margin-bottom:9px;font-size:12px}
+.hkp-tl .it b{color:var(--hkp-gold-deep)}
+/* โหมดพิมพ์จริง */
+@media print{
+  @page{size:A4;margin:12mm}
+  @page land{size:A4 landscape}
+  body{background:#fff!important}
+  .noprint,.hk-topbar,.topbar,.hkp-toolbar{display:none!important}
+  .hkp-page{box-shadow:none;margin:0;border-radius:0;max-width:100%;min-height:auto;page-break-after:always}
+  .hkp-page:last-child{page-break-after:auto}
+  .hkp-card,.hkp-page table{break-inside:avoid}
+}
