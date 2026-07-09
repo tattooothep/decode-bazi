@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -232,10 +233,18 @@
   /* Claude-style chat shell toolbar (2 มิ.ย.) */
   .chat-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--gold-line);}
   .chat-title{display:inline-flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--fg);}
-  .hk-fusion-cta{display:inline-flex;align-items:center;gap:5px;text-decoration:none;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--gold);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;line-height:1;white-space:nowrap;transition:.2s;margin-right:auto;}
-  .hk-fusion-cta:hover{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+  /* ปุ่มดูดวงขั้นสูง — เด่น: พื้นทองเต็ม + เงาเรือง + แสงกวาด + ✨ (เจ้านายสั่งให้เด่นขึ้น) */
+  .hk-fusion-cta{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+    background:linear-gradient(135deg,var(--gold-bright,#e0c98a),var(--gold) 45%,var(--gold-deep));
+    border:1px solid var(--gold);color:#1c1305;border-radius:999px;padding:8px 17px;font-size:13.5px;font-weight:800;
+    line-height:1;white-space:nowrap;transition:.2s;margin-right:auto;box-shadow:0 3px 13px rgba(200,164,77,.42);}
+  .hk-fusion-cta:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,164,77,.6);filter:brightness(1.07);}
+  .hk-fusion-cta::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);
+    animation:hkFusionShine 3.6s ease-in-out infinite;}
+  @keyframes hkFusionShine{0%,72%{left:-60%}88%,100%{left:130%}}
   .hk-fusion-cta .tc{font-family:var(--tc);font-size:15px;}
-  @media(max-width:560px){ .hk-fusion-cta{padding:5px 11px;font-size:12px;} .hk-fusion-cta .lbl-full{display:none;} }
+  @media(max-width:560px){ .hk-fusion-cta{padding:7px 13px;font-size:12.5px;} }
   .chat-title .tc{font-family:var(--tc);color:var(--gold);}
   .messages{display:flex;flex-direction:column;gap:14px;margin:0 auto 16px;padding-bottom:8px;max-width:760px;width:100%;}
   .chat-toolbar{position:sticky;top:60px;background:var(--bg);z-index:9;padding-top:10px;max-width:760px;width:100%;margin:0 auto;}
@@ -597,7 +606,7 @@
 </div>
 
 <header class="topbar">
-  <button class="hk-side-toggle" id="hk-side-toggle" aria-label="ประวัติแชท">☰</button>
+  <button class="hk-side-toggle" id="hk-side-toggle" aria-label="Chat history">☰</button>
   <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
   <nav class="nav" id="hk-topnav">
     <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="mst.nav.chart">ดวง</span></a>
@@ -610,6 +619,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="mst.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="mst.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="mst.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="mst.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -624,10 +634,10 @@
     <!-- toolbar: เลือกดวง + กลุ่ม (ย้ายขึ้นบนแชท · แบบ Claude) -->
     <div class="chat-toolbar">
       <div class="chat-title"><span class="tc">師</span><span data-i18n="auto.m.030">ถามซินแส</span></div>
-      <a href="/master-fusion" class="hk-fusion-cta" title="ดูดวงเชิงลึก รวมหลายซินแส/หลายศาสตร์"><span class="tc">融</span><span class="lbl-full" data-i18n="mst.nav.fusion">ดูดวงขั้นสูง</span></a>
+      <a href="/master-fusion" class="hk-fusion-cta" title="Advanced multi-science reading"><span class="tc">融</span><span class="lbl-full" data-i18n="mst.nav.fusion">ดูดวงขั้นสูง</span><span aria-hidden="true">✨</span></a>
       <div class="sifu-model-pick" id="sifu-model-wrap">
         <span class="smp-label" data-i18n="mst.model.label">โมเดล:</span>
-        <select id="sifu-model" aria-label="เลือกโมเดลซินแส">
+        <select id="sifu-model" aria-label="Choose Sifu model">
           <option value="claude-max-cli">Claude CLI</option>
           <option value="codex-cli">Codex CLI</option>
           <option value="grok-cli">Grok CLI</option>
@@ -635,14 +645,14 @@
       </div>
       <div class="profile-pick" id="sifu-profile-wrap">
         <span class="pp-label" data-i18n="mst.ask.for">ดูดวงของ:</span>
-        <select id="sifu-profile" aria-label="เลือกโปรไฟล์"></select>
+        <select id="sifu-profile" aria-label="Choose profile"></select>
         <span class="pp-label pp-second" data-i18n="mst.ask.plus">เพิ่มดวงที่สอง:</span>
-        <select id="sifu-profile-2" aria-label="เลือกดวงที่สอง"></select>
+        <select id="sifu-profile-2" aria-label="Choose second chart"></select>
         <span class="hkp-count" id="sifu-pair-count">1/2</span>
       </div>
       <div class="hkg-pick" id="hkg-wrap" style="display:none;">
         <span class="hkg-label" data-i18n="hkg.label">โหมดกลุ่ม:</span>
-        <select id="hkg-group" aria-label="เลือกกลุ่ม">
+        <select id="hkg-group" aria-label="Choose group">
 	          <option value="-" data-i18n="hkg.opt.none">-</option>
 	          <option value="general" data-i18n="hkg.opt.general">ทั่วไป</option>
 	          <option value="family" data-i18n="hkg.opt.family">家 ครอบครัว</option>
@@ -684,10 +694,10 @@
     <div class="hk-attach-preview" id="hk-attach-preview" style="display:none;"></div>
     <div class="chat-input" id="hk-chat-input-bar">
       <input type="file" id="hk-attach-input" accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xlsx,.md" multiple style="display:none;">
-      <button type="button" class="hk-attach-btn" id="hk-attach-btn" title="แนบรูป/ไฟล์ (หรือลากมาวาง)" aria-label="แนบไฟล์">📎</button>
-      <button type="button" class="hk-attach-btn hk-genimg-btn" id="hk-genimg-btn" title="สร้างรูปด้วย AI (grok/gpt)" aria-label="สร้างรูป">🎨</button>
-      <button type="button" class="hk-attach-btn hk-genvid-btn" id="hk-genvid-btn" title="สร้างวิดีโอด้วย AI (BytePlus)" aria-label="สร้างวิดีโอ">🎬</button>
-      <textarea id="chat-input" placeholder="ถามซินแส... เช่น 'พรุ่งนี้ควรประชุมตอนไหน', 'ใครเป็นคนของฉันสัปดาห์นี้'"></textarea>
+      <button type="button" class="hk-attach-btn" id="hk-attach-btn" title="Attach image/file or drag here" aria-label="Attach file">📎</button>
+      <button type="button" class="hk-attach-btn hk-genimg-btn" id="hk-genimg-btn" title="Generate image with AI (grok/gpt)" aria-label="Generate image">🎨</button>
+      <button type="button" class="hk-attach-btn hk-genvid-btn" id="hk-genvid-btn" title="Generate video with AI (BytePlus)" aria-label="Generate video">🎬</button>
+      <textarea id="chat-input" placeholder="Ask Sifu... e.g. 'When should I meet tomorrow?'" data-i18n-ph="mst.chat.placeholder"></textarea>
       <button class="send-btn" id="send">送 →</button>
     </div>
     <div class="hk-drop-overlay" id="hk-drop-overlay"><div class="hk-drop-box"><span class="hk-drop-ico">📎</span><span data-i18n="mst.drop.title">วางไฟล์ที่นี่เพื่อแนบ</span><small data-i18n="mst.drop.sub">รูปภาพ · เอกสาร</small></div></div>
@@ -930,7 +940,7 @@
         mode: 'intro',
         message: msg,
         topic: 'overview',
-        lang: 'th'
+        lang: curLocale()
       });
       if (activeProfile.id) qs.set('profileId', activeProfile.id);
       var rawDt = String(activeProfile.birth_datetime || '');
@@ -1144,7 +1154,7 @@
       var box=document.getElementById('hk-side-list'); if(!box) return;
       var o=loadThreads();
       var arr=profileThreads(o, activeProfileId()).slice().sort(function(a,b){ var pa=a.pinned?1:0,pb=b.pinned?1:0; if(pa!==pb) return pb-pa; return b.ts-a.ts; });
-      if(!arr.length){ box.innerHTML='<div class="hk-side-empty" data-i18n="mst.side.empty">ยังไม่มีบทสนทนา</div>'; return; }
+      if(!arr.length){ box.innerHTML='<div class="hk-side-empty" data-i18n="mst.side.empty">'+escHtml(_mstx('mst.side.empty','ยังไม่มีบทสนทนา'))+'</div>'; return; }
       var L=tLoc(), ph=L==='th'?'ตั้งชื่อแชท':L==='zh'?'输入对话名称':'Chat name';
       var h='';
       arr.forEach(function(t){
@@ -1438,7 +1448,15 @@
 
     /* 🧑‍🤝‍🧑 dropdown เลือกดวง · โหลดรายชื่อโปรไฟล์ในบัญชีจาก /api/profile (ตัวเอง+ญาติ org เดียวกัน) */
     var relSelf = (window.HK_I18N && window.HK_I18N['mst.ask.self']) ? window.HK_I18N['mst.ask.self'] : { th:'ตัวเอง', en:'Self', zh:'本人' };
-    function curLocale(){ try { return localStorage.getItem('hk_locale') || 'th'; } catch(_){ return 'th'; } }
+    function curLocale(){
+      try {
+        var st=window.HK_LANG_STATE || (window.HK&&window.HK.langState);
+        if(st&&typeof st.sifu==='function') return st.sifu();
+        var l=localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th';
+        if(l==='zh'&&localStorage.getItem('hk_zh_variant')==='cn') return 'cn';
+        return l;
+      } catch(_){ return 'th'; }
+    }
     function switchProfile(newId, opts){
       opts = opts || {};
       if (!newId || (!opts.force && String(newId) === selectedProfileId)) return;
@@ -2033,6 +2051,7 @@
             threadProfileSig: pidSig,
             historyProfileIds: [pid],
             model: selectedSifuModel(),
+            lang: curLocale(),
           }),
         });
         const ct = r.headers.get('content-type') || '';
@@ -2266,6 +2285,7 @@ window.HK_I18N = {
   'mst.gate.enter': { th:'เปิดประตูเข้าสู่ HourKey', en:'Enter HourKey', zh:'進入 HourKey' },
   'mst.model.label': { th:'โมเดล:', en:'Model:', zh:'模型：' },
   'mst.chat.welcome': { th:'สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ', en:'Hello 🙏 I am your personal Sifu — ask me anything: today\'s fortune, career, wealth, love, health, the people around you, directions, or auspicious timing. I will read your actual chart and answer.', zh:'您好 🙏 我是您的專屬命理師 — 歡迎詢問任何事：今日運勢、事業、財運、感情、健康、人際、方位或擇日。我會依您的真實命盤為您解答。' },
+  'mst.chat.placeholder': { th:'ถามซินแส... เช่น "พรุ่งนี้ควรประชุมตอนไหน", "ใครเป็นคนของฉันสัปดาห์นี้"', en:'Ask Sifu... e.g. "When should I meet tomorrow?"', zh:'問老師... 例如「明天何時適合開會？」' },
   'mst.attach.remove': { th:'ลบ', en:'Remove', zh:'移除' },
   'mst.attach.err.type': { th:'ไฟล์ชนิดนี้ไม่รองรับ: {name}', en:'This file type is not supported: {name}', zh:'不支援此檔案類型：{name}' },
   'mst.attach.err.size': { th:'ไฟล์ {name} ใหญ่เกิน 20MB', en:'File {name} exceeds 20MB', zh:'檔案 {name} 超過 20MB' },
@@ -2335,22 +2355,29 @@ function applyI18N(lang){
         else el.textContent = v;
       }
     });
+    document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){ if (v !== undefined) el.setAttribute('placeholder', v); });
+    document.querySelectorAll('[data-i18n-aria="'+key+'"]').forEach(function(el){ if (v !== undefined) el.setAttribute('aria-label', v); });
+    document.querySelectorAll('[data-i18n-title="'+key+'"]').forEach(function(el){ if (v !== undefined) el.setAttribute('title', v); });
   });
 }
 window.applyI18N = applyI18N;
 window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('lang',l);document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 (function(){
-  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
-  var btns = sw.querySelectorAll('button');
+  var sw = document.getElementById('hk-lang-switch');
+  var btns = sw ? sw.querySelectorAll('button') : [];
   function apply(lang){
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
+    var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.set?window.HK_LANG_STATE.set(lang):null;
+    document.documentElement.setAttribute('lang', st?st.html:lang);
+    document.documentElement.setAttribute('data-lang', st?st.app:lang);
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
-    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    try{ localStorage.setItem('hk_locale', lang); localStorage.setItem('hk_lang', lang); }catch(e){}
     applyI18N(lang);
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  try{
+    var s=(window.HK_LANG_STATE&&window.HK_LANG_STATE.raw&&window.HK_LANG_STATE.raw())||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'th';
+    apply(s);
+  }catch(e){ apply('th'); }
 })();
 </script>
 
