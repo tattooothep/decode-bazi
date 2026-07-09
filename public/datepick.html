@@ -3645,11 +3645,13 @@ function dpOpenSifuChat(){
   if (panel) panel.classList.add('on');
   updateDpSifuContextBadge();
   const log = document.getElementById('dp-sifu-log');
+  const inp = document.getElementById('dp-sifu-input');
+  // เปิดช่องแชท "รอไว้" — ไม่ auto-ยิง · ทักทาย + เตรียมคำถามในช่องให้ user แก้/กดส่งเอง (เจ้านายสั่ง)
   if (log && !log.children.length && !(state.sifuHistory || []).length) {
-    dpSendSifu(dpDefaultSifuQuestion());
-  } else {
-    document.getElementById('dp-sifu-input')?.focus();
+    dpAppendMsg('sifu', _dptx('dp.sifu.greet','สวัสดีครับ ผมพร้อมช่วยอ่านผลฤกษ์ชุดนี้ให้ · ผมได้ตารางฤกษ์ + คะแนนทุกศาสตร์ + คนที่คุณเลือกครบแล้ว · แก้คำถามด้านล่างได้ตามใจ แล้วกด "ส่ง" เมื่อพร้อม'));
+    if (inp && !inp.value.trim()) inp.value = dpDefaultSifuQuestion();
   }
+  if (inp) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch(_){} }
 }
 document.addEventListener('DOMContentLoaded', () => {
   const sb = document.getElementById('dp-sifu-btn');
@@ -4429,6 +4431,7 @@ Object.assign(window.HK_I18N, {
   'dp.sifu.note':    { th:'คุยต่อได้แบบแชท · ระบบส่งผลฤกษ์ ฟิลเตอร์ คนที่เลือก และคะแนนทั้งหน้าล่าสุดให้ซินแสทุกครั้ง', en:'Keep chatting anytime · the system sends the auspicious-date results, filters, selected person, and full page scores to the Sifu every time', zh:'可持續對話 · 系統每次都會將擇日結果、篩選條件、所選對象及全頁分數傳送給師父' },
   'dp.sifu.h3':      { th:'💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล', en:'💬 Date-Picking Sifu · AI', zh:'💬 擇日師父 · AI' },
   'dp.sifu.thinking':{ th:'ซินแสกำลังคิด...', en:'Sifu is thinking...', zh:'師父思考中...' },
+  'dp.sifu.greet':   { th:'สวัสดีครับ ผมพร้อมช่วยอ่านผลฤกษ์ชุดนี้ให้ · ผมได้ตารางฤกษ์ + คะแนนทุกศาสตร์ + คนที่คุณเลือกครบแล้ว · แก้คำถามด้านล่างได้ตามใจ แล้วกด "ส่ง" เมื่อพร้อม', en:'Hello! I\'m ready to read this set of auspicious times · I already have the full timing table, every-science scores, and the people you selected · edit the question below as you like, then hit "Send".', zh:'您好！我已準備好為您解讀這組擇日 · 已取得完整擇日表、各術數評分與您選擇的對象 · 可自行修改下方問題，準備好再按「送出」。' },
   'dp.sifu.err':     { th:'ขัดข้อง', en:'Error', zh:'錯誤' },
   'dp.search.alert': { th:'กรุณาค้นหาฤกษ์ก่อน', en:'Please search first', zh:'請先搜尋日子' },
   'dp.search.msg':   { th:'วิเคราะห์ผลค้นหาฤกษ์ทั้ง {N} ชุด · เลือก top 3 ที่ดีสุดสำหรับผม · ไม่เลือกอันไหน · เพราะอะไร',
