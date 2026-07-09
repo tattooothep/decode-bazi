@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="th" data-lang="th" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>hourkey · Terms of Service</title>
+  <style>
+  :root{--bg:#0d0f12;--panel:#181c24;--panel2:#202630;--line:rgba(200,164,77,.24);--fg:#f6f1e6;--soft:rgba(246,241,230,.70);--faint:rgba(246,241,230,.46);--gold:#c8a44d;--red:#df6c5f;--green:#72c27d}
+  [data-theme="light"]{--bg:#f5efe2;--panel:#fffaf0;--panel2:#f8efdd;--line:rgba(138,109,42,.28);--fg:#1a1612;--soft:rgba(26,22,18,.70);--faint:rgba(26,22,18,.46);--gold:#8a6d2a;--red:#b04d41;--green:#4f8a58}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg)}
+  body{min-height:100vh;background:linear-gradient(180deg,rgba(200,164,77,.08),transparent 280px),var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}
+  a{color:inherit;text-decoration:none}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 24px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px)}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:700}
+  .seal{width:30px;height:30px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold)}
+  .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .nav a,.lang button{min-height:34px;border:1px solid var(--line);background:var(--panel);color:var(--soft);padding:0 10px;font-size:12px;cursor:pointer}
+  .lang{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+  .lang button.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:800}
+  .wrap{width:min(980px,100%);margin:0 auto;padding:34px 22px 80px}
+  .hero{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 78%,var(--bg)));padding:28px;margin-bottom:18px}
+  .kicker{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+  h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:clamp(30px,5vw,50px);line-height:1.12;font-weight:700;letter-spacing:0}
+  .lead{margin-top:12px;color:var(--soft);line-height:1.85;font-size:14px;max-width:760px}
+  .meta{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:7px 10px;color:var(--faint);font-size:12px}
+  .doc{display:grid;gap:14px}
+  section.card{border:1px solid var(--line);background:var(--panel);padding:22px}
+  h2{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:22px;line-height:1.25;margin-bottom:10px}
+  p,li{color:var(--soft);font-size:14px;line-height:1.85}
+  ul{padding-left:20px;display:grid;gap:6px}
+  .note{border-left:3px solid var(--gold);padding-left:12px;color:var(--fg)}
+  .danger{border-color:color-mix(in srgb,var(--red) 45%,var(--line))}
+  .foot{margin-top:16px;color:var(--faint);font-size:12px;line-height:1.7}
+  @media(max-width:700px){.topbar{align-items:flex-start;padding:12px 14px}.nav a{display:none}.wrap{padding:24px 14px 60px}.hero,section.card{padding:18px}.lang{max-width:260px}.lang button{min-width:38px;padding:0 8px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="seal">時</span><span>hourkey</span></a>
+    <div class="nav">
+      <a href="/privacy.html" data-nav="privacy">Privacy</a>
+      <a href="/signup" data-nav="signup">Sign up</a>
+      <div class="lang" id="lang"></div>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="hero">
+      <div class="kicker" id="kicker"></div>
+      <h1 id="title"></h1>
+      <p class="lead" id="lead"></p>
+      <div class="meta"><span class="pill" id="updated"></span><span class="pill" id="scope"></span></div>
+    </div>
+    <div class="doc" id="doc"></div>
+    <div class="foot" id="foot"></div>
+  </main>
+  <script>
+  (function(){
+    var LANGS=['th','en','zh','cn','vi','ja','ko','ru','es'];
+    var LABEL={th:'TH',en:'EN',zh:'繁',cn:'简',vi:'VI',ja:'JA',ko:'KO',ru:'RU',es:'ES'};
+    var DATA={
+      th:{nav:{privacy:'Privacy',signup:'สมัคร/เข้าสู่ระบบ'},kicker:'TERMS OF SERVICE',title:'เงื่อนไขการใช้บริการ',lead:'การใช้ Hourkey หมายถึงคุณยอมรับเงื่อนไขนี้ บริการของเราเป็นเครื่องมืออ่านเชิงสัญลักษณ์และแนะแนวชีวิต ไม่ใช่การรับรองอนาคตหรือคำแนะนำวิชาชีพแทนผู้เชี่ยวชาญ',updated:'อัปเดตล่าสุด: 9 กรกฎาคม 2026',scope:'ใช้กับ hourkey.io และบริการที่เกี่ยวข้อง',foot:'หากมีคำถามเกี่ยวกับเงื่อนไขนี้ ติดต่อทีม Hourkey ผ่านช่องทาง support ที่แสดงในเว็บไซต์',sections:[
+        ['1. การยอมรับเงื่อนไข',['เมื่อสร้างบัญชี เข้าสู่ระบบ ซื้อแพ็กเกจ ใช้ AI ซินแส อัปโหลดข้อมูล หรือใช้ฟีเจอร์ใดของ Hourkey คุณตกลงปฏิบัติตามเงื่อนไขนี้','หากคุณใช้บริการแทนองค์กร คุณยืนยันว่ามีอำนาจผูกพันองค์กรนั้น','หากไม่ยอมรับเงื่อนไขนี้ โปรดหยุดใช้บริการ']],
+        ['2. ลักษณะของบริการ',['Hourkey ให้บริการคำนวณ วิเคราะห์ และแสดงผลด้านโหราศาสตร์/ศาสตร์พยากรณ์ เช่น BaZi, Qi Men, ฤกษ์, ฟิวชันหลายศาสตร์, ลายมือ และเครื่องมือที่เกี่ยวข้อง','ผลอ่านเป็นการตีความเชิงสัญลักษณ์เพื่อการสะท้อนตนเอง ความบันเทิง การวางแผน และการพิจารณาประกอบ ไม่ใช่ข้อเท็จจริงทางวิทยาศาสตร์หรือคำรับรองผลลัพธ์','AI อาจตอบผิด ล้าสมัย ไม่ครบถ้วน หรือคลาดเคลื่อนจากข้อมูลที่ผู้ใช้กรอก']],
+        ['3. ข้อจำกัดสำคัญ',['ห้ามใช้ Hourkey แทนแพทย์ ทนาย นักการเงิน นักจิตวิทยา หรือผู้เชี่ยวชาญวิชาชีพ','ห้ามถือคำทำนายเป็นคำสั่งให้ลงทุน รักษาโรค เลิกยา ดำเนินคดี แต่งงาน หย่า หรือกระทำการเสี่ยงโดยไม่ใช้ดุลยพินิจ','สำหรับเรื่องสุขภาพ กฎหมาย การเงิน ความปลอดภัย หรือเหตุฉุกเฉิน คุณต้องปรึกษาผู้เชี่ยวชาญที่เหมาะสม']],
+        ['4. บัญชีและความปลอดภัย',['คุณต้องให้ข้อมูลที่ถูกต้องพอสมควร และรับผิดชอบการรักษารหัสผ่าน อุปกรณ์ และ session ของตนเอง','ห้ามใช้บัญชีผู้อื่น แอบอ้างบุคคลอื่น ขายต่อบัญชี หรือหลีกเลี่ยงระบบเครดิต/ข้อจำกัดการใช้งาน','หากพบการใช้งานผิดปกติ เราอาจระงับ จำกัด หรือปิดบัญชีเพื่อป้องกันความเสียหาย']],
+        ['5. เครดิต ยาม แพ็กเกจ และการชำระเงิน',['เครดิตหรือยามใช้เพื่อเข้าถึงฟีเจอร์บางส่วนของ Hourkey เงื่อนไข ราคา และจำนวนเครดิตอาจเปลี่ยนแปลงได้ตามที่แสดงในหน้าแพ็กเกจ','ผู้ให้บริการชำระเงินภายนอกอาจประมวลผลข้อมูลการชำระเงิน เราไม่ตั้งใจเก็บเลขบัตรเต็มของคุณบนระบบ Hourkey','การคืนเงินหรือการยกเลิกขึ้นกับแพ็กเกจ กฎหมายที่ใช้บังคับ และสถานะการใช้งาน หากมีข้อผิดพลาดด้านการชำระเงินให้ติดต่อ support พร้อมหลักฐาน']],
+        ['6. ข้อมูลผู้ใช้และสิทธิในเนื้อหา',['คุณรับผิดชอบข้อมูลวันเกิด เวลาเกิด สถานที่ คำถาม รูปภาพ และเนื้อหาอื่นที่ส่งให้ระบบ','คุณอนุญาตให้ Hourkey ประมวลผลข้อมูลดังกล่าวเพื่อให้บริการ สร้างผลอ่าน ปรับปรุงความปลอดภัย และจัดการบัญชีตาม Privacy Policy','คุณต้องไม่อัปโหลดข้อมูลที่ละเมิดสิทธิผู้อื่น ผิดกฎหมาย หรือเป็นเนื้อหาที่คุณไม่มีสิทธิใช้']],
+        ['7. การใช้งานที่ห้าม',['ห้ามโจมตีระบบ ขูดข้อมูลจำนวนมาก ทำ reverse engineering เจาะระบบ ใช้บอต หรือพยายามเลี่ยง rate limit','ห้ามใช้บริการเพื่อคุกคาม หลอกลวง แบล็กเมล สร้างความเกลียดชัง หรือทำร้ายผู้อื่น','ห้ามนำผลอ่านไปอ้างเป็นคำรับรองทางวิชาชีพหรือข้อเท็จจริงที่ Hourkey รับประกัน']],
+        ['8. การเปลี่ยนแปลง ระงับ หรือยุติบริการ',['เราอาจปรับปรุง เพิ่ม ลบ หรือหยุดฟีเจอร์บางส่วนเพื่อความปลอดภัย คุณภาพ ต้นทุน หรือข้อกำหนดทางกฎหมาย','เราอาจเปลี่ยนเงื่อนไขนี้เป็นครั้งคราว โดยจะแสดงวันที่อัปเดตล่าสุดบนหน้านี้','การใช้บริการต่อหลังมีการเปลี่ยนแปลงถือว่าคุณยอมรับเงื่อนไขที่แก้ไข']],
+        ['9. ข้อจำกัดความรับผิด',['บริการจัดให้ตามสภาพที่มี โดยไม่รับประกันว่าผลอ่านจะถูกต้อง สมบูรณ์ ต่อเนื่อง หรือเหมาะกับวัตถุประสงค์เฉพาะของคุณ','ภายใต้ขอบเขตที่กฎหมายอนุญาต Hourkey ไม่รับผิดชอบความเสียหายทางอ้อม กำไรที่สูญเสีย การตัดสินใจของผู้ใช้ หรือผลจากการตีความคำทำนาย','ความรับผิดรวมของเราจะไม่เกินจำนวนที่คุณชำระให้ Hourkey สำหรับบริการที่เกี่ยวข้องในช่วงเวลาที่กฎหมายอนุญาต']],
+        ['10. กฎหมายและการติดต่อ',['เงื่อนไขนี้ตีความตามกฎหมายที่เกี่ยวข้องกับผู้ให้บริการและผู้ใช้ โดยไม่ตัดสิทธิผู้บริโภคที่กฎหมายบังคับให้มี','หากข้อใดใช้บังคับไม่ได้ ข้ออื่นยังคงมีผล','โปรดติดต่อ support หากต้องการแจ้งปัญหา ข้อพิพาท หรือคำถามเกี่ยวกับเงื่อนไขนี้']]
+      ]},
+      en:{nav:{privacy:'Privacy',signup:'Sign up'},kicker:'TERMS OF SERVICE',title:'Terms of Service',lead:'By using Hourkey you accept these terms. Hourkey provides symbolic readings and life guidance tools. It does not guarantee the future and does not replace professional advice.',updated:'Last updated: July 9, 2026',scope:'Applies to hourkey.io and related services',foot:'Questions about these terms can be sent through the support channel shown on the website.',sections:[
+        ['1. Acceptance',['By creating an account, signing in, buying a package, using AI Sifu, uploading data, or using any Hourkey feature, you agree to these terms.','If you use the service for an organization, you confirm that you can bind that organization.','If you do not accept these terms, stop using the service.']],
+        ['2. Service nature',['Hourkey offers calculation, interpretation, and presentation tools for astrology and divination systems, including BaZi, Qi Men, date selection, multi-system fusion, palmistry, and related tools.','Readings are symbolic interpretations for reflection, planning, entertainment, and personal consideration. They are not scientific facts or guaranteed outcomes.','AI output may be wrong, outdated, incomplete, or affected by the data you provide.']],
+        ['3. Important limitations',['Do not use Hourkey as a substitute for doctors, lawyers, financial advisers, mental health professionals, or other qualified professionals.','Do not treat a reading as an instruction to invest, seek medical treatment, stop medication, litigate, marry, divorce, or take risky action without your own judgment.','For health, legal, financial, safety, or emergency matters, consult the appropriate professional.']],
+        ['4. Accounts and security',['You must provide reasonably accurate information and protect your password, devices, and sessions.','Do not use another person’s account, impersonate anyone, resell accounts, or bypass credits and usage limits.','If we detect abnormal use, we may suspend, restrict, or close an account to prevent harm.']],
+        ['5. Credits, packages, and payment',['Credits or yam unlock parts of Hourkey. Conditions, prices, and credit amounts may change as shown on the package page.','External payment providers may process payment data. Hourkey does not intend to store your full card number.','Refunds or cancellations depend on the package, applicable law, and usage status. Contact support with evidence if a payment error occurs.']],
+        ['6. User data and content',['You are responsible for birth data, questions, images, and other content you submit.','You allow Hourkey to process that content to provide readings, operate accounts, improve safety, and perform the purposes in the Privacy Policy.','Do not upload unlawful content, content that violates another person’s rights, or content you are not allowed to use.']],
+        ['7. Prohibited use',['Do not attack, scrape, reverse engineer, breach, use bots, or bypass rate limits.','Do not use the service to harass, deceive, blackmail, spread hate, or harm others.','Do not present readings as professional certifications or facts guaranteed by Hourkey.']],
+        ['8. Changes and suspension',['We may update, add, remove, or pause features for safety, quality, cost, or legal reasons.','We may update these terms from time to time. The latest update date appears on this page.','Continuing to use the service after an update means you accept the revised terms.']],
+        ['9. Liability limits',['The service is provided as available, without a promise that readings will be accurate, complete, uninterrupted, or fit for a specific purpose.','To the extent allowed by law, Hourkey is not responsible for indirect damages, lost profits, user decisions, or outcomes from interpreting readings.','Our total liability will not exceed the amount you paid Hourkey for the relevant service where such limitation is allowed by law.']],
+        ['10. Law and contact',['These terms are interpreted under laws relevant to the provider and user, without removing mandatory consumer rights.','If one provision cannot be enforced, the rest remain in effect.','Contact support for issues, disputes, or questions about these terms.']]
+      ]},
+      zh:{nav:{privacy:'隱私',signup:'註冊'},kicker:'服務條款',title:'服務條款',lead:'使用 Hourkey 即表示您接受本條款。Hourkey 提供象徵式命理閱讀與生活參考工具，不保證未來，也不能取代專業意見。',updated:'最後更新：2026年7月9日',scope:'適用於 hourkey.io 及相關服務',foot:'如對本條款有疑問，請透過網站顯示的 support 管道聯絡我們。',sections:[
+        ['1. 接受條款',['建立帳戶、登入、購買方案、使用 AI 師傅、上傳資料或使用任何 Hourkey 功能，即表示您同意本條款。','若您代表組織使用服務，表示您有權使該組織受本條款約束。','若您不同意本條款，請停止使用服務。']],
+        ['2. 服務性質',['Hourkey 提供八字、奇門、擇日、多術融合、手相及相關工具的計算、解讀與呈現。','解讀屬象徵式詮釋，用於自我反思、規劃、娛樂及參考，並非科學事實或保證結果。','AI 輸出可能錯誤、過時、不完整，或受您提供資料影響。']],
+        ['3. 重要限制',['不得以 Hourkey 取代醫師、律師、財務顧問、心理健康專業人士或其他專業人士。','不得把解讀視為投資、醫療、停藥、訴訟、結婚、離婚或高風險行動的指令。','健康、法律、財務、安全或緊急事項，應諮詢合適專業人士。']],
+        ['4. 帳戶與安全',['您應提供合理準確資料，並保護密碼、裝置與登入 session。','不得使用他人帳戶、冒充他人、轉售帳戶或規避點數與使用限制。','若偵測異常使用，我們可暫停、限制或關閉帳戶以防止損害。']],
+        ['5. 點數、方案與付款',['點數或「ยาม」用於開啟 Hourkey 部分功能。條件、價格與點數數量可依方案頁調整。','外部付款服務可能處理付款資料。Hourkey 不打算在系統中保存完整卡號。','退款或取消取決於方案、適用法律與使用狀態。付款錯誤請附證據聯絡 support。']],
+        ['6. 使用者資料與內容',['您對提交的出生資料、問題、圖片及其他內容負責。','您允許 Hourkey 為提供解讀、營運帳戶、提升安全及 Privacy Policy 所述目的而處理資料。','不得上傳違法、侵犯他人權利或您無權使用的內容。']],
+        ['7. 禁止使用',['不得攻擊、爬取、大量抓取、逆向工程、入侵、使用 bot 或規避 rate limit。','不得用服務騷擾、欺騙、勒索、散播仇恨或傷害他人。','不得把解讀宣稱為 Hourkey 保證的專業認證或事實。']],
+        ['8. 變更與暫停',['我們可基於安全、品質、成本或法律原因更新、增加、移除或暫停功能。','我們可不時更新本條款，最新日期會顯示於本頁。','更新後繼續使用服務，表示您接受修訂條款。']],
+        ['9. 責任限制',['服務按現況提供，不保證解讀準確、完整、不間斷或符合特定目的。','在法律允許範圍內，Hourkey 不對間接損害、利潤損失、使用者決策或解讀結果負責。','在法律允許範圍內，我們的總責任不超過您為相關服務支付給 Hourkey 的金額。']],
+        ['10. 法律與聯絡',['本條款依與服務提供者及使用者相關的法律解釋，且不排除法律強制賦予的消費者權利。','若部分條款無法執行，其餘條款仍有效。','如有問題、爭議或疑問，請聯絡 support。']]
+      ]},
+      cn:{nav:{privacy:'隐私',signup:'注册'},kicker:'服务条款',title:'服务条款',lead:'使用 Hourkey 即表示您接受本条款。Hourkey 提供象征式命理阅读与生活参考工具，不保证未来，也不能取代专业意见。',updated:'最后更新：2026年7月9日',scope:'适用于 hourkey.io 及相关服务',foot:'如对本条款有疑问，请通过网站显示的 support 渠道联系我们。',sections:[
+        ['1. 接受条款',['创建账户、登录、购买套餐、使用 AI 师傅、上传资料或使用任何 Hourkey 功能，即表示您同意本条款。','若您代表组织使用服务，表示您有权使该组织受本条款约束。','若不同意本条款，请停止使用服务。']],
+        ['2. 服务性质',['Hourkey 提供八字、奇门、择日、多术融合、手相及相关工具的计算、解读与呈现。','解读属于象征式诠释，用于自我反思、规划、娱乐及参考，并非科学事实或保证结果。','AI 输出可能错误、过时、不完整，或受您提供资料影响。']],
+        ['3. 重要限制',['不得以 Hourkey 取代医生、律师、财务顾问、心理健康专业人士或其他专业人士。','不得把解读视为投资、医疗、停药、诉讼、结婚、离婚或高风险行动的指令。','健康、法律、财务、安全或紧急事项，应咨询合适专业人士。']],
+        ['4. 账户与安全',['您应提供合理准确资料，并保护密码、设备与登录 session。','不得使用他人账户、冒充他人、转售账户或规避点数与使用限制。','若检测到异常使用，我们可暂停、限制或关闭账户以防止损害。']],
+        ['5. 点数、套餐与付款',['点数或“ยาม”用于开启 Hourkey 部分功能。条件、价格与点数数量可依套餐页调整。','外部支付服务可能处理付款资料。Hourkey 不打算在系统中保存完整卡号。','退款或取消取决于套餐、适用法律与使用状态。付款错误请附证据联系 support。']],
+        ['6. 用户资料与内容',['您对提交的出生资料、问题、图片及其他内容负责。','您允许 Hourkey 为提供解读、运营账户、提升安全及 Privacy Policy 所述目的而处理资料。','不得上传违法、侵犯他人权利或您无权使用的内容。']],
+        ['7. 禁止使用',['不得攻击、爬取、大量抓取、逆向工程、入侵、使用 bot 或规避 rate limit。','不得用服务骚扰、欺骗、勒索、传播仇恨或伤害他人。','不得把解读宣称为 Hourkey 保证的专业认证或事实。']],
+        ['8. 变更与暂停',['我们可基于安全、质量、成本或法律原因更新、增加、移除或暂停功能。','我们可不时更新本条款，最新日期会显示于本页。','更新后继续使用服务，表示您接受修订条款。']],
+        ['9. 责任限制',['服务按现况提供，不保证解读准确、完整、不中断或符合特定目的。','在法律允许范围内，Hourkey 不对间接损害、利润损失、用户决策或解读结果负责。','在法律允许范围内，我们的总责任不超过您为相关服务支付给 Hourkey 的金额。']],
+        ['10. 法律与联系',['本条款依与服务提供者及用户相关的法律解释，且不排除法律强制赋予的消费者权利。','若部分条款无法执行，其余条款仍有效。','如有问题、争议或疑问，请联系 support。']]
+      ]},
+      vi:{nav:{privacy:'Quyền riêng tư',signup:'Đăng ký'},kicker:'ĐIỀU KHOẢN DỊCH VỤ',title:'Điều khoản dịch vụ',lead:'Khi sử dụng Hourkey, bạn chấp nhận các điều khoản này. Hourkey cung cấp công cụ đọc biểu tượng và định hướng cuộc sống; không bảo đảm tương lai và không thay thế tư vấn chuyên môn.',updated:'Cập nhật lần cuối: 9/7/2026',scope:'Áp dụng cho hourkey.io và dịch vụ liên quan',foot:'Nếu có câu hỏi về điều khoản, hãy liên hệ qua kênh support trên website.',sections:[
+        ['1. Chấp nhận',['Tạo tài khoản, đăng nhập, mua gói, dùng AI Sifu, tải dữ liệu lên hoặc dùng bất kỳ tính năng nào nghĩa là bạn đồng ý với điều khoản này.','Nếu dùng thay cho tổ chức, bạn xác nhận có quyền ràng buộc tổ chức đó.','Nếu không đồng ý, hãy ngừng sử dụng dịch vụ.']],
+        ['2. Bản chất dịch vụ',['Hourkey cung cấp công cụ tính toán và diễn giải các hệ thống như BaZi, Qi Men, chọn ngày, hợp nhất nhiều hệ, xem tay và công cụ liên quan.','Kết quả là diễn giải biểu tượng để suy ngẫm, lập kế hoạch, giải trí và tham khảo; không phải sự thật khoa học hay cam kết kết quả.','AI có thể sai, lỗi thời, thiếu hoặc bị ảnh hưởng bởi dữ liệu bạn nhập.']],
+        ['3. Giới hạn quan trọng',['Không dùng Hourkey thay cho bác sĩ, luật sư, cố vấn tài chính, chuyên gia sức khỏe tinh thần hoặc chuyên gia khác.','Không xem kết quả là mệnh lệnh đầu tư, điều trị, ngừng thuốc, kiện tụng, kết hôn, ly hôn hoặc hành động rủi ro.','Với vấn đề sức khỏe, pháp lý, tài chính, an toàn hoặc khẩn cấp, hãy hỏi chuyên gia phù hợp.']],
+        ['4. Tài khoản và bảo mật',['Bạn cần cung cấp thông tin tương đối chính xác và bảo vệ mật khẩu, thiết bị, session.','Không dùng tài khoản người khác, mạo danh, bán lại tài khoản hoặc né giới hạn credit.','Nếu phát hiện bất thường, chúng tôi có thể tạm dừng, giới hạn hoặc đóng tài khoản.']],
+        ['5. Credit, gói và thanh toán',['Credit hoặc yam dùng để mở một số tính năng. Điều kiện, giá và số credit có thể thay đổi theo trang gói.','Nhà cung cấp thanh toán bên ngoài có thể xử lý dữ liệu thanh toán. Hourkey không chủ ý lưu toàn bộ số thẻ.','Hoàn tiền hoặc hủy tùy gói, luật áp dụng và trạng thái sử dụng. Lỗi thanh toán hãy gửi bằng chứng cho support.']],
+        ['6. Dữ liệu và nội dung người dùng',['Bạn chịu trách nhiệm về ngày giờ sinh, câu hỏi, hình ảnh và nội dung gửi vào hệ thống.','Bạn cho phép Hourkey xử lý dữ liệu để cung cấp kết quả, vận hành tài khoản, cải thiện an toàn và theo Privacy Policy.','Không tải lên nội dung trái luật, xâm phạm quyền người khác hoặc bạn không có quyền dùng.']],
+        ['7. Hành vi bị cấm',['Không tấn công, scrape, reverse engineer, xâm nhập, dùng bot hoặc né rate limit.','Không dùng dịch vụ để quấy rối, lừa đảo, tống tiền, kích động thù ghét hoặc gây hại.','Không trình bày kết quả như chứng nhận chuyên môn hoặc sự thật do Hourkey bảo đảm.']],
+        ['8. Thay đổi và tạm dừng',['Chúng tôi có thể cập nhật, thêm, bỏ hoặc tạm dừng tính năng vì an toàn, chất lượng, chi phí hoặc pháp lý.','Điều khoản có thể được cập nhật; ngày mới nhất hiển thị trên trang này.','Tiếp tục sử dụng sau cập nhật nghĩa là bạn chấp nhận điều khoản sửa đổi.']],
+        ['9. Giới hạn trách nhiệm',['Dịch vụ cung cấp theo hiện trạng, không bảo đảm kết quả chính xác, đầy đủ, liên tục hoặc phù hợp mục đích cụ thể.','Trong phạm vi luật cho phép, Hourkey không chịu trách nhiệm với thiệt hại gián tiếp, mất lợi nhuận, quyết định của người dùng hoặc kết quả từ việc diễn giải.','Tổng trách nhiệm của chúng tôi không vượt quá số tiền bạn đã trả cho dịch vụ liên quan khi luật cho phép.']],
+        ['10. Luật và liên hệ',['Điều khoản được hiểu theo luật liên quan đến nhà cung cấp và người dùng, không loại bỏ quyền người tiêu dùng bắt buộc.','Nếu một điều khoản không thể thi hành, các điều còn lại vẫn có hiệu lực.','Liên hệ support nếu có vấn đề, tranh chấp hoặc câu hỏi.']]
+      ]},
+      ja:{nav:{privacy:'プライバシー',signup:'登録'},kicker:'利用規約',title:'利用規約',lead:'Hourkey を利用することで、本規約に同意したものとみなされます。Hourkey は象徴的なリーディングと生活上の参考ツールを提供するもので、未来を保証せず、専門的助言の代替ではありません。',updated:'最終更新日：2026年7月9日',scope:'hourkey.io および関連サービスに適用',foot:'本規約に関する質問は、サイト上の support 窓口からご連絡ください。',sections:[
+        ['1. 同意',['アカウント作成、ログイン、購入、AI Sifu の利用、データ送信、各機能の利用により、本規約に同意します。','組織のために利用する場合、その組織を拘束する権限があることを確認します。','同意しない場合は利用を停止してください。']],
+        ['2. サービスの性質',['Hourkey は八字、奇門、日選び、多体系統合、手相などの計算・解釈・表示ツールを提供します。','リーディングは内省、計画、娯楽、参考のための象徴的解釈であり、科学的事実や結果保証ではありません。','AI 出力は誤り、古さ、不完全さ、入力データの影響を含む場合があります。']],
+        ['3. 重要な制限',['Hourkey を医師、弁護士、金融専門家、メンタルヘルス専門家などの代替として使用しないでください。','投資、治療、服薬中止、訴訟、結婚、離婚、危険行為の命令として扱わないでください。','健康、法律、金融、安全、緊急事項は適切な専門家に相談してください。']],
+        ['4. アカウントと安全',['合理的に正確な情報を提供し、パスワード、端末、session を保護してください。','他人のアカウント利用、なりすまし、転売、credit 制限の回避は禁止です。','異常利用を検知した場合、被害防止のためアカウントを停止・制限・閉鎖できます。']],
+        ['5. Credit、プラン、支払い',['credit または yam は一部機能の利用に使われます。条件、価格、数量はプランページに従い変更される場合があります。','外部決済業者が決済情報を処理する場合があります。Hourkey は完全なカード番号を保存する意図はありません。','返金や解約はプラン、適用法、利用状況によります。決済エラーは証拠を添えて support へ連絡してください。']],
+        ['6. ユーザーデータと内容',['出生情報、質問、画像、その他送信内容について責任を負います。','Hourkey が結果提供、アカウント運営、安全性向上、Privacy Policy の目的で処理することを許可します。','違法、他者の権利侵害、または利用権限のない内容を送信しないでください。']],
+        ['7. 禁止行為',['攻撃、スクレイピング、リバースエンジニアリング、不正侵入、bot 利用、rate limit 回避は禁止です。','嫌がらせ、欺瞞、恐喝、ヘイト、他者への害のために使用しないでください。','リーディングを Hourkey が保証する専門認証や事実として示さないでください。']],
+        ['8. 変更・停止',['安全、品質、費用、法的理由により機能を更新、追加、削除、停止する場合があります。','本規約は随時更新され、最新日付は本ページに表示されます。','更新後も利用を続ける場合、改定後の規約に同意したものとします。']],
+        ['9. 責任制限',['サービスは現状有姿で提供され、正確性、完全性、継続性、特定目的適合性を保証しません。','法の許す範囲で、Hourkey は間接損害、逸失利益、利用者の判断、解釈結果について責任を負いません。','当社の総責任は、法の許す範囲で、関連サービスに対し利用者が Hourkey に支払った額を上限とします。']],
+        ['10. 法律と連絡',['本規約は提供者および利用者に関連する法律に従って解釈され、強制的な消費者権利を排除しません。','一部が無効でも他の条項は有効です。','問題、紛争、質問は support へご連絡ください。']]
+      ]},
+      ko:{nav:{privacy:'개인정보',signup:'가입'},kicker:'서비스 약관',title:'서비스 약관',lead:'Hourkey를 사용하면 본 약관에 동의한 것으로 봅니다. Hourkey는 상징적 리딩과 삶의 참고 도구를 제공하며, 미래를 보장하거나 전문 조언을 대체하지 않습니다.',updated:'최종 업데이트: 2026년 7월 9일',scope:'hourkey.io 및 관련 서비스에 적용',foot:'약관에 관한 질문은 웹사이트의 support 채널로 문의해 주세요.',sections:[
+        ['1. 동의',['계정 생성, 로그인, 패키지 구매, AI Sifu 사용, 데이터 업로드 또는 기능 이용 시 본 약관에 동의합니다.','조직을 대신해 사용하는 경우 해당 조직을 구속할 권한이 있음을 확인합니다.','동의하지 않으면 서비스를 중단해 주세요.']],
+        ['2. 서비스 성격',['Hourkey는 BaZi, Qi Men, 날짜 선택, 다중 시스템 fusion, 손금 및 관련 도구의 계산과 해석을 제공합니다.','리딩은 성찰, 계획, 오락, 참고를 위한 상징적 해석이며 과학적 사실이나 결과 보장이 아닙니다.','AI 출력은 틀리거나 오래되었거나 불완전하거나 입력 데이터의 영향을 받을 수 있습니다.']],
+        ['3. 중요한 제한',['Hourkey를 의사, 변호사, 금융 자문가, 정신건강 전문가 등 전문인의 대체로 사용하지 마세요.','투자, 치료, 약 중단, 소송, 결혼, 이혼, 위험 행동의 지시로 받아들이지 마세요.','건강, 법률, 금융, 안전, 긴급 문제는 적절한 전문가에게 문의하세요.']],
+        ['4. 계정과 보안',['합리적으로 정확한 정보를 제공하고 비밀번호, 기기, session을 보호해야 합니다.','타인 계정 사용, 사칭, 계정 재판매, credit 제한 우회는 금지됩니다.','이상 사용이 감지되면 피해 방지를 위해 계정을 정지, 제한 또는 종료할 수 있습니다.']],
+        ['5. Credit, 패키지, 결제',['credit 또는 yam은 일부 기능 이용에 쓰입니다. 조건, 가격, 수량은 패키지 페이지에 따라 변경될 수 있습니다.','외부 결제 제공자가 결제 정보를 처리할 수 있습니다. Hourkey는 전체 카드번호를 저장하려는 의도가 없습니다.','환불 또는 취소는 패키지, 적용 법률, 사용 상태에 따릅니다. 결제 오류는 증빙과 함께 support에 문의하세요.']],
+        ['6. 사용자 데이터와 콘텐츠',['생년월일, 질문, 이미지 및 제출 콘텐츠에 대한 책임은 사용자에게 있습니다.','Hourkey가 리딩 제공, 계정 운영, 안전 개선 및 Privacy Policy 목적을 위해 처리하는 것을 허용합니다.','불법, 타인의 권리 침해, 사용 권한이 없는 콘텐츠를 업로드하지 마세요.']],
+        ['7. 금지 사용',['공격, 스크래핑, 리버스 엔지니어링, 침입, bot 사용, rate limit 우회를 금지합니다.','괴롭힘, 사기, 협박, 혐오 확산, 타인에게 해를 주기 위해 사용하지 마세요.','리딩을 Hourkey가 보증하는 전문 인증이나 사실처럼 표시하지 마세요.']],
+        ['8. 변경과 중단',['안전, 품질, 비용, 법적 이유로 기능을 업데이트, 추가, 제거 또는 일시 중단할 수 있습니다.','본 약관은 수시로 업데이트될 수 있으며 최신 날짜가 이 페이지에 표시됩니다.','업데이트 후 계속 사용하면 개정 약관에 동의한 것으로 봅니다.']],
+        ['9. 책임 제한',['서비스는 있는 그대로 제공되며 정확성, 완전성, 중단 없음, 특정 목적 적합성을 보장하지 않습니다.','법이 허용하는 범위에서 Hourkey는 간접 손해, 이익 손실, 사용자 결정, 리딩 해석 결과에 책임지지 않습니다.','총 책임은 법이 허용하는 범위에서 관련 서비스에 대해 사용자가 Hourkey에 지불한 금액을 넘지 않습니다.']],
+        ['10. 법률과 문의',['본 약관은 제공자와 사용자에게 관련된 법률에 따라 해석되며 강행 소비자 권리를 배제하지 않습니다.','일부 조항이 집행 불가능해도 나머지는 유효합니다.','문제, 분쟁, 질문은 support로 문의하세요.']]
+      ]},
+      ru:{nav:{privacy:'Privacy',signup:'Регистрация'},kicker:'УСЛОВИЯ СЕРВИСА',title:'Условия использования',lead:'Используя Hourkey, вы принимаете эти условия. Hourkey предоставляет символические чтения и инструменты жизненной ориентации; сервис не гарантирует будущее и не заменяет профессиональную консультацию.',updated:'Последнее обновление: 9 июля 2026',scope:'Применяется к hourkey.io и связанным сервисам',foot:'Вопросы по условиям можно отправить через канал support на сайте.',sections:[
+        ['1. Принятие',['Создавая аккаунт, входя в систему, покупая пакет, используя AI Sifu, загружая данные или любую функцию, вы соглашаетесь с условиями.','Если вы используете сервис от имени организации, вы подтверждаете полномочия связывать ее этими условиями.','Если вы не согласны, прекратите использование сервиса.']],
+        ['2. Характер сервиса',['Hourkey предоставляет инструменты расчета и толкования для BaZi, Qi Men, выбора дат, multi-system fusion, хиромантии и связанных функций.','Чтения являются символическими интерпретациями для размышления, планирования, развлечения и личного рассмотрения; это не научные факты и не гарантии.','AI может ошибаться, устаревать, быть неполным или зависеть от введенных вами данных.']],
+        ['3. Важные ограничения',['Не используйте Hourkey вместо врача, юриста, финансового советника, специалиста по психическому здоровью или другого профессионала.','Не считайте чтение приказом инвестировать, лечиться, прекращать лекарства, судиться, жениться, разводиться или совершать рискованные действия.','По вопросам здоровья, права, финансов, безопасности или чрезвычайных ситуаций обращайтесь к специалистам.']],
+        ['4. Аккаунты и безопасность',['Вы должны предоставлять достаточно точные данные и защищать пароль, устройства и session.','Запрещены чужие аккаунты, выдача себя за других, перепродажа аккаунтов и обход credit/лимитов.','При аномальном использовании мы можем приостановить, ограничить или закрыть аккаунт.']],
+        ['5. Credits, пакеты и платежи',['Credits или yam открывают части Hourkey. Условия, цены и количество могут меняться как указано на странице пакетов.','Внешние платежные провайдеры могут обрабатывать платежные данные. Hourkey не намерен хранить полный номер карты.','Возврат или отмена зависят от пакета, применимого права и статуса использования. При ошибке платежа свяжитесь с support с доказательствами.']],
+        ['6. Данные и контент пользователя',['Вы отвечаете за данные рождения, вопросы, изображения и другой отправленный контент.','Вы разрешаете Hourkey обрабатывать их для предоставления чтений, работы аккаунта, безопасности и целей Privacy Policy.','Не загружайте незаконный контент, нарушающий права других или тот, который вы не вправе использовать.']],
+        ['7. Запрещенное использование',['Запрещены атаки, scraping, reverse engineering, взлом, боты и обход rate limit.','Не используйте сервис для преследования, обмана, шантажа, ненависти или вреда другим.','Не представляйте чтения как профессиональную сертификацию или факт, гарантированный Hourkey.']],
+        ['8. Изменения и приостановка',['Мы можем обновлять, добавлять, удалять или приостанавливать функции из-за безопасности, качества, затрат или закона.','Условия могут обновляться; дата последнего обновления указана на странице.','Продолжение использования после обновления означает согласие с новой версией.']],
+        ['9. Ограничение ответственности',['Сервис предоставляется как есть, без гарантии точности, полноты, непрерывности или пригодности для конкретной цели.','В пределах закона Hourkey не отвечает за косвенный ущерб, упущенную прибыль, решения пользователя или последствия толкования.','Общая ответственность не превышает сумму, уплаченную вами Hourkey за соответствующий сервис, если такое ограничение разрешено законом.']],
+        ['10. Закон и контакт',['Условия толкуются по законам, применимым к провайдеру и пользователю, без исключения обязательных прав потребителя.','Если одно положение не исполнимо, остальные остаются в силе.','По вопросам, спорам и проблемам обращайтесь в support.']]
+      ]},
+      es:{nav:{privacy:'Privacidad',signup:'Registro'},kicker:'TÉRMINOS DEL SERVICIO',title:'Términos del servicio',lead:'Al usar Hourkey aceptas estos términos. Hourkey ofrece lecturas simbólicas y herramientas de orientación; no garantiza el futuro ni reemplaza asesoramiento profesional.',updated:'Última actualización: 9 de julio de 2026',scope:'Aplicable a hourkey.io y servicios relacionados',foot:'Las preguntas sobre estos términos pueden enviarse por el canal de support indicado en el sitio.',sections:[
+        ['1. Aceptación',['Al crear una cuenta, iniciar sesión, comprar un paquete, usar AI Sifu, subir datos o usar cualquier función, aceptas estos términos.','Si usas el servicio para una organización, confirmas que puedes obligarla.','Si no aceptas estos términos, deja de usar el servicio.']],
+        ['2. Naturaleza del servicio',['Hourkey ofrece herramientas de cálculo e interpretación para BaZi, Qi Men, selección de fechas, fusion multi-sistema, quiromancia y funciones relacionadas.','Las lecturas son interpretaciones simbólicas para reflexión, planificación, entretenimiento y consideración personal; no son hechos científicos ni resultados garantizados.','La IA puede equivocarse, estar desactualizada, ser incompleta o depender de los datos que proporciones.']],
+        ['3. Límites importantes',['No uses Hourkey como sustituto de médicos, abogados, asesores financieros, profesionales de salud mental u otros expertos.','No trates una lectura como instrucción para invertir, tratarte, dejar medicación, litigar, casarte, divorciarte o tomar riesgos sin criterio propio.','Para salud, ley, finanzas, seguridad o emergencias, consulta al profesional adecuado.']],
+        ['4. Cuentas y seguridad',['Debes proporcionar información razonablemente precisa y proteger contraseña, dispositivos y sesiones.','No uses cuentas ajenas, suplantes personas, revendas cuentas ni evites credits o límites.','Si detectamos uso anormal, podemos suspender, limitar o cerrar la cuenta para prevenir daños.']],
+        ['5. Credits, paquetes y pagos',['Los credits o yam desbloquean partes de Hourkey. Condiciones, precios y cantidades pueden cambiar como se muestre en la página de paquetes.','Proveedores externos de pago pueden procesar datos de pago. Hourkey no pretende almacenar el número completo de tu tarjeta.','Reembolsos o cancelaciones dependen del paquete, la ley aplicable y el estado de uso. Contacta a support con evidencia si hay error de pago.']],
+        ['6. Datos y contenido del usuario',['Eres responsable de datos de nacimiento, preguntas, imágenes y contenido que envías.','Permites que Hourkey procese ese contenido para prestar lecturas, operar cuentas, mejorar seguridad y cumplir la Privacy Policy.','No subas contenido ilegal, que viole derechos de otros o que no tengas derecho a usar.']],
+        ['7. Uso prohibido',['No ataques, hagas scraping, ingeniería inversa, intrusión, uses bots ni evadas rate limits.','No uses el servicio para acosar, engañar, chantajear, difundir odio o dañar a otros.','No presentes lecturas como certificaciones profesionales o hechos garantizados por Hourkey.']],
+        ['8. Cambios y suspensión',['Podemos actualizar, añadir, eliminar o pausar funciones por seguridad, calidad, coste o razones legales.','Podemos actualizar estos términos; la fecha más reciente aparece en esta página.','Seguir usando el servicio tras una actualización significa aceptar los términos revisados.']],
+        ['9. Limitación de responsabilidad',['El servicio se ofrece tal como está, sin prometer precisión, integridad, continuidad o idoneidad para un fin específico.','En la medida permitida por la ley, Hourkey no responde por daños indirectos, lucro cesante, decisiones del usuario o resultados de interpretar lecturas.','La responsabilidad total no excederá lo pagado a Hourkey por el servicio relacionado cuando la ley lo permita.']],
+        ['10. Ley y contacto',['Estos términos se interpretan bajo las leyes relevantes para el proveedor y el usuario, sin eliminar derechos obligatorios del consumidor.','Si una disposición no puede aplicarse, las demás siguen vigentes.','Contacta a support por problemas, disputas o preguntas.']]
+      ]}
+    };
+    function pickLang(){
+      var q=new URLSearchParams(location.search).get('lang');
+      var saved=''; try{saved=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';}catch(_){}
+      var raw=(q||saved||navigator.language||'th').toLowerCase();
+      if(raw.indexOf('zh-cn')===0||raw==='cn') return 'cn';
+      if(raw.indexOf('zh')===0) return 'zh';
+      raw=raw.slice(0,2);
+      return LANGS.indexOf(raw)>=0?raw:'en';
+    }
+    function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+    function render(lang){
+      var d=DATA[lang]||DATA.en;
+      document.documentElement.lang=lang==='cn'?'zh-CN':(lang==='zh'?'zh-TW':lang);
+      document.documentElement.dataset.lang=lang;
+      try{localStorage.setItem('hk_locale',lang);localStorage.setItem('hk_lang',lang);}catch(_){}
+      document.title='hourkey · '+d.title;
+      document.querySelector('[data-nav="privacy"]').textContent=d.nav.privacy;
+      document.querySelector('[data-nav="signup"]').textContent=d.nav.signup;
+      document.getElementById('kicker').textContent=d.kicker;
+      document.getElementById('title').textContent=d.title;
+      document.getElementById('lead').textContent=d.lead;
+      document.getElementById('updated').textContent=d.updated;
+      document.getElementById('scope').textContent=d.scope;
+      document.getElementById('foot').textContent=d.foot;
+      document.getElementById('doc').innerHTML=d.sections.map(function(sec,i){
+        return '<section class="card '+(i===2?'danger':'')+'"><h2>'+esc(sec[0])+'</h2><ul>'+sec[1].map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';
+      }).join('');
+      document.querySelectorAll('#lang button').forEach(function(b){b.classList.toggle('on',b.dataset.lang===lang);});
+    }
+    var box=document.getElementById('lang');
+    box.innerHTML=LANGS.map(function(l){return '<button type="button" data-lang="'+l+'">'+LABEL[l]+'</button>';}).join('');
+    box.addEventListener('click',function(e){if(e.target&&e.target.dataset.lang) render(e.target.dataset.lang);});
+    render(pickLang());
+  })();
+  </script>
+</body>
+</html>

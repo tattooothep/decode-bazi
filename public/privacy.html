@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="th" data-lang="th" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>hourkey · Privacy Policy</title>
+  <style>
+  :root{--bg:#0d0f12;--panel:#181c24;--panel2:#202630;--line:rgba(200,164,77,.24);--fg:#f6f1e6;--soft:rgba(246,241,230,.70);--faint:rgba(246,241,230,.46);--gold:#c8a44d;--red:#df6c5f;--green:#72c27d}
+  [data-theme="light"]{--bg:#f5efe2;--panel:#fffaf0;--panel2:#f8efdd;--line:rgba(138,109,42,.28);--fg:#1a1612;--soft:rgba(26,22,18,.70);--faint:rgba(26,22,18,.46);--gold:#8a6d2a;--red:#b04d41;--green:#4f8a58}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg)}
+  body{min-height:100vh;background:linear-gradient(180deg,rgba(200,164,77,.08),transparent 280px),var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}
+  a{color:inherit;text-decoration:none}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 24px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px)}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:700}
+  .seal{width:30px;height:30px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold)}
+  .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .nav a,.lang button{min-height:34px;border:1px solid var(--line);background:var(--panel);color:var(--soft);padding:0 10px;font-size:12px;cursor:pointer}
+  .lang{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+  .lang button.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:800}
+  .wrap{width:min(980px,100%);margin:0 auto;padding:34px 22px 80px}
+  .hero{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 78%,var(--bg)));padding:28px;margin-bottom:18px}
+  .kicker{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+  h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:clamp(30px,5vw,50px);line-height:1.12;font-weight:700;letter-spacing:0}
+  .lead{margin-top:12px;color:var(--soft);line-height:1.85;font-size:14px;max-width:760px}
+  .meta{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:7px 10px;color:var(--faint);font-size:12px}
+  .doc{display:grid;gap:14px}
+  section.card{border:1px solid var(--line);background:var(--panel);padding:22px}
+  h2{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:22px;line-height:1.25;margin-bottom:10px}
+  p,li{color:var(--soft);font-size:14px;line-height:1.85}
+  ul{padding-left:20px;display:grid;gap:6px}
+  .note{border-left:3px solid var(--gold);padding-left:12px;color:var(--fg)}
+  .foot{margin-top:16px;color:var(--faint);font-size:12px;line-height:1.7}
+  @media(max-width:700px){.topbar{align-items:flex-start;padding:12px 14px}.nav a{display:none}.wrap{padding:24px 14px 60px}.hero,section.card{padding:18px}.lang{max-width:260px}.lang button{min-width:38px;padding:0 8px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="seal">時</span><span>hourkey</span></a>
+    <div class="nav">
+      <a href="/terms.html" data-nav="terms">Terms</a>
+      <a href="/signup" data-nav="signup">Sign up</a>
+      <div class="lang" id="lang"></div>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="hero">
+      <div class="kicker" id="kicker"></div>
+      <h1 id="title"></h1>
+      <p class="lead" id="lead"></p>
+      <div class="meta"><span class="pill" id="updated"></span><span class="pill" id="scope"></span></div>
+    </div>
+    <div class="doc" id="doc"></div>
+    <div class="foot" id="foot"></div>
+  </main>
+  <script>
+  (function(){
+    var LANGS=['th','en','zh','cn','vi','ja','ko','ru','es'];
+    var LABEL={th:'TH',en:'EN',zh:'繁',cn:'简',vi:'VI',ja:'JA',ko:'KO',ru:'RU',es:'ES'};
+    var DATA={
+      th:{nav:{terms:'Terms',signup:'สมัคร/เข้าสู่ระบบ'},kicker:'PRIVACY POLICY',title:'นโยบายความเป็นส่วนตัว',lead:'นโยบายนี้อธิบายว่า Hourkey เก็บ ใช้ เปิดเผย เก็บรักษา และปกป้องข้อมูลส่วนบุคคลอย่างไร เมื่อคุณใช้เว็บไซต์ บัญชี AI ซินแส ระบบลายมือ ระบบชำระเงิน และฟีเจอร์ที่เกี่ยวข้อง',updated:'อัปเดตล่าสุด: 9 กรกฎาคม 2026',scope:'ใช้กับ hourkey.io และบริการที่เกี่ยวข้อง',foot:'ติดต่อเรื่องข้อมูลส่วนบุคคลหรือขอใช้สิทธิได้ผ่านช่องทาง support ที่แสดงบนเว็บไซต์',sections:[
+        ['1. ข้อมูลที่เราเก็บ',['ข้อมูลบัญชี เช่น อีเมล เบอร์โทร ชื่อที่แสดง รหัสผ่านที่ถูกแฮช session และข้อมูลการเข้าสู่ระบบ','ข้อมูลดวงและการใช้งาน เช่น วัน เวลา สถานที่เกิด เพศที่เลือก โปรไฟล์ญาติ คำถาม บันทึก AI ผลอ่าน ประวัติการใช้เครดิต และการตั้งค่า','ข้อมูลรูปภาพที่คุณอัปโหลด เช่น รูปฝ่ามือเพื่ออ่านลายมือ รูปจะใช้เพื่อประมวลผลตามฟีเจอร์ และอาจถูกลบทันทีหลังประมวลผล เว้นแต่คุณเลือกบันทึกผลหรือระบบจำเป็นต้องเก็บบันทึกที่เกี่ยวข้อง','ข้อมูลชำระเงิน เช่น order, package, credit, transaction status และข้อมูลจาก payment provider เราไม่ตั้งใจเก็บเลขบัตรเต็ม','ข้อมูลเทคนิค เช่น IP, user agent, device id, cookie/local storage, log, error, rate limit และข้อมูลความปลอดภัย']],
+        ['2. วัตถุประสงค์การใช้ข้อมูล',['สร้างและดูแลบัญชี ยืนยันตัวตน ป้องกันการเข้าถึงโดยไม่ได้รับอนุญาต','คำนวณดวง สร้างผลอ่าน AI จัดเก็บประวัติ ส่งออกข้อมูล และให้ฟีเจอร์ที่คุณขอใช้','ประมวลผลการชำระเงิน เติมเครดิต แสดงประวัติธุรกรรม จัดการ refund หรือ dispute','รักษาความปลอดภัย ตรวจ abuse ป้องกัน bot fraud spam และแก้ไขปัญหาระบบ','ปรับปรุงคุณภาพบริการ วิเคราะห์ประสิทธิภาพ และสื่อสารเรื่องบัญชี การบริการ หรือประกาศสำคัญ']],
+        ['3. ฐานการประมวลผล',['เราใช้ข้อมูลเพื่อปฏิบัติตามสัญญาการให้บริการเมื่อคุณสมัคร ใช้งาน หรือซื้อแพ็กเกจ','เราอาจใช้ความยินยอมสำหรับข้อมูลหรือฟีเจอร์ที่ต้องให้คุณเลือกอย่างชัดเจน เช่น การอัปโหลดรูปหรือการสื่อสารบางประเภท','เราอาจใช้ประโยชน์โดยชอบด้วยกฎหมายเพื่อความปลอดภัย การป้องกันการทุจริต การวิเคราะห์ระบบ และการปรับปรุงบริการ','เราอาจประมวลผลเมื่อจำเป็นตามกฎหมาย ภาษี บัญชี หรือคำสั่งที่ชอบด้วยกฎหมาย']],
+        ['4. การเปิดเผยข้อมูล',['เราอาจเปิดเผยข้อมูลให้ผู้ให้บริการที่ช่วยดำเนินงาน เช่น hosting, database, AI model provider, payment provider, email/SMS/OAuth, analytics, security และ support','ผู้ให้บริการเหล่านี้ควรใช้ข้อมูลเพื่อช่วยให้บริการ Hourkey ไม่ใช่เพื่อขายข้อมูลส่วนบุคคลของคุณ','เราอาจเปิดเผยข้อมูลเมื่อจำเป็นตามกฎหมาย เพื่อบังคับใช้เงื่อนไข ป้องกันความเสียหาย หรือคุ้มครองสิทธิ ความปลอดภัย และทรัพย์สิน','หากมีการควบรวม โอนกิจการ หรือปรับโครงสร้าง ข้อมูลอาจถูกโอนภายใต้นโยบายคุ้มครองข้อมูลที่เหมาะสม']],
+        ['5. การโอนข้อมูลระหว่างประเทศ',['บริการของเราอาจใช้ผู้ให้บริการหรือ AI provider ในต่างประเทศ ข้อมูลจึงอาจถูกประมวลผลนอกประเทศที่คุณอยู่','เมื่อมีการโอนข้อมูล เราจะพยายามใช้มาตรการที่เหมาะสม เช่น เงื่อนไขสัญญา การจำกัดวัตถุประสงค์ และมาตรการความปลอดภัยตามบริบท','หากกฎหมายกำหนดให้ต้องมีความยินยอมหรือมาตรการเฉพาะเพิ่มเติม เราจะดำเนินการตามที่เหมาะสม']],
+        ['6. การเก็บรักษาและการลบ',['เราเก็บข้อมูลเท่าที่จำเป็นเพื่อให้บริการ จัดการบัญชี ธุรกรรม ความปลอดภัย ภาษี ข้อพิพาท และข้อกำหนดทางกฎหมาย','ข้อมูลรูปภาพสำหรับฟีเจอร์ลายมือมีเป้าหมายให้ใช้เฉพาะการประมวลผล และลบเมื่อไม่จำเป็น เว้นแต่คุณเลือกบันทึกหรือจำเป็นเพื่อ debug/security ตามสมควร','คุณสามารถขอส่งออกข้อมูล แก้ไข หรือลบบัญชีได้ผ่านฟีเจอร์บัญชีหรือช่องทาง support บางข้อมูลอาจต้องเก็บต่อเมื่อกฎหมายหรือความปลอดภัยกำหนด']],
+        ['7. สิทธิของคุณ',['คุณอาจมีสิทธิขอเข้าถึง สำเนา โอนย้าย แก้ไข ลบ ระงับ คัดค้าน หรือถอนความยินยอมต่อการประมวลผลข้อมูลส่วนบุคคล ตามกฎหมายที่ใช้บังคับ','คุณอาจมีสิทธิร้องเรียนต่อหน่วยงานคุ้มครองข้อมูลส่วนบุคคลที่เกี่ยวข้อง','การถอนความยินยอมอาจทำให้บางฟีเจอร์ใช้ไม่ได้ แต่จะไม่กระทบการประมวลผลที่ทำไปโดยชอบก่อนถอนความยินยอม']],
+        ['8. Cookies และ local storage',['เราใช้ cookies, local storage และเทคโนโลยีคล้ายกันเพื่อจำ session, ภาษา, theme, การตั้งค่า, ความปลอดภัย และการวิเคราะห์พื้นฐาน','บางรายการจำเป็นต่อการให้บริการ เช่น login หรือการป้องกัน abuse','คุณอาจลบหรือบล็อก cookies ผ่าน browser ได้ แต่บางฟีเจอร์อาจทำงานไม่สมบูรณ์']],
+        ['9. ความปลอดภัยและเหตุละเมิดข้อมูล',['เราใช้มาตรการทางเทคนิคและองค์กรตามสมควร เช่น hashing, access control, logging, rate limit, HTTPS และการจำกัดสิทธิ์เข้าถึง','ไม่มีระบบใดปลอดภัย 100% คุณควรรักษารหัสผ่านและอุปกรณ์ของตนเอง','หากเกิดเหตุละเมิดข้อมูลที่มีความเสี่ยง เราจะประเมินและแจ้งหน่วยงานหรือผู้ใช้ตามที่กฎหมายกำหนด']],
+        ['10. เด็กและการเปลี่ยนแปลงนโยบาย',['บริการนี้ไม่ได้มุ่งให้เด็กที่ยังไม่มีความสามารถให้ความยินยอมตามกฎหมายใช้โดยลำพัง หากผู้ปกครองพบว่ามีข้อมูลเด็กถูกส่งมา โปรดติดต่อเรา','เราอาจปรับปรุงนโยบายนี้ และจะแสดงวันที่อัปเดตล่าสุดบนหน้านี้','การใช้บริการต่อหลังการอัปเดตหมายถึงคุณรับทราบนโยบายฉบับล่าสุด']]
+      ]},
+      en:{nav:{terms:'Terms',signup:'Sign up'},kicker:'PRIVACY POLICY',title:'Privacy Policy',lead:'This policy explains how Hourkey collects, uses, discloses, retains, and protects personal data when you use the website, account, AI Sifu, palmistry, payment, and related features.',updated:'Last updated: July 9, 2026',scope:'Applies to hourkey.io and related services',foot:'Data privacy questions or rights requests can be sent through the support channel shown on the website.',sections:[
+        ['1. Data we collect',['Account data such as email, phone number, display name, hashed password, sessions, and login information.','Chart and usage data such as birth date, time, place, selected gender, related profiles, questions, AI notes, readings, credit history, and settings.','Uploaded images, such as palm photos for palmistry. Images are used for processing the feature and may be deleted after processing unless you choose to save results or related records must be kept.','Payment data such as orders, packages, credits, transaction status, and payment provider information. We do not intend to store full card numbers.','Technical data such as IP address, user agent, device id, cookies/local storage, logs, errors, rate limits, and security signals.']],
+        ['2. Purposes',['Create and maintain accounts, authenticate users, and prevent unauthorized access.','Calculate charts, generate AI readings, keep history, export data, and provide features you request.','Process payments, add credits, show transaction history, and handle refunds or disputes.','Secure the service, detect abuse, prevent bots, fraud, and spam, and troubleshoot.','Improve quality, analyze performance, and communicate service, account, or important notices.']],
+        ['3. Lawful bases',['We process data to perform the service contract when you sign up, use features, or buy packages.','We may rely on consent for data or features you clearly choose, such as image upload or some communications.','We may rely on legitimate interests for security, fraud prevention, system analytics, and service improvement.','We may process data when required for legal, tax, accounting, or lawful requests.']],
+        ['4. Sharing',['We may share data with service providers that support hosting, databases, AI models, payment, email/SMS/OAuth, analytics, security, and support.','These providers should use the data to support Hourkey, not to sell your personal data.','We may disclose data when required by law, to enforce terms, prevent harm, or protect rights, safety, and property.','If there is a merger, transfer, or restructuring, data may transfer under appropriate protection measures.']],
+        ['5. International transfers',['Our service may use providers or AI providers in other countries, so data may be processed outside your country.','For transfers, we try to use appropriate safeguards such as contractual terms, purpose limits, and contextual security measures.','If applicable law requires consent or additional safeguards, we will take appropriate steps.']],
+        ['6. Retention and deletion',['We keep data as long as needed for service, accounts, transactions, security, tax, disputes, and legal requirements.','Palmistry images are intended to be used for processing and deleted when no longer needed, unless you choose to save or limited retention is reasonably needed for debug/security.','You can request export, correction, or account deletion through account tools or support. Some data may need to be retained for law or safety.']],
+        ['7. Your rights',['Depending on applicable law, you may request access, copy, portability, correction, deletion, restriction, objection, or withdrawal of consent.','You may have the right to complain to the relevant data protection authority.','Withdrawing consent may disable some features, but it does not affect lawful processing already completed.']],
+        ['8. Cookies and local storage',['We use cookies, local storage, and similar technologies for sessions, language, theme, settings, security, and basic analytics.','Some items are necessary for the service, such as login or abuse prevention.','You can delete or block cookies through your browser, but some features may not work properly.']],
+        ['9. Security and breaches',['We use reasonable technical and organizational measures such as hashing, access control, logging, rate limits, HTTPS, and restricted access.','No system is 100% secure. You should protect your password and device.','If a data breach creates risk, we will assess and notify authorities or users as required by law.']],
+        ['10. Children and changes',['The service is not directed to children who cannot legally consent on their own. If a guardian believes child data was submitted, contact us.','We may update this policy and will show the latest update date on this page.','Continuing to use the service after an update means you acknowledge the latest policy.']]
+      ]},
+      zh:{nav:{terms:'條款',signup:'註冊'},kicker:'隱私政策',title:'隱私政策',lead:'本政策說明當您使用網站、帳戶、AI 師傅、手相、付款及相關功能時，Hourkey 如何收集、使用、揭露、保存與保護個人資料。',updated:'最後更新：2026年7月9日',scope:'適用於 hourkey.io 及相關服務',foot:'如有個人資料問題或欲行使權利，請透過網站顯示的 support 管道聯絡我們。',sections:[
+        ['1. 我們收集的資料',['帳戶資料，如電郵、電話、顯示名稱、雜湊密碼、session 與登入資訊。','命盤與使用資料，如出生日期、時間、地點、選擇性別、親友 profile、問題、AI 記錄、解讀、點數歷史與設定。','上傳圖片，例如手相照片。圖片用於處理功能，處理後可能刪除，除非您選擇保存結果或需保存相關紀錄。','付款資料，如訂單、方案、點數、交易狀態與付款服務資訊。我們不打算保存完整卡號。','技術資料，如 IP、user agent、device id、cookies/local storage、log、錯誤、rate limit 與安全訊號。']],
+        ['2. 使用目的',['建立與維護帳戶、驗證身份、防止未授權存取。','計算命盤、生成 AI 解讀、保留歷史、匯出資料並提供您要求的功能。','處理付款、加值點數、顯示交易歷史、處理退款或爭議。','維護安全、偵測濫用、防 bot/fraud/spam 並排除問題。','改善品質、分析效能並傳送帳戶、服務或重要通知。']],
+        ['3. 處理依據',['您註冊、使用功能或購買方案時，我們為履行服務合約而處理資料。','對您明確選擇的資料或功能，例如圖片上傳或某些通知，我們可能依同意處理。','為安全、防詐欺、系統分析與服務改善，我們可能依合法利益處理。','為法律、稅務、會計或合法要求所需時，我們可能處理資料。']],
+        ['4. 資料分享',['我們可能與 hosting、database、AI model、payment、email/SMS/OAuth、analytics、security、support 等服務供應商分享資料。','這些供應商應為支援 Hourkey 使用資料，而非出售您的個人資料。','法律要求、執行條款、防止損害或保護權利、安全、財產時，我們可能揭露資料。','若發生合併、轉讓或重組，資料可在適當保護措施下轉移。']],
+        ['5. 跨境傳輸',['服務可能使用境外服務或 AI provider，因此資料可能在您所在國家以外處理。','跨境時我們會盡力採用適當保障，例如合約條款、目的限制與安全措施。','若適用法律要求同意或額外保障，我們會採取適當步驟。']],
+        ['6. 保存與刪除',['我們在服務、帳戶、交易、安全、稅務、爭議與法律需要範圍內保存資料。','手相圖片以處理功能為目的，非必要時刪除；除非您選擇保存或為 debug/security 合理短期保存。','您可透過帳戶工具或 support 請求匯出、修正或刪除帳戶。部分資料可能因法律或安全需繼續保存。']],
+        ['7. 您的權利',['依適用法律，您可請求查閱、複本、轉移、修正、刪除、限制、反對或撤回同意。','您可能有權向相關個資保護機關申訴。','撤回同意可能使部分功能無法使用，但不影響撤回前已合法完成的處理。']],
+        ['8. Cookies 與 local storage',['我們使用 cookies、local storage 及類似技術記住 session、語言、theme、設定、安全與基本分析。','有些項目為服務必要，例如登入或防濫用。','您可透過瀏覽器刪除或阻擋 cookies，但部分功能可能無法正常運作。']],
+        ['9. 安全與資料外洩',['我們採用合理技術與組織措施，如 hashing、access control、logging、rate limit、HTTPS 與限制權限。','沒有系統能 100% 安全，請保護您的密碼與裝置。','若資料外洩造成風險，我們會評估並依法通知機關或使用者。']],
+        ['10. 兒童與政策變更',['服務不面向無法自行合法同意的兒童。若監護人認為兒童資料被提交，請聯絡我們。','我們可更新本政策，最新日期會顯示於本頁。','更新後繼續使用服務，表示您知悉最新政策。']]
+      ]},
+      cn:{nav:{terms:'条款',signup:'注册'},kicker:'隐私政策',title:'隐私政策',lead:'本政策说明当您使用网站、账户、AI 师傅、手相、付款及相关功能时，Hourkey 如何收集、使用、披露、保存与保护个人资料。',updated:'最后更新：2026年7月9日',scope:'适用于 hourkey.io 及相关服务',foot:'如有个人资料问题或欲行使权利，请通过网站显示的 support 渠道联系我们。',sections:[
+        ['1. 我们收集的资料',['账户资料，如邮箱、电话、显示名称、哈希密码、session 与登录信息。','命盘与使用资料，如出生日期、时间、地点、选择性别、亲友 profile、问题、AI 记录、解读、点数历史与设置。','上传图片，例如手相照片。图片用于处理功能，处理后可能删除，除非您选择保存结果或需保存相关记录。','付款资料，如订单、套餐、点数、交易状态与支付服务信息。我们不打算保存完整卡号。','技术资料，如 IP、user agent、device id、cookies/local storage、log、错误、rate limit 与安全信号。']],
+        ['2. 使用目的',['创建和维护账户、验证身份、防止未授权访问。','计算命盘、生成 AI 解读、保留历史、导出资料并提供您要求的功能。','处理付款、加值点数、显示交易历史、处理退款或争议。','维护安全、检测滥用、防 bot/fraud/spam 并排除问题。','改善质量、分析性能并发送账户、服务或重要通知。']],
+        ['3. 处理依据',['您注册、使用功能或购买套餐时，我们为履行服务合同而处理资料。','对您明确选择的资料或功能，例如图片上传或某些通知，我们可能依同意处理。','为安全、防欺诈、系统分析与服务改进，我们可能依合法利益处理。','为法律、税务、会计或合法要求所需时，我们可能处理资料。']],
+        ['4. 资料分享',['我们可能与 hosting、database、AI model、payment、email/SMS/OAuth、analytics、security、support 等服务供应商分享资料。','这些供应商应为支持 Hourkey 使用资料，而非出售您的个人资料。','法律要求、执行条款、防止损害或保护权利、安全、财产时，我们可能披露资料。','若发生合并、转让或重组，资料可在适当保护措施下转移。']],
+        ['5. 跨境传输',['服务可能使用境外服务或 AI provider，因此资料可能在您所在国家以外处理。','跨境时我们会尽力采用适当保障，例如合同条款、目的限制与安全措施。','若适用法律要求同意或额外保障，我们会采取适当步骤。']],
+        ['6. 保存与删除',['我们在服务、账户、交易、安全、税务、争议与法律需要范围内保存资料。','手相图片以处理功能为目的，非必要时删除；除非您选择保存或为 debug/security 合理短期保存。','您可通过账户工具或 support 请求导出、修正或删除账户。部分资料可能因法律或安全需继续保存。']],
+        ['7. 您的权利',['依适用法律，您可请求查阅、副本、转移、修正、删除、限制、反对或撤回同意。','您可能有权向相关个人资料保护机关投诉。','撤回同意可能使部分功能无法使用，但不影响撤回前已合法完成的处理。']],
+        ['8. Cookies 与 local storage',['我们使用 cookies、local storage 及类似技术记住 session、语言、theme、设置、安全与基本分析。','有些项目为服务必要，例如登录或防滥用。','您可通过浏览器删除或阻挡 cookies，但部分功能可能无法正常运作。']],
+        ['9. 安全与资料泄露',['我们采用合理技术与组织措施，如 hashing、access control、logging、rate limit、HTTPS 与限制权限。','没有系统能 100% 安全，请保护您的密码与设备。','若资料泄露造成风险，我们会评估并依法通知机关或用户。']],
+        ['10. 儿童与政策变更',['服务不面向无法自行合法同意的儿童。若监护人认为儿童资料被提交，请联系我们。','我们可更新本政策，最新日期会显示于本页。','更新后继续使用服务，表示您知悉最新政策。']]
+      ]},
+      vi:{nav:{terms:'Điều khoản',signup:'Đăng ký'},kicker:'CHÍNH SÁCH QUYỀN RIÊNG TƯ',title:'Chính sách quyền riêng tư',lead:'Chính sách này giải thích cách Hourkey thu thập, sử dụng, tiết lộ, lưu giữ và bảo vệ dữ liệu cá nhân khi bạn dùng website, tài khoản, AI Sifu, xem tay, thanh toán và tính năng liên quan.',updated:'Cập nhật lần cuối: 9/7/2026',scope:'Áp dụng cho hourkey.io và dịch vụ liên quan',foot:'Câu hỏi về dữ liệu cá nhân hoặc yêu cầu quyền có thể gửi qua kênh support trên website.',sections:[
+        ['1. Dữ liệu chúng tôi thu thập',['Dữ liệu tài khoản như email, số điện thoại, tên hiển thị, mật khẩu đã hash, session và thông tin đăng nhập.','Dữ liệu lá số và sử dụng như ngày giờ nơi sinh, giới tính chọn, hồ sơ người thân, câu hỏi, ghi chú AI, kết quả đọc, lịch sử credit và cài đặt.','Ảnh tải lên như ảnh bàn tay để xem tay. Ảnh dùng để xử lý tính năng và có thể bị xóa sau xử lý trừ khi bạn chọn lưu kết quả hoặc cần giữ hồ sơ liên quan.','Dữ liệu thanh toán như order, gói, credit, trạng thái giao dịch và thông tin từ payment provider. Chúng tôi không chủ ý lưu số thẻ đầy đủ.','Dữ liệu kỹ thuật như IP, user agent, device id, cookies/local storage, logs, lỗi, rate limit và tín hiệu bảo mật.']],
+        ['2. Mục đích',['Tạo và duy trì tài khoản, xác thực, ngăn truy cập trái phép.','Tính lá số, tạo kết quả AI, lưu lịch sử, xuất dữ liệu và cung cấp tính năng bạn yêu cầu.','Xử lý thanh toán, nạp credit, hiển thị lịch sử giao dịch, xử lý hoàn tiền hoặc tranh chấp.','Bảo mật dịch vụ, phát hiện lạm dụng, chống bot, fraud, spam và sửa lỗi.','Cải thiện chất lượng, phân tích hiệu năng và gửi thông báo tài khoản, dịch vụ hoặc thông báo quan trọng.']],
+        ['3. Cơ sở xử lý',['Chúng tôi xử lý dữ liệu để thực hiện hợp đồng dịch vụ khi bạn đăng ký, dùng tính năng hoặc mua gói.','Chúng tôi có thể dựa vào đồng ý cho dữ liệu hoặc tính năng bạn chọn rõ ràng, như tải ảnh lên hoặc một số liên lạc.','Chúng tôi có thể dựa vào lợi ích hợp pháp cho bảo mật, chống gian lận, phân tích hệ thống và cải thiện dịch vụ.','Chúng tôi có thể xử lý khi cần cho pháp luật, thuế, kế toán hoặc yêu cầu hợp pháp.']],
+        ['4. Chia sẻ',['Chúng tôi có thể chia sẻ với nhà cung cấp hỗ trợ hosting, database, AI model, payment, email/SMS/OAuth, analytics, security và support.','Các nhà cung cấp này nên dùng dữ liệu để hỗ trợ Hourkey, không phải để bán dữ liệu cá nhân của bạn.','Chúng tôi có thể tiết lộ khi luật yêu cầu, để thực thi điều khoản, ngăn hại hoặc bảo vệ quyền, an toàn, tài sản.','Nếu sáp nhập, chuyển nhượng hoặc tái cấu trúc, dữ liệu có thể chuyển giao với biện pháp bảo vệ phù hợp.']],
+        ['5. Chuyển dữ liệu quốc tế',['Dịch vụ có thể dùng provider hoặc AI provider ở nước khác, nên dữ liệu có thể được xử lý ngoài quốc gia của bạn.','Khi chuyển dữ liệu, chúng tôi cố gắng dùng bảo vệ phù hợp như điều khoản hợp đồng, giới hạn mục đích và biện pháp an toàn.','Nếu luật yêu cầu đồng ý hoặc bảo vệ bổ sung, chúng tôi sẽ thực hiện bước phù hợp.']],
+        ['6. Lưu giữ và xóa',['Chúng tôi giữ dữ liệu khi cần cho dịch vụ, tài khoản, giao dịch, bảo mật, thuế, tranh chấp và yêu cầu pháp lý.','Ảnh xem tay nhằm dùng cho xử lý và xóa khi không còn cần, trừ khi bạn chọn lưu hoặc cần giữ ngắn hạn hợp lý cho debug/security.','Bạn có thể yêu cầu xuất, sửa hoặc xóa tài khoản qua công cụ tài khoản hoặc support. Một số dữ liệu có thể phải giữ vì luật hoặc an toàn.']],
+        ['7. Quyền của bạn',['Tùy luật áp dụng, bạn có thể yêu cầu truy cập, bản sao, chuyển dữ liệu, sửa, xóa, hạn chế, phản đối hoặc rút đồng ý.','Bạn có thể có quyền khiếu nại với cơ quan bảo vệ dữ liệu liên quan.','Rút đồng ý có thể làm một số tính năng không dùng được, nhưng không ảnh hưởng xử lý hợp pháp đã hoàn tất trước đó.']],
+        ['8. Cookies và local storage',['Chúng tôi dùng cookies, local storage và công nghệ tương tự cho session, ngôn ngữ, theme, cài đặt, bảo mật và phân tích cơ bản.','Một số mục cần thiết cho dịch vụ, như đăng nhập hoặc chống lạm dụng.','Bạn có thể xóa hoặc chặn cookies trong trình duyệt, nhưng một số tính năng có thể không hoạt động đúng.']],
+        ['9. Bảo mật và sự cố',['Chúng tôi dùng biện pháp kỹ thuật và tổ chức hợp lý như hashing, access control, logging, rate limit, HTTPS và hạn chế truy cập.','Không hệ thống nào an toàn 100%. Bạn nên bảo vệ mật khẩu và thiết bị.','Nếu xảy ra vi phạm dữ liệu có rủi ro, chúng tôi sẽ đánh giá và thông báo cơ quan hoặc người dùng theo luật.']],
+        ['10. Trẻ em và thay đổi',['Dịch vụ không hướng tới trẻ em chưa thể tự đồng ý hợp pháp. Nếu người giám hộ cho rằng dữ liệu trẻ em đã được gửi, hãy liên hệ chúng tôi.','Chúng tôi có thể cập nhật chính sách này và sẽ hiển thị ngày mới nhất trên trang.','Tiếp tục dùng sau cập nhật nghĩa là bạn đã biết chính sách mới nhất.']]
+      ]},
+      ja:{nav:{terms:'規約',signup:'登録'},kicker:'プライバシーポリシー',title:'プライバシーポリシー',lead:'本ポリシーは、ウェブサイト、アカウント、AI Sifu、手相、決済、関連機能の利用時に Hourkey が個人データをどのように収集、利用、開示、保存、保護するかを説明します。',updated:'最終更新日：2026年7月9日',scope:'hourkey.io および関連サービスに適用',foot:'個人データに関する質問や権利行使は、サイト上の support 窓口からご連絡ください。',sections:[
+        ['1. 収集するデータ',['アカウント情報：メール、電話番号、表示名、ハッシュ化されたパスワード、session、ログイン情報。','命盤・利用情報：出生日時・場所、選択性別、関連 profile、質問、AI メモ、リーディング、credit 履歴、設定。','手相用写真などのアップロード画像。画像は機能処理に使われ、結果保存を選択した場合または関連記録が必要な場合を除き、処理後に削除されることがあります。','決済情報：order、package、credit、取引状態、決済業者からの情報。完全なカード番号を保存する意図はありません。','技術情報：IP、user agent、device id、cookies/local storage、logs、errors、rate limit、安全シグナル。']],
+        ['2. 利用目的',['アカウント作成・維持、認証、不正アクセス防止。','命盤計算、AI リーディング生成、履歴保存、データ出力、要求された機能提供。','決済処理、credit 付与、取引履歴表示、返金・紛争対応。','サービス保護、濫用検知、bot/fraud/spam 防止、障害対応。','品質改善、性能分析、アカウント・サービス・重要通知の連絡。']],
+        ['3. 処理根拠',['登録、機能利用、購入時のサービス契約履行のために処理します。','画像アップロードや一部連絡など、明確に選択したデータ・機能について同意に基づく場合があります。','安全、詐欺防止、分析、改善について正当な利益に基づく場合があります。','法令、税務、会計、適法な要請に必要な場合に処理します。']],
+        ['4. 共有',['hosting、database、AI model、payment、email/SMS/OAuth、analytics、security、support などの提供者と共有する場合があります。','これらの提供者は Hourkey 支援のために利用し、個人データ販売のために利用すべきではありません。','法令、規約執行、被害防止、権利・安全・財産保護のために開示する場合があります。','合併、譲渡、再編時、適切な保護措置のもとでデータが移転される場合があります。']],
+        ['5. 国際移転',['国外の provider または AI provider を使うため、データが居住国以外で処理される場合があります。','移転時は契約条件、目的制限、安全措置など適切な保護を試みます。','法が同意または追加措置を求める場合、適切に対応します。']],
+        ['6. 保存と削除',['サービス、アカウント、取引、安全、税務、紛争、法的要件に必要な期間保存します。','手相画像は処理目的で使用し、不要になれば削除する方針です。ただし保存選択または debug/security の合理的短期保存を除きます。','アカウント機能または support から出力、修正、削除を求められます。一部データは法令または安全のため保存が必要な場合があります。']],
+        ['7. 利用者の権利',['適用法により、アクセス、コピー、ポータビリティ、修正、削除、制限、異議、同意撤回を求められる場合があります。','関連するデータ保護機関へ苦情を申し立てる権利がある場合があります。','同意撤回により一部機能が使えなくなる場合がありますが、撤回前の適法処理には影響しません。']],
+        ['8. Cookies と local storage',['session、言語、theme、設定、安全、基本分析のため cookies、local storage、類似技術を使います。','ログインや濫用防止など一部はサービスに必要です。','ブラウザで削除・ブロックできますが、一部機能が正常に動かない場合があります。']],
+        ['9. 安全と漏えい',['hashing、access control、logging、rate limit、HTTPS、アクセス制限など合理的措置を使います。','100%安全なシステムはありません。パスワードと端末を保護してください。','リスクのあるデータ漏えいが発生した場合、法に従い評価し、当局または利用者に通知します。']],
+        ['10. 子どもと変更',['本サービスは単独で法的同意ができない子どもを対象にしていません。保護者が子どものデータ送信を把握した場合はご連絡ください。','本ポリシーは更新されることがあり、最新日付を本ページに表示します。','更新後の利用継続は最新ポリシーを認識したものとします。']]
+      ]},
+      ko:{nav:{terms:'약관',signup:'가입'},kicker:'개인정보 처리방침',title:'개인정보 처리방침',lead:'본 방침은 웹사이트, 계정, AI Sifu, 손금, 결제 및 관련 기능 이용 시 Hourkey가 개인정보를 어떻게 수집, 사용, 공개, 보관, 보호하는지 설명합니다.',updated:'최종 업데이트: 2026년 7월 9일',scope:'hourkey.io 및 관련 서비스에 적용',foot:'개인정보 질문이나 권리 요청은 웹사이트의 support 채널로 문의해 주세요.',sections:[
+        ['1. 수집하는 데이터',['계정 데이터: 이메일, 전화번호, 표시 이름, 해시된 비밀번호, session, 로그인 정보.','차트 및 이용 데이터: 출생일시와 장소, 선택한 성별, 관련 profile, 질문, AI 기록, 리딩, credit 내역, 설정.','손금 사진 등 업로드 이미지. 이미지는 기능 처리를 위해 사용되고, 결과 저장을 선택하거나 관련 기록 보관이 필요한 경우를 제외하고 처리 후 삭제될 수 있습니다.','결제 데이터: order, package, credit, 거래 상태, 결제 제공자 정보. 전체 카드번호를 저장하려는 의도는 없습니다.','기술 데이터: IP, user agent, device id, cookies/local storage, logs, errors, rate limit, 보안 신호.']],
+        ['2. 목적',['계정 생성과 유지, 인증, 무단 접근 방지.','차트 계산, AI 리딩 생성, 기록 보관, 데이터 내보내기, 요청 기능 제공.','결제 처리, credit 추가, 거래 내역 표시, 환불 또는 분쟁 처리.','서비스 보안, 남용 탐지, bot/fraud/spam 방지, 문제 해결.','품질 개선, 성능 분석, 계정/서비스/중요 공지 전달.']],
+        ['3. 처리 근거',['가입, 기능 이용, 구매 시 서비스 계약 이행을 위해 처리합니다.','이미지 업로드나 일부 커뮤니케이션처럼 명확히 선택한 데이터/기능은 동의에 근거할 수 있습니다.','보안, 사기 방지, 시스템 분석, 서비스 개선은 정당한 이익에 근거할 수 있습니다.','법률, 세금, 회계 또는 적법한 요청에 필요한 경우 처리할 수 있습니다.']],
+        ['4. 공유',['hosting, database, AI model, payment, email/SMS/OAuth, analytics, security, support 제공자와 공유할 수 있습니다.','이 제공자들은 Hourkey 지원을 위해 데이터를 사용해야 하며 개인정보 판매 목적이 아닙니다.','법 요구, 약관 집행, 피해 방지, 권리/안전/재산 보호를 위해 공개할 수 있습니다.','합병, 이전, 구조조정 시 적절한 보호 조치하에 데이터가 이전될 수 있습니다.']],
+        ['5. 국제 이전',['다른 국가의 provider 또는 AI provider를 사용할 수 있어 데이터가 거주국 밖에서 처리될 수 있습니다.','이전 시 계약 조건, 목적 제한, 보안 조치 등 적절한 보호를 사용하려고 합니다.','적용 법이 동의나 추가 보호를 요구하면 적절히 조치합니다.']],
+        ['6. 보관과 삭제',['서비스, 계정, 거래, 보안, 세금, 분쟁, 법적 요구에 필요한 기간 보관합니다.','손금 이미지는 처리를 위해 사용하고 불필요하면 삭제하는 것을 목표로 합니다. 단, 저장 선택 또는 debug/security를 위한 합리적 단기 보관은 예외입니다.','계정 도구 또는 support를 통해 내보내기, 수정, 삭제를 요청할 수 있습니다. 일부 데이터는 법이나 안전상 보관이 필요할 수 있습니다.']],
+        ['7. 권리',['적용 법에 따라 접근, 사본, 이동, 수정, 삭제, 제한, 반대, 동의 철회를 요청할 수 있습니다.','관련 개인정보 보호 기관에 불만을 제기할 권리가 있을 수 있습니다.','동의 철회는 일부 기능을 사용할 수 없게 할 수 있지만, 철회 전 적법한 처리에는 영향을 주지 않습니다.']],
+        ['8. Cookies 및 local storage',['session, 언어, theme, 설정, 보안, 기본 분석을 위해 cookies, local storage 및 유사 기술을 사용합니다.','로그인 또는 남용 방지처럼 서비스에 필요한 항목이 있습니다.','브라우저에서 cookies를 삭제하거나 차단할 수 있지만 일부 기능이 제대로 작동하지 않을 수 있습니다.']],
+        ['9. 보안과 침해',['hashing, access control, logging, rate limit, HTTPS, 접근 제한 등 합리적 기술 및 조직 조치를 사용합니다.','100% 안전한 시스템은 없습니다. 비밀번호와 기기를 보호해 주세요.','위험이 있는 데이터 침해가 발생하면 법에 따라 평가하고 기관 또는 사용자에게 알립니다.']],
+        ['10. 아동과 변경',['본 서비스는 법적으로 단독 동의할 수 없는 아동을 대상으로 하지 않습니다. 보호자가 아동 데이터 제출을 알게 되면 연락해 주세요.','본 방침은 업데이트될 수 있으며 최신 날짜가 이 페이지에 표시됩니다.','업데이트 후 계속 사용하면 최신 방침을 인지한 것으로 봅니다.']]
+      ]},
+      ru:{nav:{terms:'Условия',signup:'Регистрация'},kicker:'ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ',title:'Политика конфиденциальности',lead:'Эта политика объясняет, как Hourkey собирает, использует, раскрывает, хранит и защищает персональные данные при использовании сайта, аккаунта, AI Sifu, хиромантии, платежей и связанных функций.',updated:'Последнее обновление: 9 июля 2026',scope:'Применяется к hourkey.io и связанным сервисам',foot:'Вопросы о данных или запросы прав можно отправить через канал support на сайте.',sections:[
+        ['1. Данные, которые мы собираем',['Данные аккаунта: email, телефон, отображаемое имя, хешированный пароль, session и сведения входа.','Данные карты и использования: дата, время, место рождения, выбранный пол, связанные профили, вопросы, AI заметки, чтения, история credit и настройки.','Загруженные изображения, например фото ладони. Они используются для функции и могут удаляться после обработки, если вы не выбрали сохранение или требуется запись.','Платежные данные: order, package, credit, статус транзакции и сведения платежного провайдера. Мы не намерены хранить полный номер карты.','Технические данные: IP, user agent, device id, cookies/local storage, logs, errors, rate limits и сигналы безопасности.']],
+        ['2. Цели',['Создание и ведение аккаунта, аутентификация, предотвращение несанкционированного доступа.','Расчет карт, AI чтения, история, экспорт данных и функции по вашему запросу.','Платежи, начисление credit, история транзакций, возвраты и споры.','Безопасность сервиса, выявление abuse, защита от bot/fraud/spam и устранение проблем.','Улучшение качества, анализ производительности, сообщения об аккаунте, сервисе и важных уведомлениях.']],
+        ['3. Основания обработки',['Мы обрабатываем данные для выполнения договора сервиса при регистрации, использовании функций или покупке.','Мы можем полагаться на согласие для явно выбранных данных или функций, например загрузки изображений или некоторых сообщений.','Мы можем полагаться на законные интересы для безопасности, предотвращения fraud, аналитики и улучшения.','Мы можем обрабатывать данные для закона, налогов, учета или законных запросов.']],
+        ['4. Передача',['Мы можем передавать данные провайдерам hosting, database, AI model, payment, email/SMS/OAuth, analytics, security и support.','Эти провайдеры должны использовать данные для поддержки Hourkey, а не продажи персональных данных.','Мы можем раскрывать данные по закону, для исполнения условий, предотвращения вреда или защиты прав, безопасности и имущества.','При слиянии, передаче или реструктуризации данные могут перейти при надлежащей защите.']],
+        ['5. Международные передачи',['Сервис может использовать провайдеров или AI provider в других странах, поэтому данные могут обрабатываться вне вашей страны.','При передаче мы стараемся использовать договорные условия, ограничения целей и меры безопасности.','Если закон требует согласия или дополнительных гарантий, мы примем соответствующие меры.']],
+        ['6. Хранение и удаление',['Мы храним данные столько, сколько нужно для сервиса, аккаунтов, транзакций, безопасности, налогов, споров и закона.','Фото ладони предназначены для обработки и удаления, когда они больше не нужны, кроме выбранного сохранения или разумного debug/security хранения.','Вы можете запросить экспорт, исправление или удаление аккаунта через инструменты аккаунта или support. Часть данных может сохраняться по закону или безопасности.']],
+        ['7. Ваши права',['В зависимости от закона вы можете запросить доступ, копию, перенос, исправление, удаление, ограничение, возражение или отзыв согласия.','Вы можете иметь право обратиться в орган защиты данных.','Отзыв согласия может отключить некоторые функции, но не влияет на законную обработку до отзыва.']],
+        ['8. Cookies и local storage',['Мы используем cookies, local storage и похожие технологии для session, языка, theme, настроек, безопасности и базовой аналитики.','Некоторые элементы необходимы для сервиса, например login или защита от abuse.','Вы можете удалить или заблокировать cookies в браузере, но часть функций может работать неправильно.']],
+        ['9. Безопасность и инциденты',['Мы используем разумные технические и организационные меры: hashing, access control, logging, rate limit, HTTPS и ограничение доступа.','Ни одна система не безопасна на 100%. Защищайте пароль и устройство.','Если утечка данных создает риск, мы оценим ее и уведомим органы или пользователей согласно закону.']],
+        ['10. Дети и изменения',['Сервис не предназначен для детей, которые не могут самостоятельно дать законное согласие. Если опекун считает, что данные ребенка отправлены, свяжитесь с нами.','Мы можем обновлять политику; дата последнего обновления указана на странице.','Продолжение использования после обновления означает, что вы ознакомлены с новой политикой.']]
+      ]},
+      es:{nav:{terms:'Términos',signup:'Registro'},kicker:'POLÍTICA DE PRIVACIDAD',title:'Política de privacidad',lead:'Esta política explica cómo Hourkey recopila, usa, divulga, conserva y protege datos personales cuando usas el sitio, la cuenta, AI Sifu, quiromancia, pagos y funciones relacionadas.',updated:'Última actualización: 9 de julio de 2026',scope:'Aplicable a hourkey.io y servicios relacionados',foot:'Las preguntas de privacidad o solicitudes de derechos pueden enviarse por el canal de support indicado en el sitio.',sections:[
+        ['1. Datos que recopilamos',['Datos de cuenta como email, teléfono, nombre visible, contraseña hasheada, sesiones e información de inicio de sesión.','Datos de carta y uso como fecha, hora, lugar de nacimiento, género elegido, perfiles relacionados, preguntas, notas de IA, lecturas, historial de credit y ajustes.','Imágenes subidas, como fotos de palma. Se usan para procesar la función y pueden borrarse después salvo que elijas guardar resultados o deban conservarse registros relacionados.','Datos de pago como order, package, credit, estado de transacción e información del proveedor de pago. No pretendemos guardar números completos de tarjeta.','Datos técnicos como IP, user agent, device id, cookies/local storage, logs, errores, rate limits y señales de seguridad.']],
+        ['2. Finalidades',['Crear y mantener cuentas, autenticar usuarios y prevenir acceso no autorizado.','Calcular cartas, generar lecturas de IA, mantener historial, exportar datos y proporcionar funciones solicitadas.','Procesar pagos, añadir credits, mostrar historial de transacciones y gestionar reembolsos o disputas.','Proteger el servicio, detectar abuso, prevenir bots, fraude, spam y solucionar problemas.','Mejorar calidad, analizar rendimiento y comunicar avisos de cuenta, servicio o importantes.']],
+        ['3. Bases de tratamiento',['Procesamos datos para cumplir el contrato del servicio cuando te registras, usas funciones o compras paquetes.','Podemos basarnos en consentimiento para datos o funciones que eliges claramente, como subir imágenes o algunas comunicaciones.','Podemos basarnos en intereses legítimos para seguridad, prevención de fraude, análisis y mejora.','Podemos procesar datos cuando sea necesario por ley, impuestos, contabilidad o solicitudes legales.']],
+        ['4. Compartición',['Podemos compartir datos con proveedores de hosting, database, AI model, payment, email/SMS/OAuth, analytics, security y support.','Estos proveedores deberían usar datos para apoyar Hourkey, no para vender tus datos personales.','Podemos divulgar datos si la ley lo exige, para hacer cumplir términos, prevenir daño o proteger derechos, seguridad y propiedad.','En una fusión, transferencia o reestructuración, los datos pueden transferirse con protecciones adecuadas.']],
+        ['5. Transferencias internacionales',['El servicio puede usar proveedores o AI providers en otros países, por lo que los datos pueden procesarse fuera de tu país.','Intentamos usar salvaguardas adecuadas como cláusulas contractuales, límites de finalidad y medidas de seguridad.','Si la ley exige consentimiento o garantías adicionales, tomaremos medidas adecuadas.']],
+        ['6. Conservación y eliminación',['Conservamos datos mientras sean necesarios para servicio, cuentas, transacciones, seguridad, impuestos, disputas y ley.','Las imágenes de quiromancia se usan para procesar y se eliminan cuando ya no son necesarias, salvo guardado elegido o retención razonable para debug/security.','Puedes solicitar exportación, corrección o eliminación de cuenta mediante herramientas de cuenta o support. Algunos datos pueden conservarse por ley o seguridad.']],
+        ['7. Tus derechos',['Según la ley aplicable, puedes pedir acceso, copia, portabilidad, corrección, eliminación, restricción, oposición o retirar consentimiento.','Puedes tener derecho a reclamar ante la autoridad de protección de datos correspondiente.','Retirar consentimiento puede desactivar funciones, pero no afecta el tratamiento lícito ya completado.']],
+        ['8. Cookies y local storage',['Usamos cookies, local storage y tecnologías similares para sesiones, idioma, theme, ajustes, seguridad y analítica básica.','Algunos elementos son necesarios, como login o prevención de abuso.','Puedes borrar o bloquear cookies en el navegador, pero algunas funciones pueden fallar.']],
+        ['9. Seguridad e incidentes',['Usamos medidas técnicas y organizativas razonables como hashing, access control, logging, rate limits, HTTPS y acceso restringido.','Ningún sistema es 100% seguro. Protege tu contraseña y dispositivo.','Si una brecha crea riesgo, la evaluaremos y notificaremos a autoridades o usuarios según la ley.']],
+        ['10. Menores y cambios',['El servicio no está dirigido a menores que no puedan consentir legalmente por sí mismos. Si un tutor cree que se enviaron datos de un menor, debe contactarnos.','Podemos actualizar esta política y mostraremos la fecha más reciente en esta página.','Seguir usando el servicio tras una actualización significa que reconoces la política más reciente.']]
+      ]}
+    };
+    function pickLang(){
+      var q=new URLSearchParams(location.search).get('lang');
+      var saved=''; try{saved=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';}catch(_){}
+      var raw=(q||saved||navigator.language||'th').toLowerCase();
+      if(raw.indexOf('zh-cn')===0||raw==='cn') return 'cn';
+      if(raw.indexOf('zh')===0) return 'zh';
+      raw=raw.slice(0,2);
+      return LANGS.indexOf(raw)>=0?raw:'en';
+    }
+    function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+    function render(lang){
+      var d=DATA[lang]||DATA.en;
+      document.documentElement.lang=lang==='cn'?'zh-CN':(lang==='zh'?'zh-TW':lang);
+      document.documentElement.dataset.lang=lang;
+      try{localStorage.setItem('hk_locale',lang);localStorage.setItem('hk_lang',lang);}catch(_){}
+      document.title='hourkey · '+d.title;
+      document.querySelector('[data-nav="terms"]').textContent=d.nav.terms;
+      document.querySelector('[data-nav="signup"]').textContent=d.nav.signup;
+      document.getElementById('kicker').textContent=d.kicker;
+      document.getElementById('title').textContent=d.title;
+      document.getElementById('lead').textContent=d.lead;
+      document.getElementById('updated').textContent=d.updated;
+      document.getElementById('scope').textContent=d.scope;
+      document.getElementById('foot').textContent=d.foot;
+      document.getElementById('doc').innerHTML=d.sections.map(function(sec){
+        return '<section class="card"><h2>'+esc(sec[0])+'</h2><ul>'+sec[1].map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';
+      }).join('');
+      document.querySelectorAll('#lang button').forEach(function(b){b.classList.toggle('on',b.dataset.lang===lang);});
+    }
+    var box=document.getElementById('lang');
+    box.innerHTML=LANGS.map(function(l){return '<button type="button" data-lang="'+l+'">'+LABEL[l]+'</button>';}).join('');
+    box.addEventListener('click',function(e){if(e.target&&e.target.dataset.lang) render(e.target.dataset.lang);});
+    render(pickLang());
+  })();
+  </script>
+</body>
+</html>
