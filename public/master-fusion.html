@@ -3465,7 +3465,7 @@
       }
       var saved = '';
       try { saved = localStorage.getItem('hk_profile_id') || ''; } catch(_){}
-      var active = (j.active_profile && j.active_profile.id) || saved || state.profiles[0].id;
+      var active = (j.active_profile && j.active_profile.id) || saved || (state.profiles.find(function(p){return p.is_self;}) || {}).id || ''; /* ⛔ ดวงตัวเอง/บันทึกไว้ ไม่ fallback profiles[0]=ดวงคนอื่น (rule #6) */
       fillProfileSelect(els.profile, active);
       var second = state.profiles.find(function(p){ return String(p.id) !== String(els.profile.value); });
       fillProfileSelect(els.profile2, second ? second.id : '', els.profile.value);
@@ -4080,6 +4080,8 @@
     // ===== r420 · modal "วิธีใช้" + tooltip ต่อศาสตร์ wiring (additive) =====
     var howToBtn = document.getElementById('how-to-btn');
     if (howToBtn) howToBtn.addEventListener('click', openHelpModal);
+    /* เด้ง modal "วิธีใช้" อัตโนมัติครั้งแรกที่เข้าหน้า (จำด้วย localStorage · ครั้งถัดไปกด ⓘ เอง) */
+    try { if (!localStorage.getItem('hk_fusion_help_seen')) { setTimeout(function(){ openHelpModal(); try{ localStorage.setItem('hk_fusion_help_seen','1'); }catch(_){}}, 500); } } catch(_){}
     var helpModalCloseBtn = document.getElementById('help-modal-close');
     if (helpModalCloseBtn) helpModalCloseBtn.addEventListener('click', closeHelpModal);
     var helpModalEl = document.getElementById('help-modal');

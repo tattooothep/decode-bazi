@@ -1555,7 +1555,7 @@
         });
         sifuProfileSigLoaded = true;
         var selfPg = j.profiles.find(function(p){ return p.is_self; });
-        hkgSelfId = String((j.active_profile && j.active_profile.id) || (selfPg && selfPg.id) || j.profiles[0].id || '');
+        hkgSelfId = String((j.active_profile && j.active_profile.id) || (selfPg && selfPg.id) || ''); /* ⛔ ไม่ fallback profiles[0]=ดวงคนอื่น (rule #6) */
         if (window.hkgInitGroup) window.hkgInitGroup();
         var sel = document.getElementById('sifu-profile');
         var sel2 = document.getElementById('sifu-profile-2');
@@ -1565,7 +1565,7 @@
         sel.innerHTML = '';
         /* default = ดวงตัวเอง (active_profile/is_self) เป็นหลัก · ไม่เชื่อ hk_profile_id ที่อาจค้างดวงญาติจากหน้า chart · ยกเว้น urlPid (chart เด้งมาตั้งใจดูดวงนั้น) */
         var selfP = j.profiles.find(function(p){ return p.is_self; });
-        var preferId = String(urlPid || (j.active_profile && j.active_profile.id) || (selfP && selfP.id) || j.profiles[0].id);
+        var preferId = String(urlPid || (j.active_profile && j.active_profile.id) || (selfP && selfP.id) || ''); /* ⛔ ไม่ fallback profiles[0]=ดวงคนอื่น (rule #6) */
         /* ดวงตัวเองขึ้นบนสุดเสมอ (กันค่าเรียงจาก DB เปลี่ยน) */
         var ordered = j.profiles.slice().sort(function(a, b){ return (b.is_self ? 1 : 0) - (a.is_self ? 1 : 0); });
         ordered.forEach(function(p){

@@ -952,7 +952,7 @@
       if (!arr.length) return { auth: true, profile: null };
       var pick = (j.active_profile && j.active_profile.id && arr.find(function(p){ return p.id === j.active_profile.id; }))
               || arr.find(function(p){ return !!p.is_self; })
-              || arr[0];
+              || null; /* ⛔ ไม่ fallback arr[0]=ดวงคนอื่น · ไม่มีดวงตัวเอง→null→ไป /input (rule #6) */
       // hygiene: ล้าง hk_profile_id ที่ค้างแต่ไม่อยู่ในบัญชี/องค์กรปัจจุบัน
       try {
         var stale = localStorage.getItem('hk_profile_id');

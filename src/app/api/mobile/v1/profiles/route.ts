@@ -72,7 +72,7 @@ export async function GET(req: Request) {
             birth_time_known, day_boundary,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
        FROM profiles
-      WHERE org_id=$1
+      WHERE created_by_user_id=$2 AND org_id=$1  /* ⛔ เฉพาะดวงที่ user สร้างเอง · เดิม org อย่างเดียว=leak (rule #6) */
         AND COALESCE(is_archived, false)=false
       ORDER BY
         CASE WHEN created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '') THEN 0 ELSE 1 END,
@@ -80,7 +80,8 @@ export async function GET(req: Request) {
     [session.orgId, session.userId]
   );
 
-  const activeProfile = rows.find((profile) => profile.is_self) || rows[0] || null;
+  // is_self เท่านั้น · ⛔ ห้าม fallback rows[0] (หยิบดวงคนอื่นใน org · rule #6/#27)
+  const activeProfile = rows.find((profile) => profile.is_self) || null;
   return NextResponse.json(
     {
       ok: true,

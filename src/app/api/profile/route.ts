@@ -21,13 +21,14 @@ export async function GET() {
             birth_time_known, day_boundary, is_archived, created_at,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
      FROM profiles
-     WHERE org_id=$1 AND is_archived=false
+     WHERE created_by_user_id=$2 AND org_id=$1 AND is_archived=false  /* ⛔ เฉพาะดวงที่ user สร้างเอง (self+ญาติที่เพิ่ม) · เดิม org_id อย่างเดียว = เห็นดวงคนอื่นใน org (leak · rule #6) */
      ORDER BY
        CASE WHEN created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '') THEN 0 ELSE 1 END,
        created_at DESC`,
     [s.orgId, s.userId]
   );
-  const activeProfile = rows.find((p: any) => p.is_self) || rows[0] || null;
+  // active_profile = ดวงของเจ้าของบัญชีเท่านั้น (is_self) · ไม่มี=null · ⛔ ห้าม fallback rows[0] (= หยิบดวงคนอื่นใน org มาโชว์ผิดคน · rule #6/#27)
+  const activeProfile = rows.find((p: any) => p.is_self) || null;
   return NextResponse.json({ profiles: rows, active_profile: activeProfile });
 }
 
