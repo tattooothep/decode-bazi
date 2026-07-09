@@ -5,6 +5,7 @@
  */
 import { q1 } from "@/lib/db";
 import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { captureAffiliateAttribution } from "@/lib/affiliate";
 import crypto from "node:crypto";
 
 function redirect303(url: string): Response {
@@ -16,6 +17,7 @@ export async function POST(req: Request) {
   const email = String(form.get("email") || "").trim().toLowerCase();
   const password = String(form.get("password") || "");
   const name = String(form.get("name") || "").trim();
+  const referralCode = String(form.get("ref") || form.get("referralCode") || "");
 
   if (!email || !password) return redirect303("/signup?err=" + encodeURIComponent("กรอก email + password"));
   if (password.length < 6) return redirect303("/signup?err=" + encodeURIComponent("รหัสผ่านต้อง ≥ 6 ตัวอักษร"));
@@ -46,6 +48,13 @@ export async function POST(req: Request) {
     [orgId, userId]
   ).catch(() => null);
   await q1(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [orgId, userId]);
+
+  await captureAffiliateAttribution({
+    referredUserId: userId,
+    referralCode,
+    request: req,
+    channel: "form",
+  }).catch((e) => console.warn("[affiliate] form attribution failed", e instanceof Error ? e.message : String(e)));
 
   const token = await signSession({ userId, email, orgId });
   await setAuthCookie(token);

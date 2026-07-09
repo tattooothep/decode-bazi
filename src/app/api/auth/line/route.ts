@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     return new Response("LINE Login not configured", { status: 503 });
   }
   const requestUrl = new URL(req.url);
-  const state = await buildState(requestUrl.searchParams.get("next"));
+  const state = await buildState(requestUrl.searchParams.get("next"), requestUrl.searchParams.get("ref"));
   const c = await cookies();
   c.set("oauth_state_line", state, {
     httpOnly: true,

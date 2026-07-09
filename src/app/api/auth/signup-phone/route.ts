@@ -6,6 +6,7 @@ import { hashPassword } from "@/lib/auth";
 import { normalizePhone, isValidThaiMobile, createOtp } from "@/lib/phone-otp";
 import { sendOtpSms, isSmsReady } from "@/lib/thaibulksms-sms";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { captureAffiliateAttribution } from "@/lib/affiliate";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -60,14 +61,22 @@ export async function POST(req: Request) {
   ).catch(() => null);
   await q1(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [orgId, userId]);
 
+  const referral = await captureAffiliateAttribution({
+    referredUserId: userId,
+    referralCode: body.referralCode || body.ref || null,
+    request: req,
+    channel: "phone",
+    deviceId: body.affiliateDeviceId || null,
+  }).catch((e) => ({ ok: false, status: "error", reason: e instanceof Error ? e.message : String(e) }));
+
   // สร้าง OTP + ส่ง SMS
   const code = await createOtp(phone);
   if (!isSmsReady()) {
-    return NextResponse.json({ ok: true, need_verify: true, phone, dev_otp: code });
+    return NextResponse.json({ ok: true, need_verify: true, phone, dev_otp: code, referral });
   }
   const r = await sendOtpSms(phone, code);
   if (!r.ok) {
-    return NextResponse.json({ ok: true, need_verify: true, phone, sms_error: r.error });
+    return NextResponse.json({ ok: true, need_verify: true, phone, sms_error: r.error, referral });
   }
-  return NextResponse.json({ ok: true, need_verify: true, phone });
+  return NextResponse.json({ ok: true, need_verify: true, phone, referral });
 }

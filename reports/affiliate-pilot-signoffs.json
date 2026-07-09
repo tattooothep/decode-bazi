@@ -1,0 +1,68 @@
+{
+  "ok": true,
+  "runId": "aff_1783598739919_71bb27",
+  "generatedAt": "2026-07-09T12:05:39.996Z",
+  "signatures": [
+    {
+      "name": "01_schema_real_tables",
+      "status": "PASS",
+      "evidence": {
+        "tables": [
+          "affiliate_attributions",
+          "affiliate_audit_events",
+          "affiliate_members",
+          "affiliate_rewards"
+        ],
+        "settings": 8
+      }
+    },
+    {
+      "name": "02_attribution_constraints",
+      "status": "PASS",
+      "evidence": {
+        "code": "HK-F37D9D32",
+        "attribution_id": "bc699bbc-e739-4f92-be1d-c10e44090ba1",
+        "selfBlocked": true,
+        "dupBlocked": true
+      }
+    },
+    {
+      "name": "03_paid_order_reward_reversal",
+      "status": "PASS",
+      "evidence": {
+        "order_id": "ed19809a-f6f1-4cf7-903e-9eb2b487e318",
+        "reward_id": "2a55606f-c437-4b1e-ac06-3c103a0ef2a0",
+        "lifecycle": [
+          "pending",
+          "approved",
+          "paid",
+          "reversed"
+        ],
+        "reverse_helpers": true
+      }
+    },
+    {
+      "name": "04_signup_paths_capture_ref",
+      "status": "PASS",
+      "evidence": {
+        "signupFiles": [
+          "src/app/api/auth/signup/route.ts",
+          "src/app/api/auth/signup-phone/route.ts",
+          "src/app/api/auth/signup-form/route.ts",
+          "src/app/api/auth/google/callback/route.ts",
+          "src/app/api/auth/line/callback/route.ts"
+        ]
+      }
+    },
+    {
+      "name": "05_ui_admin_9lang_share_modal",
+      "status": "PASS",
+      "evidence": {
+        "hero": "public/assets/affiliate/affiliate-hero-v1.webp",
+        "shareButtons": 6,
+        "languages": 9,
+        "signupModeration": true
+      }
+    }
+  ]
+}

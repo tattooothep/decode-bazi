@@ -163,6 +163,36 @@
 	    function safeNext(path){
 	      return (path && path.charAt(0)==='/' && path.charAt(1)!=='/') ? path : '';
 	    }
+	    function safeRef(value){
+	      var raw = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
+	      if (!raw) return '';
+	      if (raw.indexOf('HK') === 0) raw = raw.slice(2);
+	      return raw ? 'HK-' + raw.slice(0, 16) : '';
+	    }
+	    function affiliateDeviceId(){
+	      try{
+	        var k='hk_aff_device_id';
+	        var v=localStorage.getItem(k);
+	        if(!v){
+	          v='afd_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,10);
+	          localStorage.setItem(k,v);
+	        }
+	        return v;
+	      }catch(_){ return ''; }
+	    }
+	    window.hkAffiliateDeviceId = affiliateDeviceId;
+	    var refParam = safeRef(params.get('ref') || params.get('affiliate') || '');
+	    var affiliateRef = refParam;
+	    try{
+	      if (affiliateRef) {
+	        localStorage.setItem('hk_aff_ref', affiliateRef);
+	        sessionStorage.setItem('hk_aff_ref', affiliateRef);
+	        document.cookie = 'hk_aff_ref=' + encodeURIComponent(affiliateRef) + '; path=/; max-age=2592000; SameSite=Lax';
+	      } else {
+	        affiliateRef = safeRef(sessionStorage.getItem('hk_aff_ref') || localStorage.getItem('hk_aff_ref') || '');
+	      }
+	    }catch(_){}
+	    window.hkAffiliateRef = affiliateRef || '';
 	    function afterLogin(hasProfile){
 	      if (!hasProfile) {
 	        window.location.href = '/input';
@@ -173,10 +203,11 @@
 	    }
 	    window.hkAfterLogin = afterLogin;
 	    const oauthNext = safeNext(nextParam);
-	    if (oauthNext) {
+	    if (oauthNext || affiliateRef) {
 	      document.querySelectorAll('.social a[href^="/api/auth/"]').forEach((a)=>{
 	        const u = new URL(a.getAttribute('href'), location.origin);
-	        u.searchParams.set('next', oauthNext);
+	        if (oauthNext) u.searchParams.set('next', oauthNext);
+	        if (affiliateRef) u.searchParams.set('ref', affiliateRef);
 	        a.setAttribute('href', u.pathname + u.search);
 	      });
 	    }
@@ -463,7 +494,7 @@
           if (isSignup) {
             const r = await fetch('/api/auth/signup-phone', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ phone: phone, password: password }),
+              body: JSON.stringify({ phone: phone, password: password, referralCode: window.hkAffiliateRef || null, affiliateDeviceId: window.hkAffiliateDeviceId && window.hkAffiliateDeviceId() }),
             });
             const j = await r.json().catch(function(){ return {}; });
             cta.disabled = false; cta.style.opacity = '1';
@@ -522,7 +553,7 @@
         }
         const r = await fetch('/api/auth/signup', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, password: password, name: email.split('@')[0] }),
+          body: JSON.stringify({ email: email, password: password, name: email.split('@')[0], referralCode: window.hkAffiliateRef || null, affiliateDeviceId: window.hkAffiliateDeviceId && window.hkAffiliateDeviceId() }),
         });
         if (r.ok) {
           try { localStorage.setItem('hk_email', email); } catch(_) {}

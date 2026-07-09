@@ -3,6 +3,7 @@
 import crypto from "node:crypto";
 import { q1 } from "@/lib/db";
 import { SignJWT, jwtVerify } from "jose";
+import { normalizeAffiliateCode } from "@/lib/affiliate";
 
 const CHANNEL_ID = process.env.LINE_LOGIN_CHANNEL_ID || "";
 const CHANNEL_SECRET = process.env.LINE_LOGIN_CHANNEL_SECRET || "";
@@ -30,11 +31,13 @@ function safeNext(path: unknown): string | null {
     : null;
 }
 
-export async function buildState(next?: string | null): Promise<string> {
+export async function buildState(next?: string | null, referralCode?: string | null): Promise<string> {
   const nonce = crypto.randomBytes(16).toString("hex");
-  const payload: { nonce: string; next?: string } = { nonce };
+  const payload: { nonce: string; next?: string; ref?: string } = { nonce };
   const safe = safeNext(next);
   if (safe) payload.next = safe;
+  const ref = normalizeAffiliateCode(referralCode);
+  if (ref) payload.ref = ref;
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -42,10 +45,10 @@ export async function buildState(next?: string | null): Promise<string> {
     .sign(STATE_SECRET);
 }
 
-export async function verifyState(state: string): Promise<{ next: string | null } | null> {
+export async function verifyState(state: string): Promise<{ next: string | null; ref: string | null } | null> {
   try {
     const { payload } = await jwtVerify(state, STATE_SECRET);
-    return { next: safeNext(payload.next) };
+    return { next: safeNext(payload.next), ref: normalizeAffiliateCode(payload.ref) };
   } catch {
     return null;
   }

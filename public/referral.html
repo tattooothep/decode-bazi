@@ -3,178 +3,138 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>hourkey · ชวนเพื่อนรับยาม</title>
+  <title>hourkey · Affiliate Pilot</title>
+  <link rel="preload" as="image" href="/assets/affiliate/affiliate-hero-v1.webp"/>
   <style>
-  :root{
-    --bg:#0d0f12;--panel:#191d25;--panel2:#202530;--line:rgba(200,164,77,.22);
-    --soft:rgba(246,241,230,.68);--faint:rgba(246,241,230,.43);--fg:#f6f1e6;
-    --gold:#c8a44d;--green:#72c27d;--blue:#74a9df;--red:#df6c5f;--shadow:0 22px 58px rgba(0,0,0,.32);
-  }
-  [data-theme="light"]{
-    --bg:#f5efe2;--panel:#fffaf0;--panel2:#f7eedb;--line:rgba(138,109,42,.28);
-    --soft:rgba(26,22,18,.68);--faint:rgba(26,22,18,.45);--fg:#1a1612;
-    --gold:#8a6d2a;--green:#4f8a58;--blue:#3c6f9e;--red:#b04d41;--shadow:0 18px 45px rgba(86,63,27,.13);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{background:var(--bg)}
-  body{min-height:100vh;background:linear-gradient(180deg,rgba(200,164,77,.08),transparent 270px),var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}
-  a{color:inherit;text-decoration:none}
-  button,input{font:inherit}
-  .topbar{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-  .brand{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:700}
-  .seal{width:30px;height:30px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-size:13px}
-  .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-  .nav a,.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:13px;cursor:pointer}
-  .btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:800}
-  .wrap{width:min(1120px,100%);margin:0 auto;padding:32px 22px 72px}
-  .hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:18px;align-items:stretch;margin-bottom:18px}
-  .hero-main,.panel{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 80%,var(--bg)));box-shadow:var(--shadow)}
-  .hero-main{padding:28px}
-  .kicker{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:9px}
-  h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:clamp(31px,4.2vw,54px);line-height:1.12;font-weight:700;letter-spacing:0}
-  .lead{margin-top:12px;color:var(--soft);line-height:1.85;font-size:14px;max-width:700px}
-  .status{margin-top:18px;display:grid;gap:8px}
-  .status div{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:11px 12px;color:var(--soft);font-size:13px;line-height:1.55}
-  .status b{color:var(--fg)}
-  .invite{padding:22px;display:grid;gap:14px}
-  .invite-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-  .title{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:22px;font-weight:700;line-height:1.25}
-  .sub{color:var(--faint);font-size:12px;line-height:1.65;margin-top:3px}
-  .badge{border:1px solid color-mix(in srgb,var(--green) 55%,transparent);color:var(--green);padding:6px 9px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;white-space:nowrap}
-  .linkbox{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
-  .linkbox input{width:100%;min-height:42px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:0 12px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px}
-  .hint{font-size:12px;color:var(--faint);line-height:1.65}
-  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
-  .card{border:1px solid var(--line);background:var(--panel);padding:18px;min-height:182px}
-  .card-num{font-family:'Noto Serif TC',serif;font-size:34px;color:var(--gold);line-height:1}
-  .card h3{font-size:16px;margin-top:12px}
-  .card p{font-size:13px;color:var(--soft);line-height:1.7;margin-top:8px}
-  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px}
-  .list{display:grid;gap:10px;margin-top:12px}
-  .row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;border:1px solid rgba(255,255,255,.06);padding:12px;background:rgba(255,255,255,.025)}
-  .dot{width:9px;height:9px;background:var(--gold);margin-top:8px}
-  .row b{display:block;font-size:13px}
-  .row span{display:block;color:var(--soft);font-size:12px;line-height:1.65;margin-top:2px}
-  .warn{border-color:color-mix(in srgb,var(--red) 42%,var(--line));background:color-mix(in srgb,var(--red) 8%,var(--panel))}
-  @media(max-width:860px){.hero,.split{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.topbar{align-items:flex-start}.nav a{display:none}}
-  @media(max-width:560px){.topbar{padding:12px 14px}.wrap{padding:24px 14px 54px}.hero-main,.invite,.card{padding:18px}.linkbox{grid-template-columns:1fr}.linkbox .btn{width:100%}h1{font-size:34px}.invite-head{display:grid}.badge{justify-self:start}}
+  :root{--bg:#0b0d10;--panel:#171c22;--panel2:#202832;--line:rgba(205,166,76,.26);--fg:#f7f1e6;--soft:rgba(247,241,230,.72);--faint:rgba(247,241,230,.46);--gold:#cda64c;--green:#6fcf97;--blue:#78aee8;--red:#e06b5d;--violet:#b9a2ff;--shadow:0 24px 70px rgba(0,0,0,.34)}
+  [data-theme="light"]{--bg:#f5efe2;--panel:#fffaf0;--panel2:#f7edda;--line:rgba(134,104,39,.25);--fg:#1b1712;--soft:rgba(27,23,18,.70);--faint:rgba(27,23,18,.48);--gold:#876927;--green:#407f59;--blue:#356fa7;--red:#a94b40;--violet:#6b5fa8;--shadow:0 20px 48px rgba(84,61,23,.12)}
+  *{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}a{color:inherit;text-decoration:none}button,input{font:inherit}
+  .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px)}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:800}.seal{width:30px;height:30px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold)}
+  .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.nav a,.nav button,.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);min-height:38px;padding:0 13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}.nav button{min-width:40px}.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:850}.btn.good{border-color:rgba(111,207,151,.45);color:var(--green)}.btn.warn{border-color:rgba(224,107,93,.42);color:var(--red)}.btn:disabled{opacity:.45;cursor:not-allowed}
+  .lang{display:flex;gap:4px}.lang button{font-size:11px;min-width:34px;padding:0 8px}.lang button.on{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+  .hero{position:relative;min-height:430px;overflow:hidden;border-bottom:1px solid var(--line);display:flex;align-items:end}.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,color-mix(in srgb,var(--bg) 82%,transparent) 32%,rgba(0,0,0,.08) 76%),linear-gradient(0deg,var(--bg),transparent 45%)}.hero-inner{position:relative;z-index:1;width:min(1180px,100%);margin:0 auto;padding:72px 22px 48px}.kicker{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase}.hero h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:clamp(36px,5vw,66px);line-height:1.08;margin:9px 0 12px;letter-spacing:0;max-width:650px}.lead{max-width:690px;color:var(--soft);line-height:1.85;font-size:14px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .wrap{width:min(1180px,100%);margin:0 auto;padding:22px 22px 80px}.grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(330px,.88fr);gap:16px}.panel{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 82%,var(--bg)));box-shadow:var(--shadow);padding:20px}.panel h2{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:25px;margin:0 0 4px}.muted{color:var(--faint);font-size:12px;line-height:1.65}.status{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);padding:6px 10px;font-size:12px;color:var(--soft);margin-top:8px}.status i{width:8px;height:8px;border-radius:50%;background:var(--faint)}.status.active i{background:var(--green)}.status.requested i{background:var(--blue)}.status.suspended i,.status.rejected i{background:var(--red)}
+  .linkbox{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:14px}.linkbox input{min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--fg);height:44px;padding:0 12px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px}.share{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}.share button{min-height:56px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer;display:grid;place-items:center;gap:3px}.share svg{width:20px;height:20px}.share span{font-size:10px;color:var(--faint)}.line svg{color:#06c755}.fb svg{color:#1877f2}.wa svg{color:#25d366}.tg svg{color:#2aabee}.x svg{color:var(--fg)}.mail svg{color:var(--gold)}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}.stat{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);padding:14px;min-height:94px}.stat b{display:block;font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:26px;line-height:1.1}.stat span{display:block;color:var(--faint);font-size:11px;margin-top:5px;line-height:1.4}
+  .section-title{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:20px 0 10px}.section-title h3{margin:0;font-size:16px}.table{border:1px solid var(--line);overflow:auto}.table table{width:100%;border-collapse:collapse;min-width:680px}.table th,.table td{padding:10px 11px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left;font-size:12px}.table th{color:var(--faint);text-transform:uppercase;letter-spacing:.08em;font-size:10px}.table .money{font-family:'JetBrains Mono','SF Mono',monospace;text-align:right}.empty{padding:22px;color:var(--faint);font-size:13px;text-align:center}.how{display:grid;gap:10px;margin-top:13px}.how .step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;border:1px solid rgba(255,255,255,.08);padding:13px;background:rgba(255,255,255,.025)}.num{width:28px;height:28px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px}.step b{display:block;font-size:13px}.step span{display:block;color:var(--soft);font-size:12px;line-height:1.65;margin-top:3px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:80;display:none;align-items:center;justify-content:center;padding:18px}.modal.show{display:flex}.modal-card{width:min(760px,100%);max-height:88vh;overflow:auto;border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow);padding:22px}.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:start}.modal-head h2{margin:0;font-family:'Noto Serif Thai','Noto Serif TC',serif}.close{width:38px;height:38px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}.guide-list{display:grid;gap:11px;margin-top:16px}.guide-item{border:1px solid rgba(255,255,255,.08);padding:13px;background:rgba(255,255,255,.025)}.guide-item b{display:block}.guide-item p{margin:5px 0 0;color:var(--soft);font-size:13px;line-height:1.7}.toast{position:fixed;right:18px;bottom:18px;z-index:90;background:var(--panel);border:1px solid var(--line);padding:10px 13px;color:var(--fg);display:none}.toast.show{display:block}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:520px}.share{grid-template-columns:repeat(3,minmax(0,1fr))}.nav a{display:none}}
+  @media(max-width:560px){.topbar{padding:12px 14px;align-items:flex-start}.wrap{padding:16px 14px 60px}.hero-inner{padding:58px 14px 38px}.hero h1{font-size:38px}.panel{padding:16px}.linkbox{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.lang{max-width:190px;overflow:auto}.share button{min-height:50px}}
   </style>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/"><span class="seal">時</span><span>hourkey</span></a>
     <nav class="nav">
-      <a href="/account.html">บัญชี</a>
-      <a href="/pricing">แพ็กเกจ</a>
+      <a href="/account.html" data-t="navAccount">บัญชี</a>
+      <a href="/pricing" data-t="navPricing">แพ็กเกจ</a>
+      <button id="guideTop" type="button" data-t="navGuide">วิธีใช้</button>
+      <div class="lang" id="lang"></div>
     </nav>
   </header>
 
+  <section class="hero">
+    <picture><source srcset="/assets/affiliate/affiliate-hero-v1.webp" type="image/webp"/><img src="/assets/affiliate/affiliate-hero-v1.png" alt="Hourkey affiliate network visual"/></picture>
+    <div class="hero-inner">
+      <div class="kicker">affiliate pilot</div>
+      <h1 data-t="heroTitle">ชวนเพื่อน รับส่วนแบ่งจริง</h1>
+      <p class="lead" data-t="heroLead">ระบบชวนเพื่อนแบบ pilot สำหรับกลุ่มเล็ก ใช้ลิงก์จริง ผูกยอดซื้อจริง และให้ admin อนุมัติหลังพ้นช่วงตรวจ refund/fraud ก่อนจ่าย</p>
+      <div class="hero-actions">
+        <button class="btn primary" id="copyHero" type="button" data-t="copyLink">คัดลอกลิงก์</button>
+        <button class="btn" id="openGuide" type="button" data-t="openGuide">ดูวิธีใช้ทีละขั้น</button>
+      </div>
+    </div>
+  </section>
+
   <main class="wrap">
-    <section class="hero">
-      <div class="hero-main">
-        <div class="kicker">member referral</div>
-        <h1>ชวนเพื่อนรับยาม</h1>
-        <p class="lead">หน้าแยกสำหรับระบบชวนเพื่อนของ Hourkey เฟสแรกออกแบบเป็นเครดิตใช้งาน ไม่ใช่เงินสด และจะเปิดรางวัลอัตโนมัติหลัง backend ตรวจ refund, fraud, tax และ ledger ครบเท่านั้น</p>
-        <div class="status">
-          <div><b>สถานะตอนนี้:</b> UI พร้อมใช้งานเป็น pilot page แยกจากหน้า account</div>
-          <div><b>ยังไม่เปิด:</b> การจ่าย reward อัตโนมัติ, cash affiliate, multi-level commission</div>
-          <div><b>ไม่แตะระบบเดิม:</b> payment, orders, webhook, hour_transactions และศาสตร์หลักยังเหมือนเดิม</div>
+    <section class="grid">
+      <div class="panel">
+        <h2 data-t="consoleTitle">Affiliate Console</h2>
+        <div class="muted" id="who">Loading...</div>
+        <div class="status" id="memberStatus"><i></i><span data-t="statusLoading">กำลังโหลดสถานะ</span></div>
+        <div class="linkbox">
+          <input id="refLink" readonly value=""/>
+          <button class="btn primary" id="copyBtn" type="button" data-t="copy">คัดลอก</button>
+        </div>
+        <div class="muted" id="linkHint" style="margin-top:8px"></div>
+        <div class="share" aria-label="share">
+          <button class="line" data-share="line" type="button" title="LINE"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 6.9 2 11.7c0 4.2 3.5 7.7 8.2 8.4.32.06.74.2.85.48.1.24.06.62.03.87l-.14.8c-.04.24-.19.95.84.52 1.03-.44 5.54-3.23 7.58-5.54C21 15.35 22 13.62 22 11.7 22 6.9 17.52 3 12 3Z"/></svg><span>LINE</span></button>
+          <button class="fb" data-share="facebook" type="button" title="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V5h-3c-3.1 0-5 1.9-5 5v2H6v4h3v7h4v-7h3.2l.8-4h-4v-2c0-.7.3-1 1-1Z"/></svg><span>Facebook</span></button>
+          <button class="wa" data-share="whatsapp" type="button" title="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 11.8a8.4 8.4 0 0 1-12.4 7.4L4 20.5l1.4-4a8.4 8.4 0 1 1 15.1-4.7Zm-8.3-6.6a6.5 6.5 0 0 0-5.5 10l.3.5-.8 2.2 2.3-.7.5.3a6.5 6.5 0 1 0 3.2-12.3Zm3.7 9.4c-.2.5-1.1 1-1.6 1.1-.4.1-.9.1-1.5-.1-.4-.1-.9-.3-1.6-.7-2.8-1.2-4.6-4-4.8-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .5.4.2.4.7 1.7.8 1.8.1.2.1.3 0 .5-.1.2-.2.3-.3.5-.2.2-.3.3-.4.5-.1.1-.3.3-.1.6.2.3.7 1.1 1.5 1.8 1 .9 1.8 1.2 2.1 1.3.3.2.5.1.6-.1.2-.2.7-.8.8-1 .2-.3.4-.2.6-.1.2.1 1.5.7 1.8.9.3.1.5.2.5.3 0 .2 0 .9-.2 1.4Z"/></svg><span>WhatsApp</span></button>
+          <button class="tg" data-share="telegram" type="button" title="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.7 4.4 18.4 20c-.2 1-.8 1.2-1.6.8l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.7L18 7.7c.4-.3-.1-.5-.5-.2L7.1 14 2.6 12.6c-1-.3-1-1 .2-1.5L20.3 4c.8-.3 1.5.2 1.4.4Z"/></svg><span>Telegram</span></button>
+          <button class="x" data-share="x" type="button" title="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.7 10.5 21 3h-1.5L14 9.5 9.6 3H4l6.6 9.6L4 20.5h1.5l5.8-6.9 4.7 6.9h5.6l-6.9-10Zm-2.1 2.5-.7-1L6.6 4.2h2.3l4.3 6.3.7 1 5.6 8.1h-2.3l-4.6-6.6Z"/></svg><span>X</span></button>
+          <button class="mail" data-share="email" type="button" title="Email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v14H3V5Zm9 8 7-5.3V7L12 12 5 7v.7L12 13Z"/></svg><span>Email</span></button>
         </div>
       </div>
 
-      <aside class="panel invite">
-        <div class="invite-head">
-          <div>
-            <div class="title">ลิงก์ชวนเพื่อน</div>
-            <div class="sub" id="memberState">กำลังตรวจสถานะบัญชี...</div>
-          </div>
-          <div class="badge">PHASE 1</div>
+      <aside class="panel">
+        <h2 data-t="statsTitle">สรุปผลงาน</h2>
+        <div class="muted" data-t="statsSub">ข้อมูลมาจาก ledger จริงของระบบเท่านั้น</div>
+        <div class="stats">
+          <div class="stat"><b id="sSignups">0</b><span data-t="sSignups">สมัครผ่านลิงก์</span></div>
+          <div class="stat"><b id="sOrders">0</b><span data-t="sOrders">ออเดอร์ที่มี reward</span></div>
+          <div class="stat"><b id="sPending">฿0</b><span data-t="sPending">รออนุมัติ</span></div>
+          <div class="stat"><b id="sPaid">฿0</b><span data-t="sPaid">จ่ายแล้ว</span></div>
         </div>
-        <div class="linkbox">
-          <input id="refLink" readonly value="กำลังสร้างลิงก์..."/>
-          <button class="btn primary" id="copyBtn" type="button">คัดลอก</button>
+        <div class="how">
+          <div class="step"><div class="num">1</div><div><b data-t="flow1T">แชร์ลิงก์</b><span data-t="flow1D">ส่งลิงก์ส่วนตัวให้เพื่อนสมัคร</span></div></div>
+          <div class="step"><div class="num">2</div><div><b data-t="flow2T">เพื่อนซื้อแพ็กเกจ</b><span data-t="flow2D">ระบบสร้าง reward pending จาก order paid จริง</span></div></div>
+          <div class="step"><div class="num">3</div><div><b data-t="flow3T">admin ตรวจแล้วจ่าย</b><span data-t="flow3D">พ้น hold และไม่มี refund/fraud ก่อน approve</span></div></div>
         </div>
-        <div class="hint" id="copyHint">ลิงก์นี้เป็น pilot display ก่อน ระบบให้รางวัลจริงจะเปิดหลัง backend gate ผ่านครบ</div>
       </aside>
     </section>
 
-    <section class="grid">
-      <article class="card">
-        <div class="card-num">1</div>
-        <h3>เพื่อนสมัคร</h3>
-        <p>ผู้ใช้ส่งลิงก์ให้เพื่อน เพื่อนสมัครด้วย referral code เดียวกัน ระบบจริงต้องล็อก attribution และกัน self-referral</p>
-      </article>
-      <article class="card">
-        <div class="card-num">2</div>
-        <h3>เพื่อนซื้อแพ็กเกจ</h3>
-        <p>เครดิตของผู้ชวนควรถูกจองไว้ก่อน และปล่อยหลังพ้นช่วง refund/chargeback เพื่อไม่ให้บริษัทเสียซ้ำ</p>
-      </article>
-      <article class="card">
-        <div class="card-num">3</div>
-        <h3>รับยามใช้งาน</h3>
-        <p>เฟสแรกแนะนำเป็นยาม/เครดิตใช้งาน เพราะเปิดได้เร็ว ไม่ต้อง KYC payout และไม่ซับซ้อนภาษีเหมือนเงินสด</p>
-      </article>
-    </section>
+    <div class="section-title"><h3 data-t="rewardsTitle">Reward ledger</h3><span class="muted" data-t="ledgerHint">pending / approved / paid / reversed</span></div>
+    <div class="table" id="rewardsTable"></div>
 
-    <section class="split">
-      <div class="panel invite">
-        <div class="title">กติกาที่ควรใช้</div>
-        <div class="list">
-          <div class="row"><i class="dot"></i><div><b>เพื่อนใหม่ได้ welcome credit</b><span>ให้ทดลองศาสตร์หลักได้ทันที แต่ต้องมีเพดานต้นทุน AI ต่อบัญชี</span></div></div>
-          <div class="row"><i class="dot"></i><div><b>ผู้ชวนได้ reward หลังซื้อจริง</b><span>นับจาก net revenue หลังหัก refund, discount, fee และ tax ที่เกี่ยวข้อง</span></div></div>
-          <div class="row"><i class="dot"></i><div><b>เปิด cash affiliate ทีหลัง</b><span>ต้องพร้อม KYC, withholding tax, payout ledger และ dispute reversal ก่อน</span></div></div>
-        </div>
-      </div>
-      <div class="panel invite warn">
-        <div class="title">backend gate ก่อนเปิดจริง</div>
-        <div class="list">
-          <div class="row"><i class="dot"></i><div><b>refund / chargeback handler</b><span>ต้องมี reversal event ก่อนจ่าย reward จริง</span></div></div>
-          <div class="row"><i class="dot"></i><div><b>fraud guard</b><span>กัน self-referral, device ซ้ำ, payment fingerprint ซ้ำ และ abuse จากโปรโมชัน</span></div></div>
-          <div class="row"><i class="dot"></i><div><b>ledger แยกประเภท</b><span>แยก member credit, affiliate payable, pending, approved, reversed และ paid</span></div></div>
-        </div>
-      </div>
-    </section>
+    <div class="section-title"><h3 data-t="signupsTitle">เพื่อนที่สมัครผ่านลิงก์</h3><span class="muted" data-t="signupHint">ตรวจ fraud flags ได้</span></div>
+    <div class="table" id="signupsTable"></div>
   </main>
 
-  <script>
-  (function(){
-    var input = document.getElementById('refLink');
-    var state = document.getElementById('memberState');
-    var hint = document.getElementById('copyHint');
-    var copyBtn = document.getElementById('copyBtn');
-    function codeFrom(value){
-      var raw = String(value || 'guest').toUpperCase().replace(/[^A-Z0-9]/g,'');
-      if (!raw) raw = 'GUEST';
-      var hash = 0;
-      for (var i=0;i<raw.length;i++) hash = ((hash * 31) + raw.charCodeAt(i)) >>> 0;
-      return 'HK-' + hash.toString(36).toUpperCase().padStart(6,'0').slice(-6);
-    }
-    function setGuest(){
-      input.value = location.origin + '/signup?ref=HK-PILOT';
-      state.textContent = 'ยังไม่พบ session: แสดงลิงก์ตัวอย่างก่อน';
-      hint.textContent = 'เข้าสู่ระบบแล้วกลับมาหน้านี้เพื่อสร้าง code ตามบัญชี';
-    }
-    fetch('/api/account/me', { credentials:'include', cache:'no-store' }).then(function(r){
-      if (r.status === 401) return null;
-      if (!r.ok) throw new Error('account ' + r.status);
-      return r.json();
-    }).then(function(me){
-      if (!me) return setGuest();
-      var id = me.id || me.user_id || me.email || me.name || 'member';
-      input.value = location.origin + '/signup?ref=' + encodeURIComponent(codeFrom(id));
-      state.textContent = (me.email || me.name || 'บัญชี hourkey') + ' · pilot code พร้อมคัดลอก';
-    }).catch(setGuest);
-    copyBtn.addEventListener('click', function(){
-      input.select();
-      input.setSelectionRange(0, input.value.length);
-      Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(input.value)).catch(function(){
-        document.execCommand('copy');
-      }).then(function(){
-        hint.textContent = 'คัดลอกแล้ว · reward จริงยังไม่เปิดจนกว่า backend gate ผ่านครบ';
-      });
-    });
-  })();
-  </script>
-  <script src="/js/hk-user-menu.js?v=23" defer></script>
+  <div class="modal" id="guideModal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-head"><div><div class="kicker">guide</div><h2 id="guideTitle">วิธีใช้ Affiliate Pilot</h2></div><button class="close" id="closeGuide" type="button">×</button></div>
+      <div class="guide-list" id="guideList"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const LANGS=['th','en','zh','cn','vi','ja','ko','ru','es'];
+  const LABEL={th:'TH',en:'EN',zh:'繁',cn:'简',vi:'VI',ja:'JA',ko:'KO',ru:'RU',es:'ES'};
+  const I={
+    th:{navAccount:'บัญชี',navPricing:'แพ็กเกจ',navGuide:'วิธีใช้',heroTitle:'ชวนเพื่อน รับส่วนแบ่งจริง',heroLead:'ระบบชวนเพื่อนแบบ pilot สำหรับกลุ่มเล็ก ใช้ลิงก์จริง ผูกยอดซื้อจริง และให้ admin อนุมัติหลังพ้นช่วงตรวจ refund/fraud ก่อนจ่าย',copyLink:'คัดลอกลิงก์',openGuide:'ดูวิธีใช้ทีละขั้น',consoleTitle:'Affiliate Console',statusLoading:'กำลังโหลดสถานะ',copy:'คัดลอก',statsTitle:'สรุปผลงาน',statsSub:'ข้อมูลมาจาก ledger จริงของระบบเท่านั้น',sSignups:'สมัครผ่านลิงก์',sOrders:'ออเดอร์ที่มี reward',sPending:'รออนุมัติ',sPaid:'จ่ายแล้ว',flow1T:'แชร์ลิงก์',flow1D:'ส่งลิงก์ส่วนตัวให้เพื่อนสมัคร',flow2T:'เพื่อนซื้อแพ็กเกจ',flow2D:'ระบบสร้าง reward pending จาก order paid จริง',flow3T:'admin ตรวจแล้วจ่าย',flow3D:'พ้น hold และไม่มี refund/fraud ก่อน approve',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'เพื่อนที่สมัครผ่านลิงก์',signupHint:'ตรวจ fraud flags ได้',login:'ต้องเข้าสู่ระบบก่อน',loginBtn:'เข้าสู่ระบบ',request:'ขอเข้าร่วม pilot',requested:'ส่งคำขอแล้ว รอ admin approve',active:'พร้อมแชร์ ใช้งานได้จริง',inactive:'ยังไม่เปิดแชร์',noRows:'ยังไม่มีข้อมูล',linkDisabled:'ลิงก์จะใช้จริงหลัง admin approve pilot access',linkActive:'ลิงก์นี้ผูกกับบัญชีและบันทึก attribution จริง',copied:'คัดลอกแล้ว',nativeShare:'แชร์',guideTitle:'วิธีใช้ Affiliate Pilot',guide:[['ขอสิทธิ์ pilot','กดขอเข้าร่วม แล้วรอ admin approve เพื่อเปิด code ให้ใช้งานจริง'],['แชร์ลิงก์','ส่งผ่าน LINE, Facebook, WhatsApp, Telegram, X หรือ Email ได้จากปุ่มบนหน้านี้'],['เพื่อนสมัคร','ถ้า code ถูกต้องและ active ระบบจะผูก referrer กับบัญชีเพื่อนทันที'],['เพื่อนซื้อ','เมื่อ order paid จริง ระบบสร้าง reward เป็น pending และตั้ง hold กัน refund'],['admin อนุมัติ','หลังตรวจ fraud/refund แล้ว admin approve และ mark paid ในหลังบ้าน']]},
+    en:{navAccount:'Account',navPricing:'Pricing',navGuide:'Guide',heroTitle:'Invite friends. Earn real rewards.',heroLead:'A small-group affiliate pilot using real links, real paid orders, pending rewards, admin approval, refund and fraud checks before payout.',copyLink:'Copy link',openGuide:'Step-by-step guide',consoleTitle:'Affiliate Console',statusLoading:'Loading status',copy:'Copy',statsTitle:'Performance',statsSub:'Only real ledger data is shown',sSignups:'signups',sOrders:'rewarded orders',sPending:'pending',sPaid:'paid',flow1T:'Share link',flow1D:'Send your personal signup link',flow2T:'Friend buys',flow2D:'A paid order creates a pending reward',flow3T:'Admin pays',flow3D:'Approved after hold, refund and fraud checks',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'Referral signups',signupHint:'fraud flags are visible',login:'Please sign in first',loginBtn:'Sign in',request:'Request pilot access',requested:'Request sent. Waiting for admin approval',active:'Active and ready to share',inactive:'Sharing is not active yet',noRows:'No data yet',linkDisabled:'This link becomes active after admin approval',linkActive:'This link records real attribution',copied:'Copied',nativeShare:'Share',guideTitle:'Affiliate Pilot Guide',guide:[['Request access','Ask to join the pilot and wait for admin approval.'],['Share','Use LINE, Facebook, WhatsApp, Telegram, X, or Email.'],['Friend signs up','A valid active code attaches your referrer record.'],['Friend buys','A real paid order creates a pending reward with a refund hold.'],['Admin approves','Admin checks fraud/refund status, approves, then records payout.']]},
+    zh:{navAccount:'帳戶',navPricing:'方案',navGuide:'指南',heroTitle:'邀請好友，獲得真實分潤',heroLead:'小範圍 affiliate pilot：真實連結、真實付款訂單、pending reward、後台審核，確認退款與風險後再付款。',copyLink:'複製連結',openGuide:'查看步驟',consoleTitle:'Affiliate Console',statusLoading:'載入狀態',copy:'複製',statsTitle:'成效摘要',statsSub:'只顯示真實 ledger 資料',sSignups:'註冊數',sOrders:'reward 訂單',sPending:'待審核',sPaid:'已付款',flow1T:'分享連結',flow1D:'把專屬註冊連結發給好友',flow2T:'好友購買',flow2D:'真實 paid order 會建立 pending reward',flow3T:'後台審核付款',flow3D:'通過 hold、退款與風險檢查後付款',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'透過連結註冊的好友',signupHint:'可查看 fraud flags',login:'請先登入',loginBtn:'登入',request:'申請 pilot 權限',requested:'已送出，等待 admin approval',active:'已啟用，可分享',inactive:'尚未啟用分享',noRows:'尚無資料',linkDisabled:'admin approval 後連結才會啟用',linkActive:'此連結會記錄真實 attribution',copied:'已複製',nativeShare:'分享',guideTitle:'Affiliate Pilot 指南',guide:[['申請權限','先申請加入 pilot，等待 admin approve。'],['分享','可用 LINE、Facebook、WhatsApp、Telegram、X 或 Email。'],['好友註冊','有效且 active 的 code 會綁定 referrer。'],['好友購買','真實 paid order 會建立 pending reward 並進入 refund hold。'],['後台付款','admin 檢查 fraud/refund 後 approve 並記錄 payout。']]},
+    cn:{navAccount:'账户',navPricing:'方案',navGuide:'指南',heroTitle:'邀请好友，获得真实分润',heroLead:'小范围 affiliate pilot：真实链接、真实付款订单、pending reward、后台审核，确认退款与风险后再付款。',copyLink:'复制链接',openGuide:'查看步骤',consoleTitle:'Affiliate Console',statusLoading:'载入状态',copy:'复制',statsTitle:'成效摘要',statsSub:'只显示真实 ledger 数据',sSignups:'注册数',sOrders:'reward 订单',sPending:'待审核',sPaid:'已付款',flow1T:'分享链接',flow1D:'把专属注册链接发给好友',flow2T:'好友购买',flow2D:'真实 paid order 会建立 pending reward',flow3T:'后台审核付款',flow3D:'通过 hold、退款与风险检查后付款',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'通过链接注册的好友',signupHint:'可查看 fraud flags',login:'请先登录',loginBtn:'登录',request:'申请 pilot 权限',requested:'已送出，等待 admin approval',active:'已启用，可分享',inactive:'尚未启用分享',noRows:'暂无数据',linkDisabled:'admin approval 后链接才会启用',linkActive:'此链接会记录真实 attribution',copied:'已复制',nativeShare:'分享',guideTitle:'Affiliate Pilot 指南',guide:[['申请权限','先申请加入 pilot，等待 admin approve。'],['分享','可用 LINE、Facebook、WhatsApp、Telegram、X 或 Email。'],['好友注册','有效且 active 的 code 会绑定 referrer。'],['好友购买','真实 paid order 会建立 pending reward 并进入 refund hold。'],['后台付款','admin 检查 fraud/refund 后 approve 并记录 payout。']]},
+    vi:{navAccount:'Tài khoản',navPricing:'Gói',navGuide:'Hướng dẫn',heroTitle:'Mời bạn bè, nhận thưởng thật',heroLead:'Affiliate pilot cho nhóm nhỏ: link thật, đơn thanh toán thật, reward pending, admin duyệt sau khi kiểm tra refund và fraud.',copyLink:'Sao chép link',openGuide:'Xem từng bước',consoleTitle:'Affiliate Console',statusLoading:'Đang tải',copy:'Sao chép',statsTitle:'Hiệu quả',statsSub:'Chỉ dùng dữ liệu ledger thật',sSignups:'đăng ký',sOrders:'đơn có reward',sPending:'chờ duyệt',sPaid:'đã trả',flow1T:'Chia sẻ link',flow1D:'Gửi link đăng ký cá nhân',flow2T:'Bạn mua gói',flow2D:'Order paid thật tạo reward pending',flow3T:'Admin trả thưởng',flow3D:'Sau hold, refund và fraud check',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'Bạn đăng ký qua link',signupHint:'có fraud flags',login:'Vui lòng đăng nhập',loginBtn:'Đăng nhập',request:'Xin vào pilot',requested:'Đã gửi yêu cầu, chờ admin duyệt',active:'Đã bật, có thể chia sẻ',inactive:'Chưa bật chia sẻ',noRows:'Chưa có dữ liệu',linkDisabled:'Link hoạt động sau khi admin duyệt',linkActive:'Link này ghi nhận attribution thật',copied:'Đã sao chép',nativeShare:'Chia sẻ',guideTitle:'Hướng dẫn Affiliate Pilot',guide:[['Xin quyền','Gửi yêu cầu tham gia pilot và chờ admin duyệt.'],['Chia sẻ','Dùng LINE, Facebook, WhatsApp, Telegram, X hoặc Email.'],['Bạn đăng ký','Code hợp lệ sẽ gắn referrer.'],['Bạn mua','Order paid thật tạo reward pending có hold.'],['Admin duyệt','Admin kiểm tra fraud/refund rồi ghi nhận payout.']]},
+    ja:{navAccount:'アカウント',navPricing:'料金',navGuide:'ガイド',heroTitle:'友達を招待して報酬を得る',heroLead:'少人数向け affiliate pilot。実リンク、実決済注文、pending reward、返金と不正確認後に管理者が承認します。',copyLink:'リンクをコピー',openGuide:'手順を見る',consoleTitle:'Affiliate Console',statusLoading:'読み込み中',copy:'コピー',statsTitle:'実績',statsSub:'実 ledger データのみ表示',sSignups:'登録',sOrders:'reward 注文',sPending:'保留中',sPaid:'支払済み',flow1T:'リンク共有',flow1D:'専用登録リンクを送る',flow2T:'友達が購入',flow2D:'paid order で pending reward 作成',flow3T:'管理者が支払い',flow3D:'hold・返金・不正確認後に承認',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'リンク経由登録',signupHint:'fraud flags 確認可',login:'ログインしてください',loginBtn:'ログイン',request:'pilot 申請',requested:'申請済み、承認待ち',active:'有効、共有できます',inactive:'共有は未有効',noRows:'データなし',linkDisabled:'管理者承認後に有効化されます',linkActive:'このリンクは実 attribution を記録します',copied:'コピーしました',nativeShare:'共有',guideTitle:'Affiliate Pilot ガイド',guide:[['申請','pilot 参加を申請し承認を待ちます。'],['共有','LINE, Facebook, WhatsApp, Telegram, X, Email が使えます。'],['友達登録','有効 code が referrer を紐付けます。'],['友達購入','実 paid order で pending reward と hold が作成されます。'],['管理者承認','fraud/refund 確認後に payout を記録します。']]},
+    ko:{navAccount:'계정',navPricing:'요금제',navGuide:'가이드',heroTitle:'친구를 초대하고 실제 보상 받기',heroLead:'소규모 affiliate pilot입니다. 실제 링크, 실제 결제 주문, pending reward, 환불과 fraud 확인 후 admin이 승인합니다.',copyLink:'링크 복사',openGuide:'단계 보기',consoleTitle:'Affiliate Console',statusLoading:'불러오는 중',copy:'복사',statsTitle:'성과',statsSub:'실제 ledger 데이터만 표시',sSignups:'가입',sOrders:'reward 주문',sPending:'승인 대기',sPaid:'지급 완료',flow1T:'링크 공유',flow1D:'개인 가입 링크를 보냅니다',flow2T:'친구 구매',flow2D:'실제 paid order가 pending reward를 만듭니다',flow3T:'admin 지급',flow3D:'hold, refund, fraud 확인 후 승인',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'링크 가입자',signupHint:'fraud flags 확인 가능',login:'먼저 로그인하세요',loginBtn:'로그인',request:'pilot 신청',requested:'신청 완료, admin 승인 대기',active:'활성화됨, 공유 가능',inactive:'아직 공유 비활성',noRows:'데이터 없음',linkDisabled:'admin 승인 후 링크가 활성화됩니다',linkActive:'이 링크는 실제 attribution을 기록합니다',copied:'복사됨',nativeShare:'공유',guideTitle:'Affiliate Pilot 가이드',guide:[['신청','pilot 참여를 신청하고 admin 승인을 기다립니다.'],['공유','LINE, Facebook, WhatsApp, Telegram, X, Email로 공유합니다.'],['친구 가입','유효한 active code가 referrer를 연결합니다.'],['친구 구매','실제 paid order가 refund hold와 pending reward를 만듭니다.'],['admin 승인','fraud/refund 확인 후 payout을 기록합니다.']]},
+    ru:{navAccount:'Аккаунт',navPricing:'Планы',navGuide:'Гайд',heroTitle:'Приглашайте друзей и получайте реальные выплаты',heroLead:'Пилот affiliate для небольшой группы: реальные ссылки, реальные оплаченные заказы, pending reward и ручное одобрение после refund/fraud checks.',copyLink:'Скопировать ссылку',openGuide:'Пошаговый гайд',consoleTitle:'Affiliate Console',statusLoading:'Загрузка',copy:'Копировать',statsTitle:'Результаты',statsSub:'Показаны только реальные ledger данные',sSignups:'регистрации',sOrders:'reward заказы',sPending:'ожидает',sPaid:'выплачено',flow1T:'Поделиться ссылкой',flow1D:'Отправьте персональную ссылку',flow2T:'Друг покупает',flow2D:'Paid order создает pending reward',flow3T:'Admin выплачивает',flow3D:'После hold, refund и fraud checks',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'Регистрации по ссылке',signupHint:'видны fraud flags',login:'Сначала войдите',loginBtn:'Войти',request:'Запросить pilot access',requested:'Запрос отправлен, ждите approval',active:'Активно, можно делиться',inactive:'Шеринг еще не активен',noRows:'Данных пока нет',linkDisabled:'Ссылка активируется после admin approval',linkActive:'Ссылка записывает реальную attribution',copied:'Скопировано',nativeShare:'Поделиться',guideTitle:'Гайд Affiliate Pilot',guide:[['Запрос','Запросите доступ и ждите admin approval.'],['Шеринг','Используйте LINE, Facebook, WhatsApp, Telegram, X или Email.'],['Регистрация друга','Валидный active code привяжет referrer.'],['Покупка','Реальный paid order создает pending reward с hold.'],['Одобрение','Admin проверяет fraud/refund и фиксирует payout.']]},
+    es:{navAccount:'Cuenta',navPricing:'Planes',navGuide:'Guía',heroTitle:'Invita amigos y gana recompensas reales',heroLead:'Affiliate pilot para un grupo pequeño: enlaces reales, pedidos pagados reales, reward pending y aprobación admin tras revisar refund y fraud.',copyLink:'Copiar enlace',openGuide:'Ver pasos',consoleTitle:'Affiliate Console',statusLoading:'Cargando',copy:'Copiar',statsTitle:'Resultados',statsSub:'Solo se muestran datos reales del ledger',sSignups:'registros',sOrders:'pedidos con reward',sPending:'pendiente',sPaid:'pagado',flow1T:'Comparte enlace',flow1D:'Envía tu enlace personal',flow2T:'Amigo compra',flow2D:'Un paid order real crea reward pending',flow3T:'Admin paga',flow3D:'Tras hold, refund y fraud checks',rewardsTitle:'Reward ledger',ledgerHint:'pending / approved / paid / reversed',signupsTitle:'Registros por enlace',signupHint:'fraud flags visibles',login:'Inicia sesión primero',loginBtn:'Iniciar sesión',request:'Solicitar pilot access',requested:'Solicitud enviada, espera aprobación admin',active:'Activo y listo para compartir',inactive:'Aún no activo',noRows:'Sin datos todavía',linkDisabled:'El enlace se activa tras aprobación admin',linkActive:'Este enlace registra attribution real',copied:'Copiado',nativeShare:'Compartir',guideTitle:'Guía Affiliate Pilot',guide:[['Solicita acceso','Pide entrar al pilot y espera aprobación admin.'],['Comparte','Usa LINE, Facebook, WhatsApp, Telegram, X o Email.'],['Registro','Un code activo vincula el referrer.'],['Compra','Un paid order real crea pending reward con hold.'],['Aprobación','Admin revisa fraud/refund y registra payout.']]}
+  };
+  let state={lang:'th',data:null,link:'',canShare:false};
+  function norm(raw){raw=String(raw||'th').toLowerCase(); if(raw==='zh-hans')return'cn'; if(raw==='zh-hant')return'zh'; if(raw.startsWith('zh-cn'))return'cn'; if(raw.startsWith('zh'))return'zh'; return LANGS.includes(raw)?raw:'th'}
+  function tx(k){return (I[state.lang]&&I[state.lang][k])||(I.th[k])||k}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function money(n){return '฿'+Number(n||0).toLocaleString(state.lang==='th'?'th-TH':'en-US')}
+  function toast(s){const el=document.getElementById('toast');el.textContent=s;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
+  function setLang(l){state.lang=norm(l);document.documentElement.lang=state.lang;try{localStorage.setItem('hk_locale',state.lang)}catch(_){};renderLang();renderData(state.data)}
+  function renderLang(){document.querySelectorAll('[data-t]').forEach(el=>el.textContent=tx(el.dataset.t));document.getElementById('guideTitle').textContent=tx('guideTitle');const box=document.getElementById('guideList');box.innerHTML=(tx('guide')||[]).map((g,i)=>`<div class="guide-item"><b>${i+1}. ${esc(g[0])}</b><p>${esc(g[1])}</p></div>`).join('');document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b.dataset.lang===state.lang))}
+  function initLang(){const el=document.getElementById('lang');el.innerHTML=LANGS.map(l=>`<button type="button" data-lang="${l}">${LABEL[l]}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));let saved='th';try{saved=localStorage.getItem('hk_locale')||navigator.language||'th'}catch(_){};setLang(saved)}
+  function refUrl(code){return location.origin+'/signup?ref='+encodeURIComponent(code||'')}
+  function renderTables(d){const rewards=d&&d.rewards||[];document.getElementById('rewardsTable').innerHTML=rewards.length?`<table><thead><tr><th>date</th><th>friend</th><th>package</th><th>status</th><th class="money">amount</th><th class="money">reward</th><th>hold</th></tr></thead><tbody>${rewards.map(r=>`<tr><td>${esc(new Date(r.created_at).toLocaleDateString())}</td><td>${esc(r.referred_email)}</td><td>${esc(r.package_code||'')}</td><td>${esc(r.status)}</td><td class="money">${money(r.amount_thb)}</td><td class="money">${money(r.commission_thb)}</td><td>${esc(r.hold_until?new Date(r.hold_until).toLocaleDateString():'')}</td></tr>`).join('')}</tbody></table>`:`<div class="empty">${esc(tx('noRows'))}</div>`;const signups=d&&d.signups||[];document.getElementById('signupsTable').innerHTML=signups.length?`<table><thead><tr><th>date</th><th>friend</th><th>status</th><th>flags</th></tr></thead><tbody>${signups.map(s=>`<tr><td>${esc(new Date(s.created_at).toLocaleDateString())}</td><td>${esc(s.referred_email)}</td><td>${esc(s.status)}</td><td>${esc(JSON.stringify(s.fraud_flags||[]))}</td></tr>`).join('')}</tbody></table>`:`<div class="empty">${esc(tx('noRows'))}</div>`}
+  function renderData(d){state.data=d;if(!d){return}const who=document.getElementById('who'),status=document.getElementById('memberStatus'),hint=document.getElementById('linkHint'),input=document.getElementById('refLink');if(d.error==='not_logged_in'){state.link='';state.canShare=false;who.textContent=tx('login');status.className='status';status.querySelector('span').textContent=tx('inactive');input.value='';hint.innerHTML=`<a class="btn primary" href="/signup?tab=login&next=/referral.html">${esc(tx('loginBtn'))}</a>`;renderTables(null);return}const m=d.member;who.textContent=(d.user&&d.user.email)||'';status.className='status '+(m?m.status:'');status.querySelector('span').textContent=m&&m.status==='active'?tx('active'):m&&m.status==='requested'?tx('requested'):tx('inactive');state.canShare=!!(m&&m.status==='active');if(m&&m.code){state.link=refUrl(m.code);input.value=state.link;hint.textContent=state.canShare?tx('linkActive'):tx('linkDisabled')}else{state.link='';state.canShare=false;input.value='';hint.innerHTML=`<button class="btn good" id="requestBtn" type="button">${esc(tx('request'))}</button>`;document.getElementById('requestBtn').onclick=requestAccess}const s=d.stats||{};document.getElementById('sSignups').textContent=Number(s.signups||0).toLocaleString();document.getElementById('sOrders').textContent=Number(s.paid_orders||0).toLocaleString();document.getElementById('sPending').textContent=money(s.pending_thb||0);document.getElementById('sPaid').textContent=money(s.paid_thb||0);renderTables(d)}
+  async function load(){try{const r=await fetch('/api/affiliate',{credentials:'include',cache:'no-store'});const j=await r.json().catch(()=>({}));if(r.status===401)renderData({error:'not_logged_in'});else if(j.ok)renderData(j);else throw new Error(j.error||'load failed')}catch(e){document.getElementById('who').textContent=e.message||String(e)}}
+  async function requestAccess(){const r=await fetch('/api/affiliate',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({action:'request_access'})}).then(x=>x.json());if(r.ok){toast(tx('requested'));renderData(r)}else toast(r.error||'error')}
+  async function copy(){if(!state.link||!state.canShare){toast(tx('inactive'));return}await navigator.clipboard.writeText(state.link).catch(()=>{const i=document.getElementById('refLink');i.select();document.execCommand('copy')});toast(tx('copied'))}
+  function share(kind){if(!state.link||!state.canShare){toast(tx('inactive'));return}const url=encodeURIComponent(state.link),text=encodeURIComponent(tx('heroTitle'));const map={line:`https://social-plugins.line.me/lineit/share?url=${url}`,facebook:`https://www.facebook.com/sharer/sharer.php?u=${url}`,whatsapp:`https://api.whatsapp.com/send?text=${text}%20${url}`,telegram:`https://t.me/share/url?url=${url}&text=${text}`,x:`https://twitter.com/intent/tweet?url=${url}&text=${text}`,email:`mailto:?subject=${text}&body=${url}`};window.open(map[kind],kind==='email'?'_self':'_blank','noopener')}
+  document.getElementById('copyBtn').onclick=copy;document.getElementById('copyHero').onclick=copy;document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>share(b.dataset.share));document.getElementById('openGuide').onclick=document.getElementById('guideTop').onclick=()=>document.getElementById('guideModal').classList.add('show');document.getElementById('closeGuide').onclick=()=>document.getElementById('guideModal').classList.remove('show');document.getElementById('guideModal').onclick=e=>{if(e.target.id==='guideModal')e.currentTarget.classList.remove('show')};
+  initLang();load();
+})();
+</script>
+<script src="/js/hk-user-menu.js?v=23" defer></script>
 </body>
 </html>

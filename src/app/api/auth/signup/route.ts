@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { captureAffiliateAttribution } from "@/lib/affiliate";
 import crypto from "node:crypto";
 
 export async function POST(req: Request) {
@@ -52,6 +53,14 @@ export async function POST(req: Request) {
   ).catch(() => null);
   await q1(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [orgId, userId]);
 
+  const referral = await captureAffiliateAttribution({
+    referredUserId: userId,
+    referralCode: body.referralCode || body.ref || null,
+    request: req,
+    channel: "email",
+    deviceId: body.affiliateDeviceId || null,
+  }).catch((e) => ({ ok: false, status: "error", reason: e instanceof Error ? e.message : String(e) }));
+
   const token = await signSession({ userId, email, orgId });
   await setAuthCookie(token);
 
@@ -60,5 +69,6 @@ export async function POST(req: Request) {
     has_profile: false,
     next_url: "/input",
     user: { id: userId, email, orgId },
+    referral,
   });
 }

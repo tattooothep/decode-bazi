@@ -9,6 +9,7 @@ import {
 } from "@/lib/oauth-line";
 import { getSession, signSession, setAuthCookie } from "@/lib/auth";
 import { userHasProfile } from "@/lib/profile-status";
+import { captureAffiliateAttribution } from "@/lib/affiliate";
 
 const COOKIE_DOMAIN = process.env.NODE_ENV === "production" ? ".hourkey.io" : undefined;
 
@@ -70,6 +71,14 @@ export async function GET(req: Request) {
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "create user failed";
     return redirect(`/signup?tab=login&err=${encodeURIComponent(msg)}`);
+  }
+  if (user.is_new && stateData.ref) {
+    await captureAffiliateAttribution({
+      referredUserId: user.id,
+      referralCode: stateData.ref,
+      request: req,
+      channel: "line",
+    }).catch((e) => console.warn("[affiliate] line attribution failed", e instanceof Error ? e.message : String(e)));
   }
 
   const token = await signSession({

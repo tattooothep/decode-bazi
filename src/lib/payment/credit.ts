@@ -11,6 +11,7 @@
  */
 import { pool } from "@/lib/db";
 import { getPackage, thbToSatang } from "./packages";
+import { createPendingAffiliateRewardForOrder } from "@/lib/affiliate";
 
 export type FulfillResult =
   | { ok: true; status: "credited"; orderId: string; userId: string; yam: number; balance_after: number; tier: string | null; sub_expires_at: string | null }
@@ -50,6 +51,10 @@ export async function fulfillOrder(
     // idempotent guard #1: สถานะไม่ใช่ pending = เคยประมวลผลแล้ว → ไม่ทำซ้ำ
     if (order.status !== "pending") {
       await client.query("ROLLBACK");
+      if (order.status === "paid") {
+        await createPendingAffiliateRewardForOrder(orderId, "payment_already_paid")
+          .catch((e) => console.warn("[affiliate] reward backfill failed", e instanceof Error ? e.message : String(e)));
+      }
       return { ok: true, status: "already", orderId, note: `order already ${order.status}` };
     }
 
@@ -158,6 +163,8 @@ export async function fulfillOrder(
     }
 
     await client.query("COMMIT");
+    await createPendingAffiliateRewardForOrder(orderId, "payment_paid")
+      .catch((e) => console.warn("[affiliate] reward create failed", e instanceof Error ? e.message : String(e)));
     return {
       ok: true,
       status: "credited",
