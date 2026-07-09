@@ -133,6 +133,8 @@
   var imgs = { left: null, right: null, closeups: [] }; // File objects (ในเครื่อง ไม่อัปถาวร)
   var profileCtx = { gender: "", birthDate: "" }; // login แล้ว auto จาก /api/profile (วันเกิด/เพศ)
   var curResult = null, pendingReshoot = null, progTimer = null;
+  // เผยแพร่ curResult ให้ script ภายนอก (Export สรุป PDF ด้วย AI · inputs.palm) อ่านได้ · read-only getter
+  window.hkPalmGetResult = function () { return curResult; };
 
   function show(id) {
     ["stUpload", "stAnalyzing", "stReshoot", "stResult"].forEach(function (s) {

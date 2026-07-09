@@ -80,6 +80,70 @@
         (title ? "<h3>" + esc(title) + "</h3>" : "") + (bodyHtml || "") + "</div>";
     },
     verdict: function (lab, text) { return '<div class="hkp-verdict"><span class="lab">' + esc(lab) + "</span><p>" + esc(text) + "</p></div>"; },
+
+    /* markdown ปลอดภัย → html (escape ก่อนแปลง · หัวข้อ/ตาราง/ตัวหนา/ลิสต์/เส้นคั่น) · ยกจาก book.html mdSafe */
+    mdSafe: function (md) {
+      var lines = String(md == null ? "" : md).split(/\r?\n/), out = [], listBuf = [], i = 0;
+      function inline(s) { s = esc(s); s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"); s = s.replace(/`([^`]+)`/g, "<code>$1</code>"); return s; }
+      function flushList() { if (listBuf.length) { out.push('<ul class="md-ul">' + listBuf.join("") + "</ul>"); listBuf = []; } }
+      while (i < lines.length) {
+        var ln = lines[i];
+        if (/^\s*\|.+\|\s*$/.test(ln) && i + 1 < lines.length && /^\s*\|[\s:|\-]+\|\s*$/.test(lines[i + 1])) {
+          flushList();
+          var cells = function (row) { return row.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(function (c) { return inline(c.trim()); }); };
+          var hd = cells(ln); i += 2; var rows = [];
+          while (i < lines.length && /^\s*\|.+\|\s*$/.test(lines[i])) { rows.push(cells(lines[i])); i++; }
+          out.push('<div class="md-tw"><table class="md-t"><thead><tr>' + hd.map(function (h) { return "<th>" + h + "</th>"; }).join("") +
+            "</tr></thead><tbody>" + rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>");
+          continue;
+        }
+        if (/^\s*#{1,4}\s+/.test(ln)) { flushList(); var lvl = ln.match(/^\s*(#{1,4})/)[1].length; out.push('<div class="md-h md-h' + lvl + '">' + inline(ln.replace(/^\s*#{1,4}\s+/, "")) + "</div>"); i++; continue; }
+        if (/^\s*[-*•]\s+/.test(ln)) { listBuf.push("<li>" + inline(ln.replace(/^\s*[-*•]\s+/, "")) + "</li>"); i++; continue; }
+        var num = ln.match(/^\s*(\d{1,2}[.)])\s+(.*)$/);
+        if (num) { flushList(); out.push('<div class="md-p"><strong>' + esc(num[1]) + "</strong> " + inline(num[2]) + "</div>"); i++; continue; }
+        if (/^\s*(-{3,}|_{3,})\s*$/.test(ln)) { flushList(); out.push('<hr class="md-hr">'); i++; continue; }
+        flushList();
+        out.push(ln.trim() === "" ? '<div class="md-sp"></div>' : '<div class="md-p">' + inline(ln) + "</div>");
+        i++;
+      }
+      flushList();
+      return out.join("");
+    },
+
+    /* 📄 สรุปจาก markdown ของ AI → PDF · ปกบังคับ + ตัด section ตาม H2 (## ) + figs SVG แทรกหน้าแรก
+     * opts: { cover(บังคับ), figs:[{svg,cap}], docTitle, headTitle } */
+    summaryFromMarkdown: function (md, opts) {
+      opts = opts || {};
+      // ปกบังคับ (กฎเจ้านาย): ถ้าไม่ส่งมา สร้างปกขั้นต่ำกันหลุด
+      var cover = opts.cover || { kick: "สรุปดวงชะตา", title: "รายงานสรุป", who: "", qrLabel: "hourkey.io" };
+      var text = String(md == null ? "" : md);
+      // ตัด section ตามหัวข้อระดับ 2 (## ...) เท่านั้น (### ไม่เข้าเงื่อนไข = อยู่ในเนื้อ)
+      var lines = text.split(/\r?\n/), secs = [], cur = null;
+      for (var i = 0; i < lines.length; i++) {
+        var m = lines[i].match(/^\s*##\s+(.*)$/);
+        if (m) { cur = { title: m[1].trim(), body: "" }; secs.push(cur); }
+        else { if (!cur) { if (!lines[i].trim()) continue; cur = { title: "", body: "" }; secs.push(cur); } cur.body += lines[i] + "\n"; }
+      }
+      var figsHtml = "";
+      (opts.figs || []).forEach(function (f) {
+        if (!f || !f.svg) return;
+        figsHtml += '<div class="fig">' + f.svg + (f.cap ? '<div class="cap">' + esc(f.cap) + "</div>" : "") + "</div>";
+      });
+      var pages = [];
+      secs.forEach(function (s, idx) {
+        var body = '<div class="hkp-summary">' + HKPrint.mdSafe(s.body) + "</div>";
+        var sectionHtml = s.title ? (HKPrint.section(s.title, body)) : body;
+        var sections = (idx === 0 && figsHtml) ? [figsHtml, sectionHtml] : [sectionHtml];
+        pages.push({ sections: sections });
+      });
+      if (!pages.length) pages.push({ sections: [(figsHtml || "") + '<div class="hkp-summary">' + HKPrint.mdSafe(text) + "</div>"] });
+      HKPrint.open({
+        docTitle: opts.docTitle || ("hourkey-summary" + (cover.title ? "-" + cover.title : "")),
+        headTitle: opts.headTitle || cover.who || cover.title || "รายงานสรุป",
+        cover: cover,
+        pages: pages,
+      });
+    },
     esc: esc,
   };
   window.HKPrint = HKPrint;

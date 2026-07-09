@@ -62,6 +62,33 @@
 .hkp-tl{border-left:2px solid var(--hkp-gold);padding-left:14px;margin:6px 0}
 .hkp-tl .it{margin-bottom:9px;font-size:12px}
 .hkp-tl .it b{color:var(--hkp-gold-deep)}
+/* ── สรุป AI (markdown → html · .hkp-summary) · เนื้อจาก HKPrint.mdSafe ── */
+.hkp-summary{font-size:12.5px;line-height:1.7;color:#3a3730;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.hkp-summary .md-h{color:var(--hkp-gold-deep);font-weight:700;margin:14px 0 6px}
+.hkp-summary .md-h1{font-size:16px}
+.hkp-summary .md-h2{font-size:15px}
+.hkp-summary .md-h3{font-size:13.5px;color:var(--hkp-ink)}
+.hkp-summary .md-h4{font-size:12.5px;color:var(--hkp-ink)}
+.hkp-summary .md-p{margin:4px 0;orphans:3;widows:3}
+.hkp-summary .md-sp{height:6px}
+.hkp-summary .md-ul{margin:4px 0 8px;padding-left:20px}
+.hkp-summary .md-ul li{margin:2px 0;orphans:3;widows:3}
+.hkp-summary strong{color:var(--hkp-gold-deep)}
+.hkp-summary code{font-family:"Noto Serif TC",monospace;background:#f5efe0;padding:0 4px;border-radius:4px}
+.hkp-summary .md-hr{border:0;border-top:1px solid var(--hkp-line);margin:10px 0}
+/* ปัญหา 1 · ตารางตัดข้ามหน้า: หัวตารางซ้ำทุกหน้า + แถวไม่ถูกผ่ากลาง (table เองผ่าได้เพื่อพอดีหน้า) */
+.hkp-summary .md-tw{overflow-x:auto;margin:6px 0 12px}
+.hkp-summary .md-t{width:100%;border-collapse:collapse;font-size:11.5px;break-inside:auto}
+.hkp-summary .md-t thead{display:table-header-group}
+.hkp-summary .md-t tr,.hkp-summary .md-t td,.hkp-summary .md-t th{break-inside:avoid;page-break-inside:avoid}
+.hkp-summary .md-t th,.hkp-summary .md-t td{border:1px solid var(--hkp-line);padding:5px 7px;text-align:center}
+.hkp-summary .md-t th{background:#f5efe0;color:var(--hkp-gold-deep);font-weight:700}
+/* ปัญหา 3 · หัวข้อกำพร้าท้ายหน้า: หัวข้อห้ามหลุดจากย่อหน้าถัดไป */
+.hkp-summary .md-h{break-after:avoid;page-break-after:avoid}
+/* ปัญหา 2 · เส้น SVG จาง/หาย: บังคับพิมพ์สีจริง (ไม่บังคับ stroke-width ทับ SVG เดิม — server SVG กำหนด ≥1px + viewBox มาแล้ว) */
+.hkp-page .fig svg,.hkp-summary svg{print-color-adjust:exact;-webkit-print-color-adjust:exact;max-width:100%;height:auto;display:block;margin:0 auto}
+.hkp-page .fig{margin:8px 0 14px;text-align:center;break-inside:avoid;page-break-inside:avoid}
+.hkp-page .fig .cap{font-size:9.5px;color:#a89e86;margin-top:4px}
 /* โหมดพิมพ์จริง */
 @media print{
   @page{size:A4;margin:12mm}
