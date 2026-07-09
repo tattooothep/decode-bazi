@@ -108,7 +108,7 @@ export async function POST(req: Request) {
       token_type: "Bearer",
       access_token: token,
       has_profile: hasProfile,
-      intro_url: "/master?intro=1&next=%2Ftoday",
+      intro_url: "/today",
       user: {
         id: user.id,
         email: user.email,

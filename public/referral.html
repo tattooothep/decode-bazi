@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>hourkey · ชวนเพื่อนรับยาม</title>
+  <style>
+  :root{
+    --bg:#0d0f12;--panel:#191d25;--panel2:#202530;--line:rgba(200,164,77,.22);
+    --soft:rgba(246,241,230,.68);--faint:rgba(246,241,230,.43);--fg:#f6f1e6;
+    --gold:#c8a44d;--green:#72c27d;--blue:#74a9df;--red:#df6c5f;--shadow:0 22px 58px rgba(0,0,0,.32);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2;--panel:#fffaf0;--panel2:#f7eedb;--line:rgba(138,109,42,.28);
+    --soft:rgba(26,22,18,.68);--faint:rgba(26,22,18,.45);--fg:#1a1612;
+    --gold:#8a6d2a;--green:#4f8a58;--blue:#3c6f9e;--red:#b04d41;--shadow:0 18px 45px rgba(86,63,27,.13);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg)}
+  body{min-height:100vh;background:linear-gradient(180deg,rgba(200,164,77,.08),transparent 270px),var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}
+  a{color:inherit;text-decoration:none}
+  button,input{font:inherit}
+  .topbar{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:700}
+  .seal{width:30px;height:30px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-size:13px}
+  .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .nav a,.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:13px;cursor:pointer}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:800}
+  .wrap{width:min(1120px,100%);margin:0 auto;padding:32px 22px 72px}
+  .hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:18px;align-items:stretch;margin-bottom:18px}
+  .hero-main,.panel{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 80%,var(--bg)));box-shadow:var(--shadow)}
+  .hero-main{padding:28px}
+  .kicker{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:9px}
+  h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:clamp(31px,4.2vw,54px);line-height:1.12;font-weight:700;letter-spacing:0}
+  .lead{margin-top:12px;color:var(--soft);line-height:1.85;font-size:14px;max-width:700px}
+  .status{margin-top:18px;display:grid;gap:8px}
+  .status div{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:11px 12px;color:var(--soft);font-size:13px;line-height:1.55}
+  .status b{color:var(--fg)}
+  .invite{padding:22px;display:grid;gap:14px}
+  .invite-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .title{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:22px;font-weight:700;line-height:1.25}
+  .sub{color:var(--faint);font-size:12px;line-height:1.65;margin-top:3px}
+  .badge{border:1px solid color-mix(in srgb,var(--green) 55%,transparent);color:var(--green);padding:6px 9px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;white-space:nowrap}
+  .linkbox{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .linkbox input{width:100%;min-height:42px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:0 12px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px}
+  .hint{font-size:12px;color:var(--faint);line-height:1.65}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+  .card{border:1px solid var(--line);background:var(--panel);padding:18px;min-height:182px}
+  .card-num{font-family:'Noto Serif TC',serif;font-size:34px;color:var(--gold);line-height:1}
+  .card h3{font-size:16px;margin-top:12px}
+  .card p{font-size:13px;color:var(--soft);line-height:1.7;margin-top:8px}
+  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px}
+  .list{display:grid;gap:10px;margin-top:12px}
+  .row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;border:1px solid rgba(255,255,255,.06);padding:12px;background:rgba(255,255,255,.025)}
+  .dot{width:9px;height:9px;background:var(--gold);margin-top:8px}
+  .row b{display:block;font-size:13px}
+  .row span{display:block;color:var(--soft);font-size:12px;line-height:1.65;margin-top:2px}
+  .warn{border-color:color-mix(in srgb,var(--red) 42%,var(--line));background:color-mix(in srgb,var(--red) 8%,var(--panel))}
+  @media(max-width:860px){.hero,.split{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.topbar{align-items:flex-start}.nav a{display:none}}
+  @media(max-width:560px){.topbar{padding:12px 14px}.wrap{padding:24px 14px 54px}.hero-main,.invite,.card{padding:18px}.linkbox{grid-template-columns:1fr}.linkbox .btn{width:100%}h1{font-size:34px}.invite-head{display:grid}.badge{justify-self:start}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="seal">時</span><span>hourkey</span></a>
+    <nav class="nav">
+      <a href="/account.html">บัญชี</a>
+      <a href="/pricing">แพ็กเกจ</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-main">
+        <div class="kicker">member referral</div>
+        <h1>ชวนเพื่อนรับยาม</h1>
+        <p class="lead">หน้าแยกสำหรับระบบชวนเพื่อนของ Hourkey เฟสแรกออกแบบเป็นเครดิตใช้งาน ไม่ใช่เงินสด และจะเปิดรางวัลอัตโนมัติหลัง backend ตรวจ refund, fraud, tax และ ledger ครบเท่านั้น</p>
+        <div class="status">
+          <div><b>สถานะตอนนี้:</b> UI พร้อมใช้งานเป็น pilot page แยกจากหน้า account</div>
+          <div><b>ยังไม่เปิด:</b> การจ่าย reward อัตโนมัติ, cash affiliate, multi-level commission</div>
+          <div><b>ไม่แตะระบบเดิม:</b> payment, orders, webhook, hour_transactions และศาสตร์หลักยังเหมือนเดิม</div>
+        </div>
+      </div>
+
+      <aside class="panel invite">
+        <div class="invite-head">
+          <div>
+            <div class="title">ลิงก์ชวนเพื่อน</div>
+            <div class="sub" id="memberState">กำลังตรวจสถานะบัญชี...</div>
+          </div>
+          <div class="badge">PHASE 1</div>
+        </div>
+        <div class="linkbox">
+          <input id="refLink" readonly value="กำลังสร้างลิงก์..."/>
+          <button class="btn primary" id="copyBtn" type="button">คัดลอก</button>
+        </div>
+        <div class="hint" id="copyHint">ลิงก์นี้เป็น pilot display ก่อน ระบบให้รางวัลจริงจะเปิดหลัง backend gate ผ่านครบ</div>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="card-num">1</div>
+        <h3>เพื่อนสมัคร</h3>
+        <p>ผู้ใช้ส่งลิงก์ให้เพื่อน เพื่อนสมัครด้วย referral code เดียวกัน ระบบจริงต้องล็อก attribution และกัน self-referral</p>
+      </article>
+      <article class="card">
+        <div class="card-num">2</div>
+        <h3>เพื่อนซื้อแพ็กเกจ</h3>
+        <p>เครดิตของผู้ชวนควรถูกจองไว้ก่อน และปล่อยหลังพ้นช่วง refund/chargeback เพื่อไม่ให้บริษัทเสียซ้ำ</p>
+      </article>
+      <article class="card">
+        <div class="card-num">3</div>
+        <h3>รับยามใช้งาน</h3>
+        <p>เฟสแรกแนะนำเป็นยาม/เครดิตใช้งาน เพราะเปิดได้เร็ว ไม่ต้อง KYC payout และไม่ซับซ้อนภาษีเหมือนเงินสด</p>
+      </article>
+    </section>
+
+    <section class="split">
+      <div class="panel invite">
+        <div class="title">กติกาที่ควรใช้</div>
+        <div class="list">
+          <div class="row"><i class="dot"></i><div><b>เพื่อนใหม่ได้ welcome credit</b><span>ให้ทดลองศาสตร์หลักได้ทันที แต่ต้องมีเพดานต้นทุน AI ต่อบัญชี</span></div></div>
+          <div class="row"><i class="dot"></i><div><b>ผู้ชวนได้ reward หลังซื้อจริง</b><span>นับจาก net revenue หลังหัก refund, discount, fee และ tax ที่เกี่ยวข้อง</span></div></div>
+          <div class="row"><i class="dot"></i><div><b>เปิด cash affiliate ทีหลัง</b><span>ต้องพร้อม KYC, withholding tax, payout ledger และ dispute reversal ก่อน</span></div></div>
+        </div>
+      </div>
+      <div class="panel invite warn">
+        <div class="title">backend gate ก่อนเปิดจริง</div>
+        <div class="list">
+          <div class="row"><i class="dot"></i><div><b>refund / chargeback handler</b><span>ต้องมี reversal event ก่อนจ่าย reward จริง</span></div></div>
+          <div class="row"><i class="dot"></i><div><b>fraud guard</b><span>กัน self-referral, device ซ้ำ, payment fingerprint ซ้ำ และ abuse จากโปรโมชัน</span></div></div>
+          <div class="row"><i class="dot"></i><div><b>ledger แยกประเภท</b><span>แยก member credit, affiliate payable, pending, approved, reversed และ paid</span></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (function(){
+    var input = document.getElementById('refLink');
+    var state = document.getElementById('memberState');
+    var hint = document.getElementById('copyHint');
+    var copyBtn = document.getElementById('copyBtn');
+    function codeFrom(value){
+      var raw = String(value || 'guest').toUpperCase().replace(/[^A-Z0-9]/g,'');
+      if (!raw) raw = 'GUEST';
+      var hash = 0;
+      for (var i=0;i<raw.length;i++) hash = ((hash * 31) + raw.charCodeAt(i)) >>> 0;
+      return 'HK-' + hash.toString(36).toUpperCase().padStart(6,'0').slice(-6);
+    }
+    function setGuest(){
+      input.value = location.origin + '/signup?ref=HK-PILOT';
+      state.textContent = 'ยังไม่พบ session: แสดงลิงก์ตัวอย่างก่อน';
+      hint.textContent = 'เข้าสู่ระบบแล้วกลับมาหน้านี้เพื่อสร้าง code ตามบัญชี';
+    }
+    fetch('/api/account/me', { credentials:'include', cache:'no-store' }).then(function(r){
+      if (r.status === 401) return null;
+      if (!r.ok) throw new Error('account ' + r.status);
+      return r.json();
+    }).then(function(me){
+      if (!me) return setGuest();
+      var id = me.id || me.user_id || me.email || me.name || 'member';
+      input.value = location.origin + '/signup?ref=' + encodeURIComponent(codeFrom(id));
+      state.textContent = (me.email || me.name || 'บัญชี hourkey') + ' · pilot code พร้อมคัดลอก';
+    }).catch(setGuest);
+    copyBtn.addEventListener('click', function(){
+      input.select();
+      input.setSelectionRange(0, input.value.length);
+      Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(input.value)).catch(function(){
+        document.execCommand('copy');
+      }).then(function(){
+        hint.textContent = 'คัดลอกแล้ว · reward จริงยังไม่เปิดจนกว่า backend gate ผ่านครบ';
+      });
+    });
+  })();
+  </script>
+  <script src="/js/hk-user-menu.js?v=23" defer></script>
+</body>
+</html>

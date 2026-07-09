@@ -805,6 +805,10 @@
     var forced = params.get('intro') === '1';
     var next = params.get('next') || '/today';
     if (!next || next.charAt(0) !== '/' || next.charAt(1) === '/') next = '/today';
+    if (forced) {
+      window.location.replace(next);
+      return;
+    }
     if (!forced) return;
     var done = false;
     try { done = localStorage.getItem('hk_sinsae_intro_version') === VERSION; } catch(_) {}
@@ -2382,7 +2386,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
 </script>
 
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=20" defer></script>
+<script src="/js/hk-user-menu.js?v=23" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
 <script>

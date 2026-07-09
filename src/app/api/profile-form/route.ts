@@ -30,5 +30,5 @@ export async function POST(req: Request) {
     birthTimeKnown,
   });
 
-  return redirect303("/master?intro=1&next=" + encodeURIComponent("/today"));
+  return redirect303("/today");
 }

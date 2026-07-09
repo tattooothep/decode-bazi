@@ -110,6 +110,7 @@
     network:  { th:'เครือข่ายดวง', en:'Network', zh:'人脈網', cn:'人脉网', vi:'Mạng lưới', ja:'ネットワーク', ru:'Сеть', ko:'네트워크', es:'Red' },
     books:    { th:'หนังสือของฉัน', en:'My Books', zh:'我的命書', cn:'我的命书', vi:'Sách của tôi', ja:'私の本', ru:'Мои книги', ko:'내 책', es:'Mis libros' },
     topup:    { th:'เติมยาม · แพ็กเกจ', en:'Top Up · Plans', zh:'充值 · 方案', cn:'充值 · 套餐', vi:'Nạp · Gói', ja:'チャージ · プラン', ru:'Пополнить · Планы', ko:'충전 · 플랜', es:'Recarga · Planes' },
+    referral: { th:'ชวนเพื่อนรับยาม', en:'Invite friends', zh:'邀請好友', cn:'邀请好友', vi:'Mời bạn bè', ja:'友達を招待', ru:'Пригласить друзей', ko:'친구 초대', es:'Invitar amigos' },
     account:  { th:'บัญชีของฉัน', en:'My Account', zh:'我的帳戶', cn:'我的账户', vi:'Tài khoản', ja:'アカウント', ru:'Аккаунт', ko:'내 계정', es:'Mi cuenta' },
     news:     { th:'ข่าวสาร · โปรโมชั่น', en:'News · Offers', zh:'消息 · 優惠', cn:'新闻 · 优惠', vi:'Tin tức · Ưu đãi', ja:'ニュース · 特典', ru:'Новости · Акции', ko:'소식 · 혜택', es:'Noticias · Ofertas' },
     support:  { th:'แจ้งปัญหาการใช้งาน', en:'Report an issue', zh:'回報使用問題', cn:'反馈使用问题', vi:'Báo lỗi sử dụng', ja:'問題を報告', ru:'Сообщить о проблеме', ko:'문제 신고', es:'Reportar problema' },
@@ -337,6 +338,7 @@
       '.hk-um-i-books': t('books'),
       '.hk-um-i-network': t('network'),
       '.hk-um-i-topup': t('topup'),
+      '.hk-um-i-referral': t('referral'),
       '.hk-um-i-account': t('account'),
       '.hk-um-i-news': t('news'),
       '.hk-um-i-support': t('support'),
@@ -403,6 +405,7 @@
           <a class="hk-um-item" href="/book"><span class="hk-um-ico">📖</span><span class="hk-um-i-books">${t('books')}</span></a>
           <a class="hk-um-item" href="/network"><span class="hk-um-ico">👥</span><span class="hk-um-i-network">${t('network')}</span></a>
           <a class="hk-um-item" href="/pricing"><span class="hk-um-ico">💎</span><span class="hk-um-i-topup">${t('topup')}</span></a>
+          <a class="hk-um-item" href="/referral.html"><span class="hk-um-ico">時</span><span class="hk-um-i-referral">${t('referral')}</span></a>
           <a class="hk-um-item" href="/account.html"><span class="hk-um-ico">⚙️</span><span class="hk-um-i-account">${t('account')}</span></a>
           <a class="hk-um-item" href="/news"><span class="hk-um-ico">📰</span><span class="hk-um-i-news">${t('news')}</span></a>
           <a class="hk-um-item" href="/support" id="hk-um-support-link"><span class="hk-um-ico">🛟</span><span class="hk-um-i-support">${t('support')}</span></a>
