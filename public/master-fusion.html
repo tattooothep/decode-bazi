@@ -112,6 +112,24 @@
     .answer-sub{margin-top:5px;font-size:12px;color:var(--muted);line-height:1.45}
     .answer-close{border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);min-height:32px;padding:4px 10px;cursor:pointer}
     .answer-body{margin:0;padding:16px;overflow:auto;white-space:pre-wrap;line-height:1.65;color:var(--text);font-family:var(--thai);font-size:14px;background:var(--panel-2)}
+    /* r420 · ⓘ วิธีใช้หน้า + tooltip ต่อศาสตร์ (additive · ลอก .answer-modal style) */
+    .hero-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .help-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;flex:0 0 auto;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--muted);font-size:15px;line-height:1;cursor:pointer}
+    .help-btn:hover{border-color:var(--gold);color:var(--gold)}
+    .field-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+    .field-label-row label{margin:0}
+    .help-dialog .answer-body{white-space:normal}
+    .help-sec{margin-bottom:16px}
+    .help-sec:last-child{margin-bottom:0}
+    .help-sec h4{margin:0 0 6px;font-family:var(--serif);font-size:16px;font-weight:600;color:var(--gold)}
+    .help-sec p{margin:0;line-height:1.68;color:var(--text)}
+    .sci-name-row{display:flex;align-items:center;gap:6px;min-width:0}
+    .sci-info-btn{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;flex:0 0 auto;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--faint);font-size:11px;line-height:1;cursor:pointer}
+    .sci-info-btn:hover{border-color:var(--gold);color:var(--gold)}
+    .sci-tip-popup{position:fixed;z-index:60;width:min(300px,88vw);background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;padding:11px 12px;box-shadow:0 16px 40px rgba(0,0,0,.35);font-size:12.5px;line-height:1.55;color:var(--text)}
+    .sci-tip-popup.hidden{display:none}
+    .sci-tip-body{margin-bottom:7px}
+    .sci-tip-meta{font-family:var(--mono);font-size:10.5px;color:var(--faint);border-top:1px solid var(--line);padding-top:7px}
     .pill{display:inline-flex;align-items:center;justify-content:center;min-height:24px;border-radius:8px;padding:3px 8px;font-family:var(--mono);font-size:10px;border:1px solid var(--line);color:var(--muted)}
     .pill.ok{color:var(--ok);border-color:rgba(119,196,138,.45)}
     .pill.err{color:var(--bad);border-color:rgba(227,111,95,.45)}
@@ -1014,7 +1032,10 @@
   <main>
     <section class="header">
       <div>
-        <h1 data-i18n="hero.title">ดูดวง 6 ศาสตร์</h1>
+        <div class="hero-title-row">
+          <h1 data-i18n="hero.title">ดูดวง 6 ศาสตร์</h1>
+          <button type="button" class="help-btn" id="how-to-btn" aria-label="How to use this page" title="How to use this page">ⓘ</button>
+        </div>
         <p class="sub" data-i18n="hero.sub">หลอมรวม 6 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท · ยูเรเนียน — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยวหรือดูคู่</p>
       </div>
       <div class="badges">
@@ -1161,6 +1182,22 @@
     </div>
   </div>
 
+  <!-- r420 · modal "วิธีใช้หน้านี้" (ลอก .answer-modal style) -->
+  <div class="answer-modal hidden" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+    <div class="answer-dialog help-dialog">
+      <div class="answer-head">
+        <div>
+          <div class="answer-title" id="help-modal-title"></div>
+        </div>
+        <button class="answer-close" id="help-modal-close" type="button"></button>
+      </div>
+      <div class="answer-body help-body" id="help-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- r420 · tooltip ต่อศาสตร์ (ตำแหน่งลอยตาม ⓘ ที่คลิก) -->
+  <div class="sci-tip-popup hidden" id="sci-tip-popup" role="tooltip"></div>
+
   <!-- r402 · หน้าต่างสร้างคัมภีร์ชะตา ย้ายไปหน้า "หนังสือของฉัน" (/book) แล้ว -->
 
   <script src="/js/hk-user-menu.js?v=20"></script>
@@ -1195,6 +1232,112 @@
     var SCI_ORDER = ['bazi','qizheng','ziwei','western','vedic','uranian','palmistry'];
     var JUDGE_YAM = 5;
     function sciLabel(s){ var b = DISCIPLINES[s]; return b ? (b[state.locale] || (state.locale === 'cn' ? b.zh : b.en) || b.th) : s; }
+    // ===== r420 · modal "วิธีใช้" + tooltip ต่อศาสตร์ — self-contained 9 ภาษา (ไม่พึ่ง overlay/I18N หลัก เพื่อให้ vi/ja/ko/ru/es ใช้ได้ทันทีแม้ยังไม่ LIVE ผ่าน overlay) =====
+    var HELP_I18N = {
+      th:{ title:'วิธีใช้หน้านี้', closeLabel:'ปิด', aiLabel:'อ่านโดย AI', yamLabel:'ใช้ยาม', needTimeYes:'ต้องมีเวลาเกิด', needTimeNo:'ไม่ต้องมีเวลาเกิด',
+        sec1Title:'หน้านี้ทำงานยังไง', sec1Body:'แต่ละศาสตร์ที่คุณติ๊ก จะถูกอ่านแยกด้วย AI เฉพาะทาง (ปาจื้อ→Claude · ดาวจริง→Grok · จื่อเวย→Gemini · พระเวท→Codex ฯลฯ) แล้ว Claude หลอมรวมทุกคำอ่านเป็นคำฟันธงเดียว + หาจุดที่หลายศาสตร์เห็นพ้องกัน (Resonance)',
+        sec2Title:'คิดยามยังไง', sec2Body:'แต่ละศาสตร์คิดยามต่างกัน — ปาจื้อ 10 · ดาวจริง 15 · จื่อเวย 12 · ตะวันตก 10 · พระเวท 10 · ยูเรเนียน 12 · บวกค่าหลอมรวม 5 ยาม · ยอดรวมโชว์สดตามที่ติ๊ก (ยิ่งเลือกหลายศาสตร์ยิ่งใช้ยามมากแต่รอบด้านกว่า) · ลายมือใช้ผลที่สแกนไว้ ไม่คิดยามเพิ่ม',
+        sec3Title:'เลือกศาสตร์/โหมด', sec3Body:'ติ๊กศาสตร์ได้หลายข้อ · เลือกโหมด เดี่ยว/ดูคู่/กลุ่ม 3-4 ดวง · บางศาสตร์ต้องมีเวลาเกิด (ดาวจริง · จื่อเวย) ถ้าไม่มีเวลาจะติ๊กไม่ได้/เตือน · แล้วพิมพ์คำถามที่อยากรู้ กดถาม' },
+      en:{ title:'How to use this page', closeLabel:'Close', aiLabel:'Read by', yamLabel:'Yam cost', needTimeYes:'Needs birth time', needTimeNo:'No birth time needed',
+        sec1Title:'How this page works', sec1Body:'Each science you tick is read separately by a dedicated AI (BaZi → Claude · Real-Star → Grok · Zi Wei → Gemini · Vedic → Codex, etc). Claude then fuses all the readings into one verdict, and finds where multiple sciences agree (Resonance).',
+        sec2Title:'How yam (hours) are counted', sec2Body:'Each science costs a different amount of yam — BaZi 10 · Real-Star 15 · Zi Wei 12 · Western 10 · Vedic 10 · Uranian 12 — plus 5 yam for the fusion verdict. The total updates live as you tick sciences (more sciences = more yam, but a fuller picture). Palmistry uses your existing scan result and costs no extra yam.',
+        sec3Title:'Choosing sciences / mode', sec3Body:'Tick as many sciences as you like · choose Single / Pair / Group of 3-4 charts · some sciences need a birth time (Real-Star, Zi Wei) — without one they will be greyed out or warn you · then type your question and tap Ask.' },
+      zh:{ title:'本頁使用說明', closeLabel:'關閉', aiLabel:'解讀 AI', yamLabel:'時數', needTimeYes:'需出生時間', needTimeNo:'不需出生時間',
+        sec1Title:'本頁如何運作', sec1Body:'您勾選的每個術數會由專屬 AI 分別解讀（八字→Claude · 七政四餘→Grok · 紫微斗數→Gemini · 吠陀→Codex 等），再由 Claude 將所有解讀融合為一個裁斷，並找出多術一致之處（共振 Resonance）。',
+        sec2Title:'時數如何計算', sec2Body:'各術耗時不同 — 八字 10 · 七政四餘 15 · 紫微斗數 12 · 西洋占星 10 · 吠陀占星 10 · 天王星占星 12 — 再加 5 時作綜合裁斷。總計會隨勾選即時顯示（選越多術耗時越多，但更全面）。手相使用您已掃描的結果，不另外計時。',
+        sec3Title:'選擇術數／模式', sec3Body:'可複選多個術數 · 選擇單看／合盤／3-4 盤群組 · 部分術數需要出生時間（七政四餘、紫微斗數）沒有時間會無法勾選或提示 · 接著輸入您的問題並點擊提問。' },
+      cn:{ title:'本页使用说明', closeLabel:'关闭', aiLabel:'解读 AI', yamLabel:'时数', needTimeYes:'需出生时间', needTimeNo:'不需出生时间',
+        sec1Title:'本页如何运作', sec1Body:'您勾选的每个术数会由专属 AI 分别解读（八字→Claude · 七政四余→Grok · 紫微斗数→Gemini · 吠陀→Codex 等），再由 Claude 将所有解读融合为一个裁断，并找出多术一致之处（共振 Resonance）。',
+        sec2Title:'时数如何计算', sec2Body:'各术耗时不同 — 八字 10 · 七政四余 15 · 紫微斗数 12 · 西洋占星 10 · 吠陀占星 10 · 天王星占星 12 — 再加 5 时作综合裁断。总计会随勾选即时显示（选越多术耗时越多，但更全面）。手相使用您已扫描的结果，不另外计时。',
+        sec3Title:'选择术数／模式', sec3Body:'可复选多个术数 · 选择单看／合盘／3-4 盘群组 · 部分术数需要出生时间（七政四余、紫微斗数）没有时间会无法勾选或提示 · 接着输入您的问题并点击提问。' },
+      vi:{ title:'Hướng dẫn sử dụng trang này', closeLabel:'Đóng', aiLabel:'AI luận giải', yamLabel:'Số giờ', needTimeYes:'Cần giờ sinh', needTimeNo:'Không cần giờ sinh',
+        sec1Title:'Trang này hoạt động thế nào', sec1Body:'Mỗi môn bạn chọn sẽ được một AI chuyên biệt luận giải riêng (Bát Tự → Claude · Thất Chính Tứ Dư → Grok · Tử Vi Đẩu Số → Gemini · Vệ Đà → Codex, v.v). Sau đó Claude tổng hợp tất cả các luận giải thành một kết luận chung, đồng thời tìm những điểm mà nhiều môn cùng đồng thuận (Cộng hưởng).',
+        sec2Title:'Cách tính giờ (yam)', sec2Body:'Mỗi môn tốn số giờ khác nhau — Bát Tự 10 · Thất Chính Tứ Dư 15 · Tử Vi 12 · Chiêm tinh Tây phương 10 · Chiêm tinh Vệ Đà 10 · Uranian 12 — cộng thêm 5 giờ cho kết luận tổng hợp. Tổng số cập nhật ngay khi bạn chọn (chọn càng nhiều môn càng tốn giờ nhưng cái nhìn càng toàn diện). Xem chỉ tay dùng kết quả đã quét sẵn, không tốn thêm giờ.',
+        sec3Title:'Chọn môn / chế độ', sec3Body:'Có thể chọn nhiều môn cùng lúc · chọn chế độ Đơn / Cặp đôi / Nhóm 3-4 lá số · một số môn cần giờ sinh (Thất Chính Tứ Dư, Tử Vi) — nếu không có giờ sinh sẽ không chọn được hoặc có cảnh báo · sau đó nhập câu hỏi và nhấn Hỏi.' },
+      ja:{ title:'このページの使い方', closeLabel:'閉じる', aiLabel:'読み解くAI', yamLabel:'必要時間', needTimeYes:'生まれた時刻が必要', needTimeNo:'生まれた時刻は不要',
+        sec1Title:'このページの仕組み', sec1Body:'チェックした各占術は、それぞれ専門のAIが個別に読み解きます（四柱推命→Claude・七政四餘→Grok・紫微斗数→Gemini・ヴェーダ占星術→Codex など）。その後、Claudeがすべての読み解きを統合して一つの結論を出し、複数の占術が一致するポイント（レゾナンス）を見つけます。',
+        sec2Title:'時間（ヤム）の計算方法', sec2Body:'占術ごとに必要な時間が異なります — 四柱推命10・七政四餘15・紫微斗数12・西洋占星術10・ヴェーダ占星術10・ウラニアン占星術12 — さらに統合判定に5時間が加算されます。合計はチェックに応じてリアルタイムで表示されます(占術を多く選ぶほど時間がかかりますが、より多角的な結果になります)。手相はスキャン済みの結果を使うため追加の時間はかかりません。',
+        sec3Title:'占術・モードの選択', sec3Body:'占術は複数選択可能・モードは単独／ペア／3-4人グループから選択・一部の占術は生まれた時刻が必要です(七政四餘・紫微斗数)。時刻がない場合は選択できないか警告が表示されます・その後、知りたい質問を入力して送信してください。' },
+      ko:{ title:'이 페이지 사용법', closeLabel:'닫기', aiLabel:'해석 AI', yamLabel:'소요 시간', needTimeYes:'출생 시간 필요', needTimeNo:'출생 시간 불필요',
+        sec1Title:'이 페이지는 이렇게 작동합니다', sec1Body:'체크한 각 학문은 전용 AI가 개별적으로 해석합니다(사주팔자→Claude · 칠정사여→Grok · 자미두수→Gemini · 베다 점성술→Codex 등). 이후 Claude가 모든 해석을 하나의 결론으로 통합하고, 여러 학문이 일치하는 지점(레조넌스)을 찾아냅니다.',
+        sec2Title:'시간(얌) 계산 방법', sec2Body:'학문마다 소요 시간이 다릅니다 — 사주팔자 10 · 칠정사여 15 · 자미두수 12 · 서양 점성술 10 · 베다 점성술 10 · 우라니안 점성술 12 — 여기에 통합 결론용 5시간이 추가됩니다. 총합은 선택에 따라 실시간으로 표시됩니다(더 많은 학문을 선택할수록 시간이 더 들지만 더 폭넓은 결과를 얻습니다). 손금은 이미 스캔한 결과를 사용하며 추가 시간이 들지 않습니다.',
+        sec3Title:'학문/모드 선택', sec3Body:'여러 학문을 동시에 선택할 수 있습니다 · 단일 / 페어 / 3-4명 그룹 모드 중 선택 · 일부 학문은 출생 시간이 필요합니다(칠정사여, 자미두수) — 출생 시간이 없으면 선택이 불가능하거나 경고가 표시됩니다 · 이후 궁금한 질문을 입력하고 질문하기를 누르세요.' },
+      ru:{ title:'Как пользоваться этой страницей', closeLabel:'Закрыть', aiLabel:'Читает ИИ', yamLabel:'Часы', needTimeYes:'Нужно время рождения', needTimeNo:'Время рождения не требуется',
+        sec1Title:'Как работает эта страница', sec1Body:'Каждая отмеченная вами система читается отдельным специализированным ИИ (Ба-цзы → Claude · Настоящие звёзды (Ци Чжэн) → Grok · Цзы-вэй → Gemini · Ведическая астрология → Codex и т.д.). Затем Claude объединяет все прочтения в единый вердикт и находит точки, где несколько систем сходятся во мнении (резонанс).',
+        sec2Title:'Как считаются часы (ям)', sec2Body:'Каждая система стоит разное количество часов — Ба-цзы 10 · Настоящие звёзды 15 · Цзы-вэй 12 · Западная астрология 10 · Ведическая астрология 10 · Уранианская астрология 12 — плюс 5 часов на итоговый вердикт. Итог обновляется в реальном времени по мере выбора (чем больше систем, тем больше часов, но и полнее картина). Хиромантия использует уже отсканированный результат и не требует дополнительных часов.',
+        sec3Title:'Выбор систем / режима', sec3Body:'Можно отметить несколько систем сразу · выберите режим Одиночный / Пара / Группа из 3-4 карт · некоторым системам нужно время рождения (настоящие звёзды, Цзы-вэй) — без него они будут недоступны или появится предупреждение · затем введите свой вопрос и нажмите «Спросить».' },
+      es:{ title:'Cómo usar esta página', closeLabel:'Cerrar', aiLabel:'Lee la IA', yamLabel:'Horas', needTimeYes:'Necesita hora de nacimiento', needTimeNo:'No necesita hora de nacimiento',
+        sec1Title:'Cómo funciona esta página', sec1Body:'Cada ciencia que marques será interpretada por separado por una IA especializada (BaZi → Claude · Estrellas Reales → Grok · Zi Wei → Gemini · Astrología Védica → Codex, etc). Luego Claude fusiona todas las lecturas en un único veredicto y encuentra los puntos donde varias ciencias coinciden (Resonancia).',
+        sec2Title:'Cómo se calculan las horas (yam)', sec2Body:'Cada ciencia cuesta una cantidad distinta de horas — BaZi 10 · Estrellas Reales 15 · Zi Wei 12 · Astrología Occidental 10 · Astrología Védica 10 · Astrología Uraniana 12 — más 5 horas para el veredicto de fusión. El total se actualiza en vivo según lo que marques (más ciencias = más horas, pero una visión más completa). La quiromancia usa el resultado ya escaneado y no cuesta horas adicionales.',
+        sec3Title:'Elegir ciencias / modo', sec3Body:'Puedes marcar varias ciencias a la vez · elige el modo Individual / Pareja / Grupo de 3-4 cartas · algunas ciencias requieren hora de nacimiento (Estrellas Reales, Zi Wei) — sin ella no se podrán marcar o se mostrará una advertencia · luego escribe tu pregunta y pulsa Preguntar.' }
+    };
+    function helpDict(){ return HELP_I18N[state.locale] || HELP_I18N.th; }
+    var SCI_TOOLTIP = {
+      bazi:{ th:'ดวงจีนจากปี-เดือน-วัน-เวลาเกิด (4 เสา) อ่านธาตุ/用神/วัยจร — แกนนิสัย โชคชะตา จังหวะชีวิต · ไม่จำเป็นต้องมีเวลาเกิดก็ดูได้',
+        en:'Chinese chart from year-month-day-hour of birth (4 Pillars). Reads elements / Useful God (用神) / luck cycles — the core of temperament, destiny and life rhythm. Can be read even without a birth time.',
+        zh:'以出生年、月、日、時排出四柱的中國命理，解讀五行／用神／大運小運 — 性格、命運與人生節奏的根基 · 沒有出生時間也能看。',
+        cn:'以出生年、月、日、时排出四柱的中国命理，解读五行／用神／大运小运 — 性格、命运与人生节奏的根基 · 没有出生时间也能看。',
+        vi:'Lá số Trung Hoa từ năm-tháng-ngày-giờ sinh (Tứ Trụ). Luận giải Ngũ Hành / Dụng Thần / Đại vận Tiểu vận — cốt lõi của tính cách, vận mệnh và nhịp sống · vẫn xem được dù không có giờ sinh.',
+        ja:'生まれた年・月・日・時から作る四柱推命(四柱)。五行・用神・大運小運を読み解き、性格・運命・人生のリズムの土台になります。生まれた時刻がなくても占えます。',
+        ko:'태어난 년-월-일-시로 만드는 사주(四柱)명리 · 오행/용신/대운소운을 해석하며 성격, 운명, 인생 리듬의 근간입니다 · 출생 시간이 없어도 볼 수 있습니다.',
+        ru:'Китайская карта по году-месяцу-дню-часу рождения (Четыре Столпа). Читает стихии / полезного бога (Юн-шэнь) / циклы удачи — основа характера, судьбы и жизненного ритма · можно смотреть даже без времени рождения.',
+        es:'Carta china a partir de año-mes-día-hora de nacimiento (Cuatro Pilares). Interpreta elementos / Dios Útil (Yongshen) / ciclos de suerte — el núcleo del temperamento, el destino y el ritmo vital · se puede leer incluso sin hora de nacimiento.' },
+      qizheng:{ th:'โหราจีนโบราณใช้ตำแหน่งดาวจริงบนฟ้า (7 ดาว + 4 เงา) เด่นเรื่องจังหวะเวลา · ต้องมีเวลาเกิด',
+        en:'Ancient Chinese astrology using the actual positions of real stars in the sky (7 planets + 4 shadow points). Excels at pinpointing timing. Needs a birth time.',
+        zh:'古代中國占星術，使用天上真實星體的位置(七政星＋四餘) · 擅長精準推算時機 · 需要出生時間。',
+        cn:'古代中国占星术，使用天上真实星体的位置(七政星＋四余) · 擅长精准推算时机 · 需要出生时间。',
+        vi:'Chiêm tinh cổ Trung Hoa dùng vị trí thực của các sao trên bầu trời (7 sao thực + 4 sao bóng). Nổi bật trong việc xác định thời điểm chính xác · cần có giờ sinh.',
+        ja:'実際の天体の位置(7つの実星＋4つの陰影星)を使う古代中国占星術。タイミングの読み解きに優れています。生まれた時刻が必要です。',
+        ko:'실제 하늘의 별 위치(칠정성+사여성)를 사용하는 고대 중국 점성술 · 시기를 정확히 짚어내는 데 강합니다 · 출생 시간이 필요합니다.',
+        ru:'Древнекитайская астрология, использующая реальные положения звёзд на небе (7 планет + 4 теневые точки). Отлично определяет точное время событий · требуется время рождения.',
+        es:'Astrología china antigua que usa las posiciones reales de las estrellas en el cielo (7 planetas + 4 puntos sombra). Destaca en precisar el momento exacto · necesita hora de nacimiento.' },
+      ziwei:{ th:'ระบบดาว 紫微 จัดลง 12 เรือน เด่นเรื่องโครงชีวิต การงาน คู่ครอง ทรัพย์ · ต้องมีเวลาเกิด',
+        en:'The 紫微 (Purple Star) system, mapping stars into 12 palaces. Excels at life structure, career, relationships and wealth. Needs a birth time.',
+        zh:'紫微星系統，將星曜排入十二宮 · 擅長人生架構、事業、感情、財運 · 需要出生時間。',
+        cn:'紫微星系统，将星曜排入十二宫 · 擅长人生架构、事业、感情、财运 · 需要出生时间。',
+        vi:'Hệ thống sao Tử Vi, sắp các sao vào 12 cung. Nổi bật về cấu trúc cuộc đời, sự nghiệp, tình duyên, tài lộc · cần có giờ sinh.',
+        ja:'紫微星を12の宮に配置する体系。人生の構造・仕事・恋愛・財運の読み解きに優れています。生まれた時刻が必要です。',
+        ko:'자미성을 12궁에 배치하는 체계 · 인생의 구조, 직업, 배우자, 재물운을 보는 데 강합니다 · 출생 시간이 필요합니다.',
+        ru:'Система звезды Цзы-вэй (Пурпурная звезда), распределяющая звёзды по 12 дворцам. Отлично раскрывает жизненную структуру, карьеру, отношения и богатство · требуется время рождения.',
+        es:'Sistema de la estrella Zi Wei (Estrella Púrpura), que distribuye estrellas en 12 palacios. Destaca en la estructura de vida, carrera, pareja y riqueza · necesita hora de nacimiento.' },
+      western:{ th:'ดวงดาว 12 ราศี/12 เรือน/มุมดาว อ่านบุคลิก จิตใจ ความสัมพันธ์',
+        en:'12 zodiac signs / 12 houses / planetary aspects. Reads personality, inner life and relationships.',
+        zh:'十二星座／十二宮位／星體相位 · 解讀性格、內心與人際關係。',
+        cn:'十二星座／十二宫位／星体相位 · 解读性格、内心与人际关系。',
+        vi:'12 cung hoàng đạo / 12 nhà / các góc chiếu hành tinh. Luận giải tính cách, đời sống nội tâm và các mối quan hệ.',
+        ja:'12星座・12ハウス・惑星のアスペクトから、性格・内面・人間関係を読み解きます。',
+        ko:'12궁 별자리 / 12하우스 / 행성 각도로 성격, 내면, 인간관계를 해석합니다.',
+        ru:'12 знаков зодиака / 12 домов / аспекты планет. Читает личность, внутренний мир и отношения.',
+        es:'12 signos zodiacales / 12 casas / aspectos planetarios. Interpreta la personalidad, la vida interior y las relaciones.' },
+      vedic:{ th:'ระบบนักษัตร + ทศา (ช่วงดาวครอง) เน้นกรรมและจังหวะชีวิต',
+        en:'Nakshatra system + Dasha (planetary periods), focused on karma and life timing.',
+        zh:'宿曜(Nakshatra)系統＋達沙(Dasha,星曜主宰期) · 側重業力與人生時機。',
+        cn:'宿曜(Nakshatra)系统＋达沙(Dasha,星曜主宰期) · 侧重业力与人生时机。',
+        vi:'Hệ thống Nakshatra + Dasha (chu kỳ hành tinh cai quản), tập trung vào nghiệp và thời điểm trong cuộc đời.',
+        ja:'ナクシャトラ(星宿)体系＋ダシャー(惑星period)。カルマと人生のタイミングを重視します。',
+        ko:'낙샤트라(별자리) 체계 + 다샤(행성 주기) · 업(카르마)과 인생의 타이밍에 중점을 둡니다.',
+        ru:'Система накшатр + даша (планетарные периоды), с упором на карму и жизненный тайминг.',
+        es:'Sistema de Nakshatras + Dasha (periodos planetarios), centrado en el karma y el momento vital.' },
+      uranian:{ th:'ใช้จุดกึ่งกลาง(midpoint) + ดาวสมมติ ละเอียดเรื่องเหตุการณ์เจาะจง/จังหวะ',
+        en:'Uses midpoints and hypothetical planets (Hamburg School). Precise for pinpointing specific events and timing.',
+        zh:'使用中點(midpoint)與假設星體(漢堡學派) · 對精準推算具體事件/時機特別細緻。',
+        cn:'使用中点(midpoint)与假设星体(汉堡学派) · 对精准推算具体事件/时机特别细致。',
+        vi:'Dùng điểm giữa (midpoint) và các hành tinh giả định (trường phái Hamburg). Rất tinh tế trong việc xác định sự kiện/thời điểm cụ thể.',
+        ja:'ミッドポイント(中点)と仮想天体を使う(ハンブルグ学派)。特定の出来事やタイミングを細かく読み解くのが得意です。',
+        ko:'중점(midpoint)과 가상 행성을 사용합니다(함부르크 학파) · 구체적인 사건/시기를 정밀하게 짚어내는 데 강합니다.',
+        ru:'Использует мидпоинты и гипотетические планеты (Гамбургская школа). Точен в определении конкретных событий и времени.',
+        es:'Usa puntos medios (midpoints) y planetas hipotéticos (Escuela de Hamburgo). Preciso para señalar eventos y momentos específicos.' },
+      palmistry:{ th:'อ่านจากเส้นลายมือที่คุณสแกนไว้ · ไม่ใช้เวลาเกิด · ใช้ผลที่มีอยู่ ไม่คิดยามเพิ่ม',
+        en:'Reads the lines of the palm you already scanned. Doesn’t use birth time · uses your existing scan, no extra yam.',
+        zh:'解讀您已掃描的手相紋路 · 不使用出生時間 · 使用既有掃描結果，不另計時。',
+        cn:'解读您已扫描的手相纹路 · 不使用出生时间 · 使用既有扫描结果，不另计时。',
+        vi:'Luận giải các đường chỉ tay bạn đã quét. Không dùng giờ sinh · dùng kết quả quét sẵn có, không tốn thêm giờ.',
+        ja:'既にスキャンした手相の線を読み解きます。生まれた時刻は使いません · 既存のスキャン結果を使うため追加の時間はかかりません。',
+        ko:'이미 스캔한 손금 선을 해석합니다. 출생 시간을 사용하지 않습니다 · 기존 스캔 결과를 사용하며 추가 시간이 들지 않습니다.',
+        ru:'Читает линии ладони по вашему уже отсканированному изображению. Не использует время рождения · использует существующее сканирование, без дополнительных часов.',
+        es:'Interpreta las líneas de la palma que ya escaneaste. No usa hora de nacimiento · usa el resultado ya escaneado, sin horas adicionales.' }
+    };
+    function sciTipBody(s){ var d = SCI_TOOLTIP[s]; if (!d) return ''; return d[state.locale] || d.th; }
     // ===== i18n =====
     var I18N = {
       th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 6 ศาสตร์','hero.sub':'หลอมรวม 6 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท · ยูเรเนียน — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยว ดูคู่ หรือกลุ่ม 3-4 ดวง',
@@ -1293,6 +1436,58 @@
       return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
         return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
       });
+    }
+    // ===== r420 · modal "วิธีใช้" + tooltip ต่อศาสตร์ (additive · ไม่แตะ flow รัน/yam calc) =====
+    function renderHelpModal(){
+      var d = helpDict();
+      var titleEl = document.getElementById('help-modal-title');
+      var closeBtn = document.getElementById('help-modal-close');
+      var bodyEl = document.getElementById('help-modal-body');
+      if (titleEl) titleEl.textContent = d.title;
+      if (closeBtn) closeBtn.textContent = d.closeLabel;
+      if (bodyEl) bodyEl.innerHTML =
+        '<div class="help-sec"><h4>' + esc(d.sec1Title) + '</h4><p>' + esc(d.sec1Body) + '</p></div>' +
+        '<div class="help-sec"><h4>' + esc(d.sec2Title) + '</h4><p>' + esc(d.sec2Body) + '</p></div>' +
+        '<div class="help-sec"><h4>' + esc(d.sec3Title) + '</h4><p>' + esc(d.sec3Body) + '</p></div>';
+    }
+    function openHelpModal(){
+      renderHelpModal();
+      var modal = document.getElementById('help-modal');
+      if (modal) modal.className = 'answer-modal';
+    }
+    function closeHelpModal(){
+      var modal = document.getElementById('help-modal');
+      if (modal) modal.className = 'answer-modal hidden';
+    }
+    function sciTipContent(s){
+      var b = DISCIPLINES[s];
+      if (!b) return '';
+      var d = helpDict();
+      var yamText = b.isPalm ? '0 時' : (b.costYam + ' 時');
+      var timeText = b.needsBirthTime ? d.needTimeYes : d.needTimeNo;
+      return '<div class="sci-tip-body">' + esc(sciTipBody(s)) + '</div>' +
+        '<div class="sci-tip-meta">' + esc(d.aiLabel) + ': ' + esc(b.ai) + ' · ' + esc(d.yamLabel) + ': ' + esc(yamText) + ' · ' + esc(timeText) + '</div>';
+    }
+    function closeSciTip(){
+      var pop = document.getElementById('sci-tip-popup');
+      if (pop) { pop.classList.add('hidden'); pop.removeAttribute('data-open-sci'); }
+    }
+    function openSciTip(btn, s){
+      var pop = document.getElementById('sci-tip-popup');
+      if (!pop) return;
+      if (pop.getAttribute('data-open-sci') === s && !pop.classList.contains('hidden')) { closeSciTip(); return; }
+      pop.innerHTML = sciTipContent(s);
+      pop.setAttribute('data-open-sci', s);
+      pop.classList.remove('hidden');
+      pop.style.visibility = 'hidden';
+      var r = btn.getBoundingClientRect();
+      var left = Math.min(r.left, window.innerWidth - pop.offsetWidth - 8);
+      if (left < 8) left = 8;
+      var top = r.bottom + 6;
+      if (top + pop.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - pop.offsetHeight - 6);
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+      pop.style.visibility = '';
     }
     // แปลง markdown ชุดปลอดภัย (escape ก่อนแปลงเสมอ — บทเรียน XSS r166) · หัวข้อ/ตาราง/ตัวหนา/ลิสต์/เส้นคั่น
     function mdSafe(md){
@@ -1533,6 +1728,7 @@
     }
     function renderSciList(){
       if (!els.sciList) return;
+      closeSciTip(); // r420: กัน tooltip ลอยค้างชี้ item ที่กำลังจะถูกวาดใหม่
       var noTime = !allSelectedHaveTime();
       els.sciList.innerHTML = SCI_ORDER.map(function(s){
         var b = DISCIPLINES[s];
@@ -1541,14 +1737,15 @@
         var checked = !!state.sci[s] && !disabled;
         var palmNeedScan = s === 'palmistry' && !state.hasPalm;
         var note = !b.available ? t('soon') : (blockedTime ? t('needTime') : (palmNeedScan ? t('palmScan') : ''));
+        var infoBtn = '<button type="button" class="sci-info-btn" data-sci-tip="' + s + '" aria-label="info">ⓘ</button>';
         if (palmNeedScan) return '<a class="sci-item palm-scan" href="/palmistry" data-sci="' + s + '">' +
           '<span class="hk-um-ico" style="font-size:15px">🖐</span>' +
-          '<div class="sci-main"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' +
+          '<div class="sci-main"><div class="sci-name-row"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' + infoBtn + '</div>' +
             '<div class="sci-sub" style="color:var(--gold,#c8a44d)">📷 ' + esc(t('palmScan')) + '</div></div>' +
           '<div class="sci-cost">→</div></a>';
         return '<label class="sci-item' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '" data-sci="' + s + '">' +
           '<input type="checkbox" data-sci-cb="' + s + '"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '>' +
-          '<div class="sci-main"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' +
+          '<div class="sci-main"><div class="sci-name-row"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' + infoBtn + '</div>' +
             '<div class="sci-sub"><span class="ai-badge">AI · ' + esc(b.ai) + '</span>' + (b.needsBirthTime ? '<span title="' + esc(t('needTime')) + '">⏰</span>' : '') + '</div></div>' +
           (note ? '<div class="sci-note">' + esc(note) + '</div>' : '<div class="sci-cost">' + b.costYam + ' 時</div>') +
         '</label>';
@@ -3879,6 +4076,31 @@
     els.answerClose.addEventListener('click', closeAnswer);
     document.addEventListener('keydown', function(e){
       if (e.key === 'Escape') closeAnswer();
+    });
+    // ===== r420 · modal "วิธีใช้" + tooltip ต่อศาสตร์ wiring (additive) =====
+    var howToBtn = document.getElementById('how-to-btn');
+    if (howToBtn) howToBtn.addEventListener('click', openHelpModal);
+    var helpModalCloseBtn = document.getElementById('help-modal-close');
+    if (helpModalCloseBtn) helpModalCloseBtn.addEventListener('click', closeHelpModal);
+    var helpModalEl = document.getElementById('help-modal');
+    if (helpModalEl) helpModalEl.addEventListener('click', function(e){
+      if (e.target === helpModalEl) closeHelpModal();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') { closeHelpModal(); closeSciTip(); }
+    });
+    if (els.sciList) els.sciList.addEventListener('click', function(e){
+      var infoBtn = e.target && e.target.closest ? e.target.closest('[data-sci-tip]') : null;
+      if (!infoBtn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openSciTip(infoBtn, infoBtn.getAttribute('data-sci-tip'));
+    });
+    document.addEventListener('click', function(e){
+      var pop = document.getElementById('sci-tip-popup');
+      if (!pop || pop.classList.contains('hidden')) return;
+      if (pop.contains(e.target)) return;
+      closeSciTip();
     });
     els.clear.addEventListener('click', function(){
       resetConversationForProfile(selectedProfileId());
