@@ -521,6 +521,11 @@
     return '<span class="badge '+m[1]+'">'+esc(t(m[0]))+"</span>";
   }
   function fmtDate(iso){ try{ var d=new Date(iso); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }catch(_){ return ""; } }
+  function bookSciTitle(b){
+    var arr=(b&&b.sciences)||[];
+    if(arr.length){ return arr.map(function(s){ return sciLabel(s); }).join(" · "); }
+    return (b&&b.bookId||"").slice(0,8); // fallback: รหัสสั้นเดิม ถ้าเล่มไม่มีศาสตร์
+  }
   function renderShelf(books){
     var head = '<section class="cover" style="padding:30px 24px"><div class="kai">'+esc(t("kai"))+'</div><h1 style="font-size:clamp(24px,6vw,34px)">'+esc(t("shelfTitle"))+'</h1><div class="zh">命書</div>'+
       '<div style="margin-top:16px"><button class="btn primary" id="shelfNewBtn" type="button">📜 '+esc(t("shelfNew"))+'</button></div></section>';
@@ -529,7 +534,7 @@
       var open = (b.status==="done"||b.status==="degraded");
       var inner = '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+
         '<span style="font-size:22px">📖</span>'+
-        '<div style="flex:1;min-width:120px"><div style="font-weight:700">'+esc(t("brand"))+' · '+esc((b.bookId||"").slice(0,8))+'</div>'+
+        '<div style="flex:1;min-width:120px"><div style="font-weight:700">'+esc(t("brand"))+' · '+esc(bookSciTitle(b))+'</div>'+
         '<div style="font-size:13px;color:var(--muted)">'+esc(fmtDate(b.createdAt))+' · '+((b.sciences||[]).length)+' '+esc(t("sciencesUnit"))+' '+statusBadge(b.status)+'</div></div>'+
         (open?'<span class="btn" style="pointer-events:none">'+esc(t("shelfOpen"))+' →</span>':"")+"</div>";
       return open

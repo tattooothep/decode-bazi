@@ -2460,6 +2460,42 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
       } catch(e){}
     }
 
+    /* ยังไม่มีดวง (login แล้วแต่ไม่มี profile) → empty-state banner · ไม่ redirect/ไม่ blank
+     * ข้อมูลวันด้านล่างยังใช้ได้ตามปกติ · self-contained i18n 9 ภาษา · theme-aware (9 ก.ค. 2026) */
+    if (!userChart && !document.getElementById('t-no-profile')) {
+      try {
+        var _nloc = '';
+        try { _nloc = localStorage.getItem('hk_locale') || ''; } catch(_){}
+        var _nl = (_nloc || document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'th').toLowerCase();
+        var _NT = {
+          th:{title:'คุณยังไม่มีดวง',sub:'ข้อมูลวันนี้ด้านล่างยังดูได้ · สร้างดวงเพื่อดูคะแนนเฉพาะตัว',btn:'สร้างดวงของคุณ'},
+          en:{title:'You don’t have a chart yet',sub:'Today’s info below still works · create a chart for your personal score',btn:'Create your chart'},
+          zh:{title:'您還沒有命盤',sub:'下方今日資訊仍可查看 · 建立命盤以獲得個人評分',btn:'建立您的命盤'},
+          cn:{title:'您还没有命盘',sub:'下方今日信息仍可查看 · 创建命盘以获得个人评分',btn:'创建您的命盘'},
+          vi:{title:'Bạn chưa có lá số',sub:'Thông tin hôm nay bên dưới vẫn dùng được · tạo lá số để xem điểm cá nhân',btn:'Tạo lá số của bạn'},
+          ja:{title:'まだ命式がありません',sub:'下の今日の情報はご覧いただけます · 命式を作成すると個人スコアが表示されます',btn:'命式を作成'},
+          ko:{title:'아직 사주가 없습니다',sub:'아래 오늘 정보는 계속 볼 수 있어요 · 사주를 만들면 개인 점수가 표시됩니다',btn:'내 사주 만들기'},
+          ru:{title:'У вас ещё нет карты',sub:'Информация на сегодня ниже доступна · создайте карту для личной оценки',btn:'Создать карту'},
+          es:{title:'Aún no tienes una carta',sub:'La info de hoy abajo sigue disponible · crea una carta para tu puntuación personal',btn:'Crear tu carta'}
+        };
+        var _t = _NT[_nl] || (_nl.indexOf('zh')===0?_NT.zh:null) || _NT.en;
+        var _wrap = document.querySelector('.wrap');
+        if (_wrap) {
+          var _ban = document.createElement('div');
+          _ban.id = 't-no-profile';
+          _ban.setAttribute('style','display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(212,168,87,.12),rgba(212,168,87,.04));border:1px solid var(--gold-line,rgba(212,168,87,.35));border-radius:12px;padding:14px 18px;margin:0 0 18px;font-family:var(--thai,\'IBM Plex Sans Thai\',sans-serif);');
+          var _ic = document.createElement('span'); _ic.setAttribute('style','font-family:var(--tc,serif);font-size:26px;color:var(--gold,#d4a857);line-height:1;'); _ic.textContent = '命';
+          var _txt = document.createElement('div'); _txt.setAttribute('style','flex:1;min-width:180px;line-height:1.5;');
+          var _h = document.createElement('div'); _h.setAttribute('style','font-size:14px;font-weight:700;color:var(--fg,#eee);margin-bottom:3px;'); _h.textContent = _t.title;
+          var _s = document.createElement('div'); _s.setAttribute('style','font-size:12px;color:var(--fg-soft,#aaa);'); _s.textContent = _t.sub;
+          _txt.appendChild(_h); _txt.appendChild(_s);
+          var _b = document.createElement('a'); _b.href = '/input'; _b.setAttribute('style','padding:9px 20px;background:var(--gold,#d4a857);color:var(--bg,#1a1a1a);border-radius:99px;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;'); _b.textContent = _t.btn + ' →';
+          _ban.appendChild(_ic); _ban.appendChild(_txt); _ban.appendChild(_b);
+          _wrap.insertBefore(_ban, _wrap.firstChild);
+        }
+      } catch(_){}
+    }
+
     /* 3. fetch /api/today · 18 พ.ค. unified: POST + userChart + birth → pair-base.ts (Single Source)
      * ส่ง birth ให้ backend calc yongshen ภายใน · score ตรง /calendar + /network */
     const dmStem = userChart?.day?.stem || '';

@@ -967,7 +967,70 @@
       return { auth: false, profile: null };
     }
   }
-  /* resolution: ?as → DB → localStorage → /input (no demo fallback) */
+  /* ─────────────────────────────────────────────────────────────
+   * Empty-state "ยังไม่มีดวง" · login แล้วแต่ไม่มี profile/date (9 ก.ค. 2026)
+   * เจ้านายสั่ง: ไม่บังคับ redirect /input · โชว์ empty-state กลางจอ + ทางเลือก
+   * หน้าที่ไม่ต้องใช้ดวง (ปฏิทิน/ฤกษ์/ลายมือ) · self-contained i18n 9 ภาษา
+   * theme-aware (var เดิม) · XSS-safe (textContent) · idempotent · additive
+   * ───────────────────────────────────────────────────────────── */
+  function showNoProfileEmpty(){
+    if (document.getElementById('hk-no-profile')) return;
+    var loc = '';
+    try { loc = localStorage.getItem('hk_locale') || ''; } catch(_){}
+    loc = (loc || document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'th').toLowerCase();
+    var T = {
+      th:{title:'คุณยังไม่มีดวง',sub:'สร้างดวงของคุณ เพื่อดูปาจื้อ วัยจร และคำอ่านเฉพาะตัว',btn:'สร้างดวงของคุณ',alt:'หรือใช้หน้าที่ไม่ต้องมีดวงก่อน',cal:'ปฏิทิน',pick:'ฤกษ์',palm:'ลายมือ'},
+      en:{title:'You don’t have a chart yet',sub:'Create your chart to see your BaZi, luck cycles and personal reading',btn:'Create your chart',alt:'Or use pages that don’t need a chart',cal:'Calendar',pick:'Date picker',palm:'Palmistry'},
+      zh:{title:'您還沒有命盤',sub:'建立您的命盤以查看八字、大運與個人解讀',btn:'建立您的命盤',alt:'或先使用無需命盤的頁面',cal:'曆法',pick:'擇日',palm:'手相'},
+      cn:{title:'您还没有命盘',sub:'创建您的命盘以查看八字、大运与个人解读',btn:'创建您的命盘',alt:'或先使用无需命盘的页面',cal:'历法',pick:'择日',palm:'手相'},
+      vi:{title:'Bạn chưa có lá số',sub:'Tạo lá số của bạn để xem Bát Tự, đại vận và luận giải cá nhân',btn:'Tạo lá số của bạn',alt:'Hoặc dùng các trang không cần lá số',cal:'Lịch',pick:'Chọn ngày',palm:'Xem chỉ tay'},
+      ja:{title:'まだ命式がありません',sub:'命式を作成して四柱推命・大運・個人鑑定をご覧ください',btn:'命式を作成',alt:'または命式なしで使えるページへ',cal:'カレンダー',pick:'日取り',palm:'手相'},
+      ko:{title:'아직 사주가 없습니다',sub:'사주를 만들어 팔자, 대운, 개인 해석을 확인하세요',btn:'내 사주 만들기',alt:'또는 사주 없이 쓸 수 있는 페이지로',cal:'달력',pick:'택일',palm:'손금'},
+      ru:{title:'У вас ещё нет карты',sub:'Создайте карту, чтобы увидеть Бацзы, циклы удачи и личный разбор',btn:'Создать карту',alt:'Или откройте страницы, где карта не нужна',cal:'Календарь',pick:'Выбор даты',palm:'Хиромантия'},
+      es:{title:'Aún no tienes una carta',sub:'Crea tu carta para ver tu BaZi, ciclos de suerte y lectura personal',btn:'Crear tu carta',alt:'O usa páginas que no necesitan carta',cal:'Calendario',pick:'Fecha propicia',palm:'Quiromancia'}
+    };
+    var t = T[loc] || (loc.indexOf('zh')===0?T.zh:null) || T.en;
+    var stage = document.querySelector('.stage');
+    if (stage) stage.style.display = 'none';
+    var box = document.createElement('div');
+    box.id = 'hk-no-profile';
+    box.setAttribute('style','max-width:560px;margin:8vh auto;padding:40px 28px;text-align:center;font-family:var(--thai,\'IBM Plex Sans Thai\',sans-serif);');
+    var glyph = document.createElement('div');
+    glyph.setAttribute('style','font-family:var(--tc,serif);font-size:52px;line-height:1;color:var(--gold,#d4a857);opacity:.85;margin-bottom:18px;');
+    glyph.textContent = '命';
+    var h = document.createElement('div');
+    h.setAttribute('style','font-size:22px;font-weight:700;color:var(--fg,#eee);margin-bottom:10px;');
+    h.textContent = t.title;
+    var p = document.createElement('div');
+    p.setAttribute('style','font-size:14px;color:var(--fg-soft,#aaa);line-height:1.6;margin-bottom:26px;');
+    p.textContent = t.sub;
+    var btn = document.createElement('a');
+    btn.href = '/input';
+    btn.setAttribute('style','display:inline-block;padding:12px 30px;background:var(--gold,#d4a857);color:var(--bg,#1a1a1a);border-radius:99px;font-weight:700;font-size:15px;text-decoration:none;');
+    btn.textContent = t.btn + ' →';
+    var altLbl = document.createElement('div');
+    altLbl.setAttribute('style','font-size:12px;color:var(--fg-soft,#aaa);opacity:.75;margin:30px 0 12px;');
+    altLbl.textContent = t.alt;
+    var links = document.createElement('div');
+    links.setAttribute('style','display:flex;gap:10px;justify-content:center;flex-wrap:wrap;');
+    [['/calendar',t.cal,'曆'],['/datepick',t.pick,'擇'],['/palmistry',t.palm,'手']].forEach(function(x){
+      var a = document.createElement('a');
+      a.href = x[0];
+      a.setAttribute('style','display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border:1px solid var(--gold-line,rgba(212,168,87,.35));border-radius:99px;color:var(--fg,#eee);text-decoration:none;font-size:13px;background:var(--tile,transparent);');
+      var g = document.createElement('span');
+      g.setAttribute('style','font-family:var(--tc,serif);color:var(--gold,#d4a857);font-size:15px;');
+      g.textContent = x[2];
+      a.appendChild(g);
+      a.appendChild(document.createTextNode(x[1]));
+      links.appendChild(a);
+    });
+    box.appendChild(glyph); box.appendChild(h); box.appendChild(p); box.appendChild(btn);
+    box.appendChild(altLbl); box.appendChild(links);
+    if (stage && stage.parentNode) stage.parentNode.insertBefore(box, stage.nextSibling);
+    else document.body.appendChild(box);
+    document.documentElement.setAttribute('data-live','1');
+  }
+  /* resolution: ?as → DB → localStorage → empty-state (login) / signup (anon) · no demo fallback */
   async function readChartSnapshot(){
     var params = new URLSearchParams(location.search);
 	    /* 1. view-as · strict ?as= match เท่านั้น · ห้าม /api/profile · ห้าม localStorage write */
@@ -1034,10 +1097,10 @@
 	    if (lb && lb.date && !lb._viewAs) return norm(lb, 'local');
 	    var sb = parse(sessionStorage.getItem('hk_birth'));
 	    if (sb && sb.date) return norm(sb, 'session');
-	    /* 5. ไม่มีดวงเลย · แยก login/anon → /input · ไม่ login → auth หน้าใหม่ */
+	    /* 5. ไม่มีดวงเลย · แยก login/anon (9 ก.ค. 2026 · เจ้านายสั่ง ไม่บังคับ redirect) */
     if (res.auth) {
-      /* login แล้ว แต่ไม่มี profile/date → /input ให้กรอกใหม่ */
-      window.location.replace('/input');
+      /* login แล้ว แต่ไม่มี profile/date → empty-state กลางจอ (ไม่ replace /input) */
+      showNoProfileEmpty();
     } else {
       /* ไม่ได้ login บน device นี้ · localStorage ก็ไม่มี → /signup login tab */
       var ret = encodeURIComponent('/chart');

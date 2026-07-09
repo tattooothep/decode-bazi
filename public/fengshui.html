@@ -58,6 +58,27 @@ nav .breadcrumb .cur{color:var(--gold);}
 .hero .sub{font-size:15px;line-height:1.7;color:var(--fg-soft);max-width:620px;margin:0 auto;}
 .hero .sub i{color:var(--gold-bright);font-style:italic;}
 
+/* r-fengshui-help · modal "วิธีใช้หน้านี้" (additive · self-contained 9 ภาษา · ลอกแนว master-fusion .answer-modal) */
+.fs-hero-title-row{display:inline-flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+.fs-help-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:0 0 auto;border:1px solid var(--gold-line);border-radius:50%;background:transparent;color:var(--fg-soft);font-size:16px;line-height:1;cursor:pointer;}
+.fs-help-btn:hover{border-color:var(--gold);color:var(--gold);}
+.fs-help-modal{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:18px;}
+.fs-help-modal.hidden{display:none;}
+.fs-help-dialog{width:min(640px,100%);max-height:88vh;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:14px;display:grid;grid-template-rows:auto minmax(0,1fr);box-shadow:0 24px 70px rgba(0,0,0,.45);text-align:left;}
+.fs-help-head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line);}
+.fs-help-title{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--gold);}
+.fs-help-close{border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg-soft);min-height:32px;padding:4px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;}
+.fs-help-close:hover{border-color:var(--gold);color:var(--gold);}
+.fs-help-body{margin:0;padding:18px;overflow:auto;line-height:1.65;color:var(--fg);font-family:var(--thai);font-size:14px;}
+.fs-help-sec{margin-bottom:18px;}
+.fs-help-sec:last-child{margin-bottom:0;}
+.fs-help-sec h4{margin:0 0 7px;font-family:var(--serif);font-size:16px;font-weight:600;color:var(--gold);}
+.fs-help-sec p{margin:0;line-height:1.68;color:var(--fg-soft);white-space:pre-line;}
+@media (max-width:560px){
+  .fs-help-dialog{max-height:92vh;}
+  .fs-help-body{padding:14px;}
+}
+
 .topbar{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border-top:1px solid var(--gold-line);border-bottom:1px solid var(--gold-line);padding:14px 24px;}
 .topbar-inner{max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;}
 .timeline-set{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -612,6 +633,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="hk.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="hk.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="hk-top-r">
     <!-- 16 พ.ค. 2026: lang+theme switch ย้ายเข้า avatar menu (hk-user-menu) อย่างเดียว · เอา duplicate นอก avatar ออก -->
@@ -622,7 +644,10 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <section class="hero">
   <div class="eyebrow">方位 · HOUSE DIRECTION GATE · FIRST STEP</div>
-  <h1><span data-i18n="auto.f.022">หาทิศบ้าน</span> <span  class="tc" data-i18n="auto.f.320">วัดทิศ → ยืนยัน → พรีวิว</span></h1>
+  <div class="fs-hero-title-row">
+    <h1><span data-i18n="auto.f.022">หาทิศบ้าน</span> <span  class="tc" data-i18n="auto.f.320">วัดทิศ → ยืนยัน → พรีวิว</span></h1>
+    <button type="button" class="fs-help-btn" id="fs-how-to-btn" aria-label="How to use this page" title="How to use this page">ⓘ</button>
+  </div>
   <p class="sub" data-i18n="auto.f.023">
     หน้านี้มีไว้สำหรับคนที่ยังไม่รู้ว่าหน้าบ้านหันกี่องศา ใช้แผนที่ เข็มทิศมือถือ หรือกรอกค่าที่วัดเอง แล้วล็อกทิศบ้านก่อนอ่านภาพรวมเบื้องต้น
   </p>
@@ -966,6 +991,17 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 <footer>
   <p>© 2026 hourkey · <span class="han">玄空</span> Period 9 · 2024-2043 · made in Bangkok</p>
 </footer>
+
+<!-- r-fengshui-help · modal "วิธีใช้หน้านี้" (additive · self-contained 9 ภาษา) -->
+<div class="fs-help-modal hidden" id="fs-help-modal" role="dialog" aria-modal="true" aria-labelledby="fs-help-modal-title">
+  <div class="fs-help-dialog">
+    <div class="fs-help-head">
+      <div class="fs-help-title" id="fs-help-modal-title"></div>
+      <button class="fs-help-close" id="fs-help-modal-close" type="button"></button>
+    </div>
+    <div class="fs-help-body" id="fs-help-modal-body"></div>
+  </div>
+</div>
 
 
 <script>
@@ -5494,6 +5530,143 @@ if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeo
 window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
 })();
 }catch(_){}})();
+</script>
+<script>
+/* r-fengshui-help · modal "วิธีใช้หน้านี้" — self-contained 9 ภาษา (ไม่พึ่ง overlay/I18N หลัก) · auto-pop ครั้งแรก · additive ไม่แตะ engine */
+(function(){
+  var FS_HELP_I18N = {
+    th:{ title:'วิธีใช้หน้านี้', closeLabel:'ปิด',
+      sec1Title:'หน้านี้ดูอะไร',
+      sec1Body:'หน้า "ทิศมงคล/ฮวงจุ้ย" นี้วิเคราะห์ทิศบ้านทั้ง 8 ทิศ ด้วย 2 ระบบ — 飛星 ดาวเหิน (ตามยุคบ้าน+ปี/เดือน/วันปัจจุบัน) และ 八宅 คนในผัง (ตามคนที่อยู่ในบ้าน) — บอกทิศดี ทิศต้องระวัง (ไท่ซุ่ย/3ชะ/5เหลือง) และจุดที่ต้องเฝ้าระวังตอนนี้ ก่อนอื่นต้อง "ล็อกทิศหน้าบ้าน" ให้ถูกก่อน เพราะทุกผังในหน้านี้คำนวณอิงจากองศาที่กรอกไว้',
+      sec2Title:'🧭 ยังไม่รู้ทิศบ้าน ทำยังไง',
+      sec2Body:'มี 2 วิธีในหน้านี้เอง (ไม่ต้องออกไปหน้าอื่น): (1) เลื่อนลงมาที่การ์ด "指南針 เข็มทิศช่วยวัด" กด "เริ่ม Live Compass" ยืนที่ประตู/หน้าบ้าน หันตัวออกไปทางที่บ้านหัน แล้วกด "🔒 ล็อกเป็นทิศบ้าน" — องศาจะเติมลงช่อง "องศาหน้าบ้าน" ให้เอง (2) หรือใช้แผนที่ดาวเทียมด้านบน (方位 · GOOGLE MAP · COMPASS) ลากเส้นทาบผนังหน้าบ้าน A→B แล้วกดยืนยัน',
+      sec3Title:'✅ รู้ทิศบ้านแล้ว ทำยังไง',
+      sec3Body:'กรอกองศา (0-359.9) ลงช่อง "องศาหน้าบ้าน" ในการ์ด "ยืนยันทิศบ้าน · Facing and Period" (หรือเลือกจากช่อง "24 ซาน" แทนก็ได้) ใส่ปีสร้างบ้าน + เลือกยุคบ้าน (宅運) แล้วกดปุ่ม "ยืนยันทิศบ้าน" — ระบบจะคำนวณผัง 9 พาลาให้ทันที กด "บันทึกบ้าน" ถ้าจะเก็บไว้ใช้ครั้งหน้า' },
+    en:{ title:'How to use this page', closeLabel:'Close',
+      sec1Title:'What this page shows',
+      sec1Body:'This "House Direction / Feng Shui" page reads all 8 directions of your house using two systems — Flying Stars (飛星, based on the house Period + current year/month/day) and Eight Mansions (八宅, based on who lives in the house) — showing good directions, directions to avoid (Tai Sui / Three Killings / Five Yellow), and what to watch out for right now. Before anything else, lock in the correct house facing direction, since every chart on this page is calculated from that degree.',
+      sec2Title:"🧭 Don't know your house's facing direction yet?",
+      sec2Body:'Two ways to find it, right on this page (no need to leave it): (1) Scroll down to the "指南針 Compass helper" card, tap "Start Live Compass", stand at your main door facing outward the way the house faces, then tap "🔒 Lock as facing" — the degree fills the "Facing degree" field automatically. (2) Or use the satellite map above (方位 · GOOGLE MAP · COMPASS), drag a line A→B along your house\'s front wall, then confirm.',
+      sec3Title:'✅ Already know your house\'s facing direction?',
+      sec3Body:'Type the degree (0-359.9) into the "Facing degree" field on the "Confirm House Facing · Facing and Period" card (or pick from the "24 Mountains" dropdown instead). Enter the construction year and choose the house Period (宅運), then tap "Confirm facing" — the 9-Palace chart calculates instantly. Tap "Save house" to keep it for next time.' },
+    zh:{ title:'本頁使用說明', closeLabel:'關閉',
+      sec1Title:'本頁看什麼',
+      sec1Body:'本「方位・風水」頁以兩套系統解讀房屋八方——飛星(依宅運＋當前年/月/日)與八宅(依住宅中人)——顯示吉方、忌方(太歲／三煞／五黃)以及當下需留意之處。開始之前，必須先鎖定正確的坐向，因為頁面上所有排盤都以此角度為準。',
+      sec2Title:'🧭 還不知道房屋朝向怎麼辦',
+      sec2Body:'本頁內建兩種方法(不需離開此頁)：(1) 往下捲到「指南針 輔助測量」卡片，點「開始即時指南針」，站在大門/房屋正面朝外的方向，再點「🔒 鎖定為朝向」——角度會自動填入「朝向角度」欄。(2) 或使用上方衛星地圖(方位・GOOGLE MAP・COMPASS)，沿房屋正面外牆拉一條線A→B，再確認。',
+      sec3Title:'✅ 已知房屋朝向怎麼辦',
+      sec3Body:'在「確認朝向・Facing and Period」卡片的「朝向角度」欄輸入角度(0-359.9)(或改選「24山」下拉選單)。填入建造年份、選擇宅運，再點「確認朝向」——系統會立即算出九宮圖。點「儲存住宅」可留待下次使用。' },
+    cn:{ title:'本页使用说明', closeLabel:'关闭',
+      sec1Title:'本页看什么',
+      sec1Body:'本「方位・风水」页以两套系统解读房屋八方——飞星(依宅运＋当前年/月/日)与八宅(依住宅中人)——显示吉方、忌方(太岁／三煞／五黄)以及当下需留意之处。开始之前，必须先锁定正确的坐向，因为页面上所有排盘都以此角度为准。',
+      sec2Title:'🧭 还不知道房屋朝向怎么办',
+      sec2Body:'本页内建两种方法(不需离开此页)：(1) 往下滚到「指南针 辅助测量」卡片，点「开始实时指南针」，站在大门/房屋正面朝外的方向，再点「🔒 锁定为朝向」——角度会自动填入「朝向角度」栏。(2) 或使用上方卫星地图(方位・GOOGLE MAP・COMPASS)，沿房屋正面外墙拉一条线A→B，再确认。',
+      sec3Title:'✅ 已知房屋朝向怎么办',
+      sec3Body:'在「确认朝向・Facing and Period」卡片的「朝向角度」栏输入角度(0-359.9)(或改选「24山」下拉菜单)。填入建造年份、选择宅运，再点「确认朝向」——系统会立即算出九宫图。点「保存住宅」可留待下次使用。' },
+    vi:{ title:'Hướng dẫn sử dụng trang này', closeLabel:'Đóng',
+      sec1Title:'Trang này xem gì',
+      sec1Body:'Trang "Hướng nhà / Phong thủy" này đọc cả 8 hướng của ngôi nhà bằng hai hệ thống — Phi Tinh (飛星, theo Vận nhà + năm/tháng/ngày hiện tại) và Bát Trạch (八宅, theo người sống trong nhà) — cho biết hướng tốt, hướng cần tránh (Thái Tuế / Tam Sát / Ngũ Hoàng) và điều cần lưu ý ngay lúc này. Trước tiên phải khóa đúng hướng nhà, vì mọi sơ đồ trên trang đều tính theo góc độ đó.',
+      sec2Title:'🧭 Chưa biết hướng nhà thì làm sao',
+      sec2Body:'Có 2 cách ngay trên trang này (không cần rời trang): (1) Kéo xuống thẻ "指南針 La bàn hỗ trợ đo", bấm "Bắt đầu La bàn trực tiếp", đứng ở cửa chính/mặt tiền nhà, quay mặt ra hướng nhà quay ra, rồi bấm "🔒 Khóa làm hướng nhà" — góc độ sẽ tự điền vào ô "Góc độ hướng nhà". (2) Hoặc dùng bản đồ vệ tinh phía trên (方位 · GOOGLE MAP · COMPASS), kéo một đường A→B áp theo mặt tường trước nhà, rồi xác nhận.',
+      sec3Title:'✅ Đã biết hướng nhà thì làm sao',
+      sec3Body:'Nhập góc độ (0-359.9) vào ô "Góc độ hướng nhà" trên thẻ "Xác nhận hướng nhà · Facing and Period" (hoặc chọn từ danh sách "24 Sơn" thay thế). Nhập năm xây dựng + chọn Vận nhà (宅運), rồi bấm "Xác nhận hướng nhà" — hệ thống tính ngay sơ đồ Cửu Cung. Bấm "Lưu nhà" để dùng lại lần sau.' },
+    ja:{ title:'このページの使い方', closeLabel:'閉じる',
+      sec1Title:'このページで見られること',
+      sec1Body:'この「方位・風水」ページは、飛星(宅の運＋現在の年/月/日に基づく)と八宅(住んでいる人に基づく)という2つの体系で、家の8方位すべてを読み解きます。吉方位・注意すべき方位(太歳・三殺・五黄)、そして今注意すべき点を表示します。まず正しい家の向きをロックしてください。このページのすべての盤はその角度から計算されます。',
+      sec2Title:'🧭 家の向きがまだわからない場合',
+      sec2Body:'このページ内で2つの方法があります(他のページへ移動する必要はありません)。(1) 下にスクロールして「指南針 コンパス測定補助」カードへ進み、「ライブコンパス開始」をタップ。玄関/家の正面に立ち、家が向いている方向を向いた状態で「🔒 向きとしてロック」をタップ — 角度が「向きの角度」欄に自動入力されます。(2) または上部の衛星地図(方位・GOOGLE MAP・COMPASS)を使い、家の正面の壁に沿ってA→Bの線を引いてから確定します。',
+      sec3Title:'✅ 家の向きが既にわかっている場合',
+      sec3Body:'「向きの確認・Facing and Period」カードの「向きの角度」欄に角度(0-359.9)を入力します(代わりに「24山」ドロップダウンから選択も可)。建築年を入力し、宅の運(宅運)を選択してから「向きを確認」をタップ — 九宮図がすぐに計算されます。「家を保存」をタップすると次回も使えます。' },
+    ko:{ title:'이 페이지 사용법', closeLabel:'닫기',
+      sec1Title:'이 페이지에서 보는 것',
+      sec1Body:'이 "방위/풍수" 페이지는 비성(飛星, 집의 운+현재 년/월/일 기준)과 팔택(八宅, 집에 사는 사람 기준) 두 체계로 집의 8방위를 모두 해석합니다. 길한 방위, 주의할 방위(태세/삼살/오황), 지금 당장 주의할 점을 보여줍니다. 다른 것보다 먼저 집의 정확한 방향을 잠가야 합니다. 이 페이지의 모든 도표는 그 각도를 기준으로 계산되기 때문입니다.',
+      sec2Title:'🧭 아직 집 방향을 모른다면',
+      sec2Body:'이 페이지 안에서 두 가지 방법이 있습니다(다른 페이지로 이동할 필요 없음): (1) 아래로 스크롤해 "指南針 나침반 측정 도우미" 카드로 가서 "라이브 나침반 시작"을 누르고, 현관/집 앞에 서서 집이 향한 방향으로 몸을 돌린 뒤 "🔒 방향으로 잠금"을 누르세요 — 각도가 "방향 각도" 칸에 자동으로 채워집니다. (2) 또는 위쪽의 위성 지도(方位・GOOGLE MAP・COMPASS)를 사용해 집 앞벽을 따라 A→B 선을 긋고 확인하세요.',
+      sec3Title:'✅ 이미 집 방향을 안다면',
+      sec3Body:'"방향 확인・Facing and Period" 카드의 "방향 각도" 칸에 각도(0-359.9)를 입력하세요(또는 "24산" 드롭다운에서 선택 가능). 건축 연도를 입력하고 집의 운(宅運)을 선택한 뒤 "방향 확인"을 누르세요 — 구궁도가 즉시 계산됩니다. "집 저장"을 누르면 다음에도 사용할 수 있습니다.' },
+    ru:{ title:'Как пользоваться этой страницей', closeLabel:'Закрыть',
+      sec1Title:'Что показывает эта страница',
+      sec1Body:'Эта страница «Направление дома / Фэн-шуй» анализирует все 8 направлений вашего дома с помощью двух систем — Летающие звёзды (飛星, по Периоду дома + текущему году/месяцу/дню) и Восемь особняков (八宅, по тем, кто живёт в доме) — показывая благоприятные направления, направления, которых стоит избегать (Тай Суй / Три убийства / Пять жёлтых), и на что обратить внимание прямо сейчас. Прежде всего нужно зафиксировать правильное направление фасада дома, так как все схемы на странице рассчитываются именно от этого угла.',
+      sec2Title:'🧭 Ещё не знаете, куда смотрит фасад дома?',
+      sec2Body:'Есть два способа прямо на этой странице (не нужно никуда переходить): (1) Прокрутите вниз до карточки «指南針 Помощник-компас», нажмите «Запустить живой компас», встаньте у входной двери лицом в ту сторону, куда смотрит дом, затем нажмите «🔒 Зафиксировать как фасад» — градус автоматически заполнит поле «Градус фасада». (2) Либо используйте спутниковую карту выше (方位 · GOOGLE MAP · COMPASS), проведите линию A→B вдоль передней стены дома и подтвердите.',
+      sec3Title:'✅ Уже знаете направление фасада дома?',
+      sec3Body:'Введите градус (0-359.9) в поле «Градус фасада» на карточке «Подтвердить направление дома · Facing and Period» (или выберите из списка «24 горы» вместо этого). Укажите год постройки, выберите Период дома (宅運), затем нажмите «Подтвердить направление» — схема 9 дворцов рассчитается мгновенно. Нажмите «Сохранить дом», чтобы использовать в следующий раз.' },
+    es:{ title:'Cómo usar esta página', closeLabel:'Cerrar',
+      sec1Title:'Qué muestra esta página',
+      sec1Body:'Esta página de "Dirección de la casa / Feng Shui" interpreta las 8 direcciones de tu casa usando dos sistemas — Estrellas Voladoras (飛星, según el Periodo de la casa + el año/mes/día actual) y Ocho Mansiones (八宅, según quién vive en la casa) — mostrando direcciones favorables, direcciones a evitar (Tai Sui / Tres Asesinatos / Cinco Amarillo) y qué vigilar ahora mismo. Antes que nada, debes fijar la orientación correcta de la fachada, ya que todos los diagramas de la página se calculan a partir de ese grado.',
+      sec2Title:'🧭 ¿Todavía no sabes hacia dónde mira tu casa?',
+      sec2Body:'Hay dos formas de averiguarlo en esta misma página (sin salir de ella): (1) Baja hasta la tarjeta "指南針 Brújula de ayuda", toca "Iniciar brújula en vivo", ponte de pie en la puerta principal mirando hacia donde da la fachada, luego toca "🔒 Fijar como fachada" — el grado se rellenará automáticamente en el campo "Grado de fachada". (2) O usa el mapa satelital de arriba (方位 · GOOGLE MAP · COMPASS), traza una línea A→B a lo largo de la pared frontal de la casa y confirma.',
+      sec3Title:'✅ ¿Ya sabes hacia dónde mira tu casa?',
+      sec3Body:'Escribe el grado (0-359.9) en el campo "Grado de fachada" de la tarjeta "Confirmar dirección de la casa · Facing and Period" (o elige en el menú desplegable "24 Montañas" en su lugar). Ingresa el año de construcción y elige el Periodo de la casa (宅運), luego toca "Confirmar dirección" — el gráfico de 9 Palacios se calcula al instante. Toca "Guardar casa" para usarlo la próxima vez.' }
+  };
+
+  function fsHelpLocale(){
+    try {
+      var raw = document.documentElement.getAttribute('data-hk-locale');
+      if (raw && FS_HELP_I18N[raw]) return raw;
+      var dl = document.documentElement.getAttribute('data-lang');
+      if (dl && FS_HELP_I18N[dl]) return dl;
+    } catch (_) {}
+    return 'th';
+  }
+  function fsHelpDict(){ return FS_HELP_I18N[fsHelpLocale()] || FS_HELP_I18N.th; }
+  function fsEsc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+  function fsRenderHelpModal(){
+    var d = fsHelpDict();
+    var titleEl = document.getElementById('fs-help-modal-title');
+    var closeBtn = document.getElementById('fs-help-modal-close');
+    var bodyEl = document.getElementById('fs-help-modal-body');
+    if (titleEl) titleEl.textContent = d.title;
+    if (closeBtn) closeBtn.textContent = d.closeLabel;
+    if (bodyEl) bodyEl.innerHTML =
+      '<div class="fs-help-sec"><h4>' + fsEsc(d.sec1Title) + '</h4><p>' + fsEsc(d.sec1Body) + '</p></div>' +
+      '<div class="fs-help-sec"><h4>' + fsEsc(d.sec2Title) + '</h4><p>' + fsEsc(d.sec2Body) + '</p></div>' +
+      '<div class="fs-help-sec"><h4>' + fsEsc(d.sec3Title) + '</h4><p>' + fsEsc(d.sec3Body) + '</p></div>';
+  }
+  function fsOpenHelpModal(){
+    fsRenderHelpModal();
+    var modal = document.getElementById('fs-help-modal');
+    if (modal) modal.classList.remove('hidden');
+  }
+  function fsCloseHelpModal(){
+    var modal = document.getElementById('fs-help-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function fsHelpBoot(){
+    var btn = document.getElementById('fs-how-to-btn');
+    if (btn) btn.addEventListener('click', fsOpenHelpModal);
+    var closeBtn = document.getElementById('fs-help-modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', fsCloseHelpModal);
+    var modal = document.getElementById('fs-help-modal');
+    if (modal) modal.addEventListener('click', function(e){
+      if (e.target === modal) fsCloseHelpModal();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') fsCloseHelpModal();
+    });
+    /* เด้ง modal "วิธีใช้" อัตโนมัติครั้งแรกที่เข้าหน้า (จำด้วย localStorage · ครั้งถัดไปกด ⓘ เอง) */
+    try {
+      if (!localStorage.getItem('hk_fengshui_help_seen')) {
+        setTimeout(function(){
+          fsOpenHelpModal();
+          try { localStorage.setItem('hk_fengshui_help_seen', '1'); } catch (_) {}
+        }, 500);
+      }
+    } catch (_) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fsHelpBoot);
+  } else {
+    fsHelpBoot();
+  }
+})();
+
 </script>
 </body>
 </html>
