@@ -1607,5 +1607,29 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<!-- 💳 แบนเนอร์แจ้งผลชำระเงิน (กลับจาก Stripe · ?payment=success/cancel) · 9 ภาษา · ยามเข้าจริงจาก webhook -->
+<script>
+(function paymentResultBanner(){
+  try{
+    var p = new URLSearchParams(location.search).get('payment');
+    if(!p || (p!=='success' && p!=='cancel')) return;
+    try{ history.replaceState(null,'',location.pathname); }catch(_){}
+    function L(){ try{ return (typeof lang==='function'?lang():(localStorage.getItem('hk_locale')||'th')); }catch(_){ return 'th'; } }
+    var MSG={
+      success:{ th:'✅ ชำระเงินสำเร็จ! เติมยามเข้าบัญชีเรียบร้อย ขอบคุณที่อุดหนุน 🙏', en:'✅ Payment successful! Your credits have been added — thank you 🙏', zh:'✅ 付款成功！時數已到帳，感謝您的支持 🙏', cn:'✅ 付款成功！时数已到账，感谢您的支持 🙏', vi:'✅ Thanh toán thành công! Số dư đã được cộng — cảm ơn bạn 🙏', ja:'✅ お支払い完了！時数が追加されました。ありがとうございます 🙏', ko:'✅ 결제 완료! 크레딧이 충전되었습니다 — 감사합니다 🙏', ru:'✅ Оплата прошла успешно! Кредиты зачислены — спасибо 🙏', es:'✅ ¡Pago exitoso! Tus créditos se han añadido — gracias 🙏' },
+      cancel:{ th:'การชำระเงินถูกยกเลิก · ยังไม่มีการตัดเงิน', en:'Payment canceled · no charge was made.', zh:'付款已取消 · 未扣款。', cn:'付款已取消 · 未扣款。', vi:'Đã hủy thanh toán · chưa bị trừ tiền.', ja:'お支払いはキャンセルされました · 請求は発生していません。', ko:'결제가 취소되었습니다 · 청구되지 않았습니다.', ru:'Платёж отменён · списание не производилось.', es:'Pago cancelado · no se realizó ningún cargo.' }
+    };
+    var m = (MSG[p]||{})[L()] || (MSG[p]||{}).en || (MSG[p]||{}).th;
+    if(!m) return;
+    if(typeof alertMsg==='function') alertMsg(m, p==='success'?'success':'warn');
+    else { try{ alert(m); }catch(_){} }
+    if(p==='success'){
+      // webhook อาจช้า 1-3 วิ → ดึงยอดใหม่โชว์ยามเข้า (ไม่ reload กัน banner หาย)
+      function refreshBal(){ try{ if(typeof loadMe==='function'){ Promise.resolve(loadMe()).then(function(me){ if(me&&me.hour_balance!=null){ var el=document.getElementById('hour-balance'); if(el) el.textContent=Number(me.hour_balance).toLocaleString(); } }).catch(function(){}); } }catch(_){} }
+      setTimeout(refreshBal, 1500); setTimeout(refreshBal, 4000);
+    }
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

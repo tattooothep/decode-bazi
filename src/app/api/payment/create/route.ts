@@ -32,6 +32,20 @@ function baseUrl(req: Request): string {
   return host ? `${proto}://${host}` : "";
 }
 
+function safeReturnPath(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return null;
+  try {
+    const u = new URL(raw, "https://hourkey.local");
+    const allowed = new Set(["/ask", "/ask.html"]);
+    if (!allowed.has(u.pathname)) return null;
+    return u.pathname;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "not_logged_in" }, { status: 401 });
@@ -41,6 +55,7 @@ export async function POST(req: Request) {
     method?: string;
     gateway?: string;
     omiseToken?: string;
+    returnPath?: string;
   };
 
   const pkg = getPackage(body.packageCode);
@@ -64,8 +79,10 @@ export async function POST(req: Request) {
   const orderId = order.id;
 
   const site = baseUrl(req);
-  const successUrl = `${site}/account.html`;
-  const cancelUrl = `${site}/account.html?payment=cancel`;
+  const returnPath = safeReturnPath(body.returnPath);
+  // แนบ ?payment=success/cancel เสมอ (แม้ไม่มี returnPath) → หน้าปลายทางโชว์แบนเนอร์ขอบคุณ/ยกเลิก
+  const successUrl = `${site}${returnPath || "/account.html"}${(returnPath || "/account.html").includes("?") ? "&" : "?"}payment=success`;
+  const cancelUrl = `${site}${returnPath || "/account.html"}${(returnPath || "/account.html").includes("?") ? "&" : "?"}payment=cancel`;
 
   try {
     if (gateway === "stripe") {
