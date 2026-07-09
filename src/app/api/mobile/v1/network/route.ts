@@ -92,7 +92,7 @@ async function loadProfiles(orgId: string, userId: string) {
             day_master, day_master_strength, yongshen, bazi_pillars,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
        FROM profiles
-      WHERE org_id=$1
+      WHERE created_by_user_id=$2 AND org_id=$1
         AND COALESCE(is_archived, false)=false
       ORDER BY
         CASE WHEN created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '') THEN 0 ELSE 1 END,
@@ -115,7 +115,7 @@ export async function GET(req: Request) {
   }
 
   const profiles = await loadProfiles(session.orgId, session.userId);
-  const activeProfile = profiles.find((profile) => (centerId ? profile.id === centerId : profile.is_self)) || profiles[0] || null;
+  const activeProfile = profiles.find((profile) => (centerId ? profile.id === centerId : profile.is_self)) || null;
   if (!activeProfile) {
     return NextResponse.json({ ok: true, date, count: 0, active_profile: null, people: [] });
   }

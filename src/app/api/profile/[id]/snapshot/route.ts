@@ -10,6 +10,7 @@
  * Solution: DB-as-truth · chart.html fetch จาก endpoint นี้ก่อน fallback storage
  */
 import { NextResponse } from "next/server";
+import { NO_STORE_HEADERS } from "@/lib/api-scrub";
 import { getSession } from "@/lib/auth";
 import { q1 } from "@/lib/db";
 
@@ -17,7 +18,7 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, ctx: Ctx) {
   const s = await getSession();
-  if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401, headers: NO_STORE_HEADERS });
   const { id } = await ctx.params;
   /* strip optional 'p_' prefix (yongsennetwork ใช้ p_<uuid>) */
   const cleanId = id.replace(/^p_/, "");
@@ -49,10 +50,10 @@ export async function GET(_req: Request, ctx: Ctx) {
 	       gender, birth_time_known, day_boundary, relationship_type, network_group, network_group_label,
        bazi_pillars, day_master
      FROM profiles
-     WHERE id=$1 AND org_id=$2 AND is_archived=false`,
-    [cleanId, s.orgId]
+     WHERE id=$1 AND created_by_user_id=$2 AND is_archived=false`,
+    [cleanId, s.userId]
   );
-  if (!row) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!row) return NextResponse.json({ error: "not found" }, { status: 404, headers: NO_STORE_HEADERS });
   /* snapshot format · ตรงกับสิ่งที่ chart.html readChartSnapshot ใช้ */
   return NextResponse.json({
     snapshot: {
@@ -75,5 +76,5 @@ export async function GET(_req: Request, ctx: Ctx) {
 	      pillars: row.bazi_pillars,
       dayMaster: row.day_master,
     },
-  });
+  }, { headers: NO_STORE_HEADERS });
 }

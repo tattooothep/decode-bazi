@@ -42,8 +42,8 @@ export async function GET(_req: Request, ctx: Ctx) {
             gender, relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars,
             birth_time_known, day_boundary, yongshen_school, is_archived, created_at
-     FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
-    [id, s.orgId]
+     FROM profiles WHERE id=$1 AND created_by_user_id=$2 AND is_archived=false`,
+    [id, s.userId]
   );
   if (!row) return NextResponse.json({ error: "not found" }, { status: 404 });
   return NextResponse.json({ profile: row });
@@ -69,8 +69,8 @@ export async function PUT(req: Request, ctx: Ctx) {
             (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self,
             day_master, day_master_strength, yongshen, bazi_pillars,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
-     FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
-    [id, s.orgId]
+     FROM profiles WHERE id=$1 AND created_by_user_id=$2 AND is_archived=false`,
+    [id, s.userId]
   );
   if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
 
@@ -223,9 +223,9 @@ export async function PUT(req: Request, ctx: Ctx) {
   });
   /* Codex direction: audit trail · always set updated_at on any change */
   sets.push(`"updated_at"=now()`);
-  params.push(id, s.orgId);
+  params.push(id, s.userId);
   await q(
-    `UPDATE profiles SET ${sets.join(", ")} WHERE id=$${i++} AND org_id=$${i}`,
+    `UPDATE profiles SET ${sets.join(", ")} WHERE id=$${i++} AND created_by_user_id=$${i}`,
     params
   );
 
@@ -236,8 +236,8 @@ export async function PUT(req: Request, ctx: Ctx) {
             birth_lat, birth_lng, birth_location_name,
             gender, relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known, day_boundary
-     FROM profiles WHERE id=$1 AND org_id=$2`,
-    [id, s.orgId]
+     FROM profiles WHERE id=$1 AND created_by_user_id=$2`,
+    [id, s.userId]
   );
   return NextResponse.json({ ok: true, profile: updated, recomputed: recompute });
 }
@@ -252,9 +252,9 @@ export async function DELETE(_req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   const row = await q1(
     `UPDATE profiles SET is_archived=true, updated_at=now()
-     WHERE id=$1 AND org_id=$2
+     WHERE id=$1 AND created_by_user_id=$2
      RETURNING id, name, is_archived`,
-    [id, s.orgId]
+    [id, s.userId]
   );
   if (!row) return NextResponse.json({ error: "not found" }, { status: 404 });
   return NextResponse.json({ ok: true, archived: row });

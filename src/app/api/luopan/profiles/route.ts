@@ -9,11 +9,11 @@ export async function GET() {
     const rows = await q<{ id: string; name: string; nickname: string | null }>(
       `SELECT id, name, nickname
          FROM profiles
-        WHERE org_id=$1
+        WHERE created_by_user_id=$2 AND org_id=$1
           AND is_archived=false
         ORDER BY COALESCE(updated_at, created_at) DESC
         LIMIT 100`,
-      [s.orgId]
+      [s.orgId, s.userId]
     );
     return NextResponse.json({
       ok: true,

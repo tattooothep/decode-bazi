@@ -136,7 +136,7 @@ async function loadProfiles(orgId: string, userId: string) {
             day_master, yongshen, bazi_pillars,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
        FROM profiles
-      WHERE org_id=$1
+      WHERE created_by_user_id=$2 AND org_id=$1
         AND COALESCE(is_archived, false)=false
       ORDER BY
         CASE WHEN created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '') THEN 0 ELSE 1 END,
@@ -165,7 +165,7 @@ export async function POST(req: Request) {
   const centerProfile =
     profileById(profiles, cleanUuid((body as { centerProfileId?: unknown }).centerProfileId))
     || profiles.find((profile) => profile.is_self)
-    || profiles[0]
+    || null
     || null;
   if (!centerProfile) {
     return NextResponse.json({ ok: false, error: "ยังไม่มีดวงศูนย์กลาง" }, { status: 422 });
