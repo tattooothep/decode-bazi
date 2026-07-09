@@ -578,6 +578,7 @@ window.HK_I18N = {
   'ac.hist.what': { th:'รายการ', en:'Item', zh:'項目' },
   'ac.hist.delta': { th:'เปลี่ยนแปลง', en:'Change', zh:'變動' },
   'ac.hist.balance': { th:'คงเหลือ', en:'Balance', zh:'餘額' },
+  'ac.hist.more': { th:'ดูเพิ่ม', en:'Show more', zh:'查看更多' },
   'ac.buy': { th:'เติมแพ็กเกจ', en:'Top up', zh:'加值' },
   'ac.upgrade': { th:'ยกระดับสมาชิก', en:'Upgrade', zh:'升級' },
   'ac.login.title': { th:'ต้องเข้าสู่ระบบก่อน', en:'Please sign in first', zh:'請先登入' },
@@ -803,7 +804,7 @@ function renderHistory(){
     const delta = Number(t.delta || 0);
     const cls = delta >= 0 ? 'pos' : 'neg';
     const sign = delta > 0 ? '+' : '';
-    const what = t.note || t.ref_feature || t.reason || '—';
+    const what = histLabel(t);
     return `<div class="tx-row">
       <div class="when">${esc(fmtDateTime(t.created_at))}</div>
       <div class="what">${esc(what)}</div>
@@ -811,7 +812,9 @@ function renderHistory(){
       <div class="bal">${Number(t.balance_after || 0).toLocaleString()}</div>
     </div>`;
   }).join('');
-  list.innerHTML = head + rows;
+  const more = state.histMore ? `<button class="btn small" id="hist-more" style="margin:12px auto 4px;display:block">${esc(tx('ac.hist.more','ดูเพิ่ม'))}</button>` : '';
+  list.innerHTML = head + rows + more;
+  const mb = document.getElementById('hist-more'); if (mb) mb.onclick = loadMoreHistory;
 }
 function renderAll(){
   renderStaticText();
@@ -849,12 +852,43 @@ async function loadPackages(){
   const d = await r.json();
   return d.packages || [];
 }
-async function loadHistory(){
-  const r = await fetch('/api/account/history', { credentials:'include', cache:'no-store' });
-  if (r.status === 401) return [];
+async function loadHistory(offset){
+  offset = offset || 0;
+  const r = await fetch('/api/account/history?offset=' + offset, { credentials:'include', cache:'no-store' });
+  if (r.status === 401) { state.histMore = false; return []; }
   if (!r.ok) throw new Error('history ' + r.status);
   const d = await r.json();
-  return d.transactions || [];
+  const items = d.transactions || [];
+  state.histMore = !!d.hasMore;
+  state.histOffset = offset + items.length;
+  return items;
+}
+async function loadMoreHistory(){
+  try { const more = await loadHistory(state.histOffset || 0); state.history = (state.history || []).concat(more); renderHistory(); }
+  catch(e) {}
+}
+/* ป้ายรายการประวัติ 3 ภาษา (fallback en) — เติม=note+฿+วิธีจ่าย · ใช้=แปล feature */
+const HIST_FEAT = {
+  export_pdf:{th:'สรุป PDF',en:'PDF summary',zh:'PDF 總結'}, palm:{th:'ดูลายมือ',en:'Palm reading',zh:'手相'},
+  master:{th:'ถามซินแส',en:'Ask Sifu',zh:'問師傅'}, sifu:{th:'ถามซินแส',en:'Ask Sifu',zh:'問師傅'},
+  fusion5:{th:'ดูดวง 6 ศาสตร์',en:'6-science reading',zh:'六術合參'}, qimen:{th:'ฉีเหมิน',en:'Qi Men',zh:'奇門'},
+  network:{th:'เครือข่ายดวง',en:'Chart network',zh:'命盤網絡'}, book:{th:'คัมภีร์ชะตา',en:'Book of Destiny',zh:'命書'},
+  natal_book:{th:'คัมภีร์ชะตา',en:'Book of Destiny',zh:'命書'}, today:{th:'ดูวันนี้',en:'Today',zh:'今日'},
+  calendar:{th:'ปฏิทิน',en:'Calendar',zh:'黃曆'}, datepick:{th:'วางฤกษ์',en:'Date picking',zh:'擇日'}, export_summary:{th:'สรุป PDF',en:'PDF summary',zh:'PDF 總結'}
+};
+const HIST_METHOD = { stripe_card:{th:'บัตร',en:'Card',zh:'信用卡'}, stripe_promptpay:{th:'PromptPay',en:'PromptPay',zh:'PromptPay'}, omise_card:{th:'บัตร',en:'Card',zh:'信用卡'}, omise_promptpay:{th:'PromptPay',en:'PromptPay',zh:'PromptPay'}, mock:{th:'ทดสอบ',en:'Test',zh:'測試'} };
+function histLabel(t){
+  var L = (typeof lang==='function'?lang():'th');
+  function pk(o){ return o ? (o[L]||o.en||o.th) : null; }
+  if (Number(t.delta||0) >= 0){
+    var base = t.note || pk({th:'เติมยาม',en:'Top-up',zh:'儲值'});
+    var ex = [];
+    if (t.amount_thb) ex.push('฿'+Number(t.amount_thb).toLocaleString());
+    var m = pk(HIST_METHOD[t.pay_method]); if (m) ex.push(m);
+    return '💰 ' + base + (ex.length ? ' · '+ex.join(' · ') : '');
+  }
+  var feat = String(t.ref_feature||'').replace(/_pre$/,'') || String(t.reason||'').replace(/^spend_/,'');
+  return pk(HIST_FEAT[feat]) || feat || pk({th:'ใช้ยาม',en:'Spend',zh:'消耗'});
 }
 /* ── ระบบชำระเงินจริง (r408) ──────────────────────────────────────────
  * create order → ถ้า Stripe (บัตร/พร้อมเพย์ผ่าน Stripe) = redirect หน้า checkout ปลอดภัย
