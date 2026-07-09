@@ -88,10 +88,10 @@ export async function createStripeCheckout(args: CheckoutArgs): Promise<Checkout
     };
   }
 
-  const pmType = args.method === "promptpay" ? "promptpay" : "card";
+  // ไม่ล็อกวิธีจ่าย → ตัด payment_method_types ทิ้ง = Stripe Checkout โชว์ทุกวิธีที่เปิดใน dashboard อัตโนมัติ
+  // (บัตร + PromptPay + Link ให้ลูกค้าเลือกในหน้าเดียว · รับได้ทั้งไทย/ต่างชาติ) · args.method ยังบันทึกใน order.pay_method เฉยๆ
   const body: Record<string, string> = {
     mode: "payment",
-    "payment_method_types[0]": pmType,
     "line_items[0][price_data][currency]": "thb",
     "line_items[0][price_data][unit_amount]": String(satang),
     "line_items[0][price_data][product_data][name]": args.packageName,
