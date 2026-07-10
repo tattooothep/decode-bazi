@@ -1,0 +1,41 @@
+{
+  "_comment": "Điều kiện chèn theo lá số/theo ngày · ngày xung · ngày hợp · hướng · màu · dịch từ bản gốc tiếng Thái 10/07/2569",
+
+  "chong_personal": {
+    "chip": "⚠ Ngày xung với bạn",
+    "line": "Hôm nay xung thẳng với tuổi của bạn, năng lượng ngày va trực diện vào năng lượng bản mệnh. Chuyện lớn như ký hợp đồng, ra mắt, đi xa — dời được thì nên dời. Nếu không tránh được, hãy chừa dư thời gian, kiểm tra lại mọi thứ hai lần và tuyệt đối đừng quyết định lúc đang nóng giận."
+  },
+  "chong_universal": {
+    "chip": "Xung tuổi {animal}",
+    "line": "Hôm nay xung với người tuổi {animal}. Nếu đúng tuổi bạn, hãy hoãn chuyện lớn lại đã; nếu không phải thì cứ tiến hành như bình thường."
+  },
+  "he_personal": {
+    "chip": "✦ Ngày hợp với bạn",
+    "line": "Hôm nay hợp với tuổi của bạn, cả ngày có lực đẩy đặc biệt. Chuyện quan trọng vẫn cất chờ thời điểm, hôm nay đem ra làm được luôn. Người xung quanh sẵn lòng đứng về phía bạn hơn hẳn mọi khi."
+  },
+  "he_universal": {
+    "chip": "Hợp tuổi {animal}",
+    "line": "Hôm nay trao điểm cộng đặc biệt cho người tuổi {animal}. Nếu đúng tuổi bạn, cứ mạnh dạn xúc tiến việc quan trọng."
+  },
+  "harm_personal": {
+    "chip": "△ Ngày kỵ nhẹ với bạn",
+    "line": "Hôm nay có sóng ngầm với bản mệnh của bạn — không đến mức đổ vỡ nhưng dễ gây bực bội. Cẩn thận lời nói bị hiểu sai và hẹn hò lệch giờ; mọi cuộc hẹn nên xác nhận lại thêm một lần."
+  },
+
+  "direction_use": {
+    "wealth":  "Chuyện tiền bạc hôm nay, quay mặt hoặc xúc tiến về hướng {dir} sẽ chiếm lợi thế",
+    "noble":   "Gặp người lớn, thương lượng, phỏng vấn — hãy chọn hướng {dir}, sẽ có người nâng đỡ",
+    "joy":     "Việc hỷ, cuộc hẹn quan trọng, khởi sự tốt lành — hướng {dir} tiếp thêm năng lượng hôm nay",
+    "fortune": "Thử vận may, mở cơ hội mới — hãy thử hướng {dir} trước các hướng khác",
+    "avoid":   "Hướng {dir} hôm nay năng lượng không thuận, chuyện quan trọng nên tránh hướng này trước đã"
+  },
+
+  "color_line": "Màu may mắn hôm nay: {colors} — khoác lên người một món thôi cũng giúp kéo nhịp may đến gần",
+
+  "season_boost": {
+    "spring": "Cây cối đang đâm chồi, năng lượng Mộc vượng — việc khởi đầu và việc cần lớn lên đều được gió đẩy",
+    "summer": "Lửa mùa hè rực cháy — việc phô diễn, việc ra mắt được tiếp sức, nhưng nóng vội chính là kẻ thù",
+    "autumn": "Kim mùa gặt sắc bén — việc cần quyết đoán, việc gặt hái thành quả vào đúng nhịp nhất",
+    "winter": "Nước mùa đông lặng mà sâu — việc lên kế hoạch, việc tính đường dài chiếm ưu thế hơn việc hấp tấp"
+  }
+}

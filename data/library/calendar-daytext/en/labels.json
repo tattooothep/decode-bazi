@@ -1,0 +1,70 @@
+{
+  "_comment": "Base label + translation tables, English · translated from the Thai original (10 Jul 2026) · replaces raw Chinese characters everywhere in the day cell",
+
+  "daypower": {
+    "比肩": { "label": "Self",         "hint": "A self-powered day — you can stand on your own two feet" },
+    "劫財": { "label": "Allies",       "hint": "Extra strength from team and friends, but keep money matters crystal clear" },
+    "食神": { "label": "Joy",          "hint": "A day to relax, create, and take care of yourself" },
+    "傷官": { "label": "Ideas",        "hint": "Thoughts run fast — show your stuff, but watch your words" },
+    "正財": { "label": "Steady Money", "hint": "A day for regular income — real, countable, in hand" },
+    "偏財": { "label": "Windfall",     "hint": "Floating money and special openings — well-connected people can help" },
+    "正官": { "label": "Duty",         "hint": "A day for formal business, order, seniors, and reputation" },
+    "七殺": { "label": "Pressure",     "hint": "A high-pressure day — sharp decisions, head-on challenges" },
+    "正印": { "label": "Recharge",     "hint": "A day for learning, recovery, credentials, and kind mentors" },
+    "偏印": { "label": "Instinct",     "hint": "Hunches run clear — think from odd angles, go deep" }
+  },
+
+  "officer": {
+    "建": { "label": "Begin Day",          "hint": "Start new things — plant the first stake" },
+    "除": { "label": "Clear-Out Day",      "hint": "Wash out the old, cut the clutter, begin treatment" },
+    "滿": { "label": "Full Day",           "hint": "Abundance, celebrations, bringing people together" },
+    "平": { "label": "Steady Day",         "hint": "Routine runs smooth — negotiate as equals" },
+    "定": { "label": "Settle Day",         "hint": "Agree, book, and tie things down firmly" },
+    "執": { "label": "Follow-Through Day", "hint": "Handle the details, chase pending work, grip tight" },
+    "破": { "label": "Breaker Day",        "hint": "Only for tearing down and ending things — skip anything auspicious" },
+    "危": { "label": "Caution Day",        "hint": "Move slowly, avoid risk — a day for stillness and review" },
+    "成": { "label": "Success Day",        "hint": "Bring things to a beautiful finish — unveil the results" },
+    "收": { "label": "Harvest Day",        "hint": "Gather the returns, the money, and the goods" },
+    "開": { "label": "Open Day",           "hint": "Launch, open the market, start learning, fire it up" },
+    "閉": { "label": "Rest Day",           "hint": "Close the cycle, seal the leaks, rest and recharge" }
+  },
+
+  "stem": {
+    "甲": "Yang Wood", "乙": "Yin Wood", "丙": "Yang Fire", "丁": "Yin Fire",
+    "戊": "Yang Earth", "己": "Yin Earth", "庚": "Yang Metal", "辛": "Yin Metal",
+    "壬": "Yang Water", "癸": "Yin Water"
+  },
+
+  "branch": {
+    "子": { "label": "Rat Day",     "animal": "Rat" },
+    "丑": { "label": "Ox Day",      "animal": "Ox" },
+    "寅": { "label": "Tiger Day",   "animal": "Tiger" },
+    "卯": { "label": "Rabbit Day",  "animal": "Rabbit" },
+    "辰": { "label": "Dragon Day",  "animal": "Dragon" },
+    "巳": { "label": "Snake Day",   "animal": "Snake" },
+    "午": { "label": "Horse Day",   "animal": "Horse" },
+    "未": { "label": "Goat Day",    "animal": "Goat" },
+    "申": { "label": "Monkey Day",  "animal": "Monkey" },
+    "酉": { "label": "Rooster Day", "animal": "Rooster" },
+    "戌": { "label": "Dog Day",     "animal": "Dog" },
+    "亥": { "label": "Pig Day",     "animal": "Pig" }
+  },
+
+  "lunarDay": { "format": "Lunar day {n}", "hint": "Day of the lunar month, counted 1-30" },
+
+  "ui": {
+    "chongYou": "⚠ Your clash day",
+    "heYou": "✦ Your harmony day",
+    "chongYear": "Clash: {animal} year",
+    "heYear": "Harmony: {animal} year",
+    "direction": "Direction",
+    "luckyColor": "Lucky color",
+    "deepMode": "Deep read",
+    "simpleMode": "Easy read"
+  },
+
+  "goal": {
+    "wealth": "Money", "career": "Work", "love": "Love",
+    "family": "Family", "health": "Health", "travel": "Travel"
+  }
+}

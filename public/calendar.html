@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="dark">
+<html lang="th" data-theme="dark" data-hk-product-page="calendar">
 <head>
 <script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
@@ -139,6 +139,9 @@
   .intent-dd-menu .opt.on{background:var(--gold-soft);color:var(--gold);font-weight:600;}
   .intent-dd-menu .opt .ico{font-size:16px;width:20px;text-align:center;}
   .intent-dd-menu .opt.all{border-bottom:1px solid var(--gold-line);margin-bottom:4px;padding-bottom:10px;}
+  .cal-ent-locked{position:relative;opacity:.46;filter:saturate(.25);cursor:pointer!important;}
+  .cal-ent-locked::after{content:'🔒';margin-left:auto;color:var(--gold);font-size:12px;}
+  button.cal-ent-locked::after{margin-left:4px;}
   .intent-status{font-size:12px;color:var(--gold);font-style:italic;}
   /* Filter mode · highlight days */
   .day-cell.intent-good{box-shadow:inset 0 0 0 2px var(--good,#7ec47e);}
@@ -172,6 +175,23 @@
   .day-cell.is-today{background:var(--gold-soft);box-shadow:inset 0 0 0 2px var(--gold);}
   .day-cell.is-today .d-num{color:var(--gold);}
   .day-cell.selected{background:var(--gold-soft);box-shadow:inset 0 0 0 1px var(--gold);}
+  /* 10 ก.ค. · โหมดอ่านง่าย (ปฏิทินภาษาคน) · ชั้นครอบใหม่ ไม่แตะ CSS เดิม · ถอด = ลบ block นี้ */
+  .control-bar{grid-template-columns:auto 1fr auto auto;} /* เพิ่มช่องที่ 4 รองรับ #view-toggle · มือถือยัง 1fr เดิม */
+  .day-cell.ez{aspect-ratio:auto;min-height:150px;}
+  .ez-top{display:flex;align-items:center;gap:6px;}
+  .ez-num{font-weight:700;font-size:14px;}
+  .ez-power{color:var(--gold);font-weight:700;font-size:11.5px;}
+  .ez-chip{margin-left:auto;font-size:9.5px;padding:1px 6px;border-radius:99px;white-space:nowrap;}
+  .ez-chip.ch{background:rgba(198,40,40,.14);color:#c62828;}
+  .ez-chip.he{background:rgba(46,125,50,.14);color:#2e7d32;}
+  [data-theme="dark"] .ez-chip.ch{color:#ef9a9a;}
+  [data-theme="dark"] .ez-chip.he{color:#81c784;}
+  .ez-chip.chu{color:var(--fg-soft);border:1px solid var(--tile-bd);}
+  .ez-sub{font-size:9.5px;color:var(--fg-soft);}
+  .ez-title{font-size:11px;font-weight:600;}
+  .ez-text{font-size:10.5px;line-height:1.45;opacity:.85;}
+  .ez-goal{font-size:9.5px;color:var(--gold);border-top:1px dashed var(--tile-bd);padding-top:3px;}
+  @media(max-width:768px){.ez-text,.ez-title,.ez-sub,.ez-goal{display:none;}.ez-chip{max-width:55%;overflow:hidden;text-overflow:ellipsis;}.day-cell.ez{min-height:auto;}}
 
   .d-head{display:flex;justify-content:space-between;align-items:flex-start;}
   .d-num{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1;}
@@ -346,6 +366,7 @@
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 <script src="/js/hk-tongshu-dict.js?v=1" defer></script>
+<script src="/js/hk-daytext.js?v=1" defer></script>
 <link rel="stylesheet" href="/css/hk-print.css?v=4">
 </head>
 <body>
@@ -400,6 +421,10 @@
       <button id="next-m">›</button>
     </div>
     <div></div>
+    <div class="toggle-group" id="view-toggle">
+      <button class="on" data-view="easy" data-i18n="cal.view.easy">อ่านง่าย</button>
+      <button data-view="deep" data-i18n="cal.view.deep">แบบลึก</button>
+    </div>
     <div class="toggle-group" id="overlay-toggle">
       <button class="on" data-mode="personal" data-i18n="cal.mode.personal">ดวงฉัน · 我</button>
       <button data-mode="tongshu" data-i18n="cal.mode.general">ทั่วไป · 黃曆</button>
@@ -461,9 +486,9 @@
   <div class="cal-pdf-row noprint" style="text-align:center;margin:26px 0 10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
     <button id="cal-pdf-btn" onclick="exportCalendarPdf()" data-i18n="cal.pdf.btn"
       style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">⬇ ดาวน์โหลด PDF (ทั้งเดือน)</button>
-    <!-- 9 ก.ค. · Export สรุป PDF ด้วย AI (async job · 50 ยาม) · window.hkExportSummaryPdf · แยกจากปุ่ม client-print เดิมด้านบน -->
+    <!-- 9 ก.ค. · Export สรุป PDF ด้วย AI (async job · 20 ยาม) · window.hkExportSummaryPdf · แยกจากปุ่ม client-print เดิมด้านบน -->
     <button id="hk-calendar-summary-pdf" type="button" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()"
-      style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">📄 สร้างสรุป PDF (50 ยาม)</button>
+      style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">📄 สร้างสรุป PDF (20 ยาม)</button>
   </div>
 </div>
 
@@ -501,6 +526,7 @@
     if (!p) return null;
     const raw = p.bazi_pillars || {};
     const bp = raw.pillars || raw;
+    if (bp.year && bp.year.branch) SELF_YEAR_BRANCH = bp.year.branch;
     return applySelfDay({
       stem: p.day_master || bp.day?.stem || '',
       branch: bp.day?.branch || ''
@@ -510,23 +536,20 @@
     /* viewAs เฉพาะตอนมี ?as= ตรงกัน → hk_birth → /api/profile · เก็บทั้ง stem + branch */
     try {
       const asId = new URLSearchParams(location.search).get('as');
-      const va = asId ? JSON.parse(sessionStorage.getItem('hk_view_as')||'null') : null;
       if (!asId) sessionStorage.removeItem('hk_view_as');
-      if (va && va.pillars && va.pillars.day && va.pillars.day.stem) {
-        if (va.id !== asId) {
-          sessionStorage.removeItem('hk_view_as');
-          throw new Error('stale view-as');
+      if (asId) {
+        const vr = await fetch('/api/profile/' + encodeURIComponent(String(asId).replace(/^p_/, '')) + '/snapshot', { credentials:'include', cache:'no-store' });
+        if (vr.ok) {
+          const vj = await vr.json();
+          const va = vj && vj.snapshot;
+          if (va && va.pillars && va.pillars.day && va.pillars.day.stem) {
+            sessionStorage.setItem('hk_view_as', JSON.stringify(va));
+            SELF_BRANCH = va.pillars.day.branch || '';
+            SELF_YEAR_BRANCH = (va.pillars.year && va.pillars.year.branch) || '';
+            return va.pillars.day.stem;
+          }
         }
-        SELF_BRANCH = va.pillars.day.branch || '';
-        return va.pillars.day.stem;
-      }
-    } catch(_){}
-    try {
-      const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
-      if (birth && birth.date) {
-        const day = birth.pillars?.day || birth.bazi_pillars?.day || null;
-        const cached = applySelfDay(day, true);
-        if (cached) return cached;
+        sessionStorage.removeItem('hk_view_as');
       }
     } catch(_){}
     try {
@@ -539,23 +562,21 @@
       if (pr.ok) {
         const pd = await pr.json();
         const live = (pd.profiles||[]).filter(p => !p.is_archived);
-        let activeMeId = null;
-        try { activeMeId = localStorage.getItem('hk_profile_id'); } catch(_){}
         const me = (pd.active_profile && live.find(p=>p.id===pd.active_profile.id))
-          || (activeMeId && live.find(p=>p.id===activeMeId))
           || live.find(p=>!!p.is_self)
-          || live[0];
+          || null;
         const dm = selfDayFromProfile(me);
         if (dm) return dm;
       }
     } catch(_){}
-    return '己'; /* fallback demo */
+    return null;
   }
 
   /* ─── ค่าจาก /api/calendar ─── */
   let MONTH_DATA = { year:null, month:null, days:[], month_pillar:'', year_pillar:'' };
-  let SELF_DM = '己';
+  let SELF_DM = null;
   let SELF_BRANCH = ''; /* กิ่งวันเกิด · ใช้ตรวจ 沖 ในชั่วยาม */
+  let SELF_YEAR_BRANCH = ''; /* 10 ก.ค. · กิ่งปีเกิด (นักษัตร) · ชิพชง/สมพงษ์โหมดอ่านง่าย · ว่าง=โชว์แบบสากล */
   /* cache · hour grid + directions ต่อวัน · lazy fetch ตอนคลิก */
   const DAY_DETAILS = {}; /* key = "YYYY-MM-DD" → { hours, directions } */
 
@@ -688,9 +709,11 @@
     let html = `<div class="opt all ${state.intent === null ? 'on' : ''}" data-intent=""><span class="ico">📋</span><span>${labels.all}</span></div>`;
     ['work','wealth','love','home','travel'].forEach(grp => {
       html += `<div class="grp">${INTENT_GROUP_LABELS[grp][lang]}</div>`;
+      const allowed = new Set((MONTH_DATA.entitlement && MONTH_DATA.entitlement.allowed_intents) || INTENTS_CAL.map(x=>x.id));
       INTENTS_CAL.filter(i => i.group === grp).forEach(i => {
         const label = i[lang] || i.th;
-        html += `<div class="opt ${state.intent === i.id ? 'on' : ''}" data-intent="${i.id}"><span class="ico">${i.icon}</span><span>${label}</span></div>`;
+        const locked = !allowed.has(i.id);
+        html += `<div class="opt ${state.intent === i.id ? 'on' : ''} ${locked ? 'cal-ent-locked' : ''}" data-intent="${i.id}" ${locked ? 'data-ent-locked="1"' : ''}><span class="ico">${i.icon}</span><span>${label}</span></div>`;
       });
     });
     menu.innerHTML = html;
@@ -730,7 +753,8 @@
     /* คัด good days · sort by score desc · top 3 */
     const goodDays = (days||[]).filter(d => d.intentStatus && d.intentStatus[state.intent] === 'good' && d.verdict);
     goodDays.sort((a,b) => (b.verdict?.score||0) - (a.verdict?.score||0));
-    const top = goodDays.slice(0, 3);
+    const rankLimit = Math.max(1, Number(MONTH_DATA.entitlement?.ranked_days || 3));
+    const top = goodDays.slice(0, rankLimit);
     const MEDALS = ['🥇','🥈','🥉'];
     const LBL = {
       th: { head: `🔍 ดู ${sel.icon} ${sel.th}`, found: 'พบ', days: 'วันเหมาะ', best:'ดีสุด', score:'คะแนน', empty:'ไม่พบวันเหมาะในเดือนนี้' },
@@ -783,6 +807,7 @@
       return;
     }
     if (opt) {
+      if (opt.dataset.entLocked === '1') { location.href='/pricing'; return; }
       const id = opt.dataset.intent || null;
       state.intent = id || null;
       menu.hidden = true;
@@ -812,7 +837,36 @@
   function scoreLabel(s){ return s>=20?'★ 大吉':s>=10?'用 吉':s>=-9?'平 中和':s>=-19?'慎 凶':'凶 大凶'; }
 
   // ─── RENDER CALENDAR ───
+  /* 10 ก.ค. · โหมดอ่านง่าย · โหลดคลังข้อความปฏิทินภาษาคนตามภาษา (fallback→en) · โหลดครั้งเดียวต่อภาษา */
+  let DT_STATE = { loc:'', useLoc:'', ok:false, map:null };
+  function dtLocale(){ const l=getRawLang(); return ['th','en','zh','vi','ja','ko','ru','es'].indexOf(l)>=0?l:'en'; }
+  function ensureDaytext(){
+    if (!(window.HK && HK.daytext)) { setTimeout(()=>{ if(window.HK && HK.daytext) renderCal(); }, 400); return false; }
+    const loc = dtLocale();
+    if (DT_STATE.loc === loc) return DT_STATE.ok;
+    /* สลับภาษา: คงคลังภาษาเดิมโชว์ไว้ก่อน (ไม่แวบกลับแบบลึก) · โหลดเสร็จค่อยสลับข้อความ */
+    DT_STATE = { loc, useLoc:DT_STATE.useLoc, ok:DT_STATE.ok, map:DT_STATE.map };
+    Promise.all([
+      HK.daytext.loadBrowser(loc).then(()=>loc).catch(()=>HK.daytext.loadBrowser('en').then(()=>'en')),
+      DT_STATE.map ? Promise.resolve(DT_STATE.map) : fetch('/data/calendar-daytext/nayin-map.json?v=1').then(r=>r.json())
+    ]).then(([useLoc, m])=>{
+        if (DT_STATE.loc !== loc) return; /* กันผลภาษาเก่ามาทับภาษาที่เลือกล่าสุด */
+        DT_STATE.useLoc=useLoc; DT_STATE.map=m; DT_STATE.ok=true; renderCal();
+        /* โหลดภาษาหลักที่เหลือรอไว้เงียบๆ → กดสลับแล้วเปลี่ยนทันที ไม่ต้องรอ */
+        setTimeout(()=>{ ['th','en','zh'].forEach(l=>{ if(l!==useLoc) HK.daytext.loadBrowser(l).catch(()=>{}); }); }, 2500);
+      })
+      .catch(()=>{
+        if (DT_STATE.loc !== loc) return;
+        DT_STATE.loc=''; /* เปิดทางลองโหลดใหม่รอบหน้า ไม่ตายถาวร */
+        state.viewMode='deep';
+        const vt=document.getElementById('view-toggle');
+        if (vt) vt.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.view==='deep'));
+        renderCal();
+      });
+    return false;
+  }
   function renderCal(){
+    if (state.viewMode !== 'deep') ensureDaytext();
     const grid = document.getElementById('cal-grid');
 
     const days = MONTH_DATA.days || [];
@@ -874,6 +928,29 @@
       const intentsHtml = (topIcons || worstIcons) && !intentSel ? `<div class="d-intents">${topIcons}${worstIcons}</div>` : '';
       const isToday = d.date === todayStr;
       const isSelected = d.day === state.selected;
+
+      /* 10 ก.ค. · โหมดอ่านง่าย: ช่องวันภาษาคนจากคลัง calendar-daytext · แตะช่องเปิดแผงข้างเหมือนเดิม · error ใดๆ ตกกลับแบบลึก */
+      if (state.viewMode !== 'deep' && DT_STATE.ok) {
+        try {
+          const nz = DT_STATE.map ? (DT_STATE.map[(d.stem||'')+(d.branch||'')] || '') : '';
+          const c = HK.daytext.cell(DT_STATE.useLoc, d, {
+            mode: isTongshu ? 'tongshu' : 'self',
+            userYearBranch: isTongshu ? '' : SELF_YEAR_BRANCH,
+            goal: state.goal, nayinZh: nz
+          });
+          const chipCls = c.chipType==='chong' ? 'ch' : c.chipType==='he' ? 'he' : 'chu';
+          const ez = s => String(s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+          html.push(`
+        <div class="day-cell ez ${isToday?'is-today':''} ${isSelected?'selected':''} ${intentClass}" data-day="${d.day}">
+          <div class="ez-top"><span class="ez-num">${d.day}</span><span class="ez-power">${ez(c.label)}</span>${c.chip?`<span class="ez-chip ${chipCls}">${ez(c.chip)}</span>`:''}</div>
+          <div class="ez-sub">${ez(c.subline)}</div>
+          ${c.title && c.title!==c.label ? `<div class="ez-title">${ez(c.title)}</div>` : ''}
+          <div class="ez-text">${ez(c.text)}</div>
+          ${c.goalLine?`<div class="ez-goal">▸ ${ez(c.goalLine)}</div>`:''}
+        </div>`);
+          return;
+        } catch(_) { /* ตกกลับ render แบบลึกเดิมด้านล่าง */ }
+      }
 
       let tags = '';
       if(state.overlay==='personal'){
@@ -2029,7 +2106,7 @@
     try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
     const _payload = (extra) => {
       const p = userChartArg ? { date, userChart: userChartArg, ...(extra||{}) } : { date, ...(extra||{}) };
-	      if (_birth && _birth.date) { p.birthDate = _birth.date; p.birthTime = _birth.time || '12:00'; p.birthLng = _birth.lng || _birth.longitude || 100.5018; p.birthTimeKnown = _birth.birthTimeKnown !== false; }
+      if (SELF_DM && _birth && _birth.date) { p.birthDate = _birth.date; p.birthTime = _birth.time || '12:00'; p.birthLng = _birth.lng || _birth.longitude || 100.5018; p.birthTimeKnown = _birth.birthTimeKnown !== false; }
       return p;
     };
     try {
@@ -2056,7 +2133,34 @@
     return DAY_DETAILS[date];
   }
 
-  function render(){ updateMonthHeader(); renderCal(); renderSide(); }
+  function calendarLockText(){
+    const raw = String(getRawLang() || 'th').toLowerCase();
+    return ({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'})[raw] || 'Locked · see plans';
+  }
+  function applyCalendarEntitlementUi(){
+    const ent = MONTH_DATA.entitlement;
+    if (!ent) return;
+    const oneGoal = ent.intents === 'one';
+    document.querySelectorAll('#goal-bar button[data-goal]').forEach(btn => {
+      const locked = oneGoal && !['all','wealth'].includes(btn.dataset.goal || '');
+      btn.classList.toggle('cal-ent-locked', locked);
+      if (locked) { btn.dataset.entLocked='1'; btn.title=calendarLockText(); }
+      else { delete btn.dataset.entLocked; btn.removeAttribute('title'); }
+    });
+    ['cal-pdf-btn','hk-calendar-summary-pdf'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.classList.toggle('cal-ent-locked', !ent.pdf);
+      if (!ent.pdf) {
+        btn.dataset.entLocked='1';
+        btn.title=calendarLockText();
+      } else {
+        delete btn.dataset.entLocked;
+        btn.removeAttribute('title');
+      }
+    });
+  }
+  function render(){ updateMonthHeader(); renderCal(); renderSide(); applyCalendarEntitlementUi(); }
 
   /* ─── โหลด /api/calendar · ส่ง birth ถ้ามี เพื่อใช้ wrapper-6 (ตำราใหม่) ─── */
   async function loadMonth(year, month, opts){
@@ -2064,15 +2168,15 @@
       let bUrl = '';
       try {
         const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
-        if (b && b.date) {
+        if (SELF_DM && b && b.date) {
 	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||b.longitude||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}&gender=${encodeURIComponent(b.gender||'M')}&dayBoundary=${encodeURIComponent(b.dayBoundary||'23:00')}`;
         }
       } catch(_){}
-      const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM)}${bUrl}`);
+      const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM || '')}${bUrl}`);
       if (!r.ok) throw new Error('http '+r.status);
       const d = await r.json();
       MONTH_DATA = d;
-      if (d && d.dm) SELF_DM = d.dm;
+      if (SELF_DM && d && d.dm) SELF_DM = d.dm;
       /* select today ถ้าอยู่ในเดือนปัจจุบัน · ไม่งั้นเลือกวันแรก */
       const tn = new Date();
       if (tn.getFullYear()===year && tn.getMonth()+1===month) {
@@ -2137,6 +2241,19 @@
     }
   });
 
+  /* 10 ก.ค. · ปุ่มสลับ อ่านง่าย/แบบลึก · จำค่าใน localStorage */
+  state.viewMode = (localStorage.getItem('hk_cal_view') === 'deep') ? 'deep' : 'easy';
+  (function(){
+    const vt = document.getElementById('view-toggle'); if (!vt) return;
+    vt.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.view===state.viewMode));
+    vt.addEventListener('click', e=>{
+      const b = e.target.closest('button[data-view]'); if (!b) return;
+      state.viewMode = b.dataset.view;
+      localStorage.setItem('hk_cal_view', state.viewMode);
+      vt.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
+      renderCal();
+    });
+  })();
   document.getElementById('overlay-toggle').addEventListener('click', e=>{
     const btn = e.target.closest('button[data-mode]');
     if(!btn) return;
@@ -2149,19 +2266,38 @@
   document.getElementById('goal-bar').addEventListener('click', e=>{
     const btn = e.target.closest('button[data-goal]');
     if(!btn) return;
+    if(btn.dataset.entLocked === '1') { e.preventDefault(); location.href='/pricing'; return; }
     document.querySelectorAll('#goal-bar button').forEach(b=>b.classList.remove('on'));
     btn.classList.add('on');
     state.goal = btn.dataset.goal;
     render();
   });
 
+  document.querySelectorAll('#cal-pdf-btn,#hk-calendar-summary-pdf').forEach(btn => {
+    btn.addEventListener('click', e => {
+      if (btn.dataset.entLocked === '1') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        location.href='/pricing';
+      }
+    }, true);
+  });
+
   // initial · resolve DM แล้วโหลดเดือนปัจจุบัน
   (async function init(){
+    try { if (window.__hkProfileReady) await window.__hkProfileReady; } catch(_){ }
+    SELF_DM = await resolveSelfDM();
+    if (!SELF_DM) {
+      state.overlay = 'tongshu';
+      document.querySelectorAll('#overlay-toggle button').forEach(function(btn){
+        btn.classList.toggle('on', btn.dataset.mode === 'tongshu');
+        if (btn.dataset.mode === 'personal') btn.disabled = true;
+      });
+    }
     if (calendarHasBirthParams()) {
       const detailsReady = resolveSelfDM().catch(()=>{});
       await loadMonth(CUR_YEAR, CUR_MONTH, { detailsReady });
     } else {
-      SELF_DM = await resolveSelfDM();
       await loadMonth(CUR_YEAR, CUR_MONTH);
     }
   })();
@@ -2376,6 +2512,8 @@ window.HK_I18N = {
   'cal.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
   'cal.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
   'cal.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'cal.view.easy':{ th:'อ่านง่าย', en:'Easy read', zh:'白話版', vi:'Dễ đọc', ja:'かんたん表示', ko:'쉽게 보기', ru:'Просто', es:'Fácil' },
+  'cal.view.deep':{ th:'แบบลึก', en:'Expert', zh:'專業版', vi:'Chuyên sâu', ja:'詳細表示', ko:'전문가 보기', ru:'Подробно', es:'Experto' },
   'cal.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
   'cal.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
   'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
@@ -2500,6 +2638,8 @@ window.__hkOverlayApply=function(l){
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
     try{ localStorage.setItem('hk_locale', lang); }catch(e){}
     applyI18N(lang);
+    /* 10 ก.ค. · โหมดอ่านง่ายต้องวาดตารางใหม่ตามภาษา (ข้อความมาจากคลัง ไม่ใช่ data-i18n) */
+    try{ if (typeof renderCal==='function' && typeof MONTH_DATA!=='undefined' && (MONTH_DATA.days||[]).length) renderCal(); }catch(_){}
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
   try{
@@ -2545,7 +2685,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
   [300,900,1800,3000].forEach(function(ms){ setTimeout(fix, ms); });
 })();
 </script>
-<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 50 ยาม · async job + poll + resume · 9 ภาษา)
+<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 20 ยาม · async job + poll + resume · 9 ภาษา)
      ลอกโครงจาก palmistry.html · เปลี่ยน page="calendar" + inputs.calendar={month:MONTH_DATA,selected:state.selected}
      (engine 建除/黃黑道/神煞/宜忌 คำนวณเสร็จแล้วฝั่ง /api/calendar → ส่ง snapshot แทน re-fetch) -->
 <script>
@@ -2561,10 +2701,10 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังสรุปปฏิทิน… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is summarising the calendar… you can leave this open or close it; the job keeps running.", zh:"AI 正在總結黃曆…可保持開啟或關閉，工作會繼續。", cn:"AI 正在总结黄历…可保持开启或关闭，工作会继续。", vi:"AI đang tổng hợp lịch… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIが暦をまとめ中…開いたままでも閉じても処理は続きます。", ko:"AI가 달력을 요약 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет сводку календаря… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está resumiendo el calendario… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -2694,11 +2834,11 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(payload); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];
@@ -2721,5 +2861,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 </script>
 <script src="/js/hk-print.js?v=4" defer></script>
+<script src="/js/hk-product-caps.js?v=5" defer></script>
 </body>
 </html>

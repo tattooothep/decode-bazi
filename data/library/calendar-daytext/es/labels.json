@@ -1,0 +1,70 @@
+{
+  "_comment": "Tabla de etiquetas y traducciones base en español · traducido del original tailandés 10 jul 2026 · sustituye todo carácter chino en la casilla del día",
+
+  "daypower": {
+    "比肩": { "label": "Autonomía",      "hint": "Día de fuerza propia: hoy te sostienes con tus propios pies" },
+    "劫財": { "label": "Aliados",        "hint": "Día de impulso del equipo y los amigos, pero con el dinero todo claro" },
+    "食神": { "label": "Disfrute",       "hint": "Día para relajarte, crear y cuidarte" },
+    "傷官": { "label": "Ideas",          "hint": "Día de mente ágil: luce tu talento, pero cuida tus palabras" },
+    "正財": { "label": "Dinero estable", "hint": "Día de finanzas ordenadas: ingresos reales y tangibles" },
+    "偏財": { "label": "Oportunidad",    "hint": "Día de dinero extra y golpes de suerte; tus contactos suman" },
+    "正官": { "label": "Deber",          "hint": "Día de trámites, orden, superiores e imagen pública" },
+    "七殺": { "label": "Presión",        "hint": "Día de alta exigencia: decisiones firmes y de frente" },
+    "正印": { "label": "Recarga",        "hint": "Día para aprender, recuperarte, gestionar certificados y recibir apoyo de mayores" },
+    "偏印": { "label": "Instinto",       "hint": "Día de intuición nítida y pensamiento distinto, ideal para trabajo profundo" }
+  },
+
+  "officer": {
+    "建": { "label": "Día de inicio",      "hint": "Puedes empezar cosas nuevas y clavar el primer hito" },
+    "除": { "label": "Día de limpieza",    "hint": "Despeja lo viejo, corta lo que estorba, inicia tratamientos" },
+    "滿": { "label": "Día de plenitud",    "hint": "Abundancia, celebraciones, reunir gente" },
+    "平": { "label": "Día tranquilo",      "hint": "La rutina fluye estable; negocia de igual a igual" },
+    "定": { "label": "Día de acuerdos",    "hint": "Cierra tratos, agenda citas, deja los compromisos bien atados" },
+    "執": { "label": "Día de seguimiento", "hint": "Cuida los detalles, retoma pendientes, sujeta firme" },
+    "破": { "label": "Día de demolición",  "hint": "Solo para desmontar, desechar y terminar; evita lo auspicioso" },
+    "危": { "label": "Día de cautela",     "hint": "Avanza despacio, evita riesgos; ideal para pausar y reflexionar" },
+    "成": { "label": "Día de éxito",       "hint": "Cierra asuntos con broche de oro y presenta resultados" },
+    "收": { "label": "Día de cosecha",     "hint": "Recoge frutos, cobra dinero, pon cada cosa en su lugar" },
+    "開": { "label": "Día de apertura",    "hint": "Lanza, abre mercado, empieza a estudiar, pon todo en marcha" },
+    "閉": { "label": "Día de descanso",    "hint": "Cierra el ciclo, sella las fugas, descansa y acumula fuerza" }
+  },
+
+  "stem": {
+    "甲": "Madera yang", "乙": "Madera yin", "丙": "Fuego yang", "丁": "Fuego yin",
+    "戊": "Tierra yang", "己": "Tierra yin", "庚": "Metal yang", "辛": "Metal yin",
+    "壬": "Agua yang", "癸": "Agua yin"
+  },
+
+  "branch": {
+    "子": { "label": "Día de la Rata",      "animal": "Rata" },
+    "丑": { "label": "Día del Buey",        "animal": "Buey" },
+    "寅": { "label": "Día del Tigre",       "animal": "Tigre" },
+    "卯": { "label": "Día del Conejo",      "animal": "Conejo" },
+    "辰": { "label": "Día del Dragón",      "animal": "Dragón" },
+    "巳": { "label": "Día de la Serpiente", "animal": "Serpiente" },
+    "午": { "label": "Día del Caballo",     "animal": "Caballo" },
+    "未": { "label": "Día de la Cabra",     "animal": "Cabra" },
+    "申": { "label": "Día del Mono",        "animal": "Mono" },
+    "酉": { "label": "Día del Gallo",       "animal": "Gallo" },
+    "戌": { "label": "Día del Perro",       "animal": "Perro" },
+    "亥": { "label": "Día del Cerdo",       "animal": "Cerdo" }
+  },
+
+  "lunarDay": { "format": "Día lunar {n}", "hint": "Convierte la fecha lunar: día lunar 1 · día lunar 15 · día lunar 23" },
+
+  "ui": {
+    "chongYou": "⚠ Hoy es tu día de choque",
+    "heYou": "✦ Hoy es tu día de armonía",
+    "chongYear": "Choca con el año del {animal}",
+    "heYear": "Armoniza con el año del {animal}",
+    "direction": "Dirección",
+    "luckyColor": "Colores de apoyo",
+    "deepMode": "Modo profundo",
+    "simpleMode": "Modo sencillo"
+  },
+
+  "goal": {
+    "wealth": "Dinero", "career": "Trabajo", "love": "Amor",
+    "family": "Familia", "health": "Salud", "travel": "Viajes"
+  }
+}

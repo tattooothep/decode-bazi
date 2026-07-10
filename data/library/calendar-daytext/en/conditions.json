@@ -1,0 +1,41 @@
+{
+  "_comment": "Conditional inserts by chart or by day · clash days · harmony days · directions · colors · translated from the Thai original (10 Jul 2026)",
+
+  "chong_personal": {
+    "chip": "⚠ Your clash day",
+    "line": "Today clashes with your birth year — the day's energy hits your chart head-on. Big moves, signings, launches, long trips: postpone what can be postponed. If you can't, leave extra time, double-check everything, and never decide while your temper is up."
+  },
+  "chong_universal": {
+    "chip": "Clash: {animal} year",
+    "line": "Today clashes with people born in the Year of the {animal}. If that's your year, hold off on the big moves. If not, carry on as usual."
+  },
+  "he_personal": {
+    "chip": "✦ Your harmony day",
+    "line": "Today is in harmony with your birth year — an extra tailwind all day long. That important matter you've been saving for the right moment? Move on it today. People around you are more ready than usual to take your side."
+  },
+  "he_universal": {
+    "chip": "Harmony: {animal} year",
+    "line": "Today gives bonus points to anyone born in the Year of the {animal}. If that's your year, push the important things forward at full strength."
+  },
+  "harm_personal": {
+    "chip": "△ Your friction day",
+    "line": "There's an undercurrent between today and your chart — nothing breaks, but plenty niggles. Watch for crossed wires and missed appointments, and confirm every meeting one more time."
+  },
+
+  "direction_use": {
+    "wealth":  "For money matters today, face {dir} or take your business that way — it gives you the edge",
+    "noble":   "Meeting seniors, negotiating, interviewing — head {dir} and a helping hand will find you",
+    "joy":     "Celebrations, key appointments, happy beginnings — {dir} adds extra power today",
+    "fortune": "Trying your luck or opening a new door? Go {dir} before anywhere else",
+    "avoid":   "{dir} runs against the grain today — steer important business away from that direction"
+  },
+
+  "color_line": "Today's lucky colors: {colors}. Wear even one piece to pull the day's good rhythm your way",
+
+  "season_boost": {
+    "spring": "The trees are leafing out and growing energy runs high — fresh starts and anything meant to grow get the wind behind them",
+    "summer": "Summer fire blazes — showing up and stepping into the spotlight get extra power, but a hot temper is the enemy",
+    "autumn": "Harvest-season steel is sharp and clear — decisions and gathering in results hit their perfect rhythm now",
+    "winter": "Winter water runs deep and still — planning and long-game thinking beat any rushed move"
+  }
+}
