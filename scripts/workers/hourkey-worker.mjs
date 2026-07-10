@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-import { loadEnvConfig } from "@next/env";
+import nextEnv from "@next/env";
 import { Queue, Worker } from "bullmq";
 import IORedis from "ioredis";
 import pg from "pg";
 
+const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd(), false, console, true);
 
 const queue = process.argv[2] || "hourkey-vision-palm";
