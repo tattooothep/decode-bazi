@@ -169,6 +169,15 @@
       ru: "Смотреть планы →",
       es: "Ver planes →",
     },
+    upgrade_title: {
+      th: "สิทธิ์ของแพ็กเกจ", en: "Plan access", zh: "方案權限", cn: "套餐权限",
+      vi: "Quyền của gói", ja: "プランの利用範囲", ko: "요금제 이용 범위",
+      ru: "Доступ по плану", es: "Acceso del plan",
+    },
+    upgrade_close: {
+      th: "ปิด", en: "Close", zh: "關閉", cn: "关闭", vi: "Đóng", ja: "閉じる",
+      ko: "닫기", ru: "Закрыть", es: "Cerrar",
+    },
     lock_generic: {
       th: "ต้องอัปเกรด · /pricing",
       en: "Upgrade required · /pricing",
@@ -489,20 +498,71 @@
     return el && el.getAttribute("data-locked") === "1";
   }
 
+  function ensureAccessStyles() {
+    if (document.getElementById("hk-access-styles")) return;
+    var style = document.createElement("style");
+    style.id = "hk-access-styles";
+    style.textContent =
+      ".hk-feature-locked{opacity:.76;filter:saturate(.7)}" +
+      ".hk-access-modal{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(4,6,9,.7);backdrop-filter:blur(5px)}" +
+      ".hk-access-dialog{width:min(100%,420px);border:1px solid var(--gold-line,rgba(200,164,77,.35));border-radius:8px;background:var(--bg-2,#12151b);color:var(--fg,#f3edde);box-shadow:0 24px 70px rgba(0,0,0,.45);padding:22px}" +
+      ".hk-access-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}" +
+      ".hk-access-title{font:700 18px/1.35 'Noto Serif Thai',serif;color:var(--fg,#f3edde)}" +
+      ".hk-access-x{width:34px;height:34px;border:1px solid var(--line,rgba(200,164,77,.16));border-radius:6px;background:transparent;color:var(--fg-soft,#c3b99f);font-size:20px;line-height:1;cursor:pointer}" +
+      ".hk-access-copy{font:400 14px/1.7 'Noto Serif Thai',serif;color:var(--fg-soft,#c3b99f);margin-bottom:18px}" +
+      ".hk-access-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}" +
+      ".hk-access-actions a,.hk-access-actions button{min-height:40px;padding:9px 14px;border-radius:6px;font:700 13px/1.2 'Noto Serif Thai',serif;cursor:pointer}" +
+      ".hk-access-actions button{border:1px solid var(--line,rgba(200,164,77,.16));background:transparent;color:var(--fg-soft,#c3b99f)}" +
+      ".hk-access-actions a{display:inline-flex;align-items:center;border:1px solid var(--gold,#c8a44d);background:var(--gold,#c8a44d);color:var(--bg,#0b0d11);text-decoration:none}";
+    document.head.appendChild(style);
+  }
+
+  function showUpgradeDialog(message) {
+    ensureAccessStyles();
+    var old = document.getElementById("hk-access-modal");
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var modal = document.createElement("div");
+    modal.id = "hk-access-modal";
+    modal.className = "hk-access-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "hk-access-title");
+    modal.innerHTML =
+      '<div class="hk-access-dialog"><div class="hk-access-head"><div class="hk-access-title" id="hk-access-title"></div>' +
+      '<button class="hk-access-x" type="button"></button></div><div class="hk-access-copy"></div>' +
+      '<div class="hk-access-actions"><button type="button" data-hk-access-close></button><a href="/pricing"></a></div></div>';
+    modal.querySelector(".hk-access-title").textContent = t("upgrade_title");
+    modal.querySelector(".hk-access-copy").textContent = message || t("lock_generic");
+    var closeIcon = modal.querySelector(".hk-access-x");
+    closeIcon.textContent = "×";
+    closeIcon.setAttribute("aria-label", t("upgrade_close"));
+    closeIcon.setAttribute("title", t("upgrade_close"));
+    modal.querySelector("[data-hk-access-close]").textContent = t("upgrade_close");
+    modal.querySelector(".hk-access-actions a").textContent = t("cta_pricing").replace(/\s*→\s*$/, "");
+    function close() { if (modal.parentNode) modal.parentNode.removeChild(modal); }
+    closeIcon.addEventListener("click", close);
+    modal.querySelector("[data-hk-access-close]").addEventListener("click", close);
+    modal.addEventListener("click", function (event) { if (event.target === modal) close(); });
+    modal.addEventListener("keydown", function (event) { if (event.key === "Escape") close(); });
+    document.body.appendChild(modal);
+    closeIcon.focus();
+  }
+
   function lockEl(el, title) {
     if (!el) return;
+    ensureAccessStyles();
     var msg = title || t("lock_generic");
     el.classList.add("hk-feature-locked");
-    el.style.opacity = "0.48";
     el.style.pointerEvents = "auto";
     el.setAttribute("title", msg);
     el.setAttribute("data-locked", "1");
     el.setAttribute("data-lock-title", msg);
-    if (el.tagName === "INPUT" || el.tagName === "BUTTON") {
+    if (el.tagName === "INPUT") {
       try {
         el.disabled = true;
       } catch (_) {}
     }
+    if (el.tagName === "BUTTON") el.setAttribute("aria-disabled", "true");
     var cb = el.querySelector && el.querySelector('input[type="checkbox"]');
     if (cb) {
       cb.checked = false;
@@ -516,9 +576,7 @@
           e.preventDefault();
           e.stopPropagation();
           var m = el.getAttribute("data-lock-title") || t("lock_generic");
-          if (window.confirm(m + "\n\n" + t("lock_confirm").split("\n\n").pop())) {
-            location.href = "/pricing";
-          }
+          showUpgradeDialog(m);
         },
         true
       );
@@ -545,7 +603,7 @@
     var style = document.createElement("style");
     style.id = "hk-preview-lock-styles";
     style.textContent =
-      ".hk-lock-preview{position:relative!important;filter:saturate(.35)}" +
+      ".hk-lock-preview{position:relative!important}" +
       ".hk-lock-preview-badge{position:absolute;top:10px;right:10px;z-index:12;display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid rgba(200,164,77,.5);border-radius:7px;background:rgba(12,14,18,.9);color:var(--gold,#c8a44d);font:700 11px/1.2 sans-serif;letter-spacing:0;pointer-events:none}" +
       "tr.hk-lock-preview .hk-lock-preview-badge{position:static;margin-left:6px;padding:3px 6px;font-size:10px}";
     document.head.appendChild(style);
@@ -581,15 +639,23 @@
     var ranks = { summary: 0, guided: 1, full: 2, technical: 3 };
     var currentRank = ranks[chart.detail] == null ? 0 : ranks[chart.detail];
     var required = { guided: planLabel("trial"), full: "Premium", technical: "Master" };
+    var previewSeen = {};
     document.querySelectorAll("[data-chart-tier]").forEach(function (el) {
       var tier = el.getAttribute("data-chart-tier") || "summary";
-      if ((ranks[tier] || 0) > currentRank) lockPreviewEl(el, required[tier] || "Premium");
+      if ((ranks[tier] || 0) > currentRank) {
+        if (el.tagName === "SECTION" && !previewSeen[tier]) {
+          previewSeen[tier] = true;
+          lockPreviewEl(el, required[tier] || "Premium");
+        }
+        else lockElKey(el, "lock_generic");
+      }
     });
 
     var luckVisible = chart.luck_cycles === "current" ? 1 : chart.luck_cycles === "current_next" ? 2 : 8;
     document.querySelectorAll(".hk-luck-row .hk-luck-card").forEach(function (card, index) {
       if (index >= luckVisible) {
-        lockPreviewEl(card, chart.luck_cycles === "current" ? planLabel("trial") : "Premium");
+        if (index === luckVisible) lockPreviewEl(card, chart.luck_cycles === "current" ? planLabel("trial") : "Premium");
+        else lockElKey(card, "lock_generic");
       }
     });
     if (!chart.ai_summary_pdf) lockPreviewEl(document.getElementById("hk-chart-summary-pdf"), planLabel("trial"));
@@ -609,11 +675,15 @@
     };
     var visible = Math.max(1, Number(network.visualization_profiles) || 1);
     document.querySelectorAll("#people-grid .person-card").forEach(function (card, index) {
-      if (index >= visible) lockPreviewEl(card, window.HK_PRODUCT.plan === "trial" ? "Premium" : planLabel("trial"));
+      if (index >= visible) {
+        if (index === visible) lockPreviewEl(card, window.HK_PRODUCT.plan === "trial" ? "Premium" : planLabel("trial"));
+        else lockElKey(card, "lock_generic");
+      }
     });
     if (network.pair_compare === "locked") {
-      document.querySelectorAll("[data-compare]").forEach(function (button) {
-        lockPreviewEl(button, planLabel("trial"));
+      document.querySelectorAll("[data-compare]").forEach(function (button, index) {
+        if (index === 0) lockPreviewEl(button, planLabel("trial"));
+        else lockElKey(button, "lock_generic");
       });
     }
     if (!network.team_analysis) {
@@ -621,20 +691,21 @@
     }
     if (!network.bulk_ai) lockPreviewEl(document.getElementById("hk-add-bulk-btn"), "Master");
     if (network.pair_ai === "locked") {
-      ["cm-sifu-input", "cm-sifu-send", "cm-sifu-topics"].forEach(function (id) {
-        lockPreviewEl(document.getElementById(id), planLabel("trial"));
-      });
+      lockPreviewEl(document.getElementById("cm-sifu-section"), planLabel("trial"));
     }
     if (!network.team_ai) {
-      ["hk-team-ai-btn", "tb-ai-plan-btn", "team-sifu-input", "team-sifu-send"].forEach(function (id) {
-        lockPreviewEl(document.getElementById(id), "Master");
-      });
+      lockPreviewEl(document.getElementById("hk-team-ai-btn"), "Master");
+      lockPreviewEl(document.getElementById("tb-ai-plan-btn"), "Master");
+      lockPreviewEl(document.querySelector("#hk-team-modal .sifu-chat"), "Master");
     }
     var customGroups = Array.prototype.slice.call(document.querySelectorAll(".group-chips button[data-g]")).filter(function (button) {
       return button.getAttribute("data-g") !== "all" && button.getAttribute("data-g") !== "general";
     });
     customGroups.forEach(function (button, index) {
-      if (index >= Number(network.groups || 0)) lockPreviewEl(button, window.HK_PRODUCT.plan === "trial" ? "Premium" : planLabel("trial"));
+      if (index >= Number(network.groups || 0)) {
+        if (index === Number(network.groups || 0)) lockPreviewEl(button, window.HK_PRODUCT.plan === "trial" ? "Premium" : planLabel("trial"));
+        else lockElKey(button, "lock_generic");
+      }
     });
     var createGroup = document.querySelector(".group-chips button:not([data-g])");
     if (createGroup && Number(network.groups || 0) < 1) lockPreviewEl(createGroup, planLabel("trial"));
@@ -666,16 +737,20 @@
     controls.forEach(function (entry) {
       var needed = entry[1];
       if (current >= rank[needed]) return;
-      document.querySelectorAll(entry[0]).forEach(function (button) {
+      document.querySelectorAll(entry[0]).forEach(function (button, index) {
         if (button.classList.contains("active")) {
           try { button.click(); } catch (_) { button.classList.remove("active"); }
         }
-        lockPreviewEl(button, required[needed]);
+        if (index === 0) lockPreviewEl(button, required[needed]);
+        else lockElKey(button, "lock_layer");
       });
     });
     if (!fengshui.multi_profile) {
       document.querySelectorAll("#peopleList .person-row").forEach(function (row, index) {
-        if (index >= 1) lockPreviewEl(row, "Master");
+        if (index >= 1) {
+          if (index === 1) lockPreviewEl(row, "Master");
+          else lockElKey(row, "lock_generic");
+        }
       });
       if (document.querySelectorAll("#peopleList .person-row").length >= 1) {
         lockPreviewEl(document.getElementById("btnAddPerson"), "Master");
@@ -695,15 +770,6 @@
       var mod = FILTER_TO_MODULE[f] || f;
       if (!allow.has(mod)) {
         lockElKey(item, "lock_layer");
-        item.style.position = "relative";
-        if (!item.querySelector(".hk-lock-badge")) {
-          var b = document.createElement("span");
-          b.className = "hk-lock-badge";
-          b.textContent = "🔒";
-          b.style.cssText = "margin-left:6px;font-size:12px";
-          var ttl = item.querySelector(".ttl") || item;
-          ttl.appendChild(b);
-        }
       }
     });
     injectBanner({ trialKey: "datepick_trial", freeKey: "datepick_free" });
@@ -721,11 +787,13 @@
         )
         .forEach(function (el) {
           var key = el.getAttribute("data-lp-tier") === "full" ? "lock_luopan_pro" : "lock_luopan_tier";
-          lockElKey(el, key);
+          if (el.classList.contains("cat-section")) lockPreviewEl(el, el.getAttribute("data-lp-tier") === "full" ? "Master" : "Premium");
+          else lockElKey(el, key);
         });
     } else if (mode === "pro") {
-      document.querySelectorAll("[data-lp-tier='full'],.lp-tier-full").forEach(function (el) {
-        lockElKey(el, "lock_luopan_pro");
+      document.querySelectorAll("[data-lp-tier='full'],.lp-tier-full").forEach(function (el, index) {
+        if (index === 0) lockPreviewEl(el, "Master");
+        else lockElKey(el, "lock_luopan_pro");
       });
     }
     if (pins === "basic") {
@@ -774,22 +842,12 @@
       if (hourEl) lockElKey(hourEl, "lock_qimen_hour");
     }
     if (!searchOk) {
-      ["qm-search-panel", "qm-search-tabs"].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) lockElKey(el, "lock_qimen_search");
-      });
-      document.querySelectorAll("#qm-search-panel button, #qm-search-panel input, #qm-srch-go").forEach(function (el) {
-        lockElKey(el, "lock_qimen_search");
-      });
+      var searchPanel = document.getElementById("qm-search-panel");
+      if (searchPanel) lockPreviewEl(searchPanel, "Premium");
     }
     if (!sifuOk) {
-      ["qm-sifu-panel", "qm-sifu-input", "qm-sifu-send", "qm-sifu-topics"].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) lockElKey(el, "lock_qimen_sifu");
-      });
-      document.querySelectorAll("#qm-sifu-panel button, #qm-sifu-panel input, #qm-sifu-panel textarea").forEach(function (el) {
-        lockElKey(el, "lock_qimen_sifu");
-      });
+      var sifuPanel = document.getElementById("qm-sifu-panel");
+      if (sifuPanel) lockPreviewEl(sifuPanel, "Premium");
     }
     injectBanner({ trialKey: "qimen_trial", freeKey: "qimen_free" });
   }
@@ -817,6 +875,8 @@
       applyNetworkCompareLocks();
     } else if (page === "fengshui") {
       applyFengshuiLocks();
+    } else if (page === "today") {
+      /* Today is the daily-retention surface: current-day content is open in every plan. */
     } else if (page !== "forecast" && page !== "palmistry") {
       /* generic banner if plan limited */
       injectBanner({});

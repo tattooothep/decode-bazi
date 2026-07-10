@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { mkdirSync } from "node:fs";
 import { SignJWT } from "jose";
 import { q } from "../src/lib/db.ts";
 import { chromium } from "/root/.npm/_npx/c61c9351a0dbcfa7/node_modules/playwright/index.mjs";
@@ -9,6 +10,8 @@ if (process.env.HK_ALLOW_FIXTURE_DB !== "1") {
 }
 
 const BASE = process.env.HK_MATRIX_BASE || "http://127.0.0.1:3360";
+const screenshotDir = process.env.HK_MATRIX_SCREENSHOT_DIR || "";
+if (screenshotDir) mkdirSync(screenshotDir, { recursive: true });
 const authSecret = process.env.AUTH_SECRET;
 assert.ok(authSecret && authSecret.length >= 16, "AUTH_SECRET env is required");
 const secret = new TextEncoder().encode(authSecret);
@@ -44,6 +47,7 @@ const paths = {
   luopan: "/luopan",
   palmistry: "/palmistry",
 };
+const visibleBadgeLimits = { today: 0, qimen: 2, datepick: 1, luopan: 3, chart: 5, network: 8, fengshui: 4 };
 for (const page of requestedPages) assert.ok(paths[page], `unknown matrix page ${page}`);
 
 const now = Date.now();
@@ -118,6 +122,7 @@ try {
           plan: window.HK_PRODUCT?.plan || null,
           ready: !!window.HK_PRODUCT?.ready,
           locks: document.querySelectorAll("[data-locked='1']").length,
+          visibleLockBadges: document.querySelectorAll(".hk-lock-preview-badge").length,
           overflow: document.documentElement.scrollWidth - window.innerWidth,
           overflowElements: Array.from(document.querySelectorAll("body *"))
             .map((el) => {
@@ -132,11 +137,30 @@ try {
             .map((el) => ({ tag: el.tagName, cls: String(el.className || ""), clientWidth: el.clientWidth, scrollWidth: el.scrollWidth, overflowX: getComputedStyle(el).overflowX })),
           path: location.pathname,
         }));
-        console.log(JSON.stringify({ plan: fixture.plan, viewport: viewport.name, page: pageName, locks: state.locks, overflow: state.overflow, path: state.path }));
+        console.log(JSON.stringify({ plan: fixture.plan, viewport: viewport.name, page: pageName, locks: state.locks, visibleLockBadges: state.visibleLockBadges, overflow: state.overflow, path: state.path }));
         assert.equal(state.ready, true, `${fixture.plan}/${viewport.name}/${pageName} product ready`);
         assert.equal(state.plan, fixture.plan, `${fixture.plan}/${viewport.name}/${pageName} plan`);
         assert.ok(state.overflow <= 2, `${fixture.plan}/${viewport.name}/${pageName} overflow=${state.overflow}`);
         assert.equal(pageErrors.length, 0, `${fixture.plan}/${viewport.name}/${pageName} page errors: ${pageErrors.join(" | ")}`);
+        if (fixture.plan === "master") {
+          assert.equal(state.visibleLockBadges, 0, `${fixture.plan}/${viewport.name}/${pageName} has no visible locks`);
+        } else if (visibleBadgeLimits[pageName] != null) {
+          assert.ok(state.visibleLockBadges <= visibleBadgeLimits[pageName], `${fixture.plan}/${viewport.name}/${pageName} visible locks are grouped`);
+        }
+        if (fixture.plan === "free" && viewport.name === "desktop") {
+          const firstVisibleLock = page.locator("[data-locked='1']:visible").first();
+          if (await firstVisibleLock.count()) {
+            await firstVisibleLock.click({ force: true });
+            assert.equal(await page.locator("#hk-access-modal").count(), 1, `${pageName} opens shared access dialog`);
+            await page.keyboard.press("Escape");
+          }
+        }
+        if (screenshotDir) {
+          await page.screenshot({
+            path: `${screenshotDir}/${fixture.plan}-${viewport.name}-${pageName}.png`,
+            fullPage: true,
+          });
+        }
         checks += 5;
         await page.close();
       }
