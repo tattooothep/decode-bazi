@@ -5,7 +5,9 @@ import IORedis from "ioredis";
 import pg from "pg";
 
 const { loadEnvConfig } = nextEnv;
-loadEnvConfig(process.cwd(), false, console, true);
+if (!process.env.HOURKEY_INTERNAL_JOB_TOKEN || !process.env.PGUSER) {
+  loadEnvConfig(process.cwd(), false, console);
+}
 
 const queue = process.argv[2] || "hourkey-vision-palm";
 const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6380";

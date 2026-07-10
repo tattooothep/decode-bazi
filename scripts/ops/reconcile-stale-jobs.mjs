@@ -5,7 +5,7 @@ import path from "node:path";
 import pg from "pg";
 
 const { loadEnvConfig } = nextEnv;
-loadEnvConfig(process.cwd(), false, console, true);
+if (!process.env.PGUSER) loadEnvConfig(process.cwd(), false, console);
 const pool = new pg.Pool({
   host: process.env.PGHOST || "127.0.0.1",
   port: Number(process.env.PGPORT || 5433),
