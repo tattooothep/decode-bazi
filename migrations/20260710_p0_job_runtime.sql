@@ -36,12 +36,19 @@ ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS payload jsonb;
 ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS idempotency_key text;
 ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS attempt_count integer NOT NULL DEFAULT 0;
 ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS heartbeat_at timestamptz;
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS billing_status text NOT NULL DEFAULT 'legacy';
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS yam_reserved integer NOT NULL DEFAULT 0;
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS yam_charged integer NOT NULL DEFAULT 0;
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS billed_at timestamptz;
 CREATE UNIQUE INDEX IF NOT EXISTS palm_jobs_user_idempotency_uq
   ON palm_jobs(user_id, idempotency_key)
   WHERE idempotency_key IS NOT NULL;
 CREATE INDEX IF NOT EXISTS palm_jobs_recovery_idx
   ON palm_jobs(status, updated_at)
   WHERE status IN ('queued', 'running');
+CREATE UNIQUE INDEX IF NOT EXISTS hour_transactions_palm_billing_ref_uq
+  ON hour_transactions(ref_payment_id)
+  WHERE ref_payment_id LIKE 'palm_job:%';
 
 ALTER TABLE fusion5_jobs ADD COLUMN IF NOT EXISTS payload jsonb;
 ALTER TABLE fusion5_jobs ADD COLUMN IF NOT EXISTS idempotency_key text;
