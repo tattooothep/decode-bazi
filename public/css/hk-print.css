@@ -3,16 +3,16 @@
  * ⚠️ ห้าม jsPDF/html2pdf (CSP) · ฟอนต์ไทย+จีนพึ่ง browser (Noto Serif Thai/TC)
  */
 :root{
-  --hkp-gold:#c8a44d; --hkp-gold-deep:#8a6d2a; --hkp-ink:#1a1d24; --hkp-soft:#5f5847;
-  --hkp-line:#e5ddc9; --hkp-paper:#fffdf7; --hkp-good:#5a8a48; --hkp-bad:#b03a2e;
+  --hkp-gold:#a47f2d; --hkp-gold-deep:#725516; --hkp-ink:#171b24; --hkp-soft:#4f5664;
+  --hkp-line:#d8d1c1; --hkp-paper:#fffefa; --hkp-good:#1f6b4f; --hkp-bad:#9f3434; --hkp-warn:#9a6418;
 }
 /* box-sizing บังคับทั้งเนื้อ PDF — server (export-pdf.ts) inline แค่ไฟล์นี้ ไม่มี reset ของหน้า → ถ้าไม่ตั้ง .hkp-page width:100%+padding = ล้นขอบขวาโดน clip */
-.hkp-root,.hkp-root *,.hkp-page,.hkp-page *{box-sizing:border-box}
+.hkp-root,.hkp-root *,.hkp-page,.hkp-page *{box-sizing:border-box;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 /* root ที่ inject ตอนสั่งพิมพ์ = ซ่อนบนจอ (กัน flash) โผล่เฉพาะตอน print · mockup ใช้ .hkp-page ตรง ไม่มี .hkp-root จึงไม่โดน */
 .hkp-root{display:none}
 /* กระดาษ A4 (แสดงบนจอ = การ์ด · พิมพ์ = เต็มหน้า) */
 .hkp-page{background:var(--hkp-paper);color:var(--hkp-ink);width:100%;max-width:794px;min-height:500px;
-  margin:0 auto 20px;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:44px 46px;position:relative;
+  margin:0 auto 20px;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:44px 46px 58px;position:relative;
   overflow:hidden;font-family:"Noto Serif Thai","Noto Serif TC",serif}
 .hkp-page.land{max-width:1050px}                 /* A4 แนวนอน (calendar) */
 /* header/footer วิ่งทุกหน้า */
@@ -20,6 +20,8 @@
   padding-bottom:10px;margin-bottom:20px;font-size:11px;color:var(--hkp-soft)}
 .hkp-head .lg{display:flex;align-items:center;gap:7px;font-weight:700;color:var(--hkp-gold-deep)}
 .hkp-head .lg .seal{width:20px;height:20px;border:1px solid var(--hkp-gold-deep);display:grid;place-items:center;font-size:11px}
+.hkp-head-meta{display:flex;align-items:center;gap:10px}
+.hkp-report-id{font:700 8.5px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--hkp-gold-deep);letter-spacing:0}
 .hkp-foot{position:absolute;left:46px;right:46px;bottom:20px;display:flex;justify-content:space-between;
   font-size:10px;color:#a89e86;border-top:1px solid var(--hkp-line);padding-top:8px}
 /* หน้าปก */
@@ -33,8 +35,15 @@
 .hkp-cover .big{font-size:52px;color:var(--hkp-gold-deep);margin:14px 0 4px;font-family:"Noto Serif TC",serif}
 .hkp-cover .badge{display:inline-block;margin-top:14px;font-size:11px;color:var(--hkp-good);
   border:1px solid var(--hkp-good);border-radius:20px;padding:4px 14px}
-.hkp-cover .qr{width:74px;height:74px;margin:22px auto 0;border:1px solid var(--hkp-line);border-radius:8px;
-  display:grid;place-items:center;font-size:9px;color:#a89e86}
+.hkp-cover .qr{width:74px;height:74px;margin:22px auto 0;display:grid;place-items:center}
+.hkp-cover .qr svg{width:74px;height:74px;display:block}
+/* Quick stays quiet; paid AI reports receive a distinct premium cover without ink-heavy backgrounds. */
+.hkp-page.quick-cover .hkp-cover{border-top:1px solid var(--hkp-gold);border-bottom:1px solid var(--hkp-line);padding:42px 24px 48px}
+.hkp-page.premium-cover{box-shadow:inset 0 0 0 2px var(--hkp-gold),inset 0 0 0 8px var(--hkp-paper),inset 0 0 0 9px var(--hkp-line)}
+.hkp-page.premium-cover .hkp-cover{border:1px solid var(--hkp-gold);padding:52px 32px 58px;margin:18px 8px;background:#fffdf7;min-height:205mm;display:flex;flex-direction:column;justify-content:center}
+.hkp-page.premium-cover .seal-lg{background:var(--hkp-ink);color:#d9b65c;border-color:var(--hkp-ink);box-shadow:0 0 0 4px #fffdf7,0 0 0 5px var(--hkp-gold)}
+.hkp-page.premium-cover .kick{color:var(--hkp-gold-deep);font-weight:800}
+.hkp-page.premium-cover .badge{border-color:var(--hkp-gold-deep);color:var(--hkp-gold-deep);background:#fff}
 /* section/ตาราง/การ์ด */
 .hkp-page h2.sec{font-size:17px;color:var(--hkp-gold-deep);border-left:3px solid var(--hkp-gold);padding-left:10px;margin:22px 0 12px}
 .hkp-page table{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0 14px}
@@ -47,7 +56,7 @@
 .hkp-card .conf{float:right;font-size:9px;color:#fff;background:var(--hkp-good);border-radius:10px;padding:1px 8px}
 .hkp-card p{font-size:12px;color:#3a3730;line-height:1.65;margin:3px 0}
 .hkp-card p b{color:var(--hkp-gold-deep)}
-.hkp-verdict{background:linear-gradient(160deg,rgba(200,164,77,.14),transparent);border:1px solid var(--hkp-line);
+.hkp-verdict{background:#f8f3e6;border:1px solid var(--hkp-line);
   border-radius:11px;padding:14px 16px;margin:6px 0 14px}
 .hkp-verdict .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--hkp-gold-deep)}
 .hkp-verdict p{font-size:13.5px;line-height:1.7;margin-top:6px;color:var(--hkp-ink)}
@@ -60,6 +69,27 @@
 .hkp-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
 .hkp-sum .x{border:1px solid var(--hkp-line);border-radius:8px;padding:9px 11px;font-size:11.5px;background:#fefcf5}
 .hkp-sum .x .l{color:var(--hkp-gold-deep);font-weight:700;font-size:10px;display:block;margin-bottom:2px}
+/* PdfDocumentV2 structured blocks */
+.hkp-subsec{font-size:14px;color:var(--hkp-ink);margin:16px 0 7px;break-after:avoid;page-break-after:avoid}
+.hkp-callout{border:1px solid var(--hkp-line);border-left:4px solid var(--hkp-gold);padding:12px 14px;margin:8px 0 14px;background:#faf8f1;break-inside:avoid}
+.hkp-callout .lab{display:block;font-size:9px;font-weight:800;text-transform:uppercase;color:var(--hkp-gold-deep);margin-bottom:4px}
+.hkp-callout p{font-size:13px;line-height:1.65;margin:0;color:var(--hkp-ink)}
+.hkp-callout.good{border-left-color:var(--hkp-good);background:#f1f8f4}.hkp-callout.good .lab{color:var(--hkp-good)}
+.hkp-callout.warning{border-left-color:var(--hkp-warn);background:#fff8eb}.hkp-callout.warning .lab{color:var(--hkp-warn)}
+.hkp-callout.danger{border-left-color:var(--hkp-bad);background:#fff3f1}.hkp-callout.danger .lab{color:var(--hkp-bad)}
+.hkp-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.hkp-facts.cols-1{grid-template-columns:1fr}.hkp-facts.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.hkp-facts .x{border:1px solid var(--hkp-line);padding:9px 11px;background:#fff;break-inside:avoid;min-width:0}
+.hkp-facts .l{display:block;color:var(--hkp-gold-deep);font-size:9.5px;font-weight:800;margin-bottom:3px}
+.hkp-facts .v{display:block;color:var(--hkp-ink);font-size:11.5px;line-height:1.45;overflow-wrap:anywhere}
+.hkp-table-wrap{width:100%;margin:7px 0 15px;overflow:visible}
+.hkp-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;break-inside:auto}
+.hkp-table.compact{font-size:9.8px}.hkp-table thead{display:table-header-group}.hkp-table tfoot{display:table-footer-group}
+.hkp-table tr{break-inside:avoid;page-break-inside:avoid}.hkp-table th,.hkp-table td{overflow-wrap:anywhere;word-break:break-word;vertical-align:top;text-align:left;line-height:1.4}
+.hkp-list{font-size:12px;line-height:1.65;margin:6px 0 13px;padding-left:22px}.hkp-list li{margin:3px 0;break-inside:avoid}
+.hkp-prose p{font-size:12.5px;line-height:1.72;color:#30343c;margin:5px 0;orphans:3;widows:3}
+.hkp-figure{margin:8px auto 15px;text-align:center;break-inside:avoid;page-break-inside:avoid}.hkp-figure svg{max-width:100%;height:auto;display:block;margin:auto}
+.hkp-figure figcaption{font-size:9.5px;color:var(--hkp-soft);margin-top:5px}
 /* timeline */
 .hkp-tl{border-left:2px solid var(--hkp-gold);padding-left:14px;margin:6px 0}
 .hkp-tl .it{margin-bottom:9px;font-size:12px}
@@ -104,7 +134,10 @@
      ผูกกับ body.hkp-active (HKPrint.open เติมให้) เท่านั้น → book/หน้าที่พิมพ์ตัวเองไม่โดน */
   body.hkp-active>*:not(.hkp-root){display:none!important}
   .hkp-root{display:block!important}
-  .hkp-page{box-shadow:none;margin:0;border-radius:0;max-width:100%;min-height:auto;page-break-after:always;overflow:visible}
+  .hkp-page{box-shadow:none;margin:0;border-radius:0;max-width:100%;min-height:270mm;page-break-after:always;overflow:visible}
   .hkp-page:last-child{page-break-after:auto}
-  .hkp-card,.hkp-page table{break-inside:avoid}
+  .hkp-card{break-inside:avoid}
+  .hkp-page table{break-inside:auto}
+  .hkp-page thead{display:table-header-group}
+  .hkp-page tr{break-inside:avoid;page-break-inside:avoid}
 }

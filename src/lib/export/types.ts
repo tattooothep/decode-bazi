@@ -7,6 +7,7 @@
  * ⚠️ ปกบังคับทุกหน้า (cover ต้องมีเสมอ) · ห้าม AI มั่ว: engine/ข้อมูลจริงคำนวณเสร็จก่อน AI แค่สรุปภาษา
  */
 import type { Session } from "@/lib/auth";
+import type { PdfDocumentV2 } from "@/lib/pdf-document-v2";
 
 export type ExportFig = { svg: string; cap: string };
 export type ExportCover = Record<string, unknown>;
@@ -15,6 +16,8 @@ export type GenerateResult = {
   markdown: string;
   cover: ExportCover;
   figs: ExportFig[];
+  /** Structured v2 document. The renderer prefers this over free-form markdown. */
+  document?: PdfDocumentV2;
 };
 
 export type ResolveOk<Ctx> = { dataHash: string; ctx: Ctx };

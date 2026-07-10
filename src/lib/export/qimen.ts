@@ -12,6 +12,7 @@ import { createHash } from "crypto";
 import { langName } from "@/lib/palm/prompt";
 import { LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang";
 import { authCookie, callSifu } from "./shared";
+import { assertAiSectionCount, assertEvidenceBoundMeasurements, makeAiDocument } from "./pdf-v2";
 import type { PageHandler, ResolveOk, ResolveErr, GenerateResult } from "./types";
 
 export type QimenCtx = { qimen: Record<string, unknown>; cookie: string };
@@ -141,7 +142,38 @@ function factBlockFromQimen(qimen: Record<string, unknown>): string {
   for (const p of palaces) L.push(palaceLine(p));
   const forms = formationLines(qimen);
   if (forms.length) { L.push(`━━━ รูปแบบพิเศษ 格局 ━━━`); L.push(...forms); }
+  const timing = asArray(qimen.yingqi_evidence).concat(asArray(chart.yingqi_evidence));
+  if (timing.length) {
+    L.push(`━━━ หลักฐานจังหวะเกิดผล 應期 (ใช้ได้เฉพาะรายการนี้) ━━━`);
+    L.push(...timing.map(textOf).filter(Boolean));
+  } else {
+    L.push(`━━━ หลักฐานจังหวะเกิดผล 應期 ━━━`);
+    L.push(`ไม่มีหลักฐาน應期ที่ engine ส่งมา — ห้ามระบุวัน/เวลาเกิดผล ให้บอกว่ายังระบุไม่ได้`);
+  }
   return L.join("\n");
+}
+
+function qimenGridSvg(qimen: Record<string, unknown>): string {
+  const palaces = asArray(qimen.palaces);
+  const byId = new Map(palaces.map((p) => [Number(p.palace_id), p]));
+  const order = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+  const xml = (value: unknown) => str(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c] || c));
+  const cells = order.map((id, index) => {
+    const p = byId.get(id) || {};
+    const x = (index % 3) * 190 + 15;
+    const y = Math.floor(index / 3) * 155 + 15;
+    const score = Number(p.display_score ?? p.score);
+    const scoreText = Number.isFinite(score) ? ` · ${score}` : "";
+    const dir = DIR_TH[str(p.direction)] || str(p.direction) || "中";
+    const line1 = `${id}宮 · ${dir}${scoreText}`;
+    const line2 = [str(p.door_zh), str(p.star_zh), str(p.deity_zh)].filter(Boolean).join(" · ") || "—";
+    const line3 = [str(p.heaven_stem_zh), str(p.earth_stem_zh)].filter(Boolean).join(" / ") || "—";
+    return `<g><rect x="${x}" y="${y}" width="180" height="145" rx="4" fill="#fffefa" stroke="#a47f2d"/>` +
+      `<text x="${x + 10}" y="${y + 25}" font-size="14" font-weight="700" fill="#725516">${xml(line1)}</text>` +
+      `<text x="${x + 10}" y="${y + 65}" font-size="18" fill="#171b24">${xml(line2)}</text>` +
+      `<text x="${x + 10}" y="${y + 102}" font-size="15" fill="#4f5664">${xml(line3)}</text></g>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 485" role="img" aria-label="Qi Men nine palaces"><rect width="600" height="485" fill="#fff"/>${cells}</svg>`;
 }
 
 function buildQimenSummaryPrompt(qimen: Record<string, unknown>, lang: string): string {
@@ -156,17 +188,28 @@ function buildQimenSummaryPrompt(qimen: Record<string, unknown>, lang: string): 
     factBlock,
     `━━━━━━━━━━━━━━━━━━━━━`,
     ``,
-    `เขียนรายงานเป็น Markdown ด้วยหัวข้อระดับ 2 (ขึ้นต้น "## ") ตามนี้ครบ เรียงลำดับ ห้ามข้าม ห้ามเพิ่มหัวข้ออื่นนอกเหนือนี้:`,
-    `## ภาพรวมผัง — สรุป局/遁干/ห้วง元 + ภาพรวมวัง 9 วังว่าผังนี้เด่นเรื่องอะไร อ่อนเรื่องอะไร`,
-    `## 用神·格局 — อธิบายวังที่เป็น用神ตามจุดโฟกัส(ถ้ามี) + 格局/รูปแบบพิเศษที่พบ ว่าหนุนหรือฉุดเรื่องที่ถามอย่างไร`,
-    `## ทิศ·จังหวะ(應期) — ฟันธงทิศที่ควรใช้/เลี่ยง และจังหวะเวลาที่น่าจะเห็นผล (應期) จากวังเด่น/รูปแบบพิเศษที่พบ`,
-    `## คำแนะนำ — ข้อแนะนำที่ทำได้จริง 3–5 ข้อ (ทิศ/จังหวะ/สิ่งที่ควรทำหรือเลี่ยง) ตามผังนี้`,
+    `เขียนรายงานเป็น Markdown ด้วยหัวข้อระดับ 2 (ขึ้นต้น "## ") ตามนี้ครบ เรียงลำดับ ห้ามข้าม ห้ามเพิ่มหัวข้ออื่น:`,
+    `## คำตอบตรงต่อคำถาม`,
+    `ตอบสิ่งที่ packet รองรับก่อน หาก packet ไม่มีเจตนา/คำถามเฉพาะ ให้บอกว่าเป็นการอ่านภาพรวมและยังไม่ฟันธงเรื่องเฉพาะ`,
+    `## โครงสร้างผังและจุดชี้ขาด`,
+    `สรุป局/遁干/ห้วง元/值符值使และองค์ประกอบที่ตัดสินผัง โดยยึดข้อมูลจริง`,
+    `## ผู้ถาม–คู่กรณี–เรื่องที่ถาม · 主客用神`,
+    `อธิบายเฉพาะ selector/วังเป้าหมายที่ packet ให้มา หากไม่มี主客ให้ระบุว่าข้อมูลไม่พอ ห้ามตั้งตัวแทนเอง`,
+    `## ทิศและวิธีลงมือ`,
+    `เลือกทิศจากวังที่ engine ส่งมา อธิบายวิธีใช้และเงื่อนไข ห้ามสร้างทิศใหม่`,
+    `## จังหวะเวลาและเงื่อนไขการเกิดผล`,
+    `ใช้เฉพาะหลักฐาน應期ที่ packet ระบุ หาก packet บอกว่าไม่มี ต้องเขียนว่ายังระบุวัน/เวลาเกิดผลไม่ได้ ห้ามอนุมานวันเอง`,
+    `## สิ่งที่ควรหลีกเลี่ยง`,
+    `สรุปวัง/สัญญาณ/格局ที่ควรระวังจาก packet เท่านั้น`,
+    `## หลักฐานและข้อจำกัด`,
+    `สรุปหลักฐานชี้ขาดและข้อมูลที่ยังขาด เพื่อให้ผู้ใช้นำไปใช้โดยไม่เกินขอบเขต`,
     ``,
     `กติกาการเขียน (เคร่งครัด):`,
     `- โทนซินแสที่กล้า "ฟันธง" ชัดเจน ไม่กั๊ก ไม่พูดลอย แต่สุภาพ ให้กำลังใจ (ยึดข้อมูลผังจริงเป็นหลัก)`,
     `- ⛔ ห้ามพูด 6 เรื่องต้องห้ามเด็ดขาด: วันตาย/อายุขัย · โรคร้ายแรงเจาะจง · การแท้ง–มี/ไม่มีบุตร · การหย่าร้างฟันธง · ภัยพิบัติ/อุบัติเหตุถึงชีวิต (ให้พูดเชิงดูแล/ป้องกันแทน)`,
     `- ⛔ NO_PERCENT: ห้ามใส่ตัวเลขเปอร์เซ็นต์ คะแนน หรือสถิติใด ๆ ในคำอ่าน (ใช้คำเชิงคุณภาพแทน) ยกเว้นคะแนนวัง/用神ที่ให้ไว้แล้วในข้อมูลเท่านั้น`,
-    `- ใช้ bullet (- ) และ **ตัวหนา** ได้ ให้อ่านง่าย · แต่ละหัวข้อ 2–5 ย่อหน้าสั้น`,
+    `- ใช้ย่อหน้าสั้นและ bullet (- ) ได้ ห้ามสร้างตาราง เพราะผังและตารางข้อเท็จจริงวาดโดยระบบ`,
+    `- ห้ามใส่วัน เวลา คะแนน ทิศ ประตู ดาว เทพ ก้าน 格局 หรือ應期ที่ไม่มีใน packet`,
     `- ศัพท์วิชาจีนคงตัวจีนในวงเล็บครั้งแรก (奇門/用神/格局/應期 ฯลฯ) แล้วอธิบายด้วยภาษาเป้าหมาย`,
     `- เริ่มที่เนื้อหาเลย ห้ามเกริ่นว่ากำลังอ่านไฟล์/ข้อมูล/prompt`,
     langDir ? `\n${langDir}` : `\n⚠️ ภาษา: เขียนทั้งฉบับเป็น ${target}`,
@@ -180,7 +223,7 @@ export const qimenHandler: PageHandler<QimenCtx> = {
     if (!qimen) return { error: "invalid_inputs", status: 400 };
 
     // dataHash ผูกกับเนื้อผังเท่านั้น (route.ts คำนวณ cache key ร่วมกับคอลัมน์ page/lang อยู่แล้ว)
-    const dataHash = createHash("sha256").update(JSON.stringify(qimen)).digest("hex");
+    const dataHash = createHash("sha256").update(JSON.stringify({ pdfVersion: "hourkey.pdf.v2", qimen })).digest("hex");
     const cookie = await authCookie(session);
     return { dataHash, ctx: { qimen, cookie } };
   },
@@ -189,6 +232,9 @@ export const qimenHandler: PageHandler<QimenCtx> = {
     const prompt = buildQimenSummaryPrompt(ctx.qimen, lang);
     const ai = await callSifu(ctx.cookie, prompt);
     if (!ai.ok || !ai.reply) throw new Error(ai.error || "ai_failed");
+    const evidence = { version: "qimen_evidence_v2", qimen: ctx.qimen };
+    assertAiSectionCount(ai.reply, 7);
+    assertEvidenceBoundMeasurements(ai.reply, evidence);
     const ci = coverI18n(lang);
     const chart = asRecord(ctx.qimen.chart) || {};
     const pole = str(chart.dun_type).toLowerCase() === "yin" ? "陰" : "陽";
@@ -200,8 +246,50 @@ export const qimenHandler: PageHandler<QimenCtx> = {
       metaHtml: juZh,
       big: "奇",
       badge: ci.badge,
-      qrLabel: "hourkey.io",
+      qr: false,
     };
-    return { markdown: ai.reply, cover, figs: [] };
+    const palaces = asArray(ctx.qimen.palaces).sort((a, b) => Number(a.palace_id) - Number(b.palace_id));
+    const palaceRows = palaces.map((p) => ({
+      palace: `${str(p.palace_id)}宮`,
+      direction: DIR_TH[str(p.direction)] || str(p.direction) || "中",
+      door: str(p.door_zh) || "—",
+      star: str(p.star_zh) || "—",
+      deity: str(p.deity_zh) || "—",
+      stems: [str(p.heaven_stem_zh), str(p.earth_stem_zh)].filter(Boolean).join("/") || "—",
+    }));
+    const document = makeAiDocument({
+      prefix: "HKQM",
+      evidence,
+      lang,
+      title: ci.title,
+      headerTitle: ci.kick,
+      verificationLabel: "Qi Men engine evidence · AI interpretation",
+      cover: {
+        kick: ci.kick,
+        title: ci.title,
+        who: "",
+        meta: [juZh, str(chart.system_type)].filter(Boolean),
+        glyph: "奇",
+        badge: ci.badge,
+      },
+      markdown: ai.reply,
+      deterministicFirstPage: [
+        { type: "figure", svg: qimenGridSvg(ctx.qimen), caption: "九宮 · deterministic engine chart" },
+        {
+          type: "table",
+          compact: true,
+          columns: [
+            { key: "palace", label: "宮", width: "9%" },
+            { key: "direction", label: "Direction", width: "22%" },
+            { key: "door", label: "門", width: "14%" },
+            { key: "star", label: "星", width: "14%" },
+            { key: "deity", label: "神", width: "18%" },
+            { key: "stems", label: "天/地干", width: "23%" },
+          ],
+          rows: palaceRows,
+        },
+      ],
+    });
+    return { markdown: ai.reply, cover, figs: [], document };
   },
 };

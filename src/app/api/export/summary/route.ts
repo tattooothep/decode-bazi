@@ -22,6 +22,7 @@ import { fusionHandler } from "@/lib/export/fusion";
 import { qimenHandler } from "@/lib/export/qimen";
 import { datepickHandler } from "@/lib/export/datepick";
 import { calendarHandler } from "@/lib/export/calendar";
+import { luopanHandler } from "@/lib/export/luopan";
 import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
 
 export const runtime = "nodejs";
@@ -41,6 +42,7 @@ const HANDLERS: Record<string, PageHandler<any>> = {
   qimen: qimenHandler,
   datepick: datepickHandler,
   calendar: calendarHandler,
+  luopan: luopanHandler,
 };
 
 /* ── worker (detached · ไม่ throw ออกนอก · UPDATE row เสมอ) ── */
@@ -48,14 +50,15 @@ async function processExport(jobId: string, userId: string, page: string, lang: 
   try {
     const handler = HANDLERS[page];
     if (!handler) throw new Error("handler_missing");
-    const { markdown, cover, figs } = await handler.generate(ctx, lang);
+    const { markdown, cover, figs, document } = await handler.generate(ctx, lang);
     const result = {
-      version: "export_summary_v1",
+      version: document ? "export_summary_v2" : "export_summary_v1",
       page,
       lang,
       markdown,
       cover,
       figs,
+      ...(document ? { document } : {}),
       meta: { yam: { charged: EXPORT_YAM, refunded: 0 }, ms: Date.now() - started },
     };
     await q(`UPDATE export_jobs SET status='done', result=$2, updated_at=now() WHERE id=$1`, [jobId, JSON.stringify(result)]);

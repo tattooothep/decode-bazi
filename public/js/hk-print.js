@@ -12,16 +12,22 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   // header/footer วิ่งทุกหน้า (โลโก้ 時 + ชื่อ + เลขหน้า)
-  function head(title) {
-    return '<div class="hkp-head"><span class="lg"><span class="seal">' + SEAL + '</span>hourkey · ' + esc(title) + '</span><span>' + esc(HKPrint._dateStr()) + '</span></div>';
+  function head(title, reportId) {
+    return '<div class="hkp-head"><span class="lg"><span class="seal">' + SEAL + '</span>hourkey · ' + esc(title) + '</span><span class="hkp-head-meta">' +
+      (reportId ? '<span class="hkp-report-id">' + esc(reportId) + '</span>' : '') + esc(HKPrint._dateStr()) + '</span></div>';
   }
-  function foot(pageNo, total) {
-    return '<div class="hkp-foot"><span>hourkey.io · TST verified</span><span>หน้า ' + pageNo + ' / ' + total + '</span></div>';
+  function foot(pageNo, total, opts) {
+    opts = opts || {};
+    var left = 'hourkey.io';
+    if (opts.verificationLabel) left += ' · ' + esc(opts.verificationLabel);
+    if (opts.reportId) left += ' · ' + esc(opts.reportId);
+    return '<div class="hkp-foot"><span>' + left + '</span><span>หน้า ' + pageNo + ' / ' + total + '</span></div>';
   }
 
   // หน้าปกมาตรฐาน (ตรา 時 + ชื่อรายงาน + เจ้าของดวง + meta + QR)
   function coverHtml(c) {
-    var qr = c.qr !== false ? '<div class="qr">QR<br>' + esc(c.qrLabel || "hourkey.io") + "</div>" : "";
+    // Never draw a fake QR placeholder. A QR is rendered only when a real SVG/HTML payload is supplied.
+    var qr = c.qr === true && c.qrHtml ? '<div class="qr">' + c.qrHtml + "</div>" : "";
     var big = c.big ? '<div class="big">' + esc(c.big) + "</div>" : "";
     var badge = c.badge ? '<div class="badge">' + esc(c.badge) + "</div>" : "";
     return '<div class="hkp-cover"><div class="seal-lg">' + SEAL + "</div>" +
@@ -37,6 +43,14 @@
   var HKPrint = {
     _now: null,
     _dateStr: function () { try { return "ออกเอกสาร " + (this._now || new Date()).toLocaleDateString("th-TH"); } catch (e) { return "hourkey"; } },
+    reportId: function (prefix) {
+      var p = String(prefix || 'HK').replace(/[^A-Za-z0-9]/g, '').slice(0, 8).toUpperCase() || 'HK';
+      var d = new Date(), ymd = d.getFullYear().toString() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+      var rnd = '';
+      try { rnd = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase(); }
+      catch (e) { rnd = Math.random().toString(36).slice(2, 10).toUpperCase(); }
+      return p + '-' + ymd + '-' + rnd;
+    },
 
     /* opts: { docTitle, headTitle, cover, pages:[{sections:[html]}], land:bool } */
     open: function (opts) {
@@ -45,16 +59,19 @@
       var pn = 0;
       var html = "";
       var cls = "hkp-page" + (opts.land ? " land" : "");
+      var reportId = opts.reportId || '';
       // ปก = หน้าแรก
       if (opts.cover) {
         pn++;
-        html += '<div class="' + cls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน") + coverHtml(opts.cover) + foot(pn, total) + "</div>";
+        var coverCls = cls + (opts.coverClass ? ' ' + String(opts.coverClass).replace(/[^a-z0-9_-]/gi, '') : '');
+        html += '<div class="' + coverCls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน", reportId) + coverHtml(opts.cover) + foot(pn, total, opts) + "</div>";
       }
       // เนื้อหาแต่ละหน้า
       (opts.pages || []).forEach(function (p) {
         pn++;
-        html += '<div class="' + cls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน") +
-          (p.sections || []).join("\n") + foot(pn, total) + "</div>";
+        var pageCls = cls + (p.landscape ? " land" : "");
+        html += '<div class="' + pageCls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน", reportId) +
+          (p.sections || []).join("\n") + foot(pn, total, opts) + "</div>";
       });
 
       // ตั้งชื่อไฟล์ PDF = docTitle · สร้าง root print-only · พิมพ์ · ลบ
@@ -80,6 +97,70 @@
         (title ? "<h3>" + esc(title) + "</h3>" : "") + (bodyHtml || "") + "</div>";
     },
     verdict: function (lab, text) { return '<div class="hkp-verdict"><span class="lab">' + esc(lab) + "</span><p>" + esc(text) + "</p></div>"; },
+
+    /* Structured report renderer shared by deterministic quick PDFs and AI reports. */
+    openDocument: function (doc) {
+      if (!doc || doc.version !== 'hourkey.pdf.v2' || !doc.report || !doc.cover || !Array.isArray(doc.pages)) {
+        throw new Error('invalid_pdf_document_v2');
+      }
+      function block(b) {
+        if (!b || !b.type) return '';
+        if (b.type === 'heading') {
+          return b.level === 3 ? '<h3 class="hkp-subsec">' + esc(b.text) + '</h3>' : HKPrint.section(b.text, '');
+        }
+        if (b.type === 'callout') {
+          return '<div class="hkp-callout ' + esc(b.tone || 'neutral') + '">' +
+            (b.label ? '<span class="lab">' + esc(b.label) + '</span>' : '') + '<p>' + esc(b.text) + '</p></div>';
+        }
+        if (b.type === 'facts') {
+          var cols = Math.max(1, Math.min(3, Number(b.columns) || 2));
+          return '<div class="hkp-facts cols-' + cols + '">' + (b.items || []).map(function (x) {
+            return '<div class="x"><span class="l">' + esc(x.label) + '</span><span class="v">' + esc(x.value) + '</span></div>';
+          }).join('') + '</div>';
+        }
+        if (b.type === 'table') {
+          var cols2 = (b.columns || []).slice(0, 6);
+          var cg = cols2.some(function (c) { return c.width; }) ? '<colgroup>' + cols2.map(function (c) { return '<col' + (c.width ? ' style="width:' + esc(c.width) + '"' : '') + '>'; }).join('') + '</colgroup>' : '';
+          return '<div class="hkp-table-wrap"><table class="hkp-table' + (b.compact ? ' compact' : '') + '">' + cg + '<thead><tr>' +
+            cols2.map(function (c) { return '<th>' + esc(c.label) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+            (b.rows || []).map(function (r) { return '<tr>' + cols2.map(function (c) { return '<td>' + esc(r[c.key] == null ? '' : r[c.key]) + '</td>'; }).join('') + '</tr>'; }).join('') +
+            '</tbody></table></div>';
+        }
+        if (b.type === 'list') {
+          var tag = b.ordered ? 'ol' : 'ul';
+          return '<' + tag + ' class="hkp-list">' + (b.items || []).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</' + tag + '>';
+        }
+        if (b.type === 'prose') {
+          return '<div class="hkp-prose">' + (b.paragraphs || []).map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') + '</div>';
+        }
+        if (b.type === 'figure') {
+          return '<figure class="hkp-figure">' + String(b.svg || '') + (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
+        }
+        return '';
+      }
+      var issued = doc.report.issuedAt ? new Date(doc.report.issuedAt) : new Date();
+      if (!isNaN(issued.getTime())) HKPrint._now = issued;
+      var cover = {
+        kick: doc.cover.kick || '', title: doc.cover.title || doc.report.title,
+        who: doc.cover.who || '', metaHtml: (doc.cover.meta || []).map(esc).join('<br>'),
+        big: doc.cover.glyph || '', badge: doc.cover.badge || '', qr: false
+      };
+      var pages = doc.pages.map(function (p) {
+        var sections = [];
+        if (p.title) sections.push(HKPrint.section(p.title, ''));
+        (p.blocks || []).forEach(function (b) { var h = block(b); if (h) sections.push(h); });
+        return { sections: sections, landscape: !!p.landscape };
+      });
+      HKPrint.open({
+        docTitle: doc.report.title,
+        headTitle: doc.report.headerTitle || doc.report.title,
+        reportId: doc.report.id,
+        verificationLabel: doc.report.verificationLabel || '',
+        coverClass: doc.report.kind === 'ai' ? 'premium-cover' : 'quick-cover',
+        cover: cover,
+        pages: pages
+      });
+    },
 
     /* markdown ปลอดภัย → html (escape ก่อนแปลง · หัวข้อ/ตาราง/ตัวหนา/ลิสต์/เส้นคั่น) · ยกจาก book.html mdSafe */
     mdSafe: function (md) {

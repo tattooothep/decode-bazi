@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
 <!-- 📄 8 ก.ค. 2569 · เทมเพลต PDF ร่วม (client window.print · additive · ไม่กระทบ engine หน้า) -->
-<link rel="stylesheet" href="/css/hk-print.css?v=4"/>
+<link rel="stylesheet" href="/css/hk-print.css?v=5"/>
 <style>
 :root{
   --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
@@ -1015,9 +1015,9 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
       <!-- 📄 8 ก.ค. 2569 · ดาวน์โหลดรายงานฤกษ์เป็น PDF (โผล่หลังค้นหา · additive) -->
       <div class="dp-pdf-bar noprint" id="dp-pdf-bar">
-        <button class="dp-pdf-btn" id="dp-pdf-btn" type="button" data-i18n="dp.pdf.btn" onclick="dpExportPdf()">⬇ ดาวน์โหลด PDF</button>
+        <button class="dp-pdf-btn" id="dp-pdf-btn" type="button" data-i18n="dp.pdf.btn" onclick="dpExportPdfV2()">⬇ รายงานด่วน</button>
         <!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI (async job 20 ยาม · เพิ่มข้าง dp-pdf-btn เดิม · ไม่แตะปุ่มเดิม) -->
-        <button class="dp-pdf-btn" id="dp-ai-pdf-btn" type="button" onclick="if(window.hkExportSummaryPdfDatepick)window.hkExportSummaryPdfDatepick()">📄 สร้างสรุป PDF (20 ยาม)</button>
+        <button class="dp-pdf-btn" id="dp-ai-pdf-btn" type="button" onclick="if(window.hkExportSummaryPdfDatepick)window.hkExportSummaryPdfDatepick()">📄 รายงาน AI · 20 ยาม</button>
       </div>
 
     </section>
@@ -4003,7 +4003,41 @@ function formatThaiDate(d){
 function dpSetPdfBtnLabel(){
   const b = document.getElementById('dp-pdf-btn'); if (!b) return;
   const L = getCurrentLang();
-  b.textContent = L === 'zh' ? '⬇ 下載 PDF' : L === 'th' ? '⬇ ดาวน์โหลด PDF' : '⬇ Download PDF';
+  b.textContent = L === 'zh' ? '⬇ 快速報告' : L === 'cn' ? '⬇ 快速报告' : L === 'th' ? '⬇ รายงานด่วน' : '⬇ Quick report';
+}
+
+function dpExportPdfV2(){
+  const data=window._dpLastSearch,L=getCurrentLang();
+  if(!window.HKPrint||!HKPrint.openDocument||!data||!Array.isArray(data.top)||!data.top.length){alert(L==='th'?'ยังไม่มีผลฤกษ์ กรุณาค้นหาก่อน':'No date-picking result is available.');return;}
+  const tx={
+    th:{title:'รายงานวางฤกษ์',kick:'รายงานด่วนจาก Engine · 擇日',snapshot:'ภาพรวมการค้นหา',ranking:'อันดับฤกษ์จาก Engine',details:'หลักฐานของฤกษ์เด่น',veto:'วันที่ถูกตัดและคำเตือน',method:'วิธีคำนวณและขอบเขต'},
+    en:{title:'Date-picking report',kick:'Quick Engine Report · 擇日',snapshot:'Search snapshot',ranking:'Engine-ranked timings',details:'Evidence for leading timings',veto:'Vetoes and warnings',method:'Method and scope'},
+    zh:{title:'擇日報告',kick:'引擎快速報告 · 擇日',snapshot:'搜尋概覽',ranking:'引擎擇日排名',details:'首選吉時依據',veto:'實裁與警示',method:'算法與範圍'},
+    cn:{title:'择日报告',kick:'引擎快速报告 · 择日',snapshot:'搜索概览',ranking:'引擎择日排名',details:'首选吉时依据',veto:'实裁与警示',method:'算法与范围'},
+    vi:{title:'Báo cáo chọn ngày',kick:'Báo cáo nhanh từ hệ thống · 擇日',snapshot:'Tổng quan tìm kiếm',ranking:'Xếp hạng từ hệ thống',details:'Căn cứ cho giờ tốt',veto:'Loại trừ và cảnh báo',method:'Phương pháp và phạm vi'},
+    ja:{title:'択日レポート',kick:'エンジン・クイックレポート · 擇日',snapshot:'検索概要',ranking:'エンジン順位',details:'上位候補の根拠',veto:'除外と注意',method:'計算方法と範囲'},
+    ko:{title:'택일 리포트',kick:'엔진 빠른 리포트 · 擇日',snapshot:'검색 개요',ranking:'엔진 순위',details:'상위 시간 근거',veto:'제외와 주의',method:'계산 방법과 범위'},
+    ru:{title:'Отчёт по выбору даты',kick:'Быстрый отчёт движка · 擇日',snapshot:'Обзор поиска',ranking:'Рейтинг движка',details:'Основания лучших вариантов',veto:'Отсев и предупреждения',method:'Метод и границы'},
+    es:{title:'Informe de selección de fecha',kick:'Informe rápido del motor · 擇日',snapshot:'Resumen de búsqueda',ranking:'Clasificación del motor',details:'Evidencia de los mejores horarios',veto:'Descartes y avisos',method:'Método y alcance'}
+  }[L]||null;
+  const T2=tx||{title:'Date-picking report',kick:'Quick Engine Report · 擇日',snapshot:'Search snapshot',ranking:'Engine-ranked timings',details:'Evidence for leading timings',veto:'Vetoes and warnings',method:'Method and scope'};
+  const esc=HKPrint.esc,top=data.top.slice(0,8),am=(typeof currentActivityMeta==='function'?currentActivityMeta():{name:'',han:''});
+  const activity=[am.name,am.han].filter(Boolean).join(' · ')||'擇日';
+  const win=data.search_window?.label||window._dpLastPageContext?.search_window?.label||'';
+  let place='';try{place=(typeof dpReadEventLocation==='function'&&dpReadEventLocation()?.place)||'';}catch(_){}
+  const people=(state.people||[]).filter(p=>p.enabled).map(p=>p.name||p.label).filter(Boolean);
+  const rows=top.map((s,i)=>({rank:String(i+1),datetime:`${s.date||''} ${s.time||''}`.trim(),score:String(s.score??'—'),verdict:(Number(s.score)>=55?'Recommended':Number(s.score)>=50?'Usable':'Caution'),evidence:(s.science_reasons||s.matches||[]).slice(0,3).map(x=>typeof x==='string'?x:(x.text||x.thai||x.label||'')).filter(Boolean).join(' · ')||'—'}));
+  const bh=top.length*34+28;
+  const bars=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 ${bh}" role="img" aria-label="Date ranking">${top.map((s,i)=>{const n=Math.max(0,Math.min(100,Number(s.score)||0)),y=12+i*34,w=n*3.2,col=n>=70?'#1f6b4f':n>=50?'#a47f2d':'#9f3434';return `<text x="0" y="${y+15}" font-size="12" fill="#171b24">${i+1}. ${esc(`${s.date||''} ${s.time||''}`)}</text><rect x="210" y="${y}" width="320" height="18" fill="#ece8df"/><rect x="210" y="${y}" width="${w}" height="18" fill="${col}"/><text x="540" y="${y+14}" text-anchor="end" font-size="11" fill="#171b24">${n}</text>`;}).join('')}</svg>`;
+  const detailBlocks=top.slice(0,3).flatMap((s,i)=>[{type:'heading',text:`#${i+1} · ${s.date||''} ${s.time||''}`,level:3},{type:'list',ordered:false,items:(s.science_reasons||s.matches||[]).slice(0,8).map(x=>typeof x==='string'?x:(x.text||x.thai||x.label||'')).filter(Boolean).length?(s.science_reasons||s.matches||[]).slice(0,8).map(x=>typeof x==='string'?x:(x.text||x.thai||x.label||'')).filter(Boolean):['No additional evidence was returned.']}]);
+  const cut=(data.cutSlots||[]).slice(0,20).map(s=>`${s.date||''} ${s.time||''} · ${(s.vetoes||[]).map(v=>typeof v==='string'?v:(v.reasonTh||v.reason||v.code||'')).filter(Boolean).join(' · ')||'Canon veto'}`);
+  const doc={version:'hourkey.pdf.v2',report:{id:HKPrint.reportId('HKDP'),kind:'quick',lang:L,title:T2.title,headerTitle:T2.kick,issuedAt:new Date().toISOString(),verificationLabel:'Deterministic date-picking engine'},cover:{kick:T2.kick,title:T2.title,who:activity,meta:[win,place,people.join(', ')].filter(Boolean),glyph:'擇',badge:'Quick Engine Report · no AI · no credit charge'},pages:[
+    {title:T2.snapshot,landscape:false,blocks:[{type:'facts',columns:2,items:[{label:'Activity',value:activity},{label:'Search window',value:win||'—'},{label:'Venue',value:place||'—'},{label:'People',value:people.join(', ')||'—'},{label:'Scanned slots',value:String(data.total_scanned??'—')},{label:'Candidate pool',value:String(data.candidate_pool??'—')}]},{type:'figure',svg:bars,caption:T2.ranking}]},
+    {title:T2.ranking,landscape:false,blocks:[{type:'table',compact:true,columns:[{key:'rank',label:'#',width:'7%'},{key:'datetime',label:'Date / time',width:'20%'},{key:'score',label:'Score',width:'10%'},{key:'verdict',label:'Verdict',width:'17%'},{key:'evidence',label:'Engine evidence',width:'46%'}],rows}]},
+    {title:T2.details,landscape:false,blocks:detailBlocks},
+    {title:T2.veto,landscape:false,blocks:[{type:'list',ordered:false,items:cut.length?cut:['No canon veto was returned in this search.']},{type:'heading',text:T2.method,level:3},{type:'callout',label:'Rule',text:'Almanac and Dong Gong vetoes are hard exclusions. Personal chart interactions are warnings unless the engine explicitly marks a hard veto.',tone:'neutral'},{type:'callout',label:'Boundary',text:'This report reproduces the saved engine ranking. It does not recalculate, rerank or add dates.',tone:'warning'}]}
+  ]};
+  HKPrint.openDocument(doc);
 }
 
 function dpExportPdf(){
@@ -4303,6 +4337,7 @@ console.log('🐉 Date Picking · 擇吉 · loaded');
 
   /* fallback (เก็บไว้เผื่อ server เจน PDF ไม่ได้): เด้ง print dialog แบบเดิม */
   function renderPrint(result) {
+    if (result && result.document && window.HKPrint && window.HKPrint.openDocument) { window.HKPrint.openDocument(result.document); return; }
     if (!window.HKPrint || !window.HKPrint.summaryFromMarkdown) { try { alert("Print module not loaded"); } catch (e) {} return; }
     window.HKPrint.summaryFromMarkdown(result.markdown || "", {
       cover: result.cover,                 // ปกบังคับ (มาจาก worker เสมอ)
@@ -4806,7 +4841,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 </script>
 <script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 <!-- 📄 8 ก.ค. 2569 · ตัวช่วยสร้าง PDF ร่วม (window.HKPrint · additive) -->
-<script src="/js/hk-print.js?v=4" defer></script>
+<script src="/js/hk-print.js?v=5" defer></script>
 <script src="/js/hk-product-caps.js?v=3" defer></script>
 </body>
 </html>

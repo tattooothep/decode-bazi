@@ -8,6 +8,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title data-i18n="doc.title">hourkey · หล่อแก 22 วง · 羅盤</title>
+<link rel="stylesheet" href="/css/hk-print.css?v=5"/>
 <style>
   :root{
     --bg:#0d0f12; --panel:#15181d; --line:rgba(200,164,77,.22);
@@ -503,6 +504,11 @@
       <div class="row" id="aiChatRow" style="gap:6px;align-items:center;margin-top:8px">
         <input id="aiChatInput" type="text" maxlength="300" placeholder="ถามซินแสต่อ · เช่น วางเตียงตรงไหนดี?" data-i18n-ph="ph.aiChat" autocomplete="off" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--gold-line,var(--line));border-radius:6px;padding:7px 9px;font-family:var(--thai);font-size:13px;"/>
         <button class="btn" id="btnAiChat" data-i18n="ai.ask">ถาม</button>
+      </div>
+      <div class="row noprint" id="luopanPdfActions" style="gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+        <button class="btn" id="luopanQuickPdfBtn" type="button">⬇ รายงานด่วน</button>
+        <button class="btn" id="luopanAiPdfBtn" type="button" style="border-color:var(--gold);color:var(--gold-bright)">📄 รายงาน AI · 20 ยาม</button>
+        <span id="luopanPdfStatus" style="font-size:11px;color:var(--fg-soft)"></span>
       </div>
     </div>
 
@@ -4955,6 +4961,122 @@ async function buildHousePacket(){
   if(occ) lines.push(`ผู้อยู่: ${occ}`);
   return lines.join('\n');
 }
+
+/* ── PDF V2 · packet เดียวกันสำหรับรายงานด่วนและ AI 20 ยาม ── */
+const LUOPAN_PDF_I18N = {
+  th:{quick:'รายงานด่วน',ai:'รายงาน AI · 20 ยาม',quickTitle:'รายงานหล่อแก',quickKick:'รายงานข้อมูลจาก Engine · 羅盤',building:'กำลังสร้างรายงาน…',noData:'ไม่สามารถอ่านข้อมูลหล่อแกได้',confirm:'สร้างรายงาน AI โดยใช้ 20 ยาม?',insufficient:'ยามไม่พอสำหรับรายงาน AI',failed:'สร้างรายงานไม่สำเร็จ',download:'กำลังจัดไฟล์ PDF…'},
+  en:{quick:'Quick report',ai:'AI report · 20 units',quickTitle:'Luopan report',quickKick:'Quick Engine Report · 羅盤',building:'Building report…',noData:'Luopan evidence is unavailable',confirm:'Create the AI report for 20 units?',insufficient:'Not enough units for the AI report',failed:'Could not create the report',download:'Preparing PDF…'},
+  zh:{quick:'快速報告',ai:'AI 報告 · 20 時',quickTitle:'羅盤報告',quickKick:'引擎快速報告 · 羅盤',building:'正在建立報告…',noData:'無法取得羅盤資料',confirm:'使用 20 時建立 AI 報告？',insufficient:'時數不足',failed:'報告建立失敗',download:'正在整理 PDF…'},
+  cn:{quick:'快速报告',ai:'AI 报告 · 20 时',quickTitle:'罗盘报告',quickKick:'引擎快速报告 · 罗盘',building:'正在建立报告…',noData:'无法取得罗盘资料',confirm:'使用 20 时建立 AI 报告？',insufficient:'时数不足',failed:'报告建立失败',download:'正在整理 PDF…'},
+  vi:{quick:'Báo cáo nhanh',ai:'Báo cáo AI · 20 đơn vị',quickTitle:'Báo cáo La Bàn',quickKick:'Báo cáo nhanh từ hệ thống · 羅盤',building:'Đang tạo báo cáo…',noData:'Không có dữ liệu La Bàn',confirm:'Tạo báo cáo AI với 20 đơn vị?',insufficient:'Không đủ đơn vị',failed:'Không thể tạo báo cáo',download:'Đang chuẩn bị PDF…'},
+  ja:{quick:'クイックレポート',ai:'AIレポート · 20時',quickTitle:'羅盤レポート',quickKick:'エンジン・クイックレポート · 羅盤',building:'レポート作成中…',noData:'羅盤データを取得できません',confirm:'20時でAIレポートを作成しますか？',insufficient:'時が不足しています',failed:'レポート作成に失敗しました',download:'PDF準備中…'},
+  ko:{quick:'빠른 리포트',ai:'AI 리포트 · 20단위',quickTitle:'나경 리포트',quickKick:'엔진 빠른 리포트 · 羅盤',building:'리포트 생성 중…',noData:'나경 데이터를 불러올 수 없습니다',confirm:'20단위로 AI 리포트를 만들까요?',insufficient:'단위가 부족합니다',failed:'리포트를 만들지 못했습니다',download:'PDF 준비 중…'},
+  ru:{quick:'Быстрый отчёт',ai:'AI-отчёт · 20 единиц',quickTitle:'Отчёт Лопань',quickKick:'Быстрый отчёт движка · 羅盤',building:'Создание отчёта…',noData:'Нет данных Лопань',confirm:'Создать AI-отчёт за 20 единиц?',insufficient:'Недостаточно единиц',failed:'Не удалось создать отчёт',download:'Подготовка PDF…'},
+  es:{quick:'Informe rápido',ai:'Informe IA · 20 unidades',quickTitle:'Informe Luopan',quickKick:'Informe rápido del motor · 羅盤',building:'Creando informe…',noData:'No hay datos Luopan',confirm:'¿Crear el informe IA por 20 unidades?',insufficient:'No hay suficientes unidades',failed:'No se pudo crear el informe',download:'Preparando PDF…'}
+};
+function luopanPdfLang(){ try{return lpSifuLang()||'th';}catch(_){return 'th';} }
+function luopanPdfWords(){ const l=luopanPdfLang(); return LUOPAN_PDF_I18N[l]||LUOPAN_PDF_I18N.en; }
+function setLuopanPdfLabels(){
+  const w=luopanPdfWords(), q=document.getElementById('luopanQuickPdfBtn'), a=document.getElementById('luopanAiPdfBtn');
+  if(q) q.textContent='⬇ '+w.quick;
+  if(a) a.textContent='📄 '+w.ai;
+}
+function luopanPdfStatus(text){ const el=document.getElementById('luopanPdfStatus'); if(el) el.textContent=text||''; }
+function luopanTopDirectionRows(items,status){
+  return (Array.isArray(items)?items:[]).slice(0,5).map(x=>({status,degree:`${x.degree}°`,mountain:x.m24||x.mountain||'—',score:String(x.score??'—')}));
+}
+async function buildLuopanEvidenceV2(){
+  const profileId=getSelectedProfileId()||null;
+  const body={
+    facing_deg:houseLocked?Number(lockedFacing||180):Number($hFacing.value||180),
+    year:houseLocked?Number(lockedYear||2026):Number($hYear.value||2026),
+    timing:currentTimingKey||'era', profile_id:profileId,
+    pins:(pins||[]).map(p=>({type:p.type||'pin',degree:pinRingDeg(p)})),
+  };
+  const response=await fetch('/api/luopan/degrees',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!response.ok) throw new Error('engine_'+response.status);
+  const engine=await response.json();
+  if(!engine?.ok) throw new Error(engine?.error||'engine_failed');
+  const facing=((Number(body.facing_deg)%360)+360)%360, sitting=(facing+180)%360;
+  const fm=degToMountain(facing), sm=degToMountain(sitting);
+  const deg=getCursorRelativeDeg(), focus=engine?.degrees?.find?.(x=>Number(x.degree)===Math.round(deg)%360)||null;
+  const owner=(profiles.find(p=>p.id===profileId)||{}).name||'';
+  const water=(pins||[]).filter(p=>['water','incoming_water','outgoing_water','water_mouth','drain'].includes(pinFeatureCategory(p)));
+  const cats=new Set(water.map(pinFeatureCategory));
+  const normalizeTop=(x)=>({degree:Number(x.degree),mountain:x.m24||x.mountain||'',score:Number(x.score)});
+  const profileElements=engine?.summary?.profile_elements||null;
+  const packet={
+    version:'luopan_evidence_v2',
+    house:{name:($hName.value||T('house.myHouse')||'').trim(),facingDegree:Number(facing.toFixed(1)),facingMountain:`${fm.c} ${fm.m}`,sittingDegree:Number(sitting.toFixed(1)),sittingMountain:`${sm.c} ${sm.m}`,year:Number(body.year),period:yearToPeriod(Number(body.year)).n,ownerName:owner,timing:body.timing,qimenSchool:window.QM_SCHOOL||'chaibu'},
+    focus:{degree:Number(deg.toFixed(1)),mountain:`${focus?.m24||fm.c} ${focus?.mountain||fm.m}`.trim(),direction:focus?.direction||focus?.dir8||'',score:focus?.scoring?.final_score??null,evidence:Array.isArray(focus?.scoring?.evidence)?focus.scoring.evidence.slice(0,20):[]},
+    summary:{schemaVersion:engine?.summary?.schema_version||'',topGood:(engine?.summary?.top_good_degrees||[]).slice(0,5).map(normalizeTop),topBad:(engine?.summary?.top_bad_degrees||[]).slice(-5).map(normalizeTop),profileElements:profileElements?`用=${(profileElements.yong||[]).join('/')} · 喜=${(profileElements.xi||[]).join('/')} · 忌=${(profileElements.ji||[]).join('/')}`:''},
+    pins:(pins||[]).map(p=>{const pd=Number(pinRingDeg(p));const row=engine?.degrees?.find?.(x=>Number(x.degree)===Math.round(pd)%360);const mt=degToMountain(pd);return{type:p.type||'pin',degree:Number(pd.toFixed(1)),mountain:`${mt.c} ${mt.m}`,score:row?.scoring?.final_score??null,evidence:(row?.scoring?.evidence||[]).slice(0,8)};}),
+    completeness:{houseLocked:!!houseLocked,hasPlan:!!planImg,hasProfile:!!owner,pinCount:(pins||[]).length,waterPinCount:water.length,waterComplete:cats.has('incoming_water')&&cats.has('outgoing_water')&&cats.has('water_mouth')},
+    sciences:buildLuopanFullSciencesPacket(engine),
+  };
+  return packet;
+}
+function luopanPdfFigureSvg(){
+  const source=document.getElementById('lp');
+  if(!source) return '';
+  const clone=source.cloneNode(true); clone.removeAttribute('id'); clone.setAttribute('width','560'); clone.setAttribute('height','560');
+  try{
+    const plan=document.getElementById('plan');
+    if(planImg&&plan){
+      const image=document.createElementNS('http://www.w3.org/2000/svg','image');
+      image.setAttribute('x','0');image.setAttribute('y','0');image.setAttribute('width','760');image.setAttribute('height','760');image.setAttribute('opacity','0.72');
+      image.setAttributeNS('http://www.w3.org/1999/xlink','href',plan.toDataURL('image/jpeg',0.78));
+      clone.insertBefore(image,clone.firstChild);
+    }
+  }catch(_){}
+  return clone.outerHTML;
+}
+function luopanQuickDocument(packet){
+  const w=luopanPdfWords(), l=luopanPdfLang(), h=packet.house, c=packet.completeness;
+  const topRows=[...luopanTopDirectionRows(packet.summary.topGood,'Recommended'),...luopanTopDirectionRows(packet.summary.topBad,'Caution')];
+  const pinRows=(packet.pins||[]).map(p=>({type:p.type,degree:`${p.degree}°`,mountain:p.mountain,score:String(p.score??'—'),evidence:(p.evidence||[]).slice(0,2).join(' · ')||'—'}));
+  const missing=[];
+  if(!c.houseLocked) missing.push('House facing is not locked; directional conclusions remain provisional.');
+  if(!c.hasPlan) missing.push('No floor plan is attached; room placement cannot be confirmed.');
+  if(!c.hasProfile) missing.push('No owner profile is selected; personal Yongshen/Xishen fit is unavailable.');
+  if(!c.waterComplete) missing.push('Incoming water, outgoing water, and water mouth are incomplete; Water Method verdict is withheld.');
+  const statusLines=String(packet.sciences||'').split('\n').filter(x=>/status=(needs|loading|not-selected|no-pin)/.test(x)).slice(0,16);
+  return {version:'hourkey.pdf.v2',report:{id:HKPrint.reportId('HKLP'),kind:'quick',lang:l,title:w.quickTitle,headerTitle:w.quickKick,issuedAt:new Date().toISOString(),verificationLabel:'Deterministic Luopan engine'},cover:{kick:w.quickKick,title:w.quickTitle,who:h.name||'',meta:[`${h.facingDegree}° ${h.facingMountain}`,`Period ${h.period}`,h.ownerName||''].filter(Boolean),glyph:'羅',badge:'Quick Engine Report · no AI · no credit charge'},pages:[
+    {title:'House snapshot · 宅盤',landscape:false,blocks:[{type:'figure',svg:luopanPdfFigureSvg(),caption:'Luopan, floor plan and pins at export time'},{type:'facts',columns:2,items:[{label:'House',value:h.name||'—'},{label:'Facing / sitting',value:`${h.facingDegree}° ${h.facingMountain} / ${h.sittingDegree}° ${h.sittingMountain}`},{label:'Built / period',value:`${h.year} / ${h.period}`},{label:'Owner',value:h.ownerName||'—'},{label:'Timing layer',value:h.timing},{label:'Qi Men school',value:h.qimenSchool}]}]},
+    {title:'Engine-ranked directions',landscape:false,blocks:[{type:'table',compact:false,columns:[{key:'status',label:'Status',width:'24%'},{key:'degree',label:'Degree',width:'18%'},{key:'mountain',label:'24山',width:'34%'},{key:'score',label:'Score',width:'24%'}],rows:topRows},{type:'callout',label:'Current cursor',text:`${packet.focus.degree}° · ${packet.focus.mountain} · score ${packet.focus.score??'—'}`,tone:'neutral'}]},
+    {title:'Pinned features',landscape:false,blocks:pinRows.length?[{type:'table',compact:true,columns:[{key:'type',label:'Feature',width:'15%'},{key:'degree',label:'Degree',width:'14%'},{key:'mountain',label:'24山',width:'18%'},{key:'score',label:'Score',width:'12%'},{key:'evidence',label:'Engine evidence',width:'41%'}],rows:pinRows}]:[{type:'callout',label:'Missing input',text:'No door, bed, stove, desk or water pin was available at export time.',tone:'warning'}]},
+    {title:'Completeness and method',landscape:false,blocks:[{type:'facts',columns:2,items:[{label:'House locked',value:String(c.houseLocked)},{label:'Floor plan',value:String(c.hasPlan)},{label:'Owner profile',value:String(c.hasProfile)},{label:'Pins',value:String(c.pinCount)},{label:'Water pins',value:String(c.waterPinCount)},{label:'Water data complete',value:String(c.waterComplete)}]},{type:'heading',text:'Missing inputs and boundaries',level:3},{type:'list',ordered:false,items:missing.length?missing:['No blocking input gap was detected for the exported scope.']},{type:'heading',text:'Engine coverage notes',level:3},{type:'list',ordered:false,items:statusLines.length?statusLines:['All selected layers returned a ready state.']}]}
+  ]};
+}
+async function exportLuopanQuickPdf(){
+  const w=luopanPdfWords(); luopanPdfStatus(w.building);
+  try{const packet=await buildLuopanEvidenceV2();HKPrint.openDocument(luopanQuickDocument(packet));luopanPdfStatus('');}
+  catch(e){console.warn('[luopan pdf quick]',e);luopanPdfStatus(w.noData);}
+}
+function downloadLuopanAiPdf(jobId){
+  const w=luopanPdfWords();luopanPdfStatus(w.download);
+  return fetch('/api/export/summary?id='+encodeURIComponent(jobId)+'&format=pdf',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('pdf_'+r.status);return r.blob();}).then(blob=>{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hourkey-luopan-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);luopanPdfStatus('');});
+}
+function pollLuopanAiJob(jobId){
+  let n=0;const w=luopanPdfWords();
+  const tick=()=>fetch('/api/export/summary?id='+encodeURIComponent(jobId),{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(j=>{if(j.status==='done')return downloadLuopanAiPdf(jobId);if(j.status==='error')throw new Error(j.error||'job_error');if(++n>200)throw new Error('timeout');luopanPdfStatus(w.building+' '+Math.min(90,15+n*3)+'%');setTimeout(tick,3000);}).catch(e=>{console.warn('[luopan pdf ai]',e);luopanPdfStatus(w.failed);});tick();
+}
+async function exportLuopanAiPdf(){
+  const w=luopanPdfWords();luopanPdfStatus(w.building);
+  try{
+    const meRes=await fetch('/api/account/me',{credentials:'same-origin',cache:'no-store'});if(meRes.status===401){location.href='/signup';return;}const me=await meRes.json();
+    if(Number(me.hour_balance||0)<20){luopanPdfStatus(w.insufficient);return;}
+    if(!confirm(w.confirm+'\n'+String(me.hour_balance||0)+' → '+String(Number(me.hour_balance||0)-20))) {luopanPdfStatus('');return;}
+    const packet=await buildLuopanEvidenceV2();
+    const r=await fetch('/api/export/summary',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({page:'luopan',lang:luopanPdfLang(),inputs:{luopan:packet}})});
+    const j=await r.json().catch(()=>({}));if(r.status===402){luopanPdfStatus(w.insufficient);return;}if(!r.ok||!j.job_id)throw new Error(j.error||'start_failed');
+    try{localStorage.setItem('hk_export_summary_job_luopan',JSON.stringify({job_id:j.job_id,ts:Date.now()}));}catch(_){}
+    pollLuopanAiJob(j.job_id);
+  }catch(e){console.warn('[luopan pdf ai]',e);luopanPdfStatus(w.failed);}
+}
+document.getElementById('luopanQuickPdfBtn')?.addEventListener('click',exportLuopanQuickPdf);
+document.getElementById('luopanAiPdfBtn')?.addEventListener('click',exportLuopanAiPdf);
+setLuopanPdfLabels();
 async function fetchEngineAdvice(){
   const engineBrief = await buildHousePacket();
   // master pipeline: ใช้ /api/sifu ตอบภาษาคน โดยแนบ profileId + context จาก full Luopan packet + engine360
@@ -5288,6 +5410,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-print.js?v=5"></script>
 <script src="/js/hk-product-caps.js?v=3" defer></script>
 </body>
 </html>
