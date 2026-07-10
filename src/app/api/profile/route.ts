@@ -12,6 +12,26 @@ import { upsertSelfProfile } from "@/lib/self-profile";
 export async function GET() {
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  // heartbeat "ออนไลน์ตอนนี้" ของหลังบ้าน: ทุกหน้า login โหลด /api/profile (hk-profile-sync)
+  // อัปเดต last_active_at แบบ throttle 5 นาที (statement เดียว · fire-and-forget · ไม่บล็อก response)
+  q1(
+    `UPDATE users SET last_active_at=now()
+      WHERE id=$1 AND (last_active_at IS NULL OR last_active_at < now() - interval '5 minutes')`,
+    [s.userId]
+  ).catch(() => null);
+  const owner = await q1<{ id: string; name: string | null; email: string }>(
+    `SELECT id, name, email FROM users WHERE id=$1 AND deleted_at IS NULL`,
+    [s.userId]
+  );
+  if (!s.orgId) {
+    return NextResponse.json({
+      profiles: [],
+      active_profile: null,
+      owner,
+      profile_setup_required: true,
+      error: "account_org_missing",
+    });
+  }
   const rows = await q(
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
@@ -29,7 +49,12 @@ export async function GET() {
   );
   // active_profile = ดวงของเจ้าของบัญชีเท่านั้น (is_self) · ไม่มี=null · ⛔ ห้าม fallback rows[0] (= หยิบดวงคนอื่นใน org มาโชว์ผิดคน · rule #6/#27)
   const activeProfile = rows.find((p: any) => p.is_self) || null;
-  return NextResponse.json({ profiles: rows, active_profile: activeProfile });
+  return NextResponse.json({
+    profiles: rows,
+    active_profile: activeProfile,
+    owner,
+    profile_setup_required: !activeProfile,
+  });
 }
 
 export async function POST(req: Request) {
