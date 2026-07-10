@@ -449,10 +449,69 @@
     }).catch(function () {});
   });
 
+  /* ---------- admin entry chip · r497 ----------
+   * ปัญหา: PWA (standalone) ไม่มีแถบ URL → แอดมินเข้า /admin ไม่ได้เลย
+   * ทางแก้: เฉพาะโหมดแอป + เป็นแอดมินจริง (เช็คกับ /api/admin/whoami ฝั่ง server)
+   * → โชว์ปุ่มเล็ก "หลังบ้าน" มุมล่างซ้าย · คนทั่วไปไม่เห็น (endpoint ตอบ 401/403)
+   * cache ผลใน sessionStorage — ไม่ยิงซ้ำทุกหน้า · พังเงียบทุกทาง */
+
+  var ADMIN_CHIP_KEY = 'hk_admin_chip';       /* '1' = แอดมิน · '0' = ไม่ใช่ (ต่อ session) */
+  var ADMIN_CHIP_HIDE = 'hk_admin_chip_hide'; /* '1' = ผู้ใช้กด ✕ ซ่อนไว้ (ต่อ session) */
+
+  function ssGet(k) { try { return sessionStorage.getItem(k); } catch (_) { return null; } }
+  function ssSet(k, v) { try { sessionStorage.setItem(k, v); } catch (_) {} }
+
+  var showAdminChip = safe(function () {
+    if (document.getElementById('hk-admin-chip')) return;
+    if (ssGet(ADMIN_CHIP_HIDE) === '1') return;
+    var pal = themePalette();
+    var chip = document.createElement('div');
+    chip.id = 'hk-admin-chip';
+    chip.style.cssText =
+      'position:fixed;left:12px;bottom:12px;z-index:2147482000;display:flex;align-items:center;gap:8px;' +
+      'background:' + pal.bg + ';color:' + pal.gold + ';border:1px solid ' + pal.line + ';' +
+      'border-radius:999px;padding:7px 12px;font-family:Georgia,\'Times New Roman\',serif;' +
+      'font-size:13px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer;';
+    chip.addEventListener('click', safe(function () { location.href = '/admin?src=pwa-chip'; }));
+    var label = document.createElement('span');
+    label.textContent = 'หลังบ้าน';
+    chip.appendChild(label);
+    var x = document.createElement('span');
+    x.textContent = '✕';
+    x.style.cssText = 'opacity:.55;font-weight:400;padding:0 2px;';
+    x.addEventListener('click', safe(function (e) {
+      e.stopPropagation();
+      ssSet(ADMIN_CHIP_HIDE, '1');
+      if (chip.parentNode) chip.parentNode.removeChild(chip);
+    }));
+    chip.appendChild(x);
+    var mount = function () { if (document.body) document.body.appendChild(chip); };
+    if (document.body) mount();
+    else document.addEventListener('DOMContentLoaded', safe(mount));
+  });
+
+  var wireAdminEntry = safe(function () {
+    if (!isStandalone()) return;                                  /* เฉพาะโหมดแอป — ใน browser มีแถบ URL อยู่แล้ว */
+    var path = location.pathname || '';
+    if (path === '/admin' || path.indexOf('/admin/') === 0) return; /* อยู่หลังบ้านแล้ว ไม่ต้องโชว์ */
+    var cached = ssGet(ADMIN_CHIP_KEY);
+    if (cached === '0') return;
+    if (cached === '1') { showAdminChip(); return; }
+    fetch('/api/admin/whoami', { credentials: 'include', cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(safe(function (d) {
+        var ok = !!(d && d.ok);
+        ssSet(ADMIN_CHIP_KEY, ok ? '1' : '0');
+        if (ok) showAdminChip();
+      }))
+      .catch(function () {});
+  });
+
   /* ---------- main ---------- */
 
   var main = safe(function () {
     lockStandaloneViewport(); /* r384: ล็อกจอโหมดแอป — ต้องรันก่อน SW check (เครื่องไม่มี SW ก็ยังล็อกจอ) */
+    wireAdminEntry();         /* r497: ทางเข้าหลังบ้านในโหมดแอป (เช็คสิทธิ์ฝั่ง server · ไม่ผูกกับ pwa-flag) */
     if (!('serviceWorker' in navigator)) return;
     /* r380b: ลิงก์ลับ canary — ?pwa=1 เปิด opt-in / ?pwa=0 ปิด (สำหรับมือถือที่เปิด console ไม่ได้) */
     try {

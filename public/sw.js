@@ -11,7 +11,7 @@
  *   6. อื่น ๆ                     → ไม่แตะ
  */
 
-const HK_SW_VERSION = 'r384f';
+const HK_SW_VERSION = 'r497';
 const CACHE_NAME = 'hk-pwa-' + HK_SW_VERSION;
 
 const PRECACHE_URLS = [
@@ -99,6 +99,10 @@ self.addEventListener('fetch', (event) => {
 
   /* ด่าน 3: /api/* ไม่แตะเด็ดขาด — return ทันที ก่อนเข้า logic ใด ๆ */
   if (url.pathname.startsWith('/api/')) return;
+
+  /* ด่าน 3b (r497): /admin ทั้งหมด = network-only เสมอ — SW ไม่แตะ ไม่ cache
+   * ไม่เสิร์ฟ offline.html ทับหน้าหลังบ้าน (กันเห็นข้อมูล admin ค้างจาก cache) */
+  if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) return;
 
   /* ด่าน 4: navigation (HTML) = network-ONLY + offline fallback */
   if (req.mode === 'navigate') {
