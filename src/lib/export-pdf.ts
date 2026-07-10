@@ -240,7 +240,7 @@ function buildDocHtml(result: ExportResult, lang: string): string {
       '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:">' +
       '<meta name="viewport" content="width=device-width, initial-scale=1">' +
       "<title>" + esc(legacy.report.title) + "</title>" +
-      "<style>" + css + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
+      "<style>" + css + "\n" + (legacy.extraCss || "") + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
       '</head><body class="hkp-active"><div class="hkp-root">' + pages + "</div></body></html>";
   }
   const structured = result.document ? parsePdfDocumentV2(result.document) : null;

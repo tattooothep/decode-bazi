@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@400;500;600;700&display=optional" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/hk-print.css?v=4"/>
+<link rel="stylesheet" href="/css/hk-print.css?v=6"/>
 <style>
   /* fonts · matches /article/geometry */
   :root{
@@ -215,6 +215,7 @@
     </div>
   </div>
 
+<script src="/js/hk-print.js?v=6"></script>
 <script>
 (function(){
   "use strict";
@@ -770,11 +771,19 @@
     loadOverlayForLang(lang, function(){ load(); });
   });
   document.getElementById("printBtn").addEventListener("click", function(){
-    // ตั้งชื่อไฟล์ PDF ให้สวย (browser ใช้ document.title เป็นชื่อไฟล์ตอน Save as PDF)
-    var prev = document.title;
-    if(bookName){ document.title = t("brand") + "-" + bookName; }
-    window.print();
-    setTimeout(function(){ document.title = prev; }, 800);
+    if(!window.HKPrint){ alert(t("jobError")); return; }
+    var nodes = root.querySelectorAll(":scope > .cover, :scope > .toc, :scope > .chapter");
+    if(!bookName || !nodes.length){ alert(t("noId")); return; }
+    var css = "";
+    try { css = document.querySelector("head > style").textContent || ""; } catch(e) {}
+    window.HKPrint.open({
+      docTitle: t("brand") + "-" + bookName,
+      headTitle: t("brand") + " · " + bookName,
+      reportId: window.HKPrint.reportId("HKBOOK"),
+      lang: lang,
+      extraCss: css,
+      pages: Array.prototype.map.call(nodes, function(node){ return { sections:[node.outerHTML], landscape:false }; })
+    });
   });
 
   applyTheme();

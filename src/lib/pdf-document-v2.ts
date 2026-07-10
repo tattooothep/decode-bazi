@@ -80,6 +80,7 @@ export const legacyPdfDocumentSchema = z.object({
     headerTitle: z.string().max(300).optional(),
     verificationLabel: z.string().max(180).optional(),
   }),
+  extraCss: z.string().max(120_000).optional(),
   cover: z.object({
     kick: z.string().max(300).optional(),
     title: z.string().min(1).max(300),
@@ -131,6 +132,20 @@ function assertPassiveMarkup(value: string): void {
   }
 }
 
+function assertPassiveCss(value: string): void {
+  if (/@import|javascript\s*:|expression\s*\(|behavior\s*:|-moz-binding/i.test(value)) {
+    throw new Error("pdf_unsafe_css");
+  }
+  const urls = value.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/gi);
+  for (const match of urls) {
+    const ref = match[1] ?? match[2] ?? match[3] ?? "";
+    if (!/^#[A-Za-z_][\w:.-]*$/.test(ref)
+      && !/^data:image\/(?:png|jpe?g|webp);base64,[a-z0-9+/=\s]+$/i.test(ref)) {
+      throw new Error("pdf_external_css_url");
+    }
+  }
+}
+
 /** Client-built quick reports may contain inline SVG diagrams. Keep Chromium
  * rendering data-only: no active markup and no external file/network loads. */
 export function assertPdfDocumentServerSafe(doc: PdfDocumentV2): void {
@@ -147,6 +162,7 @@ export function assertPdfDocumentServerSafe(doc: PdfDocumentV2): void {
 }
 
 export function assertLegacyPdfDocumentServerSafe(doc: LegacyPdfDocument): void {
+  if (doc.extraCss) assertPassiveCss(doc.extraCss);
   if (doc.cover?.metaHtml) assertPassiveMarkup(doc.cover.metaHtml);
   for (const page of doc.pages) {
     for (const section of page.sections) assertPassiveMarkup(section);

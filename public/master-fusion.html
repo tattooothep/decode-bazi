@@ -3172,16 +3172,10 @@
     }
     function hkOpenDetails(html){ return String(html == null ? '' : html).replace(/<details/g, '<details open'); } // ตาราง res/sniper อยู่ใน <details> พับ — กางให้เห็นครบตอนพิมพ์
     function hkPrintOpen(opts){
-      document.body.classList.add('hkp-printing');
-      window.addEventListener('afterprint', function h(){ document.body.classList.remove('hkp-printing'); window.removeEventListener('afterprint', h); });
-      HKPrint.open(opts);
+      return HKPrint.open(opts);
     }
-    function printPdfFallback(title, md){ // เผื่อ hk-print.js โหลดไม่ทัน — ยังได้ไฟล์ (ไม่ค้าง)
-      var w = window.open('', '_blank');
-      if (!w) { setStatus(t('jobError'), 'err'); return; }
-      w.document.write('<!doctype html><title>' + esc(title) + '</title><style>body{font-family:"Noto Serif Thai","Noto Serif TC",serif;line-height:1.65;padding:28px;max-width:900px;margin:auto}pre{white-space:pre-wrap}</style><h1>' + esc(title) + '</h1><pre>' + esc(md) + '</pre>');
-      w.document.close(); w.focus();
-      setTimeout(function(){ w.print(); }, 250);
+    function printPdfFallback(){
+      setStatus(t('jobError'), 'err');
     }
     // ⬇ ดาวน์โหลด PDF ของคำพยากรณ์ปัจจุบัน (judge + 6 แผงศาสตร์ + Resonance + Day Sniper + ศาสตร์ที่ข้าม)
     function exportFusionPdf(){

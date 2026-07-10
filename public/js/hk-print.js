@@ -96,6 +96,7 @@
           headerTitle: String(opts.headTitle || opts.docTitle || 'HourKey report'),
           verificationLabel: String(opts.verificationLabel || '')
         },
+        extraCss: String(opts.extraCss || ''),
         cover: cover,
         pages: (opts.pages || []).map(function (page) {
           return { sections: (page.sections || []).map(String), landscape: !!(opts.land || page.landscape) };

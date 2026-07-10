@@ -79,6 +79,15 @@ ok("Legacy quick reports use the same direct-download boundary", () => {
   assert.throws(() => assertLegacyPdfDocumentServerSafe(unsafe));
   unsafe.pages[0].sections[0] = "<img src=file:///etc/passwd>";
   assert.throws(() => assertLegacyPdfDocumentServerSafe(unsafe));
+  unsafe.pages[0].sections[0] = "<h2>Safe</h2>";
+  unsafe.extraCss = "body{background:url(file:///etc/passwd)}";
+  assert.throws(() => assertLegacyPdfDocumentServerSafe(unsafe));
+});
+ok("Book of Destiny saves through the direct PDF renderer", () => {
+  const book = read("public/book.html");
+  assert.match(book, /HKPrint\.open\(\{/);
+  assert.match(book, /hk-print\.js\?v=6/);
+  assert.doesNotMatch(book, /window\.print\(\)/);
 });
 ok("Direct PDF renderer rejects active or external SVG content", () => {
   const safe = parsePdfDocumentV2(fixture);
