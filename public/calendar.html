@@ -177,7 +177,9 @@
   .day-cell.selected{background:var(--gold-soft);box-shadow:inset 0 0 0 1px var(--gold);}
   /* 10 ก.ค. · โหมดอ่านง่าย (ปฏิทินภาษาคน) · ชั้นครอบใหม่ ไม่แตะ CSS เดิม · ถอด = ลบ block นี้ */
   .control-bar{grid-template-columns:auto 1fr auto auto;} /* เพิ่มช่องที่ 4 รองรับ #view-toggle · มือถือยัง 1fr เดิม */
-  .day-cell.ez{aspect-ratio:auto;min-height:112px;padding:8px;gap:3px;}
+  .day-cell.ez{aspect-ratio:auto;height:128px;min-height:0;padding:8px;gap:3px;overflow:hidden;} /* สูงเท่ากันเป๊ะทุกช่อง ตามกติกาเหล็ก */
+  .ez-text{flex:none;}
+  .ez-dir{margin-top:auto;}
   .ez-top{display:flex;align-items:center;gap:6px;}
   .ez-num{font-weight:700;font-size:14px;}
   .ez-power{color:var(--gold);font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -193,7 +195,15 @@
   .ez-goal{font-size:9px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .ez-dir{font-size:9px;color:var(--fg-soft);display:flex;align-items:center;gap:4px;margin-top:auto;border-top:1px dashed var(--tile-bd);padding-top:3px;white-space:nowrap;overflow:hidden;}
   .ez-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none;}
-  @media(max-width:768px){.ez-text,.ez-title,.ez-sub,.ez-goal{display:none;}.ez-chip{max-width:55%;overflow:hidden;text-overflow:ellipsis;}.day-cell.ez{min-height:auto;}}
+  /* มือถือ: 3 บรรทัด — เลขวัน+ป้าย / ชิพชง / ทิศ+สี · แตะช่องดูเต็มในแผงข้าง */
+  @media(max-width:768px){
+    .ez-text,.ez-title,.ez-sub,.ez-goal{display:none;}
+    .day-cell.ez{height:64px;padding:5px;gap:2px;}
+    .ez-top{flex-wrap:wrap;row-gap:2px;}
+    .ez-chip{flex-basis:100%;margin-left:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+    .ez-num{font-size:12px;}.ez-power{font-size:10px;}
+    .ez-dir{border-top:none;padding-top:0;}
+  }
 
   .d-head{display:flex;justify-content:space-between;align-items:flex-start;}
   .d-num{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1;}
@@ -1387,8 +1397,32 @@
     else if (lang==='zh') monthLabel = `${MONTH_DATA.year}年${MONTH_DATA.month}月`;
     else { try { monthLabel = new Date(MONTH_DATA.year, MONTH_DATA.month-1, 1).toLocaleDateString(_bcp47(lang),{month:'long',year:'numeric'}); } catch(e){ monthLabel = new Date(MONTH_DATA.year, MONTH_DATA.month-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'}); } }
 
+    /* 10 ก.ค. · ก้อนอ่านง่ายบนสุดแผงข้าง: ข้อความเต็ม + นาอินพร้อมคำอธิบาย (นาอินย้ายจากช่องวันมาที่นี่) */
+    let ezPanel = '';
+    try {
+      if (state.viewMode !== 'deep' && DT_STATE.ok) {
+        const nz = DT_STATE.map ? (DT_STATE.map[(d.stem||'')+(d.branch||'')] || '') : '';
+        const c = HK.daytext.cell(DT_STATE.useLoc, d, {
+          mode: isTongshu ? 'tongshu' : 'self',
+          userYearBranch: isTongshu ? '' : SELF_YEAR_BRANCH,
+          goal: state.goal, nayinZh: nz
+        });
+        const L = HK.daytext._lib[DT_STATE.useLoc];
+        const nyLine = (nz && L && L.nayin[nz]) ? `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;">✨ ${L.nayin[nz].name} — ${L.nayin[nz].line}</div>` : '';
+        const ezE = s => String(s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+        ezPanel = `
+        <div style="border:1px solid var(--gold-line);background:var(--gold-soft);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-weight:700;color:var(--gold);font-size:13px;">${ezE(c.label)}${c.chip?` · ${ezE(c.chip)}`:''}</div>
+          ${c.title&&c.title!==c.label?`<div style="font-weight:600;font-size:12.5px;margin-top:4px;">${ezE(c.title)}</div>`:''}
+          <div style="font-size:12px;line-height:1.6;margin-top:4px;">${ezE(c.text)}</div>
+          ${c.goalLine?`<div style="font-size:11px;color:var(--gold);margin-top:6px;">▸ ${ezE(c.goalLine)}</div>`:''}
+          ${nyLine}
+        </div>`;
+      }
+    } catch(_) { ezPanel = ''; }
+
     const sp = document.getElementById('side-panel');
-    sp.innerHTML = `
+    sp.innerHTML = ezPanel + `
       <div class="sp-head">
         <div class="sp-date">
           <div>
