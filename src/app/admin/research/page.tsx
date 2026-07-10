@@ -1,15 +1,20 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { requireAdmin } from "@/lib/admin-guard";
 import ResearchAdmin from "./research-admin";
 
-export const metadata = { title: "Research Console · Admin" };
+export const metadata = { title: "มอนิเตอร์แชท AI · Admin" };
+export const dynamic = "force-dynamic";
 
 export default async function AdminResearchPage() {
-  let admin;
   try {
-    admin = await requireAdmin();
+    await requireAdmin();
   } catch {
     redirect("/signup?tab=login&next=/admin/research");
   }
-  return <ResearchAdmin email={admin.email || ""} />;
+  return (
+    <Suspense>
+      <ResearchAdmin />
+    </Suspense>
+  );
 }
