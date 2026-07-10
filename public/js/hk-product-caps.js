@@ -268,6 +268,39 @@
       ru: "AI Sifu Ци Мэнь · Premium+",
       es: "AI Sifu Qi Men · Premium+",
     },
+    lock_qimen_detail: {
+      th: "รายละเอียดรายวัง · เปิดตั้งแต่ช่วงทดลอง",
+      en: "Palace details · available from Trial",
+      zh: "宮位詳情 · 試用方案起開放",
+      cn: "宫位详情 · 试用方案起开放",
+      vi: "Chi tiết cung · có từ gói dùng thử",
+      ja: "宮の詳細 · トライアルから利用可能",
+      ko: "궁 상세 · 체험판부터 사용 가능",
+      ru: "Детали дворцов · доступны с пробного периода",
+      es: "Detalles de palacios · disponibles desde la prueba",
+    },
+    lock_qimen_date: {
+      th: "แพ็กเกจนี้เปิดผังได้เฉพาะวันนี้",
+      en: "This plan can open today's chart only",
+      zh: "此方案僅可開啟今日之盤",
+      cn: "此方案仅可开启今日之盘",
+      vi: "Gói này chỉ mở được bàn hôm nay",
+      ja: "このプランは今日の盤のみ利用できます",
+      ko: "이 요금제는 오늘의 판만 열 수 있습니다",
+      ru: "На этом тарифе доступна только карта на сегодня",
+      es: "Este plan solo permite abrir la carta de hoy",
+    },
+    lock_qimen_hour: {
+      th: "Free เปิดเฉพาะผังยามปัจจุบัน · Trial เปิดครบ 12 ยาม",
+      en: "Free opens the current hour only · Trial opens all 12 hours",
+      zh: "免費版僅開放當前時辰 · 試用版開放十二時辰",
+      cn: "免费版仅开放当前时辰 · 试用版开放十二时辰",
+      vi: "Free chỉ mở giờ hiện tại · Trial mở đủ 12 giờ",
+      ja: "Freeは現在時のみ · Trialは12時辰すべて",
+      ko: "Free는 현재 시진만 · Trial은 12시진 전체",
+      ru: "Free: только текущий час · Trial: все 12 часов",
+      es: "Free: solo la hora actual · Trial: las 12 horas",
+    },
     datepick_trial: {
       th: "ทดลองวางฤกษ์ · เกณฑ์หลัก 6 ชั้น + 1 ดวง + ช่วงสั้น",
       en: "Datepick trial · 6 core layers + 1 chart + short range",
@@ -707,17 +740,38 @@
 
   function applyQimenLocks() {
     var caps = window.HK_PRODUCT.caps || {};
-    var detail = caps.qimen_detail_mode || "beginner";
+    var pageCaps = caps.pages && caps.pages.qimen ? caps.pages.qimen : null;
+    var detail = (pageCaps && pageCaps.detail) || caps.qimen_detail_mode || "beginner";
     var searchOk = !!caps.qimen_search;
     var sifuOk = !!caps.qimen_sifu;
+    window.HK_QIMEN_PAGE_CAPS = pageCaps || {
+      time_window_days: 0,
+      hours_per_day: detail === "basic" ? 1 : 12,
+      detail: detail,
+      compare_locations: false,
+    };
 
-    if (detail === "beginner") {
+    if (detail === "basic") {
+      var detailPanel = document.getElementById("panel-detail");
+      if (detailPanel) lockPreviewEl(detailPanel, "Trial");
+    }
+    if (detail === "basic" || detail === "beginner") {
       document.querySelectorAll('[data-qm-detail-mode="pro"]').forEach(function (btn) {
         lockElKey(btn, "lock_qimen_pro");
       });
-      try {
-        window._qimenDetailMode = "beginner";
-      } catch (_) {}
+      try { window._qimenDetailMode = "beginner"; } catch (_) {}
+    }
+    if (pageCaps && Number(pageCaps.time_window_days) === 0) {
+      ["t-year", "t-month", "t-day"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) lockElKey(el, "lock_qimen_date");
+      });
+      var calendarBtn = document.querySelector('#qm-quick-times [data-qt="calendar"]');
+      if (calendarBtn) lockElKey(calendarBtn, "lock_qimen_date");
+    }
+    if (pageCaps && Number(pageCaps.hours_per_day) <= 1) {
+      var hourEl = document.getElementById("t-hour");
+      if (hourEl) lockElKey(hourEl, "lock_qimen_hour");
     }
     if (!searchOk) {
       ["qm-search-panel", "qm-search-tabs"].forEach(function (id) {

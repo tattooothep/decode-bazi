@@ -513,23 +513,19 @@
     /* viewAs เฉพาะตอนมี ?as= ตรงกัน → hk_birth → /api/profile · เก็บทั้ง stem + branch */
     try {
       const asId = new URLSearchParams(location.search).get('as');
-      const va = asId ? JSON.parse(sessionStorage.getItem('hk_view_as')||'null') : null;
       if (!asId) sessionStorage.removeItem('hk_view_as');
-      if (va && va.pillars && va.pillars.day && va.pillars.day.stem) {
-        if (va.id !== asId) {
-          sessionStorage.removeItem('hk_view_as');
-          throw new Error('stale view-as');
+      if (asId) {
+        const vr = await fetch('/api/profile/' + encodeURIComponent(String(asId).replace(/^p_/, '')) + '/snapshot', { credentials:'include', cache:'no-store' });
+        if (vr.ok) {
+          const vj = await vr.json();
+          const va = vj && vj.snapshot;
+          if (va && va.pillars && va.pillars.day && va.pillars.day.stem) {
+            sessionStorage.setItem('hk_view_as', JSON.stringify(va));
+            SELF_BRANCH = va.pillars.day.branch || '';
+            return va.pillars.day.stem;
+          }
         }
-        SELF_BRANCH = va.pillars.day.branch || '';
-        return va.pillars.day.stem;
-      }
-    } catch(_){}
-    try {
-      const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
-      if (birth && birth.date) {
-        const day = birth.pillars?.day || birth.bazi_pillars?.day || null;
-        const cached = applySelfDay(day, true);
-        if (cached) return cached;
+        sessionStorage.removeItem('hk_view_as');
       }
     } catch(_){}
     try {
@@ -542,22 +538,19 @@
       if (pr.ok) {
         const pd = await pr.json();
         const live = (pd.profiles||[]).filter(p => !p.is_archived);
-        let activeMeId = null;
-        try { activeMeId = localStorage.getItem('hk_profile_id'); } catch(_){}
         const me = (pd.active_profile && live.find(p=>p.id===pd.active_profile.id))
-          || (activeMeId && live.find(p=>p.id===activeMeId))
           || live.find(p=>!!p.is_self)
-          || live[0];
+          || null;
         const dm = selfDayFromProfile(me);
         if (dm) return dm;
       }
     } catch(_){}
-    return '己'; /* fallback demo */
+    return null;
   }
 
   /* ─── ค่าจาก /api/calendar ─── */
   let MONTH_DATA = { year:null, month:null, days:[], month_pillar:'', year_pillar:'' };
-  let SELF_DM = '己';
+  let SELF_DM = null;
   let SELF_BRANCH = ''; /* กิ่งวันเกิด · ใช้ตรวจ 沖 ในชั่วยาม */
   /* cache · hour grid + directions ต่อวัน · lazy fetch ตอนคลิก */
   const DAY_DETAILS = {}; /* key = "YYYY-MM-DD" → { hours, directions } */
@@ -2036,7 +2029,7 @@
     try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
     const _payload = (extra) => {
       const p = userChartArg ? { date, userChart: userChartArg, ...(extra||{}) } : { date, ...(extra||{}) };
-	      if (_birth && _birth.date) { p.birthDate = _birth.date; p.birthTime = _birth.time || '12:00'; p.birthLng = _birth.lng || _birth.longitude || 100.5018; p.birthTimeKnown = _birth.birthTimeKnown !== false; }
+      if (SELF_DM && _birth && _birth.date) { p.birthDate = _birth.date; p.birthTime = _birth.time || '12:00'; p.birthLng = _birth.lng || _birth.longitude || 100.5018; p.birthTimeKnown = _birth.birthTimeKnown !== false; }
       return p;
     };
     try {
@@ -2098,15 +2091,15 @@
       let bUrl = '';
       try {
         const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
-        if (b && b.date) {
+        if (SELF_DM && b && b.date) {
 	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||b.longitude||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}&gender=${encodeURIComponent(b.gender||'M')}&dayBoundary=${encodeURIComponent(b.dayBoundary||'23:00')}`;
         }
       } catch(_){}
-      const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM)}${bUrl}`);
+      const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM || '')}${bUrl}`);
       if (!r.ok) throw new Error('http '+r.status);
       const d = await r.json();
       MONTH_DATA = d;
-      if (d && d.dm) SELF_DM = d.dm;
+      if (SELF_DM && d && d.dm) SELF_DM = d.dm;
       /* select today ถ้าอยู่ในเดือนปัจจุบัน · ไม่งั้นเลือกวันแรก */
       const tn = new Date();
       if (tn.getFullYear()===year && tn.getMonth()+1===month) {
@@ -2202,11 +2195,19 @@
 
   // initial · resolve DM แล้วโหลดเดือนปัจจุบัน
   (async function init(){
+    try { if (window.__hkProfileReady) await window.__hkProfileReady; } catch(_){ }
+    SELF_DM = await resolveSelfDM();
+    if (!SELF_DM) {
+      state.overlay = 'tongshu';
+      document.querySelectorAll('#overlay-toggle button').forEach(function(btn){
+        btn.classList.toggle('on', btn.dataset.mode === 'tongshu');
+        if (btn.dataset.mode === 'personal') btn.disabled = true;
+      });
+    }
     if (calendarHasBirthParams()) {
       const detailsReady = resolveSelfDM().catch(()=>{});
       await loadMonth(CUR_YEAR, CUR_MONTH, { detailsReady });
     } else {
-      SELF_DM = await resolveSelfDM();
       await loadMonth(CUR_YEAR, CUR_MONTH);
     }
   })();

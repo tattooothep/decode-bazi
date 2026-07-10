@@ -86,5 +86,9 @@ export async function POST(req: Request) {
   if (!orderId) return NextResponse.json({ error: "no_order_id" }, { status: 400 });
 
   const result = await fulfillOrder(orderId, `stripe:${payRef}`, "stripe", amountThb);
+  if (!result.ok) {
+    // Stripe retries non-2xx. Never acknowledge a paid event that was not credited.
+    return NextResponse.json({ error: "fulfillment_failed", result }, { status: 500 });
+  }
   return NextResponse.json({ received: true, result });
 }

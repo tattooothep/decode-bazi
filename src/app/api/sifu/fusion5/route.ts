@@ -838,6 +838,15 @@ export async function POST(req: Request) {
     const { getProductAccess, entitlementDenied } = await import("@/lib/product-entitlement");
     const access = await getProductAccess(userId);
     if (!access) return NextResponse.json(entitlementDenied("not_entitled"), { status: 403 });
+    if (!access.fusion_suite) {
+      return NextResponse.json(
+        entitlementDenied("fusion_suite_locked", {
+          message: "Fusion เปิดตั้งแต่ช่วงทดลองขึ้นไป · อัปเกรดที่ /pricing",
+          plan: access.plan,
+        }),
+        { status: 403 }
+      );
+    }
     if (runSciences.length > access.fusion_max_sciences) {
       return NextResponse.json(
         entitlementDenied("fusion_science_limit", {

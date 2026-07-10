@@ -754,10 +754,15 @@
 
         /* attempt save via API (logged-in only · graceful fail) */
         /* Codex: await + use correct field names + save returned profile.id */
-        const birthRaw = localStorage.getItem('hk_birth');
-        if (birthRaw) {
+        const pendingRaw = sessionStorage.getItem('hk_pending_birth');
+        if (pendingRaw) {
           try {
-            const birth = JSON.parse(birthRaw);
+            const pending = JSON.parse(pendingRaw);
+            const birth = pending && pending.birth;
+            if (!birth || !birth.date || !pending.createdAt || Date.now() - Number(pending.createdAt) > 30 * 60 * 1000) {
+              sessionStorage.removeItem('hk_pending_birth');
+              throw new Error('stale pending birth');
+            }
             const displayName = birth.name
               || localStorage.getItem('hk_profile_name')
               || localStorage.getItem('hk_email')
@@ -782,6 +787,7 @@
               if (j && j.profile && j.profile.id) {
                 try { localStorage.setItem('hk_profile_id', j.profile.id); } catch(_){}
               }
+              sessionStorage.removeItem('hk_pending_birth');
             }
           } catch(_) {}
         }

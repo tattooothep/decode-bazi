@@ -1750,7 +1750,8 @@ async function loadNetworkPeople(){
       const bb = String(b.id) === activeId || b.is_self ? 1 : 0;
       return bb - aa;
     });
-    if (!profiles.length) {
+    const selfProfile = profiles.find(p => String(p.id) === activeId || !!p.is_self) || null;
+    if (!selfProfile) {
       state.people = [];
       state.peopleLoadState = 'empty';
       renderPeople();

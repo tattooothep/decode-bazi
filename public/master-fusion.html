@@ -1701,8 +1701,14 @@
       if (state.locale === 'zh') return '預扣≥' + e + ' · 按字數(≈30字/1時)';
       return 'hold≥' + e + ' · by length(≈30/1時)';
     }
-    // ===== gate: เปิดให้ทุก user ที่ login แล้ว (ยามพอ) · tier badge แสดงได้แต่ไม่บล็อก =====
+    // ===== gate: Fusion suite เปิดตั้งแต่ Trial ขึ้นไป · server enforce ซ้ำ =====
     function isLoggedIn(){ return !!state.account; }
+    function fusionSuiteAllowed(){
+      var c = state.productCaps;
+      if (c && typeof c.fusion_suite === 'boolean') return c.fusion_suite;
+      var a = state.fusionAccess;
+      return !!(a && a.allowed === true);
+    }
     function hourBalance(){
       var access = state.fusionAccess;
       if (access && access.hour_balance != null) return Number(access.hour_balance || 0);
@@ -1716,6 +1722,8 @@
     }
     function canUseFusion(){
       if (!isLoggedIn()) return false;
+      if (!fusionSuiteAllowed()) return false;
+      if (!selectedProfileIds().length && !selectedGuests().length) return false;
       enforceSciCap();
       if (!activeSciences().length) return false;
       if (activeSciences().length > maxSciences()) return false;
@@ -1725,6 +1733,16 @@
     }
     function fusionGateMessage(){
       if (!isLoggedIn()) return t('needLogin');
+      if (!fusionSuiteAllowed()) {
+        if (state.locale === 'th') return 'Fusion เปิดตั้งแต่ช่วงทดลองขึ้นไป · ดูตัวอย่างได้ แต่ออกรันไม่ได้ · /pricing';
+        if (state.locale === 'zh') return 'Fusion 自試用方案起開放 · 可預覽但不可執行 · /pricing';
+        return 'Fusion is available from Trial onward · preview only on Free · /pricing';
+      }
+      if (!selectedProfileIds().length && !selectedGuests().length) {
+        if (state.locale === 'th') return 'เพิ่มดวงของคุณ หรือกรอกดวงชั่วคราวก่อนใช้ Fusion';
+        if (state.locale === 'zh') return '請先建立您的命盤或輸入臨時命盤';
+        return 'Create your chart or enter a guest chart before using Fusion';
+      }
       if (!activeSciences().length) return t('noSci');
       if (activeSciences().length > maxSciences()) {
         return (state.locale === 'th' ? ('แพ็กเกจนี้เลือกได้สูงสุด ' + maxSciences() + ' ศาสตร์') : ('Max ' + maxSciences() + ' sciences on your plan'));
@@ -1743,9 +1761,11 @@
     function applyFusionGate(){
       els.send.textContent = t('run') + ' · ' + yamBillingLabel();
       if (!isLoggedIn()) { els.gate.textContent = 'LOGIN'; els.gate.className = 'badge warn'; }
+      else if (!fusionSuiteAllowed()) { els.gate.textContent = 'LOCKED · TRIAL+'; els.gate.className = 'badge warn'; }
+      else if (!selectedProfileIds().length && !selectedGuests().length) { els.gate.textContent = 'ADD CHART'; els.gate.className = 'badge warn'; }
       else if (canUseFusion()) { els.gate.textContent = '5-SCIENCE READY'; els.gate.className = 'badge ok'; }
       else if (!activeSciences().length) { els.gate.textContent = 'PICK SCIENCE'; els.gate.className = 'badge warn'; }
-      else { els.gate.textContent = 'NEED ' + spend + ' 時'; els.gate.className = 'badge warn'; }
+      else { els.gate.textContent = 'NEED ' + escrowYam() + ' 時'; els.gate.className = 'badge warn'; }
       updateSendAvailability();
     }
     function updateYam(){
@@ -3502,7 +3522,11 @@
       var j = await r.json().catch(function(){ return {}; });
       if (!r.ok) throw new Error(j.error || ('profile ' + r.status));
       state.profiles = Array.isArray(j.profiles) ? j.profiles : [];
-      if (!state.profiles.length) {
+      var selfProfile = (j.active_profile && state.profiles.find(function(p){ return String(p.id) === String(j.active_profile.id); }))
+        || state.profiles.find(function(p){ return !!p.is_self; })
+        || null;
+      if (!selfProfile) {
+        state.profiles = [];
         els.profile.innerHTML = '<option value="">ไม่มี profile</option>';
         if (els.profile2) els.profile2.innerHTML = '<option value="">-</option>';
         if (els.profile3) els.profile3.innerHTML = '<option value="">-</option>';
@@ -3510,9 +3534,7 @@
         renderSciList(); updateYam();
         return;
       }
-      var saved = '';
-      try { saved = localStorage.getItem('hk_profile_id') || ''; } catch(_){}
-      var active = (j.active_profile && j.active_profile.id) || saved || (state.profiles.find(function(p){return p.is_self;}) || {}).id || ''; /* ⛔ ดวงตัวเอง/บันทึกไว้ ไม่ fallback profiles[0]=ดวงคนอื่น (rule #6) */
+      var active = selfProfile.id;
       fillProfileSelect(els.profile, active);
       var second = state.profiles.find(function(p){ return String(p.id) !== String(els.profile.value); });
       fillProfileSelect(els.profile2, second ? second.id : '', els.profile.value);

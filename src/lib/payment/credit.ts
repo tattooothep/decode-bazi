@@ -153,11 +153,19 @@ export async function fulfillOrder(
       if (orgId) {
         await client.query(
           `INSERT INTO subscriptions
-             (org_id, tier, status, started_at, current_period_start, current_period_end,
+             (id, org_id, tier, status, started_at, current_period_start, current_period_end,
               payment_provider, payment_id, amount_cents, currency, interval)
-           VALUES ($1,$2,'active', now(), now(), now() + ($3 || ' days')::interval,
-              $4, $5, $6, 'thb', 'year')`,
-          [orgId, pkg.tier, String(pkg.days), payMethod, payRef, thbToSatang(pkg.price_thb)]
+           VALUES (gen_random_uuid(), $1,$2,'active', now(), now(), now() + ($3 || ' days')::interval,
+              $4, $5, $6, 'thb', $7)`,
+          [
+            orgId,
+            pkg.tier,
+            String(pkg.days),
+            payMethod,
+            payRef,
+            thbToSatang(pkg.price_thb),
+            pkg.days >= 365 ? "year" : "month",
+          ]
         );
       }
     }

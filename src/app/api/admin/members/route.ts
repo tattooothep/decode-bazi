@@ -103,8 +103,19 @@ export async function GET(req: NextRequest) {
       `SELECT delta, reason, balance_after, ref_feature, note, created_at, ref_payment_id
          FROM hour_transactions WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100`, [id]);
     const orders = await q(
-      `SELECT id, package_code, amount_thb, yam_granted, status, pay_method, pay_ref, coupon_code, created_at, paid_at, note
-         FROM orders WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50`, [id]);
+      `SELECT o.id, o.package_code, o.amount_thb, o.yam_granted, o.status, o.pay_method, o.pay_ref,
+              o.coupon_code, o.created_at, o.paid_at, o.note,
+              CASE WHEN o.status='paid' THEN 'paid'
+                   WHEN o.status='refunded' THEN 'refunded'
+                   WHEN o.status='failed' THEN 'failed'
+                   ELSE 'unpaid' END AS payment_state,
+              EXISTS(
+                SELECT 1 FROM hour_transactions ht
+                 WHERE ht.user_id=o.user_id AND ht.ref_payment_id='order_'||o.id::text
+              ) AS credit_linked,
+              (SELECT s.id FROM subscriptions s WHERE s.payment_id=o.pay_ref ORDER BY s.created_at DESC LIMIT 1) AS subscription_id,
+              (SELECT s.status FROM subscriptions s WHERE s.payment_id=o.pay_ref ORDER BY s.created_at DESC LIMIT 1) AS subscription_status
+         FROM orders o WHERE o.user_id=$1 ORDER BY o.created_at DESC LIMIT 50`, [id]);
     const notes = await q(
       `SELECT n.id, n.body, n.pinned, n.created_at, u.email AS admin_email
          FROM user_admin_notes n JOIN users u ON u.id=n.admin_id

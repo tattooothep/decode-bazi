@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q1 } from "@/lib/db";
 import { getCheckoutPackage, listPackagesPublic } from "@/lib/payment/packages";
-import { createStripeCheckout } from "@/lib/payment/stripe";
+import { createStripeCheckout, retrieveStripeSession } from "@/lib/payment/stripe";
 import { createOmiseCharge } from "@/lib/payment/omise";
 import { markCouponUsed, resolveCheckoutPricing } from "@/lib/payment/coupons";
 
@@ -82,6 +82,43 @@ export async function POST(req: Request) {
 
   const method: "promptpay" | "card" = body.method === "card" ? "card" : "promptpay";
   const gateway: "omise" | "stripe" = body.gateway === "omise" ? "omise" : "stripe";
+
+  // A second click should return the still-open Stripe Checkout instead of
+  // creating another pending order and another amount in Admin.
+  if (gateway === "stripe") {
+    const recent = await q1<{ id: string; pay_ref: string | null }>(
+      `SELECT id, pay_ref FROM orders
+        WHERE user_id=$1 AND package_code=$2 AND amount_thb=$3 AND yam_granted=$4
+          AND coupon_code IS NOT DISTINCT FROM $5
+          AND pay_method=$6 AND status='pending'
+          AND created_at > now() - interval '15 minutes'
+        ORDER BY created_at DESC LIMIT 1`,
+      [s.userId, pkg.code, amountThb, yamGranted, couponCode, `${gateway}_${method}`]
+    );
+    if (recent?.pay_ref?.startsWith("cs_")) {
+      const live = await retrieveStripeSession(recent.pay_ref);
+      if (live?.payment_status === "paid") {
+        return NextResponse.json(
+          { error: "payment_already_completed", orderId: recent.id },
+          { status: 409 }
+        );
+      }
+      if (live?.status === "open" && live.url) {
+        return NextResponse.json({
+          ok: true,
+          reused: true,
+          orderId: recent.id,
+          gateway,
+          method,
+          mock: false,
+          redirectUrl: live.url,
+          amount_thb: amountThb,
+          yam: yamGranted,
+          coupon: pricing.applied,
+        });
+      }
+    }
+  }
 
   // สร้าง order pending — ราคา/ยามจาก packages.ts ± coupon server-side เท่านั้น
   const order = await q1<{ id: string }>(

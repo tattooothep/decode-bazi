@@ -960,12 +960,12 @@
       window._networkProfileSetupRequired = d.profile_setup_required === true;
       if (!profiles.length) return null;
       const ELEM_OF = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
-      /* ใช้ active_profile/is_self จาก backend เป็นหลัก · localStorage เป็น fallback เท่านั้น */
+      /* เจ้าของบัญชีต้องมาจาก backend เท่านั้น */
       let selfPid = (d.active_profile && d.active_profile.id)
         || (profiles.find(p => !!p.is_self) || {}).id
         || null;
       if (!selfPid) {
-        try { selfPid = localStorage.getItem('hk_profile_id'); } catch(_){}
+        return null;
       }
       let people = profiles.map((p,i) => {
         /* bazi_pillars อาจห่อ {pillars:{...}} หรือไม่ห่อ · unwrap ทั้งสอง */

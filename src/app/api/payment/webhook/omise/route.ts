@@ -68,5 +68,8 @@ export async function POST(req: Request) {
   if (!orderId) return NextResponse.json({ error: "no_order_id" }, { status: 400 });
 
   const result = await fulfillOrder(orderId, `omise:${chargeId}`, "promptpay", verified.amountThb);
+  if (!result.ok) {
+    return NextResponse.json({ error: "fulfillment_failed", result }, { status: 500 });
+  }
   return NextResponse.json({ received: true, result });
 }

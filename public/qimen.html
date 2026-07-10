@@ -3591,10 +3591,11 @@ window.__hkOverlayApply=function(l){
   }
   function qimenDetailModeToggleHtml(mode){
     const current = mode === 'pro' ? 'pro' : 'beginner';
+    const technical = window.HK_QIMEN_PAGE_CAPS && window.HK_QIMEN_PAGE_CAPS.detail === 'technical';
     return `
       <div class="qm-detail-mode" role="group" aria-label="โหมดอ่านรายละเอียดวัง">
         <button type="button" data-qm-detail-mode="beginner" class="${current === 'beginner' ? 'on' : ''}" aria-pressed="${current === 'beginner'}">อ่านง่าย <span class="tc">入門</span></button>
-        <button type="button" data-qm-detail-mode="pro" class="${current === 'pro' ? 'on' : ''}" aria-pressed="${current === 'pro'}">ผู้เชี่ยวชาญ <span class="tc">專業</span></button>
+        <button type="button" data-qm-detail-mode="pro" class="${current === 'pro' ? 'on' : ''}" aria-pressed="${current === 'pro'}">${technical ? 'เทคนิค' : 'ผู้เชี่ยวชาญ'} <span class="tc">${technical ? '技術' : '專業'}</span></button>
       </div>
       <div class="qm-detail-mode-note">${current === 'pro' ? 'กำลังแสดงสูตรเต็ม แหล่งอ้างอิง และชั้นคำอ่านลึก' : 'โหมดอ่านง่ายซ่อนสูตรเต็มไว้ก่อน แตะผู้เชี่ยวชาญเมื่ออยากตรวจที่มาและสูตรลึก'}</div>
     `;
@@ -3950,7 +3951,11 @@ window.__hkOverlayApply=function(l){
       const j = await r.json();
       /* drop stale response · กัน race ตอน user เปลี่ยนเวลาเร็วๆ */
       if (mySeq !== window._qimenSeq) return;
-      if (!j.ok && !j.data) { console.warn('[qimen] api error', j); showQimenLoadError(_qtx('q.err.loadFail', 'โหลดผังฉีเหมินไม่สำเร็จ')); return; }
+      if (!r.ok || (!j.ok && !j.data)) {
+        console.warn('[qimen] api error', j);
+        showQimenLoadError(j.message || j.error || _qtx('q.err.loadFail', 'โหลดผังฉีเหมินไม่สำเร็จ'));
+        return;
+      }
       const d = j.data || j;
       window._qimenLast = d;
       renderHeader(d.chart || {}, d.palaces || []);

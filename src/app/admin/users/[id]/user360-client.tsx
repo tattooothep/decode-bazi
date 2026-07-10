@@ -44,6 +44,13 @@ const TIERS = ["free", "premium", "master"] as const;
 const fmt = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
+function paymentBadge(state: string) {
+  if (state === "paid") return { text: "จ่ายแล้ว · PAID", cls: "border-emerald-400/35 bg-emerald-400/10 text-emerald-200" };
+  if (state === "refunded") return { text: "คืนเงินแล้ว", cls: "border-violet-400/35 bg-violet-400/10 text-violet-200" };
+  if (state === "failed") return { text: "ล้มเหลว", cls: "border-rose-400/35 bg-rose-400/10 text-rose-200" };
+  return { text: "ยังไม่จ่าย · UNPAID", cls: "border-amber-400/35 bg-amber-400/10 text-amber-100" };
+}
+
 export default function User360Client({ userId, lang }: { userId: string; lang: string }) {
   const { dict, locale } = useAdminDict();
   const [d, setD] = useState<Detail | null>(null);
@@ -342,7 +349,11 @@ export default function User360Client({ userId, lang }: { userId: string; lang: 
                     <div>
                       <div className="font-mono text-xs text-white/40">{o.id?.slice?.(0, 8)}</div>
                       <div>{o.package_code} · ฿{o.amount_thb} · {o.yam_granted} yam</div>
-                      <div className="text-xs text-white/40">{o.status} · {o.pay_method || "—"} · {fmt(o.paid_at || o.created_at)}</div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white/40">
+                        <span className={`rounded border px-2 py-0.5 text-[11px] ${paymentBadge(o.payment_state || o.status).cls}`}>{paymentBadge(o.payment_state || o.status).text}</span>
+                        <span>{o.pay_method || "—"} · {fmt(o.paid_at || o.created_at)}</span>
+                        {o.payment_state === "paid" && <span className={o.credit_linked ? "text-emerald-200" : "text-rose-200"}>เครดิต {o.credit_linked ? "linked" : "missing"}</span>}
+                      </div>
                     </div>
                     {caps.can_refund && o.status === "paid" && (
                       <button type="button" onClick={() => refund(o.id)} className="rounded-lg border border-rose-400/30 px-2 py-1 text-xs text-rose-200">

@@ -49,12 +49,18 @@ export async function GET(req: Request) {
     if (isStripe) {
       const live = await retrieveStripeSession(order.pay_ref);
       if (live?.payment_status === "paid") {
-        await fulfillOrder(orderId, `stripe:${live.payment_intent || order.pay_ref}`, "stripe", live.amount_total ? Math.round(live.amount_total / 100) : order.amount_thb);
+        const result = await fulfillOrder(orderId, `stripe:${live.payment_intent || order.pay_ref}`, "stripe", live.amount_total ? Math.round(live.amount_total / 100) : order.amount_thb);
+        if (!result.ok) {
+          return NextResponse.json({ error: "fulfillment_failed", detail: result.status }, { status: 502 });
+        }
       }
     } else if (isOmise) {
       const v = await verifyOmiseCharge(order.pay_ref);
       if (v?.paid) {
-        await fulfillOrder(orderId, `omise:${order.pay_ref}`, "promptpay", v.amountThb);
+        const result = await fulfillOrder(orderId, `omise:${order.pay_ref}`, "promptpay", v.amountThb);
+        if (!result.ok) {
+          return NextResponse.json({ error: "fulfillment_failed", detail: result.status }, { status: 502 });
+        }
       }
     }
     // reload หลัง fulfill

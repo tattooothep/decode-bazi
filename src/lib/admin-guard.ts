@@ -29,10 +29,12 @@ function envAllowlist(): string[] {
     .filter(Boolean);
 }
 
-/** When "1" (default), org owner/admin still gets full admin during cutover. */
+/**
+ * Emergency migration bridge only. Platform admin access must never be inferred
+ * from an organization role: every signup owns its personal organization.
+ */
 function legacyOrgAdminEnabled(): boolean {
-  const v = (process.env.LEGACY_ORG_ADMIN ?? "1").trim();
-  return v !== "0" && v.toLowerCase() !== "false" && v !== "off";
+  return (process.env.LEGACY_ORG_ADMIN || "").trim() === "1";
 }
 
 let _seedPromise: Promise<void> | null = null;
@@ -203,7 +205,8 @@ async function loadRbacSession(userId: string, email: string, orgId: string | nu
 }
 
 /**
- * Any platform admin (env break-glass, RBAC role, or legacy org admin).
+ * Any platform admin (env break-glass or an explicit RBAC role).
+ * LEGACY_ORG_ADMIN=1 is an emergency-only compatibility escape hatch.
  */
 export async function requireAdmin(): Promise<AdminSession> {
   const { getSession } = await import("@/lib/auth");

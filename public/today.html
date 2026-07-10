@@ -818,42 +818,24 @@
   <a href="/network" class="back" data-i18n="t.va.back">← กลับ</a>
 </div>
 <script>
-/* read view-as context · บอก /today ให้เปลี่ยน mode
- * 18 พ.ค. fix · mobile new tab fallback อ่าน localStorage 'hk_view_as_xfer' (TTL 60s) */
-(function(){
+/* Render view-as only after the server confirms this profile belongs to the user. */
+(async function(){
   try {
-    let raw = sessionStorage.getItem('hk_view_as');
     const params = new URLSearchParams(location.search);
     const asId = params.get('as');
     if (!asId) {
       try { sessionStorage.removeItem('hk_view_as'); } catch(_){}
       return;
     }
-    if (!raw) {
-      /* mobile cross-tab fallback */
-      try {
-        const xferRaw = localStorage.getItem('hk_view_as_xfer');
-        if (xferRaw) {
-          const xfer = JSON.parse(xferRaw);
-          if (xfer && String(xfer.id||'')===String(asId) && (Date.now()-(xfer.ts||0) < 60000)) {
-            sessionStorage.setItem('hk_view_as', xferRaw);
-            localStorage.removeItem('hk_view_as_xfer');
-            raw = xferRaw;
-          } else {
-            localStorage.removeItem('hk_view_as_xfer');
-          }
-        }
-      } catch(_){}
-    }
-    if (!raw) {
+    const r = await fetch('/api/profile/' + encodeURIComponent(String(asId).replace(/^p_/, '')) + '/snapshot', { credentials:'include', cache:'no-store' });
+    if (!r.ok) {
       try { sessionStorage.removeItem('hk_view_as'); } catch(_){}
       return;
     }
-    const p = JSON.parse(raw);
-    if (!p || !p.name || p.id !== asId) {
-      try { sessionStorage.removeItem('hk_view_as'); } catch(_){}
-      return;
-    }
+    const j = await r.json();
+    const p = j && j.snapshot;
+    if (!p || !p.name || String(p.id || '') !== String(asId).replace(/^p_/, '')) return;
+    try { sessionStorage.setItem('hk_view_as', JSON.stringify(p)); } catch(_){}
     const bar = document.getElementById('hk-viewas-bar');
     document.getElementById('va-glyph').textContent = p.glyph || '人';
     document.getElementById('va-name').textContent = p.name;
@@ -1599,11 +1581,16 @@
             if(p.date && (p.birthTimeKnown === false || p.time)) return {date:p.date,time:p.time||'12:00',birthTimeKnown:p.birthTimeKnown !== false};
           }
         } catch(_){}
-        return {date:'1990-01-15',time:'10:30',birthTimeKnown:true};
+        return null;
       }
       async function loadBasic(){
         try { if (window.__hkProfileReady) await window.__hkProfileReady; } catch(_){}
         const b=getBirth();
+        if (!b) {
+          const section = document.getElementById('hk-basic-bazi');
+          if (section) section.style.display = 'none';
+          return;
+        }
         try{
           const d = await window.__hkFetchChart({date:b.date,time:b.time,longitude:100.5018,birthTimeKnown:b.birthTimeKnown !== false});
           if(!d||!d.pillars) return;
@@ -2400,11 +2387,17 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
     let viewAs = null;
     const viewAsId = new URLSearchParams(location.search).get('as');
     try {
-      viewAs = viewAsId ? JSON.parse(sessionStorage.getItem('hk_view_as')||'null') : null;
       if (!viewAsId) sessionStorage.removeItem('hk_view_as');
-      if (viewAs && viewAs.id !== viewAsId) {
-        sessionStorage.removeItem('hk_view_as');
-        viewAs = null;
+      if (viewAsId) {
+        const vr = await fetch('/api/profile/' + encodeURIComponent(String(viewAsId).replace(/^p_/, '')) + '/snapshot', { credentials:'include', cache:'no-store' });
+        if (vr.ok) {
+          const vj = await vr.json();
+          viewAs = vj && vj.snapshot;
+          if (viewAs) sessionStorage.setItem('hk_view_as', JSON.stringify(viewAs));
+        } else {
+          sessionStorage.removeItem('hk_view_as');
+          viewAs = null;
+        }
       }
     } catch(e){ viewAs = null; }
     let selfBirth = null;
@@ -2450,23 +2443,15 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         }
       } catch(e){ console.warn('profile fallback failed:', e); }
     }
-    if (!userChart) {
-      try {
-        const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
-        if (birth && birth.date) {
-	          const cd = await window.__hkFetchChart({ date: birth.date, time: birth.time||'12:00', gender: birth.gender||'M', longitude: Number(birth.longitude || birth.lng || 100.5018), birthTimeKnown: birth.birthTimeKnown !== false, dayBoundary: birth.dayBoundary || '23:00' });
-          if (cd && cd.pillars) {
-            userChart = cd.pillars;
-            selfBirth = birth;
-          }
-        }
-      } catch(e){}
-    }
-
     /* ยังไม่มีดวง (login แล้วแต่ไม่มี profile) → empty-state banner · ไม่ redirect/ไม่ blank
      * ข้อมูลวันด้านล่างยังใช้ได้ตามปกติ · self-contained i18n 9 ภาษา · theme-aware (9 ก.ค. 2026) */
     if (!userChart && !document.getElementById('t-no-profile')) {
       try {
+        document.documentElement.setAttribute('data-profile-state', 'missing');
+        ['.hero','#t-de-board','#hk-basic-bazi','.row2','#t-scoring-explain'].forEach(function(selector){
+          var personal = document.querySelector(selector);
+          if (personal) personal.style.display = 'none';
+        });
         var _nloc = '';
         try { _nloc = localStorage.getItem('hk_locale') || ''; } catch(_){}
         var _nl = (_nloc || document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'th').toLowerCase();
@@ -2503,9 +2488,6 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
      * ส่ง birth ให้ backend calc yongshen ภายใน · score ตรง /calendar + /network */
     const dmStem = userChart?.day?.stem || '';
     let _birth = selfBirth || null;
-    if (!_birth) {
-      try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
-    }
     const _postBody = { date: dateStr, userChart };
 	    if (_birth && _birth.date) { _postBody.birthDate = _birth.date; _postBody.birthTime = _birth.time || '12:00'; _postBody.birthLng = _birth.lng || _birth.longitude || 100.5018; _postBody.birthTimeKnown = _birth.birthTimeKnown !== false; _postBody.gender = _birth.gender || 'M'; _postBody.dayBoundary = _birth.dayBoundary || '23:00'; }
     const tr = (userChart && userChart.day && userChart.day.branch)

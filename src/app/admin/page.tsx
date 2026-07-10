@@ -270,14 +270,14 @@ async function getAdmin(): Promise<AdminSession | null> {
   try {
     return await requireAdmin();
   } catch (err) {
-    if (err instanceof Response && err.status === 401) return null;
+    if (err instanceof Response && (err.status === 401 || err.status === 403)) return null;
     throw err;
   }
 }
 
 export default async function AdminHub() {
   const admin = await getAdmin();
-  if (!admin) redirect("/signup?tab=login&next=/admin");
+  if (!admin) redirect("/today");
   const d = await loadDashboard();
   const conversion = pct(d.users.paying, d.users.total);
   const activeRate = pct(d.users.active7, d.users.total);

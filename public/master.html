@@ -839,24 +839,8 @@
       if (p && (p.day_boundary === '23:00' || p.dayBoundary === '23:00')) return '23:00';
       try { return localStorage.getItem('hk_day_boundary') === '00:00' ? '00:00' : '23:00'; } catch(_) { return '23:00'; }
     }
-    function parseBirthLocal(){
-      try {
-        var b = JSON.parse(localStorage.getItem('hk_birth') || 'null');
-        if (!b) return null;
-	        return {
-	          id: null,
-	          name: b.name || localStorage.getItem('hk_profile_name') || 'ตัวฉัน',
-	          birth_datetime: String(b.date || '') + 'T' + String(b.time || '12:00') + ':00+07:00',
-	          birth_location_name: b.place || 'กรุงเทพมหานคร',
-	          birth_time_known: b.birthTimeKnown !== false,
-	          birth_lng: b.longitude || b.lng || 100.5018,
-	          gender: b.gender || 'M',
-	          day_boundary: b.dayBoundary === '00:00' ? '00:00' : '23:00'
-	        };
-      } catch(_) { return null; }
-    }
     function fillProfile(p){
-      activeProfile = p || parseBirthLocal();
+      activeProfile = p || null;
       if (!activeProfile) {
         setText(nameEl, _mstx('mst.gate.noinfo.name','ยังไม่พบข้อมูลเกิด'));
         setText(dateEl, _mstx('mst.gate.noinfo.date','กรุณากรอกข้อมูลก่อน'));

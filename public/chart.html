@@ -846,16 +846,17 @@
   <a href="/network" class="back" data-i18n="c.va.back">← กลับ</a>
 </div>
 <script>
-/* read view-as · เปิด banner เท่านั้น · controller (HKChartPage) อ่าน snapshot เอง */
-(function(){
+/* View-as banner is rendered only after the server confirms ownership. */
+(async function(){
   try {
     const params = new URLSearchParams(location.search);
     const asId = params.get('as');
     if (!asId) return;
-    const raw = sessionStorage.getItem('hk_view_as');
-    if (!raw) return;
-    const p = JSON.parse(raw);
-    if (!p || !p.name || String(p.id || '') !== String(asId)) return;
+    const r = await fetch('/api/profile/' + encodeURIComponent(String(asId).replace(/^p_/, '')) + '/snapshot', { credentials:'include', cache:'no-store' });
+    if (!r.ok) return;
+    const j = await r.json();
+    const p = j && j.snapshot;
+    if (!p || !p.name || String(p.id || '') !== String(asId).replace(/^p_/, '')) return;
     const bar = document.getElementById('hk-viewas-bar');
     document.getElementById('va-glyph').textContent = p.glyph || '人';
     document.getElementById('va-name').textContent = p.name;
@@ -933,6 +934,17 @@
       if (s.name) localStorage.setItem('hk_profile_name', s.name);
     } catch(_) {}
   }
+  function clearChartIdentityCache(){
+    try {
+      ['hk_birth','hk_profile_id','hk_profile_name','hk_user_yongshen','hk_view_as_xfer'].forEach(function(k){
+        localStorage.removeItem(k);
+      });
+    } catch(_) {}
+    try {
+      ['hk_birth','hk_view_as'].forEach(function(k){ sessionStorage.removeItem(k); });
+    } catch(_) {}
+    try { window.hkActiveProfileId = ''; } catch(_) {}
+  }
   /* fetch /api/profile · prefer backend active_profile/is_self (source-of-truth)
    * 📜 15 พ.ค. · retry 1 ครั้งถ้า network/401 (เผื่อ mobile session ช้า) */
   async function fetchActiveProfile(retryCount){
@@ -949,7 +961,10 @@
       if (!r.ok) return { auth: true, profile: null };
       var j = await r.json();
       var arr = (j.profiles || []).filter(function(p){ return !p.is_archived; });
-      if (!arr.length) return { auth: true, profile: null };
+      if (!arr.length) {
+        clearChartIdentityCache();
+        return { auth: true, profile: null };
+      }
       var pick = (j.active_profile && j.active_profile.id && arr.find(function(p){ return p.id === j.active_profile.id; }))
               || arr.find(function(p){ return !!p.is_self; })
               || null; /* ⛔ ไม่ fallback arr[0]=ดวงคนอื่น · ไม่มีดวงตัวเอง→null→ไป /input (rule #6) */
@@ -958,6 +973,7 @@
         var stale = localStorage.getItem('hk_profile_id');
         if (stale && !arr.find(function(p){ return p.id === stale; })) localStorage.removeItem('hk_profile_id');
       } catch(_){}
+      if (!pick) clearChartIdentityCache();
       return { auth: true, profile: pick };
     } catch(_) {
       if (retryCount === 0) {
@@ -1049,26 +1065,8 @@
 	          }
 	        }
 	      } catch(_){}
-	      var va = parse(sessionStorage.getItem('hk_view_as'));
-	      if (va && String(va.id || '').replace(/^p_/, '') === asIdClean && (va.birthDate || va.date) && (va.birthTimeKnown != null || va.birth_time_known != null)) {
-	        return norm(va, 'view-as');
-	      }
-	      /* 18 พ.ค. fix · mobile new tab fallback · localStorage 'hk_view_as_xfer' (TTL 60s) */
-	      try {
-	        var xfer = parse(localStorage.getItem('hk_view_as_xfer'));
-	        if (xfer && String(xfer.id || '').replace(/^p_/, '') === asIdClean && (xfer.birthDate || xfer.date)) {
-	          var age = Date.now() - (xfer.ts || 0);
-	          if (age < 60 * 1000 && (xfer.birthTimeKnown != null || xfer.birth_time_known != null)) {
-	            /* restore เป็น sessionStorage + clear localStorage หลังใช้ */
-	            try { sessionStorage.setItem('hk_view_as', JSON.stringify(xfer)); } catch(_){}
-	            try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
-	            return norm(xfer, 'view-as-xfer');
-	          }
-	          /* หมดอายุหรือ schema เก่า → ลบทิ้ง */
-	          try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
-	        }
-	      } catch(_){}
 	      /* ?as= ไม่ match · ดึง DB ไม่ได้ → กลับ /chart */
+	      try { sessionStorage.removeItem('hk_view_as'); localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
 	      window.location.replace('/chart');
 	      return null;
     }
@@ -1080,6 +1078,13 @@
 	        syncLocalStorage(snap);
 	        return snap;
 	      }
+	    }
+	    /* Logged-in identity is DB-only. A new account must never inherit the
+	     * previous account's local/session chart from the same browser. */
+	    if (res.auth) {
+	      clearChartIdentityCache();
+	      showNoProfileEmpty();
+	      return null;
 	    }
 	    /* 3. profile-sync fallback · กัน localStorage เก่าทับตอน /api/profile ช้าหรือสะดุด */
 	    if (window.__hkProfileReady) {
@@ -1097,15 +1102,9 @@
 	    if (lb && lb.date && !lb._viewAs) return norm(lb, 'local');
 	    var sb = parse(sessionStorage.getItem('hk_birth'));
 	    if (sb && sb.date) return norm(sb, 'session');
-	    /* 5. ไม่มีดวงเลย · แยก login/anon (9 ก.ค. 2026 · เจ้านายสั่ง ไม่บังคับ redirect) */
-    if (res.auth) {
-      /* login แล้ว แต่ไม่มี profile/date → empty-state กลางจอ (ไม่ replace /input) */
-      showNoProfileEmpty();
-    } else {
-      /* ไม่ได้ login บน device นี้ · localStorage ก็ไม่มี → /signup login tab */
-      var ret = encodeURIComponent('/chart');
-      window.location.replace('/signup?tab=login&next=' + ret);
-    }
+	    /* 5. anonymous + ไม่มี local chart → login */
+    var ret = encodeURIComponent('/chart');
+    window.location.replace('/signup?tab=login&next=' + ret);
     return null;
   }
   function requestBody(s){
