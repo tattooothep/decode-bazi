@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (rawPid) {
     const own = await q1<{ id: string }>(
       `SELECT id FROM profiles WHERE id = $1::uuid
-         AND (created_by_user_id = $2 OR ($3::text IS NOT NULL AND org_id = $3)) AND is_archived = false`,
+         AND (created_by_user_id = $2 OR ($3::uuid IS NOT NULL AND org_id = $3::uuid)) AND is_archived = false`,
       [rawPid, sess.userId, sess.orgId ?? null]
     );
     if (!own) return NextResponse.json({ ok: false, error: "profile_forbidden", message: "ไม่มีสิทธิ์บันทึกเข้าดวงนี้" }, { status: 403 });

@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { createToken } from "@/lib/auth-tokens";
-import { sendResetEmailTbs, isEmailTbsReady } from "@/lib/thaibulksms-email";
+import { sendResetEmail, isEmailReady } from "@/lib/email-service";
 import { sendSms, isSmsReady } from "@/lib/thaibulksms-sms";
 import { normalizePhone, isValidThaiMobile } from "@/lib/phone-otp";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
@@ -29,11 +29,8 @@ export async function POST(req: Request) {
   if (!isEmail && !isValidThaiMobile(phone)) {
     return NextResponse.json({ error: "กรอกอีเมลหรือเบอร์โทรที่ถูกต้อง" }, { status: 400 });
   }
-  if (isEmail && !isEmailTbsReady()) {
+  if (isEmail && !isEmailReady()) {
     return NextResponse.json({ error: "ระบบส่งอีเมลยังไม่พร้อม" }, { status: 503 });
-  }
-  if (isEmail && !process.env.TBS_TPL_RESET) {
-    return NextResponse.json({ error: "ยังไม่ได้ตั้งค่าแม่แบบอีเมลรีเซ็ตรหัส" }, { status: 503 });
   }
   if (!isEmail && !isSmsReady()) {
     return NextResponse.json({ error: "ระบบส่งข้อความยังไม่พร้อม" }, { status: 503 });
@@ -55,8 +52,8 @@ export async function POST(req: Request) {
   const link = `${APP_URL}/reset-password/${token}`;
   try {
     if (isEmail) {
-      const r = await sendResetEmailTbs({ to: email, name: user.name || undefined, link });
-      if (!r.ok) throw new Error(r.error || "send failed");
+      const r = await sendResetEmail({ to: email, name: user.name || undefined, link });
+      if (r.error) throw new Error(r.error.message || "send failed");
     } else {
       const r = await sendSms({
         to: phone,
@@ -67,9 +64,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "send failed";
-    if (message === "template UUID not set") {
-      return NextResponse.json({ error: "ยังไม่ได้ตั้งค่าแม่แบบอีเมลรีเซ็ตรหัส" }, { status: 503 });
-    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
