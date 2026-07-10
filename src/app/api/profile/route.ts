@@ -12,6 +12,13 @@ import { upsertSelfProfile } from "@/lib/self-profile";
 export async function GET() {
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  // heartbeat "ออนไลน์ตอนนี้" ของหลังบ้าน: ทุกหน้า login โหลด /api/profile (hk-profile-sync)
+  // อัปเดต last_active_at แบบ throttle 5 นาที (statement เดียว · fire-and-forget · ไม่บล็อก response)
+  q1(
+    `UPDATE users SET last_active_at=now()
+      WHERE id=$1 AND (last_active_at IS NULL OR last_active_at < now() - interval '5 minutes')`,
+    [s.userId]
+  ).catch(() => null);
   const owner = await q1<{ id: string; name: string | null; email: string }>(
     `SELECT id, name, email FROM users WHERE id=$1 AND deleted_at IS NULL`,
     [s.userId]
