@@ -50,8 +50,10 @@ function cellHtml(d){
   const combo=L.combos[d.tg+'|'+d.officer]||{};
   const label=(L.labels.daypower[d.tg]||{}).label||'';
   const title=combo.title||'', text=combo.text||'';
+  const LIUHE={子:'丑',丑:'子',寅:'亥',亥:'寅',卯:'戌',戌:'卯',辰:'酉',酉:'辰',巳:'申',申:'巳',午:'未',未:'午'};
   let chip='',chipCls='chu';
   if(CHONG[d.branch]===USER_YEAR){chip=L.conditions.chong_personal.chip;chipCls='ch';}
+  else if(LIUHE[d.branch]===USER_YEAR){chip=L.conditions.he_personal.chip;chipCls='he';}
   const sub=['ค่ำ '+lunarNum(d.lunar), L.labels.stem[d.stem], (L.labels.branch[d.branch]||{}).label].filter(Boolean).join(' · ');
   const goal=L.goals[d.officer+'|'+GOAL]||'';
   const cai=EZ_CAISHEN[d.stem],xi=EZ_XISHEN[d.stem];
@@ -59,10 +61,10 @@ function cellHtml(d){
   return `<div class="day-cell ez${d.day===10?' is-today':''}">
     <div class="ez-top"><span class="ez-num">${d.day}</span><span class="ez-power">${label}</span>${chip?`<span class="ez-chip ${chipCls}">${chip}</span>`:''}</div>
     <div class="ez-sub">${sub}</div>
-    ${title?`<div class="ez-title">${title}</div>`:''}
+    ${title&&title!==label?`<div class="ez-title">${title}</div>`:''}
     <div class="ez-text">${text}</div>
     ${goal?`<div class="ez-goal">▸ ${goal}</div>`:''}
-    <div class="ez-dir">💰${EZ_DIR_TH[cai]||''}${xi&&xi!==cai?` · 🌸${EZ_DIR_TH[xi]}`:''}<span style="margin-left:auto;display:inline-flex;gap:3px;">${dots}</span></div>
+    <div class="ez-dir"><span class="ez-dir-t">💰${EZ_DIR_TH[cai]||''}${xi&&xi!==cai?` · 🌸${EZ_DIR_TH[xi]}`:''}</span><span class="ez-dots">${dots}</span></div>
   </div>`;
 }
 

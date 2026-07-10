@@ -177,8 +177,8 @@
   .day-cell.selected{background:var(--gold-soft);box-shadow:inset 0 0 0 1px var(--gold);}
   /* 10 ก.ค. · โหมดอ่านง่าย (ปฏิทินภาษาคน) · ชั้นครอบใหม่ ไม่แตะ CSS เดิม · ถอด = ลบ block นี้ */
   .control-bar{grid-template-columns:auto 1fr auto auto;} /* เพิ่มช่องที่ 4 รองรับ #view-toggle · มือถือยัง 1fr เดิม */
-  .day-cell.ez{aspect-ratio:auto;height:128px;min-height:0;padding:8px;gap:3px;overflow:hidden;} /* สูงเท่ากันเป๊ะทุกช่อง ตามกติกาเหล็ก */
-  .ez-text{flex:none;}
+  .day-cell.ez{aspect-ratio:auto;height:142px;min-height:0;padding:8px;gap:3px;overflow:hidden;} /* สูงเท่ากันเป๊ะทุกช่อง · 142px พอ 7 บรรทัด+เป้า ไม่บีบสระไทย */
+  .ez-top,.ez-sub,.ez-title,.ez-text,.ez-goal{flex:none;} /* ห้าม flex บีบแถวจนตัวอักษรขาด */
   .ez-dir{margin-top:auto;}
   .ez-top{display:flex;align-items:center;gap:6px;}
   .ez-num{font-weight:700;font-size:14px;}
@@ -203,6 +203,7 @@
     .day-cell.ez{height:64px;padding:5px;gap:2px;}
     .ez-top{flex-wrap:wrap;row-gap:2px;}
     .ez-chip{flex-basis:auto;margin-left:0;max-width:3em;overflow:hidden;text-overflow:ellipsis;} /* มือถือเห็นไอคอน ⚠/✦ + สี ก็แยกชง/สมพงษ์ได้ */
+    .ez-chip.chu{display:none;} /* ชิพชงสากล (ทุกคนเหมือนกัน) ซ่อนบนมือถือ · แตะช่องดูในแผงข้าง */
     .ez-num{font-size:12px;}.ez-power{font-size:10px;flex:1 1 0;min-width:0;} /* คงบรรทัดเดียวกับเลขวัน */
     .ez-dir{border-top:none;padding-top:0;flex-shrink:0;} /* แถวทิศห้ามหดหาย */
   }
