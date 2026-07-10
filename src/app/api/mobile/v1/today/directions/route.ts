@@ -54,7 +54,10 @@ async function handle(req: Request) {
       userChart: payload.userChart,
       yongshen: payload.yongshen[0] || null,
     }),
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Authorization: req.headers.get("authorization") || "",
+      "Content-Type": "application/json",
+    },
     method: "POST",
   });
   const resp = await todayDirectionsPost(internalReq);

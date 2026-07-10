@@ -75,7 +75,10 @@ async function handle(req: Request) {
   url.searchParams.set("gender", payload.gender);
   url.searchParams.set("dayBoundary", payload.dayBoundary);
 
-  const resp = await calendarGet(new Request(url.toString(), { method: "GET" }));
+  const resp = await calendarGet(new Request(url.toString(), {
+    headers: req.headers,
+    method: "GET",
+  }));
   const data = await resp.json();
 
   return NextResponse.json(

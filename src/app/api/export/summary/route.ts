@@ -22,6 +22,7 @@ import { fusionHandler } from "@/lib/export/fusion";
 import { qimenHandler } from "@/lib/export/qimen";
 import { datepickHandler } from "@/lib/export/datepick";
 import { calendarHandler } from "@/lib/export/calendar";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -82,6 +83,18 @@ export async function POST(req: Request) {
     const page = String(body.page || "chart").trim();
     const handler = HANDLERS[page];
     if (!handler) return NextResponse.json({ error: "unsupported_page" }, { status: 400 });
+    const productAccess = await getProductAccess(userId);
+    const exportAllowed = page === "chart"
+      ? !!productAccess?.pages.chart.ai_summary_pdf
+      : page === "calendar"
+        ? !!productAccess?.pages.calendar.pdf
+        : true;
+    if (!exportAllowed) {
+      return NextResponse.json(
+        entitlementDenied(`${page}_pdf_locked`, { plan: productAccess?.plan || "free" }),
+        { status: 403 }
+      );
+    }
     const lang = isSifuAnswerLang(body.lang) ? String(body.lang) : "th";
     const rawInputs = (body.inputs || {}) as Record<string, unknown>;
 

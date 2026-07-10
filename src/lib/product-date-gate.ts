@@ -1,5 +1,4 @@
-import { getSession } from "@/lib/auth";
-import { getProductAccess, PRODUCT_PAGE_ENTITLEMENTS, type ProductPlan } from "@/lib/product-entitlement";
+import { currentRequestProductAccess } from "@/lib/product-request-access";
 
 function bangkokToday(): string {
   return new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -23,15 +22,12 @@ export function withinMonthWindow(year: number, month: number, windowMonths: num
   return Math.abs(year * 12 + month - (cy * 12 + cm)) <= Math.max(0, windowMonths);
 }
 
-export async function currentDateWindow(page: "today" | "calendar") {
-  const session = await getSession();
-  const access = session ? await getProductAccess(session.userId) : null;
-  const plan: ProductPlan = access?.plan || "free";
-  const pages = access?.pages || PRODUCT_PAGE_ENTITLEMENTS.free;
+export async function currentDateWindow(page: "today" | "calendar", req?: Request) {
+  const { session, plan, pages } = await currentRequestProductAccess(req);
   return {
     plan,
     userId: session?.userId || null,
     max: page === "today" ? pages.today.day_window : pages.calendar.month_window,
+    caps: page === "today" ? pages.today : pages.calendar,
   };
 }
-

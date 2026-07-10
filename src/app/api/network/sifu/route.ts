@@ -217,8 +217,8 @@ export async function POST(req: Request) {
     if (mode === "pair" && networkCaps?.pair_ai === "once") {
       const used = await q1<{ n: number }>(
         `SELECT GREATEST(0,
-           COUNT(*) FILTER (WHERE reason='spend_sifu_network_pair_pre') -
-           COUNT(*) FILTER (WHERE reason='refund_sifu_network_pair_pre')
+           COUNT(*) FILTER (WHERE reason IN ('spend_sifu_network_pair_pre','spend_sifu_compare_pre','use_sifu_compare_cached_trial')) -
+           COUNT(*) FILTER (WHERE reason IN ('refund_sifu_network_pair_pre','refund_sifu_compare_pre'))
          )::int AS n FROM hour_transactions WHERE user_id=$1`,
         [session.userId]
       );

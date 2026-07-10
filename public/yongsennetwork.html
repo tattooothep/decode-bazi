@@ -473,8 +473,8 @@
   /* ─────────── responsive ─────────── */
   @media (max-width:980px){
     .stage{padding:22px 18px 60px;}
-    .topbar{padding:14px 18px;flex-wrap:wrap;gap:10px;}
-    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .topbar{padding:14px 18px;flex-wrap:wrap;gap:10px;max-width:100vw;min-width:0;}
+    .nav{order:3;width:100%;max-width:100%;min-width:0;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
     .nav::-webkit-scrollbar{display:none;}
     .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
     .nav a .glyph{font-size:14px;}
@@ -1245,6 +1245,7 @@
       const r = await fetch('/api/network/score', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
+          purpose: 'visualization',
           scoringVersion: NETWORK_SCORING_VERSION,
           self: self.pillars,
           others: others.map(p=>({id:p.id, ...p.pillars})),
@@ -6838,6 +6839,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
-<script src="/js/hk-product-caps.js?v=4" defer></script>
+<script src="/js/hk-product-caps.js?v=5" defer></script>
 </body>
 </html>

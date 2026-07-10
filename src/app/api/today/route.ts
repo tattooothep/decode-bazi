@@ -12,7 +12,7 @@ import { entitlementDenied } from "@/lib/product-entitlement";
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({} as any));
   const date: string = body.date || new Date().toISOString().slice(0, 10);
-  const dateAccess = await currentDateWindow("today");
+  const dateAccess = await currentDateWindow("today", req);
   if (!withinDayWindow(date, dateAccess.max)) {
     return NextResponse.json(
       entitlementDenied("today_date_window", { plan: dateAccess.plan, max_days: dateAccess.max }),
@@ -91,7 +91,10 @@ export async function POST(req: Request) {
   const url = new URL(req.url);
   url.searchParams.set('date', date);
   if (userChart?.day?.stem) url.searchParams.set('dm', userChart.day.stem);
-  const fakeReq = new Request(url.toString(), { method: 'GET' });
+  const fakeReq = new Request(url.toString(), {
+    headers: req.headers,
+    method: 'GET',
+  });
   const resp = await GET(fakeReq);
   const data = await resp.json();
   if (data && userChart?.day?.stem && userChart.day.branch && data.pillars?.day) {
@@ -116,7 +119,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const date = url.searchParams.get("date") || new Date().toISOString().slice(0, 10);
-  const dateAccess = await currentDateWindow("today");
+  const dateAccess = await currentDateWindow("today", req);
   if (!withinDayWindow(date, dateAccess.max)) {
     return NextResponse.json(
       entitlementDenied("today_date_window", { plan: dateAccess.plan, max_days: dateAccess.max }),

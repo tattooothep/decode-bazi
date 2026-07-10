@@ -338,6 +338,9 @@
   .act-card li b{color:var(--fg);font-weight:600;}
   .act-card .when{margin-top:auto;padding-top:10px;border-top:1px dashed var(--tile-bd);font-family:var(--mono);font-size:9px;color:var(--fg-soft);letter-spacing:.14em;text-transform:uppercase;}
   .act-card .when b{color:var(--gold);}
+  .hk-entitlement-locked{position:relative!important;opacity:.46;filter:saturate(.25);cursor:pointer!important;overflow:hidden;}
+  .hk-entitlement-locked::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(10,12,14,.12),rgba(10,12,14,.72));color:#f1c96b;font-size:18px;z-index:5;pointer-events:none;}
+  .act-card.hk-entitlement-locked::after{content:'🔒  ' attr(data-required-plan);font-family:var(--thai);font-size:12px;font-weight:700;letter-spacing:0;text-transform:uppercase;}
 
   /* row: people + color */
   .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-top:18px;}
@@ -3427,6 +3430,11 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
               return r;
             };
             grid.innerHTML = srcHours.map(h => {
+              if (h.locked) {
+                const rg = String(h.range || '').replace(/^(\d+):00-/,'$1-').replace(':00','');
+                const lockTxt = HK9.pick({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'}, _lang);
+                return `<div class="h-cell hk-entitlement-locked" title="${escHtml(lockTxt)}" data-required-plan="${escHtml(h.required_plan||'Premium')}"><div class="br">${escHtml(h.branch||'')}</div><div class="rg">${escHtml(rg)}</div><div class="q">${escHtml(lockTxt)}</div></div>`;
+              }
               const displayQuality = _gateQuality(h.quality);
               const qCls = (displayQuality === 'best' || displayQuality === 'good') ? 'good' : (displayQuality === 'ok' ? 'ok' : 'bad');
               const cls = (h.isNow ? 'now ' : '') + qCls; /* NOW = กรอบทอง + สีตาม quality (ไม่บังคับ ok) */
@@ -3450,18 +3458,21 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
               const body = document.createElement('span'); body.style.cssText='margin-top:6px;display:inline-block;'; body.textContent = r; reasonBox.appendChild(body);
               reasonBox.style.display = 'block';
             }
-            grid.querySelectorAll('.h-cell').forEach(c => c.addEventListener('click', () => showReason(c)));
+            grid.querySelectorAll('.h-cell').forEach(c => c.addEventListener('click', () => {
+              if (c.classList.contains('hk-entitlement-locked')) { location.href='/pricing'; return; }
+              showReason(c);
+            }));
             const nowCell = grid.querySelector('.h-cell.now');
             if (nowCell) showReason(nowCell);
             /* update NOW card · ถ้าไม่มี isNow ให้ใช้ hour ตามเวลาตอนนี้ของ user เอง */
-            let nowH = srcHours.find(h => h.isNow);
+            let nowH = srcHours.find(h => h.isNow && !h.locked);
             if (!nowH) {
               /* fallback · คำนวณจากเวลาเครื่อง user */
               const userH = new Date().getHours();
               const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
               const branchIdx = Math.floor(((userH + 1) % 24) / 2);
               const wantBranch = BRANCHES[branchIdx];
-              nowH = srcHours.find(h => h.branch === wantBranch) || srcHours[0];
+              nowH = srcHours.find(h => h.branch === wantBranch && !h.locked) || srcHours.find(h => !h.locked);
             }
             if (nowH) {
               const ELN = { th:{wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'},
@@ -3633,6 +3644,13 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
             return tips;
           };
           grid.innerHTML = ad.actions.map(a => {
+            if (a.locked) {
+              const lockTxt = pk3({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'});
+              return `<article class="act-card ${goalClass[a.goal]||''} hk-entitlement-locked" data-required-plan="${escHtml(a.required_plan||'Premium')}" title="${escHtml(lockTxt)}" onclick="location.href='/pricing'">
+                <div class="h"><div class="ico">${a.icon||'✦'}</div><h4>${aTitle(a)}</h4></div>
+                <ul><li>${escHtml(lockTxt)}</li><li>••••••••••••</li></ul>
+              </article>`;
+            }
             const w = goalWindow[a.goal];
             const winHtml = w ? `<div class="when" style="margin-top:4px;font-size:11px;opacity:.85">${w.label} · <b>${w.t}</b></div>` : '';
             const displaySignal = gateSignal(a.signal);
@@ -3717,10 +3735,13 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
 	          C:{th:'กลาง',en:'Center',zh:'中',cn:'中',vi:'Trung tâm',ja:'中央',ru:'Центр',ko:'중앙',es:'Centro'}
 	        };
 	        const dirName = x => x ? (DIR_TX[x.direction] ? pk(DIR_TX[x.direction]) : (curLang === 'en' ? (x.direction_en || x.direction) : (x.direction_zh || x.direction))) : '—';
-	        const top = en.best?.[0] || en.scores[0];
+	        const unlockedScores = (en.scores || []).filter(x => !x.locked);
+	        const top = en.best?.[0] || unlockedScores[0];
+	        if (!top) return;
 	        const scoreByDir = new Map((en.scores || []).map(x => [x.direction, x]));
 	        const savedDir = window.__todayDirSelected;
-	        const selectedDir = scoreByDir.has(savedDir) ? savedDir : top.direction;
+	        const savedEntry = scoreByDir.get(savedDir);
+	        const selectedDir = savedEntry && !savedEntry.locked ? savedDir : top.direction;
 	        window.__todayDirSelected = selectedDir;
 	        const selected = scoreByDir.get(selectedDir) || top;
 	        const sqh = selected.qimen?.hour || null;
@@ -3787,6 +3808,13 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
 	        const mapCell = dir => {
 	          const x = scoreByDir.get(dir);
 	          if (!x) return '<div class="de-map-cell"></div>';
+	          if (x.locked) {
+	            const lockTxt = pk({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'});
+	            return `<button type="button" class="de-map-cell hk-entitlement-locked" data-required-plan="${escHtml(x.required_plan||'Premium')}" title="${escHtml(lockTxt)}" onclick="location.href='/pricing'">
+	              <div class="de-cell-dir"><span>${escHtml(dirName(x))}</span><span class="tc">🔒</span></div>
+	              <div class="de-cell-score"><b>••</b><span>${escHtml(lockTxt)}</span></div>
+	            </button>`;
+	          }
 	          const qh = x.qimen?.hour || null;
 	          const zh = x.zibai?.hour || null;
 	          const active = x.direction === selected.direction ? ' is-selected' : '';
@@ -3912,6 +3940,10 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         const dirNameL = dir => DIR_TX2[dir.direction] ? pk(DIR_TX2[dir.direction]) : (dir.direction_zh || dir.direction);
         if (compass) {
           compass.innerHTML = dd.directions.map(dir => {
+            if (dir.locked) {
+              const lockTxt = pk({th:'ล็อก',en:'Locked',zh:'已鎖定',cn:'已锁定',vi:'Đã khóa',ja:'ロック',ru:'Закрыто',ko:'잠김',es:'Bloqueado'});
+              return `<div class="dot hk-entitlement-locked" title="${escHtml(lockTxt)}" style="${positions[dir.direction]}" onclick="location.href='/pricing'">${escHtml(dirNameL(dir))}<span class="tc">🔒</span></div>`;
+            }
             const cls = dir.quality === 'best' || dir.quality === 'good' ? 'good' : dir.quality === 'avoid' ? 'bad' : '';
             const title = `${dirNameL(dir)} · ${dir.direction_zh || ''} · ${dir.quality}`;
             return `<div class="dot ${cls}" title="${escHtml(title)}" style="${positions[dir.direction]}">${escHtml(dirNameL(dir))}<span class="tc">${curLang === 'zh' ? '' : escHtml(dir.direction_zh || '')}</span></div>`;
@@ -4202,6 +4234,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
-<script src="/js/hk-product-caps.js?v=4" defer></script>
+<script src="/js/hk-product-caps.js?v=5" defer></script>
 </body>
 </html>

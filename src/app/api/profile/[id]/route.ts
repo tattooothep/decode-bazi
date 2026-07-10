@@ -13,6 +13,7 @@ import { normalizeNetworkGroup, normalizeNonSelfRelationship } from "@/lib/profi
 import { findMatchingSelfProfile } from "@/lib/profile-clone-guard";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -99,6 +100,31 @@ export async function PUT(req: Request, ctx: Ctx) {
 
   const requestedGroupRaw = networkGroup !== undefined ? normalizeNetworkGroup(networkGroup, "general") : null;
   const requestedGroup = requestedGroupRaw === "self" && !existing.is_self ? "general" : requestedGroupRaw;
+  if (!existing.is_self && requestedGroup && requestedGroup !== "general" && requestedGroup !== existing.network_group) {
+    const access = await getProductAccess(s.userId);
+    const caps = access?.pages.network;
+    if (!caps || caps.groups < 1) {
+      return NextResponse.json(
+        entitlementDenied("network_group_locked", { plan: access?.plan || "free", max: caps?.groups || 0 }),
+        { status: 403 }
+      );
+    }
+    const usage = await q1<{ group_exists: boolean; group_count: number; people_count: number }>(
+      `SELECT
+         EXISTS(SELECT 1 FROM profiles WHERE created_by_user_id=$1 AND is_archived=false AND network_group=$2 AND id<>$3) AS group_exists,
+         (SELECT COUNT(DISTINCT network_group)::int FROM profiles
+           WHERE created_by_user_id=$1 AND is_archived=false AND network_group NOT IN ('self','general') AND id<>$3) AS group_count,
+         (SELECT COUNT(*)::int FROM profiles
+           WHERE created_by_user_id=$1 AND is_archived=false AND network_group=$2 AND id<>$3) AS people_count`,
+      [s.userId, requestedGroup, id]
+    );
+    if (!usage?.group_exists && (Number(usage?.group_count) || 0) >= caps.groups) {
+      return NextResponse.json(entitlementDenied("network_group_limit", { plan: access?.plan, max: caps.groups }), { status: 403 });
+    }
+    if ((Number(usage?.people_count) || 0) >= caps.group_people) {
+      return NextResponse.json(entitlementDenied("network_group_people_limit", { plan: access?.plan, max: caps.group_people }), { status: 403 });
+    }
+  }
   if (requestedGroup !== null) {
     sets.push(`"network_group"=$${i++}`);
     params.push(existing.is_self ? "self" : requestedGroup);

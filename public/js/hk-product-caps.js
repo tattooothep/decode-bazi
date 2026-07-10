@@ -507,6 +507,150 @@
     lockEl(el, t(key));
   }
 
+  function ensurePreviewLockStyles() {
+    if (document.getElementById("hk-preview-lock-styles")) return;
+    var style = document.createElement("style");
+    style.id = "hk-preview-lock-styles";
+    style.textContent =
+      ".hk-lock-preview{position:relative!important;filter:saturate(.35)}" +
+      ".hk-lock-preview-badge{position:absolute;top:10px;right:10px;z-index:12;display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid rgba(200,164,77,.5);border-radius:7px;background:rgba(12,14,18,.9);color:var(--gold,#c8a44d);font:700 11px/1.2 sans-serif;letter-spacing:0;pointer-events:none}" +
+      "tr.hk-lock-preview .hk-lock-preview-badge{position:static;margin-left:6px;padding:3px 6px;font-size:10px}";
+    document.head.appendChild(style);
+  }
+
+  function lockPreviewEl(el, requiredPlan) {
+    if (!el) return;
+    ensurePreviewLockStyles();
+    lockElKey(el, "lock_generic");
+    if (el.tagName === "BUTTON") {
+      el.disabled = false;
+      el.setAttribute("aria-disabled", "true");
+    }
+    el.classList.add("hk-lock-preview");
+    var badge = el.querySelector(":scope > .hk-lock-preview-badge");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "hk-lock-preview-badge";
+      if (el.tagName === "TR") (el.querySelector("th,td") || el).appendChild(badge);
+      else el.appendChild(badge);
+    }
+    badge.textContent = "🔒 " + requiredPlan;
+    badge.setAttribute("aria-label", t("lock_generic"));
+  }
+
+  function applyChartLocks() {
+    var caps = window.HK_PRODUCT.caps || {};
+    var chart = (caps.pages && caps.pages.chart) || {
+      detail: "summary",
+      luck_cycles: "current",
+      ai_summary_pdf: false,
+    };
+    var ranks = { summary: 0, guided: 1, full: 2, technical: 3 };
+    var currentRank = ranks[chart.detail] == null ? 0 : ranks[chart.detail];
+    var required = { guided: planLabel("trial"), full: "Premium", technical: "Master" };
+    document.querySelectorAll("[data-chart-tier]").forEach(function (el) {
+      var tier = el.getAttribute("data-chart-tier") || "summary";
+      if ((ranks[tier] || 0) > currentRank) lockPreviewEl(el, required[tier] || "Premium");
+    });
+
+    var luckVisible = chart.luck_cycles === "current" ? 1 : chart.luck_cycles === "current_next" ? 2 : 8;
+    document.querySelectorAll(".hk-luck-row .hk-luck-card").forEach(function (card, index) {
+      if (index >= luckVisible) {
+        lockPreviewEl(card, chart.luck_cycles === "current" ? planLabel("trial") : "Premium");
+      }
+    });
+    if (!chart.ai_summary_pdf) lockPreviewEl(document.getElementById("hk-chart-summary-pdf"), planLabel("trial"));
+    injectBanner({});
+  }
+
+  function applyNetworkLocks() {
+    var caps = window.HK_PRODUCT.caps || {};
+    var network = (caps.pages && caps.pages.network) || {
+      visualization_profiles: 1,
+      groups: 0,
+      pair_compare: "locked",
+      team_analysis: false,
+      pair_ai: "locked",
+      team_ai: false,
+      bulk_ai: false,
+    };
+    var visible = Math.max(1, Number(network.visualization_profiles) || 1);
+    document.querySelectorAll("#people-grid .person-card").forEach(function (card, index) {
+      if (index >= visible) lockPreviewEl(card, window.HK_PRODUCT.plan === "trial" ? "Premium" : planLabel("trial"));
+    });
+    if (network.pair_compare === "locked") {
+      document.querySelectorAll("[data-compare]").forEach(function (button) {
+        lockPreviewEl(button, planLabel("trial"));
+      });
+    }
+    if (!network.team_analysis) {
+      lockPreviewEl(document.querySelector('#view-tabs button[data-view="team"]'), "Master");
+    }
+    if (!network.bulk_ai) lockPreviewEl(document.getElementById("hk-add-bulk-btn"), "Master");
+    if (network.pair_ai === "locked") {
+      ["cm-sifu-input", "cm-sifu-send", "cm-sifu-topics"].forEach(function (id) {
+        lockPreviewEl(document.getElementById(id), planLabel("trial"));
+      });
+    }
+    if (!network.team_ai) {
+      ["hk-team-ai-btn", "tb-ai-plan-btn", "team-sifu-input", "team-sifu-send"].forEach(function (id) {
+        lockPreviewEl(document.getElementById(id), "Master");
+      });
+    }
+    var customGroups = Array.prototype.slice.call(document.querySelectorAll(".group-chips button[data-g]")).filter(function (button) {
+      return button.getAttribute("data-g") !== "all" && button.getAttribute("data-g") !== "general";
+    });
+    customGroups.forEach(function (button, index) {
+      if (index >= Number(network.groups || 0)) lockPreviewEl(button, window.HK_PRODUCT.plan === "trial" ? "Premium" : planLabel("trial"));
+    });
+    var createGroup = document.querySelector(".group-chips button:not([data-g])");
+    if (createGroup && Number(network.groups || 0) < 1) lockPreviewEl(createGroup, planLabel("trial"));
+    injectBanner({});
+  }
+
+  function applyNetworkCompareLocks() {
+    var caps = window.HK_PRODUCT.caps || {};
+    var network = caps.pages && caps.pages.network;
+    if (!network || network.pair_compare === "locked") {
+      lockPreviewEl(document.getElementById("cmp-go"), planLabel("trial"));
+      var form = document.querySelector(".cmp-input-row");
+      if (form) lockPreviewEl(form, planLabel("trial"));
+    }
+    injectBanner({});
+  }
+
+  function applyFengshuiLocks() {
+    var caps = window.HK_PRODUCT.caps || {};
+    var fengshui = (caps.pages && caps.pages.fengshui) || { houses: 0, layers: "basic", multi_profile: false };
+    var rank = { basic: 0, trial: 1, full: 2, professional: 3 };
+    var current = rank[fengshui.layers] == null ? 0 : rank[fengshui.layers];
+    var required = { trial: planLabel("trial"), full: "Premium", professional: "Master" };
+    var controls = [
+      [".layer-btn[data-layer='year'],[data-map-layer='year'],[data-map-layer='affliction'],[data-luopan-layer='year'],[data-luopan-layer='blocker']", "trial"],
+      [".layer-btn[data-layer='month'],[data-map-layer='month'],[data-map-layer='hex64'],[data-luopan-layer='month'],[data-luopan-layer='hex64'],.school-btn[data-school='hex'],.school-btn[data-school='mansion']", "full"],
+      [".layer-btn[data-layer='day'],[data-map-layer='day'],[data-map-layer='hour'],[data-luopan-layer='day'],[data-luopan-layer='hour'],[data-luopan-layer='qimen']", "professional"],
+    ];
+    controls.forEach(function (entry) {
+      var needed = entry[1];
+      if (current >= rank[needed]) return;
+      document.querySelectorAll(entry[0]).forEach(function (button) {
+        if (button.classList.contains("active")) {
+          try { button.click(); } catch (_) { button.classList.remove("active"); }
+        }
+        lockPreviewEl(button, required[needed]);
+      });
+    });
+    if (!fengshui.multi_profile) {
+      document.querySelectorAll("#peopleList .person-row").forEach(function (row, index) {
+        if (index >= 1) lockPreviewEl(row, "Master");
+      });
+      if (document.querySelectorAll("#peopleList .person-row").length >= 1) {
+        lockPreviewEl(document.getElementById("btnAddPerson"), "Master");
+      }
+    }
+    injectBanner({});
+  }
+
   function applyDatepickLocks() {
     var caps = window.HK_PRODUCT.caps || {};
     var allow = new Set(caps.datepick_modules || DEFAULT_FREE_MODULES);
@@ -611,6 +755,14 @@
     else if (page === "luopan") applyLuopanLocks();
     else if (page === "qimen") {
       applyQimenLocks();
+    } else if (page === "chart") {
+      applyChartLocks();
+    } else if (page === "network") {
+      applyNetworkLocks();
+    } else if (page === "network_compare") {
+      applyNetworkCompareLocks();
+    } else if (page === "fengshui") {
+      applyFengshuiLocks();
     } else if (page !== "forecast" && page !== "palmistry") {
       /* generic banner if plan limited */
       injectBanner({});
@@ -662,6 +814,10 @@
     datepick: applyDatepickLocks,
     luopan: applyLuopanLocks,
     qimen: applyQimenLocks,
+    chart: applyChartLocks,
+    network: applyNetworkLocks,
+    networkCompare: applyNetworkCompareLocks,
+    fengshui: applyFengshuiLocks,
     banner: injectBanner,
     planLabel: planLabel,
     t: t,
@@ -677,6 +833,31 @@
       if (page === "qimen") {
         setTimeout(applyQimenLocks, 800);
         setTimeout(applyQimenLocks, 2000);
+      } else if (page === "chart") {
+        setTimeout(applyChartLocks, 800);
+        setTimeout(applyChartLocks, 2000);
+      } else if (page === "network") {
+        setTimeout(applyNetworkLocks, 800);
+        setTimeout(applyNetworkLocks, 2000);
+        var peopleGrid = document.getElementById("people-grid");
+        if (peopleGrid && window.MutationObserver) {
+          var networkTimer = 0;
+          new MutationObserver(function () {
+            clearTimeout(networkTimer);
+            networkTimer = setTimeout(applyNetworkLocks, 40);
+          }).observe(peopleGrid, { childList: true });
+        }
+      } else if (page === "fengshui") {
+        setTimeout(applyFengshuiLocks, 800);
+        setTimeout(applyFengshuiLocks, 2000);
+        var peopleList = document.getElementById("peopleList");
+        if (peopleList && window.MutationObserver) {
+          var fengshuiTimer = 0;
+          new MutationObserver(function () {
+            clearTimeout(fengshuiTimer);
+            fengshuiTimer = setTimeout(applyFengshuiLocks, 40);
+          }).observe(peopleList, { childList: true });
+        }
       }
     });
   }

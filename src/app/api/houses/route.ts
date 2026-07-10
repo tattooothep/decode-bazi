@@ -63,6 +63,19 @@ export async function POST(req: Request) {
           start_lat, start_lng, end_lat, end_lng,
           floor_plan_url, family_members, is_primary } = b;
 
+  const family = Array.isArray(family_members) ? family_members : [];
+  const familyLimit = access?.pages.fengshui.multi_profile ? 30 : 1;
+  if (family.length > familyLimit) {
+    return NextResponse.json(
+      entitlementDenied("fengshui_multi_profile_locked", {
+        plan: access?.plan || "free",
+        requested: family.length,
+        max: familyLimit,
+      }),
+      { status: 403 }
+    );
+  }
+
   if (!name || lat === undefined || lng === undefined || face_angle === undefined) {
     return NextResponse.json({ error: 'Missing required: name, lat, lng, face_angle' }, { status: 400 });
   }
@@ -85,7 +98,7 @@ export async function POST(req: Request) {
        lat, lng, address ?? null,
        face_angle, sit, facing_mountain ?? null, facing_direction ?? null,
        method ?? 'two_pin', start_lat ?? null, start_lng ?? null, end_lat ?? null, end_lng ?? null,
-       floor_plan_url ?? null, JSON.stringify(family_members ?? [])]
+       floor_plan_url ?? null, JSON.stringify(family)]
     );
     return NextResponse.json({ house: row }, { status: 201 });
   } catch (err: any) {

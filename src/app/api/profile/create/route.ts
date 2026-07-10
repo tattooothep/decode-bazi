@@ -73,6 +73,38 @@ export async function POST(req: Request) {
     );
   }
 
+  const access = await getProductAccess(s.userId);
+  const networkCaps = access?.pages.network;
+  if (group !== "general") {
+    if (!networkCaps || networkCaps.groups < 1) {
+      return NextResponse.json(
+        entitlementDenied("network_group_locked", { plan: access?.plan || "free", max: networkCaps?.groups || 0 }),
+        { status: 403 }
+      );
+    }
+    const groupUsage = await q1<{ group_exists: boolean; group_count: number; people_count: number }>(
+      `SELECT
+         EXISTS(SELECT 1 FROM profiles WHERE org_id=$1 AND is_archived=false AND network_group=$2) AS group_exists,
+         (SELECT COUNT(DISTINCT network_group)::int FROM profiles
+           WHERE org_id=$1 AND is_archived=false AND network_group NOT IN ('self','general')) AS group_count,
+         (SELECT COUNT(*)::int FROM profiles
+           WHERE org_id=$1 AND is_archived=false AND network_group=$2) AS people_count`,
+      [s.orgId, group]
+    );
+    if (!groupUsage?.group_exists && (Number(groupUsage?.group_count) || 0) >= networkCaps.groups) {
+      return NextResponse.json(
+        entitlementDenied("network_group_limit", { plan: access?.plan, max: networkCaps.groups }),
+        { status: 403 }
+      );
+    }
+    if ((Number(groupUsage?.people_count) || 0) >= networkCaps.group_people) {
+      return NextResponse.json(
+        entitlementDenied("network_group_people_limit", { plan: access?.plan, max: networkCaps.group_people }),
+        { status: 403 }
+      );
+    }
+  }
+
   // duplicate guard: same org + same person payload (name/relationship/datetime) and not archived
   // ป้องกันกดซ้ำ/ยิงซ้ำจาก UI แล้วเกิด profile โคลน
   const existed = await q1<{ id: string }>(
@@ -108,7 +140,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, created: false, duplicate: true, profile: fullExisting });
   }
 
-  const access = await getProductAccess(s.userId);
   const profileLimit = access?.pages.network.saved_profiles ?? 1;
   const profileCount = await q1<{ n: number }>(
     `SELECT COUNT(*)::int AS n FROM profiles

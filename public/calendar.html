@@ -139,6 +139,9 @@
   .intent-dd-menu .opt.on{background:var(--gold-soft);color:var(--gold);font-weight:600;}
   .intent-dd-menu .opt .ico{font-size:16px;width:20px;text-align:center;}
   .intent-dd-menu .opt.all{border-bottom:1px solid var(--gold-line);margin-bottom:4px;padding-bottom:10px;}
+  .cal-ent-locked{position:relative;opacity:.46;filter:saturate(.25);cursor:pointer!important;}
+  .cal-ent-locked::after{content:'🔒';margin-left:auto;color:var(--gold);font-size:12px;}
+  button.cal-ent-locked::after{margin-left:4px;}
   .intent-status{font-size:12px;color:var(--gold);font-style:italic;}
   /* Filter mode · highlight days */
   .day-cell.intent-good{box-shadow:inset 0 0 0 2px var(--good,#7ec47e);}
@@ -688,9 +691,11 @@
     let html = `<div class="opt all ${state.intent === null ? 'on' : ''}" data-intent=""><span class="ico">📋</span><span>${labels.all}</span></div>`;
     ['work','wealth','love','home','travel'].forEach(grp => {
       html += `<div class="grp">${INTENT_GROUP_LABELS[grp][lang]}</div>`;
+      const allowed = new Set((MONTH_DATA.entitlement && MONTH_DATA.entitlement.allowed_intents) || INTENTS_CAL.map(x=>x.id));
       INTENTS_CAL.filter(i => i.group === grp).forEach(i => {
         const label = i[lang] || i.th;
-        html += `<div class="opt ${state.intent === i.id ? 'on' : ''}" data-intent="${i.id}"><span class="ico">${i.icon}</span><span>${label}</span></div>`;
+        const locked = !allowed.has(i.id);
+        html += `<div class="opt ${state.intent === i.id ? 'on' : ''} ${locked ? 'cal-ent-locked' : ''}" data-intent="${i.id}" ${locked ? 'data-ent-locked="1"' : ''}><span class="ico">${i.icon}</span><span>${label}</span></div>`;
       });
     });
     menu.innerHTML = html;
@@ -730,7 +735,8 @@
     /* คัด good days · sort by score desc · top 3 */
     const goodDays = (days||[]).filter(d => d.intentStatus && d.intentStatus[state.intent] === 'good' && d.verdict);
     goodDays.sort((a,b) => (b.verdict?.score||0) - (a.verdict?.score||0));
-    const top = goodDays.slice(0, 3);
+    const rankLimit = Math.max(1, Number(MONTH_DATA.entitlement?.ranked_days || 3));
+    const top = goodDays.slice(0, rankLimit);
     const MEDALS = ['🥇','🥈','🥉'];
     const LBL = {
       th: { head: `🔍 ดู ${sel.icon} ${sel.th}`, found: 'พบ', days: 'วันเหมาะ', best:'ดีสุด', score:'คะแนน', empty:'ไม่พบวันเหมาะในเดือนนี้' },
@@ -783,6 +789,7 @@
       return;
     }
     if (opt) {
+      if (opt.dataset.entLocked === '1') { location.href='/pricing'; return; }
       const id = opt.dataset.intent || null;
       state.intent = id || null;
       menu.hidden = true;
@@ -2056,7 +2063,34 @@
     return DAY_DETAILS[date];
   }
 
-  function render(){ updateMonthHeader(); renderCal(); renderSide(); }
+  function calendarLockText(){
+    const raw = String(getRawLang() || 'th').toLowerCase();
+    return ({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'})[raw] || 'Locked · see plans';
+  }
+  function applyCalendarEntitlementUi(){
+    const ent = MONTH_DATA.entitlement;
+    if (!ent) return;
+    const oneGoal = ent.intents === 'one';
+    document.querySelectorAll('#goal-bar button[data-goal]').forEach(btn => {
+      const locked = oneGoal && !['all','wealth'].includes(btn.dataset.goal || '');
+      btn.classList.toggle('cal-ent-locked', locked);
+      if (locked) { btn.dataset.entLocked='1'; btn.title=calendarLockText(); }
+      else { delete btn.dataset.entLocked; btn.removeAttribute('title'); }
+    });
+    ['cal-pdf-btn','hk-calendar-summary-pdf'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.classList.toggle('cal-ent-locked', !ent.pdf);
+      if (!ent.pdf) {
+        btn.dataset.entLocked='1';
+        btn.title=calendarLockText();
+      } else {
+        delete btn.dataset.entLocked;
+        btn.removeAttribute('title');
+      }
+    });
+  }
+  function render(){ updateMonthHeader(); renderCal(); renderSide(); applyCalendarEntitlementUi(); }
 
   /* ─── โหลด /api/calendar · ส่ง birth ถ้ามี เพื่อใช้ wrapper-6 (ตำราใหม่) ─── */
   async function loadMonth(year, month, opts){
@@ -2149,10 +2183,21 @@
   document.getElementById('goal-bar').addEventListener('click', e=>{
     const btn = e.target.closest('button[data-goal]');
     if(!btn) return;
+    if(btn.dataset.entLocked === '1') { e.preventDefault(); location.href='/pricing'; return; }
     document.querySelectorAll('#goal-bar button').forEach(b=>b.classList.remove('on'));
     btn.classList.add('on');
     state.goal = btn.dataset.goal;
     render();
+  });
+
+  document.querySelectorAll('#cal-pdf-btn,#hk-calendar-summary-pdf').forEach(btn => {
+    btn.addEventListener('click', e => {
+      if (btn.dataset.entLocked === '1') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        location.href='/pricing';
+      }
+    }, true);
   });
 
   // initial · resolve DM แล้วโหลดเดือนปัจจุบัน
@@ -2721,6 +2766,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 </script>
 <script src="/js/hk-print.js?v=4" defer></script>
-<script src="/js/hk-product-caps.js?v=4" defer></script>
+<script src="/js/hk-product-caps.js?v=5" defer></script>
 </body>
 </html>

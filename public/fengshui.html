@@ -2073,6 +2073,127 @@ function saveHouseInputs(){
     if(st) st.textContent = _fstx('auto.f.292','บันทึกแล้วในเครื่องนี้');
   }catch(e){}
 }
+let activeFengshuiHouseId = null;
+function packFengshuiHouseNote(){
+  return JSON.stringify({
+    _fengshui: {
+      v: 1,
+      constructionYear: Number(document.getElementById('houseConstructionYear')?.value || 2026),
+      period: Number(document.getElementById('housePeriod')?.value || 9),
+      directionSource: houseDirectionSource || 'manual'
+    }
+  });
+}
+function unpackFengshuiHouseNote(note){
+  try { const parsed = JSON.parse(String(note || '')); return parsed && parsed._fengshui ? parsed._fengshui : {}; }
+  catch(e) { return {}; }
+}
+function fengshuiHouseLocation(){
+  try {
+    const center = map && map.getCenter ? map.getCenter() : null;
+    if(center) return { lat:Number(center.lat()), lng:Number(center.lng()) };
+  } catch(e){}
+  return { lat:13.8378, lng:100.4823 };
+}
+function fengshuiFamilyPayload(){
+  return (people || []).map((p, index) => ({
+    person_id: `fengshui_${index + 1}`,
+    name: p.name,
+    year: p.year,
+    gender: p.gender,
+    room: p.room || null,
+    kua: calcLifeGua(p.year, p.gender)
+  }));
+}
+function currentFengshuiCloudPayload(){
+  const rawFacing = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
+  const facing = Number(rawFacing);
+  if(!rawFacing || !Number.isFinite(facing)) return null;
+  const normalized = normalizeDeg(facing);
+  const mountain = get24Mountain(normalized);
+  const loc = fengshuiHouseLocation();
+  return {
+    name: String(document.getElementById('houseName')?.value || '').trim() || _fstx('auto.f.296','บ้านของฉัน'),
+    note: packFengshuiHouseNote(),
+    lat: loc.lat,
+    lng: loc.lng,
+    face_angle: normalized,
+    sit_angle: normalizeDeg(normalized + 180),
+    facing_mountain: String(mountain?.code || mountain?.h || '').slice(0, 16),
+    facing_direction: String(getDirectionName(normalized) || '').slice(0, 40),
+    method: 'fengshui',
+    family_members: fengshuiFamilyPayload(),
+    is_primary: false
+  };
+}
+async function saveFengshuiHouseCloud(){
+  const st = document.getElementById('houseSaveStatus');
+  const payload = currentFengshuiCloudPayload();
+  if(!payload){ if(st) st.textContent = _fstx('auto.f.147','ยังไม่มีองศาที่ใช้ยืนยัน'); return false; }
+  if(st) st.textContent = _fstx('auto.f.294','กำลังบันทึกเข้าบัญชี...');
+  try {
+    const listRes = await fetch('/api/houses', { credentials:'same-origin', cache:'no-store' });
+    if(listRes.status === 401){ if(st) st.textContent = _fstx('auto.f.295','เข้าสู่ระบบเพื่อบันทึกบ้าน'); return false; }
+    const list = listRes.ok ? await listRes.json() : { houses:[] };
+    const existing = (list.houses || []).find(h => String(h.id) === String(activeFengshuiHouseId || ''))
+      || (list.houses || []).find(h => String(h.name || '') === payload.name);
+    const url = existing ? `/api/houses/${encodeURIComponent(existing.id)}` : '/api/houses';
+    const res = await fetch(url, {
+      method: existing ? 'PATCH' : 'POST',
+      credentials:'same-origin',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){
+      const msg = data.message || data.error || `HTTP ${res.status}`;
+      if(st) st.textContent = `${msg}${data.upgrade ? ' · '+data.upgrade : ''}`;
+      return false;
+    }
+    const row = data.house || data;
+    activeFengshuiHouseId = row.id || existing?.id || null;
+    saveHouseInputs();
+    if(st) st.textContent = `☁ ${_fstx('auto.f.292','บันทึกแล้ว')} · ${payload.name}`;
+    return true;
+  } catch(e) {
+    if(st) st.textContent = `${_fstx('auto.f.297','บันทึกไม่สำเร็จ')} · ${e.message || e}`;
+    return false;
+  }
+}
+async function loadFengshuiHouseCloud(){
+  const st = document.getElementById('houseSaveStatus');
+  if(st) st.textContent = _fstx('auto.f.298','กำลังโหลดบ้านจากบัญชี...');
+  try {
+    const res = await fetch('/api/houses', { credentials:'same-origin', cache:'no-store' });
+    if(res.status === 401){ if(st) st.textContent = _fstx('auto.f.295','เข้าสู่ระบบเพื่อโหลดบ้าน'); return false; }
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const rows = data.houses || [];
+    const row = rows.find(h => String(h.id) === String(activeFengshuiHouseId || ''))
+      || rows.find(h => unpackFengshuiHouseNote(h.note).v === 1)
+      || rows[0];
+    if(!row){ if(st) st.textContent = _fstx('auto.f.291','ยังไม่มีบ้านที่บันทึกไว้'); return false; }
+    const meta = unpackFengshuiHouseNote(row.note);
+    activeFengshuiHouseId = row.id;
+    document.getElementById('houseName').value = row.name || _fstx('auto.f.296','บ้านของฉัน');
+    document.getElementById('houseFacingDeg').value = String(Math.round(Number(row.face_angle || 0) * 10) / 10);
+    if(Number.isFinite(Number(meta.constructionYear))) document.getElementById('houseConstructionYear').value = Number(meta.constructionYear);
+    if(Number.isFinite(Number(meta.period))) document.getElementById('housePeriod').value = Number(meta.period);
+    if(Array.isArray(row.family_members)) {
+      people = row.family_members.map(p => ({ name:String(p.name || '').slice(0,80), year:Number(p.year), gender:p.gender === 'female' ? 'female' : 'male', room:p.room || null }))
+        .filter(p => p.name && Number.isFinite(p.year));
+      savePeople(); renderPeopleList(); renderPersonFilter();
+    }
+    syncHouseMountainFromDegree(false);
+    saveHouseInputs();
+    lockHouseDirection(Number(row.face_angle), 'saved', true);
+    if(st) st.textContent = `☁ ${_fstx('auto.f.290','โหลดบ้านที่บันทึกไว้แล้ว')} · ${row.name} · ${data.count}/${data.limit >= 900 ? '∞' : data.limit}`;
+    return true;
+  } catch(e) {
+    if(st) st.textContent = `${_fstx('auto.f.299','โหลดไม่สำเร็จ')} · ${e.message || e}`;
+    return false;
+  }
+}
 function syncHouseMountainFromDegree(save=true){
   const raw = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
   if(raw === '') return;
@@ -2276,12 +2397,8 @@ document.getElementById('btnOpenLuopanFull')?.addEventListener('click', openLuop
 document.getElementById('btnOpenLuopanPage')?.addEventListener('click', openLuopanPageFromCta);
 document.getElementById('btnOpenLuopanFromHouse')?.addEventListener('click', openLuopanFullFromCta);
 document.getElementById('btnCalcHouseChart').addEventListener('click', calculateHouseChart);
-document.getElementById('btnSaveHouse').addEventListener('click', ()=>{ saveHouseInputs(); calculateHouseChart(); });
-document.getElementById('btnLoadHouse').addEventListener('click', ()=>{
-  const loaded = loadSavedHouseInputs(true);
-  const raw = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
-  if(loaded.hasAny && raw !== '' && Number.isFinite(Number(raw))) lockHouseDirection(Number(raw), 'saved', true);
-});
+document.getElementById('btnSaveHouse').addEventListener('click', async ()=>{ if(await saveFengshuiHouseCloud()) calculateHouseChart(); });
+document.getElementById('btnLoadHouse').addEventListener('click', loadFengshuiHouseCloud);
 document.getElementById('btnLockHouseFromMap').addEventListener('click', lockMeasuredFacingToHouse);
 document.getElementById('btnNow').addEventListener('click', ()=>{ initDateInputs(); renderGrid(); });
 document.getElementById('setYear').addEventListener('change', renderGrid);
@@ -2581,6 +2698,8 @@ document.getElementById('peopleList')?.addEventListener('click', (ev)=>{
 });
 
 document.getElementById('btnAddPerson')?.addEventListener('click', ()=>{
+  const fsCaps = window.HK_PRODUCT?.caps?.pages?.fengshui;
+  if(fsCaps && !fsCaps.multi_profile && people.length >= 1){ window.location.href='/pricing'; return; }
   const name = document.getElementById('pfName').value.trim();
   const year = parseInt(document.getElementById('pfYear').value);
   const gender = document.getElementById('pfGender').value;
@@ -5668,6 +5787,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 
 </script>
-<script src="/js/hk-product-caps.js?v=4" defer></script>
+<script src="/js/hk-product-caps.js?v=5" defer></script>
 </body>
 </html>

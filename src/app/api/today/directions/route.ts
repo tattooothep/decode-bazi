@@ -8,6 +8,9 @@
  */
 import { NextResponse } from "next/server";
 import { computeFlyingLayers } from "@/lib/fengshui-luxing";
+import { entitlementDenied } from "@/lib/product-entitlement";
+import { withinDayWindow } from "@/lib/product-date-gate";
+import { currentRequestProductAccess, nextRequiredPlan } from "@/lib/product-request-access";
 
 const STEM_ELEMENT: Record<string, "wood"|"fire"|"earth"|"metal"|"water"> = {
   甲:"wood",乙:"wood",丙:"fire",丁:"fire",戊:"earth",己:"earth",
@@ -544,6 +547,14 @@ export async function POST(req: Request) {
 
   const [yy, mm, dd] = date.split("-").map(Number);
   if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400 });
+  const product = await currentRequestProductAccess(req);
+  const todayCaps = product.pages.today;
+  if (!withinDayWindow(date, todayCaps.day_window)) {
+    return NextResponse.json(
+      entitlementDenied("today_date_window", { plan: product.plan, max_days: todayCaps.day_window }),
+      { status: 403 }
+    );
+  }
 
   /* day pillar เพื่อปรับ direction tilt (วันนี้ธาตุไหนเด่น) */
   const tyme = await import("tyme4ts");
@@ -584,15 +595,6 @@ export async function POST(req: Request) {
     };
   });
 
-  const summary = {
-    good: directions
-      .filter(d => d.quality === "best" || d.quality === "good")
-      .map(d => d.direction),
-    avoid: directions
-      .filter(d => d.quality === "avoid")
-      .map(d => d.direction),
-  };
-
   const [qimenDay, qimenHour] = await Promise.all([
     buildQimenLayer(date, "12:00", lng, lat, school),
     buildQimenLayer(date, hourTime, lng, lat, school),
@@ -608,20 +610,67 @@ export async function POST(req: Request) {
     hasUserChart: !!userChart,
   });
 
+  const directionLimit = Math.max(0, Math.min(8, todayCaps.directions));
+  const allowedDirections = new Set(
+    directionEnergy.scores.slice(0, directionLimit).map((entry: any) => entry.direction)
+  );
+  const requiredPlan = nextRequiredPlan(product.plan);
+  const publicDirection = (entry: any) => {
+    if (allowedDirections.has(entry.direction)) return { ...entry, locked: false };
+    return {
+      direction: entry.direction,
+      direction_th: entry.direction_th,
+      direction_th_long: entry.direction_th_long,
+      direction_zh: entry.direction_zh,
+      direction_en: entry.direction_en,
+      locked: true,
+      required_plan: requiredPlan,
+    };
+  };
+  const publicQimenLayer = (layer: any) => {
+    if (!layer) return null;
+    const layerDirections = (layer.directions || []).map(publicDirection);
+    return {
+      ...layer,
+      directions: layerDirections,
+      good: layerDirections.filter((entry: any) => !entry.locked && (entry.quality === "best" || entry.quality === "good")).slice(0, 4),
+      avoid: layerDirections.filter((entry: any) => !entry.locked && entry.quality === "avoid").slice(-4).reverse(),
+    };
+  };
+  const publicDirections = directions.map(publicDirection);
+  const publicEnergyScores = directionEnergy.scores.map(publicDirection);
+  const publicDirectionEnergy = {
+    ...directionEnergy,
+    scores: publicEnergyScores,
+    best: publicEnergyScores.filter((entry: any) => !entry.locked).slice(0, 3),
+    avoid: publicEnergyScores
+      .filter((entry: any) => !entry.locked && (entry.label === "avoid" || entry.label === "caution"))
+      .slice(-4)
+      .reverse(),
+  };
+
   return NextResponse.json({
     date,
     dayBranch,
     dayBranchEl,
     yongshen,
-    directions,
-    summary,
+    directions: publicDirections,
+    summary: {
+      good: publicDirections.filter((entry: any) => !entry.locked && (entry.quality === "best" || entry.quality === "good")).map((entry: any) => entry.direction),
+      avoid: publicDirections.filter((entry: any) => !entry.locked && entry.quality === "avoid").map((entry: any) => entry.direction),
+    },
     qimen: {
       source: qimenDay || qimenHour ? "qimen-api" : "unavailable",
       school,
-      day: qimenDay,
-      hour: qimenHour,
+      day: publicQimenLayer(qimenDay),
+      hour: publicQimenLayer(qimenHour),
     },
-    flying_focus: flyingFocus,
-    direction_energy: directionEnergy,
+    flying_focus: directionLimit >= 8 ? flyingFocus : null,
+    direction_energy: publicDirectionEnergy,
+    entitlement: {
+      plan: product.plan,
+      detailed_directions: directionLimit,
+      total_directions: 8,
+    },
   });
 }

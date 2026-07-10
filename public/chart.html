@@ -1265,7 +1265,7 @@
   </div>
 
   <!-- §1 HERO SUMMARY -->
-  <section class="hero">
+  <section class="hero" data-chart-tier="summary">
     <div class="hero-grid">
       <div class="hero-l">
         <div  class="label" data-i18n="auto.c.501">01 · สรุปภาพรวม · YOUR CHART AT A GLANCE</div>
@@ -1291,7 +1291,7 @@
   </section>
 
   <!-- §00 ภาพรวมตัวตน · 30 profiles + ซินแสถามต่อ -->
-  <section class="sec hk-overview-sec" id="hk-overview-sec" style="display:none">
+  <section class="sec hk-overview-sec" id="hk-overview-sec" data-chart-tier="summary" style="display:none">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.sec0.num">00 · ภาพรวม</span>
@@ -1385,7 +1385,7 @@
   </section>
 
   <!-- §2 FOUR PILLARS -->
-  <section class="sec">
+  <section class="sec" data-chart-tier="summary">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.sec4.num">02 · โครงดวง</span>
@@ -1429,43 +1429,43 @@
             <td class="hhs-month"><span class="pt-empty">—</span></td>
             <td class="hhs-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="nayin"><th><span class="th-lead" data-i18n="c.r.nayin.lead">ธาตุเสียง</span><span class="tc">納音</span><span class="en-sub" data-i18n="c.r.nayin.sub">ภาพธาตุของเสา</span><span class="hk-help" data-help="r.nayin"></span></th>
+          <tr data-row="nayin" data-chart-tier="guided"><th><span class="th-lead" data-i18n="c.r.nayin.lead">ธาตุเสียง</span><span class="tc">納音</span><span class="en-sub" data-i18n="c.r.nayin.sub">ภาพธาตุของเสา</span><span class="hk-help" data-help="r.nayin"></span></th>
             <td class="ny-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ny-day"><span class="pt-empty">—</span></td>
             <td class="ny-month"><span class="pt-empty">—</span></td>
             <td class="ny-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="phases"><th><span class="th-lead" data-i18n="c.r.phases.lead">12 ระยะชีวิต</span><span class="tc">十二長生</span><span class="en-sub" data-i18n="c.r.phases.sub">จังหวะพลัง</span><span class="hk-help" data-help="r.phase"></span></th>
+          <tr data-row="phases" data-chart-tier="guided"><th><span class="th-lead" data-i18n="c.r.phases.lead">12 ระยะชีวิต</span><span class="tc">十二長生</span><span class="en-sub" data-i18n="c.r.phases.sub">จังหวะพลัง</span><span class="hk-help" data-help="r.phase"></span></th>
             <td class="ph-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ph-day"><span class="pt-empty">—</span></td>
             <td class="ph-month"><span class="pt-empty">—</span></td>
             <td class="ph-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="kong"><th><span class="th-lead" data-i18n="c.r.kong.lead">ดวงว่าง</span><span class="tc">空亡</span><span class="en-sub" data-i18n="c.r.kong.sub">จุดที่พลังไม่เต็ม</span><span class="hk-help" data-help="r.kwdhhs"></span></th>
+          <tr data-row="kong" data-chart-tier="guided"><th><span class="th-lead" data-i18n="c.r.kong.lead">ดวงว่าง</span><span class="tc">空亡</span><span class="en-sub" data-i18n="c.r.kong.sub">จุดที่พลังไม่เต็ม</span><span class="hk-help" data-help="r.kwdhhs"></span></th>
             <td class="kw-hour"><span class="pt-empty">—</span></td>
             <td class="col-day kw-day"><span class="pt-empty">—</span></td>
             <td class="kw-month"><span class="pt-empty">—</span></td>
             <td class="kw-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="stars"><th><span class="th-lead" data-i18n="c.r.stars.lead">ดาวพิเศษ</span><span class="tc">神煞</span><span class="en-sub" data-i18n="c.r.stars.sub">สัญญาณเสริม</span><span class="hk-help" data-help="r.stars"></span></th>
+          <tr data-row="stars" data-chart-tier="full"><th><span class="th-lead" data-i18n="c.r.stars.lead">ดาวพิเศษ</span><span class="tc">神煞</span><span class="en-sub" data-i18n="c.r.stars.sub">สัญญาณเสริม</span><span class="hk-help" data-help="r.stars"></span></th>
             <td class="ss-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ss-day"><span class="pt-empty">—</span></td>
             <td class="ss-month"><span class="pt-empty">—</span></td>
             <td class="ss-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="react"><th><span class="th-lead" data-i18n="c.r.react.lead">ปฏิกิริยา</span><span class="tc">反應</span><span class="en-sub" data-i18n="c.r.react.sub">ชนหรือหนุน</span><span class="hk-help" data-help="r.react"></span></th>
+          <tr data-row="react" data-chart-tier="guided"><th><span class="th-lead" data-i18n="c.r.react.lead">ปฏิกิริยา</span><span class="tc">反應</span><span class="en-sub" data-i18n="c.r.react.sub">ชนหรือหนุน</span><span class="hk-help" data-help="r.react"></span></th>
             <td class="rx-hour"><span class="pt-empty">—</span></td>
             <td class="col-day rx-day"><span class="pt-empty">—</span></td>
             <td class="rx-month"><span class="pt-empty">—</span></td>
             <td class="rx-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="palace"><th><span class="th-lead" data-i18n="c.r.palace.lead">ตำแหน่งวัง</span><span class="tc">宮位</span><span class="en-sub" data-i18n="c.r.palace.sub">เรือนชีวิต</span><span class="hk-help" data-help="r.palace"></span></th>
+          <tr data-row="palace" data-chart-tier="full"><th><span class="th-lead" data-i18n="c.r.palace.lead">ตำแหน่งวัง</span><span class="tc">宮位</span><span class="en-sub" data-i18n="c.r.palace.sub">เรือนชีวิต</span><span class="hk-help" data-help="r.palace"></span></th>
             <td class="pal-hour"><span class="pt-empty">—</span></td>
             <td class="col-day pal-day"><span class="pt-empty">—</span></td>
             <td class="pal-month"><span class="pt-empty">—</span></td>
             <td class="pal-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="hex-natal"><th><span class="th-lead" data-i18n="c.r.hexNatal.lead">สัญลักษณ์เสา 64</span><span class="tc">易</span><span class="en-sub" data-i18n="c.r.hexNatal.sub">ภาพอ่านเสา</span><span class="hk-help" data-help="r.hex_natal"></span></th>
+          <tr data-row="hex-natal" data-chart-tier="full"><th><span class="th-lead" data-i18n="c.r.hexNatal.lead">สัญลักษณ์เสา 64</span><span class="tc">易</span><span class="en-sub" data-i18n="c.r.hexNatal.sub">ภาพอ่านเสา</span><span class="hk-help" data-help="r.hex_natal"></span></th>
             <td class="hex-hour"><span class="pt-empty">—</span></td>
             <td class="col-day hex-day"><span class="pt-empty">—</span></td>
             <td class="hex-month"><span class="pt-empty">—</span></td>
@@ -1477,7 +1477,7 @@
   </section>
 
   <!-- §3 TEN GODS RADAR -->
-  <section class="sec">
+  <section class="sec" data-chart-tier="guided">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.sec2.num">03 · มิติชีวิต</span>
@@ -1574,7 +1574,7 @@
   </section>
 
   <!-- §09 PERSONAL · ย้ายขึ้นมาหลัง §03 LIFE DOMAINS (Engine 2 · เห็นเด่น) ── -->
-  <section class="sec" id="hk-personal-sec">
+  <section class="sec" id="hk-personal-sec" data-chart-tier="full">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.sec9.num">04 · ชีวิตจริง</span>
@@ -1614,7 +1614,7 @@
   <!-- §05 INSIGHTS · REMOVED 20 พ.ค. 2026 · เนื้อหาซ้ำกับ §04 PERSONAL + §06 ELEMENTS + §06b YONGSHEN v2 -->
 
   <!-- §5 ELEMENTS + YONGSHEN -->
-  <section class="sec">
+  <section class="sec" data-chart-tier="summary">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.sec1.num">06 · ธาตุ</span>
@@ -1666,7 +1666,7 @@
   </section>
 
   <!-- §5.5 用神 v2 · wrapper-7 · โครงสร้าง + โรค + ยา + สะพาน · อากง 15 พ.ค. -->
-  <section class="sec" id="hk-ysv2-sec" style="display:none">
+  <section class="sec" id="hk-ysv2-sec" data-chart-tier="guided" style="display:none">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.ysv2.num">06b · ธาตุช่วย</span>
@@ -1677,7 +1677,7 @@
     <div class="ys-v2">
       <div class="ys-head">
         <div class="ys-struct" id="hk-ysv2-struct">—</div>
-        <div class="ys-meta">
+        <div class="ys-meta" data-chart-tier="technical">
           <span class="ys-strategy" id="hk-ysv2-strategy">—</span>
           <span class="ys-engine" id="hk-ysv2-engine">—</span>
           <span class="ys-conf" id="hk-ysv2-conf">—</span>
@@ -1705,7 +1705,7 @@
           <div id="hk-school-status" style="margin-top:6px;opacity:.7"></div>
         </div>
       </div>
-      <details class="ys-explain" id="hk-ysv2-explain-box" style="display:none">
+      <details class="ys-explain" id="hk-ysv2-explain-box" data-chart-tier="technical" style="display:none">
         <summary data-i18n="c.ysv2.reasoning">📜 ที่มาของการประเมิน</summary>
         <ul id="hk-ysv2-explain"></ul>
       </details>
@@ -1713,7 +1713,7 @@
   </section>
 
   <!-- §07 ปฏิกิริยา -->
-  <section class="sec">
+  <section class="sec" data-chart-tier="guided">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.sec5.num">07 · ปฏิกิริยา</span>
@@ -1750,7 +1750,7 @@
   </section>
 
   <!-- §10 LUCK PILLARS · 大運 ─────────────────── -->
-  <section class="sec">
+  <section class="sec" data-chart-tier="summary" data-chart-luck="1">
     <div class="sec-head">
       <div class="l">
         <span class="num">08 · 大運</span>
@@ -1773,7 +1773,7 @@
   </section>
 
   <!-- §08b · 拱·夾 CARRY IMAGE · sifu-grade · classical 三命通會+神峰通考 (18 พ.ค.) -->
-  <section class="sec" id="hk-carry-section" style="display:none;">
+  <section class="sec" id="hk-carry-section" data-chart-tier="full" style="display:none;">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.carry.num">08b · 拱·夾</span>
@@ -1788,7 +1788,7 @@
   </section>
 
   <!-- §10 PERSONAL STARS · ดาวประจำตัว 14 ดวง ─────────── -->
-  <section class="sec" id="hk-personal-stars">
+  <section class="sec" id="hk-personal-stars" data-chart-tier="full">
     <div class="sec-head">
       <div class="l">
         <span class="num" data-i18n="c.pstar.num">09 · 個人星</span>
@@ -1857,7 +1857,7 @@
 
   <!-- §13 · 24 節氣 ของปีเกิด · อากง v3 (16 พ.ค.) -->
   <!-- §12 · 河洛理數 Heluo Astrology · Pre/Post-Heaven + Annual + Monthly (17 พ.ค.) -->
-  <section class="sec" id="hk-heluo-sec" style="display:none">
+  <section class="sec" id="hk-heluo-sec" data-chart-tier="full" style="display:none">
     <div class="sec-head">
       <div>
         <h2 data-i18n="c.heluo.h2"><span class="tc">易經</span>ดวงในสัญลักษณ์ 64 ฉัก · 河洛</h2>
@@ -1868,7 +1868,7 @@
     <div id="hk-heluo-numbers" style="margin-top:12px;padding:12px 16px;background:var(--bg-3,#1a1a23);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--fg-soft);"></div>
   </section>
 
-  <section class="sec" id="hk-jieqi-sec" style="display:none">
+  <section class="sec" id="hk-jieqi-sec" data-chart-tier="full" style="display:none">
     <div class="sec-head">
       <div>
         <h2 data-i18n="c.jieqi.h2"><span class="tc">節氣</span>24 節氣 · ปฏิทินฤดูปีเกิด</h2>
@@ -6170,6 +6170,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
   } catch (e) {}
 })();
 </script>
-<script src="/js/hk-product-caps.js?v=4" defer></script>
+<script src="/js/hk-product-caps.js?v=5" defer></script>
 </body>
 </html>

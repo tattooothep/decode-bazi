@@ -8,6 +8,9 @@
  */
 import { NextResponse } from "next/server";
 import { buildLiuShi, type ElementEN } from "@/lib/bazi-liushi";
+import { entitlementDenied } from "@/lib/product-entitlement";
+import { withinDayWindow } from "@/lib/product-date-gate";
+import { currentRequestProductAccess, nextRequiredPlan } from "@/lib/product-request-access";
 
 const BRANCH_ELEMENT: Record<string, "wood"|"fire"|"earth"|"metal"|"water"> = {
   子:"water", 丑:"earth", 寅:"wood", 卯:"wood", 辰:"earth", 巳:"fire",
@@ -165,6 +168,14 @@ export async function POST(req: Request) {
 
   const [yy, mm, dd] = date.split("-").map(Number);
   if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400 });
+  const product = await currentRequestProductAccess(req);
+  const todayCaps = product.pages.today;
+  if (!withinDayWindow(date, todayCaps.day_window)) {
+    return NextResponse.json(
+      entitlementDenied("today_date_window", { plan: product.plan, max_days: todayCaps.day_window }),
+      { status: 403 }
+    );
+  }
 
   /* === คำนวณกิ่งวัน (วันนี้) เพื่อ detect 六沖 · อากงสอน === */
   let dayBranch = "";
@@ -375,6 +386,33 @@ export async function POST(req: Request) {
     }
   } catch (_) { liushi = null; }
 
+  const detailedLimit = Math.max(0, Math.min(hours.length, todayCaps.detailed_hours));
+  const detailedIndexes = new Set<number>();
+  const currentIndex = hours.findIndex((hour) => hour.isNow);
+  if (product.plan === "free" && currentIndex >= 0) {
+    detailedIndexes.add(currentIndex);
+    if (detailedLimit > 1) detailedIndexes.add((currentIndex + 1) % hours.length);
+  }
+  const qualityRank: Record<string, number> = { best: 4, good: 3, ok: 2, bad: 1 };
+  [...hours.keys()]
+    .sort((a, b) => (qualityRank[hours[b].quality] || 0) - (qualityRank[hours[a].quality] || 0) || a - b)
+    .forEach((index) => {
+      if (detailedIndexes.size < detailedLimit) detailedIndexes.add(index);
+    });
+  const requiredPlan = nextRequiredPlan(product.plan);
+  const entitledHours = hours.map((hour, index) => {
+    if (detailedIndexes.has(index)) return { ...hour, locked: false };
+    return {
+      branch: hour.branch,
+      range: hour.range,
+      name_th: hour.name_th,
+      isNow: hour.isNow,
+      locked: true,
+      required_plan: requiredPlan,
+    };
+  });
+  const fullHourAccess = detailedLimit >= hours.length;
+
   return NextResponse.json({
     date,
     day_pillar: dayStem + dayBranch,
@@ -382,7 +420,16 @@ export async function POST(req: Request) {
     clash_branch: dayBranch ? BRANCH_CLASH[dayBranch] : null,
     user_branch: userBranch || null,
     yongshen, jishen,
-    hours, golden_window, avoid_window, calm_window,
-    liushi   /* deep · null ถ้า natal ไม่ครบ · UI ใช้ถ้ามี ไม่งั้น fallback hours */
+    hours: entitledHours,
+    golden_window: fullHourAccess ? golden_window : null,
+    avoid_window: fullHourAccess ? avoid_window : null,
+    calm_window: fullHourAccess ? calm_window : null,
+    liushi: product.plan === "master" ? liushi : null,
+    entitlement: {
+      plan: product.plan,
+      detailed_hours: detailedLimit,
+      total_hours: hours.length,
+      technical: product.plan === "master",
+    },
   });
 }

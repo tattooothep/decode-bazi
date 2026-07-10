@@ -143,7 +143,10 @@ async function handle(req: Request) {
 
   const internalReq = new Request(req.url, {
     body: JSON.stringify(payload),
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Authorization: req.headers.get("authorization") || "",
+      "Content-Type": "application/json",
+    },
     method: "POST",
   });
   const todayResp = await todayPost(internalReq);

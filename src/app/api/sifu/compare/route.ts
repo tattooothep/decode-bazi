@@ -27,6 +27,13 @@ import { spawnClaudeStreaming, makeJsonlParser, streamOpenRouter } from "@/lib/c
 import { loadPromptMd } from "@/lib/prompt-md";
 import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
 import { buildSynastry, altPillar, type PersonSyn } from "@/lib/bazi-synastry";
+import { getSession } from "@/lib/auth";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
+import {
+  refundReservedHourForUser,
+  reserveHourForUser,
+  settleReservedHourByCharsForUser,
+} from "@/lib/spend-hours";
 
 /* 25 พ.ค. · compare persona ย้ายไป prompts/compare-{th,en,zh}.md (section marker) · parser + fallback */
 function parseCompareSections(raw: string): Record<string, string> {
@@ -384,9 +391,50 @@ async function saveCache(key: string, reply: string, warmup: string, lang: strin
   } catch {}
 }
 
+async function claimCachedTrialUse(userId: string): Promise<boolean> {
+  try {
+    const row = await q1<{ id: string }>(
+      `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_feature)
+       SELECT id, 0, 'use_sifu_compare_cached_trial', hour_balance, 'sifu_compare'
+         FROM users
+        WHERE id=$1
+          AND NOT EXISTS (
+            SELECT 1 FROM hour_transactions
+             WHERE user_id=$1
+               AND reason IN ('spend_sifu_network_pair_pre','spend_sifu_compare_pre','use_sifu_compare_cached_trial')
+          )
+       RETURNING id`,
+      [userId]
+    );
+    return !!row;
+  } catch (error: any) {
+    if (error?.code === "23505") return false;
+    throw error;
+  }
+}
+
 export async function POST(req: Request) {
   /* 1 มิ.ย. · AI ดูดวงเทียบคู่ต้องสมัคร/login ก่อน (เจ้านายสั่ง) */
-  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  const session = await getSession();
+  if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  const productAccess = await getProductAccess(session.userId);
+  const pairAi = productAccess?.pages.network.pair_ai || "locked";
+  if (pairAi === "locked") {
+    return NextResponse.json(entitlementDenied("network_pair_ai_locked", { plan: productAccess?.plan || "free" }), { status: 403 });
+  }
+  if (pairAi === "once") {
+    const used = await q1<{ n: number }>(
+      `SELECT GREATEST(0,
+         COUNT(*) FILTER (WHERE reason IN ('spend_sifu_network_pair_pre','spend_sifu_compare_pre','use_sifu_compare_cached_trial')) -
+         COUNT(*) FILTER (WHERE reason IN ('refund_sifu_network_pair_pre','refund_sifu_compare_pre'))
+       )::int AS n
+       FROM hour_transactions WHERE user_id=$1`,
+      [session.userId]
+    );
+    if ((Number(used?.n) || 0) >= 1) {
+      return NextResponse.json(entitlementDenied("network_pair_ai_trial_used", { plan: productAccess?.plan, max: 1 }), { status: 403 });
+    }
+  }
   /* preflight common · ใช้ทั้ง JSON และ stream mode */
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
     || req.headers.get("x-real-ip") || "unknown";
@@ -427,6 +475,9 @@ export async function POST(req: Request) {
   if (!wantStream) {
     const cached = await getCachedReply(key);
     if (cached) {
+      if (pairAi === "once" && !(await claimCachedTrialUse(session.userId))) {
+        return NextResponse.json(entitlementDenied("network_pair_ai_trial_used", { plan: productAccess?.plan, max: 1 }), { status: 403 });
+      }
       return NextResponse.json({ reply: cached.reply, lang: L, cached: true });
     }
     if (rateLimitHit(ip)) {
@@ -435,14 +486,20 @@ export async function POST(req: Request) {
     const warmupText = buildEngineWarmup(p1, p2, L);
     const prompt = buildPrompt(p1, p2, L, true, protocol.text);
     const startMs = Date.now();
+    const reserved = await reserveHourForUser(session.userId, "sifu_compare");
+    if (!reserved.ok) {
+      return NextResponse.json({ error: reserved.error, required: reserved.required, balance: reserved.balance }, { status: reserved.status });
+    }
     try {
       /* JSON mode ใช้ Claude CLI synchronous (เดิม) · ไม่ stream */
       const reply = await runClaudeCliSync(prompt);
       const elapsedMs = Date.now() - startMs;
       const full = warmupText + "\n" + reply;
       saveCache(key, full, warmupText, L, elapsedMs, "claude-cli", protocol.version);
-      return NextResponse.json({ reply: full, lang: L, cached: false });
+      const settled = await settleReservedHourByCharsForUser(session.userId, reply.length, "sifu_compare");
+      return NextResponse.json({ reply: full, lang: L, cached: false, yam: { charged: settled.spent, balance_after: settled.balance_after } });
     } catch (e) {
+      await refundReservedHourForUser(session.userId, "sifu_compare").catch(() => {});
       const msg = (e as Error)?.message || "claude failed";
       return NextResponse.json({ error: msg }, { status: 500 });
     }
@@ -453,6 +510,18 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let closed = false;
+      let streamReserved = false;
+      let billingFinalized = false;
+      const settleBilling = async (chars: number) => {
+        if (!streamReserved || billingFinalized) return null;
+        billingFinalized = true;
+        return settleReservedHourByCharsForUser(session.userId, chars, "sifu_compare");
+      };
+      const refundBilling = async () => {
+        if (!streamReserved || billingFinalized) return;
+        billingFinalized = true;
+        await refundReservedHourForUser(session.userId, "sifu_compare").catch(() => {});
+      };
       const safeClose = () => {
         if (closed) return;
         closed = true;
@@ -474,6 +543,11 @@ export async function POST(req: Request) {
       /* 1. Cache hit → ส่งทั้งก้อนทันที · ไม่นับ rate limit */
       const cached = await getCachedReply(key);
       if (cached) {
+        if (pairAi === "once" && !(await claimCachedTrialUse(session.userId))) {
+          send("error", { error: "network_pair_ai_trial_used", status: 403, upgrade: "/pricing" });
+          safeClose();
+          return;
+        }
         send("meta", { cached: true, lang: L, key: key.slice(0, 8) });
         send("chunk", { text: cached.reply });
         send("done", { ms: 0, cached: true, provider: "cache" });
@@ -487,6 +561,14 @@ export async function POST(req: Request) {
         safeClose();
         return;
       }
+
+      const reserve = await reserveHourForUser(session.userId, "sifu_compare");
+      if (!reserve.ok) {
+        send("error", { error: reserve.error, status: reserve.status, required: reserve.required, balance: reserve.balance });
+        safeClose();
+        return;
+      }
+      streamReserved = true;
 
       send("meta", { cached: false, lang: L, key: key.slice(0, 8), startedAt: Date.now() });
 
@@ -532,20 +614,24 @@ export async function POST(req: Request) {
           if (!closed && aiText) {
             const elapsedMs = Date.now() - t0;
             saveCache(key, warmup + "\n" + aiText, warmup, L, elapsedMs, providerUsed, protocol.version);
-            send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length });
+            const settled = await settleBilling(aiText.length);
+            send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length, yam: settled ? { charged: settled.spent, balance_after: settled.balance_after } : undefined });
           }
         } catch (e) {
+          await refundBilling();
           if (!closed) send("error", { error: "fallback failed: " + ((e as Error)?.message || "unknown") });
         } finally {
+          if (!aiText) await refundBilling();
           clearTimeout(hardTimer);
           safeClose();
         }
       }, FIRST_BYTE_TIMEOUT_MS);
 
       /* Hard timeout · 180s · kill ทุก provider (CLI + fallback) */
-      const hardTimer = setTimeout(() => {
+      const hardTimer = setTimeout(async () => {
         try { child.kill("SIGKILL"); } catch {}
         fallbackAbort.abort();
+        await refundBilling();
         if (!closed) send("error", { error: "timeout" });
         safeClose();
       }, TIMEOUT_MS);
@@ -564,7 +650,7 @@ export async function POST(req: Request) {
       child.stderr?.on("data", (chunk: Buffer) => {
         console.warn("[sifu/compare stderr]", chunk.toString().slice(0, 200));
       });
-      child.on("close", (code) => {
+      child.on("close", async (code) => {
         /* fallback กำลังหรือทำสำเร็จไปแล้ว · CLI close ห้ามทับ stream */
         if (fallbackActive) return;
         clearTimeout(firstByteTimer);
@@ -574,8 +660,10 @@ export async function POST(req: Request) {
           const elapsedMs = Date.now() - t0;
           /* Codex รอบ 52 fix · CLI success path ส่ง protocol.version ด้วย */
           saveCache(key, warmup + "\n" + aiText, warmup, L, elapsedMs, providerUsed, protocol.version);
-          send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length });
+          const settled = await settleBilling(aiText.length);
+          send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length, yam: settled ? { charged: settled.spent, balance_after: settled.balance_after } : undefined });
         } else {
+          await refundBilling();
           send("error", { error: `claude exit ${code}` });
         }
         safeClose();
@@ -587,6 +675,7 @@ export async function POST(req: Request) {
         clearTimeout(hardTimer);
         try { child.kill("SIGKILL"); } catch {}
         fallbackAbort.abort();
+        void refundBilling();
         safeClose();
       });
     },
