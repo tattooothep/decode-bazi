@@ -13,16 +13,24 @@ import { summarizeStars } from "@/lib/star-dict-th";
 import { computeIntentStatus, pickTopWorst } from "@/lib/tongshu-intents";
 import { universalDayScore, universalGoals } from "@/lib/tongshu-universal";
 import { computeDailyPersonalVerdict } from "@/lib/daily-personal-verdict";
+import { currentDateWindow, withinMonthWindow } from "@/lib/product-date-gate";
+import { entitlementDenied, type ProductPlan } from "@/lib/product-entitlement";
+import type { ProductPageEntitlements } from "@/lib/product-page-entitlements";
 
 type CalendarCacheEntry = { exp: number; payload: unknown };
 const CALENDAR_CACHE_TTL_MS = 10 * 60 * 1000;
-const CALENDAR_CACHE_MAX = 96;
+/* 10 ก.ค. · 96→2000: คีย์ส่วนตัว unique ต่อคน ที่ 5k user ช่อง 96 = hit แทบ 0 · payload ~18KB × 2000 ≈ 36MB/instance รับได้ */
+const CALENDAR_CACHE_MAX = Number(process.env.CALENDAR_CACHE_MAX || 2000);
 const CALENDAR_CACHE_VERSION = "calendar-v1";
 const calendarCacheGlobal = globalThis as typeof globalThis & {
   __hkCalendarMonthCache?: Map<string, CalendarCacheEntry>;
+  __hkCalendarInflight?: Map<string, Promise<unknown>>;
 };
 const CALENDAR_MONTH_CACHE = calendarCacheGlobal.__hkCalendarMonthCache ?? new Map<string, CalendarCacheEntry>();
 calendarCacheGlobal.__hkCalendarMonthCache = CALENDAR_MONTH_CACHE;
+/* 10 ก.ค. · กันคำนวณซ้อน: ดวงเดียวกันกด refresh ระหว่างคำนวณ (10-13s) ต้องรอผลก้อนเดียว ไม่คำนวณคู่ */
+const CALENDAR_INFLIGHT = calendarCacheGlobal.__hkCalendarInflight ?? new Map<string, Promise<unknown>>();
+calendarCacheGlobal.__hkCalendarInflight = CALENDAR_INFLIGHT;
 
 function calendarCacheKey(input: {
   year: number;
@@ -53,6 +61,7 @@ function calendarJson(payload: unknown, cacheStatus: "hit" | "miss") {
   return NextResponse.json(payload, {
     headers: {
       "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+      Vary: "Cookie",
       "X-HK-Calendar-Cache": cacheStatus,
     },
   });
@@ -178,6 +187,79 @@ type DayCell = {
   universal_goals?: Record<string, { score: number; level: string }>;
 };
 
+const CALENDAR_INTENT_IDS = [
+  "start_work", "sign_contract", "open_business", "negotiate", "invest", "loan",
+  "marriage", "engagement", "gathering", "move_house", "construct", "renovate",
+  "install_bed", "travel", "pray_heal",
+] as const;
+
+function shapeCalendarPayload(
+  raw: unknown,
+  plan: ProductPlan,
+  caps: ProductPageEntitlements["calendar"],
+) {
+  const payload = raw as Record<string, any>;
+  const fullDetail = plan === "premium" || plan === "master";
+  const trialDetail = plan === "trial";
+  const allowedIntentIds = caps.intents === "all" ? [...CALENDAR_INTENT_IDS] : [CALENDAR_INTENT_IDS[0]];
+  const allowedIntentSet = new Set<string>(allowedIntentIds);
+  const yiJiLimit = fullDetail ? 8 : trialDetail ? 4 : 2;
+  const godLimit = fullDetail ? 16 : trialDetail ? 3 : 1;
+
+  const days = Array.isArray(payload.days) ? payload.days.map((day: DayCell) => {
+    const goals = day.goals
+      ? (caps.intents === "all" ? day.goals : { wealth: day.goals.wealth })
+      : undefined;
+    const universalGoals = day.universal_goals
+      ? (caps.intents === "all" ? day.universal_goals : { wealth: day.universal_goals.wealth })
+      : undefined;
+    const intentStatus = day.intentStatus
+      ? Object.fromEntries(Object.entries(day.intentStatus).filter(([id]) => allowedIntentSet.has(id)))
+      : undefined;
+    const verdict = day.verdict && !fullDetail
+      ? {
+          score: day.verdict.score,
+          label: day.verdict.label,
+          level: day.verdict.level,
+          role: day.verdict.role,
+          role_element: day.verdict.role_element,
+          role_label: day.verdict.role_label,
+          tags: trialDetail ? (day.verdict.tags || []).slice(0, 2) : [],
+        }
+      : day.verdict;
+    return {
+      ...day,
+      yi: (day.yi || []).slice(0, yiJiLimit),
+      ji: (day.ji || []).slice(0, yiJiLimit),
+      gods: {
+        good: (day.gods?.good || []).slice(0, godLimit),
+        bad: (day.gods?.bad || []).slice(0, godLimit),
+      },
+      stars_detail: fullDetail ? day.stars_detail : undefined,
+      pillars_full: fullDetail ? day.pillars_full : undefined,
+      verdict,
+      goals,
+      universal_goals: universalGoals,
+      intentStatus,
+      topIntents: (day.topIntents || []).filter((item) => allowedIntentSet.has(item.id)),
+      worstIntents: (day.worstIntents || []).filter((item) => allowedIntentSet.has(item.id)),
+    };
+  }) : [];
+
+  return {
+    ...payload,
+    days,
+    entitlement: {
+      plan,
+      ...caps,
+      allowed_intents: allowedIntentIds,
+      locked_intents: CALENDAR_INTENT_IDS.filter((id) => !allowedIntentSet.has(id)),
+      yi_ji_items_per_side: yiJiLimit,
+      technical_detail: plan === "master",
+    },
+  };
+}
+
 /* ตำราคลาสสิก · ดาวมงคล/อัปมงคล · ใช้ classify gods array จาก tyme4ts
  * 17 พ.ค. fix · ครอบคลุม simplified+traditional · เพิ่มดาวที่ tyme4ts ส่งจริง */
 const GOOD_GODS = new Set([
@@ -300,9 +382,36 @@ export async function GET(req: Request) {
   if (!year || !month || month < 1 || month > 12) {
     return NextResponse.json({ error: "year + month (1-12) required" }, { status: 400 });
   }
+  const dateAccess = await currentDateWindow("calendar", req);
+  if (!withinMonthWindow(year, month, dateAccess.max)) {
+    return NextResponse.json(
+      entitlementDenied("calendar_month_window", { plan: dateAccess.plan, max_months: dateAccess.max }),
+      { status: 403 }
+    );
+  }
   const cacheKey = calendarCacheKey({ year, month, dmArg, birthDate, birthTime, birthTimeKnown, birthLng, gender, dayBoundary });
   const cached = getCalendarCache(cacheKey);
-  if (cached) return calendarJson(cached, "hit");
+  if (cached) return calendarJson(
+    shapeCalendarPayload(cached, dateAccess.plan, dateAccess.caps as ProductPageEntitlements["calendar"]),
+    "hit"
+  );
+
+  /* 10 ก.ค. · คีย์เดียวกันกำลังคำนวณอยู่ → รอผลเดียวกัน (กัน stampede ตอน compute ส่วนตัวหนัก) */
+  const inflightExisting = CALENDAR_INFLIGHT.get(cacheKey);
+  if (inflightExisting) {
+    try {
+      const payload = await inflightExisting;
+      return calendarJson(
+        shapeCalendarPayload(payload, dateAccess.plan, dateAccess.caps as ProductPageEntitlements["calendar"]),
+        "hit"
+      );
+    } catch { /* ตัวหลักพัง — ปล่อยไหลไปคำนวณเองตามปกติ */ }
+  }
+  let inflightResolve: (p: unknown) => void = () => {};
+  let inflightReject: (e: unknown) => void = () => {};
+  const inflightPromise = new Promise<unknown>((res, rej) => { inflightResolve = res; inflightReject = rej; });
+  inflightPromise.catch(() => {}); /* กัน unhandledRejection เมื่อไม่มีใครรอ */
+  CALENDAR_INFLIGHT.set(cacheKey, inflightPromise);
 
   try {
     const tyme = await import("tyme4ts");
@@ -612,8 +721,15 @@ export async function GET(req: Request) {
       days,
     };
     setCalendarCache(cacheKey, payload);
-    return calendarJson(payload, "miss");
+    inflightResolve(payload);
+    CALENDAR_INFLIGHT.delete(cacheKey);
+    return calendarJson(
+      shapeCalendarPayload(payload, dateAccess.plan, dateAccess.caps as ProductPageEntitlements["calendar"]),
+      "miss"
+    );
   } catch (e: unknown) {
+    inflightReject(e);
+    CALENDAR_INFLIGHT.delete(cacheKey);
     const err = e as Error;
     console.error("[calendar] error:", err);
     return NextResponse.json({ error: "internal_error" }, { status: 500 });

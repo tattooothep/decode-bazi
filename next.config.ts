@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
       { source: "/mygoal-m.html", destination: "/mygoal", permanent: false },
       { source: "/picker-m", destination: "/picker", permanent: false },
       { source: "/picker-m.html", destination: "/picker", permanent: false },
+      { source: "/sifu-live.", destination: "/sifu-live", permanent: false },
     ];
   },
   async headers() {
@@ -37,7 +38,10 @@ const nextConfig: NextConfig = {
       "/signup.html",
       "/ask",
       "/ask.html",
+      "/sifu-live",
       "/reset-password.html",
+      "/verify-email-result.html",
+      "/verify-email/result",
       "/offline",
       "/offline.html",
       "/input",
@@ -125,6 +129,9 @@ const nextConfig: NextConfig = {
     ];
 
     return [
+      /* 10 ก.ค. · คลังปฏิทินภาษาคน: เนื้อคงที่ + วินัย bump ?v= เมื่อแก้ → browser จำยาว ตัด revalidate ~390k req/วันที่ 5k user */
+      { source: "/data/calendar-daytext/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      { source: "/js/hk-daytext.js", headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }] },
       ...htmlSurfaces.map((source) => ({ source, headers: noStoreHeaders })),
       { source: "/css/mobile-safe.css", headers: noStoreHeaders },
       { source: "/js/hk-lang-state.js", headers: noStoreHeaders },
@@ -144,6 +151,10 @@ const nextConfig: NextConfig = {
       { source: "/ask", destination: "/ask.html" },
       { source: "/reset-password", destination: "/reset-password.html" },
       { source: "/reset-password/:token", destination: "/reset-password.html" }, // 31 พ.ค. · หน้าตั้งรหัสใหม่ (ปลายทางลิงก์ลืมรหัส · เดิม 404)
+      // verify email · ลิงก์ในอีเมล = /verify-email/{token} → API · แล้ว redirect มา result
+      { source: "/verify-email/result", destination: "/verify-email-result.html" },
+      { source: "/verify-email-result", destination: "/verify-email-result.html" },
+      { source: "/verify-email/:token", destination: "/api/auth/verify-email/:token" },
       { source: "/offline", destination: "/offline.html" },
       { source: "/input", destination: "/input.html" },
       { source: "/goal", destination: "/goal.html" },
