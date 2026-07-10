@@ -107,7 +107,12 @@ try {
         page.on("pageerror", (error) => pageErrors.push(error.message));
         const response = await page.goto(BASE + paths[pageName], { waitUntil: "domcontentloaded", timeout: 30000 });
         assert.ok(response && response.status() < 500, `${fixture.plan}/${viewport.name}/${pageName} HTTP`);
-        await page.waitForFunction(() => window.HK_PRODUCT?.ready === true, null, { timeout: 10000 });
+        let productReady = false;
+        for (let attempt = 0; attempt < 20 && !productReady; attempt += 1) {
+          productReady = await page.evaluate(() => window.HK_PRODUCT?.ready === true);
+          if (!productReady) await page.waitForTimeout(500);
+        }
+        assert.equal(productReady, true, `${fixture.plan}/${viewport.name}/${pageName} product ready timeout`);
         await page.waitForTimeout(pageName === "chart" ? 2500 : 1000);
         const state = await page.evaluate(() => ({
           plan: window.HK_PRODUCT?.plan || null,
