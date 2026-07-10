@@ -40,6 +40,7 @@ import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
 import { loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
+import { CLAUDE_TEXT_ONLY_ARGS, GROK_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
@@ -76,6 +77,10 @@ function resolveSifuModel(raw: unknown): SifuModel {
   const s = String(raw || "").trim().toLowerCase();
   if (s === "grok" || s === "grok-cli") return "grok-cli";
   return s === "codex" || s === "codex-cli" ? "codex-cli" : "claude-max-cli";
+}
+
+function providerSecurityDisabled(model: SifuModel): boolean {
+  return model === "codex-cli";
 }
 
 function promptSafe(raw: unknown, fallback = "—"): string {
@@ -514,7 +519,7 @@ function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; 
 /* ── Claude CLI · copy จาก /api/sifu (spawn sudo -u jarvis -H claude · cwd checklist-app) ── */
 async function runClaudeCli(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const claudeArgs = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "user"];
+    const claudeArgs = ["-p", "--output-format", "text", ...CLAUDE_TEXT_ONLY_ARGS];
     const c = spawn("sudo", ["-u", CHILD_USER, "-H", "claude", ...claudeArgs], {
       cwd: "/var/www/checklist-app",
       env: process.env,
@@ -537,7 +542,7 @@ async function runClaudeCli(prompt: string): Promise<string> {
 function spawnClaudeStreaming(prompt: string) {
   const claudeArgs = [
     "-p", "--output-format", "stream-json", "--include-partial-messages", "--verbose",
-    "--dangerously-skip-permissions", "--setting-sources", "user",
+    ...CLAUDE_TEXT_ONLY_ARGS,
   ];
   const c = spawn("sudo", ["-u", CHILD_USER, "-H", "claude", ...claudeArgs], {
     cwd: "/var/www/checklist-app",
@@ -597,7 +602,7 @@ function writeGrokPromptFile(prompt: string): string {
   return path;
 }
 function grokCliArgs(promptFile: string, format: "plain" | "streaming-json"): string[] {
-  const args = ["--prompt-file", promptFile, "--output-format", format];
+  const args = ["--prompt-file", promptFile, ...GROK_TEXT_ONLY_ARGS, "--output-format", format];
   if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
   return args;
 }
@@ -888,6 +893,9 @@ export async function POST(req: Request) {
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
     const lang: string = isSifuAnswerLang(body.lang) ? body.lang : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
     const sifuModel = resolveSifuModel(body.model || url.searchParams.get("model"));
+    if (providerSecurityDisabled(sifuModel)) {
+      return NextResponse.json({ error: "provider_security_disabled", model: sifuModel }, { status: 503 });
+    }
     const threadId = cleanSifuThreadId(body.threadId);
     const clientGroupBindingHash = cleanAuditToken(body.groupBindingHash);
     const clientHistoryGroupBindingHash = cleanAuditToken(body.historyGroupBindingHash);

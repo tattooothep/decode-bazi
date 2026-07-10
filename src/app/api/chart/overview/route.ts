@@ -10,6 +10,7 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -345,8 +346,7 @@ async function runClaudeStream(prompt: string, onChunk: (s: string) => void): Pr
       "--output-format", "stream-json",
       "--include-partial-messages",
       "--verbose",
-      "--dangerously-skip-permissions",
-      "--setting-sources", "user",
+      ...CLAUDE_TEXT_ONLY_ARGS,
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, {

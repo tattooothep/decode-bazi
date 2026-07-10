@@ -1,0 +1,12 @@
+[Unit]
+Description=Block public access to host-only container services
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/hourkey-container-firewall
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

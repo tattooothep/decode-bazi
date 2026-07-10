@@ -9,6 +9,7 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { loadPromptMd } from "@/lib/prompt-md";
 import { getSession } from "@/lib/auth";
 import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
@@ -68,8 +69,7 @@ async function runClaudeCli(prompt: string): Promise<string> {
     const claudeArgs = [
       "-p",
       "--output-format", "text",
-      "--dangerously-skip-permissions",
-      "--setting-sources", "user",
+      ...CLAUDE_TEXT_ONLY_ARGS,
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });

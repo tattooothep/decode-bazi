@@ -3,6 +3,7 @@
 // แยกจาก /api/sifu (LOCKED) · auth required
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -56,12 +57,19 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!process.env.ARK_API_KEY) return NextResponse.json({ error: "ark_key_missing", detail: "ตั้งค่า ARK_API_KEY ก่อนใช้สร้างวิดีโอ" }, { status: 503 });
+  const contentLength = Number(req.headers.get("content-length") || 0);
+  if (contentLength > 18 * 1024 * 1024) return NextResponse.json({ error: "payload_too_large" }, { status: 413 });
+  const rl = await rateLimit(`ai-video:${session.userId}:${clientIp(req)}`, 3, 10 * 60_000);
+  if (!rl.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
 
   let body: { prompt?: unknown; image_b64?: unknown; duration?: unknown; fast?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad_json" }, { status: 400 }); }
   const prompt = String(body.prompt || "").trim().slice(0, 1800);
   if (!prompt) return NextResponse.json({ error: "no_prompt" }, { status: 400 });
   const image_b64 = typeof body.image_b64 === "string" ? body.image_b64 : undefined;
+  if (image_b64 && image_b64.length > 16 * 1024 * 1024) {
+    return NextResponse.json({ error: "image_too_large" }, { status: 413 });
+  }
   const duration = Math.min(Math.max(Math.round(Number(body.duration) || 6), 4), 15);
   const fast = body.fast !== false; // default fast (เร็ว/ถูกกว่า)
 

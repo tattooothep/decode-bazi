@@ -38,6 +38,7 @@ import { logResearchAiMessageSafe } from "@/lib/research-log";
 import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
 import { logSifuSourceAuditSafe } from "@/lib/sifu-source-audit-log";
 import type { SifuAnswerSupportedByAudit } from "@/lib/sifu-source-audit";
+import { CLAUDE_TEXT_ONLY_ARGS, GROK_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 
 loadEnvConfig(process.cwd(), false, console, true);
 ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
@@ -1751,6 +1752,7 @@ function writeGrokPromptFile(prompt: string): string {
 function grokCliArgs(promptFile: string, format: "plain" | "streaming-json", adapter = false, lockTools = false): string[] {
   const args = [
     "--prompt-file", promptFile,
+    ...GROK_TEXT_ONLY_ARGS,
   ];
   if (adapter) {
     args.push(
@@ -1761,11 +1763,9 @@ function grokCliArgs(promptFile: string, format: "plain" | "streaming-json", ada
       "--max-turns", "1",
     );
   }
-  // lockTools: ปิดเครื่องมือ agent (Read/Write/Bash…) → กัน grok หลุดไปเรียก Read tool (agentic) แล้วจบเทิร์นโดยไม่ตอบ (r404 intro)
-  // ⚠️ ใช้ --disallowed-tools (ค่าไม่ว่าง) ห้ามใช้ --tools "" (empty arg หลุดผ่าน sudo/spawn ไปกิน flag ถัดไป → tool ไม่ถูกปิดจริง) · ห้าม --max-turns 1 (ตัดคำตอบสั้น)
-  if (lockTools) {
-    args.push("--disallowed-tools", "Read,Write,Edit,MultiEdit,Bash,Glob,Grep,WebSearch,WebFetch,NotebookEdit,Task,TodoWrite");
-  }
+  // Compatibility arguments remain for existing callers. The global allowlist
+  // above is stricter and applies to every Grok prediction path.
+  void lockTools;
   args.push("--output-format", format);
   if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
   return args;
@@ -1872,8 +1872,7 @@ async function runClaudeCli(prompt: string, signal?: AbortSignal): Promise<strin
     const claudeArgs = [
       "-p",
       "--output-format", "text",
-      "--dangerously-skip-permissions",
-      "--setting-sources", "user",
+      ...CLAUDE_TEXT_ONLY_ARGS,
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, {
@@ -2136,8 +2135,7 @@ function spawnClaudeStreaming(prompt: string) {
     "--output-format", "stream-json",
     "--include-partial-messages",
     "--verbose",
-    "--dangerously-skip-permissions",
-    "--setting-sources", "user",
+    ...CLAUDE_TEXT_ONLY_ARGS,
   ];
   const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
   const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });
@@ -2436,6 +2434,9 @@ export async function POST(req: Request) {
     const mode = body.mode === "intro" ? "intro" : undefined;
     const sifuModel = resolveSifuModel(body.model);
     const isFusionInternalCall = isTrustedFusionInternalCall(req);
+    if (sifuModel === "codex-cli") {
+      return NextResponse.json({ error: "provider_security_disabled", model: sifuModel }, { status: 503 });
+    }
     const fusionPacketAuditOnly = isFusionInternalCall && body.fusionPacketMode === "raw-data";
     const threadId = cleanSifuThreadId(body.threadId);
     const fusionRunId = isFusionInternalCall ? cleanSifuThreadId(body.fusionRunId || body.fusion_run_id) : null;
@@ -3137,6 +3138,9 @@ export async function GET(req: Request) {
   const lang = resolveSifuAnswerLang(url.searchParams.get("lang") || "", message); // r431-i18n: 9 ภาษา + infer จากคำถามเมื่อ caller ส่ง lang=en
   const mode = url.searchParams.get("mode") === "intro" ? "intro" : undefined;
   const sifuModel = resolveSifuModel(url.searchParams.get("model"));
+  if (sifuModel === "codex-cli") {
+    return NextResponse.json({ error: "provider_security_disabled", model: sifuModel }, { status: 503 });
+  }
   const threadId = cleanSifuThreadId(url.searchParams.get("threadId"));
   const threadProfileId = cleanProfileId(url.searchParams.get("threadProfileId") || url.searchParams.get("historyProfileId"));
   const historyProfileIds = (url.searchParams.get("historyProfileIds") || "")

@@ -12,6 +12,7 @@ import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"
 /* 25 พ.ค. · persona ย้ายไป prompts/forecast-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{METHOD}}+{{BODY}}=dynamic · fallback กันพัง */
 const FORECAST_TPL_FALLBACK = `คุณคือซินแสพยากรณ์ของ hourkey.io · ใช้วิธี "{{METHOD}}" ตอบคำถามนี้\n{{BODY}}\nตอบให้ตรงคำถาม · เริ่มด้วย "✓ ปิดได้" / "✗ ยังไม่ได้" / "⚠ ต้องระวัง" ตามผัง แล้วอธิบายเหตุผลจาก 卦/星/門/神 · ปิดท้ายด้วยคำแนะนำ 1-2 บรรทัด`;
 import { spawn } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { calcBazi } from "@/lib/bazi-calc";
 import { hexagramForStemBranch, HEXAGRAMS_64, TRIGRAMS_8 } from "@/lib/year-hexagram";
 import { q1 } from "@/lib/db";
@@ -293,7 +294,7 @@ function buildPrompt(question: string, method: Method, category: string, lang: s
 
 async function runClaudeCli(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const claudeArgs = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "user"];
+    const claudeArgs = ["-p", "--output-format", "text", ...CLAUDE_TEXT_ONLY_ARGS];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });
     let out = ""; let err = "";

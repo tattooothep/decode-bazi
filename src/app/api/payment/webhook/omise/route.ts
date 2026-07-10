@@ -5,25 +5,32 @@
  * ความปลอดภัย:
  *  - Omise ไม่มีลายเซ็น HMAC มาตรฐาน → ยืนยันด้วยการ re-fetch charge จาก API (server-side confirm)
  *    ห้ามเชื่อ payload จำนวนเงิน/สถานะตรง ๆ
- *  - option: ตั้ง OMISE_WEBHOOK_SECRET เป็น shared token ใน query (?t=) เพิ่มชั้นกัน spam
+ *  - บังคับ OMISE_WEBHOOK_SECRET เป็น shared token ใน query (?t=) หรือ header
  *  - เติมยามผ่าน fulfillOrder (ตรวจยอดตรง + idempotent + atomic)
- *  - ยังไม่มี OMISE key → ตอบ 200 note pending (verify ไม่ได้ = ไม่เติม)
+ *  - ถ้า secret หรือ Omise key ไม่ครบ → fail closed ด้วย 503
  */
 import { NextResponse } from "next/server";
 import { verifyOmiseCharge, omiseReady } from "@/lib/payment/omise";
 import { clawbackYamForOrder, fulfillOrder } from "@/lib/payment/credit";
 import { q } from "@/lib/db";
+import { timingSafeEqual } from "crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  // optional shared-secret guard
+  // Omise has no standard HMAC signature. The shared token and server-side API
+  // verification are both mandatory; a missing configuration must fail closed.
   const wantSecret = process.env.OMISE_WEBHOOK_SECRET || "";
-  if (wantSecret) {
-    const url = new URL(req.url);
-    const got = url.searchParams.get("t") || req.headers.get("x-webhook-token") || "";
-    if (got !== wantSecret) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!wantSecret || !omiseReady()) {
+    return NextResponse.json({ error: "omise_webhook_not_configured" }, { status: 503 });
+  }
+  const url = new URL(req.url);
+  const got = url.searchParams.get("t") || req.headers.get("x-webhook-token") || "";
+  const gotBuf = Buffer.from(got);
+  const wantBuf = Buffer.from(wantSecret);
+  if (gotBuf.length !== wantBuf.length || !timingSafeEqual(gotBuf, wantBuf)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const body = (await req.json().catch(() => ({}))) as {
@@ -52,11 +59,6 @@ export async function POST(req: Request) {
       }
     } catch { /* optional */ }
     return NextResponse.json({ received: true, clawbacks, affiliate_reversed, key: eventKey });
-  }
-
-  if (!omiseReady()) {
-    // ยังไม่มี key = ยืนยันไม่ได้ → ไม่เติม (fail-closed)
-    return NextResponse.json({ received: true, note: "omise not configured — cannot verify, skipped" });
   }
 
   // re-fetch charge (server-side confirm)

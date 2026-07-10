@@ -1,81 +1,25 @@
 /* src/lib/palm/vision.ts · ศาสตร์ที่ 7 — เปิดตา AI อ่านลายมือจากรูป
- * grok-4.3 vision (ตัวนำ · เร็ว ~15s + ตาแม่น) → gemini API → codex CLI (fallback)
+ * grok-4.3 vision (ตัวนำ · เร็ว ~15s + ตาแม่น) → gemini API (fallback)
  * grok ใช้ xAI API + OAuth token (grok CLI login · /root/.grok/auth.json) — ไม่ต้องซื้อ key เพิ่ม
  * standalone — ไม่แตะ sifu route (LOCKED) · reuse pattern เดียวกัน
  */
-import { spawn } from "child_process";
-import { StringDecoder } from "string_decoder";
 import { readFile } from "fs/promises";
 import { readFileSync } from "fs";
 import { runWithProviderCircuit } from "@/lib/ai/provider-health";
 
-const CHILD_USER = process.env.PALM_CHILD_USER || "jarvis";
-const CODEX_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
-const CODEX_EFFORT = (process.env.PALM_CODEX_EFFORT || "medium").trim(); // อ่านภาพ+จับคู่คัมภีร์ ไม่ต้อง xhigh
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.PALM_GEMINI_MODEL || "gemini-2.5-flash";
 const GROK_MODEL = (process.env.PALM_GROK_MODEL || "grok-4.3").trim();
 const GROK_EFFORT = (process.env.PALM_GROK_EFFORT || "high").trim(); // reasoning: ให้ grok คิดลึกก่อนอ่าน (ลึก > เร็ว)
-const GROK_TIMEOUT = Math.max(30_000, Number(process.env.PALM_GROK_TIMEOUT_MS || 150_000)); // grok timeout สั้นกว่า route maxDuration 240s → เหลือเวลา fallback gemini/codex
+const GROK_TIMEOUT = Math.max(30_000, Number(process.env.PALM_GROK_TIMEOUT_MS || 150_000)); // grok timeout สั้นกว่า route maxDuration 240s → เหลือเวลา fallback gemini
 const GROK_AUTH_PATH = process.env.PALM_GROK_AUTH || "/root/.grok/auth.json";
 const GROK_API_URL = process.env.PALM_GROK_URL || "https://api.x.ai/v1/chat/completions";
 const TIMEOUT_MS = Math.max(30_000, Number(process.env.PALM_TIMEOUT_MS || 200_000));
-/* ตัวนำ: grok-4.3 (เร็ว ~15s + ตาแม่น + รับคัมภีร์ใหญ่ได้) · gemini/codex เป็น fallback
- * สลับได้ด้วย env PALM_PRIMARY=gemini|codex */
+/* ตัวนำ: grok-4.3 (เร็ว ~15s + ตาแม่น + รับคัมภีร์ใหญ่ได้) · gemini เป็น fallback
+ * สลับได้ด้วย env PALM_PRIMARY=gemini */
 const PRIMARY = (process.env.PALM_PRIMARY || "grok").trim().toLowerCase();
 
-export type VisionResult = { text: string; engine: "codex-cli" | "gemini-api" | "grok-api" };
-
-/* ── codex: sudo -u jarvis -H codex exec --json ... -i <img> <prompt(positional)> ── */
-function codexArgs(imagePaths: string[], prompt: string): string[] {
-  const a = [
-    "-u", CHILD_USER, "-H", "codex", "exec",
-    "--json", "--ephemeral",
-    "--sandbox", "read-only",
-    "--skip-git-repo-check",
-    "-C", "/tmp",
-  ];
-  if (CODEX_MODEL) a.push("-m", CODEX_MODEL);
-  if (CODEX_EFFORT) a.push("-c", `model_reasoning_effort="${CODEX_EFFORT}"`);
-  for (const p of imagePaths) a.push("-i", p);
-  a.push(prompt); // prompt เป็น positional arg (image mode ห้าม stdin — ไม่งั้น "No prompt provided")
-  return a;
-}
-
-function runCodexVision(imagePaths: string[], prompt: string, signal?: AbortSignal): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const c = spawn("sudo", codexArgs(imagePaths, prompt), { cwd: "/tmp", env: process.env });
-    let rawOut = "", finalText = "", err = "", lineBuf = "", settled = false;
-    const dec = new StringDecoder("utf8");
-    const parseLine = (line: string) => {
-      const t = line.trim();
-      if (!t) return;
-      try {
-        const o = JSON.parse(t);
-        if (o.type === "item.completed" && o.item?.type === "agent_message" && typeof o.item.text === "string") finalText = o.item.text;
-        else if (o.type === "turn.failed" && o.error?.message) err += "\n" + o.error.message;
-        else if (o.type === "error" && o.message) err += "\n" + o.message;
-      } catch { /* non-json line */ }
-    };
-    const done = (fn: () => void) => { if (settled) return; settled = true; clearTimeout(timer); signal?.removeEventListener("abort", onAbort); fn(); };
-    const onAbort = () => { try { c.kill("SIGKILL"); } catch {} done(() => reject(new Error("aborted"))); };
-    const timer = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} done(() => reject(new Error("codex_timeout"))); }, TIMEOUT_MS);
-    if (signal?.aborted) return onAbort();
-    signal?.addEventListener("abort", onAbort, { once: true });
-    c.stdout.on("data", ch => {
-      const s = dec.write(ch); rawOut += s; lineBuf += s;
-      let nl; while ((nl = lineBuf.indexOf("\n")) !== -1) { parseLine(lineBuf.slice(0, nl)); lineBuf = lineBuf.slice(nl + 1); }
-    });
-    c.stderr.on("data", ch => { err += ch.toString(); });
-    c.on("error", e => done(() => reject(e)));
-    c.on("close", code => done(() => {
-      const tail = (lineBuf + dec.end()).trim(); if (tail) parseLine(tail);
-      const out = finalText.trim(); // ใช้เฉพาะ agent_message · ไม่ resolve rawOut (JSONL ดิบ = ขยะ)
-      if (code === 0 && out) resolve(out);
-      else reject(new Error(`codex_exit_${code}: ${(err || rawOut.slice(0, 120) || "").slice(0, 240)}`));
-    }));
-  });
-}
+export type VisionResult = { text: string; engine: "gemini-api" | "grok-api" };
 
 /* ── gemini fallback: inline base64 หลายรูป ── */
 async function runGeminiVision(imagePaths: string[], prompt: string, signal?: AbortSignal): Promise<string> {
@@ -147,17 +91,13 @@ async function tryGrok(p: string[], q: string, s?: AbortSignal): Promise<VisionR
 async function tryGemini(p: string[], q: string, s?: AbortSignal): Promise<VisionResult> {
   return { text: await runGeminiVision(p, q, s), engine: "gemini-api" };
 }
-async function tryCodex(p: string[], q: string, s?: AbortSignal): Promise<VisionResult> {
-  return { text: await runCodexVision(p, q, s), engine: "codex-cli" };
-}
 export async function readPalmVision(imagePaths: string[], prompt: string, signal?: AbortSignal): Promise<VisionResult> {
   const engines: Record<string, (p: string[], q: string, s?: AbortSignal) => Promise<VisionResult>> = {
-    grok: tryGrok, gemini: tryGemini, codex: tryCodex,
+    grok: tryGrok, gemini: tryGemini,
   };
-  // ตัวนำก่อน แล้ว fallback ที่เหลือตามลำดับ (grok → gemini → codex เป็น default)
-  const order = PRIMARY === "codex" ? ["codex", "gemini", "grok"]
-    : PRIMARY === "gemini" ? ["gemini", "grok", "codex"]
-    : ["grok", "gemini", "codex"];
+  // Agentic Codex vision is intentionally excluded: even a read-only shell can
+  // expose host credentials through a prompt-injected answer.
+  const order = PRIMARY === "gemini" ? ["gemini", "grok"] : ["grok", "gemini"];
   let lastErr: unknown;
   for (const name of order) {
     try {
