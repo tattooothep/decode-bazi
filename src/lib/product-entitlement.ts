@@ -8,15 +8,15 @@ import { q1 } from "@/lib/db";
 import {
   PRODUCT_CONTRACT_VERSION,
   PRODUCT_PAGE_ENTITLEMENTS,
+  FREE_SIGNUP_YAM,
+  TRIAL_DAYS,
   type ProductPageEntitlements,
   type ProductPlan,
 } from "@/lib/product-page-entitlements";
 
 export { PRODUCT_CONTRACT_VERSION, PRODUCT_PAGE_ENTITLEMENTS };
+export { FREE_SIGNUP_YAM, TRIAL_DAYS };
 export type { ProductPlan };
-
-export const FREE_SIGNUP_YAM = 1000;
-export const TRIAL_DAYS = 14;
 
 /** ตรง /api/book + public/book.html */
 export const BOOK_SCIENCE_YAM = 18;
@@ -110,7 +110,7 @@ export type ProductAccess = {
   qimen_detail_mode: QimenDetailMode;
   qimen_search: boolean;
   qimen_sifu: boolean;
-  /** สิทธิ์รายหน้า v2 - payload เดียวกันสำหรับ web/mobile และ API gates */
+  /** สิทธิ์รายหน้า v3 - payload เดียวกันสำหรับ web/mobile และ API gates */
   pages: ProductPageEntitlements;
 };
 
@@ -133,92 +133,36 @@ export function deriveProductAccess(row: ProductUserRow, nowMs: number = Date.no
   if (paidMaster) plan = "master";
   else if (paidPremium) plan = "premium";
   else if (inTrial) plan = "trial";
+  const pages = PRODUCT_PAGE_ENTITLEMENTS[plan];
 
   /* legacy: ไม่มี trial_ends_at เลย · ไม่แจก trial ย้อนหลัง · บ้านได้ 1 หลัง */
   const legacy_free = !row.trial_ends_at && plan === "free";
-  let house_limit = 0;
-  if (paidMaster) house_limit = 999;
-  else if (paidPremium) house_limit = 50;
-  else if (inTrial) house_limit = 3;
-  else if (legacy_free) house_limit = 1;
-  // else post-trial free: house_limit = 0
-
-  let fusion_max_sciences = 2;
-  let fusion_max_profiles = 1;
-  if (paidMaster) {
-    fusion_max_sciences = 6;
-    fusion_max_profiles = 8;
-  } else if (paidPremium) {
-    fusion_max_sciences = 4;
-    fusion_max_profiles = 1;
-  } else if (inTrial) {
-    fusion_max_sciences = 3;
-    fusion_max_profiles = 1;
-  }
-
-  let book_max_sciences = 0;
-  let book_synthesis = false;
-  if (paidMaster) {
-    book_max_sciences = 6;
-    book_synthesis = true;
-  } else if (paidPremium) {
-    book_max_sciences = 3;
-    book_synthesis = false;
-  } else if (inTrial) {
-    book_max_sciences = 2;
-    book_synthesis = false;
-  }
-
-  const fusion_suite = paidMaster || paidPremium || inTrial;
-  const network_multi = paidMaster;
-
-  let luopan_vision_max = 0;
-  if (paidMaster) luopan_vision_max = 10;
-  else if (paidPremium) luopan_vision_max = 10;
-  else if (inTrial) luopan_vision_max = 1;
-
-  let datepick_max_people = 1;
-  if (paidMaster) datepick_max_people = 10;
-  else if (paidPremium) datepick_max_people = 3;
-  else if (inTrial) datepick_max_people = 1;
+  const house_limit = legacy_free ? 1 : pages.fengshui.houses;
+  const fusion_max_sciences = pages.fusion.max_sciences;
+  const fusion_max_profiles = pages.fusion.max_profiles;
+  const book_max_sciences = pages.book.max_sciences;
+  const book_synthesis = pages.book.synthesis;
+  const fusion_suite = pages.fusion.enabled;
+  const network_multi = pages.network.team_analysis;
+  const luopan_vision_max = pages.luopan.vision_limit;
+  const datepick_max_people = pages.datepick.people;
 
   /* ── datepick / luopan / qimen · trial ~30% ── */
   let datepick_modules: DatepickModuleId[] = [...DATEPICK_MODULES_FREE];
-  let datepick_max_range_days = 30;
-  let datepick_max_results = 10;
-  let luopan_mode: LuopanMode = "core";
-  let luopan_pins: LuopanPins = "basic";
-  let qimen_detail_mode: QimenDetailMode = "beginner";
-  let qimen_search = false;
-  let qimen_sifu = false;
+  const datepick_max_range_days = pages.datepick.range_days;
+  const datepick_max_results = pages.datepick.results;
+  const luopan_mode: LuopanMode = pages.luopan.mode;
+  const luopan_pins: LuopanPins = pages.luopan.pins;
+  const qimen_detail_mode: QimenDetailMode = pages.qimen.detail === "basic" || pages.qimen.detail === "beginner" ? "beginner" : "pro";
+  const qimen_search = pages.qimen.search_days > 0;
+  const qimen_sifu = pages.qimen.sifu;
 
   if (paidMaster) {
     datepick_modules = [...DATEPICK_ALL_MODULES];
-    datepick_max_range_days = 365;
-    datepick_max_results = 100;
-    luopan_mode = "full";
-    luopan_pins = "full";
-    qimen_detail_mode = "pro";
-    qimen_search = true;
-    qimen_sifu = true;
   } else if (paidPremium) {
     datepick_modules = [...DATEPICK_ALL_MODULES];
-    datepick_max_range_days = 90;
-    datepick_max_results = 50;
-    luopan_mode = "pro";
-    luopan_pins = "full";
-    qimen_detail_mode = "pro";
-    qimen_search = true;
-    qimen_sifu = true;
   } else if (inTrial) {
     datepick_modules = [...DATEPICK_MODULES_TRIAL];
-    datepick_max_range_days = 45;
-    datepick_max_results = 20;
-    luopan_mode = "core";
-    luopan_pins = "basic";
-    qimen_detail_mode = "beginner";
-    qimen_search = false;
-    qimen_sifu = false;
   }
   // free post-trial: DATEPICK_MODULES_FREE · core · beginner · no search/sifu (ด้านบน)
 
@@ -248,7 +192,7 @@ export function deriveProductAccess(row: ProductUserRow, nowMs: number = Date.no
     qimen_detail_mode,
     qimen_search,
     qimen_sifu,
-    pages: PRODUCT_PAGE_ENTITLEMENTS[plan],
+    pages,
   };
 }
 

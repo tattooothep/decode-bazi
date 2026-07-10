@@ -93,6 +93,7 @@ async function main() {
   );
   assert(free.plan === "free", "post-trial free plan");
   assert(free.fusion_max_sciences === 2, "free fusion sci=2");
+  assert(free.fusion_suite === true, "free fusion suite open");
   assert(free.book_max_sciences === 0, "free book closed");
   assert(free.house_limit === 0, "free house=0");
   assert(free.luopan_vision_max === 0, "free vision=0");
@@ -147,6 +148,16 @@ async function main() {
   assert(master.plan === "master", "master plan");
   assert(master.fusion_max_sciences === 6 && master.fusion_max_profiles === 8, "master full fusion");
   assert(master.book_synthesis === true, "master book synth");
+  assert(master.luopan_vision_max === 10, "master vision=10/day");
+
+  for (const access of [free, trial, prem, master]) {
+    assert(access.fusion_suite === access.pages.fusion.enabled, `${access.plan} fusion alias matches pages`);
+    assert(access.fusion_max_sciences === access.pages.fusion.max_sciences, `${access.plan} fusion max alias matches pages`);
+    assert(access.book_max_sciences === access.pages.book.max_sciences, `${access.plan} book alias matches pages`);
+    assert(access.luopan_vision_max === access.pages.luopan.vision_limit, `${access.plan} vision alias matches pages`);
+    assert(access.datepick_max_people === access.pages.datepick.people, `${access.plan} datepick people alias matches pages`);
+    assert(access.datepick_max_range_days === access.pages.datepick.range_days, `${access.plan} datepick range alias matches pages`);
+  }
 
   assert(FREE_SIGNUP_YAM === 1000, "FREE_SIGNUP_YAM=1000");
   assert(TRIAL_DAYS === 14, "TRIAL_DAYS=14");

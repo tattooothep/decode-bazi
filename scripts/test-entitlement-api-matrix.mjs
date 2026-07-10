@@ -119,6 +119,11 @@ try {
     let r = await request(fixture, "/api/account/me");
     check(r.response.status === 200 && r.data.plan === fixture.plan, `${fixture.plan} account plan`);
     check(r.data.product?.trial_days === 14 && r.data.product?.free_signup_yam === 1000, `${fixture.plan} trial contract`);
+    check(r.data.caps?.contract_version === "entitlements-v3-20260711", `${fixture.plan} contract version`);
+    check(r.data.caps?.fusion_suite === caps.fusion.enabled, `${fixture.plan} fusion enabled alias`);
+    check(r.data.caps?.fusion_max_sciences === caps.fusion.max_sciences, `${fixture.plan} fusion max alias`);
+    check(r.data.caps?.book_max_sciences === caps.book.max_sciences, `${fixture.plan} book max alias`);
+    check(r.data.caps?.luopan_vision_max === caps.luopan.vision_limit, `${fixture.plan} vision alias`);
 
     r = await request(fixture, "/api/chart", { method: "POST", body: chartBody });
     check(r.response.status === 200 && r.data.entitlement?.plan === fixture.plan, `${fixture.plan} chart status`);

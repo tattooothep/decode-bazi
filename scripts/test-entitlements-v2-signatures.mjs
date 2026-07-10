@@ -4,13 +4,20 @@ import {
   PRODUCT_PAGE_ENTITLEMENTS,
   PRODUCT_CONTRACT_VERSION,
 } from "../src/lib/product-page-entitlements.ts";
-import { FREE_SIGNUP_YAM, TRIAL_DAYS } from "../src/lib/product-entitlement.ts";
+import {
+  DATEPICK_ALL_MODULES,
+  DATEPICK_MODULES_FREE,
+  DATEPICK_MODULES_TRIAL,
+  FREE_SIGNUP_YAM,
+  TRIAL_DAYS,
+  deriveProductAccess,
+} from "../src/lib/product-entitlement.ts";
 import { getCheckoutPackage, getPackage, listPackagesPublic } from "../src/lib/payment/packages.ts";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const pass = (name) => console.log(`SIGNATURE PASS · ${name}`);
 
-assert.equal(PRODUCT_CONTRACT_VERSION, "entitlements-v2-20260710");
+assert.equal(PRODUCT_CONTRACT_VERSION, "entitlements-v3-20260711");
 assert.equal(FREE_SIGNUP_YAM, 1000);
 assert.equal(TRIAL_DAYS, 14);
 assert.deepEqual(PRODUCT_PAGE_ENTITLEMENTS.free.forecast, PRODUCT_PAGE_ENTITLEMENTS.master.forecast);
@@ -18,6 +25,24 @@ assert.deepEqual(PRODUCT_PAGE_ENTITLEMENTS.free.palmistry, PRODUCT_PAGE_ENTITLEM
 assert.equal(PRODUCT_PAGE_ENTITLEMENTS.master.network.team_people, 12);
 assert.equal(PRODUCT_PAGE_ENTITLEMENTS.trial.network.saved_profiles, 3);
 assert.equal(PRODUCT_PAGE_ENTITLEMENTS.premium.network.saved_profiles, 10);
+assert.equal(PRODUCT_PAGE_ENTITLEMENTS.free.fusion.enabled, true);
+assert.equal(PRODUCT_PAGE_ENTITLEMENTS.free.fusion.max_sciences, 2);
+assert.equal(PRODUCT_PAGE_ENTITLEMENTS.trial.book.max_sciences, 2);
+assert.equal(PRODUCT_PAGE_ENTITLEMENTS.master.book.synthesis, true);
+assert.deepEqual(PRODUCT_PAGE_ENTITLEMENTS.premium.luopan, {
+  mode: "pro",
+  pins: "full",
+  vision: true,
+  vision_limit: 10,
+  vision_period: "day",
+  sifu: true,
+});
+assert.equal(DATEPICK_MODULES_FREE.length, PRODUCT_PAGE_ENTITLEMENTS.free.datepick.modules);
+assert.equal(DATEPICK_MODULES_TRIAL.length, PRODUCT_PAGE_ENTITLEMENTS.trial.datepick.modules);
+assert.equal(DATEPICK_ALL_MODULES.length, PRODUCT_PAGE_ENTITLEMENTS.premium.datepick.modules);
+const expiredFree = deriveProductAccess({ tier: "free", hour_balance: 10, sub_expires_at: null, trial_ends_at: "2020-01-01T00:00:00.000Z" });
+assert.equal(expiredFree.fusion_suite, true);
+assert.equal(expiredFree.fusion_max_sciences, 2);
 pass("1 contract");
 
 const palmRead = read("src/app/api/palmistry/read/route.ts");
