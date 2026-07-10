@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -77,7 +78,6 @@ export async function POST(req: Request) {
         ? (body as { lang?: string }).lang
         : "th",
       message,
-      model: cleanString((body as { model?: unknown }).model, 40),
       profileIds,
       stream: false,
     }),
@@ -99,11 +99,11 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    {
+    publicAiPayload({
       ok: groupResp.ok,
       ...data,
       source: "/api/sifu/group",
-    },
+    }),
     {
       headers: { "Cache-Control": "no-store, max-age=0" },
       status: groupResp.status,

@@ -8,6 +8,7 @@ import { getSession } from "@/lib/auth";
 import { reserveHour, settleReservedHourByChars, refundReservedHour } from "@/lib/spend-hours";
 import { tianxingReading } from "@/lib/tianxing";
 import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const runtime = "nodejs";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
       const t = await resp.text().catch(() => "");
       await refundReservedHour("tianxing_sifu").catch(() => {});
       reserved = false;
-      return NextResponse.json({ ok: false, error: `ai ${resp.status}`, detail: t.slice(0, 150) }, { status: 502 });
+      return NextResponse.json(publicAiPayload({ ok: false, error: `ai ${resp.status}`, detail: t.slice(0, 150) }), { status: 502 });
     }
     const j = await resp.json();
     const reply = String(j?.choices?.[0]?.message?.content || "").trim();
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
     }
     const sp = await settleReservedHourByChars(reply.length, "tianxing_sifu");
     reserved = false;
-    return NextResponse.json({ ok: true, reply, model: MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after });
+    return NextResponse.json(publicAiPayload({ ok: true, reply, model: MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after }));
   } catch (e) {
     if (reserved) await refundReservedHour("tianxing_sifu").catch(() => {});
     console.error("[tianxing/sifu]", e instanceof Error ? e.message : String(e));

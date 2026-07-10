@@ -21,6 +21,7 @@
  *    (มีบทเรียนว่าทำ stream พัง)
  */
 import { NextResponse } from "next/server";
+import { publicAiPayload } from "@/lib/public-ai-response";
 import { spawn, execFileSync } from "child_process";
 import { readFileSync, statSync, writeFileSync, rmSync, chownSync, chmodSync } from "fs";
 import { join } from "path";
@@ -886,15 +887,14 @@ function startSifuHeartbeat(
 export async function POST(req: Request) {
   const reqT0 = Date.now();
   try {
-    const url = new URL(req.url);
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
     const rawHistory: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
     const lang: string = isSifuAnswerLang(body.lang) ? body.lang : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
-    const sifuModel = resolveSifuModel(body.model || url.searchParams.get("model"));
+    const sifuModel = resolveSifuModel(process.env.SIFU_GROUP_MODEL || process.env.SIFU_DEFAULT_MODEL);
     if (providerSecurityDisabled(sifuModel)) {
-      return NextResponse.json({ error: "provider_security_disabled", model: sifuModel }, { status: 503 });
+      return NextResponse.json({ error: "analysis_unavailable" }, { status: 503 });
     }
     const threadId = cleanSifuThreadId(body.threadId);
     const clientGroupBindingHash = cleanAuditToken(body.groupBindingHash);
@@ -927,11 +927,11 @@ export async function POST(req: Request) {
     }
     if (sifuModel === "codex-cli" && profileIds.length > CODEX_GROUP_MAX) {
       console.log(`[sifu/group guard] model=codex-cli count=${profileIds.length} max=${CODEX_GROUP_MAX}`);
-      return NextResponse.json({ error: "codex_context_limit_group_size", max: CODEX_GROUP_MAX, count: profileIds.length }, { status: 400 });
+      return NextResponse.json({ error: "analysis_context_limit", max: CODEX_GROUP_MAX, count: profileIds.length }, { status: 400 });
     }
     if (sifuModel === "grok-cli" && profileIds.length > GROK_GROUP_MAX) {
       console.log(`[sifu/group guard] model=grok-cli count=${profileIds.length} max=${GROK_GROUP_MAX}`);
-      return NextResponse.json({ error: "grok_context_limit_group_size", max: GROK_GROUP_MAX, count: profileIds.length }, { status: 400 });
+      return NextResponse.json({ error: "analysis_context_limit", max: GROK_GROUP_MAX, count: profileIds.length }, { status: 400 });
     }
     console.log(`[sifu/group model] model=${sifuModel} stream=${body.stream === true ? "1" : "0"} count=${profileIds.length}`);
 
@@ -1060,7 +1060,7 @@ export async function POST(req: Request) {
           const send = (event: string, data: unknown) => {
             if (closed) return;
             try {
-              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
             } catch {
               closed = true;
             }
@@ -1200,7 +1200,7 @@ export async function POST(req: Request) {
       profileBindingStatus,
       auditQuality: "group_packet_hash_v1",
     });
-    return NextResponse.json({ reply, model: sifuModel });
+    return NextResponse.json(publicAiPayload({ reply, model: sifuModel }));
   } catch (e: unknown) {
     const err = e as Error;
     console.error("[sifu/group] error:", err);

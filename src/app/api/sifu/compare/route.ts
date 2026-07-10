@@ -19,6 +19,7 @@
  * - Rate limit: นับเฉพาะ cache miss (cache hit ไม่นับ)
  */
 import { NextResponse } from "next/server";
+import { publicAiPayload } from "@/lib/public-ai-response";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -531,7 +532,7 @@ export async function POST(req: Request) {
       const send = (event: string, data: unknown) => {
         if (closed) return;
         try {
-          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
         } catch {
           closed = true;
         }

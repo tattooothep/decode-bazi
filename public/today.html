@@ -2307,7 +2307,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
     try{ localStorage.setItem('hk_locale', lang); }catch(e){}
     applyI18N(lang);
-    /* 18 พ.ค. · Codex flag · re-render hours from cache เมื่อสลับภาษา · กัน static i18n เขียนทับ */
+    /* 18 พ.ค. · review flag · re-render hours from cache เมื่อสลับภาษา · กัน static i18n เขียนทับ */
     try {
       if (window._hours && typeof window.__renderHoursFromCache === 'function') {
         window.__renderHoursFromCache();
@@ -2550,7 +2550,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
     if (td.verdict) {
       d.personal = { score: td.verdict.score, label: td.verdict.label, breakdown: null, bonuses: [], warnings: [] };
     }
-    /* 18 พ.ค. · #2 · render userSummary banner · Codex flag #1 · ใช้ DOM nodes กัน XSS
+    /* 18 พ.ค. · #2 · render userSummary banner · review flag #1 · ใช้ DOM nodes กัน XSS
      * 5 ก.ค. · เพิ่ม 3 ภาษา · backend ส่งมาแค่ .th + .el (english slug) → ต่อ en/zh เองจาก ELEM_NAME_TX ในเครื่อง
      * (ไม่แตะ /api/today หรือ yongshen-cache.ts เลย · ใช้ field .el ที่มีอยู่แล้ว) */
     if (td.userSummary) {
@@ -2921,7 +2921,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
 
     /* 5 ก.ค. · ห่อ display ทั้งหมดของ §1 Day Verdict + §2 Pillar เป็น renderVerdictBlock(lang)
      * ให้สลับภาษาได้จริงเมื่อกดปุ่ม TH/EN/ZH · ไม่แตะ levelOf()/threshold/lv.key logic เดิมเลย
-     * (Codex flag เดิม: ก่อนหน้านี้ทั้งบล็อกเขียนไทยตรงๆ ครั้งเดียวตอนโหลด ไม่รีเรนเดอร์ตอนสลับภาษา) */
+     * (review flag เดิม: ก่อนหน้านี้ทั้งบล็อกเขียนไทยตรงๆ ครั้งเดียวตอนโหลด ไม่รีเรนเดอร์ตอนสลับภาษา) */
     function renderVerdictBlock(lang){
       const L = HK9.norm(lang);
       const pick3 = (obj) => {
@@ -3350,7 +3350,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         const hd = await hr.json();
         if (hr.ok && hd.hours) {
           window._hours = hd; /* 18 พ.ค. · cache ก่อน */
-          /* 18 พ.ค. · Codex flag · refactor render เป็น function ที่เรียกซ้ำได้ตอนเปลี่ยน lang */
+          /* 18 พ.ค. · review flag · refactor render เป็น function ที่เรียกซ้ำได้ตอนเปลี่ยน lang */
           window.__renderHoursFromCache = function(){
             const cached = window._hours;
             if (!cached || !cached.hours) return;
@@ -3513,11 +3513,11 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
       /* 18 พ.ค. · A · client TST · ให้ตรงกับ server side · longitude default Bangkok */
       const _BIRTH_CACHE = (function(){ try { return JSON.parse(localStorage.getItem('hk_birth')||'null') || {}; } catch { return {}; } })();
       const _LNG = Number(_BIRTH_CACHE.longitude || _BIRTH_CACHE.lng || 100.5018);
-      /* 18 พ.ค. · Codex flag · ใช้ Bangkok time (UTC+7) ทุก timezone ของ user
+      /* 18 พ.ค. · review flag · ใช้ Bangkok time (UTC+7) ทุก timezone ของ user
        * server marks isNow จาก Bangkok time · client ต้องตรงกัน */
       function curBranchLocalTST(){
         const now = new Date();
-        /* 18 พ.ค. · Codex round 2 · getTime() คือ UTC epoch แล้ว · +7h ตรง = Bangkok */
+        /* 18 พ.ค. · review round 2 · getTime() คือ UTC epoch แล้ว · +7h ตรง = Bangkok */
         const bkk = new Date(now.getTime() + (7 * 3600000));
         const y = bkk.getUTCFullYear(), m = bkk.getUTCMonth()+1, dd = bkk.getUTCDate();
         const h = bkk.getUTCHours(), mm = bkk.getUTCMinutes();
@@ -4062,7 +4062,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         const ELEM_LABEL = { wood:{th:'ไม้',en:'Wood',zh:'木',cn:'木',vi:'Mộc',ja:'木',ru:'Дерево',ko:'목',es:'Madera'}, fire:{th:'ไฟ',en:'Fire',zh:'火',cn:'火',vi:'Hỏa',ja:'火',ru:'Огонь',ko:'화',es:'Fuego'}, earth:{th:'ดิน',en:'Earth',zh:'土',cn:'土',vi:'Thổ',ja:'土',ru:'Земля',ko:'토',es:'Tierra'}, metal:{th:'ทอง',en:'Metal',zh:'金',cn:'金',vi:'Kim',ja:'金',ru:'Металл',ko:'금',es:'Metal'}, water:{th:'น้ำ',en:'Water',zh:'水',cn:'水',vi:'Thủy',ja:'水',ru:'Вода',ko:'수',es:'Agua'} };
         const useTxt = { th:'ใช้', en:'Use', zh:'用', cn:'用', vi:'Dùng', ja:'使う', ru:'Использовать', ko:'사용', es:'Usar' };
         const avoidTxt = { th:'เลี่ยง', en:'Avoid', zh:'忌', cn:'忌', vi:'Tránh', ja:'避ける', ru:'Избегать', ko:'피함', es:'Evitar' };
-        /* swatches · รวมสีทุก yongshen (positive) + แต่ละ jishen (skip) · Codex flag · DOM nodes */
+        /* swatches · รวมสีทุก yongshen (positive) + แต่ละ jishen (skip) · review flag · DOM nodes */
         const sw = document.getElementById('t-color-swatches');
         if (sw) {
           sw.textContent = '';
@@ -4100,7 +4100,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
           if (skipEls.length) {
             const glyph = skipEls.map(s => s.info.zh).join('·');
             const label = pk(avoidTxt) + ' ' + skipEls.map(s => pk(ELEM_LABEL[s.el]) + (s.dominant?'⚡':'')).join(' · ');
-            /* 18 พ.ค. · Codex flag · ใช้ avoid_s (ลดสีของธาตุนี้) ไม่ใช่ skip_s (legacy opposite) */
+            /* 18 พ.ค. · review flag · ใช้ avoid_s (ลดสีของธาตุนี้) ไม่ใช่ skip_s (legacy opposite) */
             const sub = skipEls.map(s => pk(s.info.avoid_s || s.info.skip_s)).join(' / ');
             elRecs.appendChild(mkRow('skip', glyph, label, sub));
           }
@@ -4181,7 +4181,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
             else if (ELEMENT_PRODUCES_LOC[myEl] === oEl) { cat='neutral'; reason=ptx('output'); }
             else if (myEl === 'wood' && oEl==='earth' || myEl==='earth' && oEl==='water' || myEl==='water' && oEl==='fire' || myEl==='fire' && oEl==='metal' || myEl==='metal' && oEl==='wood') { cat='meet'; reason=ptx('wealth'); }
             else { cat='avoid'; reason=ptx('pressure'); }
-            /* 18 พ.ค. · Codex flag · ใช้ DOM nodes กัน XSS · p.nickname/name อาจมี HTML */
+            /* 18 พ.ค. · review flag · ใช้ DOM nodes กัน XSS · p.nickname/name อาจมี HTML */
             const chip = document.createElement('span'); chip.className='ppl-chip';
             const av = document.createElement('span'); av.className='av '+oEl; av.textContent=String(otherStem||''); chip.appendChild(av);
             const nm = document.createElement('span'); nm.className='nm'; nm.textContent=String(p.nickname||p.name||'—'); chip.appendChild(nm);

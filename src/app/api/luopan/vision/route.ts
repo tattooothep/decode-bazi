@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { reserveHourForUser, settleReservedHourByCharsForUser, refundReservedHourForUser } from "@/lib/spend-hours";
 import { getProductAccess, entitlementDenied, countLuopanVisionUses } from "@/lib/product-entitlement";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const runtime = "nodejs";
 
@@ -124,7 +125,7 @@ export async function POST(req: NextRequest) {
       const t = await r.text().catch(() => "");
       await refundReservedHourForUser(s.userId, "luopan_vision").catch(() => {});
       reservedUserId = null;
-      return NextResponse.json({ ok: false, error: `vision ${r.status}`, detail: t.slice(0, 200) }, { status: 502 });
+      return NextResponse.json(publicAiPayload({ ok: false, error: `vision ${r.status}`, detail: t.slice(0, 200) }), { status: 502 });
     }
     const j = await r.json();
     const reply = String(j?.choices?.[0]?.message?.content || "").trim();
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
     }
     const sp = await settleReservedHourByCharsForUser(s.userId, reply.length, "luopan_vision");
     reservedUserId = null;
-    return NextResponse.json({ ok: true, reply, model: VISION_MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after });
+    return NextResponse.json(publicAiPayload({ ok: true, reply, model: VISION_MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after }));
   } catch (e) {
     if (reservedUserId) await refundReservedHourForUser(reservedUserId, "luopan_vision").catch(() => {});
     console.error("[luopan/vision]", e instanceof Error ? e.message : String(e));

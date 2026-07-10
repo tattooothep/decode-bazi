@@ -13,6 +13,7 @@ import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { loadPromptMd } from "@/lib/prompt-md";
 import { getSession } from "@/lib/auth";
 import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 const CHILD_USER = "jarvis";
 const TIMEOUT_MS = 60_000;
@@ -153,7 +154,7 @@ ${text}`;
       lat: typeof p.lat === "number" ? p.lat : 13.7563,
     }));
 
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       ok: true,
       count: valid.length,
       people: valid,
@@ -161,7 +162,7 @@ ${text}`;
       model: "claude-max-cli",
       balance_after: balanceAfter,
       spent,
-    });
+    }));
   } catch (e: any) {
     if (reserved) {
       const { refundReservedHour } = await import("@/lib/spend-hours");

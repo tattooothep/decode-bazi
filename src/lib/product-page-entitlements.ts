@@ -19,7 +19,7 @@ export type ProductPageEntitlements = {
   book: { max_sciences: number; synthesis: boolean };
   qimen: { time_window_days: number; hours_per_day: number; detail: "basic" | "beginner" | "pro" | "technical"; search_days: number; search_results: number; compare_locations: boolean; sifu: boolean };
   forecast: { methods: 3; full_result: true; history: true; evidence: true; ai_uses_yam: true };
-  sifu: { answer: "full"; other_profile_contexts: number; pair_context: boolean; group_context_people: number; model_choice: boolean; ai_uses_yam: true };
+  sifu: { answer: "full"; other_profile_contexts: number; pair_context: boolean; group_context_people: number; ai_uses_yam: true };
   datepick: { modules: number; range_days: number; results: number; people: number; sifu: boolean };
   fengshui: { houses: number; layers: "basic" | "trial" | "full" | "professional"; multi_profile: boolean };
   luopan: { mode: "core" | "pro" | "full"; pins: "basic" | "full"; vision: boolean; vision_limit: number; vision_period: "none" | "trial_total" | "day"; sifu: boolean };
@@ -39,7 +39,7 @@ export const PRODUCT_PAGE_ENTITLEMENTS: Record<ProductPlan, ProductPageEntitleme
     book: { max_sciences: 0, synthesis: false },
     qimen: { time_window_days: 0, hours_per_day: 1, detail: "basic", search_days: 0, search_results: 0, compare_locations: false, sifu: false },
     forecast: sameForecast,
-    sifu: { answer: "full", other_profile_contexts: 1, pair_context: false, group_context_people: 0, model_choice: false, ai_uses_yam: true },
+    sifu: { answer: "full", other_profile_contexts: 1, pair_context: false, group_context_people: 0, ai_uses_yam: true },
     datepick: { modules: 3, range_days: 30, results: 10, people: 1, sifu: false },
     fengshui: { houses: 0, layers: "basic", multi_profile: false },
     luopan: { mode: "core", pins: "basic", vision: false, vision_limit: 0, vision_period: "none", sifu: false },
@@ -54,7 +54,7 @@ export const PRODUCT_PAGE_ENTITLEMENTS: Record<ProductPlan, ProductPageEntitleme
     book: { max_sciences: 2, synthesis: false },
     qimen: { time_window_days: 0, hours_per_day: 12, detail: "beginner", search_days: 0, search_results: 0, compare_locations: false, sifu: false },
     forecast: sameForecast,
-    sifu: { answer: "full", other_profile_contexts: 3, pair_context: false, group_context_people: 0, model_choice: false, ai_uses_yam: true },
+    sifu: { answer: "full", other_profile_contexts: 3, pair_context: false, group_context_people: 0, ai_uses_yam: true },
     datepick: { modules: 6, range_days: 45, results: 20, people: 1, sifu: false },
     fengshui: { houses: 3, layers: "trial", multi_profile: false },
     luopan: { mode: "core", pins: "basic", vision: true, vision_limit: 1, vision_period: "trial_total", sifu: false },
@@ -69,7 +69,7 @@ export const PRODUCT_PAGE_ENTITLEMENTS: Record<ProductPlan, ProductPageEntitleme
     book: { max_sciences: 3, synthesis: false },
     qimen: { time_window_days: 90, hours_per_day: 12, detail: "pro", search_days: 7, search_results: 10, compare_locations: false, sifu: true },
     forecast: sameForecast,
-    sifu: { answer: "full", other_profile_contexts: 10, pair_context: true, group_context_people: 0, model_choice: false, ai_uses_yam: true },
+    sifu: { answer: "full", other_profile_contexts: 10, pair_context: true, group_context_people: 0, ai_uses_yam: true },
     datepick: { modules: 20, range_days: 90, results: 50, people: 3, sifu: true },
     fengshui: { houses: 50, layers: "full", multi_profile: false },
     luopan: { mode: "pro", pins: "full", vision: true, vision_limit: 10, vision_period: "day", sifu: true },
@@ -84,7 +84,7 @@ export const PRODUCT_PAGE_ENTITLEMENTS: Record<ProductPlan, ProductPageEntitleme
     book: { max_sciences: 6, synthesis: true },
     qimen: { time_window_days: 365, hours_per_day: 12, detail: "technical", search_days: 30, search_results: 30, compare_locations: true, sifu: true },
     forecast: sameForecast,
-    sifu: { answer: "full", other_profile_contexts: 100, pair_context: true, group_context_people: 12, model_choice: true, ai_uses_yam: true },
+    sifu: { answer: "full", other_profile_contexts: 100, pair_context: true, group_context_people: 12, ai_uses_yam: true },
     datepick: { modules: 20, range_days: 365, results: 100, people: 10, sifu: true },
     fengshui: { houses: 999, layers: "professional", multi_profile: true },
     luopan: { mode: "full", pins: "full", vision: true, vision_limit: 10, vision_period: "day", sifu: true },

@@ -16,6 +16,7 @@ import { getSession } from "@/lib/auth";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
 import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
 import { q1 } from "@/lib/db";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 /* 25 พ.ค. · persona ย้ายไป md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}} = ส่วน dynamic · fallback กันพัง */
 const PAIR_TPL_FALLBACK = `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ความสัมพันธ์ระหว่าง 2 คน · ตำรา子平真詮·三命通會\n{{BODY}}\nตอบเต็มโดยมีข้อสรุป หลักฐาน เหตุผล และคำแนะนำลงมือทำ · ห้ามลดเป็นคำตอบสั้นตามแพ็กเกจ:`;
@@ -259,7 +260,7 @@ export async function POST(req: Request) {
           const send = (event: string, data: unknown) => {
             if (closed) return;
             try {
-              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
             } catch {
               closed = true;
             }
@@ -357,7 +358,7 @@ export async function POST(req: Request) {
       balanceAfter,
       durationMs: Date.now() - reqT0,
     });
-    return NextResponse.json({ reply, mode, model: "claude-max-cli", balance_after: balanceAfter, spent });
+    return NextResponse.json(publicAiPayload({ reply, mode, model: "claude-max-cli", balance_after: balanceAfter, spent }));
   } catch (e: any) {
     await refundReservation();
     console.error("[network/sifu]", e instanceof Error ? e.message : String(e));

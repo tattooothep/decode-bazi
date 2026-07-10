@@ -896,7 +896,7 @@ window.HK_I18N = {
   'q.sifu.t.fm':   { th:'รูปแบบพิเศษ · 格局', en:'Formations', zh:'格局' },
   'q.sifu.placeholder':{ th:'ถามซินแสได้เลย · เช่น \'วันนี้ทิศไหนรวยเร็ว\'', en:'Ask the master · e.g. "best direction today"', zh:'問師父 · 如「今日哪方有財」' },
   'q.sifu.send':   { th:'ส่ง', en:'Send', zh:'送' },
-  'q.sifu.hint':   { th:'ใช้ Claude AI · อ้างอิงผังเวลา + ดวงคุณ · 10-30 วินาที', en:'Claude AI · uses chart + your destiny · 10-30s', zh:'Claude AI · 用盤局 + 命局 · 10-30秒' },
+  'q.sifu.hint':   { th:'ระบบวิเคราะห์เฉพาะศาสตร์ · อ้างอิงผังเวลา + ดวงคุณ · 10-30 วินาที', en:'Specialist analysis · uses the time chart + your destiny · 10-30s', zh:'專業術數分析 · 依盤局 + 命局 · 10-30秒' },
   'q.sifu.thinking':{ th:'ซินแสกำลังคิด...', en:'Sifu is thinking...', zh:'師父思考中...' },
   'q.sifu.err':    { th:'ขัดข้อง', en:'Error', zh:'錯誤' },
   'q.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
@@ -1425,7 +1425,7 @@ window.__hkOverlayApply=function(l){
   }
 
   /* ───────────────────────────────────────────────────────────────
-   * Step 1 (22 พ.ค.) · helper กลาง · Codex-approved plan
+   * Step 1 (22 พ.ค.) · helper กลาง · reviewed plan
    * ─────────────────────────────────────────────────────────────── */
   const DEFAULT_QIMEN_LOCATION = Object.freeze({ lng: 100.5018, lat: 13.7563 });
 
@@ -4649,7 +4649,7 @@ window.__hkOverlayApply=function(l){
     const _t_tim  = _qtx('q.sifu.t.tim', 'เวลานี้เหมาะมั๊ย');
     const _t_fm   = _qtx('q.sifu.t.fm', 'รูปแบบพิเศษ · 格局');
     const _t_send = _qtx('q.sifu.send', 'ส่ง');
-    const _t_hint = _qtx('q.sifu.hint', 'ใช้ Claude AI · อ้างอิงผังเวลา + ดวงคุณ · 10-30 วินาที');
+    const _t_hint = _qtx('q.sifu.hint', 'ระบบวิเคราะห์เฉพาะศาสตร์ · อ้างอิงผังเวลา + ดวงคุณ · 10-30 วินาที');
     panel.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         <h3 style="font-family:var(--serif);font-size:16px;color:var(--fg);margin:0">${_t_h3}</h3>

@@ -148,12 +148,12 @@
     #set-city-input{font-size:16px !important;}
     .hk-set-loading-hint{margin-top:6px;font-size:11px;color:rgba(246,241,230,.45);letter-spacing:.04em;}
     body.light .hk-set-loading-hint{color:rgba(26,29,36,.55);}
-    /* Codex: Google Places dropdown ต้องอยู่หน้า overlay/drawer (9998/9999) */
+    /* Google Places dropdown ต้องอยู่หน้า overlay/drawer (9998/9999) */
     .pac-container{z-index:10001 !important;}
   `;
   document.head.appendChild(style);
 
-  // Codex G1: lazy-load Google Places · script โหลดเฉพาะตอนเปิด drawer ครั้งแรก
+  // G1: lazy-load Google Places · script โหลดเฉพาะตอนเปิด drawer ครั้งแรก
   function ensurePlacesScript() {
     return new Promise(function(resolve, reject){
       if (window.google && window.google.maps && window.google.maps.places) return resolve();
@@ -167,7 +167,7 @@
           if (done) return; done = true;
           clearTimeout(to);
           try { delete window.__hkInitDrawerPlaces; } catch(_){}
-          /* Codex: เคลียร์เพื่อให้ retry ครั้งต่อไปได้ · กัน promise rejected poison */
+          /* เคลียร์เพื่อให้ retry ครั้งต่อไปได้ · กัน promise rejected poison */
           try { delete window.__hkPlacesLoading; } catch(_){}
           rej(new Error(msg));
         }
@@ -444,7 +444,7 @@
     });
     recalcTST();
 
-    // Codex G1: lazy autocomplete · onerror/timeout safe · normalize input on pick
+    // G1: lazy autocomplete · onerror/timeout safe · normalize input on pick
     var placesReady = false;
     var placesFailed = false;
     (async function wireCityAutocomplete(){
@@ -479,7 +479,7 @@
 
     document.getElementById('set-save').addEventListener('click', async function(){
       var btn = this;
-      // Codex G1.6: typed-without-pick guard · block while loading too
+      // G1.6: typed-without-pick guard · block while loading too
       // ปลอดภัยเฉพาะกรณี placesFailed · ไม่งั้น mismatch = abort
       var inp = document.getElementById('set-city-input');
       var locHidden = document.getElementById('set-loc-name');

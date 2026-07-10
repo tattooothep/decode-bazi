@@ -11,6 +11,7 @@
     "test:sifu": "node scripts/run-sifu-tests.mjs",
     "test:pricing-contract": "node --experimental-strip-types scripts/test-pricing-entitlement-contract.mjs",
     "test:entitlement-ux": "node scripts/test-entitlement-lock-ux.mjs",
+    "audit:public-ai": "tsx scripts/audit-public-ai-identifiers.mts",
     "start": "next start",
     "test:admin-p0": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p0.mjs",
     "test:admin-p1": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p1.mjs"

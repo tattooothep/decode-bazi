@@ -2034,7 +2034,7 @@
   function _dirNm(code){ const m = DIR_LABELS[code]; if(!m) return code; const l = getRawLang(); return m[l] || m.en || code; }
 
   /* render 8 directions · 3×3 grid · ใช้ /api/today/directions ถ้ามี */
-  /* 19 พ.ค. Phase 13 · Option B · card stack + mini compass · Codex approved */
+  /* 19 พ.ค. Phase 13 · Option B · card stack + mini compass · reviewed */
   function renderDirs(d, det){
     const lang = _calDirLang();
     const T = (k) => { try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('calendar.html',k,lang);if(ov!=null)return ov;}catch(_){} return (window.HK_I18N && window.HK_I18N[k] && (window.HK_I18N[k][lang] || window.HK_I18N[k].th)) || ''; };

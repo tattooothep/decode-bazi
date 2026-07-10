@@ -15,6 +15,7 @@ import { ensureServerEnv } from "@/lib/server-env";
 import { refundHours, spendHours, type RefundResult, type SpendResult } from "@/lib/spend-hours";
 import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 import { getRedis } from "@/lib/redis";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 loadEnvConfig(process.cwd(), false, console, true);
 ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
@@ -1078,7 +1079,7 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   if (!JUDGE_MODEL) {
-    return NextResponse.json({ error: "invalid_judge_model", judge_model: RAW_JUDGE_MODEL }, { status: 500 });
+    return NextResponse.json({ error: "analysis_unavailable" }, { status: 500 });
   }
 
   const access = await getFusionAccess(session);
@@ -1106,7 +1107,7 @@ export async function POST(req: Request) {
   if (!message) return NextResponse.json({ error: "no message" }, { status: 400 });
   if (message.length > 2_000) return NextResponse.json({ error: "message too long" }, { status: 400 });
   if (!profileId) return NextResponse.json({ error: "profile_required" }, { status: 400 });
-  if (panelModels.length < 2) return NextResponse.json({ error: "fusion_requires_two_models" }, { status: 400 });
+  if (panelModels.length < 2) return NextResponse.json({ error: "fusion_configuration_invalid" }, { status: 400 });
   if (!session.orgId) return NextResponse.json({ error: "org_required" }, { status: 403 });
   const progress = makeFusionProgress(runId, panelModels, session.userId);
   progress?.phase("queued", "ตรวจ profile และเตรียมเรียก AI", 4);
@@ -1187,12 +1188,12 @@ export async function POST(req: Request) {
       error: "fusion_panel_incomplete",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       error: "fusion_panel_incomplete",
       reply: "",
       model: "fusion-api",
       fusion: { ...fusion, history_id: historyId },
-    }, { status: 502 });
+    }), { status: 502 });
   }
   if (fusionMode === "strict" && successful.length < requiredPanelCount) {
     progress?.failed("Fusion strict มี panel ตอบไม่พอ");
@@ -1232,12 +1233,12 @@ export async function POST(req: Request) {
       error: "fusion_panel_insufficient",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       error: "fusion_panel_insufficient",
       reply: "",
       model: "fusion-api",
       fusion: { ...fusion, history_id: historyId },
-    }, { status: 502 });
+    }), { status: 502 });
   }
   if (fusionMode === "resilient" && successful.length < 1) {
     progress?.failed("ไม่มี AI panel ที่ตอบสำเร็จ ระบบคืนชั่วโมงรอบนี้");
@@ -1282,12 +1283,12 @@ export async function POST(req: Request) {
       error: "no_panel_answer_refunded",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       reply: noPanel,
       model: "fusion-api",
       cached: false,
       fusion: { ...fusion, history_id: historyId },
-    });
+    }));
   }
 
   const judgeMessage = buildJudgeMessage(message, successful, lang);
@@ -1344,12 +1345,12 @@ export async function POST(req: Request) {
       error: judge.ok ? "fusion_empty" : "fusion_judge_failed",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       error: judge.ok ? "fusion_empty" : "fusion_judge_failed",
       reply: "",
       model: "fusion-api",
       fusion: { ...fusion, history_id: historyId },
-    }, { status: 502 });
+    }), { status: 502 });
   }
 
   progress?.done(`Fusion complete · AI answered ${stats.ai_answered_count}/${stats.ai_requested_count}`);
@@ -1400,12 +1401,12 @@ export async function POST(req: Request) {
     fusionStatus: fusionPublicStatus(degraded ? "degraded" : "done", degraded),
     fusion,
   });
-  return NextResponse.json({
+  return NextResponse.json(publicAiPayload({
     reply: finalReply,
     model: "fusion-api",
     cached: false,
     fusion: { ...fusion, history_id: historyId },
-  });
+  }));
 }
 
 export async function GET(req: Request) {
@@ -1415,14 +1416,14 @@ export async function GET(req: Request) {
   if (url.searchParams.get("check") === "access" || url.searchParams.get("access") === "1") {
     const access = await getFusionAccess(session);
     return NextResponse.json(
-      {
+      publicAiPayload({
         ok: true,
         access,
         min_tier: MIN_TIER,
         spend_hours: SPEND_HOURS,
         panel_models: PANEL_MODELS,
         judge_model: JUDGE_MODEL,
-      },
+      }),
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   }
@@ -1434,5 +1435,5 @@ export async function GET(req: Request) {
   if (status.userId !== session.userId) return NextResponse.json({ error: "run_not_found" }, { status: 404 });
   const publicStatus = { ...status } as Record<string, unknown>;
   delete publicStatus.userId;
-  return NextResponse.json({ ok: true, status: publicStatus });
+  return NextResponse.json(publicAiPayload({ ok: true, status: publicStatus }));
 }

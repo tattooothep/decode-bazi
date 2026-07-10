@@ -533,7 +533,7 @@ function trimPersonForAI(p) {
 
 /* 19 พ.ค. Option α · AI compare · เรียก /api/sifu/compare */
 /* 19 พ.ค. Phase 12 · POST streaming · fetch + body.getReader + SSE parser
- * Codex approved · ห้าม EventSource (POST body) · ห้าม URL query (body 3KB) */
+ * reviewed · ห้าม EventSource (POST body) · ห้าม URL query (body 3KB) */
 async function parseSseStream(reader, onEvent, signal) {
   const decoder = new TextDecoder();
   let buf = '';
@@ -551,7 +551,7 @@ async function parseSseStream(reader, onEvent, signal) {
         else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
       }
       if (!dataLines.length) continue;
-      /* Codex รอบ 32 fix · parse JSON ใน try แยก · onEvent อยู่นอก try
+      /* review รอบ 32 fix · parse JSON ใน try แยก · onEvent อยู่นอก try
        * เพื่อให้ throw จาก onEvent หลุดเข้า outer catch ได้ (ไม่ถูกกลืน) */
       let parsed;
       try { parsed = JSON.parse(dataLines.join('\n')); }

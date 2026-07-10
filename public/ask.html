@@ -7,8 +7,8 @@
   <title>ถาม Hourkey · อ่านคำถามแรกจากวันเกิด</title>
   <meta name="description" content="กรอกวันเกิด เวลาเกิด เพศ ชื่อ และคำถาม เพื่อดูตัวอย่างคำตอบ Hourkey ก่อนปลดล็อกการอ่านเต็ม" />
   <meta name="theme-color" content="#090706" />
-  <link rel="preload" as="video" href="/assets/ask/hourkey-ask-loop-grok-v2.mp4" type="video/mp4" />
-  <link rel="preload" as="image" href="/assets/ask/hourkey-ask-poster-grok-v2.jpg" />
+  <link rel="preload" as="video" href="/assets/ask/hourkey-ask-loop-v2.mp4" type="video/mp4" />
+  <link rel="preload" as="image" href="/assets/ask/hourkey-ask-poster-v2.jpg" />
   <style>
     :root{
       --bg:#090706;
@@ -73,7 +73,7 @@
     .btn.buy:hover{background:linear-gradient(180deg,#f4d887,#b87824)}
 
     .hero{position:relative;min-height:100svh;overflow:hidden;isolation:isolate}
-    .hero-media{position:absolute;inset:0;z-index:-3;background:#080605 url("/assets/ask/hourkey-ask-poster-grok-v2.jpg") center/cover no-repeat}
+    .hero-media{position:absolute;inset:0;z-index:-3;background:#080605 url("/assets/ask/hourkey-ask-poster-v2.jpg") center/cover no-repeat}
     .hero-media video{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.04) contrast(1.06)}
     .hero::before{content:"";position:absolute;inset:0;z-index:-2;background:
       linear-gradient(180deg,rgba(5,4,3,.42) 0%,rgba(5,4,3,.12) 38%,#090706 100%),
@@ -159,7 +159,7 @@
 
     .result-stage{position:relative;padding:68px 14px 84px;background:
       linear-gradient(180deg,#090706 0%,rgba(12,9,8,.94) 58%,#090706 100%),
-      url("/assets/ask/hourkey-ask-poster-grok-v2.jpg") center top/cover no-repeat;border-top:1px solid var(--line)}
+      url("/assets/ask/hourkey-ask-poster-v2.jpg") center top/cover no-repeat;border-top:1px solid var(--line)}
     .result-stage::before{content:"";position:absolute;inset:0;background:rgba(5,4,3,.76);pointer-events:none}
     .result-wrap{position:relative;width:min(1180px,100%);margin:0 auto}
     .result-head{display:grid;gap:12px;margin-bottom:22px}
@@ -325,7 +325,7 @@
     .loading-list{margin-top:18px;text-align:left}
     .loading-list li{font-size:13px}
 
-    .result-stage{width:min(640px,100vw);min-height:100dvh;margin:0 auto;box-sizing:border-box;padding:54px 20px calc(28px + env(safe-area-inset-bottom));background:#1a1a1a url("/assets/ask/hourkey-ask-poster-grok-v2.jpg") center top/cover no-repeat;border:0}
+    .result-stage{width:min(640px,100vw);min-height:100dvh;margin:0 auto;box-sizing:border-box;padding:54px 20px calc(28px + env(safe-area-inset-bottom));background:#1a1a1a url("/assets/ask/hourkey-ask-poster-v2.jpg") center top/cover no-repeat;border:0}
     .result-stage::before{background:linear-gradient(180deg,rgba(0,0,0,.58),rgba(26,26,26,.95) 38%,#1a1a1a)}
     .result-wrap{width:100%;max-width:none}
     .result-head{display:block;margin-bottom:18px}
@@ -456,8 +456,8 @@
 
     <header class="hero">
       <div class="hero-media" aria-hidden="true">
-        <video autoplay muted loop playsinline poster="/assets/ask/hourkey-ask-poster-grok-v2.jpg">
-          <source src="/assets/ask/hourkey-ask-loop-grok-v2.mp4" type="video/mp4" />
+        <video autoplay muted loop playsinline poster="/assets/ask/hourkey-ask-poster-v2.jpg">
+          <source src="/assets/ask/hourkey-ask-loop-v2.mp4" type="video/mp4" />
           <source src="/assets/landing-v2/hourkey-hero-loop-v2.mp4" type="video/mp4" />
         </video>
       </div>
@@ -1697,7 +1697,7 @@
         renderTimeline(report.timeline);
       }
 
-      /* ── ลูกเล่นตอนรอ: % วิ่งจริงตามเวลา + ข้อความรายศาสตร์สลับ + เวลานับ (grok ใช้ ~30-60 วิ ต้องมีอะไรขยับตลอด) ── */
+      /* ── ลูกเล่นตอนรอ: % วิ่งจริงตามเวลา + ข้อความรายศาสตร์สลับ + เวลานับ ── */
       var _ldTimer = null, _ldT0 = 0, _ldSciTimer = null;
       var LD_LINES_TH = [
         'กางผังปาจื้อ 八字 · ชั่งกำลังธาตุทั้งห้า...',

@@ -625,7 +625,7 @@
     .stage{padding:20px 16px 60px;}
     .crumb{font-size:9px;letter-spacing:.18em;}
 
-    /* hero · 20 พ.ค. Phase 14 · compact card mobile-first · Codex รอบ 39 fix */
+    /* hero · 20 พ.ค. Phase 14 · compact card mobile-first · review รอบ 39 fix */
     .hero{padding:18px;}
     .hero::before, .hero::after{display:none;}
     .hero-grid{grid-template-columns:1fr;gap:12px;}
@@ -877,7 +877,7 @@
   var lastSnapshot = null;
   function parse(raw){ try { return raw ? JSON.parse(raw) : null; } catch(_) { return null; } }
   function finite(v, fb){ var n = Number(v); return Number.isFinite(n) ? n : fb; }
-  /* gender · "male"/"female" → "M"/"F" (Codex mitigation #3) */
+  /* gender · "male"/"female" → "M"/"F" (mitigation #3) */
   function normGender(g){
     var s = String(g||'').trim().toLowerCase();
     if (s === 'm' || s === 'male') return 'M';
@@ -892,7 +892,7 @@
     if (String(raw).toLowerCase() === 'false' || String(raw) === '0') return false;
     return true;
   }
-  /* parse TIMESTAMPTZ via string split · ไม่ใช้ Date (Codex mitigation #2 · กัน timezone drift) */
+  /* parse TIMESTAMPTZ via string split · ไม่ใช้ Date (mitigation #2 · กัน timezone drift) */
   function splitDt(iso){
     if (!iso) return { date: '', time: '' };
     var m = String(iso).match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/);
@@ -917,7 +917,7 @@
         : (p.dayBoundary === '23:00' || p.day_boundary === '23:00') ? '23:00' : null
     };
   }
-  /* sync localStorage · เฉพาะ self-profile · ห้ามเรียกจาก view-as (Codex mitigation #5/#7) */
+  /* sync localStorage · เฉพาะ self-profile · ห้ามเรียกจาก view-as (mitigation #5/#7) */
   function syncLocalStorage(s){
     try {
       localStorage.setItem('hk_birth', JSON.stringify({
@@ -1179,7 +1179,7 @@
     var token = ++seq;
     try {
       var snapshot = await readChartSnapshot();
-      /* post-await seq token check (Codex mitigation #a) */
+      /* post-await seq token check (mitigation #a) */
       if (token !== seq) return;
       if (!snapshot) return; /* redirect in progress */
       var data = await fetchChart(snapshot);
@@ -1246,7 +1246,7 @@
 .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
 .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
 @media(max-width:768px){.hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}}
-/* 20 พ.ค. Codex รอบ 44 fix · force [hidden] respect inline display:flex */
+/* 20 พ.ค. review รอบ 44 fix · force [hidden] respect inline display:flex */
 #hk-3p-banner[hidden]{display:none !important;}
 </style>
 </header>
@@ -3200,7 +3200,7 @@ window.addEventListener('resize', function(){
       const TOP_TH={wood:window._chtx('c.el.wood','ไม้'),fire:window._chtx('c.el.fire','ไฟ'),earth:window._chtx('c.el.earth','ดิน'),metal:window._chtx('c.el.metal','ทอง'),water:window._chtx('c.el.water','น้ำ')};
       const TOP_GLYPH={wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
       const ROLE_TH={resource:window._chtx('c.role.resource','ครู·印'),parallel:window._chtx('c.role.parallel','ตัวเรา·比'),output:window._chtx('c.role.output','ลูก·食傷'),wealth:window._chtx('c.role.wealth','ทรัพย์·財'),power:window._chtx('c.role.power','อำนาจ·官殺')};
-      /* 20 พ.ค. Codex รอบ 41 fix · single source: yongshen_v2 + voytek functional · ลบ raw % */
+      /* 20 พ.ค. review รอบ 41 fix · single source: yongshen_v2 + voytek functional · ลบ raw % */
       const structureLabel = d.yongshen_v2?.structure_label || a.ge_ju?.structure || '中和';
       const vs2 = a.voytek_strength;
       /* dominant role จาก functional bars (ไม่ใช่ raw element_counts) */
@@ -3329,7 +3329,7 @@ window.addEventListener('resize', function(){
       const lngShift = tst.longitudeShiftMin != null ? tst.longitudeShiftMin.toFixed(1) : '';
       const eotShift = tst.eotMin != null ? tst.eotMin.toFixed(1) : '';
       const totalShift = tst.totalShiftMin != null ? tst.totalShiftMin.toFixed(1) : '';
-      /* Codex รอบ 42 fix · UTC-based เพื่อให้ dow ตรงทุก browser timezone */
+      /* review รอบ 42 fix · UTC-based เพื่อให้ dow ตรงทุก browser timezone */
       const [by,bm,bd] = String(b.date||'').split('-').map(Number);
       const dowIdx = by && bm && bd ? new Date(Date.UTC(by, bm - 1, bd)).getUTCDay() : -1;
       const dowTh = [window._chtx('c.dow.sun','อาทิตย์'),window._chtx('c.dow.mon','จันทร์'),window._chtx('c.dow.tue','อังคาร'),window._chtx('c.dow.wed','พุธ'),window._chtx('c.dow.thu','พฤหัสบดี'),window._chtx('c.dow.fri','ศุกร์'),window._chtx('c.dow.sat','เสาร์')][dowIdx]||'';
@@ -3358,7 +3358,7 @@ window.addEventListener('resize', function(){
     /* yong-card เดิม removed · §06b YONGSHEN v2 (wrapper-7) ใช้แทน · 15 พ.ค. */
 
     /* 📜 §5.5 Yongshen v2 · render จาก d.yongshen_v2 (wrapper-7) · 15 พ.ค.
-     * Phase 19 · humanize · ตัด dev slug + ภาษาผสม · ตามที่ Codex APPROVED */
+     * Phase 19 · humanize · ตัด dev slug + ภาษาผสม · ผ่าน review */
     const _ysLang = document.documentElement.getAttribute('data-lang') || 'th';
     const _EL_LBL = {wood:{th:'ไม้',en:'Wood',zh:'木'},fire:{th:'ไฟ',en:'Fire',zh:'火'},earth:{th:'ดิน',en:'Earth',zh:'土'},metal:{th:'ทอง',en:'Metal',zh:'金'},water:{th:'น้ำ',en:'Water',zh:'水'}};
     const _elT = (el) => _EL_LBL[el]?.[_ysLang] || el;
@@ -4721,7 +4721,7 @@ window.addEventListener('resize', function(){
             card.appendChild(head);
             const note = document.createElement('div');
             note.style.cssText='font-family:var(--thai);font-size:13px;line-height:1.7;color:var(--fg,#ddd);';
-            /* 18 พ.ค. · Codex flag #6 · note ตาม locale · r420: เพิ่ม zh + ภาษาใหม่ตกไป EN (ไม่ตกไทย) */
+            /* 18 พ.ค. · review flag #6 · note ตาม locale · r420: เพิ่ม zh + ภาษาใหม่ตกไป EN (ไม่ตกไทย) */
             const lang = (document.documentElement.getAttribute('data-lang') || localStorage.getItem('hk_locale') || 'th').slice(0,2);
             note.textContent = String(lang === 'th' ? (c.note_th||'')
               : lang === 'zh' ? (c.note_zh || c.note_en || '')
@@ -4857,10 +4857,10 @@ window.addEventListener('resize', function(){
     }
     } catch(e){ console.warn('[HK] liu_nian render failed:', e); }
 
-    // Engine 2 · §04 PERSONAL · 6 cards · 18 พ.ค. Codex P1+P2+P3
+    // Engine 2 · §04 PERSONAL · 6 cards · 18 พ.ค. review P1+P2+P3
     (function renderPersonal(){
       const EL_TH = {wood:window._chtx('c.el.wood','ไม้'),fire:window._chtx('c.el.fire','ไฟ'),earth:window._chtx('c.el.earth','ดิน'),metal:window._chtx('c.el.metal','ทอง'),water:window._chtx('c.el.water','น้ำ')};
-      /* helper · DOM nodes กัน XSS (Codex flag เดิม) */
+      /* helper · DOM nodes กัน XSS (review flag เดิม) */
       const mkB = (text, color) => { const e=document.createElement('b'); e.textContent=String(text||''); if(color)e.style.color=color; return e; };
       const mkSpan = (text, cls, color) => { const e=document.createElement('span'); if(cls)e.className=cls; e.textContent=String(text||''); if(color)e.style.color=color; return e; };
       const mkTag = (text, color) => { const e=document.createElement('span'); e.className='pt-tag'; e.textContent=String(text||''); if(color){e.style.color=color;e.style.borderColor=color;} return e; };
@@ -4880,7 +4880,7 @@ window.addEventListener('resize', function(){
       const sBasis = gj.basis || '';
       const sConf  = ys.confidence || gj.confidence || '';
       const sEng   = ys.engine_type || '';
-      /* Codex flag · NORMAL_* = ปกติ · ห้าม render เป็น special */
+      /* review flag · NORMAL_* = ปกติ · ห้าม render เป็น special */
       const isNormal  = !sEng || sEng.startsWith('NORMAL_');
       const isSpecial = !isNormal && !!sLabel && (sEng.startsWith('TRUE_FOLLOW') || sEng.startsWith('HUA_QI') || sEng.startsWith('ZHUAN_WANG') || sEng.startsWith('CONG_') || sEng.startsWith('WEAK_DM_'));
       if (spBox) {
@@ -5013,7 +5013,7 @@ window.addEventListener('resize', function(){
 
       /* ─── #3 · 父母 + 子女 cards · ใช้ palace_readings (object · keyed by pillar) ─── */
       const palaces = a.palace_readings || {};
-      /* Codex flag · stem_th/branch_th ไม่ emit จาก engine · ใช้ static map */
+      /* review flag · stem_th/branch_th ไม่ emit จาก engine · ใช้ static map */
       const PALACE_LABELS = {
         month: { stem_th: window._chtx('c.pal.father','พ่อ / หัวหน้า'),    branch_th: window._chtx('c.pal.mother','แม่ / รากอาชีพ') },
         hour:  { stem_th: window._chtx('c.pal.sons','ลูกชาย / ลูกน้อง'),  branch_th: window._chtx('c.pal.daughters','ลูกหญิง / บั้นปลาย') },
@@ -5040,7 +5040,7 @@ window.addEventListener('resize', function(){
         if (labels.stem_th)   tags.push(mkTag('天 · '+labels.stem_th));
         if (labels.branch_th) tags.push(mkTag('地 · '+labels.branch_th));
         if (tags.length) box.appendChild(mkRow('', tags));
-        /* Codex disclaimer · ป้ายชื่อวัง ไม่ใช่คำทำนายรายบุคคล */
+        /* disclaimer · ป้ายชื่อวัง ไม่ใช่คำทำนายรายบุคคล */
         const note = document.createElement('div'); note.style.cssText='margin-top:6px;font-size:11px;color:var(--fg-soft,#888);line-height:1.55'; note.textContent=window._chtx('c.pal.disclaimer','ป้ายชื่อวังตามเสาเกิด ไม่ใช่คำทำนายรายบุคคล · อ่านร่วมกับ用神และภาพรวมทั้งผัง'); box.appendChild(note);
       }
       renderPalace('month', '#hk-personal-parents .body');
@@ -5072,7 +5072,7 @@ window.addEventListener('resize', function(){
        * .tg-hour (Tian Gan row · §02) · .hs-hour (Hidden Stems row) · .hhs-hour (Hidden Hidden Stems)
        * #bb-hp-stem · #bb-hp-god · #bb-hp-phase (basic board hour column)
        * .gz.hour · .pillar.hour · [data-pillar="hour"] (อนาคต/อื่นๆ) */
-      /* Codex รอบ 18 fix · cover hour table rows ครบทุกแถวของ §02 (Joey Yap-style)
+      /* review รอบ 18 fix · cover hour table rows ครบทุกแถวของ §02 (Joey Yap-style)
        * tg=Tian Gan · hs=Hidden Stems · hhs=Hidden Hidden Stems · eb=Earthly Branch
        * ny=Na Yin · ph=Phases · kw=Kong Wang · ss=Special Stars · rx=Reactions · pal=Palace · hex=Hexagram */
       var HOUR_TABLE_CELLS = ['.tg-hour', '.hs-hour', '.hhs-hour', '.eb-hour', '.ny-hour', '.ph-hour', '.kw-hour', '.ss-hour', '.rx-hour', '.pal-hour', '.hex-hour'];

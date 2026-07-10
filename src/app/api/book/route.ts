@@ -16,6 +16,7 @@ import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
 import { createHash } from "crypto";
 import { DISCIPLINES, JUDGE_MODEL, type ScienceId } from "@/lib/fusion5/disciplines";
 import { isSifuAnswerLang } from "@/lib/sifu-answer-lang"; // r414-i18n9
+import { publicAiPayload } from "@/lib/public-ai-response";
 import {
   buildSciencePrompt, buildJudgeBookPrompt, loadBookDirective, resolveFusionTimingReference,
   BOOK_CHAPTER_ORDER, type BirthData,
@@ -222,7 +223,7 @@ type NatalBookRow = {
 };
 
 function bookJson(row: NatalBookRow) {
-  return {
+  return publicAiPayload({
     bookId: row.id,
     status: row.status,
     result: row.result || null,
@@ -231,7 +232,7 @@ function bookJson(row: NatalBookRow) {
     sciences: row.sciences || [],
     profileId: row.profile_id || null,
     createdAt: row.created_at,
-  };
+  });
 }
 
 /** timeline หลายปี (deterministic) ป้อนบทจังหวะเวลาให้ judge · cap กันบวม prompt */

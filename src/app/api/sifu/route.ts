@@ -32,6 +32,7 @@ import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"
 import { checkSifuCriticalEvidence, type CriticalEvidenceCheck } from "@/lib/sifu-critical-evidence-gate";
 import { checkSifuFactClaimGate, type SifuFactClaimCheck } from "@/lib/sifu-fact-claim-gate";
 import { ensureServerEnv } from "@/lib/server-env";
+import { publicAiPayload } from "@/lib/public-ai-response";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { buildSifuCompactBaseline } from "@/lib/sifu-compact-baseline";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
@@ -1055,9 +1056,9 @@ function streamStaticSifuReply(reply: string, model = "local-i18n"): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode(`event: first\ndata: ${JSON.stringify({ ms: 0, synthetic: true, provider: model })}\n\n`));
+      controller.enqueue(encoder.encode(`event: first\ndata: ${JSON.stringify(publicAiPayload({ ms: 0, synthetic: true, provider: model }))}\n\n`));
       controller.enqueue(encoder.encode(`event: chunk\ndata: ${JSON.stringify({ text: reply })}\n\n`));
-      controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({ ms: 0, model, cached: false, chars: reply.length })}\n\n`));
+      controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify(publicAiPayload({ ms: 0, model, cached: false, chars: reply.length }))}\n\n`));
       controller.close();
     },
   });
@@ -2432,10 +2433,10 @@ export async function POST(req: Request) {
     const topic = typeof body.topic === "string" ? body.topic : undefined;
     const lang = resolveSifuAnswerLang(body.lang, message); // r431-i18n: 9 ภาษา + infer จากคำถามเมื่อ caller ส่ง lang=en
     const mode = body.mode === "intro" ? "intro" : undefined;
-    const sifuModel = resolveSifuModel(body.model);
     const isFusionInternalCall = isTrustedFusionInternalCall(req);
+    const sifuModel = resolveSifuModel(isFusionInternalCall ? body.model : process.env.SIFU_DEFAULT_MODEL);
     if (sifuModel === "codex-cli") {
-      return NextResponse.json({ error: "provider_security_disabled", model: sifuModel }, { status: 503 });
+      return NextResponse.json({ error: "analysis_unavailable" }, { status: 503 });
     }
     const fusionPacketAuditOnly = isFusionInternalCall && body.fusionPacketMode === "raw-data";
     const threadId = cleanSifuThreadId(body.threadId);
@@ -2455,9 +2456,6 @@ export async function POST(req: Request) {
     /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const productAccess = await getProductAccess(session.userId);
-    if (sifuModel === "gemini-api" && !isFusionInternalCall && !productAccess?.pages.sifu.model_choice) {
-      return NextResponse.json(entitlementDenied("sifu_model_choice", { plan: productAccess?.plan || "free" }), { status: 403 });
-    }
     /* P1 kill switches (app_settings) — admin AI cost page · not affiliate */
     if (!isFusionInternalCall) {
       try {
@@ -2617,7 +2615,8 @@ export async function POST(req: Request) {
         promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
       });
       reservedUserId = null; // cached answer costs the one-yam reservation only
-      return NextResponse.json({ ...cached, reply: safeCachedReply, cached: true, key: key.slice(0, 8) });
+      const cachedResponse = { ...cached, reply: safeCachedReply, cached: true, key: key.slice(0, 8) };
+      return NextResponse.json(isFusionInternalCall ? cachedResponse : publicAiPayload(cachedResponse));
       }
     }
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
@@ -2680,7 +2679,7 @@ export async function POST(req: Request) {
           const send = (event: string, data: unknown) => {
             if (closed) return;
             try {
-              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
             } catch {
               closed = true;
             }
@@ -3115,7 +3114,9 @@ export async function POST(req: Request) {
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
     });
     if (!isFusionInternalCall && session?.userId) await settleBilling(payload.reply.length);
-    return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
+    return NextResponse.json(isFusionInternalCall
+      ? { ...payload, cached: false, ms, key: key.slice(0, 8) }
+      : publicAiPayload({ ...payload, cached: false, ms, key: key.slice(0, 8) }));
   } catch (e: unknown) {
     await refundBilling();
     const err = e as Error;
@@ -3137,9 +3138,9 @@ export async function GET(req: Request) {
   const topic = url.searchParams.get("topic") || undefined;
   const lang = resolveSifuAnswerLang(url.searchParams.get("lang") || "", message); // r431-i18n: 9 ภาษา + infer จากคำถามเมื่อ caller ส่ง lang=en
   const mode = url.searchParams.get("mode") === "intro" ? "intro" : undefined;
-  const sifuModel = resolveSifuModel(url.searchParams.get("model"));
+  const sifuModel = resolveSifuModel(process.env.SIFU_DEFAULT_MODEL);
   if (sifuModel === "codex-cli") {
-    return NextResponse.json({ error: "provider_security_disabled", model: sifuModel }, { status: 503 });
+    return NextResponse.json({ error: "analysis_unavailable" }, { status: 503 });
   }
   const threadId = cleanSifuThreadId(url.searchParams.get("threadId"));
   const threadProfileId = cleanProfileId(url.searchParams.get("threadProfileId") || url.searchParams.get("historyProfileId"));
@@ -3173,9 +3174,6 @@ export async function GET(req: Request) {
     await settleReservedHourByCharsForUser(userId, chars, "sifu_master").catch(() => {});
   };
   const productAccess = await getProductAccess(session.userId);
-  if (sifuModel === "gemini-api" && !isTrustedFusionInternalCall(req) && !productAccess?.pages.sifu.model_choice) {
-    return NextResponse.json(entitlementDenied("sifu_model_choice", { plan: productAccess?.plan || "free" }), { status: 403 });
-  }
   const orgId = session?.orgId ?? null;
   if (mode !== "intro" && !profileId) {
     return NextResponse.json({ error: "profile_required" }, { status: 400 });
@@ -3246,7 +3244,7 @@ export async function GET(req: Request) {
       const send = (event: string, data: unknown) => {
         if (closed) return;
         try {
-          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
         } catch {
           closed = true;
         }

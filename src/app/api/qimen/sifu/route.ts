@@ -13,6 +13,7 @@ import { loadPromptMd } from "@/lib/prompt-md";
 import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 import { getSession } from "@/lib/auth";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 /* 25 พ.ค. · persona ย้ายไป prompts/qimen-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}}=dynamic · fallback กันพัง */
 const QIMEN_TPL_FALLBACK = `คุณคือซินแสฉีเหมินตุ้นเจี่ย · ตำรา 煙波釣叟賦·奇門遁甲統宗\n{{BODY}}\nตอบสั้นกระชับ · อ่านจากผังจริงก่อน แล้วใช้ตำราแปลความหมาย · ใช้ดวงผู้ใช้/ผลค้นหาเป็นตัวประกอบ · เลี่ยงคำว่าโชค/ฟลุค:`;
@@ -1708,7 +1709,7 @@ export async function POST(req: Request) {
       balanceAfter,
       durationMs: Date.now() - reqT0,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       reply,
       model: "claude-max-cli",
       balance_after: balanceAfter,
@@ -1716,7 +1717,7 @@ export async function POST(req: Request) {
       qimen_source_version: built.knowledgeVersion,
       qimen_source_trace: built.sourceTrace,
       qimen_source_trace_items: built.sourceTraceItems,
-    });
+    }));
   } catch (e: any) {
     if (reserved) {
       const { refundReservedHour } = await import("@/lib/spend-hours");

@@ -5159,7 +5159,7 @@ async function askLuopanSifu(question){
   let packet = '';
   try{ packet = await buildHousePacket(); }
   catch(_){ packet = (document.getElementById('aiAdviceBody')?.textContent || '').trim(); }
-  /* ── VLM: ถ้ามีแปลนบ้านอัพไว้ → ให้ Claude เห็นภาพ (endpoint แยก ไม่แตะ /api/sifu) ── */
+  /* ── Vision: ถ้ามีแปลนบ้านอัปไว้ → วิเคราะห์ภาพผ่าน endpoint แยก ── */
   const creditTag = (n) => (typeof n === 'number') ? `\n\n${T('credit.tail')} ${n}` : '';
   const planUrl = planImageDataURL(1024);
   if(planUrl){

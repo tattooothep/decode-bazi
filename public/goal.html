@@ -753,7 +753,7 @@
         localStorage.setItem('hk_goal', JSON.stringify(aims));
 
         /* attempt save via API (logged-in only · graceful fail) */
-        /* Codex: await + use correct field names + save returned profile.id */
+        /* review: await + use correct field names + save returned profile.id */
         const pendingRaw = sessionStorage.getItem('hk_pending_birth');
         if (pendingRaw) {
           try {
