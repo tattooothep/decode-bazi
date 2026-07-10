@@ -30,7 +30,7 @@ async function signFixtureSession(fixture) {
 }
 const requestedPages = (process.env.HK_MATRIX_PAGES || "chart,today,calendar,network,fengshui")
   .split(",").map((item) => item.trim()).filter(Boolean);
-const requestedTiers = new Set((process.env.HK_MATRIX_TIERS || "free,trial,premium,master")
+const requestedTiers = new Set((process.env.HK_MATRIX_TIERS || "guest,free,trial,premium,master,expired")
   .split(",").map((item) => item.trim()).filter(Boolean));
 const requestedViewports = new Set((process.env.HK_MATRIX_VIEWPORTS || "mobile,desktop")
   .split(",").map((item) => item.trim()).filter(Boolean));
@@ -52,12 +52,14 @@ for (const page of requestedPages) assert.ok(paths[page], `unknown matrix page $
 
 const now = Date.now();
 const fixtures = [
-  { plan: "free", tier: "free", trial: new Date(now - 86400000), sub: null },
-  { plan: "trial", tier: "free", trial: new Date(now + 7 * 86400000), sub: null },
-  { plan: "premium", tier: "premium", trial: null, sub: new Date(now + 20 * 86400000) },
-  { plan: "master", tier: "master", trial: null, sub: new Date(now + 20 * 86400000) },
-].filter((fixture) => requestedTiers.has(fixture.plan))
-  .map((fixture) => ({ ...fixture, id: randomUUID(), email: `codex.matrix.${fixture.plan}.${Date.now()}@example.invalid` }));
+  { state: "guest", plan: "guest", guest: true, tier: "free", trial: null, sub: null },
+  { state: "free", plan: "free", tier: "free", trial: new Date(now - 86400000), sub: null },
+  { state: "trial", plan: "trial", tier: "free", trial: new Date(now + 7 * 86400000), sub: null },
+  { state: "premium", plan: "premium", tier: "premium", trial: null, sub: new Date(now + 20 * 86400000) },
+  { state: "master", plan: "master", tier: "master", trial: null, sub: new Date(now + 20 * 86400000) },
+  { state: "expired", plan: "free", tier: "premium", trial: new Date(now - 20 * 86400000), sub: new Date(now - 86400000) },
+].filter((fixture) => requestedTiers.has(fixture.state))
+  .map((fixture) => ({ ...fixture, id: randomUUID(), email: `codex.matrix.${fixture.state}.${Date.now()}@example.invalid` }));
 
 const viewports = [
   { name: "mobile", width: 390, height: 844 },
@@ -79,10 +81,11 @@ let browser;
 let checks = 0;
 try {
   for (const fixture of fixtures) {
+    if (fixture.guest) continue;
     await q(
       `INSERT INTO users(id,email,name,tier,hour_balance,is_active,email_verified,trial_ends_at,sub_expires_at,created_at)
        VALUES($1,$2,$3,$4,10000,true,true,$5,$6,now())`,
-      [fixture.id, fixture.email, `Matrix ${fixture.plan}`, fixture.tier, fixture.trial, fixture.sub]
+      [fixture.id, fixture.email, `Matrix ${fixture.state}`, fixture.tier, fixture.trial, fixture.sub]
     );
     fixture.token = await signFixtureSession(fixture);
   }
@@ -96,7 +99,7 @@ try {
   for (const fixture of fixtures) {
     for (const viewport of viewports) {
       const context = await browser.newContext({ viewport });
-      await context.addCookies([{ name: "decode_auth", value: fixture.token, url: BASE, httpOnly: true, sameSite: "Lax" }]);
+      if (!fixture.guest) await context.addCookies([{ name: "decode_auth", value: fixture.token, url: BASE, httpOnly: true, sameSite: "Lax" }]);
       await context.addInitScript(({ birth }) => {
         localStorage.setItem("hk_birth", JSON.stringify(birth));
         localStorage.setItem("hk_locale", "en");
@@ -111,6 +114,17 @@ try {
         page.on("pageerror", (error) => pageErrors.push(error.message));
         const response = await page.goto(BASE + paths[pageName], { waitUntil: "domcontentloaded", timeout: 30000 });
         assert.ok(response && response.status() < 500, `${fixture.plan}/${viewport.name}/${pageName} HTTP`);
+        if (fixture.guest) {
+          await page.waitForTimeout(1500);
+          const guestPath = new URL(page.url()).pathname;
+          if (["/login", "/signup"].includes(guestPath)) {
+            assert.equal(pageErrors.length, 0, `guest/${viewport.name}/${pageName} page errors: ${pageErrors.join(" | ")}`);
+            checks += 2;
+            await page.close();
+            continue;
+          }
+          assert.equal(guestPath, paths[pageName], `guest/${viewport.name}/${pageName} public path`);
+        }
         let productReady = false;
         for (let attempt = 0; attempt < 20 && !productReady; attempt += 1) {
           productReady = await page.evaluate(() => window.HK_PRODUCT?.ready === true);
@@ -137,9 +151,9 @@ try {
             .map((el) => ({ tag: el.tagName, cls: String(el.className || ""), clientWidth: el.clientWidth, scrollWidth: el.scrollWidth, overflowX: getComputedStyle(el).overflowX })),
           path: location.pathname,
         }));
-        console.log(JSON.stringify({ plan: fixture.plan, viewport: viewport.name, page: pageName, locks: state.locks, visibleLockBadges: state.visibleLockBadges, overflow: state.overflow, path: state.path }));
+        console.log(JSON.stringify({ accountState: fixture.state, plan: fixture.plan, viewport: viewport.name, page: pageName, locks: state.locks, visibleLockBadges: state.visibleLockBadges, overflow: state.overflow, path: state.path }));
         assert.equal(state.ready, true, `${fixture.plan}/${viewport.name}/${pageName} product ready`);
-        assert.equal(state.plan, fixture.plan, `${fixture.plan}/${viewport.name}/${pageName} plan`);
+        assert.equal(state.plan, fixture.guest ? "guest" : fixture.plan, `${fixture.state}/${viewport.name}/${pageName} plan`);
         assert.ok(state.overflow <= 2, `${fixture.plan}/${viewport.name}/${pageName} overflow=${state.overflow}`);
         assert.equal(pageErrors.length, 0, `${fixture.plan}/${viewport.name}/${pageName} page errors: ${pageErrors.join(" | ")}`);
         if (fixture.plan === "master") {
@@ -157,7 +171,7 @@ try {
         }
         if (screenshotDir) {
           await page.screenshot({
-            path: `${screenshotDir}/${fixture.plan}-${viewport.name}-${pageName}.png`,
+            path: `${screenshotDir}/${fixture.state}-${viewport.name}-${pageName}.png`,
             fullPage: true,
           });
         }
@@ -167,8 +181,8 @@ try {
       await context.close();
     }
   }
-  console.log(`browser matrix PASS · ${checks} checks · ${fixtures.length} tiers · ${viewports.length} viewports · ${requestedPages.length} pages`);
+  console.log(`browser matrix PASS · ${checks} checks · ${fixtures.length} account states · ${viewports.length} viewports · ${requestedPages.length} pages`);
 } finally {
   if (browser) await browser.close().catch(() => {});
-  await q(`DELETE FROM users WHERE id = ANY($1::uuid[])`, [fixtures.map((fixture) => fixture.id)]).catch(() => {});
+  await q(`DELETE FROM users WHERE id = ANY($1::uuid[])`, [fixtures.filter((fixture) => !fixture.guest).map((fixture) => fixture.id)]).catch(() => {});
 }

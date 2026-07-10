@@ -14,16 +14,17 @@ assert.ok(authSecret && authSecret.length >= 16, "AUTH_SECRET env is required");
 const secret = new TextEncoder().encode(authSecret);
 const now = Date.now();
 const fixtures = [
-  { plan: "free", tier: "free", trial: new Date(now - 86400000), sub: null },
-  { plan: "trial", tier: "free", trial: new Date(now + 7 * 86400000), sub: null },
-  { plan: "premium", tier: "premium", trial: null, sub: new Date(now + 20 * 86400000) },
-  { plan: "master", tier: "master", trial: null, sub: new Date(now + 20 * 86400000) },
+  { state: "free", plan: "free", tier: "free", trial: new Date(now - 86400000), sub: null },
+  { state: "trial", plan: "trial", tier: "free", trial: new Date(now + 7 * 86400000), sub: null },
+  { state: "premium", plan: "premium", tier: "premium", trial: null, sub: new Date(now + 20 * 86400000) },
+  { state: "master", plan: "master", tier: "master", trial: null, sub: new Date(now + 20 * 86400000) },
+  { state: "expired", plan: "free", tier: "premium", trial: new Date(now - 20 * 86400000), sub: new Date(now - 86400000) },
 ].map((fixture) => ({
   ...fixture,
   id: randomUUID(),
   orgId: randomUUID(),
   profileId: randomUUID(),
-  email: `codex.api.matrix.${fixture.plan}.${Date.now()}@example.invalid`,
+  email: `codex.api.matrix.${fixture.state}.${Date.now()}@example.invalid`,
 }));
 
 const pillars = {
@@ -55,8 +56,8 @@ async function signFixture(fixture) {
 
 async function request(fixture, path, init = {}, bearer = false) {
   const headers = new Headers(init.headers || {});
-  if (bearer) headers.set("Authorization", `Bearer ${fixture.token}`);
-  else headers.set("Cookie", `decode_auth=${fixture.token}`);
+  if (fixture && bearer) headers.set("Authorization", `Bearer ${fixture.token}`);
+  else if (fixture) headers.set("Cookie", `decode_auth=${fixture.token}`);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   const response = await fetch(BASE + path, { ...init, headers });
   const text = await response.text();
@@ -77,22 +78,25 @@ function check(value, message) {
 }
 
 try {
+  const guest = await request(null, "/api/account/me");
+  check(guest.response.status === 401 && guest.data.error === "not logged in", "guest account is unauthenticated");
+
   for (const fixture of fixtures) {
     await q(
       `INSERT INTO users(id,email,name,tier,hour_balance,is_active,email_verified,trial_ends_at,sub_expires_at,current_org_id,created_at)
        VALUES($1,$2,$3,$4,10000,true,true,$5,$6,$7,now())`,
-      [fixture.id, fixture.email, `API Matrix ${fixture.plan}`, fixture.tier, fixture.trial, fixture.sub, fixture.orgId]
+      [fixture.id, fixture.email, `API Matrix ${fixture.state}`, fixture.tier, fixture.trial, fixture.sub, fixture.orgId]
     ).catch(async () => {
       await q(
         `INSERT INTO users(id,email,name,tier,hour_balance,is_active,email_verified,trial_ends_at,sub_expires_at,created_at)
          VALUES($1,$2,$3,$4,10000,true,true,$5,$6,now())`,
-        [fixture.id, fixture.email, `API Matrix ${fixture.plan}`, fixture.tier, fixture.trial, fixture.sub]
+        [fixture.id, fixture.email, `API Matrix ${fixture.state}`, fixture.tier, fixture.trial, fixture.sub]
       );
     });
     await q(
       `INSERT INTO organizations(id,owner_user_id,name,slug,created_at) VALUES($1,$2,$3,$4,now())`,
-      [fixture.orgId, fixture.id, `API Matrix ${fixture.plan}`, `api-matrix-${fixture.id.slice(0, 8)}`]
-    ).catch(() => q(`INSERT INTO organizations(id,name) VALUES($1,$2)`, [fixture.orgId, `API Matrix ${fixture.plan}`]));
+      [fixture.orgId, fixture.id, `API Matrix ${fixture.state}`, `api-matrix-${fixture.id.slice(0, 8)}`]
+    ).catch(() => q(`INSERT INTO organizations(id,name) VALUES($1,$2)`, [fixture.orgId, `API Matrix ${fixture.state}`]));
     await q(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [fixture.orgId, fixture.id]);
     await q(
       `INSERT INTO org_members(id,org_id,user_id,role,status,joined_at,created_at)
@@ -102,7 +106,7 @@ try {
     await q(
       `INSERT INTO profiles(id,org_id,created_by_user_id,name,relationship_type,birth_datetime,birth_lat,birth_lng,gender,birth_time_known,day_boundary,is_archived,bazi_pillars,created_at,updated_at)
        VALUES($1,$2,$3,$4,NULL,'1990-01-15T12:00:00+07:00',13.7563,100.5018,'M',true,'23:00',false,$5,now(),now())`,
-      [fixture.profileId, fixture.orgId, fixture.id, `Matrix ${fixture.plan}`, JSON.stringify({ pillars, day_boundary: "23:00" })]
+      [fixture.profileId, fixture.orgId, fixture.id, `Matrix ${fixture.state}`, JSON.stringify({ pillars, day_boundary: "23:00" })]
     );
     fixture.token = await signFixture(fixture);
   }
@@ -174,9 +178,9 @@ try {
     r = await request(fixture, `/api/mobile/v1/chart?profileId=${fixture.profileId}`, {}, true);
     check(r.response.status === 200 && r.data.entitlement?.plan === fixture.plan, `${fixture.plan} mobile chart bearer`);
 
-    console.log(`API tier PASS · ${fixture.plan}`);
+    console.log(`API state PASS · ${fixture.state} → ${fixture.plan}`);
   }
-  console.log(`API matrix PASS · ${checks} checks · ${fixtures.length} tiers`);
+  console.log(`API matrix PASS · ${checks} checks · guest + ${fixtures.length} account states`);
 } finally {
   const userIds = fixtures.map((fixture) => fixture.id);
   const orgIds = fixtures.map((fixture) => fixture.orgId);
