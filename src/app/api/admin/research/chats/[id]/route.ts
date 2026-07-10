@@ -7,7 +7,7 @@
 // ทุก query JOIN users จริง → แถวผีของ user ที่ถูกลบไม่โผล่ (คำสั่งเจ้านาย 10 ก.ค.)
 // ตอบ: { ok, id, source, user_email, user_name, feature, messages:[{ role:"user"|"ai", content, created_at }] }
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requireAdmin, requirePermission } from "@/lib/admin-guard";
 import { q } from "@/lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -61,12 +61,13 @@ export async function GET(req: Request, ctx: Ctx) {
   let admin;
   try {
     admin = await requireAdmin();
+    await requirePermission("admin.users.read"); /* แชท user = ข้อมูลอ่อนไหว (ลายเซน C·A1) */
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }
 
   const { id: rawId } = await ctx.params;
-  const id = decodeURIComponent(String(rawId || "")).trim().slice(0, 200);
+  let id = ""; try { id = decodeURIComponent(String(rawId || "")).trim().slice(0, 200); } catch { return NextResponse.json({ ok: false, error: "bad_id" }, { status: 400 }); } /* กัน %zz พัง (ลายเซน C·A3) */
   const url = new URL(req.url);
   const source = (url.searchParams.get("source") || "").trim().toLowerCase();
   if (!id || !["research", "sifu", "fusion"].includes(source)) {
