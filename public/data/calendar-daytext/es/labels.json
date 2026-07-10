@@ -55,8 +55,8 @@
   "ui": {
     "chongYou": "⚠ Hoy es tu día de choque",
     "heYou": "✦ Hoy es tu día de armonía",
-    "chongYear": "Choca con el año del {animal}",
-    "heYear": "Armoniza con el año del {animal}",
+    "chongYear": "Choca con el año {animal}",
+    "heYear": "Armoniza con el año {animal}",
     "direction": "Dirección",
     "luckyColor": "Colores de apoyo",
     "deepMode": "Modo profundo",
