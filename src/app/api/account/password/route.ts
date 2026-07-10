@@ -6,7 +6,7 @@
  */
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
-import { verifyPassword, hashPassword } from "@/lib/auth";
+import { verifyPassword, hashPassword, bumpSessionVersion, signSession, setAuthCookie } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { getAccountUser, clientIpFrom } from "@/lib/account-utils";
 
@@ -52,5 +52,14 @@ export async function POST(req: Request) {
     `UPDATE users SET password_hash=$2, last_active_at=now() WHERE id=$1 AND deleted_at IS NULL`,
     [acc.u.id, hash]
   );
+  // ไล่ session เครื่องอื่น · เครื่องนี้ได้ cookie ใหม่พร้อม sv ใหม่
+  const sv = await bumpSessionVersion(acc.u.id).catch(() => 0);
+  const sess = await signSession({
+    userId: acc.u.id,
+    email: acc.u.email,
+    orgId: acc.u.current_org_id ?? null,
+    sv,
+  });
+  await setAuthCookie(sess);
   return NextResponse.json({ ok: true, mode: hasPassword ? "changed" : "set" });
 }

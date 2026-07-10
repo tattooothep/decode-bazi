@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-hk-product-page="datepick">
 <head>
 <script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
@@ -1016,8 +1016,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
       <!-- 📄 8 ก.ค. 2569 · ดาวน์โหลดรายงานฤกษ์เป็น PDF (โผล่หลังค้นหา · additive) -->
       <div class="dp-pdf-bar noprint" id="dp-pdf-bar">
         <button class="dp-pdf-btn" id="dp-pdf-btn" type="button" data-i18n="dp.pdf.btn" onclick="dpExportPdf()">⬇ ดาวน์โหลด PDF</button>
-        <!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI (async job 50 ยาม · เพิ่มข้าง dp-pdf-btn เดิม · ไม่แตะปุ่มเดิม) -->
-        <button class="dp-pdf-btn" id="dp-ai-pdf-btn" type="button" onclick="if(window.hkExportSummaryPdfDatepick)window.hkExportSummaryPdfDatepick()">📄 สร้างสรุป PDF (50 ยาม)</button>
+        <!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI (async job 20 ยาม · เพิ่มข้าง dp-pdf-btn เดิม · ไม่แตะปุ่มเดิม) -->
+        <button class="dp-pdf-btn" id="dp-ai-pdf-btn" type="button" onclick="if(window.hkExportSummaryPdfDatepick)window.hkExportSummaryPdfDatepick()">📄 สร้างสรุป PDF (20 ยาม)</button>
       </div>
 
     </section>
@@ -1041,6 +1041,9 @@ const state = {
   peopleGroup: 'all',
   peopleQuery: '',
   peopleVisible: 6,
+  /* product-entitlement · datepick_max_people จาก /api/account/me */
+  datepickMaxPeople: 1,
+  productPlan: 'free',
   /* r372 · default = preset ครบเครื่อง (①+②+③) · กลุ่ม ④ ชั้นสูง (qimen/heluo) ปิด */
   filters: { tongshu:true, bazi:true, qimen:false, heluo:false, hex:true },
   qmCalc: 'chaibu',
@@ -1447,6 +1450,8 @@ function init(){
   renderActivityProfiles();
   renderPeople();
   bindPeopleControls();
+  /* caps จาก me (trial=1 · premium=3 · master=10) · server ยัง enforce ซ้ำ */
+  loadDatepickCaps();
   /* P_B (เจ้านาย 16 พ.ค.): พยายามดึงคนจาก network จริง · login user เห็นเครือข่ายเอง */
   const networkReady = loadNetworkPeople();
 
@@ -1682,6 +1687,55 @@ const PERSON_GROUP_TH = {all:'ทั้งหมด',general:'ทั่วไป
 const PERSON_GROUP_EN = {all:'All',general:'General',family:'Family',work:'Team',friend:'Friends',love:'Partner',rival:'Rival'};
 const PERSON_GROUP_ZH = {all:'全部',general:'一般',family:'家人',work:'團隊',friend:'朋友',love:'伴侶',rival:'對手'};
 
+async function loadDatepickCaps(){
+  try {
+    const r = await fetch('/api/account/me', { credentials:'same-origin', cache:'no-store' });
+    if (!r.ok) return;
+    const me = await r.json().catch(() => ({}));
+    if (me && me.caps) {
+      const m = Number(me.caps.datepick_max_people);
+      state.datepickMaxPeople = isFinite(m) && m > 0 ? m : 1;
+      state.productPlan = me.plan || 'free';
+    }
+    enforcePeopleCap();
+    renderPeople();
+  } catch (_) { /* guest / offline */ }
+}
+function peopleCapMax(){
+  const m = Number(state.datepickMaxPeople);
+  return isFinite(m) && m > 0 ? m : 1;
+}
+function enforcePeopleCap(){
+  const max = peopleCapMax();
+  let n = 0;
+  (state.people || []).forEach((p) => {
+    if (!p.enabled) return;
+    n += 1;
+    if (n > max) p.enabled = false;
+  });
+}
+function toggleDatepickPerson(idx){
+  const p = state.people[idx];
+  if (!p) return;
+  if (p.enabled) {
+    p.enabled = false;
+    renderPeople();
+    return;
+  }
+  const max = peopleCapMax();
+  const n = state.people.filter((x) => x.enabled).length;
+  if (n >= max) {
+    const tip = document.getElementById('peopleCount');
+    if (tip) {
+      tip.textContent = (max <= 1
+        ? _dptx('dp.people.cap1', 'แพ็กเกจนี้ผูกดวงได้ 1 คน · อัปเกรด /pricing')
+        : _dptx('dp.people.capN', 'แพ็กเกจนี้สูงสุด {N} ดวง · /pricing').replace('{N}', String(max)));
+    }
+    return;
+  }
+  p.enabled = true;
+  renderPeople();
+}
 async function loadNetworkPeople(){
   try {
     const r = await fetch('/api/profile', { credentials:'include' });
@@ -1799,7 +1853,7 @@ function renderPeople(){
         <div class="nm">${escHtml(p.name)}${p.rel ? ` <span class="rel">· ${escHtml(p.rel)}</span>` : ''}</div>
         <div class="stats">${personAstroText(p)}</div>
       </div>
-      <button type="button" class="pick" onclick="state.people[${idx}].enabled=!state.people[${idx}].enabled;renderPeople();">${p.enabled ? _dptx('dp.people.picked','เลือกแล้ว') : _dptx('dp.people.pick','+ เพิ่ม')}</button>
+      <button type="button" class="pick" onclick="toggleDatepickPerson(${idx})">${p.enabled ? _dptx('dp.people.picked','เลือกแล้ว') : _dptx('dp.people.pick','+ เพิ่ม')}</button>
     </div>`;
   }).join('') + (filtered.length > visible.length ? `<button type="button" class="people-more" onclick="state.peopleVisible += ${PEOPLE_BATCH_SIZE};renderPeople();">${_dptx('dp.people.showmore','แสดงเพิ่ม')} ${Math.min(PEOPLE_BATCH_SIZE, filtered.length - visible.length)} ${_dptx('dp.unit.people','คน')}</button>` : '');
   renderSelectedPeople();
@@ -1808,11 +1862,12 @@ function renderPeople(){
 function updatePeopleCount(){
   const enabled = state.people.filter(p=>p.enabled).length;
   const total = state.people.length;
+  const max = peopleCapMax();
   const el = document.getElementById('peopleCount');
   const filtered = peopleFiltered().length;
   const lang = getCurrentLang();
   const grp = (lang === 'zh' ? PERSON_GROUP_ZH : lang === 'th' ? PERSON_GROUP_TH : PERSON_GROUP_EN)[state.peopleGroup || 'all'] || PERSON_GROUP_TH.all;
-  if (el) el.textContent = `${_dptx('dp.people.selected','เลือก')} ${enabled} / ${total} ${_dptx('dp.unit.people','คน')} · ${_dptx('dp.people.viewing','กำลังดู')} ${grp} ${filtered} ${_dptx('dp.unit.people','คน')}`;
+  if (el) el.textContent = `${_dptx('dp.people.selected','เลือก')} ${enabled}/${max} ${_dptx('dp.unit.people','คน')} (max) · ${total} ${_dptx('dp.people.inlist','ในรายการ')} · ${_dptx('dp.people.viewing','กำลังดู')} ${grp} ${filtered}`;
 }
 /* bind group selector + toolbar (ครั้งเดียวตอน DOM ready) */
 function bindPeopleControls(){
@@ -1839,7 +1894,14 @@ function bindPeopleControls(){
     renderPeople();
   });
   document.getElementById('peopleSelectAll')?.addEventListener('click', () => {
-    peopleFiltered().forEach(p => p.enabled = true);
+    const max = peopleCapMax();
+    let n = state.people.filter((p) => p.enabled).length;
+    peopleFiltered().forEach((p) => {
+      if (p.enabled) return;
+      if (n >= max) return;
+      p.enabled = true;
+      n += 1;
+    });
     renderPeople();
   });
   document.getElementById('peopleClear')?.addEventListener('click', () => {
@@ -2809,7 +2871,9 @@ async function performSearch(){
       });
       const aj = await r.json();
       if (!r.ok) {
-        document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</p></div>`;
+        const entMsg = (aj && (aj.message || aj.error)) ? String(aj.message || aj.error) : '';
+        const isCap = aj && (aj.code === 'datepick_people_limit' || aj.error === 'datepick_people_limit');
+        document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${isCap || entMsg ? escHtml(entMsg || _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')) : _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}${isCap ? ' · <a href="/pricing" style="color:var(--gold)">/pricing</a>' : ''}</p></div>`;
         console.warn('[datepick] /api/auspicious error:', aj.error || r.statusText);
         btn.disabled = false; btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
         return;
@@ -4138,7 +4202,7 @@ init();
 console.log('🐉 Date Picking · 擇吉 · loaded');
 </script>
 
-<!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI · window.hkExportSummaryPdfDatepick (additive · 50 ยาม · async job + poll + resume · 9 ภาษา)
+<!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI · window.hkExportSummaryPdfDatepick (additive · 20 ยาม · async job + poll + resume · 9 ภาษา)
      ลอกโครงจาก chart.html window.hkExportSummaryPdf ตรง ๆ · เปลี่ยนแค่ page:"datepick" + inputs.datepick + localStorage key แยก -->
 <script>
 (function () {
@@ -4154,10 +4218,10 @@ console.log('🐉 Date Picking · 擇吉 · loaded');
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังสรุปฤกษ์… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is summarising… you can leave this open or close it; the job keeps running.", zh:"AI 正在總結…可保持開啟或關閉，工作會繼續。", cn:"AI 正在总结…可保持开启或关闭，工作会继续。", vi:"AI đang tổng hợp… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIがまとめ中…開いたままでも閉じても処理は続きます。", ko:"AI가 요약 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет сводку… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está resumiendo… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -4303,11 +4367,11 @@ console.log('🐉 Date Picking · 擇吉 · loaded');
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(data, lang); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];
@@ -4719,5 +4783,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 <script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 <!-- 📄 8 ก.ค. 2569 · ตัวช่วยสร้าง PDF ร่วม (window.HKPrint · additive) -->
 <script src="/js/hk-print.js?v=4" defer></script>
+<script src="/js/hk-product-caps.js?v=3" defer></script>
 </body>
 </html>

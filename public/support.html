@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th" data-lang="th" data-theme="dark">
+<head>
+<script src="/js/hk-lang-state.js?v=2"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>hourkey · แจ้งปัญหาการใช้งาน</title>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<style>
+:root{--bg:#0d0f12;--panel:#171a21;--panel2:#1d222b;--fg:#f6f1e6;--soft:rgba(246,241,230,.68);--faint:rgba(246,241,230,.42);--line:rgba(200,164,77,.20);--gold:#c8a44d;--green:#72c27d;--blue:#74a9df;--red:#df6c5f;--shadow:0 18px 50px rgba(0,0,0,.28)}
+[data-theme="light"]{--bg:#f5efe2;--panel:#fffaf0;--panel2:#f2e8d6;--fg:#1a1612;--soft:rgba(26,22,18,.68);--faint:rgba(26,22,18,.42);--line:rgba(138,109,42,.28);--gold:#8a6d2a;--green:#4f8a58;--blue:#3c6f9e;--red:#b04d41;--shadow:0 18px 45px rgba(86,63,27,.13)}
+*{box-sizing:border-box;margin:0;padding:0}html{background:var(--bg)}body{min-height:100vh;background:linear-gradient(180deg,rgba(200,164,77,.08),transparent 260px),var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.brand{display:inline-flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:650}.seal{width:30px;height:30px;border:1px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;color:var(--gold);font-size:13px}.nav{display:flex;align-items:center;gap:10px;min-width:0}.nav-link{height:34px;display:inline-flex;align-items:center;border:1px solid var(--line);padding:0 12px;color:var(--soft);font-size:12px;white-space:nowrap}.nav-link:hover{color:var(--fg);border-color:var(--gold)}.langbox{height:34px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);padding:0 9px;color:var(--soft);font-size:12px}.langbox select{border:0;background:transparent;color:var(--fg);outline:none;min-width:96px}.langbox option{background:var(--panel);color:var(--fg)}.stage{width:min(1120px,100%);margin:0 auto;padding:34px 22px 70px}.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:20px}.eyebrow{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:42px;font-weight:650;line-height:1.15;letter-spacing:0}.lede{max-width:690px;color:var(--soft);font-size:14px;line-height:1.8;margin-top:10px}.hero-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.btn{min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:0 14px;font-size:13px;cursor:pointer}.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:750}.btn:hover{border-color:var(--gold)}.btn:disabled{opacity:.5;cursor:wait}.grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(340px,1.05fr);gap:18px;align-items:start}.panel{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 80%,var(--bg)));box-shadow:var(--shadow);border-radius:8px;padding:18px}.panel h2{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:24px;font-weight:650;margin-bottom:4px}.panel-sub{color:var(--faint);font-size:12px;line-height:1.7;margin-bottom:16px}.form{display:grid;gap:14px}.field{display:grid;gap:7px}.field span{font-size:12px;color:var(--soft)}input,select,textarea{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--fg);border-radius:6px;padding:11px 12px;outline:none}textarea{min-height:172px;resize:vertical;line-height:1.65}input:focus,select:focus,textarea:focus{border-color:var(--gold)}.status{min-height:20px;color:var(--soft);font-size:13px;line-height:1.7}.status.ok{color:var(--green)}.status.err{color:var(--red)}.reports{display:grid;gap:10px}.report{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);border-radius:8px;padding:13px}.report-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:7px;align-items:center;color:var(--faint);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px}.pill{display:inline-flex;align-items:center;border:1px solid var(--line);padding:4px 7px;color:var(--gold);text-transform:uppercase}.report p{white-space:pre-wrap;color:var(--soft);font-size:13px;line-height:1.7}.pagepath{margin-top:8px;word-break:break-all;color:var(--blue);font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px}.empty,.login{border:1px dashed var(--line);background:var(--panel);padding:26px 16px;text-align:center;color:var(--soft);border-radius:8px}.login b,.empty b{display:block;color:var(--fg);font-weight:650;margin-bottom:6px}@media(max-width:860px){.grid,.hero{grid-template-columns:1fr}.hero-actions{justify-content:flex-start}.topbar{padding:12px 14px}.nav-link{display:none}.stage{padding:24px 14px 54px}h1{font-size:32px}.langbox select{min-width:74px}}@media(max-width:420px){.brand span:last-child{display:none}.langbox{padding:0 7px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a href="/" class="brand"><span class="seal">時</span><span>hourkey</span></a>
+  <div class="nav">
+    <a class="nav-link" href="/today" data-t="navToday">วันนี้</a>
+    <a class="nav-link" href="/news" data-t="navNews">ข่าวสาร</a>
+    <label class="langbox"><span>🌐</span><select id="lang-select" aria-label="Language"></select></label>
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</header>
+
+<main class="stage">
+  <section class="hero">
+    <div>
+      <div class="eyebrow" data-t="eyebrow">SUPPORT</div>
+      <h1 data-t="h1">แจ้งปัญหาการใช้งาน</h1>
+      <p class="lede" data-t="sub">ส่งรายละเอียดปัญหาให้ทีมงานตรวจต่อจากหลังบ้าน พร้อมหน้าที่เกิดปัญหา ภาษา และอุปกรณ์ที่ใช้งาน</p>
+    </div>
+    <div class="hero-actions">
+      <a class="btn" href="/news" data-t="newsCta">ดูข่าวสาร</a>
+      <a class="btn primary" href="/account" data-t="accountCta">บัญชีของฉัน</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2 data-t="formTitle">ส่งรายงานปัญหา</h2>
+      <p class="panel-sub" data-t="formSub">ระบบจะบันทึกเป็น ticket ให้ admin ดูและเปลี่ยนสถานะได้</p>
+      <form class="form" id="support-form">
+        <label class="field"><span data-t="category">หมวดปัญหา</span><select id="category"></select></label>
+        <label class="field"><span data-t="page">หน้าที่เกิดปัญหา</span><input id="page-path" autocomplete="off"></label>
+        <label class="field"><span data-t="message">รายละเอียด</span><textarea id="message" maxlength="4000"></textarea></label>
+        <button class="btn primary" type="submit" id="submit-btn" data-t="send">ส่งรายงาน</button>
+        <div class="status" id="form-status"></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2 data-t="historyTitle">ประวัติที่แจ้งไว้</h2>
+      <p class="panel-sub" data-t="historySub">แสดง ticket ล่าสุดของบัญชีนี้</p>
+      <div class="reports" id="reports"><div class="empty"><b data-t="loading">กำลังโหลด...</b></div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var LANGS=[
+    {v:'th',label:'TH · ไทย'},{v:'en',label:'EN · English'},{v:'zh',label:'繁 · 繁體'},{v:'cn',label:'简 · 简体'},
+    {v:'vi',label:'VI · Tiếng Việt'},{v:'ja',label:'JA · 日本語'},{v:'ru',label:'RU · Русский'},{v:'ko',label:'KO · 한국어'},{v:'es',label:'ES · Español'}
+  ];
+  var CATS=['bug','account','payment','language','notification','prediction','other'];
+  var STATUSES=['new','triaged','in_progress','resolved','closed'];
+  var COPY={
+    th:{title:'hourkey · แจ้งปัญหาการใช้งาน',navToday:'วันนี้',navNews:'ข่าวสาร',eyebrow:'SUPPORT',h1:'แจ้งปัญหาการใช้งาน',sub:'ส่งรายละเอียดปัญหาให้ทีมงานตรวจต่อจากหลังบ้าน พร้อมหน้าที่เกิดปัญหา ภาษา และอุปกรณ์ที่ใช้งาน',newsCta:'ดูข่าวสาร',accountCta:'บัญชีของฉัน',formTitle:'ส่งรายงานปัญหา',formSub:'ระบบจะบันทึกเป็น ticket ให้ admin ดูและเปลี่ยนสถานะได้',category:'หมวดปัญหา',page:'หน้าที่เกิดปัญหา',message:'รายละเอียด',messagePh:'บอกสิ่งที่เกิดขึ้น สิ่งที่คาดหวัง และถ้ามี ให้ใส่ขั้นตอนที่ทำก่อนเกิดปัญหา',send:'ส่งรายงาน',sending:'กำลังส่ง...',sent:'ส่งรายงานแล้ว ทีมงานจะตรวจจากหลังบ้าน',needLogin:'กรุณาเข้าสู่ระบบก่อนส่งรายงาน',loginTitle:'ต้องเข้าสู่ระบบ',loginBody:'การแจ้งปัญหาผูกกับบัญชี เพื่อให้ทีมงานดูประวัติและติดต่อกลับได้',loginCta:'เข้าสู่ระบบ',historyTitle:'ประวัติที่แจ้งไว้',historySub:'แสดง ticket ล่าสุดของบัญชีนี้',loading:'กำลังโหลด...',emptyTitle:'ยังไม่มีประวัติแจ้งปัญหา',emptyBody:'เมื่อส่งรายงานแล้ว รายการจะแสดงที่นี่',failed:'โหลดข้อมูลไม่สำเร็จ',cat_bug:'บั๊ก / หน้าเว็บผิดปกติ',cat_account:'บัญชี / เข้าสู่ระบบ',cat_payment:'ชำระเงิน / แพ็กเกจ',cat_language:'ภาษา / คำแปล',cat_notification:'แจ้งเตือน',cat_prediction:'ผลคำนวณ / คำพยากรณ์',cat_other:'อื่น ๆ',st_new:'ใหม่',st_triaged:'รับเรื่องแล้ว',st_in_progress:'กำลังตรวจ',st_resolved:'แก้แล้ว',st_closed:'ปิดแล้ว'},
+    en:{title:'hourkey · Report an issue',navToday:'Today',navNews:'News',eyebrow:'SUPPORT',h1:'Report an issue',sub:'Send the issue details to the team with the affected page, language, and device context for admin follow-up.',newsCta:'View news',accountCta:'My account',formTitle:'Submit a report',formSub:'The report is stored as a ticket for admin review and status tracking.',category:'Category',page:'Affected page',message:'Details',messagePh:'Tell us what happened, what you expected, and the steps before the issue if available.',send:'Send report',sending:'Sending...',sent:'Report sent. The team can review it from admin.',needLogin:'Please sign in before sending a report.',loginTitle:'Sign in required',loginBody:'Reports are linked to your account so the team can see history and follow up.',loginCta:'Sign in',historyTitle:'Your reports',historySub:'Latest tickets from this account',loading:'Loading...',emptyTitle:'No reports yet',emptyBody:'After you submit a report, it will appear here.',failed:'Could not load data',cat_bug:'Bug / broken page',cat_account:'Account / sign-in',cat_payment:'Payment / plans',cat_language:'Language / translation',cat_notification:'Notifications',cat_prediction:'Calculation / reading',cat_other:'Other',st_new:'New',st_triaged:'Triaged',st_in_progress:'In progress',st_resolved:'Resolved',st_closed:'Closed'},
+    zh:{title:'hourkey · 回報使用問題',navToday:'今日',navNews:'消息',eyebrow:'SUPPORT',h1:'回報使用問題',sub:'將問題頁面、語言與裝置資訊一起送給團隊，方便後台追蹤處理。',newsCta:'查看消息',accountCta:'我的帳戶',formTitle:'送出問題回報',formSub:'系統會建立 ticket，讓 admin 查看並更新狀態。',category:'問題類別',page:'發生問題的頁面',message:'詳細內容',messagePh:'請描述發生了什麼、你原本期待的結果，以及問題前的操作步驟。',send:'送出回報',sending:'送出中...',sent:'已送出回報，團隊可在後台查看。',needLogin:'請先登入再送出回報。',loginTitle:'需要登入',loginBody:'問題回報會連到你的帳戶，方便團隊查看歷史並回覆。',loginCta:'登入',historyTitle:'已回報紀錄',historySub:'此帳戶最近的 ticket',loading:'載入中...',emptyTitle:'尚無回報紀錄',emptyBody:'送出問題後，紀錄會顯示在這裡。',failed:'無法載入資料',cat_bug:'錯誤 / 頁面異常',cat_account:'帳戶 / 登入',cat_payment:'付款 / 方案',cat_language:'語言 / 翻譯',cat_notification:'通知',cat_prediction:'計算 / 解讀',cat_other:'其他',st_new:'新建',st_triaged:'已受理',st_in_progress:'處理中',st_resolved:'已解決',st_closed:'已關閉'},
+    cn:{title:'hourkey · 反馈使用问题',navToday:'今日',navNews:'新闻',eyebrow:'SUPPORT',h1:'反馈使用问题',sub:'把问题页面、语言和设备信息一起发给团队，方便后台跟进处理。',newsCta:'查看新闻',accountCta:'我的账户',formTitle:'提交问题反馈',formSub:'系统会创建 ticket，供 admin 查看并更新状态。',category:'问题类别',page:'发生问题的页面',message:'详细内容',messagePh:'请描述发生了什么、你期望的结果，以及出问题前的操作步骤。',send:'提交反馈',sending:'正在提交...',sent:'反馈已提交，团队可在后台查看。',needLogin:'请先登录再提交反馈。',loginTitle:'需要登录',loginBody:'问题反馈会绑定你的账户，方便团队查看历史并跟进。',loginCta:'登录',historyTitle:'反馈记录',historySub:'此账户最近的 ticket',loading:'加载中...',emptyTitle:'暂无反馈记录',emptyBody:'提交问题后，记录会显示在这里。',failed:'无法加载数据',cat_bug:'错误 / 页面异常',cat_account:'账户 / 登录',cat_payment:'付款 / 套餐',cat_language:'语言 / 翻译',cat_notification:'通知',cat_prediction:'计算 / 解读',cat_other:'其他',st_new:'新建',st_triaged:'已受理',st_in_progress:'处理中',st_resolved:'已解决',st_closed:'已关闭'},
+    vi:{title:'hourkey · Báo lỗi sử dụng',navToday:'Hôm nay',navNews:'Tin tức',eyebrow:'SUPPORT',h1:'Báo lỗi sử dụng',sub:'Gửi chi tiết lỗi cùng trang gặp lỗi, ngôn ngữ và thiết bị để đội ngũ theo dõi trong admin.',newsCta:'Xem tin tức',accountCta:'Tài khoản',formTitle:'Gửi báo cáo',formSub:'Báo cáo sẽ được lưu thành ticket để admin xem và cập nhật trạng thái.',category:'Danh mục',page:'Trang gặp lỗi',message:'Chi tiết',messagePh:'Mô tả điều đã xảy ra, kết quả mong đợi và các bước trước khi gặp lỗi nếu có.',send:'Gửi báo cáo',sending:'Đang gửi...',sent:'Đã gửi báo cáo. Đội ngũ có thể xem trong admin.',needLogin:'Vui lòng đăng nhập trước khi gửi báo cáo.',loginTitle:'Cần đăng nhập',loginBody:'Báo cáo được gắn với tài khoản để đội ngũ xem lịch sử và phản hồi.',loginCta:'Đăng nhập',historyTitle:'Báo cáo của bạn',historySub:'Ticket mới nhất của tài khoản này',loading:'Đang tải...',emptyTitle:'Chưa có báo cáo',emptyBody:'Sau khi gửi, báo cáo sẽ xuất hiện tại đây.',failed:'Không tải được dữ liệu',cat_bug:'Lỗi / trang bất thường',cat_account:'Tài khoản / đăng nhập',cat_payment:'Thanh toán / gói',cat_language:'Ngôn ngữ / bản dịch',cat_notification:'Thông báo',cat_prediction:'Tính toán / luận giải',cat_other:'Khác',st_new:'Mới',st_triaged:'Đã tiếp nhận',st_in_progress:'Đang xử lý',st_resolved:'Đã giải quyết',st_closed:'Đã đóng'},
+    ja:{title:'hourkey · 問題を報告',navToday:'今日',navNews:'ニュース',eyebrow:'SUPPORT',h1:'問題を報告',sub:'問題の詳細、対象ページ、言語、端末情報をチームへ送り、管理画面で追跡できるようにします。',newsCta:'ニュースを見る',accountCta:'アカウント',formTitle:'レポートを送信',formSub:'レポートは ticket として保存され、admin が確認して状態を更新できます。',category:'カテゴリ',page:'問題が起きたページ',message:'詳細',messagePh:'起きたこと、期待した結果、問題前の操作手順があれば入力してください。',send:'送信',sending:'送信中...',sent:'レポートを送信しました。チームが管理画面で確認できます。',needLogin:'送信する前にログインしてください。',loginTitle:'ログインが必要です',loginBody:'レポートはアカウントに紐づき、履歴確認と返信に使われます。',loginCta:'ログイン',historyTitle:'報告履歴',historySub:'このアカウントの最新 ticket',loading:'読み込み中...',emptyTitle:'報告はまだありません',emptyBody:'送信後、ここに表示されます。',failed:'データを読み込めませんでした',cat_bug:'不具合 / ページ異常',cat_account:'アカウント / ログイン',cat_payment:'支払い / プラン',cat_language:'言語 / 翻訳',cat_notification:'通知',cat_prediction:'計算 / 鑑定',cat_other:'その他',st_new:'新規',st_triaged:'受付済み',st_in_progress:'対応中',st_resolved:'解決済み',st_closed:'終了'},
+    ru:{title:'hourkey · Сообщить о проблеме',navToday:'Сегодня',navNews:'Новости',eyebrow:'SUPPORT',h1:'Сообщить о проблеме',sub:'Отправьте детали проблемы, страницу, язык и данные устройства для обработки в админке.',newsCta:'Новости',accountCta:'Мой аккаунт',formTitle:'Отправить отчет',formSub:'Отчет сохранится как ticket, который admin сможет просмотреть и обновить.',category:'Категория',page:'Страница с проблемой',message:'Описание',messagePh:'Опишите, что произошло, что ожидалось и какие шаги были перед проблемой.',send:'Отправить',sending:'Отправка...',sent:'Отчет отправлен. Команда сможет увидеть его в админке.',needLogin:'Войдите в аккаунт перед отправкой отчета.',loginTitle:'Требуется вход',loginBody:'Отчеты связаны с аккаунтом, чтобы команда видела историю и могла ответить.',loginCta:'Войти',historyTitle:'Ваши отчеты',historySub:'Последние ticket этого аккаунта',loading:'Загрузка...',emptyTitle:'Отчетов пока нет',emptyBody:'После отправки отчет появится здесь.',failed:'Не удалось загрузить данные',cat_bug:'Ошибка / страница не работает',cat_account:'Аккаунт / вход',cat_payment:'Оплата / планы',cat_language:'Язык / перевод',cat_notification:'Уведомления',cat_prediction:'Расчет / трактовка',cat_other:'Другое',st_new:'Новый',st_triaged:'Принят',st_in_progress:'В работе',st_resolved:'Решен',st_closed:'Закрыт'},
+    ko:{title:'hourkey · 문제 신고',navToday:'오늘',navNews:'소식',eyebrow:'SUPPORT',h1:'문제 신고',sub:'문제 상세, 발생한 페이지, 언어, 기기 정보를 팀에 보내 관리자 화면에서 추적할 수 있게 합니다.',newsCta:'소식 보기',accountCta:'내 계정',formTitle:'신고 보내기',formSub:'신고는 admin이 확인하고 상태를 바꿀 수 있는 ticket으로 저장됩니다.',category:'분류',page:'문제가 발생한 페이지',message:'상세 내용',messagePh:'무슨 일이 있었는지, 기대한 결과, 문제 전 단계가 있다면 적어 주세요.',send:'신고 보내기',sending:'전송 중...',sent:'신고가 접수되었습니다. 팀이 관리자 화면에서 확인할 수 있습니다.',needLogin:'신고를 보내려면 먼저 로그인하세요.',loginTitle:'로그인이 필요합니다',loginBody:'신고는 계정에 연결되어 팀이 기록을 보고 후속 조치할 수 있습니다.',loginCta:'로그인',historyTitle:'신고 내역',historySub:'이 계정의 최신 ticket',loading:'불러오는 중...',emptyTitle:'아직 신고가 없습니다',emptyBody:'신고를 보내면 여기에 표시됩니다.',failed:'데이터를 불러오지 못했습니다',cat_bug:'버그 / 페이지 오류',cat_account:'계정 / 로그인',cat_payment:'결제 / 플랜',cat_language:'언어 / 번역',cat_notification:'알림',cat_prediction:'계산 / 해석',cat_other:'기타',st_new:'새로 접수',st_triaged:'접수됨',st_in_progress:'처리 중',st_resolved:'해결됨',st_closed:'종료됨'},
+    es:{title:'hourkey · Reportar problema',navToday:'Hoy',navNews:'Noticias',eyebrow:'SUPPORT',h1:'Reportar un problema',sub:'Envía los detalles del problema con la página afectada, idioma y contexto del dispositivo para seguimiento desde admin.',newsCta:'Ver noticias',accountCta:'Mi cuenta',formTitle:'Enviar reporte',formSub:'El reporte se guarda como ticket para revisión y seguimiento de estado en admin.',category:'Categoría',page:'Página afectada',message:'Detalles',messagePh:'Cuéntanos qué ocurrió, qué esperabas y los pasos previos al problema si los tienes.',send:'Enviar reporte',sending:'Enviando...',sent:'Reporte enviado. El equipo puede revisarlo desde admin.',needLogin:'Inicia sesión antes de enviar un reporte.',loginTitle:'Se requiere iniciar sesión',loginBody:'Los reportes se vinculan a tu cuenta para ver historial y dar seguimiento.',loginCta:'Iniciar sesión',historyTitle:'Tus reportes',historySub:'Tickets recientes de esta cuenta',loading:'Cargando...',emptyTitle:'Aún no hay reportes',emptyBody:'Después de enviar un reporte, aparecerá aquí.',failed:'No se pudieron cargar los datos',cat_bug:'Error / página rota',cat_account:'Cuenta / acceso',cat_payment:'Pago / planes',cat_language:'Idioma / traducción',cat_notification:'Notificaciones',cat_prediction:'Cálculo / lectura',cat_other:'Otro',st_new:'Nuevo',st_triaged:'Clasificado',st_in_progress:'En progreso',st_resolved:'Resuelto',st_closed:'Cerrado'}
+  };
+  function norm(){
+    var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current?window.HK_LANG_STATE.current():null;
+    if(st&&st.raw==='zh')return st.variant==='cn'?'cn':'zh';
+    var raw=(st&&st.raw)||localStorage.getItem('hk_locale')||'th';
+    raw=String(raw).toLowerCase();
+    if(raw==='zh-cn'||raw==='zh-hans'||raw==='cn')return'cn';
+    if(raw.indexOf('zh')===0)return'zh';
+    return COPY[raw]?raw:'en';
+  }
+  function t(k){var lang=norm();return(COPY[lang]&&COPY[lang][k])||COPY.en[k]||k}
+  function setLocale(lang){
+    if(window.HK_LANG_STATE&&window.HK_LANG_STATE.set)window.HK_LANG_STATE.set(lang==='cn'?'zh-cn':lang==='zh'?'zh-hant':lang);
+    applyText(); renderReports(lastReports);
+  }
+  function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+  function deviceId(){try{var id=localStorage.getItem('hk_device_id');if(!id){id='dv_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);localStorage.setItem('hk_device_id',id);}return id;}catch(_){return''}}
+  function defaultPage(){
+    try{var p=new URLSearchParams(location.search);return p.get('from')||document.referrer||'';}catch(_){return document.referrer||''}
+  }
+  function applyText(){
+    document.title=t('title');
+    document.querySelectorAll('[data-t]').forEach(function(el){el.textContent=t(el.getAttribute('data-t'))});
+    var sel=document.getElementById('lang-select');
+    sel.innerHTML=LANGS.map(function(l){return'<option value="'+l.v+'">'+l.label+'</option>'}).join('');
+    sel.value=norm();
+    document.getElementById('message').placeholder=t('messagePh');
+    renderCategory();
+  }
+  function renderCategory(){
+    var sel=document.getElementById('category');
+    var val=sel.value||'bug';
+    sel.innerHTML=CATS.map(function(c){return'<option value="'+c+'">'+escapeHtml(t('cat_'+c))+'</option>'}).join('');
+    sel.value=CATS.indexOf(val)>=0?val:'bug';
+  }
+  function fmt(iso){
+    var map={th:'th-TH',en:'en-US',zh:'zh-Hant',cn:'zh-Hans-CN',vi:'vi-VN',ja:'ja-JP',ru:'ru-RU',ko:'ko-KR',es:'es-ES'};
+    try{return new Intl.DateTimeFormat(map[norm()]||'en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(iso));}catch(_){return String(iso||'').slice(0,16);}
+  }
+  var lastReports=[];
+  function renderReports(reports){
+    lastReports=reports||[];
+    var box=document.getElementById('reports');
+    if(!lastReports.length){
+      box.innerHTML='<div class="empty"><b>'+escapeHtml(t('emptyTitle'))+'</b><span>'+escapeHtml(t('emptyBody'))+'</span></div>';
+      return;
+    }
+    box.innerHTML=lastReports.map(function(r){
+      var status=STATUSES.indexOf(r.status)>=0?r.status:'new';
+      return'<article class="report"><div class="report-top"><div class="meta"><span class="pill">'+escapeHtml(t('st_'+status))+'</span><span>'+escapeHtml(t('cat_'+r.category)||r.category)+'</span><span>'+escapeHtml(fmt(r.createdAt))+'</span></div></div><p>'+escapeHtml(r.message)+'</p>'+(r.pagePath?'<div class="pagepath">'+escapeHtml(r.pagePath)+'</div>':'')+'</article>';
+    }).join('');
+  }
+  function renderLogin(){
+    document.getElementById('reports').innerHTML='<div class="login"><b>'+escapeHtml(t('loginTitle'))+'</b><span>'+escapeHtml(t('loginBody'))+'</span><br><br><a class="btn primary" href="/signup?tab=login&next=/support">'+escapeHtml(t('loginCta'))+'</a></div>';
+  }
+  async function loadReports(){
+    try{
+      var r=await fetch('/api/support/report',{cache:'no-store',credentials:'same-origin'});
+      if(r.status===401){renderLogin();return;}
+      var j=await r.json();
+      renderReports(j&&j.ok?j.reports||[]:[]);
+    }catch(_){
+      document.getElementById('reports').innerHTML='<div class="empty"><b>'+escapeHtml(t('failed'))+'</b></div>';
+    }
+  }
+  function setStatus(text, ok){
+    var el=document.getElementById('form-status');
+    el.textContent=text||'';
+    el.className='status '+(ok===true?'ok':ok===false?'err':'');
+  }
+  document.getElementById('support-form').addEventListener('submit',async function(e){
+    e.preventDefault();
+    var btn=document.getElementById('submit-btn');
+    btn.disabled=true; btn.textContent=t('sending'); setStatus('',null);
+    try{
+      var r=await fetch('/api/support/report',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({category:document.getElementById('category').value,pagePath:document.getElementById('page-path').value,message:document.getElementById('message').value,locale:norm(),deviceId:deviceId()})});
+      if(r.status===401){setStatus(t('needLogin'),false);renderLogin();return;}
+      var j=await r.json().catch(function(){return null});
+      if(!j||!j.ok){setStatus((j&&j.error)||t('failed'),false);return;}
+      document.getElementById('message').value='';
+      setStatus(t('sent'),true);
+      loadReports();
+    }catch(_){setStatus(t('failed'),false);}
+    finally{btn.disabled=false;btn.textContent=t('send');}
+  });
+  document.getElementById('lang-select').addEventListener('change',function(e){setLocale(e.target.value);});
+  document.addEventListener('hk:locale',function(){applyText();renderReports(lastReports);});
+  document.getElementById('page-path').value=defaultPage();
+  applyText();
+  loadReports();
+})();
+</script>
+<script src="/js/hk-user-menu.js?v=23" defer></script>
+</body>
+</html>

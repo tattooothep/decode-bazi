@@ -9,7 +9,8 @@
  */
 import { NextResponse } from "next/server";
 import { constructStripeEvent, retrieveStripeSession } from "@/lib/payment/stripe";
-import { fulfillOrder } from "@/lib/payment/credit";
+import { clawbackYamForOrder, fulfillOrder } from "@/lib/payment/credit";
+import { q } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +25,28 @@ export async function POST(req: Request) {
   }
 
   const type = String(event.type || "");
+  // refund / dispute → clawback yam (platform) · affiliate reverse optional if module present
+  if (type === "charge.refunded" || type === "charge.dispute.created" || type === "refund.created") {
+    const dataObj = (event.data as { object?: Record<string, unknown> } | undefined)?.object || {};
+    const paymentIntent = String(dataObj.payment_intent || "");
+    const charge = String(dataObj.charge || dataObj.id || "");
+    const refs = [paymentIntent, charge, paymentIntent && `stripe:${paymentIntent}`, charge && `stripe:${charge}`].filter(Boolean) as string[];
+    const orders = await q<{ id: string }>(
+      `SELECT id FROM orders WHERE pay_ref = ANY($1::varchar[])`,
+      [refs]
+    ).catch(() => [] as { id: string }[]);
+    const clawbacks = [];
+    for (const o of orders) clawbacks.push(await clawbackYamForOrder(o.id, `stripe:${type}`));
+    let affiliate_reversed = 0;
+    try {
+      const mod = await import("@/lib/affiliate").catch(() => null as any);
+      if (mod?.reverseAffiliateRewardsForPaymentRefs) {
+        const r = await mod.reverseAffiliateRewardsForPaymentRefs(refs, `stripe:${type}`);
+        affiliate_reversed = Number(r?.reversed || 0);
+      }
+    } catch { /* affiliate module optional on this release */ }
+    return NextResponse.json({ received: true, type, clawbacks, affiliate_reversed });
+  }
   // สนใจเฉพาะเหตุการณ์ "จ่ายสำเร็จ"
   if (type !== "checkout.session.completed" && type !== "checkout.session.async_payment_succeeded") {
     return NextResponse.json({ received: true, ignored: type });

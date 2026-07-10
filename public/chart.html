@@ -1887,9 +1887,8 @@
       <p data-i18n="auto.c.538">ดูชั่วโมงมงคลของวันนี้ · ตรวจคนรอบตัว · บันทึกการตัดสินใจ</p>
     </div>
     <div class="btn-row">
-      <a href="/chart-print" class="btn line" data-i18n="c.cta.deep" target="_blank">📜 ดูเชิงลึก 38 หมวด · 詳細</a>
       <button type="button" id="hk-chart-pdf" class="btn line noprint" data-i18n="c.cta.print" onclick="if(window.exportChartPdf)window.exportChartPdf()">🖨 พิมพ์แบบเร็ว (ฟรี)</button>
-      <button type="button" id="hk-chart-summary-pdf" class="btn line noprint" data-i18n="c.cta.summary" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 สร้างสรุป PDF (50 ยาม)</button>
+      <button type="button" id="hk-chart-summary-pdf" class="btn line noprint" data-i18n="c.cta.summary" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 สร้างสรุป PDF (20 ยาม)</button>
       <a href="/today" class="btn gold" data-i18n="c.cta.calendar">ปฏิทินมงคลของฉัน →</a>
     </div>
   </div>
@@ -2078,8 +2077,7 @@ window.HK_I18N = {
   'c.sec5.sub':    { th:'ดูว่าเสาในดวงช่วยกัน ชนกัน หรือทำให้เรื่องเดิมวนซ้ำตรงไหน', en:'See where your pillars support, clash, or repeat old themes', zh:'看命局中相助、相沖與重複之處' },
   'c.cta.calendar':{ th:'ปฏิทินมงคลของฉัน →', en:'My auspicious calendar →', zh:'我的吉曆 →' },
   'c.cta.print':   { th:'🖨 พิมพ์แบบเร็ว (ฟรี)', en:'🖨 Quick print (free)', zh:'🖨 快速列印 (免費)' },
-  'c.cta.summary': { th:'📄 สร้างสรุป PDF (50 ยาม)', en:'📄 AI summary PDF (50 units)', zh:'📄 AI 總結 PDF (50 時)' },
-  'c.cta.deep':    { th:'📜 ดูเชิงลึก 38 หมวด · 詳細', en:'📜 Full 38 sections · 詳細', zh:'📜 詳細 38 項' },
+  'c.cta.summary': { th:'📄 สร้างสรุป PDF (20 ยาม)', en:'📄 AI summary PDF (20 units)', zh:'📄 AI 總結 PDF (20 時)' },
   'c.sec7.h2':     { th:'<span class="tc">大運</span>คลื่นโชค 8 รอบ · ตลอดชีวิต', en:'<span class="tc">大運</span>8 Luck Pillars · lifetime', zh:'<span class="tc">大運</span>八大運 · 一生流轉' },
   'c.sec7.sub':    { th:'รอบละ 10 ปี · กดดูรายละเอียดแต่ละรอบ', en:'10 years per pillar · tap to expand', zh:'每柱十年 · 點選展開' },
   'c.sec7.note':   { th:'รอบโชคปัจจุบัน <b>10-19 ปี · 戊子 (ดินหยาง + น้ำ)</b> · ช่วงเริ่มสะสม · ระวังน้ำท่วมความคิด · ใช้ดินสร้างฐาน',
@@ -5980,7 +5978,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 </script>
 
-<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 50 ยาม · async job + poll + resume · 9 ภาษา) -->
+<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 20 ยาม · async job + poll + resume · 9 ภาษา) -->
 <script>
 (function () {
   "use strict";
@@ -5995,10 +5993,10 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังสรุปดวง… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is summarising… you can leave this open or close it; the job keeps running.", zh:"AI 正在總結…可保持開啟或關閉，工作會繼續。", cn:"AI 正在总结…可保持开启或关闭，工作会继续。", vi:"AI đang tổng hợp… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIがまとめ中…開いたままでも閉じても処理は続きます。", ko:"AI가 요약 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет сводку… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está resumiendo… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -6146,11 +6144,11 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(st); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -60,9 +61,6 @@
   .progress .dots i.on{background:var(--gold);}
   .progress .dots i.cur{background:var(--gold);box-shadow:0 0 0 2px var(--gold-soft);}
   .hk-top-right{display:flex;align-items:center;gap:10px;}
-  .hk-lang-switch{display:inline-flex;background:var(--field);border:1px solid var(--line);border-radius:99px;padding:3px;}
-  .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--paper-soft);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
-  .hk-lang-switch button.on{background:var(--gold);color:var(--on-gold,#0d0f12);}
   .theme-toggle{display:flex;align-items:center;border:1px solid var(--line);border-radius:99px;padding:3px;background:var(--field);}
   .theme-toggle button{cursor:none;background:transparent;border:none;width:30px;height:30px;border-radius:99px;display:flex;align-items:center;justify-content:center;color:var(--paper-soft);transition:.25s;font-size:13px;}
   .theme-toggle button.on{background:var(--gold);color:var(--on-gold);}
@@ -250,6 +248,108 @@
       .hero h1{font-size:26px;}
     }
   }
+
+  /* landing-aligned refresh · goal page */
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"]{
+    --bg:#090706;
+    --paper:#f7efe3;
+    --paper-dim:rgba(247,239,227,.68);
+    --paper-soft:rgba(247,239,227,.42);
+    --gold:#e5bd69;
+    --gold-deep:#9f7436;
+    --gold-soft:rgba(232,197,128,.12);
+    --red:#a82f24;
+    --red-deep:#7e221b;
+    --jade:#6aa98c;
+    --card-bg-1:rgba(18,16,14,.82);
+    --card-bg-2:rgba(9,7,6,.84);
+    --line:rgba(232,197,128,.18);
+    --line-soft:rgba(232,197,128,.12);
+    --line-faint:rgba(232,197,128,.08);
+    --field:rgba(14,12,10,.62);
+    --field-2:rgba(9,7,6,.48);
+    --ring:rgba(232,197,128,.12);
+    --shine:rgba(255,244,214,.34);
+    --on-gold:#130d09;
+    --shadow:0 24px 80px rgba(0,0,0,.42);
+  }
+  :lang(en), :lang(es), :lang(ru), :lang(vi){font-family:ui-serif, Georgia, 'Noto Serif Thai', serif;}
+  :lang(ja){font-family:'Noto Serif TC','Hiragino Mincho ProN','Yu Mincho',serif;}
+  :lang(ko){font-family:'Noto Serif TC','Noto Serif CJK KR',serif;}
+  :lang(zh-Hans), :lang(zh-Hant){font-family:'Noto Serif TC',serif;}
+  html,body{cursor:auto;background:#090706;color:var(--paper);font-family:'Noto Serif Thai',serif;}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(9,7,6,.94),rgba(9,7,6,.72) 48%,rgba(9,7,6,.90)),url("assets/landing-v2/one-sky-six-lenses-v1.webp") center/cover no-repeat;opacity:.96;}
+  body::after{content:'';position:fixed;right:-18vw;top:-22vh;width:76vw;height:76vw;z-index:0;pointer-events:none;border-radius:50%;background:repeating-radial-gradient(circle,rgba(232,197,128,.20) 0 1px,transparent 1px 58px),conic-gradient(from 18deg,transparent 0 16deg,rgba(232,197,128,.16) 16deg 17deg,transparent 17deg 34deg);mask-image:radial-gradient(circle,rgba(0,0,0,.8),transparent 68%);opacity:.62;}
+  .cursor,.cursor-dot,.bg{display:none!important;}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:1000;display:grid;grid-template-columns:auto minmax(180px,1fr) auto;align-items:center;gap:18px;padding:16px clamp(18px,4vw,56px);background:rgba(9,7,6,.72);border-bottom:1px solid var(--line);backdrop-filter:blur(18px);}
+  .logo{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#fff;}
+  .logo .seal{width:34px;height:34px;border-radius:6px;border-color:var(--line);background:rgba(232,197,128,.10);font-size:13px;color:var(--gold);}
+  .progress{justify-self:center;min-height:42px;padding:0 14px;border:1px solid var(--line);border-radius:6px;background:rgba(18,16,14,.58);font-size:10px;letter-spacing:.14em;color:var(--paper-dim);}
+  .progress .dots i{background:rgba(232,197,128,.18);}
+  .progress .dots i.on,.progress .dots i.cur{background:var(--gold);box-shadow:none;}
+  .hk-top-right{justify-self:end;gap:12px;}
+  .hk-lang-select{height:42px;min-width:78px;border:1px solid var(--line);border-radius:6px;background:rgba(14,12,10,.76);color:#fff;padding:0 9px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
+  .hk-lang-select option{background:#120f0d;color:#fff;}
+  .stage{max-width:1180px;margin:0 auto;padding:112px clamp(18px,4vw,56px) 52px;}
+  .hero{grid-template-columns:minmax(0,.95fr) minmax(360px,1fr);gap:48px;align-items:center;margin-bottom:44px;}
+  .step-num,.hero h1,.horizon-head h2{letter-spacing:0;}
+  .step-num{font-size:clamp(96px,13vw,180px);line-height:.82;color:var(--gold);background:linear-gradient(180deg,var(--gold),rgba(232,197,128,.16));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .step-of{margin-top:-8px;margin-bottom:24px;letter-spacing:.22em;color:rgba(247,239,227,.46);}
+  .hero h1{font-size:clamp(42px,5.4vw,70px);font-weight:500;text-shadow:0 20px 70px rgba(0,0,0,.55);}
+  .hero .lede{font-size:15px;max-width:500px;color:var(--paper-dim);}
+  .aim-compass{isolation:isolate;max-width:470px;padding:12px;}
+  .goal-media{position:absolute;inset:-22px;border:1px solid var(--line);border-radius:8px;overflow:hidden;z-index:-1;background:#090706;box-shadow:var(--shadow);}
+  .goal-media video{width:100%;height:100%;object-fit:cover;opacity:.70;filter:saturate(1.05) contrast(1.04);}
+  .goal-media::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 48%,rgba(9,7,6,.18),rgba(9,7,6,.76) 72%),linear-gradient(180deg,rgba(232,197,128,.08),transparent);}
+  .aim-compass svg,.aim-compass .center,.aim-compass .pt{z-index:2;}
+  .aim-compass .center{background:rgba(9,7,6,.64);backdrop-filter:blur(10px);}
+  .aim-compass .pt{background:rgba(14,12,10,.68);border-color:rgba(247,239,227,.18);cursor:pointer;}
+  .aim-compass .pt.on{background:rgba(232,197,128,.13);border-color:var(--gold);box-shadow:0 0 0 4px rgba(232,197,128,.08);}
+  .section-eyebrow{letter-spacing:.18em;color:var(--gold);}
+  .aim,.horizon,.notify-card{border-radius:8px;background:linear-gradient(160deg,var(--card-bg-1),var(--card-bg-2));border:1px solid var(--line);box-shadow:0 18px 54px rgba(0,0,0,.24);backdrop-filter:blur(16px);}
+  .aim{cursor:pointer;}
+  .aim:hover{transform:translateY(-3px);}
+  .aim.on{background:linear-gradient(160deg,rgba(232,197,128,.12),var(--card-bg-2));border-color:var(--gold);box-shadow:0 0 0 1px rgba(232,197,128,.22),0 18px 54px rgba(0,0,0,.28);}
+  .aim .check{border-radius:6px;}
+  .horizon{padding:28px;}
+  .horizon-stop{cursor:pointer;}
+  .horizon-stop .dot,.horizon-stop.cur .dot{background:var(--bg);}
+  .horizon-stop.passed .dot,.horizon-stop.cur .dot{background:var(--gold);}
+  .hk-horizon-tip{border-radius:8px;background:rgba(14,12,10,.54);border-color:var(--line);border-left-color:var(--gold);}
+  .notify{gap:12px;margin-bottom:10px;}
+  .notify-card{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"ico toggle" "body body";align-content:start;gap:14px;padding:18px;min-height:188px;border-style:solid;cursor:pointer;}
+  .notify-card .ico{grid-area:ico;width:44px;height:44px;border-radius:6px;background:rgba(232,197,128,.10);}
+  .notify-card .body{grid-area:body;}
+  .notify-card .body h4{font-size:17px;line-height:1.25;}
+  .notify-card .body p{font-size:12px;line-height:1.55;color:var(--paper-dim);}
+  .notify-card .toggle{grid-area:toggle;justify-self:end;margin-left:0;width:46px;height:26px;cursor:pointer;background:rgba(247,239,227,.14);}
+  .notify-card .toggle::after{width:20px;height:20px;top:3px;left:3px;background:#fff;}
+  .notify-card.on{border-color:var(--gold);background:linear-gradient(160deg,rgba(232,197,128,.14),var(--card-bg-2));}
+  .notify-card.on .toggle{background:linear-gradient(135deg,var(--red),var(--red-deep));}
+  .notify-card.on .toggle::after{left:23px;background:#fff;}
+  .notify-card[data-saving="1"]{opacity:.72;pointer-events:none;}
+  .notify-status{margin:0 0 32px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:rgba(14,12,10,.52);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;letter-spacing:.08em;color:var(--paper-dim);}
+  .notify-status.ok{border-color:rgba(106,169,140,.44);color:#a6d5bd;}
+  .notify-status.warn{border-color:rgba(168,47,36,.48);color:#f0b5ae;}
+  .ghost,.primary{border-radius:6px;cursor:pointer;}
+  .primary{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;}
+  .primary:hover,.ghost:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.24);}
+  @media(max-width:900px){
+    .topbar{grid-template-columns:1fr auto;gap:12px;padding:12px 16px;}
+    .progress{grid-column:1 / -1;grid-row:2;justify-self:stretch;justify-content:center;}
+    .hk-lang-select{height:38px;min-width:66px;padding:0 6px;font-size:10px;}
+    .stage{padding:126px 16px 36px;}
+    .hero{grid-template-columns:1fr;gap:28px;margin-bottom:30px;}
+    .hero h1{font-size:36px;}
+    .aim-compass{max-width:330px;margin:0 auto;}
+    .goal-media{inset:-14px;}
+    .aims{grid-template-columns:1fr 1fr;}
+    .notify{grid-template-columns:1fr;}
+    .notify-card{min-height:auto;}
+    .cta-row{gap:10px;}
+  }
 </style>
 <link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
@@ -274,6 +374,17 @@
     <span data-i18n="g.step.title">เป้าหมาย · 志</span>
   </div>
   <div class="hk-top-right top-r">
+    <select class="hk-lang-select" id="hk-lang-select" aria-label="Language">
+      <option value="th">TH</option>
+      <option value="en">EN</option>
+      <option value="zh-hant">繁</option>
+      <option value="zh-cn">简</option>
+      <option value="vi">VI</option>
+      <option value="ja">JA</option>
+      <option value="ko">KO</option>
+      <option value="ru">RU</option>
+      <option value="es">ES</option>
+    </select>
     <div id="hk-user-menu-mount"></div>
   </div>
 </div>
@@ -287,6 +398,11 @@
       <p class="lede" data-i18n="g.lede">การตีความปาจื้อ <b>เริ่มจากเป้าหมาย</b> — เลือกได้สูงสุด <b>3 อย่าง</b> เราจะเน้นชั่วโมงและคนที่ตอบโจทย์คุณก่อน · เปลี่ยนได้ทุกเมื่อ</p>
     </div>
     <div class="aim-compass">
+      <div class="goal-media" aria-hidden="true">
+        <video autoplay muted loop playsinline poster="assets/landing-v2/hourkey-hero-poster-v2.jpg">
+          <source src="assets/landing-v2/hourkey-hero-loop-v2.mp4" type="video/mp4"/>
+        </video>
+      </div>
       <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
         <line x1="50" y1="22" x2="50" y2="50" stroke="var(--gold)" stroke-width=".4"/>
         <line x1="50" y1="50" x2="78" y2="50" stroke="var(--gold)" stroke-width=".4"/>
@@ -387,39 +503,40 @@
   </div>
 
   <div class="notify">
-    <div class="notify-card on">
+    <div class="notify-card on" data-alert="good_hour">
       <div class="ico">吉</div>
       <div class="body">
         <h4 data-i18n="g.notify.good.h">เตือนชั่วโมงดี · <span class="tc">吉時</span></h4>
         <p data-i18n="g.notify.good.p">ส่งเฉพาะวันที่มีชั่วโมงเด่น · ก่อนชั่วยามมงคล 30 นาที</p>
       </div>
-      <div class="toggle"></div>
+      <div class="toggle" role="switch" aria-checked="true" tabindex="0"></div>
     </div>
-    <div class="notify-card">
+    <div class="notify-card" data-alert="bad_hour">
       <div class="ico">凶</div>
       <div class="body">
         <h4 data-i18n="g.notify.warnhour.h">เตือนชั่วโมงต้องเลี่ยง · <span class="tc">凶時</span></h4>
         <p data-i18n="g.notify.warnhour.p">ชั่วยามแรง · ปะทะดวงคุณ — แจ้งล่วงหน้า 30 นาที</p>
       </div>
-      <div class="toggle"></div>
+      <div class="toggle" role="switch" aria-checked="false" tabindex="0"></div>
     </div>
-    <div class="notify-card">
+    <div class="notify-card" data-alert="good_day">
       <div class="ico">日</div>
       <div class="body">
         <h4 data-i18n="g.notify.goodday.h">เตือนวันเด่น · <span class="tc">吉日</span></h4>
         <p data-i18n="g.notify.goodday.p">วันมงคลของดวงคุณ · เริ่มงานใหญ่ · เซ็นสัญญา — แจ้งล่วงหน้า 1 วัน</p>
       </div>
-      <div class="toggle"></div>
+      <div class="toggle" role="switch" aria-checked="false" tabindex="0"></div>
     </div>
-    <div class="notify-card">
+    <div class="notify-card" data-alert="bad_day">
       <div class="ico">忌</div>
       <div class="body">
         <h4 data-i18n="g.notify.bad.h">เตือนวันต้องระวัง · <span class="tc">忌日</span></h4>
         <p data-i18n="g.notify.bad.p">วันปะทะ 沖/破/害/刑 ดวงคุณ — แจ้งล่วงหน้า 1 วัน</p>
       </div>
-      <div class="toggle"></div>
+      <div class="toggle" role="switch" aria-checked="false" tabindex="0"></div>
     </div>
   </div>
+  <div class="notify-status" id="notifyStatus" data-i18n="g.notify.status.ready">แตะการ์ดเพื่อเปิดแจ้งเตือนบนแอพ · ต้องอนุญาต notification ใน browser</div>
 
   <div class="cta-row">
     <button class="ghost" data-i18n="g.cta.back" onclick="window.location.href='/input'">← ย้อนกลับ</button>
@@ -449,10 +566,158 @@
       document.querySelector('.section-eyebrow').textContent = labels[l]||labels.th;
     });
   });
-  // notify toggles
-  document.querySelectorAll('.notify-card .toggle').forEach(t=>{
-    t.addEventListener('click', e=>{ t.parentElement.classList.toggle('on'); e.stopPropagation(); });
-  });
+  // notification toggles · subscribe browser push + persist 4 distinct goal prefs
+  (function wireGoalNotifications(){
+    const ALERT_KEYS = ['good_hour','bad_hour','good_day','bad_day'];
+    const status = document.getElementById('notifyStatus');
+    function tx(key, fb){
+      try {
+        var lang = document.documentElement.getAttribute('data-hk-locale') || localStorage.getItem('hk_locale') || document.documentElement.getAttribute('data-lang') || 'th';
+        var ov = window.HK_OVERLAY_GET && window.HK_OVERLAY_GET('goal.html', key, lang);
+        if (ov != null) return ov;
+        var t = window.HK_I18N && window.HK_I18N[key];
+        return (t && (t[lang] || t.en || t.th)) || fb;
+      } catch(_) { return fb; }
+    }
+    function setStatus(key, fb, tone){
+      if (!status) return;
+      status.setAttribute('data-i18n', key);
+      status.textContent = tx(key, fb);
+      status.classList.remove('ok','warn');
+      if (tone) status.classList.add(tone);
+    }
+    function syncSwitch(card){
+      const on = card.classList.contains('on');
+      const toggle = card.querySelector('.toggle');
+      if (toggle) toggle.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+    function setCard(card, on){
+      card.classList.toggle('on', !!on);
+      syncSwitch(card);
+    }
+    function collectPrefs(){
+      const prefs = {};
+      ALERT_KEYS.forEach(k => {
+        const card = document.querySelector('.notify-card[data-alert="'+k+'"]');
+        prefs[k] = !!(card && card.classList.contains('on'));
+      });
+      return prefs;
+    }
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+    }
+    async function ensurePushSubscription(){
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        throw new Error('unsupported');
+      }
+      if (Notification.permission === 'denied') throw new Error('permission_denied');
+      if (Notification.permission !== 'granted') {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') throw new Error('permission_denied');
+      }
+      await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        const keyRes = await fetch('/api/push/vapid-key', { credentials:'same-origin', cache:'no-store' });
+        if (keyRes.status === 401) throw new Error('not_logged_in');
+        if (keyRes.status === 503) throw new Error('push_not_configured');
+        if (!keyRes.ok) throw new Error('vapid_failed');
+        const data = await keyRes.json();
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(data.key),
+        });
+      }
+      const saveRes = await fetch('/api/push/subscribe', {
+        method:'POST',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ subscription: sub }),
+      });
+      if (saveRes.status === 401) throw new Error('not_logged_in');
+      if (!saveRes.ok) throw new Error('subscribe_failed');
+      return sub;
+    }
+    async function saveGoalPrefs(){
+      const res = await fetch('/api/push/goal-prefs', {
+        method:'PATCH',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(collectPrefs()),
+      });
+      if (res.status === 401) throw new Error('not_logged_in');
+      if (!res.ok) throw new Error('prefs_failed');
+      return res.json().catch(() => ({}));
+    }
+    async function toggleCard(card){
+      if (!card || card.dataset.saving === '1') return;
+      const wasOn = card.classList.contains('on');
+      const nextOn = !wasOn;
+      card.dataset.saving = '1';
+      try {
+        if (nextOn) {
+          setStatus('g.notify.status.enabling', 'กำลังเปิดแจ้งเตือนบนแอพ...', '');
+          await ensurePushSubscription();
+        }
+        setCard(card, nextOn);
+        await saveGoalPrefs();
+        setStatus(nextOn ? 'g.notify.status.on' : 'g.notify.status.off',
+          nextOn ? 'เปิดแจ้งเตือนแล้ว · ระบบจะส่งเมื่อถึงชั่วโมง/วันที่ตรงกับดวงคุณ' : 'บันทึกแล้ว · ปิดรายการนี้แล้ว',
+          nextOn ? 'ok' : '');
+      } catch(err) {
+        setCard(card, wasOn);
+        const msg = String((err && err.message) || '');
+        if (msg === 'not_logged_in') {
+          setStatus('g.notify.status.login', 'กรุณาเข้าสู่ระบบก่อนเปิดแจ้งเตือน', 'warn');
+          setTimeout(function(){ window.location.href = '/signup?tab=login&next=' + encodeURIComponent('/goal'); }, 700);
+        } else if (msg === 'unsupported') {
+          setStatus('g.notify.status.unsupported', 'Browser นี้ยังไม่รองรับ Web Push', 'warn');
+        } else if (msg === 'permission_denied') {
+          setStatus('g.notify.status.denied', 'ยังเปิดไม่ได้ · ต้องอนุญาต Notification ใน browser ก่อน', 'warn');
+        } else if (msg === 'push_not_configured') {
+          setStatus('g.notify.status.config', 'ระบบแจ้งเตือนยังไม่ได้ตั้งค่า VAPID บน server', 'warn');
+        } else {
+          setStatus('g.notify.status.error', 'บันทึกแจ้งเตือนไม่สำเร็จ · ลองใหม่อีกครั้ง', 'warn');
+        }
+      } finally {
+        delete card.dataset.saving;
+      }
+    }
+    document.querySelectorAll('.notify-card[data-alert]').forEach(card=>{
+      syncSwitch(card);
+      card.addEventListener('click', e=>{
+        if (e.target && e.target.closest && e.target.closest('a,button,input,select')) return;
+        toggleCard(card);
+      });
+      const t = card.querySelector('.toggle');
+      if (t) {
+        t.addEventListener('click', e=>{ e.stopPropagation(); toggleCard(card); });
+        t.addEventListener('keydown', e=>{
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggleCard(card); }
+        });
+      }
+    });
+    (async function hydrate(){
+      try {
+        const res = await fetch('/api/push/goal-prefs', { credentials:'same-origin', cache:'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        ALERT_KEYS.forEach(k => {
+          if (typeof data[k] === 'boolean') {
+            const card = document.querySelector('.notify-card[data-alert="'+k+'"]');
+            if (card) setCard(card, data[k]);
+          }
+        });
+        if (data.subscribed) setStatus('g.notify.status.on', 'เปิดแจ้งเตือนแล้ว · ระบบจะส่งเมื่อถึงชั่วโมง/วันที่ตรงกับดวงคุณ', 'ok');
+      } catch(_) {}
+    })();
+  })();
   // horizon
   document.querySelectorAll('.horizon-stop').forEach((s,i,all)=>{
     s.addEventListener('click', ()=>{
@@ -465,9 +730,9 @@
   });
   // theme
   const tL = document.getElementById('t-light'), tD = document.getElementById('t-dark');
-  function setTheme(m){ document.documentElement.setAttribute('data-theme', m); tL.classList.toggle('on', m==='light'); tD.classList.toggle('on', m==='dark'); try{localStorage.setItem('hourkey-theme', m);}catch(e){} }
-  tL.addEventListener('click', ()=>setTheme('light'));
-  tD.addEventListener('click', ()=>setTheme('dark'));
+  function setTheme(m){ document.documentElement.setAttribute('data-theme', m); if(tL) tL.classList.toggle('on', m==='light'); if(tD) tD.classList.toggle('on', m==='dark'); try{localStorage.setItem('hourkey-theme', m);}catch(e){} }
+  if (tL) tL.addEventListener('click', ()=>setTheme('light'));
+  if (tD) tD.addEventListener('click', ()=>setTheme('dark'));
   try{ const s=localStorage.getItem('hourkey-theme'); if (s) setTheme(s); }catch(e){}
 </script>
 
@@ -635,6 +900,33 @@ window.HK_I18N = {
   'g.notify.bad.p':     { th:'วันปะทะ 沖/破/害/刑 ดวงคุณ — แจ้งล่วงหน้า 1 วัน',
                           en:'Days of 沖/破/害/刑 clashes — 1-day advance notice',
                           zh:'與您命盤 沖/破/害/刑 之日 — 提前一日告知' },
+  'g.notify.status.ready': { th:'แตะการ์ดเพื่อเปิดแจ้งเตือนบนแอพ · ต้องอนุญาต notification ใน browser',
+                             en:'Tap a card to enable in-app alerts · browser notification permission required',
+                             zh:'點選卡片啟用 App 通知 · 需允許瀏覽器通知' },
+  'g.notify.status.enabling': { th:'กำลังเปิดแจ้งเตือนบนแอพ...',
+                                en:'Enabling in-app alerts...',
+                                zh:'正在啟用 App 通知...' },
+  'g.notify.status.on': { th:'เปิดแจ้งเตือนแล้ว · ระบบจะส่งเมื่อถึงชั่วโมง/วันที่ตรงกับดวงคุณ',
+                          en:'Alerts are on · we will notify when matching hours or days arrive',
+                          zh:'提醒已開啟 · 遇到符合命盤的時辰或日期時通知您' },
+  'g.notify.status.off': { th:'บันทึกแล้ว · ปิดรายการนี้แล้ว',
+                           en:'Saved · this alert is off',
+                           zh:'已儲存 · 此提醒已關閉' },
+  'g.notify.status.login': { th:'กรุณาเข้าสู่ระบบก่อนเปิดแจ้งเตือน',
+                             en:'Please sign in before enabling alerts',
+                             zh:'請先登入再啟用提醒' },
+  'g.notify.status.unsupported': { th:'Browser นี้ยังไม่รองรับ Web Push',
+                                   en:'This browser does not support Web Push yet',
+                                   zh:'此瀏覽器尚不支援 Web Push' },
+  'g.notify.status.denied': { th:'ยังเปิดไม่ได้ · ต้องอนุญาต Notification ใน browser ก่อน',
+                              en:'Not enabled · allow notifications in your browser first',
+                              zh:'尚未開啟 · 請先允許瀏覽器通知' },
+  'g.notify.status.config': { th:'ระบบแจ้งเตือนยังไม่ได้ตั้งค่า VAPID บน server',
+                              en:'Push alerts are not configured on the server yet',
+                              zh:'伺服器尚未設定推播 VAPID' },
+  'g.notify.status.error': { th:'บันทึกแจ้งเตือนไม่สำเร็จ · ลองใหม่อีกครั้ง',
+                             en:'Could not save alerts · try again',
+                             zh:'提醒儲存失敗 · 請再試一次' },
   'g.cta.back':    { th:'← ย้อนกลับ', en:'← Back', zh:'← 返回' },
   'g.cta.next':    { th:'เปิดดวงของฉัน →', en:'Open my chart →', zh:'開啟我的命盤 →' }
 };
@@ -643,7 +935,7 @@ function applyI18N(lang){
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
     var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('goal.html',key,lang);}catch(_){}
-    var v=(ov!=null)?ov:t[lang];
+    var v=(ov!=null)?ov:(t[lang] || t.en || t.th);
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
       if (v !== undefined) {
         if (v.indexOf('<') >= 0) el.innerHTML = v;
@@ -653,19 +945,36 @@ function applyI18N(lang){
   });
 }
 window.applyI18N = applyI18N;
-window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 (function(){
-  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
-  var btns = sw.querySelectorAll('button');
-  function apply(lang){
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
-    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
-    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
-    applyI18N(lang);
+  var sw = document.getElementById('hk-lang-select'); if (!sw) return;
+  function choiceFromState(st){
+    if (!st) return 'th';
+    if (st.raw === 'zh') {
+      try { return localStorage.getItem('hk_zh_variant') === 'cn' ? 'zh-cn' : 'zh-hant'; } catch(_) {}
+      return st.variant === 'cn' ? 'zh-cn' : 'zh-hant';
+    }
+    return st.raw || 'th';
   }
-  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  function loadOverlayThen(raw, cb){
+    if (raw === 'th' || raw === 'en' || raw === 'zh') { cb(); return; }
+    if (window.HK && window.HK.i18n && typeof window.HK.i18n.loadOverlay === 'function') {
+      window.HK.i18n.loadOverlay(raw).then(function(){ cb(); }).catch(function(){ cb(); });
+      return;
+    }
+    cb();
+  }
+  function apply(lang){
+    var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.set?window.HK_LANG_STATE.set(lang):null;
+    var raw = st ? st.raw : lang;
+    document.documentElement.setAttribute('lang', st?st.html:lang);
+    document.documentElement.setAttribute('data-lang', st?st.app:raw);
+    sw.value = choiceFromState(st || { raw: raw });
+    try{ localStorage.setItem('hk_locale', raw); localStorage.setItem('hk_lang', raw); }catch(e){}
+    loadOverlayThen(raw, function(){ applyI18N(raw); });
+  }
+  window.__hkOverlayApply=function(l){ apply(l); };
+  sw.addEventListener('change', function(){ apply(sw.value); });
+  try{ var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current(); if (st) apply(choiceFromState(st)); else apply('th'); }catch(e){ apply('th'); }
 })();
 
 /* horizon stop · click → update tip + bar width + passed/cur ตาม index */
@@ -710,5 +1019,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 </body>
 </html>

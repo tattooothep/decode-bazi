@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import { q1 } from "@/lib/db";
 import { SignJWT, jwtVerify } from "jose";
 import { normalizeAffiliateCode } from "@/lib/affiliate";
+import { ensureOrgMember } from "@/lib/ensure-org-member";
 
 const CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID || "";
 const CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET || "";
@@ -156,11 +157,9 @@ export async function findOrCreateUser(p: GoogleProfile): Promise<UserRow> {
       p.name,
     ]);
   });
-  await q1(
-    `INSERT INTO org_members (org_id, user_id, role, created_at)
-     VALUES ($1, $2, 'owner', now())`,
-    [orgId, userId]
-  ).catch(() => null);
+  await ensureOrgMember(orgId, userId, "owner").catch((e) =>
+    console.warn("[oauth-google] org_members", e instanceof Error ? e.message : String(e))
+  );
   await q1(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [orgId, userId]);
   return {
     id: userId,

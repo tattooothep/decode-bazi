@@ -1140,7 +1140,7 @@
           <div id="sniper-card" class="hidden"></div>
           <div class="dl-pdf-wrap hidden noprint" id="download-pdf-wrap">
             <button class="btn" id="download-pdf" type="button" data-i18n="dl.pdf">⬇ ดาวน์โหลด PDF</button>
-            <button class="btn" id="hk-fusion-summary-pdf" type="button" style="margin-left:8px" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 สร้างสรุป PDF (50 ยาม)</button>
+            <button class="btn" id="hk-fusion-summary-pdf" type="button" style="margin-left:8px" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 สร้างสรุป PDF (20 ยาม)</button>
           </div>
           <div class="chat" id="chat"></div>
           <div id="fusion-meta"></div>
@@ -1204,7 +1204,7 @@
   <script>
   (function(){
     var $ = function(id){ return document.getElementById(id); };
-    var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', historyView:null, preHistoryView:null, compareIds:[],
+    var state = { account:null, fusionAccess:null, productCaps:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', historyView:null, preHistoryView:null, compareIds:[],
       mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false, uranian:false, palmistry:false }, hasPalm:false, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null,
       guests:{}, guestEdit:{} }; // r383: ดวงชั่วคราวรายช่อง 1-4 (ไม่บันทึกโปรไฟล์)
     var els = {
@@ -1236,39 +1236,39 @@
     var HELP_I18N = {
       th:{ title:'วิธีใช้หน้านี้', closeLabel:'ปิด', aiLabel:'อ่านโดย AI', yamLabel:'ใช้ยาม', needTimeYes:'ต้องมีเวลาเกิด', needTimeNo:'ไม่ต้องมีเวลาเกิด',
         sec1Title:'หน้านี้ทำงานยังไง', sec1Body:'แต่ละศาสตร์ที่คุณติ๊ก จะถูกอ่านแยกด้วย AI เฉพาะทาง (ปาจื้อ→Claude · ดาวจริง→Grok · จื่อเวย→Gemini · พระเวท→Codex ฯลฯ) แล้ว Claude หลอมรวมทุกคำอ่านเป็นคำฟันธงเดียว + หาจุดที่หลายศาสตร์เห็นพ้องกัน (Resonance)',
-        sec2Title:'คิดยามยังไง', sec2Body:'แต่ละศาสตร์คิดยามต่างกัน — ปาจื้อ 10 · ดาวจริง 15 · จื่อเวย 12 · ตะวันตก 10 · พระเวท 10 · ยูเรเนียน 12 · บวกค่าหลอมรวม 5 ยาม · ยอดรวมโชว์สดตามที่ติ๊ก (ยิ่งเลือกหลายศาสตร์ยิ่งใช้ยามมากแต่รอบด้านกว่า) · ลายมือใช้ผลที่สแกนไว้ ไม่คิดยามเพิ่ม',
+        sec2Title:'คิดยามยังไง', sec2Body:'คิดยามตามความยาวคำตอบ (≈30 ตัวอักษร = 1 ยาม) · ก่อนรันต้องมียามขั้นต่ำ ≈5×จำนวนศาสตร์×ดวง (จอง) กันยามน้อยติ๊กหลายศาสตร์ · จบงานแล้วคิดจริงตามตัวอักษร คืนส่วนเกินหรือหักเพิ่ม · ลายมือใช้ผลสแกนเดิม',
         sec3Title:'เลือกศาสตร์/โหมด', sec3Body:'ติ๊กศาสตร์ได้หลายข้อ · เลือกโหมด เดี่ยว/ดูคู่/กลุ่ม 3-4 ดวง · บางศาสตร์ต้องมีเวลาเกิด (ดาวจริง · จื่อเวย) ถ้าไม่มีเวลาจะติ๊กไม่ได้/เตือน · แล้วพิมพ์คำถามที่อยากรู้ กดถาม' },
       en:{ title:'How to use this page', closeLabel:'Close', aiLabel:'Read by', yamLabel:'Yam cost', needTimeYes:'Needs birth time', needTimeNo:'No birth time needed',
         sec1Title:'How this page works', sec1Body:'Each science you tick is read separately by a dedicated AI (BaZi → Claude · Real-Star → Grok · Zi Wei → Gemini · Vedic → Codex, etc). Claude then fuses all the readings into one verdict, and finds where multiple sciences agree (Resonance).',
-        sec2Title:'How yam (hours) are counted', sec2Body:'Each science costs a different amount of yam — BaZi 10 · Real-Star 15 · Zi Wei 12 · Western 10 · Vedic 10 · Uranian 12 — plus 5 yam for the fusion verdict. The total updates live as you tick sciences (more sciences = more yam, but a fuller picture). Palmistry uses your existing scan result and costs no extra yam.',
+        sec2Title:'How yam (hours) are counted', sec2Body:'Same as AI Sifu: charged by reply length — about 30 characters = 1 yam. You need at least 1 yam to start. Each science panel and the fusion judge that return text are charged by answer length. More sciences → more replies → more yam. Palmistry reuses your scan.',
         sec3Title:'Choosing sciences / mode', sec3Body:'Tick as many sciences as you like · choose Single / Pair / Group of 3-4 charts · some sciences need a birth time (Real-Star, Zi Wei) — without one they will be greyed out or warn you · then type your question and tap Ask.' },
       zh:{ title:'本頁使用說明', closeLabel:'關閉', aiLabel:'解讀 AI', yamLabel:'時數', needTimeYes:'需出生時間', needTimeNo:'不需出生時間',
         sec1Title:'本頁如何運作', sec1Body:'您勾選的每個術數會由專屬 AI 分別解讀（八字→Claude · 七政四餘→Grok · 紫微斗數→Gemini · 吠陀→Codex 等），再由 Claude 將所有解讀融合為一個裁斷，並找出多術一致之處（共振 Resonance）。',
-        sec2Title:'時數如何計算', sec2Body:'各術耗時不同 — 八字 10 · 七政四餘 15 · 紫微斗數 12 · 西洋占星 10 · 吠陀占星 10 · 天王星占星 12 — 再加 5 時作綜合裁斷。總計會隨勾選即時顯示（選越多術耗時越多，但更全面）。手相使用您已掃描的結果，不另外計時。',
+        sec2Title:'時數如何計算', sec2Body:'與 AI 師父相同：依回覆字數計時 · 約 30 字 = 1 時 · 至少需 1 時才能開始 · 各術解讀與綜合裁斷依實際回覆長度扣時 · 選越多術回覆越多耗時越多 · 手相用既有掃描結果',
         sec3Title:'選擇術數／模式', sec3Body:'可複選多個術數 · 選擇單看／合盤／3-4 盤群組 · 部分術數需要出生時間（七政四餘、紫微斗數）沒有時間會無法勾選或提示 · 接著輸入您的問題並點擊提問。' },
       cn:{ title:'本页使用说明', closeLabel:'关闭', aiLabel:'解读 AI', yamLabel:'时数', needTimeYes:'需出生时间', needTimeNo:'不需出生时间',
         sec1Title:'本页如何运作', sec1Body:'您勾选的每个术数会由专属 AI 分别解读（八字→Claude · 七政四余→Grok · 紫微斗数→Gemini · 吠陀→Codex 等），再由 Claude 将所有解读融合为一个裁断，并找出多术一致之处（共振 Resonance）。',
-        sec2Title:'时数如何计算', sec2Body:'各术耗时不同 — 八字 10 · 七政四余 15 · 紫微斗数 12 · 西洋占星 10 · 吠陀占星 10 · 天王星占星 12 — 再加 5 时作综合裁断。总计会随勾选即时显示（选越多术耗时越多，但更全面）。手相使用您已扫描的结果，不另外计时。',
+        sec2Title:'时数如何计算', sec2Body:'与 AI 师傅相同：按回复字数计时 · 约 30 字 = 1 时 · 至少需 1 时才能开始 · 各术解读与综合裁断按实际回复长度扣时 · 选越多术回复越多耗时越多 · 手相用既有扫描结果',
         sec3Title:'选择术数／模式', sec3Body:'可复选多个术数 · 选择单看／合盘／3-4 盘群组 · 部分术数需要出生时间（七政四余、紫微斗数）没有时间会无法勾选或提示 · 接着输入您的问题并点击提问。' },
       vi:{ title:'Hướng dẫn sử dụng trang này', closeLabel:'Đóng', aiLabel:'AI luận giải', yamLabel:'Số giờ', needTimeYes:'Cần giờ sinh', needTimeNo:'Không cần giờ sinh',
         sec1Title:'Trang này hoạt động thế nào', sec1Body:'Mỗi môn bạn chọn sẽ được một AI chuyên biệt luận giải riêng (Bát Tự → Claude · Thất Chính Tứ Dư → Grok · Tử Vi Đẩu Số → Gemini · Vệ Đà → Codex, v.v). Sau đó Claude tổng hợp tất cả các luận giải thành một kết luận chung, đồng thời tìm những điểm mà nhiều môn cùng đồng thuận (Cộng hưởng).',
-        sec2Title:'Cách tính giờ (yam)', sec2Body:'Mỗi môn tốn số giờ khác nhau — Bát Tự 10 · Thất Chính Tứ Dư 15 · Tử Vi 12 · Chiêm tinh Tây phương 10 · Chiêm tinh Vệ Đà 10 · Uranian 12 — cộng thêm 5 giờ cho kết luận tổng hợp. Tổng số cập nhật ngay khi bạn chọn (chọn càng nhiều môn càng tốn giờ nhưng cái nhìn càng toàn diện). Xem chỉ tay dùng kết quả đã quét sẵn, không tốn thêm giờ.',
+        sec2Title:'Cách tính giờ (yam)', sec2Body:'Giống AI Sifu: tính theo độ dài câu trả lời · khoảng 30 ký tự = 1 yam · cần ít nhất 1 yam để bắt đầu · mỗi panel và Judge trừ theo độ dài · chọn nhiều môn = nhiều trả lời = tốn hơn · chỉ tay dùng kết quả đã quét',
         sec3Title:'Chọn môn / chế độ', sec3Body:'Có thể chọn nhiều môn cùng lúc · chọn chế độ Đơn / Cặp đôi / Nhóm 3-4 lá số · một số môn cần giờ sinh (Thất Chính Tứ Dư, Tử Vi) — nếu không có giờ sinh sẽ không chọn được hoặc có cảnh báo · sau đó nhập câu hỏi và nhấn Hỏi.' },
       ja:{ title:'このページの使い方', closeLabel:'閉じる', aiLabel:'読み解くAI', yamLabel:'必要時間', needTimeYes:'生まれた時刻が必要', needTimeNo:'生まれた時刻は不要',
         sec1Title:'このページの仕組み', sec1Body:'チェックした各占術は、それぞれ専門のAIが個別に読み解きます（四柱推命→Claude・七政四餘→Grok・紫微斗数→Gemini・ヴェーダ占星術→Codex など）。その後、Claudeがすべての読み解きを統合して一つの結論を出し、複数の占術が一致するポイント（レゾナンス）を見つけます。',
-        sec2Title:'時間（ヤム）の計算方法', sec2Body:'占術ごとに必要な時間が異なります — 四柱推命10・七政四餘15・紫微斗数12・西洋占星術10・ヴェーダ占星術10・ウラニアン占星術12 — さらに統合判定に5時間が加算されます。合計はチェックに応じてリアルタイムで表示されます(占術を多く選ぶほど時間がかかりますが、より多角的な結果になります)。手相はスキャン済みの結果を使うため追加の時間はかかりません。',
+        sec2Title:'時間（ヤム）の計算方法', sec2Body:'AI師匠と同じ：回答の文字数で課金 · 約30文字=1時 · 開始には最低1時 · 各術の回答と統合判定は長さに応じて減算 · 術を増やすほど回答が増え課金増 · 手相は既存スキャンを利用',
         sec3Title:'占術・モードの選択', sec3Body:'占術は複数選択可能・モードは単独／ペア／3-4人グループから選択・一部の占術は生まれた時刻が必要です(七政四餘・紫微斗数)。時刻がない場合は選択できないか警告が表示されます・その後、知りたい質問を入力して送信してください。' },
       ko:{ title:'이 페이지 사용법', closeLabel:'닫기', aiLabel:'해석 AI', yamLabel:'소요 시간', needTimeYes:'출생 시간 필요', needTimeNo:'출생 시간 불필요',
         sec1Title:'이 페이지는 이렇게 작동합니다', sec1Body:'체크한 각 학문은 전용 AI가 개별적으로 해석합니다(사주팔자→Claude · 칠정사여→Grok · 자미두수→Gemini · 베다 점성술→Codex 등). 이후 Claude가 모든 해석을 하나의 결론으로 통합하고, 여러 학문이 일치하는 지점(레조넌스)을 찾아냅니다.',
-        sec2Title:'시간(얌) 계산 방법', sec2Body:'학문마다 소요 시간이 다릅니다 — 사주팔자 10 · 칠정사여 15 · 자미두수 12 · 서양 점성술 10 · 베다 점성술 10 · 우라니안 점성술 12 — 여기에 통합 결론용 5시간이 추가됩니다. 총합은 선택에 따라 실시간으로 표시됩니다(더 많은 학문을 선택할수록 시간이 더 들지만 더 폭넓은 결과를 얻습니다). 손금은 이미 스캔한 결과를 사용하며 추가 시간이 들지 않습니다.',
+        sec2Title:'시간(얌) 계산 방법', sec2Body:'AI 시푸와 동일: 답변 글자 수로 차감 · 약 30자=1시 · 시작에 최소 1시 필요 · 각 학문 답변과 종합 판정은 길이에 따라 차감 · 학문을 늘릴수록 답변이 많아져 더 많이 차감 · 손금은 기존 스캔 결과 사용',
         sec3Title:'학문/모드 선택', sec3Body:'여러 학문을 동시에 선택할 수 있습니다 · 단일 / 페어 / 3-4명 그룹 모드 중 선택 · 일부 학문은 출생 시간이 필요합니다(칠정사여, 자미두수) — 출생 시간이 없으면 선택이 불가능하거나 경고가 표시됩니다 · 이후 궁금한 질문을 입력하고 질문하기를 누르세요.' },
       ru:{ title:'Как пользоваться этой страницей', closeLabel:'Закрыть', aiLabel:'Читает ИИ', yamLabel:'Часы', needTimeYes:'Нужно время рождения', needTimeNo:'Время рождения не требуется',
         sec1Title:'Как работает эта страница', sec1Body:'Каждая отмеченная вами система читается отдельным специализированным ИИ (Ба-цзы → Claude · Настоящие звёзды (Ци Чжэн) → Grok · Цзы-вэй → Gemini · Ведическая астрология → Codex и т.д.). Затем Claude объединяет все прочтения в единый вердикт и находит точки, где несколько систем сходятся во мнении (резонанс).',
-        sec2Title:'Как считаются часы (ям)', sec2Body:'Каждая система стоит разное количество часов — Ба-цзы 10 · Настоящие звёзды 15 · Цзы-вэй 12 · Западная астрология 10 · Ведическая астрология 10 · Уранианская астрология 12 — плюс 5 часов на итоговый вердикт. Итог обновляется в реальном времени по мере выбора (чем больше систем, тем больше часов, но и полнее картина). Хиромантия использует уже отсканированный результат и не требует дополнительных часов.',
+        sec2Title:'Как считаются часы (ям)', sec2Body:'Как у AI Sifu: оплата по длине ответа · ≈30 символов = 1 час · нужно минимум 1 час для старта · каждая панель и вердикт списываются по длине · больше наук = больше ответов = больше часов · хиромантия использует уже отсканированный результат',
         sec3Title:'Выбор систем / режима', sec3Body:'Можно отметить несколько систем сразу · выберите режим Одиночный / Пара / Группа из 3-4 карт · некоторым системам нужно время рождения (настоящие звёзды, Цзы-вэй) — без него они будут недоступны или появится предупреждение · затем введите свой вопрос и нажмите «Спросить».' },
       es:{ title:'Cómo usar esta página', closeLabel:'Cerrar', aiLabel:'Lee la IA', yamLabel:'Horas', needTimeYes:'Necesita hora de nacimiento', needTimeNo:'No necesita hora de nacimiento',
         sec1Title:'Cómo funciona esta página', sec1Body:'Cada ciencia que marques será interpretada por separado por una IA especializada (BaZi → Claude · Estrellas Reales → Grok · Zi Wei → Gemini · Astrología Védica → Codex, etc). Luego Claude fusiona todas las lecturas en un único veredicto y encuentra los puntos donde varias ciencias coinciden (Resonancia).',
-        sec2Title:'Cómo se calculan las horas (yam)', sec2Body:'Cada ciencia cuesta una cantidad distinta de horas — BaZi 10 · Estrellas Reales 15 · Zi Wei 12 · Astrología Occidental 10 · Astrología Védica 10 · Astrología Uraniana 12 — más 5 horas para el veredicto de fusión. El total se actualiza en vivo según lo que marques (más ciencias = más horas, pero una visión más completa). La quiromancia usa el resultado ya escaneado y no cuesta horas adicionales.',
+        sec2Title:'Cómo se calculan las horas (yam)', sec2Body:'Igual que AI Sifu: se cobra por longitud de respuesta · ≈30 caracteres = 1 hora · hace falta al menos 1 hora para empezar · cada panel y el veredicto se cobran por longitud · más ciencias = más respuestas = más horas · quiromancia reutiliza el escaneo existente',
         sec3Title:'Elegir ciencias / modo', sec3Body:'Puedes marcar varias ciencias a la vez · elige el modo Individual / Pareja / Grupo de 3-4 cartas · algunas ciencias requieren hora de nacimiento (Estrellas Reales, Zi Wei) — sin ella no se podrán marcar o se mostrará una advertencia · luego escribe tu pregunta y pulsa Preguntar.' }
     };
     function helpDict(){ return HELP_I18N[state.locale] || HELP_I18N.th; }
@@ -1463,7 +1463,7 @@
       var b = DISCIPLINES[s];
       if (!b) return '';
       var d = helpDict();
-      var yamText = b.isPalm ? '0 時' : (b.costYam + ' 時');
+      var yamText = b.isPalm ? '0 時' : (state.locale === 'th' ? 'หักตามตัวอักษร' : (state.locale === 'zh' ? '按字數計時' : 'by char length'));
       var timeText = b.needsBirthTime ? d.needTimeYes : d.needTimeNo;
       return '<div class="sci-tip-body">' + esc(sciTipBody(s)) + '</div>' +
         '<div class="sci-tip-meta">' + esc(d.aiLabel) + ': ' + esc(b.ai) + ' · ' + esc(d.yamLabel) + ': ' + esc(yamText) + ' · ' + esc(timeText) + '</div>';
@@ -1662,17 +1662,44 @@
       return selectedProfileIds().every(function(id){ return profileHasTime(profileById(id)); })
         && selectedGuests().every(function(g){ return g.birthTime !== null; }); // r383: guest ไม่ทราบเวลา → จื่อเวย/ดาวจริงจีนถูกปิด
     }
+    function maxSciences(){
+      var c = state.productCaps;
+      if (c && c.fusion_max_sciences != null) return Number(c.fusion_max_sciences);
+      return 6;
+    }
+    function maxProfiles(){
+      var c = state.productCaps;
+      if (c && c.fusion_max_profiles != null) return Number(c.fusion_max_profiles);
+      return 4;
+    }
     function isSciSelectable(s){
       var b = DISCIPLINES[s]; if (!b || !b.available) return false;
       if (b.needsBirthTime && !allSelectedHaveTime()) return false;
       return true;
     }
     function activeSciences(){ return SCI_ORDER.filter(function(s){ return s !== 'palmistry' && state.sci[s] && isSciSelectable(s); }); }
-    function currentYam(){
+    function enforceSciCap(){
+      var max = maxSciences();
+      var list = activeSciences();
+      if (list.length <= max) return;
+      list.slice(max).forEach(function(s){ state.sci[s] = false; });
+    }
+    // ยาม fusion = ตามตัวอักษร (≈30 ตัว/1) + จองขั้นต่ำ 5 ยาม/ศาสตร์×ดวง (กันยามน้อยติ๊กหลายศาสตร์)
+    var ESCROW_PER = 5;
+    function escrowYam(){
       var n = profileCount();
       var list = activeSciences();
-      var panels = list.reduce(function(sum,s){ return sum + DISCIPLINES[s].costYam * n; }, 0);
-      return panels + (list.length >= 2 ? JUDGE_YAM : 0);
+      if (!list.length) return 0;
+      var panels = list.length * n;
+      var judge = list.length >= 2 ? ESCROW_PER : 0;
+      return panels * ESCROW_PER + judge;
+    }
+    function currentYam(){ return escrowYam(); } // ขั้นต่ำที่ต้องมีก่อนรัน (escrow)
+    function yamBillingLabel(){
+      var e = escrowYam();
+      if (state.locale === 'th') return 'จอง≥' + e + ' · หักตามตัวอักษร(≈30/1時)';
+      if (state.locale === 'zh') return '預扣≥' + e + ' · 按字數(≈30字/1時)';
+      return 'hold≥' + e + ' · by length(≈30/1時)';
     }
     // ===== gate: เปิดให้ทุก user ที่ login แล้ว (ยามพอ) · tier badge แสดงได้แต่ไม่บล็อก =====
     function isLoggedIn(){ return !!state.account; }
@@ -1683,30 +1710,38 @@
       return 0;
     }
     function yamShortMsg(spend){
-      if (state.locale === 'th') return t('needYam') + ' (ต้องการ ' + spend + ' ยาม)';
-      if (state.locale === 'zh') return t('needYam') + '（需 ' + spend + ' 時）';
-      return t('needYam') + ' (need ' + spend + ' yam)';
+      if (state.locale === 'th') return t('needYam') + ' (ต้องมีอย่างน้อย ' + spend + ' ยามสำหรับศาสตร์ที่เลือก)';
+      if (state.locale === 'zh') return t('needYam') + '（所選術數至少需 ' + spend + ' 時）';
+      return t('needYam') + ' (need at least ' + spend + ' yam for selected sciences)';
     }
     function canUseFusion(){
       if (!isLoggedIn()) return false;
+      enforceSciCap();
       if (!activeSciences().length) return false;
-      var spend = currentYam();
-      return spend <= 0 || hourBalance() >= spend;
+      if (activeSciences().length > maxSciences()) return false;
+      if (profileCount() > maxProfiles()) return false;
+      // ต้องมียาม ≥ escrow ขั้นต่ำ (กันติ๊กหลายศาสตร์ด้วยยามน้อย)
+      return hourBalance() >= escrowYam();
     }
     function fusionGateMessage(){
-      var spend = currentYam();
       if (!isLoggedIn()) return t('needLogin');
       if (!activeSciences().length) return t('noSci');
-      if (spend > 0 && hourBalance() < spend) return yamShortMsg(spend);
-      return t('readyRun') + ' · ' + spend + ' 時';
+      if (activeSciences().length > maxSciences()) {
+        return (state.locale === 'th' ? ('แพ็กเกจนี้เลือกได้สูงสุด ' + maxSciences() + ' ศาสตร์') : ('Max ' + maxSciences() + ' sciences on your plan'));
+      }
+      if (profileCount() > maxProfiles()) {
+        return (state.locale === 'th' ? ('แพ็กเกจนี้สูงสุด ' + maxProfiles() + ' ดวง') : ('Max ' + maxProfiles() + ' charts on your plan'));
+      }
+      var need = escrowYam();
+      if (hourBalance() < need) return yamShortMsg(need);
+      return t('readyRun') + ' · ' + yamBillingLabel() + ' · ≤' + maxSciences() + ' sci';
     }
     function updateSendAvailability(){
       els.send.disabled = state.busy || state.resuming || !state.ready || !canUseFusion();
       if (typeof updateComposer === 'function') updateComposer(); // r385: ปุ่มส่งห้องแชท (ราคายาม/disabled/ปุ่มเติมยาม) ตามเกตเดียวกัน
     }
     function applyFusionGate(){
-      var spend = currentYam();
-      els.send.textContent = t('run') + ' · ' + spend + ' 時';
+      els.send.textContent = t('run') + ' · ' + yamBillingLabel();
       if (!isLoggedIn()) { els.gate.textContent = 'LOGIN'; els.gate.className = 'badge warn'; }
       else if (canUseFusion()) { els.gate.textContent = '5-SCIENCE READY'; els.gate.className = 'badge ok'; }
       else if (!activeSciences().length) { els.gate.textContent = 'PICK SCIENCE'; els.gate.className = 'badge warn'; }
@@ -1714,29 +1749,34 @@
       updateSendAvailability();
     }
     function updateYam(){
-      var spend = currentYam();
-      if (els.yamValue) els.yamValue.textContent = spend + ' 時';
+      if (els.yamValue) els.yamValue.textContent = yamBillingLabel();
       if (els.yamBreak) {
         var n = profileCount();
         var list = activeSciences();
-        var parts = list.map(function(s){ return sciLabel(s).split(' ')[0] + ' ' + (DISCIPLINES[s].costYam * n) + '時'; });
-        if (list.length >= 2) parts.push('Judge ' + JUDGE_YAM + '時');
+        var parts = list.map(function(s){ return sciLabel(s).split(' ')[0]; });
+        if (list.length >= 2) parts.push(state.locale === 'th' ? 'Judge หลอมรวม' : 'Judge');
         if (n > 1) parts.unshift(n + (state.locale === 'th' ? ' ดวง' : ' charts'));
-        els.yamBreak.textContent = parts.join(' + ');
+        parts.push(state.locale === 'th' ? 'หักตามความยาวคำตอบ' : 'charged by reply length');
+        els.yamBreak.textContent = parts.join(' · ');
       }
       applyFusionGate();
     }
     function renderSciList(){
       if (!els.sciList) return;
-      closeSciTip(); // r420: กัน tooltip ลอยค้างชี้ item ที่กำลังจะถูกวาดใหม่
+      closeSciTip();
+      enforceSciCap();
       var noTime = !allSelectedHaveTime();
+      var maxS = maxSciences();
+      var activeN = activeSciences().length;
       els.sciList.innerHTML = SCI_ORDER.map(function(s){
         var b = DISCIPLINES[s];
         var blockedTime = b.needsBirthTime && noTime;
-        var disabled = !b.available || blockedTime;
-        var checked = !!state.sci[s] && !disabled;
+        var overCap = s !== 'palmistry' && !state.sci[s] && activeN >= maxS;
+        var disabled = !b.available || blockedTime || overCap;
+        var checked = !!state.sci[s] && !disabled && !(s !== 'palmistry' && !isSciSelectable(s));
+        if (s !== 'palmistry' && state.sci[s] && !isSciSelectable(s)) checked = false;
         var palmNeedScan = s === 'palmistry' && !state.hasPalm;
-        var note = !b.available ? t('soon') : (blockedTime ? t('needTime') : (palmNeedScan ? t('palmScan') : ''));
+        var note = !b.available ? t('soon') : (blockedTime ? t('needTime') : (overCap ? ('max ' + maxS) : (palmNeedScan ? t('palmScan') : '')));
         var infoBtn = '<button type="button" class="sci-info-btn" data-sci-tip="' + s + '" aria-label="info">ⓘ</button>';
         if (palmNeedScan) return '<a class="sci-item palm-scan" href="/palmistry" data-sci="' + s + '">' +
           '<span class="hk-um-ico" style="font-size:15px">🖐</span>' +
@@ -1747,7 +1787,7 @@
           '<input type="checkbox" data-sci-cb="' + s + '"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '>' +
           '<div class="sci-main"><div class="sci-name-row"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' + infoBtn + '</div>' +
             '<div class="sci-sub"><span class="ai-badge">AI · ' + esc(b.ai) + '</span>' + (b.needsBirthTime ? '<span title="' + esc(t('needTime')) + '">⏰</span>' : '') + '</div></div>' +
-          (note ? '<div class="sci-note">' + esc(note) + '</div>' : '<div class="sci-cost">' + b.costYam + ' 時</div>') +
+          (note ? '<div class="sci-note">' + esc(note) + '</div>' : '<div class="sci-cost">' + (b.isPalm ? '0' : (state.locale === 'th' ? 'ตัวอักษร' : 'chars')) + '</div>') +
         '</label>';
       }).join('');
     }
@@ -3290,13 +3330,13 @@
         '<div class="room-topic">' + esc(shortText(topic, 90)) + '</div></div>' +
         '<button class="mini-btn" type="button" data-room-new="1" title="' + esc(t('chat.newRoomHint')) + '">' + esc(t('chat.newRoom')) + '</button>';
     }
-    // ปุ่มส่ง: โชว์ราคายามจริงของคำถามต่อ (หักเหมือนถามใหม่ทุกรอบ) · ยามไม่พอ = ปุ่มพาไปเติมที่ /account
+    // ปุ่มส่ง: ต้องมียาม ≥ escrow · ไม่พอ = พาไปเติม
     function updateComposer(){
       if (!roomEls.composerSend) return;
-      var spend = currentYam();
-      var short = isLoggedIn() && !!activeSciences().length && spend > 0 && hourBalance() < spend;
+      var need = escrowYam();
+      var short = isLoggedIn() && !!activeSciences().length && hourBalance() < need;
       state.composerTopup = short;
-      roomEls.composerSend.textContent = short ? t('chat.topup') : (t('chat.send') + ' · ' + spend + ' 時');
+      roomEls.composerSend.textContent = short ? t('chat.topup') : (t('chat.send') + ' · ' + yamBillingLabel());
       roomEls.composerSend.disabled = !short && (state.busy || state.resuming || !state.ready || !canUseFusion());
       if (roomEls.composerInput) roomEls.composerInput.placeholder = t('chat.ph');
     }
@@ -3397,10 +3437,17 @@
         var j = await r.json().catch(function(){ return {}; });
         if (!r.ok) throw new Error(j.error || ('account ' + r.status));
         state.account = j;
-        var tier = String(j.tier || 'free').toUpperCase();
-        els.tier.textContent = 'TIER · ' + tier;
-        els.tier.className = 'badge ' + (tier === 'MASTER' ? 'ok' : 'warn');
+        state.productCaps = j.caps || null;
+        var plan = String(j.plan || j.tier || 'free').toUpperCase();
+        if (j.in_trial) plan = 'TRIAL';
+        els.tier.textContent = 'PLAN · ' + plan + (j.in_trial && j.trial_ends_at
+          ? (' · ' + Math.max(0, Math.ceil((new Date(j.trial_ends_at).getTime() - Date.now()) / 86400000)) + 'd')
+          : '');
+        els.tier.className = 'badge ' + (plan === 'MASTER' || plan === 'PREMIUM' || plan === 'TRIAL' ? 'ok' : 'warn');
         els.balance.textContent = '時 · ' + (j.hour_balance == null ? 0 : j.hour_balance);
+        enforceSciCap();
+        renderSciList();
+        updateYam();
         return true;
       } catch(e) {
         els.tier.textContent = 'TIER · LOGIN';
@@ -3699,9 +3746,23 @@
     }
     function fusionErrorText(raw, status, data){
       data = data || {};
+      var code = data.code || raw;
       if (raw === 'insufficient_hours' || status === 402) {
-        var need = data.required != null ? data.required : (data.spend_hours != null ? data.spend_hours : currentYam());
+        var need = data.required != null ? data.required : (data.needed != null ? data.needed : (data.spend_hours != null ? data.spend_hours : currentYam()));
         return yamShortMsg(need);
+      }
+      if (code === 'fusion_science_limit' || raw === 'fusion_science_limit') {
+        return (state.locale === 'th'
+          ? ('เลือกได้สูงสุด ' + (data.max != null ? data.max : maxSciences()) + ' ศาสตร์ · อัปเกรด /pricing')
+          : ('Max ' + (data.max != null ? data.max : maxSciences()) + ' sciences · upgrade /pricing'));
+      }
+      if (code === 'fusion_profile_limit' || raw === 'fusion_profile_limit') {
+        return (state.locale === 'th'
+          ? ('สูงสุด ' + (data.max != null ? data.max : maxProfiles()) + ' ดวงบนแพ็กเกจนี้ · /pricing')
+          : ('Max ' + (data.max != null ? data.max : maxProfiles()) + ' charts · /pricing'));
+      }
+      if (status === 403 && (data.upgrade || code)) {
+        return String(data.message || data.error || code) + ' · ' + (data.upgrade || '/pricing');
       }
       // r383: guest 400 จาก server (invalid_guest_birth* + guestIndex) → ข้อความไทยชี้ช่องที่ผิด
       var guestErrMap = {
@@ -3872,6 +3933,8 @@
       if (totalCharts > 4) { setStatus(t('guest.tooMany'), 'err'); return; } // block ฝั่ง client ก่อนถึง server
       if (state.mode === 'pair' && totalCharts < 2) { setStatus(state.locale==='th'?'กรุณาเลือกดวงที่ 2':'select 2nd chart', 'err'); return; }
       if (!sciences.length) { setStatus(t('noSci'), 'err'); return; }
+      if (sciences.length > maxSciences()) { setStatus(fusionGateMessage(), 'err'); return; }
+      if (totalCharts > maxProfiles()) { setStatus(fusionGateMessage(), 'err'); return; }
       if (!message) { setStatus(t('ask.question'), 'err'); return; }
       if (!canUseFusion()) { applyFusionGate(); setStatus(fusionGateMessage(), 'err'); return; }
       if (!state.threadId) state.threadId = newRunId();
@@ -4152,9 +4215,14 @@
     if (els.sciList) els.sciList.addEventListener('change', function(e){
       var cb = e.target && e.target.getAttribute ? e.target.getAttribute('data-sci-cb') : null;
       if (!cb) return;
+      if (e.target.checked && cb !== 'palmistry' && activeSciences().length >= maxSciences() && !state.sci[cb]) {
+        e.target.checked = false;
+        setStatus((state.locale === 'th' ? ('เลือกได้สูงสุด ' + maxSciences() + ' ศาสตร์บนแพ็กเกจนี้') : ('Max ' + maxSciences() + ' sciences')), 'err');
+        return;
+      }
       state.sci[cb] = !!e.target.checked;
-      var item = e.target.closest('.sci-item');
-      if (item) item.classList.toggle('checked', e.target.checked);
+      enforceSciCap();
+      renderSciList();
       updateYam();
       saveDraft();
     });
@@ -4309,7 +4377,7 @@
   })();
   </script>
 
-<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 50 ยาม · async job + poll + resume · 9 ภาษา)
+<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 20 ยาม · async job + poll + resume · 9 ภาษา)
      ลอกโครงจาก chart.html · เปลี่ยน page="fusion" + inputs.profileIds=window.hkFusionGetProfileIds() (ดึงจาก fusion5_jobs done ล่าสุด ไม่คำนวณซ้ำ) -->
 <script>
 (function () {
@@ -4324,10 +4392,10 @@
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังเรียบเรียงคำพยากรณ์หลอมรวม… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is composing your fusion report… you can leave this open or close it; the job keeps running.", zh:"AI 正在整理合盤報告…可保持開啟或關閉，工作會繼續。", cn:"AI 正在整理合盘报告…可保持开启或关闭，工作会继续。", vi:"AI đang biên soạn báo cáo hợp nhất… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIが統合レポートを作成中…開いたままでも閉じても処理は続きます。", ko:"AI가 융합 리포트를 작성 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет сводный отчёт… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está redactando tu informe de fusión… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -4459,11 +4527,11 @@
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(profileIds); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];

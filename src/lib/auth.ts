@@ -19,10 +19,21 @@ export type Session = {
   userId: string;
   email: string;
   orgId?: string | null;
+  /** Session version for revoke-all (bump users.session_version invalidates tokens) */
+  sv?: number;
+  /** Impersonation actor (admin) if viewing as user */
+  impActorId?: string | null;
 };
 
 export async function signSession(s: Session): Promise<string> {
-  return new SignJWT({ ...s })
+  const payload: Record<string, unknown> = {
+    userId: s.userId,
+    email: s.email,
+    orgId: s.orgId ?? null,
+    sv: s.sv ?? 0,
+  };
+  if (s.impActorId) payload.impActorId = s.impActorId;
+  return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${TTL_SECONDS}s`)
@@ -36,6 +47,8 @@ export async function verifySession(token: string): Promise<Session | null> {
       userId: String(payload.userId),
       email: String(payload.email),
       orgId: (payload.orgId as string) || null,
+      sv: payload.sv != null ? Number(payload.sv) : 0,
+      impActorId: payload.impActorId ? String(payload.impActorId) : null,
     };
   } catch {
     return null;
@@ -70,7 +83,51 @@ export async function getSession(): Promise<Session | null> {
   const c = await cookies();
   const token = c.get(COOKIE)?.value;
   if (!token) return null;
-  return verifySession(token);
+  const session = await verifySession(token);
+  if (!session) return null;
+  try {
+    const { checkAccountUsable } = await import("@/lib/account-status");
+    const { q1 } = await import("@/lib/db");
+    const gate = await checkAccountUsable(session.userId);
+    if (!gate.ok) return null;
+    // session_version revoke
+    const row = await q1<{ session_version: number | null }>(
+      `SELECT session_version FROM users WHERE id=$1`,
+      [session.userId]
+    ).catch(() => null);
+    if (row && row.session_version != null) {
+      const dbSv = Number(row.session_version) || 0;
+      const tokSv = Number(session.sv) || 0;
+      if (tokSv !== dbSv) return null;
+    }
+  } catch {
+    /* DB unavailable — keep JWT session to avoid total outage; login paths still check */
+  }
+  return session;
+}
+
+/** Load current session_version for login signing (defaults 0 if column missing). */
+export async function readSessionVersion(userId: string): Promise<number> {
+  try {
+    const { q1 } = await import("@/lib/db");
+    const row = await q1<{ session_version: number | null }>(
+      `SELECT session_version FROM users WHERE id=$1`,
+      [userId]
+    );
+    return Number(row?.session_version) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function bumpSessionVersion(userId: string): Promise<number> {
+  const { q1 } = await import("@/lib/db");
+  const row = await q1<{ session_version: number }>(
+    `UPDATE users SET session_version = COALESCE(session_version,0) + 1
+      WHERE id=$1 RETURNING session_version`,
+    [userId]
+  );
+  return Number(row?.session_version) || 0;
 }
 
 export async function hashPassword(plain: string): Promise<string> {

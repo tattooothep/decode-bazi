@@ -27,6 +27,7 @@ import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace, parseClaimedSources, type TraceFacts } from "@/lib/sifu-trace-lock";
 import { checkSifuEvidenceTrace } from "@/lib/sifu-evidence-trace";
+import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9: allowlist ภาษาคำตอบ 9 ภาษา + directive ท้าย prompt ภาษาใหม่
 import { checkSifuCriticalEvidence, type CriticalEvidenceCheck } from "@/lib/sifu-critical-evidence-gate";
 import { checkSifuFactClaimGate, type SifuFactClaimCheck } from "@/lib/sifu-fact-claim-gate";
 import { ensureServerEnv } from "@/lib/server-env";
@@ -1001,6 +1002,73 @@ function isExplicitSifuAuditQuestion(message: string): boolean {
   return /(audit|debug|หลังบ้าน|prompt|packet|engine|trace|id\/trace|id trace|13\s*ชั้น|สิบสามชั้น|ขั้นตอน|วิธีอ่าน|ตรวจระบบ|validator|wrapper|cli|stdout)/i.test(message);
 }
 
+/* r414-i18n9 (gate3) · agent-CLI narration หลุดเป็นคำตอบ เช่น "The full chart context was offloaded to a file — I'll read ..."
+ * กรองระดับ "ทั้งบรรทัด" เฉพาะ pattern ชัดเจนของ narration ภายใน (อังกฤษ agent-mode) — ห้ามแตะเนื้อคำทำนายจริง */
+const AGENT_CLI_NOISE_LINE_RES: RegExp[] = [
+  /offload(?:ed|ing)?[^\n]{0,80}\b(?:file|context|chart)\b/i,                                        // "... offloaded to a file"
+  /\bcontext\b[^\n]{0,60}\b(?:was|has been|is)\b[^\n]{0,60}\b(?:offloaded|written to|saved to|moved to)\b/i,
+  /^[^\n]{0,60}\bI(?:'|’)ll\s+(?:read|start by reading|open|load|fetch|review)\b[^\n]{0,80}\b(?:file|context|packet|sections?)\b/i,
+  /^\s*(?:let me|first,?\s+i(?:'|’)?ll)\s+(?:read|open|load|check|pull|fetch|review)\b[^\n]{0,80}\b(?:file|context|packet|data)\b/i,
+  // r414-i18n9: narration ภาษาใหม่ (เทสจริง es หลุด "Necesito el contexto completo del archivo descargado ...") — จับเฉพาะบรรทัดที่มี "กริยาอ่าน/โหลด" คู่กับ "คำเครื่องใน (ไฟล์/บริบท/แพ็กเก็ต)"
+  /^[^\n]{0,160}\b(?:necesito|leer[ée]?|cargar|extraer|revisar|abrir[ée]?)\b[^\n]{0,160}\b(?:contexto|archivo|paquete)\b/i,   // es
+  /^[^\n]{0,160}(?:прочита|загру[зж]|откр[оы]|нужн)[^\n]{0,160}(?:контекст|файл|пакет)/i,                                     // ru
+  /^[^\n]{0,160}(?:ファイル|コンテキスト)[^\n]{0,80}(?:読み|読む|開き|開く|参照)/,                                              // ja
+  /^[^\n]{0,160}(?:파일|컨텍스트)[^\n]{0,80}(?:읽|열)/,                                                                        // ko
+  /^[^\n]{0,160}(?:đọc|mở|tải)[^\n]{0,80}(?:tệp|tập tin|ngữ cảnh)/i,                                                          // vi
+  /\bDay Master\b[^\n]{0,140}(?:archivo|contexto|paquete|файл|контекст|ファイル|파일|tệp)/i,                                   // cross: ศัพท์เครื่องใน EN ปนคำไฟล์ภาษาอื่น
+];
+function stripAgentCliNoiseLines(text: string): string {
+  if (!text || !/offload|context|file|packet|contexto|archivo|paquete|файл|контекст|ファイル|コンテキスト|파일|컨텍스트|tệp|ngữ cảnh/i.test(text)) return text; // fast path · เนื้อดวงปกติไม่โดนสแกน
+  return text.split(/\r?\n/).filter((line) => !AGENT_CLI_NOISE_LINE_RES.some((re) => re.test(line))).join("\n");
+}
+
+function inferSifuAnswerLangFromMessage(message: string): string | null {
+  const text = String(message || "");
+  if (/[가-힯]/.test(text)) return "ko";
+  if (/[぀-ゟ゠-ヿ]/.test(text)) return "ja";
+  if (/[Ѐ-ӿ]/.test(text)) return "ru";
+  if (/[đĐơƠưƯạảấầẩẫậắằẳẵặẹẻẽếềểễệịỉĩọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/.test(text)) return "vi";
+  if (/[¿¡ñáéíóúü]/i.test(text)) return "es";
+  return null;
+}
+
+function resolveSifuAnswerLang(rawLang: unknown, message: string): string {
+  const requested = isSifuAnswerLang(rawLang) ? String(rawLang) : "th";
+  if (requested === "en") return inferSifuAnswerLangFromMessage(message) || requested;
+  return requested;
+}
+
+function localizedIntroNeedsProfile(lang: string): string | null {
+  const text: Record<string, string> = {
+    vi: "Mình đã nhận câu hỏi rồi. Để đọc theo lá số thật, bạn cần mở hoặc chọn hồ sơ ngày giờ sinh trước. Khi có hồ sơ, AI Sifu sẽ dùng cấu trúc Bát Tự (八字), Dụng Thần (用神), Kỵ Thần (忌神), Đại Vận (大運) và nhịp ngày hiện tại để trả lời sát với bạn hơn.",
+    ja: "ご質問は受け取りました。正確に鑑定するには、先に生年月日と出生時刻のプロフィールを開くか選択してください。命式が入ると、AI Sifu は四柱推命（八字）、用神、忌神、大運、今日の流れを合わせて、あなた個人に沿って答えます。",
+    ko: "질문은 확인했습니다. 정확한 풀이를 하려면 먼저 생년월일과 출생시간이 담긴 프로필을 열거나 선택해 주세요. 명식이 준비되면 AI Sifu가 사주(八字), 용신(用神), 기신(忌神), 대운(大運), 오늘의 흐름을 함께 보고 개인에게 맞게 답변합니다.",
+    ru: "Я получил ваш вопрос. Для точного разбора сначала откройте или выберите профиль с датой, временем и местом рождения. Когда карта будет доступна, AI Sifu свяжет Ба-цзы (八字), Полезный бог (用神), Вредный бог (忌神), большой такт удачи (大運) и текущий день, чтобы ответить именно по вашей карте.",
+    es: "He recibido tu pregunta. Para una lectura precisa, primero abre o selecciona un perfil con fecha, hora y lugar de nacimiento. Cuando la carta esté disponible, AI Sifu combinará BaZi (八字), Dios Útil (用神), Dios Tabú (忌神), Pilar de la Suerte (大運) y el ritmo del día para responder según tu carta real.",
+  };
+  return text[lang] || null;
+}
+
+function streamStaticSifuReply(reply: string, model = "local-i18n"): Response {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(`event: first\ndata: ${JSON.stringify({ ms: 0, synthetic: true, provider: model })}\n\n`));
+      controller.enqueue(encoder.encode(`event: chunk\ndata: ${JSON.stringify({ text: reply })}\n\n`));
+      controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({ ms: 0, model, cached: false, chars: reply.length })}\n\n`));
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-store, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
+
 function sanitizeGrokUserVisibleText(text: string, message: string): string {
   if (!text || isExplicitSifuAuditQuestion(message)) return text;
   return text
@@ -1008,6 +1076,7 @@ function sanitizeGrokUserVisibleText(text: string, message: string): string {
     .filter((line) => {
       const s = line.trim();
       if (!s) return true;
+      if (AGENT_CLI_NOISE_LINE_RES.some((re) => re.test(s))) return false; // r414-i18n9 (gate3)
       if (/^(กำลัง|กำลังอ่าน|กำลังเปิด|กำลังตรวจ|reading|opening|checking)\b/i.test(s) && /(ไฟล์|file|prompt|packet|context|ข้อมูลดวง)/i.test(s)) return false;
       if (/(\bprompt\b|พรอมต์|พร้อมต์|คำสั่งระบบ)/i.test(s)) return false;
       if (/(stdout|backend|validator|wrapper|cache|retry|FACT LOCK|PILLAR LOCK|ID\/TRACE|⟦ID⟧|⟦TRACE⟧)/i.test(s)) return false;
@@ -1023,7 +1092,8 @@ function sanitizeGrokUserVisibleText(text: string, message: string): string {
 }
 
 function sanitizeModelVisibleReply(text: string, ctx: string, model: SifuModel, message: string): string {
-  const safe = sanitizePacketEvidenceClaims(stripSifuInternalMarkersForStream(text), ctx);
+  // r414-i18n9 (gate3): กรอง agent-CLI narration ทุก model (ทำงานบน reply เต็ม = line ครบ ไม่เสี่ยง chunk แตกกลางบรรทัด)
+  const safe = sanitizePacketEvidenceClaims(stripSifuInternalMarkersForStream(stripAgentCliNoiseLines(text)), ctx);
   return model === "grok-cli" ? sanitizeGrokUserVisibleText(safe, message) : safe;
 }
 
@@ -1517,11 +1587,13 @@ function buildPrompt(opts: {
         : "";
       introKnowledgeBlock = introRulesBlock + introInteractionBlock + introEngineBlock + introExtraBlock;
     }
-    return loadPromptMd("prompts/sifu-intro.md")
+    const introPrompt = loadPromptMd("prompts/sifu-intro.md")
       .replace("{{LANG}}", () => introLang[langKey] || introLang.TH || "")
       .replace("{{INTERACTION}}", () => introKnowledgeBlock)
       .replace("{{CTX}}", () => opts.ctx)
       .replace("{{MESSAGE}}", () => opts.message);
+    // r414-i18n9: ภาษาใหม่ 6 ตัว ต้องย้ำ directive ท้าย prompt (โครง prompt ไทยหนักมาก บรรทัดเดียวต้นไฟล์เอาไม่อยู่) · th/en/zh ไม่มี entry = prompt เดิม byte-identical
+    return LANG_ANSWER_DIRECTIVE[opts.lang] ? introPrompt + "\n\n" + LANG_ANSWER_DIRECTIVE[opts.lang] : introPrompt;
   }
 
   const histText = opts.history.length
@@ -1563,7 +1635,9 @@ function buildPrompt(opts: {
     .replace("{{CTX}}", () => packetEvidenceGuardText(opts.ctx) + opts.ctx)
     .replace("{{FOCUS_HIST}}", () => focus + histText)
     .replace("{{MESSAGE}}", () => opts.message);
-  return compact ? prompt + compactOutputProtocol(opts.ctx) : prompt;
+  const qaOut = compact ? prompt + compactOutputProtocol(opts.ctx) : prompt;
+  // r414-i18n9: ภาษาใหม่ 6 ตัว ย้ำ directive ท้าย prompt (recency ชนะ · เทสจริง lang=vi แล้วโมเดลตอบไทยถ้ามีแค่ {{LANG}} ต้นไฟล์) · th/en/zh ไม่มี entry = เดิมเป๊ะ
+  return LANG_ANSWER_DIRECTIVE[opts.lang] ? qaOut + "\n\n" + LANG_ANSWER_DIRECTIVE[opts.lang] : qaOut;
 }
 
 /* 🔍 ดักจับ prompt จริงที่ส่งเข้า AI · พิสูจน์ตำรา+engine ถูกยัดจริง · ทำงานเฉพาะ env SIFU_DUMP_PROMPT=1 · default off ไม่กระทบ prod */
@@ -2324,7 +2398,7 @@ export async function POST(req: Request) {
     const profileId = cleanProfileId(body.profileId);
     const threadProfileId = cleanProfileId(body.threadProfileId || body.historyProfileId);
     const topic = typeof body.topic === "string" ? body.topic : undefined;
-    const lang = ["th", "en", "zh"].includes(String(body.lang)) ? String(body.lang) : "th";
+    const lang = resolveSifuAnswerLang(body.lang, message); // r431-i18n: 9 ภาษา + infer จากคำถามเมื่อ caller ส่ง lang=en
     const mode = body.mode === "intro" ? "intro" : undefined;
     const sifuModel = resolveSifuModel(body.model);
     const isFusionInternalCall = isTrustedFusionInternalCall(req);
@@ -2347,6 +2421,18 @@ export async function POST(req: Request) {
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     if (sifuModel === "gemini-api" && !isFusionInternalCall) {
       return NextResponse.json({ error: "model_not_available_on_master" }, { status: 400 });
+    }
+    /* P1 kill switches (app_settings) — admin AI cost page · not affiliate */
+    if (!isFusionInternalCall) {
+      try {
+        const { q1 } = await import("@/lib/db");
+        const kill = await q1<{ value: string }>(
+          `SELECT value FROM app_settings WHERE key IN ('ai_kill_switch','feature_sifu') AND value='off' LIMIT 1`
+        );
+        if (kill) {
+          return NextResponse.json({ error: "ai_temporarily_disabled", message: "AI feature is temporarily disabled" }, { status: 503 });
+        }
+      } catch { /* settings optional */ }
     }
     const orgId = session?.orgId ?? null;
 
@@ -3005,7 +3091,7 @@ export async function GET(req: Request) {
   const rawProfileId = url.searchParams.get("profileId");
   const profileId = cleanProfileId(rawProfileId);
   const topic = url.searchParams.get("topic") || undefined;
-  const lang = (["th","en","zh"].includes(url.searchParams.get("lang") || "") ? url.searchParams.get("lang") : "th") as string;
+  const lang = resolveSifuAnswerLang(url.searchParams.get("lang") || "", message); // r431-i18n: 9 ภาษา + infer จากคำถามเมื่อ caller ส่ง lang=en
   const mode = url.searchParams.get("mode") === "intro" ? "intro" : undefined;
   const sifuModel = resolveSifuModel(url.searchParams.get("model"));
   const threadId = cleanSifuThreadId(url.searchParams.get("threadId"));
@@ -3035,6 +3121,11 @@ export async function GET(req: Request) {
   }
   if (rawProfileId && !profileId) {
     return NextResponse.json({ error: "invalid_profileId" }, { status: 400 });
+  }
+  if (mode === "intro" && !profileId) {
+    const birthParams = parseIntroBirthParams(url);
+    const noProfileReply = !birthParams && LANG_ANSWER_DIRECTIVE[lang] ? localizedIntroNeedsProfile(lang) : null;
+    if (noProfileReply) return streamStaticSifuReply(noProfileReply);
   }
   // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนเปิด stream (บล็อกยอด 0 + กัน race) · GET = แชทหลัก (EventSource)
   if (session?.userId) {
@@ -3175,7 +3266,8 @@ export async function GET(req: Request) {
       }
 
       // 2. Cache miss → spawn Claude + pipe stdout chunk-by-chunk
-      const warmup = mode === "intro" ? buildIntroWarmup(ctx) : null;
+      // r414-i18n9: ภาษาใหม่ 6 ตัวข้าม warmup (ย่อหน้าเปิดจาก engine เป็นไทย hardcode → intro ภาษาอื่นจะเปิดหัวเป็นไทยปน) · th/en/zh พฤติกรรมเดิม
+      const warmup = mode === "intro" && !LANG_ANSWER_DIRECTIVE[lang] ? buildIntroWarmup(ctx) : null;
       const promptT0 = Date.now();
       const promptBase = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel) });
       const prompt = warmup
@@ -3191,12 +3283,18 @@ export async function GET(req: Request) {
         // grok เป็น agent CLI · intro ไม่มี ⟦ID⟧ บังคับ output → grok เข้าโหมด agent เกริ่น "กำลังดึง/offloaded อ่านไฟล์" แล้วจบเทิร์นโดยไม่ตอบ
         // แก้: บังคับ ⟦ID⟧ บรรทัดแรก (กลไกเดียวกับ master Q&A ที่ทำงานได้ · adapter guard บังคับพิมพ์ machine header ก่อน) → grok หลุดจาก agent-mode มาเขียนเนื้อทันที
         // ⟦ID⟧ ใช้เป็นสมอบังคับ output เท่านั้น (intro ผ่อน · ไม่มี identity-lock reject/⟦TRACE⟧ แบบ Q&A) · sanitizeGrokUserVisibleText ตัดบรรทัด ⟦ID⟧ ทิ้งก่อนถึงผู้ใช้เสมอ
+        // r414-i18n9: ภาษาใหม่ 6 ตัว — สลับเฉพาะบรรทัดภาษา (เดิมบังคับ "ภาษาไทยล้วน"+"ห้ามอักษรจีน" ซึ่งขัดกับ cn/ja/ko) · th/en/zh ใช้ข้อความเดิมทุกไบต์
+        const introLangDirective = LANG_ANSWER_DIRECTIVE[lang];
         const introGrokDirective = [
           "",
           "=== คำสั่งบังคับ · โหมดคำทำนายเปิดตัว (สำหรับ grok เท่านั้น) ===",
           "บรรทัดแรกสุด: พิมพ์รหัสตรวจ `⟦ID⟧日干=X⟧` โดย X = ก้านวัน (日干) จาก \"FACT LOCK: Day Master =\" ในบริบท (คัดอักษรจีนตัวเดียวมาตรงๆ) · เป็นรหัสให้ระบบตรวจ ห้ามอธิบาย ห้ามใส่ markdown แล้วขึ้นบรรทัดใหม่",
-          "จากบรรทัดที่สองเป็นต้นไป เขียนเนื้อคำทำนายภาษาไทยล้วนทันที · ห้ามเกริ่นนำ ห้ามพูดว่ากำลังดึง/อ่าน/ประมวลผล/เปิด/offload ข้อมูล/บริบท/ไฟล์/ระบบ · ห้ามวางแผนหรือประกาศขั้นตอน · ไม่มีเครื่องมือให้เรียก ไม่มีอะไรต้องไปอ่านเพิ่ม ข้อมูลครบในบริบทแล้ว",
-          "ต่อจากย่อหน้าเปิดธาตุหลักที่ระบบส่งไปแล้ว เล่าต่อเนื่องเป็นเรื่องเดียว: ตัวตนพื้นฐาน → ช่วงวัย → 12 เดือนล่าสุด → ปิดท้ายชวนเข้า HourKey · 650-1000 คำ ห้ามอักษรจีนในเนื้อ (ยกเว้นบรรทัด ⟦ID⟧) ห้ามเปอร์เซ็นต์",
+          introLangDirective
+            ? `จากบรรทัดที่สองเป็นต้นไป เขียนเนื้อคำทำนายทันทีตามคำสั่งภาษานี้ — ${introLangDirective} · ห้ามเกริ่นนำ ห้ามพูดว่ากำลังดึง/อ่าน/ประมวลผล/เปิด/offload ข้อมูล/บริบท/ไฟล์/ระบบ · ห้ามวางแผนหรือประกาศขั้นตอน · ไม่มีเครื่องมือให้เรียก ไม่มีอะไรต้องไปอ่านเพิ่ม ข้อมูลครบในบริบทแล้ว`
+            : "จากบรรทัดที่สองเป็นต้นไป เขียนเนื้อคำทำนายภาษาไทยล้วนทันที · ห้ามเกริ่นนำ ห้ามพูดว่ากำลังดึง/อ่าน/ประมวลผล/เปิด/offload ข้อมูล/บริบท/ไฟล์/ระบบ · ห้ามวางแผนหรือประกาศขั้นตอน · ไม่มีเครื่องมือให้เรียก ไม่มีอะไรต้องไปอ่านเพิ่ม ข้อมูลครบในบริบทแล้ว",
+          introLangDirective
+            ? "เล่าต่อเนื่องเป็นเรื่องเดียว: ตัวตนพื้นฐาน → ช่วงวัย → 12 เดือนล่าสุด → ปิดท้ายชวนเข้า HourKey · 650-1000 คำ ห้ามเปอร์เซ็นต์"
+            : "ต่อจากย่อหน้าเปิดธาตุหลักที่ระบบส่งไปแล้ว เล่าต่อเนื่องเป็นเรื่องเดียว: ตัวตนพื้นฐาน → ช่วงวัย → 12 เดือนล่าสุด → ปิดท้ายชวนเข้า HourKey · 650-1000 คำ ห้ามอักษรจีนในเนื้อ (ยกเว้นบรรทัด ⟦ID⟧) ห้ามเปอร์เซ็นต์",
           "=== จบคำสั่งบังคับ ===",
         ].join("\n");
         const introGrokPrompt = (warmup

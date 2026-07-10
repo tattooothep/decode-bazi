@@ -30,8 +30,8 @@
       "title": { "th": "2) ธาตุทั้งห้า สร้าง/ควบคุม", "en": "2) Five Elements: Generate/Control", "zh": "二、五行生剋" },
       "intro": { "th": "การเกื้อไม่ฟรี — ผู้เกื้อเสียพลังให้ผู้รับ (泄) · ถ้าผู้ถูกควบแข็งมากอาจย้อนกลับ (反克)", "en": "Generating is not free — the giver loses energy (leak/泄). If the controlled is too strong, it can rebel (反克).", "zh": "生非無償 — 生者洩氣於受者；受剋者過強則反剋。" },
       "rows": [
-        { "k": "生 สร้าง", "v": { "th": "木→火→土→金→水→木 (ไม้เกิดไฟ · ไฟเกิดดิน · ดินเกิดทอง · ทองเกิดน้ำ · น้ำเกิดไม้)", "en": "Wood→Fire→Earth→Metal→Water→Wood", "zh": "木生火、火生土、土生金、金生水、水生木" } },
-        { "k": "克 ควบคุม", "v": { "th": "木→土→水→火→金→木 (ไม้ควบดิน · ดินคุมน้ำ · น้ำคุมไฟ · ไฟคุมทอง · ทองคุมไม้)", "en": "Wood→Earth→Water→Fire→Metal→Wood", "zh": "木剋土、土剋水、水剋火、火剋金、金剋木" } }
+        { "k": { "th": "生 สร้าง", "en": "Generate 生", "zh": "相生" }, "v": { "th": "木→火→土→金→水→木 (ไม้เกิดไฟ · ไฟเกิดดิน · ดินเกิดทอง · ทองเกิดน้ำ · น้ำเกิดไม้)", "en": "Wood→Fire→Earth→Metal→Water→Wood", "zh": "木生火、火生土、土生金、金生水、水生木" } },
+        { "k": { "th": "克 ควบคุม", "en": "Control 克", "zh": "相剋" }, "v": { "th": "木→土→水→火→金→木 (ไม้ควบดิน · ดินคุมน้ำ · น้ำคุมไฟ · ไฟคุมทอง · ทองคุมไม้)", "en": "Wood→Earth→Water→Fire→Metal→Wood", "zh": "木剋土、土剋水、水剋火、火剋金、金剋木" } }
       ]
     },
     {
@@ -51,12 +51,12 @@
       "title": { "th": "7) กิ่งดิน 六合", "en": "7) Branch Six Combinations 六合", "zh": "七、地支六合" },
       "intro": { "th": "六合 = แรงดึงดูด/ผูกพัน ทำให้กิ่งนั้น \"ติดฮะ\" จนไปชง/ช่วยอย่างอื่นลดลง (贪合忘冲) · 巳申 ระวังเป็นพิเศษ เป็นทั้ง合刑破", "en": "Six Combinations bind a branch so it 'sticks' and clashes/helps less (greedy-combine-forgets-clash). Beware 巳申 — it is 合, 刑, and 破 at once.", "zh": "六合主牽繫，使支「合住」而少沖少助（貪合忘冲）。巳申尤須慎，兼合、刑、破。" },
       "rows": [
-        { "k": "子丑 → ดิน", "v": { "th": "ผูกติด ความนิ่ง การสะสม", "en": "binding, stillness, accumulation", "zh": "繫絆、靜、積" } },
-        { "k": "寅亥 → ไม้", "v": { "th": "เริ่มต้น เติบโต เมตตา ความรู้", "en": "beginning, growth, benevolence, knowledge", "zh": "始、長、仁、學" } },
-        { "k": "卯戌 → ไฟ", "v": { "th": "จุดประกาย ชื่อเสียง การแสดงออก", "en": "ignite, fame, expression", "zh": "點火、名、表現" } },
-        { "k": "辰酉 → ทอง", "v": { "th": "จัดระเบียบ ระบบ มาตรฐาน", "en": "order, system, standards", "zh": "整飭、制度、標準" } },
-        { "k": "巳申 → น้ำ", "v": { "th": "ดึงดูดแต่แฝง刑破 ผันผวน", "en": "attraction with hidden 刑/破, volatility", "zh": "相吸而藏刑破，多變" } },
-        { "k": "午未 → ดิน", "v": { "th": "อบอุ่น ครอบครัว การก่อรูป", "en": "warmth, family, formation", "zh": "暖、家、成形" } }
+        { "k": { "th": "子丑 → ดิน", "en": "子丑 → Earth", "zh": "子丑 → 土" }, "v": { "th": "ผูกติด ความนิ่ง การสะสม", "en": "binding, stillness, accumulation", "zh": "繫絆、靜、積" } },
+        { "k": { "th": "寅亥 → ไม้", "en": "寅亥 → Wood", "zh": "寅亥 → 木" }, "v": { "th": "เริ่มต้น เติบโต เมตตา ความรู้", "en": "beginning, growth, benevolence, knowledge", "zh": "始、長、仁、學" } },
+        { "k": { "th": "卯戌 → ไฟ", "en": "卯戌 → Fire", "zh": "卯戌 → 火" }, "v": { "th": "จุดประกาย ชื่อเสียง การแสดงออก", "en": "ignite, fame, expression", "zh": "點火、名、表現" } },
+        { "k": { "th": "辰酉 → ทอง", "en": "辰酉 → Metal", "zh": "辰酉 → 金" }, "v": { "th": "จัดระเบียบ ระบบ มาตรฐาน", "en": "order, system, standards", "zh": "整飭、制度、標準" } },
+        { "k": { "th": "巳申 → น้ำ", "en": "巳申 → Water", "zh": "巳申 → 水" }, "v": { "th": "ดึงดูดแต่แฝง刑破 ผันผวน", "en": "attraction with hidden 刑/破, volatility", "zh": "相吸而藏刑破，多變" } },
+        { "k": { "th": "午未 → ดิน", "en": "午未 → Earth", "zh": "午未 → 土" }, "v": { "th": "อบอุ่น ครอบครัว การก่อรูป", "en": "warmth, family, formation", "zh": "暖、家、成形" } }
       ]
     },
     {
@@ -64,10 +64,10 @@
       "title": { "th": "8) 三合局 สามประสานธาตุ", "en": "8) Three Harmonies 三合局", "zh": "八、三合局" },
       "intro": { "th": "เกิด(长生)+รุ่ง(帝旺)+คลัง(墓库) · ครบสามตัว+ได้ฤดู = แรงใหญ่ของธาตุนั้น · ขาดตัวรุ่ง = รวมบางส่วน", "en": "Birth(长生)+Peak(帝旺)+Storehouse(墓库). All three + season = great force of that element. Missing the peak = partial.", "zh": "長生+帝旺+墓庫。三全得令成大局；缺旺則半成。" },
       "rows": [
-        { "k": "申子辰 → น้ำ", "v": { "th": "เกิด申·รุ่ง子·คลัง辰", "en": "birth 申 · peak 子 · storehouse 辰", "zh": "生申·旺子·庫辰" } },
-        { "k": "亥卯未 → ไม้", "v": { "th": "เกิด亥·รุ่ง卯·คลัง未", "en": "birth 亥 · peak 卯 · storehouse 未", "zh": "生亥·旺卯·庫未" } },
-        { "k": "寅午戌 → ไฟ", "v": { "th": "เกิด寅·รุ่ง午·คลัง戌", "en": "birth 寅 · peak 午 · storehouse 戌", "zh": "生寅·旺午·庫戌" } },
-        { "k": "巳酉丑 → ทอง", "v": { "th": "เกิด巳·รุ่ง酉·คลัง丑", "en": "birth 巳 · peak 酉 · storehouse 丑", "zh": "生巳·旺酉·庫丑" } }
+        { "k": { "th": "申子辰 → น้ำ", "en": "申子辰 → Water", "zh": "申子辰 → 水" }, "v": { "th": "เกิด申·รุ่ง子·คลัง辰", "en": "birth 申 · peak 子 · storehouse 辰", "zh": "生申·旺子·庫辰" } },
+        { "k": { "th": "亥卯未 → ไม้", "en": "亥卯未 → Wood", "zh": "亥卯未 → 木" }, "v": { "th": "เกิด亥·รุ่ง卯·คลัง未", "en": "birth 亥 · peak 卯 · storehouse 未", "zh": "生亥·旺卯·庫未" } },
+        { "k": { "th": "寅午戌 → ไฟ", "en": "寅午戌 → Fire", "zh": "寅午戌 → 火" }, "v": { "th": "เกิด寅·รุ่ง午·คลัง戌", "en": "birth 寅 · peak 午 · storehouse 戌", "zh": "生寅·旺午·庫戌" } },
+        { "k": { "th": "巳酉丑 → ทอง", "en": "巳酉丑 → Metal", "zh": "巳酉丑 → 金" }, "v": { "th": "เกิด巳·รุ่ง酉·คลัง丑", "en": "birth 巳 · peak 酉 · storehouse 丑", "zh": "生巳·旺酉·庫丑" } }
       ]
     },
     {
@@ -75,10 +75,10 @@
       "title": { "th": "9) 三会方局 สามทิศ/สามฤดู", "en": "9) Three Directional Unions 三会", "zh": "九、三會方局" },
       "intro": { "th": "แรงกว่า三合 เพราะเป็นกิ่งฤดูเดียวกันมารวมทิศ", "en": "Stronger than 三合 — same-season branches uniting a direction.", "zh": "強於三合 — 同季之支會方。" },
       "rows": [
-        { "k": "亥子丑 → น้ำ", "v": { "th": "ทิศเหนือ/ฤดูหนาว", "en": "North / Winter", "zh": "北方/冬" } },
-        { "k": "寅卯辰 → ไม้", "v": { "th": "ทิศตะวันออก/ฤดูใบไม้ผลิ", "en": "East / Spring", "zh": "東方/春" } },
-        { "k": "巳午未 → ไฟ", "v": { "th": "ทิศใต้/ฤดูร้อน", "en": "South / Summer", "zh": "南方/夏" } },
-        { "k": "申酉戌 → ทอง", "v": { "th": "ทิศตะวันตก/ฤดูใบไม้ร่วง", "en": "West / Autumn", "zh": "西方/秋" } }
+        { "k": { "th": "亥子丑 → น้ำ", "en": "亥子丑 → Water", "zh": "亥子丑 → 水" }, "v": { "th": "ทิศเหนือ/ฤดูหนาว", "en": "North / Winter", "zh": "北方/冬" } },
+        { "k": { "th": "寅卯辰 → ไม้", "en": "寅卯辰 → Wood", "zh": "寅卯辰 → 木" }, "v": { "th": "ทิศตะวันออก/ฤดูใบไม้ผลิ", "en": "East / Spring", "zh": "東方/春" } },
+        { "k": { "th": "巳午未 → ไฟ", "en": "巳午未 → Fire", "zh": "巳午未 → 火" }, "v": { "th": "ทิศใต้/ฤดูร้อน", "en": "South / Summer", "zh": "南方/夏" } },
+        { "k": { "th": "申酉戌 → ทอง", "en": "申酉戌 → Metal", "zh": "申酉戌 → 金" }, "v": { "th": "ทิศตะวันตก/ฤดูใบไม้ร่วง", "en": "West / Autumn", "zh": "西方/秋" } }
       ]
     },
     {

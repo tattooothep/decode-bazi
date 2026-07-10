@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -114,7 +115,7 @@ h1.page-h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-ri
     <div class="cmp-form">
       <h3><span class="num" data-i18n="cmp.p1.num">PERSON 1</span><span data-i18n="cmp.p1.title">คนที่ 1</span></h3>
       <label><span data-i18n="cmp.f.name">ชื่อ · NAME</span>
-        <input type="text" id="p1-name" placeholder="คุณ" value="คุณ"/></label>
+        <input type="text" id="p1-name" data-i18n-ph="cmp.p1.name.ph" placeholder="คุณ" value="คุณ"/></label>
       <div class="row2">
         <label><span data-i18n="cmp.f.bdate">วันเกิด</span>
           <input type="date" id="p1-bdate" required/></label>
@@ -138,7 +139,7 @@ h1.page-h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-ri
     <div class="cmp-form">
       <h3><span class="num" data-i18n="cmp.p2.num">PERSON 2</span><span data-i18n="cmp.p2.title">คนที่ 2</span></h3>
       <label><span data-i18n="cmp.f.name">ชื่อ · NAME</span>
-        <input type="text" id="p2-name" placeholder="คนที่ 2"/></label>
+        <input type="text" id="p2-name" data-i18n-ph="cmp.p2.name.ph" placeholder="คนที่ 2"/></label>
       <div class="row2">
         <label><span data-i18n="cmp.f.bdate">วันเกิด</span>
           <input type="date" id="p2-bdate" required/></label>
@@ -251,6 +252,7 @@ body{padding-top:62px;}
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span data-i18n="hk.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="hk.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="hk-top-r">
     <div class="hk-lang-switch" id="hk-lang-switch">
@@ -280,6 +282,8 @@ window.HK_I18N = {
               zh:'輸入兩人資料 · 系統自動計算八字 + 四項對比分（基礎 + 貴人 + 柱組 + 互動）+ 今日流年'},
   'cmp.p1.num':{th:'PERSON 1',en:'PERSON 1',zh:'第一人'},'cmp.p1.title':{th:'คนที่ 1',en:'First Person',zh:'第一人'},
   'cmp.p2.num':{th:'PERSON 2',en:'PERSON 2',zh:'第二人'},'cmp.p2.title':{th:'คนที่ 2',en:'Second Person',zh:'第二人'},
+  'cmp.p1.name.ph':{th:'คุณ',en:'You',zh:'你'},
+  'cmp.p2.name.ph':{th:'คนที่ 2',en:'Second person',zh:'第二人'},
   'cmp.f.name':{th:'ชื่อ · NAME',en:'NAME',zh:'姓名'},
   'cmp.f.bdate':{th:'วันเกิด',en:'Birth Date',zh:'生日'},'cmp.f.btime':{th:'เวลาเกิด',en:'Birth Time',zh:'時辰'},
   /* 19 พ.ค. Option α */
@@ -317,7 +321,13 @@ function applyI18N(lang){
         else el.textContent = v;
       }
     });
+    document.querySelectorAll(`[data-i18n-ph="${k}"]`).forEach(el=>{
+      if (v!==undefined) el.setAttribute('placeholder', v);
+    });
   });
+  const p1 = document.getElementById('p1-name');
+  const p1v = window.HK_I18N['cmp.p1.name.ph'] || {};
+  if (p1 && (!p1.value || ['คุณ','You','你'].indexOf(p1.value) !== -1)) p1.value = p1v[lang] || p1v.en || '';
 }
 window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 (function(){
@@ -330,7 +340,11 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('d
     applyI18N(lang);
   }
   btns.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.lang)));
-  try{var s=localStorage.getItem('hk_locale'); apply(s||'th');}catch(e){apply('th');}
+  try{
+    var api=window.HK_LANG_STATE||(window.HK&&window.HK.langState);
+    var s=(api&&api.raw&&api.raw())||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'th';
+    apply(s);
+  }catch(e){apply('th');}
 })();
 (function(){
   var sw=document.getElementById('hk-theme-switch'); if(!sw) return;

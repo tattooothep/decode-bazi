@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="dark">
+<html data-hk-product-page="qimen" lang="th" data-theme="dark">
 <head>
 <script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
@@ -771,11 +771,11 @@
       <span style="font-size:15px;">⬇</span><span data-i18n="q.pdf.download">ดาวน์โหลด PDF</span>
     </button>
     <div id="qm-pdf-hint" style="font-family:var(--thai);font-size:11px;color:var(--fg-faint);letter-spacing:0;text-align:center;" data-i18n="q.pdf.hint">พิมพ์ผังฉีเหมิน + คำทำนายซินแส เป็น PDF (A4)</div>
-    <!-- 📄 Export สรุป PDF ด้วย AI (additive · 50 ยาม · async job + poll · 9 ภาษา) · window.hkExportSummaryPdf -->
+    <!-- 📄 Export สรุป PDF ด้วย AI (additive · 20 ยาม · async job + poll · 9 ภาษา) · window.hkExportSummaryPdf -->
     <button type="button" id="qm-summary-pdf-btn"
       style="display:inline-flex;align-items:center;gap:9px;background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:12px 26px;border-radius:99px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:.2s;font-weight:700;"
       onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">
-      <span style="font-size:15px;">📄</span><span>สร้างสรุป PDF (50 ยาม)</span>
+      <span style="font-size:15px;">📄</span><span>สร้างสรุป PDF (20 ยาม)</span>
     </button>
   </div>
 </div>
@@ -5022,7 +5022,7 @@ window.__hkOverlayApply=function(l){
 })();
 </script>
 
-<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 50 ยาม · async job + poll + resume · 9 ภาษา)
+<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 20 ยาม · async job + poll + resume · 9 ภาษา)
      ลอกโครงจาก chart.html 1:1 (เปลี่ยนแค่ page="qimen" + readState + inputs.qimen = window._qimenLast) -->
 <script>
 (function () {
@@ -5039,10 +5039,10 @@ window.__hkOverlayApply=function(l){
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังสรุปผัง… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is summarising… you can leave this open or close it; the job keeps running.", zh:"AI 正在總結…可保持開啟或關閉，工作會繼續。", cn:"AI 正在总结…可保持开启或关闭，工作会继续。", vi:"AI đang tổng hợp… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIがまとめ中…開いたままでも閉じても処理は続きます。", ko:"AI가 요약 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет сводку… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está resumiendo… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -5189,11 +5189,11 @@ window.__hkOverlayApply=function(l){
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(st); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];
@@ -5229,5 +5229,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-product-caps.js?v=3" defer></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -102,7 +103,7 @@
       <button class="hk-btn" id="lang-th">TH</button>
       <button class="hk-btn" id="lang-en">EN</button>
       <button class="hk-btn" id="lang-zh">中</button>
-      <button class="hk-btn" id="theme-tog" title="สลับธีม">🌓</button>
+      <button class="hk-btn" id="theme-tog" title="Toggle theme" aria-label="Toggle theme">🌓</button>
     </div>
   </header>
 
@@ -138,7 +139,7 @@
 const I18N = {
   th: {
     title:'24 節氣 · ปฏิทินฤดูจีน', subLbl:'24 Solar Terms · ตำราอาม่าอากง v3', desc:'วงโคจรของดวงอาทิตย์ 360° แบ่งเป็น 24 ส่วน · กำหนดเดือน BaZi · ปีจีน · ฤกษ์',
-    yearLbl:'ปี:', tzLbl:'เขตเวลา:', tzNote:'UTC+7 = ไทย', liChunLbl:'立春 · ปีจีนเริ่มที่นี่',
+    yearLbl:'ปี:', tzLbl:'เขตเวลา:', tzNote:'UTC+7 = ไทย', liChunLbl:'立春 · ปีจีนเริ่มที่นี่', theme:'สลับธีม',
     typeMajor:'節 เริ่มเดือน', typeMiddle:'氣 กลางเดือน', branchPrefix:'เริ่มเดือน',
     footer:`<b>📜 ที่มา:</b> 周易 · 紫金山天文臺 · ตำราอาม่าอากง v3 (UNESCO 2016)<br/>
 <b>⏰ เวลา:</b> ปรับตามเขตเวลา (default ไทย UTC+7) · ดิบ CST = UTC+8<br/>
@@ -147,7 +148,7 @@ const I18N = {
   },
   en: {
     title:'24 Solar Terms · Chinese Seasonal Calendar', subLbl:'24 Solar Terms · Grandparent Almanac v3', desc:'Sun\'s 360° orbit divided into 24 sections · defines BaZi months · Chinese year · auspicious timing',
-    yearLbl:'Year:', tzLbl:'Timezone:', tzNote:'UTC+7 = Thailand', liChunLbl:'Beginning of Spring · Chinese year starts here',
+    yearLbl:'Year:', tzLbl:'Timezone:', tzNote:'UTC+7 = Thailand', liChunLbl:'Beginning of Spring · Chinese year starts here', theme:'Toggle theme',
     typeMajor:'節 Major (month start)', typeMiddle:'氣 Middle (month center)', branchPrefix:'starts month',
     footer:`<b>📜 Source:</b> Zhou Yi · Purple Mountain Observatory · Grandparent v3 (UNESCO 2016)<br/>
 <b>⏰ Time:</b> adjusted to your timezone (default Thailand UTC+7) · raw CST = UTC+8<br/>
@@ -156,7 +157,7 @@ const I18N = {
   },
   zh: {
     title:'二十四節氣 · 中國節氣曆', subLbl:'二十四節氣 · 阿公阿嬤曆 v3', desc:'太陽軌道360°分為24等份 · 決定八字月柱 · 中國年 · 擇日',
-    yearLbl:'年份:', tzLbl:'時區:', tzNote:'UTC+7 = 泰國', liChunLbl:'立春 · 中國年從此開始',
+    yearLbl:'年份:', tzLbl:'時區:', tzNote:'UTC+7 = 泰國', liChunLbl:'立春 · 中國年從此開始', theme:'切換主題',
     typeMajor:'節 月之始', typeMiddle:'氣 月之中', branchPrefix:'始於月',
     footer:`<b>📜 來源:</b> 周易 · 紫金山天文臺 · 阿公阿嬤 v3 (UNESCO 2016)<br/>
 <b>⏰ 時間:</b> 已換算至所選時區 (預設泰國 UTC+7) · 原始 CST = UTC+8<br/>
@@ -199,6 +200,11 @@ function applyLang(){
   document.getElementById('tz-note').textContent = t.tzNote;
   document.getElementById('lbl-li-chun').textContent = t.liChunLbl;
   document.getElementById('footer-note').innerHTML = t.footer;
+  const themeBtn = document.getElementById('theme-tog');
+  if (themeBtn) {
+    themeBtn.setAttribute('title', t.theme);
+    themeBtn.setAttribute('aria-label', t.theme);
+  }
   ['th','en','zh'].forEach(l => {
     document.getElementById('lang-'+l).classList.toggle('act', l===CUR_LANG);
   });

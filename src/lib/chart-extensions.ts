@@ -636,11 +636,16 @@ const BRANCH_TH: Record<string, string> = {子:"ชวด",丑:"ฉลู",寅:"
 export type SpousePalace = {
   day_branch: string;
   day_branch_th: string;
+  /* r420 · i18n additive */
+  day_branch_en?: string;
   day_branch_element: string;
   partner_element_th: string;
+  partner_element_en?: string;
+  partner_element_zh?: string;
   hidden_stems: string[];
   partner_traits_th: string;
   partner_traits_en: string;
+  partner_traits_zh?: string;
   relationship_flags: string[];  /* clashes/combos with day branch */
 };
 
@@ -674,14 +679,29 @@ function buildSpousePalace(pillars: BaziPillarsAny): SpousePalace {
     metal: "Organized · Direct · Decisive",
     water: "Deep · Adaptive · Stylish",
   };
+  /* r420 · i18n additive · zh gloss ตามภาพธาตุในตำรา */
+  const TRAITS_ZH: Record<string,string> = {
+    wood: "溫和 · 有理想 · 好學",
+    fire: "開朗 · 熱情 · 體貼",
+    earth: "穩重 · 顧家 · 誠懇",
+    metal: "有條理 · 直率 · 果斷",
+    water: "深沉聰慧 · 善應變 · 有格調",
+  };
+  const BRANCH_EN: Record<string,string> = {子:"Rat",丑:"Ox",寅:"Tiger",卯:"Rabbit",辰:"Dragon",巳:"Snake",午:"Horse",未:"Goat",申:"Monkey",酉:"Rooster",戌:"Dog",亥:"Pig"};
+  const ELEMENT_EN_LOCAL: Record<string,string> = {wood:"Wood",fire:"Fire",earth:"Earth",metal:"Metal",water:"Water"};
+  const ELEMENT_ZH_LOCAL: Record<string,string> = {wood:"木",fire:"火",earth:"土",metal:"金",water:"水"};
   return {
     day_branch: dayBr,
     day_branch_th: BRANCH_TH[dayBr] || dayBr,
+    day_branch_en: BRANCH_EN[dayBr] || dayBr,
     day_branch_element: dayBrEl,
     partner_element_th: ELEMENT_TH_MAP_LOCAL[dayBrEl] || dayBrEl,
+    partner_element_en: ELEMENT_EN_LOCAL[dayBrEl] || dayBrEl,
+    partner_element_zh: ELEMENT_ZH_LOCAL[dayBrEl] || dayBrEl,
     hidden_stems: hs,
     partner_traits_th: TRAITS_TH[dayBrEl] || "",
     partner_traits_en: TRAITS_EN[dayBrEl] || "",
+    partner_traits_zh: TRAITS_ZH[dayBrEl] || "",
     relationship_flags: flags,
   };
 }
@@ -694,6 +714,8 @@ export type CareerIndustry = {
   industries_zh: string[];
   advice_th: string;
   advice_en: string;
+  /* r420 · i18n additive */
+  advice_zh?: string;
 };
 
 function buildCareerIndustry(pillars: BaziPillars, yongshenElement: string | null): CareerIndustry {
@@ -707,6 +729,7 @@ function buildCareerIndustry(pillars: BaziPillars, yongshenElement: string | nul
     industries_zh: INDUSTRY_ZH[pickEl] || [],
     advice_th: `อาชีพธาตุ${ELEMENT_TH_MAP_LOCAL[pickEl] || pickEl}เหมาะกับดวงคุณ · ${ELEMENT_TH_MAP_LOCAL[pickEl]||pickEl}เสริม用神`,
     advice_en: `${pickEl} industries align with your chart · supports yongshen`,
+    advice_zh: `${({wood:"木",fire:"火",earth:"土",metal:"金",water:"水"} as Record<string,string>)[pickEl] || pickEl}行事業與命局相合 · 生扶用神`,
   };
 }
 
@@ -716,10 +739,25 @@ export type HealthMapping = {
   dm_element: string;
   dm_organs_th: string;
   dm_organs_zh: string;
-  weak_organs: { element: string; organs_th: string; organs_zh: string; reason_th: string }[];
-  caution_organs: { element: string; organs_th: string; organs_zh: string; reason_th: string }[];
+  /* r420 · i18n additive */
+  dm_organs_en?: string;
+  weak_organs: { element: string; organs_th: string; organs_zh: string; organs_en?: string; reason_th: string; reason_en?: string; reason_zh?: string }[];
+  caution_organs: { element: string; organs_th: string; organs_zh: string; organs_en?: string; reason_th: string; reason_en?: string; reason_zh?: string }[];
   summary_th: string;
+  summary_en?: string;
+  summary_zh?: string;
 };
+
+/* r420 · i18n additive · อวัยวะ TCM ภาษาอังกฤษ (ศัพท์แพทย์แผนจีนสากล) */
+const TCM_ORGAN_EN: Record<string, { yin: string; yang: string; system: string }> = {
+  wood:  { yin: "Liver",   yang: "Gallbladder",     system: "tendons · eyes" },
+  fire:  { yin: "Heart",   yang: "Small intestine", system: "blood vessels · tongue" },
+  earth: { yin: "Spleen",  yang: "Stomach",         system: "muscles · mouth" },
+  metal: { yin: "Lungs",   yang: "Large intestine", system: "skin · nose" },
+  water: { yin: "Kidneys", yang: "Bladder",         system: "bones · ears" },
+};
+const ELEMENT_EN_MAP_LOCAL: Record<string, string> = {wood:"Wood",fire:"Fire",earth:"Earth",metal:"Metal",water:"Water"};
+const ELEMENT_ZH_MAP_LOCAL: Record<string, string> = {wood:"木",fire:"火",earth:"土",metal:"金",water:"水"};
 
 function buildHealthMapping(pillars: BaziPillars, elementCounts: ElementCounts, strengthPct: number): HealthMapping {
   const dmEl = STEM_ELEMENT[pillars.day.stem];
@@ -732,26 +770,38 @@ function buildHealthMapping(pillars: BaziPillars, elementCounts: ElementCounts, 
     const v = elementCounts[el];
     const organ = TCM_ORGAN[el];
     if (v < avg * 0.4) {
+      const oe = TCM_ORGAN_EN[el];
       weak.push({
         element: el,
         organs_th: `${organ.yin_th}·${organ.yang_th} (${organ.system_th})`,
         organs_zh: `${organ.yin_zh}·${organ.yang_zh}·${organ.system_zh}`,
+        organs_en: `${oe.yin}·${oe.yang} (${oe.system})`,
         reason_th: `ธาตุ${ELEMENT_TH_MAP_LOCAL[el]}อ่อน · อวัยวะนี้ต้องเสริม`,
+        reason_en: `${ELEMENT_EN_MAP_LOCAL[el]} is weak · these organs need support`,
+        reason_zh: `${ELEMENT_ZH_MAP_LOCAL[el]}弱 · 此臟腑宜補養`,
       });
     } else if (v > avg * 1.7) {
+      const oe = TCM_ORGAN_EN[el];
       caution.push({
         element: el,
         organs_th: `${organ.yin_th}·${organ.yang_th}`,
         organs_zh: `${organ.yin_zh}·${organ.yang_zh}`,
+        organs_en: `${oe.yin}·${oe.yang}`,
         reason_th: `ธาตุ${ELEMENT_TH_MAP_LOCAL[el]}หนักเกิน · ระวัง${organ.yin_th}-${organ.yang_th}ทำงานหนัก`,
+        reason_en: `${ELEMENT_EN_MAP_LOCAL[el]} is excessive · watch for overworked ${oe.yin}/${oe.yang}`,
+        reason_zh: `${ELEMENT_ZH_MAP_LOCAL[el]}過旺 · 防${organ.yin_zh}${organ.yang_zh}過勞`,
       });
     }
   }
   const dmOrgan = TCM_ORGAN[dmEl];
+  const dmOrganEn = TCM_ORGAN_EN[dmEl];
+  const ctrlOrgan = TCM_ORGAN[ELEMENT_CONTROLS[dmEl]];
+  const ctrlOrganEn = TCM_ORGAN_EN[ELEMENT_CONTROLS[dmEl]];
   return {
     dm_element: dmEl,
     dm_organs_th: `${dmOrgan.yin_th}·${dmOrgan.yang_th}`,
     dm_organs_zh: `${dmOrgan.yin_zh}·${dmOrgan.yang_zh}`,
+    dm_organs_en: `${dmOrganEn.yin}·${dmOrganEn.yang}`,
     weak_organs: weak,
     caution_organs: caution,
     summary_th: strengthPct < 35
@@ -759,6 +809,16 @@ function buildHealthMapping(pillars: BaziPillars, elementCounts: ElementCounts, 
       : strengthPct > 65
       ? `วันเจ้าธาตุ${ELEMENT_TH_MAP_LOCAL[dmEl]}แกร่ง · ${dmOrgan.yin_th}/${dmOrgan.yang_th}แข็งแรง · ระวัง${TCM_ORGAN[ELEMENT_CONTROLS[dmEl]]?.yin_th||""}ที่ถูกควบคุม`
       : `วันเจ้าธาตุ${ELEMENT_TH_MAP_LOCAL[dmEl]}สมดุล · ดูแล${dmOrgan.yin_th}·${dmOrgan.yang_th}เป็นพื้นฐาน`,
+    summary_en: strengthPct < 35
+      ? `${ELEMENT_EN_MAP_LOCAL[dmEl]} Day Master is weak · ${dmOrganEn.yin}/${dmOrganEn.yang} may be fragile · care for ${dmOrganEn.system}`
+      : strengthPct > 65
+      ? `${ELEMENT_EN_MAP_LOCAL[dmEl]} Day Master is strong · ${dmOrganEn.yin}/${dmOrganEn.yang} are robust · watch the controlled ${ctrlOrganEn?.yin || ""}`
+      : `${ELEMENT_EN_MAP_LOCAL[dmEl]} Day Master is balanced · maintain ${dmOrganEn.yin}·${dmOrganEn.yang} as the foundation`,
+    summary_zh: strengthPct < 35
+      ? `日主${ELEMENT_ZH_MAP_LOCAL[dmEl]}弱 · ${dmOrgan.yin_zh}${dmOrgan.yang_zh}易虛 · 宜養${dmOrgan.system_zh}`
+      : strengthPct > 65
+      ? `日主${ELEMENT_ZH_MAP_LOCAL[dmEl]}旺 · ${dmOrgan.yin_zh}${dmOrgan.yang_zh}強健 · 防所剋之${ctrlOrgan?.yin_zh || ""}受損`
+      : `日主${ELEMENT_ZH_MAP_LOCAL[dmEl]}中和 · 平日保養${dmOrgan.yin_zh}${dmOrgan.yang_zh}為本`,
   };
 }
 
@@ -796,6 +856,8 @@ export type TransitHiddenStem = {
 export type TransitImpact = {
   type: string;
   type_th: string;
+  /* r420 · i18n additive */
+  type_en?: string;
   pair: string;
   target: "year" | "month" | "day" | "hour" | "luck";
   target_th: string;
@@ -803,6 +865,8 @@ export type TransitImpact = {
   domains_th: string[];
   strength: "low" | "medium" | "high" | "critical";
   summary_th: string;
+  summary_en?: string;
+  summary_zh?: string;
 };
 
 export type LiuYueEntry = {
@@ -1008,6 +1072,47 @@ const TRANSIT_DOMAIN_TH: Record<string, string[]> = {
   luck: ["วัยจร", "ทิศทางสิบปี", "จังหวะใหญ่"],
 };
 
+/* r420 · i18n additive · EN ศัพท์วงการ BaZi · ZH ตัวตำรา · ใช้ประกอบ summary_en/summary_zh เท่านั้น ไม่แตะ logic */
+const TRANSIT_TYPE_EN: Record<string, string> = {
+  伏吟: "Fu Yin (repeating pillar)",
+  反吟: "Fan Yin (reversal)",
+  六沖: "Clash",
+  六合: "Combine",
+  六害: "Harm",
+  六破: "Destruction",
+  半合: "Half combine",
+  五合: "Stem combine",
+  天克: "Stem clash",
+};
+const TRANSIT_TARGET_EN: Record<string, string> = {
+  year: "Year pillar 年",
+  month: "Month pillar 月",
+  day: "Day pillar 日",
+  hour: "Hour pillar 時",
+  luck: "Luck cycle 大運",
+};
+const TRANSIT_TARGET_ZH: Record<string, string> = {
+  year: "年柱",
+  month: "月柱",
+  day: "日柱",
+  hour: "時柱",
+  luck: "大運",
+};
+const TRANSIT_DOMAIN_EN: Record<string, string[]> = {
+  year: ["family roots", "relatives", "overall"],
+  month: ["work", "parents", "career"],
+  day: ["self", "spouse", "home"],
+  hour: ["children", "later years", "health"],
+  luck: ["luck cycle", "ten-year direction", "major rhythm"],
+};
+const TRANSIT_DOMAIN_ZH: Record<string, string[]> = {
+  year: ["祖業", "親族", "全局"],
+  month: ["事業", "父母", "職涯"],
+  day: ["自身", "配偶", "家宅"],
+  hour: ["子女", "晚運", "健康"],
+  luck: ["大運", "十年方向", "大節奏"],
+};
+
 function transitStrength(type: string, target: string): TransitImpact["strength"] {
   if ((type === "伏吟" || type === "反吟") && (target === "day" || target === "luck")) return "critical";
   if (type === "伏吟" || type === "反吟") return "high";
@@ -1031,6 +1136,7 @@ function buildTransitImpacts(
     out.push({
       type,
       type_th: TRANSIT_TYPE_TH[type] || type,
+      type_en: TRANSIT_TYPE_EN[type] || type,
       pair,
       target,
       target_th: targetTh,
@@ -1038,6 +1144,8 @@ function buildTransitImpacts(
       domains_th: domains,
       strength,
       summary_th: `${TRANSIT_TYPE_TH[type] || type} ${pair} กระทบ${targetTh} · ${domains.join("/")}`,
+      summary_en: `${TRANSIT_TYPE_EN[type] || type} ${pair} affects ${TRANSIT_TARGET_EN[target] || target} · ${(TRANSIT_DOMAIN_EN[target] || ["overall"]).join("/")}`,
+      summary_zh: `${type} ${pair} 動${TRANSIT_TARGET_ZH[target] || target} · ${(TRANSIT_DOMAIN_ZH[target] || ["全局"]).join("/")}`,
     });
   };
   const targets: Array<{ key: "year" | "month" | "day" | "hour" | "luck"; stem: string; branch: string }> = [

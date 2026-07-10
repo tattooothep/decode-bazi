@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="th">
+<head>
+<script src="/js/hk-lang-state.js?v=2"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Hourkey | ระบบวิเคราะห์ดวงจีนเพื่อการตัดสินใจ</title>
+  <meta name="description" content="Hourkey ผูกวันเวลาเกิด ฤกษ์ ทิศ พื้นที่ และบริบทคำถามเข้าด้วยกัน แล้วให้ AI Sifu สรุปเป็นคำตอบที่ตรวจสอบเหตุผลและนำไปใช้ต่อได้" />
+  <link rel="canonical" href="https://hourkey.io/" />
+  <meta name="theme-color" content="#090706" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Hourkey" />
+  <meta property="og:title" content="Hourkey | ระบบวิเคราะห์ดวงจีนเพื่อการตัดสินใจ" />
+  <meta property="og:description" content="จากวันเวลาเกิด ฤกษ์ ทิศ และบริบทจริง สู่คำตอบเดียวที่ใช้วางแผนได้" />
+  <meta property="og:url" content="https://hourkey.io/" />
+  <meta property="og:image" content="https://hourkey.io/assets/landing-v2/hourkey-og-v2.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Hourkey luopan and AI Sifu reading system" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Hourkey | ระบบวิเคราะห์ดวงจีนเพื่อการตัดสินใจ" />
+  <meta name="twitter:description" content="AI Sifu ที่อ่านจากดวง เวลา ทิศ และบริบทจริงของคุณ" />
+  <meta name="twitter:image" content="https://hourkey.io/assets/landing-v2/hourkey-og-v2.jpg" />
+  <link rel="alternate" hreflang="th" href="https://hourkey.io/?lang=th" />
+  <link rel="alternate" hreflang="en" href="https://hourkey.io/?lang=en" />
+  <link rel="alternate" hreflang="zh" href="https://hourkey.io/?lang=zh" />
+  <link rel="alternate" hreflang="vi" href="https://hourkey.io/?lang=vi" />
+  <link rel="alternate" hreflang="ja" href="https://hourkey.io/?lang=ja" />
+  <link rel="alternate" hreflang="ko" href="https://hourkey.io/?lang=ko" />
+  <link rel="alternate" hreflang="ru" href="https://hourkey.io/?lang=ru" />
+  <link rel="alternate" hreflang="es" href="https://hourkey.io/?lang=es" />
+  <link rel="alternate" hreflang="x-default" href="https://hourkey.io/" />
+  <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+  <link rel="apple-touch-icon" href="/favicon.svg?v=2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=optional" rel="stylesheet" />
+  <link rel="preload" as="image" href="assets/landing-v2/hourkey-hero-poster-v2.jpg" fetchpriority="high" />
+  <script>document.documentElement.classList.add('js');</script>
+  <style>
+    :root{
+      --ink:#f7efe3;
+      --muted:#cdbfa9;
+      --faint:#8f806c;
+      --bg:#090706;
+      --panel:#12100e;
+      --panel-2:#181310;
+      --line:rgba(232,197,128,.18);
+      --line-strong:rgba(232,197,128,.38);
+      --gold:#e5bd69;
+      --red:#a82f24;
+      --jade:#6aa98c;
+      --blue:#6f93b8;
+      --shadow:0 24px 80px rgba(0,0,0,.48);
+      --thai:"Noto Sans Thai","Inter","Segoe UI",system-ui,sans-serif;
+      --serif:"Noto Serif Thai","Noto Serif TC",Georgia,serif;
+      --tc:"Noto Serif TC","Noto Serif Thai",serif;
+      --mono:"JetBrains Mono","SFMono-Regular","Cascadia Mono",monospace;
+    }
+    :lang(en),:lang(vi),:lang(ru),:lang(es){--thai:"Noto Sans","Noto Sans Thai","Inter","Segoe UI",system-ui,sans-serif;--serif:"Noto Sans","Noto Serif Thai",Georgia,serif}
+    :lang(zh-Hant){--thai:"Noto Sans TC","Noto Sans Thai","Noto Sans",system-ui,sans-serif;--serif:"Noto Serif TC","Noto Serif Thai",serif}
+    :lang(ja){--thai:"Noto Sans JP","Noto Sans",system-ui,sans-serif;--serif:"Noto Sans JP","Noto Serif TC",serif}
+    :lang(ko){--thai:"Noto Sans KR","Noto Sans",system-ui,sans-serif;--serif:"Noto Sans KR","Noto Serif TC",serif}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--bg);color:var(--ink)}
+    body{margin:0;font-family:var(--thai);background:var(--bg);color:var(--ink);letter-spacing:0;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button,input{font:inherit}
+    a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .skip-link{position:fixed;left:14px;top:12px;z-index:80;transform:translateY(-140%);background:#fff;color:#130d09;padding:10px 12px;border-radius:6px;font-weight:700}
+    .skip-link:focus{transform:none}
+    .page{min-height:100vh;background:linear-gradient(180deg,rgba(8,6,5,.18),#090706 92vh),#090706}
+    main section,.final-cta{scroll-margin-top:86px}
+    @keyframes heroPosterJitter{
+      0%,100%{background-position:center}
+      12%{background-position:calc(50% - 1px) calc(50% + 1px)}
+      24%{background-position:calc(50% + 1px) calc(50% - 1px)}
+      38%{background-position:calc(50% - 1px) 50%}
+      52%{background-position:calc(50% + 1px) calc(50% + 1px)}
+      68%{background-position:50% calc(50% - 1px)}
+      84%{background-position:calc(50% + 1px) 50%}
+    }
+    @keyframes heroVideoJitter{
+      0%,100%{transform:translate3d(0,0,0) scale(1.018)}
+      10%{transform:translate3d(-1px,.6px,0) scale(1.019)}
+      21%{transform:translate3d(1px,-.7px,0) scale(1.018)}
+      33%{transform:translate3d(-.6px,-.4px,0) scale(1.02)}
+      47%{transform:translate3d(.8px,.8px,0) scale(1.018)}
+      61%{transform:translate3d(-.8px,.2px,0) scale(1.019)}
+      78%{transform:translate3d(.5px,-.6px,0) scale(1.018)}
+    }
+    @keyframes heroRingJitter{
+      0%,100%{transform:translate3d(0,0,0) rotate(0deg);opacity:.34}
+      16%{transform:translate3d(1px,-1px,0) rotate(.06deg);opacity:.39}
+      34%{transform:translate3d(-1px,.5px,0) rotate(-.05deg);opacity:.31}
+      56%{transform:translate3d(.6px,1px,0) rotate(.04deg);opacity:.37}
+      76%{transform:translate3d(-.5px,-.5px,0) rotate(-.04deg);opacity:.33}
+    }
+    .hero{position:relative;min-height:92svh;overflow:hidden;isolation:isolate;background:url("assets/landing-v2/hourkey-hero-poster-v2.jpg") center/cover no-repeat;animation:heroPosterJitter 5.8s steps(2,end) infinite}
+    .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.04) contrast(1.05);z-index:0;transform:scale(1.018);animation:heroVideoJitter 4.8s steps(2,end) infinite;will-change:transform}
+    .hero:before{content:"";position:absolute;inset:0;background:
+      linear-gradient(90deg,rgba(5,4,3,.92) 0%,rgba(5,4,3,.62) 36%,rgba(5,4,3,.2) 62%,rgba(5,4,3,.75) 100%),
+      linear-gradient(180deg,rgba(5,4,3,.44) 0%,rgba(5,4,3,.1) 48%,#090706 100%);z-index:1}
+    .hero:after{content:"";position:absolute;inset:0;background:
+      repeating-radial-gradient(circle at 62% 56%,rgba(229,189,105,.16) 0 1px,transparent 1px 74px),
+      conic-gradient(from 28deg at 62% 56%,transparent 0 11deg,rgba(229,189,105,.08) 11deg 12deg,transparent 12deg 30deg);
+      mask-image:linear-gradient(180deg,transparent 0%,#000 18%,#000 54%,transparent 100%);opacity:.34;z-index:2;pointer-events:none;animation:heroRingJitter 6.6s steps(2,end) infinite;will-change:transform,opacity}
+    .nav{position:fixed;top:0;left:0;right:0;z-index:30;padding:16px clamp(16px,4vw,44px);transition:background .25s,border-color .25s}
+    .nav.scrolled{background:rgba(9,7,6,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+    .nav-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .brand-mark{width:34px;height:34px;border:1px solid var(--line-strong);display:grid;place-items:center;color:var(--gold);background:rgba(12,10,8,.54);box-shadow:inset 0 0 22px rgba(229,189,105,.11);border-radius:6px}
+    .brand-mark span{font-family:var(--tc);font-size:19px;line-height:1}
+    .brand-name{font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:.16em;color:#fff}
+    .nav-links{display:flex;align-items:center;gap:20px;color:var(--muted);font-size:13px}
+    .nav-links a:hover{color:#fff}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-select{height:42px;min-width:74px;border:1px solid var(--line-strong);border-radius:6px;background:rgba(14,12,10,.72);color:#fff;padding:0 9px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .lang-select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .lang-select option{background:#120f0d;color:#fff}
+    .link-muted{font-size:13px;color:var(--muted)}
+    .link-muted:hover{color:#fff}
+    .btn{height:46px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 18px;border:1px solid var(--line-strong);background:rgba(14,12,10,.64);color:var(--ink);border-radius:6px;transition:transform .18s,border-color .18s,background .18s;white-space:nowrap}
+    .btn:hover{transform:translateY(-1px);border-color:rgba(229,189,105,.62);background:rgba(28,20,15,.84)}
+    .btn-primary{background:linear-gradient(180deg,#d74b36,#8e231b);border-color:rgba(255,172,128,.42);box-shadow:0 16px 38px rgba(130,22,18,.34),inset 0 1px rgba(255,255,255,.22);color:#fff}
+    .btn-primary:hover{background:linear-gradient(180deg,#eb5b42,#98261e)}
+    .menu-toggle{display:none;width:42px;height:42px;padding:0;border:1px solid var(--line-strong);border-radius:6px;background:rgba(14,12,10,.72);color:#fff;align-items:center;justify-content:center}
+    .menu-toggle span{width:18px;height:12px;display:block;position:relative;border-top:1px solid currentColor;border-bottom:1px solid currentColor}
+    .menu-toggle span:before{content:"";position:absolute;left:0;right:0;top:5px;border-top:1px solid currentColor}
+    .mobile-drawer{display:none;position:fixed;top:66px;left:14px;right:14px;z-index:29;border:1px solid var(--line-strong);background:rgba(9,7,6,.94);backdrop-filter:blur(18px);border-radius:8px;padding:10px;box-shadow:var(--shadow)}
+    .mobile-drawer.open{display:grid;gap:4px}
+    .mobile-drawer a{padding:12px;border-radius:6px;color:#eadfce}
+    .mobile-drawer a:hover,.mobile-drawer a:focus-visible{background:rgba(255,255,255,.055);color:#fff}
+    .mobile-drawer .drawer-primary{background:linear-gradient(180deg,#d74b36,#8e231b);color:#fff;text-align:center;margin-top:4px}
+    .hero-content{position:relative;z-index:3;max-width:1180px;margin:0 auto;min-height:92svh;padding:128px clamp(16px,4vw,44px) 50px;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);align-items:end;gap:42px}
+    .hero-copy{padding-bottom:min(6vh,54px)}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px}
+    .eyebrow:before{content:"";width:26px;height:1px;background:var(--gold)}
+    h1{margin:0;font-family:var(--serif);font-size:clamp(56px,11vw,136px);line-height:.84;font-weight:700;letter-spacing:0;color:#fff;text-shadow:0 18px 70px rgba(0,0,0,.7)}
+    .hero-sub{max-width:690px;margin:24px 0 0;color:#eadfce;font-size:clamp(18px,2.2vw,28px);line-height:1.35;font-weight:600}
+    .hero-desc{max-width:590px;margin:18px 0 0;color:var(--muted);font-size:15.5px;line-height:1.85}
+    .hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+    .hero-proof{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}
+    .proof-chip{border:1px solid rgba(229,189,105,.17);background:rgba(9,7,6,.46);color:#d8c8aa;font-size:12px;padding:8px 10px;border-radius:6px;backdrop-filter:blur(8px)}
+    .oracle-panel{align-self:end;margin-bottom:min(5vh,46px);border:1px solid var(--line);background:rgba(10,8,7,.6);backdrop-filter:blur(18px);box-shadow:var(--shadow);border-radius:8px;overflow:hidden}
+    .oracle-top{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:14px 16px;background:rgba(255,255,255,.035)}
+    .oracle-title{font-family:var(--mono);font-size:11px;letter-spacing:.17em;color:var(--gold);text-transform:uppercase}
+    .oracle-state{font-family:var(--mono);font-size:11px;color:var(--jade)}
+    .oracle-body{padding:18px}
+    .reading{display:grid;gap:12px}
+    .reading-row{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:start;border-bottom:1px solid rgba(232,197,128,.1);padding-bottom:12px}
+    .reading-row:last-child{border-bottom:0;padding-bottom:0}
+    .reading-k{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase}
+    .reading-v{color:#f3e8d6;font-size:14px;line-height:1.55}
+    .meter{height:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.07);overflow:hidden;border-radius:999px;margin-top:9px}
+    .meter span{display:block;height:100%;width:88%;background:linear-gradient(90deg,var(--jade),var(--gold),var(--red))}
+    .sample-answer{display:grid;gap:12px}
+    .sample-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .pillar-mini{border:1px solid rgba(232,197,128,.16);background:rgba(0,0,0,.2);border-radius:6px;padding:8px;text-align:center}
+    .pillar-mini small{display:block;color:var(--faint);font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em}
+    .pillar-mini b{display:block;color:#fff;font-family:var(--tc);font-size:21px;line-height:1.1;margin-top:3px}
+    .sample-result{border:1px solid rgba(106,169,140,.26);background:rgba(106,169,140,.075);border-radius:8px;padding:14px}
+    .sample-result strong{display:block;color:#fff;font-size:15px;margin-bottom:6px}
+    .sample-result p{margin:0;color:#d8cdbd;font-size:13.5px;line-height:1.66}
+    .sample-tags{display:flex;flex-wrap:wrap;gap:7px}
+    .sample-tags span{border:1px solid rgba(229,189,105,.18);background:rgba(0,0,0,.18);color:#d8c8aa;border-radius:999px;padding:6px 8px;font-family:var(--mono);font-size:10px}
+    .trust-strip{padding:18px clamp(16px,4vw,44px);border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#0c0908}
+    .trust-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .trust-item{border:1px solid rgba(232,197,128,.14);border-radius:8px;background:rgba(255,255,255,.025);padding:14px 15px}
+    .trust-item b{display:block;color:#fff;font-size:14px;margin-bottom:4px}
+    .trust-item span{display:block;color:var(--muted);font-size:12.5px;line-height:1.55}
+    .section{padding:84px clamp(16px,4vw,44px)}
+    .section-inner{max-width:1180px;margin:0 auto}
+    .section-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:26px}
+    .label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+    h2{margin:0;font-family:var(--serif);font-size:clamp(30px,5vw,62px);line-height:1.05;font-weight:700;color:#fff;letter-spacing:0}
+    .section-note{max-width:470px;color:var(--muted);font-size:15px;line-height:1.75;margin:0}
+    .paths{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+    .path-card{min-height:340px;padding:10px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));border-radius:8px;display:flex;flex-direction:column;gap:14px;overflow:hidden;transition:transform .18s,border-color .18s,background .18s}
+    .path-card:hover{transform:translateY(-3px);border-color:var(--line-strong);background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.025))}
+    .path-card-featured{grid-column:span 2;min-height:392px;background:linear-gradient(180deg,rgba(229,189,105,.095),rgba(168,47,36,.04))}
+    .path-card-featured .path-media{aspect-ratio:16/8.8}
+    .path-card-featured h3{font-size:30px}
+    .path-card-featured p{font-size:15px;max-width:560px}
+    .path-media{position:relative;aspect-ratio:16/9;border:1px solid rgba(232,197,128,.16);border-radius:6px;overflow:hidden;background:#080605}
+    .path-media img,.path-media video{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(1.06) contrast(1.04)}
+    .path-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 34%,rgba(5,4,3,.62));pointer-events:none}
+    .media-tag{position:absolute;left:10px;bottom:9px;z-index:1;border:1px solid rgba(229,189,105,.26);background:rgba(7,5,4,.58);backdrop-filter:blur(10px);border-radius:999px;padding:5px 8px;color:#f3dfad;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase}
+    .path-content{display:flex;flex-direction:column;justify-content:space-between;gap:14px;flex:1;padding:0 8px 8px}
+    .path-title{display:flex;align-items:center;gap:10px;margin-top:2px}
+    .path-icon{width:36px;height:36px;flex:0 0 36px;border:1px solid var(--line);display:grid;place-items:center;color:var(--gold);font-family:var(--tc);font-size:18px;background:rgba(0,0,0,.24);border-radius:6px}
+    .path-card h3{font-family:var(--serif);font-size:23px;line-height:1.12;margin:0;color:#fff;font-weight:700;letter-spacing:0}
+    .path-card p{margin:10px 0 0;color:var(--muted);font-size:13.5px;line-height:1.62}
+    .path-card .go{margin-top:18px;color:var(--gold);font-size:13px}
+    .result-band{background:#0c0908;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .result-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:24px;align-items:stretch}
+    .question-stack{display:grid;gap:12px;align-content:start}
+    .question{padding:18px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.035);color:#eadfce;line-height:1.55}
+    .question b{display:block;color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+    .answer{border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,rgba(25,20,17,.8),rgba(12,9,8,.86));box-shadow:var(--shadow);overflow:hidden}
+    .answer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.035)}
+    .answer-head b{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .answer-head span{font-size:12px;color:var(--jade)}
+    .answer-body{padding:22px;display:grid;gap:14px}
+    .answer-line{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+    .answer-line i{font-style:normal;width:34px;height:34px;border:1px solid var(--line);display:grid;place-items:center;color:var(--gold);font-family:var(--mono);font-size:12px;background:rgba(0,0,0,.22);border-radius:6px}
+    .answer-line strong{display:block;color:#fff;margin-bottom:4px;font-size:15px}
+    .answer-line p{margin:0;color:var(--muted);font-size:14px;line-height:1.62}
+    .fusion-band{position:relative;overflow:hidden;background:
+      radial-gradient(circle at 82% 18%,rgba(111,147,184,.18),transparent 30%),
+      linear-gradient(180deg,#090706,#0f0b09 48%,#090706)}
+    .fusion-band:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,7,6,.18),rgba(9,7,6,.7));pointer-events:none}
+    .fusion-grid{position:relative;z-index:1;display:grid;grid-template-columns:.86fr 1.14fr;gap:28px;align-items:center}
+    .fusion-copy{display:grid;gap:18px;align-content:center}
+    .fusion-copy h2{max-width:660px}
+    .fusion-copy .section-note{max-width:620px;margin:0}
+    .fusion-line{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#f2d28b;border-left:2px solid var(--gold);padding:10px 0 10px 14px}
+    .fusion-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .fusion-lenses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:2px}
+    .fusion-lens{border:1px solid rgba(232,197,128,.15);background:rgba(255,255,255,.032);border-radius:8px;padding:12px;min-height:84px}
+    .fusion-lens b{display:block;color:#fff;font-size:14px;margin-bottom:5px}
+    .fusion-lens span{display:block;color:var(--muted);font-size:12.5px;line-height:1.55}
+    .fusion-visual{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#060504;box-shadow:var(--shadow);min-height:360px}
+    .fusion-visual img{display:block;width:100%;height:100%;min-height:360px;object-fit:cover;filter:saturate(1.06) contrast(1.05)}
+    .fusion-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,4,3,.62),transparent 42%),linear-gradient(180deg,transparent 54%,rgba(5,4,3,.58));pointer-events:none}
+    .fusion-caption{position:absolute;left:14px;right:14px;bottom:14px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#eadfce;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .fusion-caption span{border:1px solid rgba(229,189,105,.22);background:rgba(7,5,4,.52);backdrop-filter:blur(10px);border-radius:999px;padding:7px 9px;color:#f0d99b}
+    .surface-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .surface{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.026);padding:18px;min-height:172px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .18s,border-color .18s}
+    .surface:hover{transform:translateY(-2px);border-color:var(--line-strong)}
+    .surface em{font-style:normal;color:var(--gold);font-family:var(--tc);font-size:28px;line-height:1}
+    .surface b{display:block;color:#fff;font-family:var(--serif);font-size:21px;margin:16px 0 8px}
+    .surface p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.58}
+    .surface small{display:inline-flex;width:max-content;margin-bottom:12px;border:1px solid rgba(229,189,105,.18);border-radius:999px;padding:4px 7px;color:#d7c290;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+    .sciences{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .science{border:1px solid var(--line);border-radius:8px;padding:10px;background:rgba(255,255,255,.026);min-height:252px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+    .science-media{aspect-ratio:16/9;border:1px solid rgba(232,197,128,.14);border-radius:6px;overflow:hidden;background:#080605}
+    .science-media img{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(1.04) contrast(1.03)}
+    .science-body{padding:0 8px 8px}
+    .science b{display:block;color:#fff;font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:10px}
+    .science p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.62}
+    .science em{font-style:normal;color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+    .process{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .step{border:1px solid var(--line);border-radius:8px;padding:22px;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.014));min-height:210px}
+    .step .num{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.14em;text-transform:uppercase}
+    .step h3{font-family:var(--serif);font-size:26px;color:#fff;margin:16px 0 10px}
+    .step p{color:var(--muted);font-size:14px;line-height:1.7;margin:0}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+    .media-frame{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#080605;box-shadow:var(--shadow)}
+    .media-frame img{display:block;width:100%;height:auto}
+    .quote-list{display:grid;gap:12px}
+    .quote{border-left:2px solid var(--gold);padding:14px 16px;background:rgba(255,255,255,.03);color:#eadfce;line-height:1.7}
+    .quote small{display:block;color:var(--faint);font-family:var(--mono);font-size:11px;margin-top:8px;letter-spacing:.12em;text-transform:uppercase}
+    .faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .faq-item{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.026);padding:18px}
+    .faq-item b{display:block;color:#fff;margin-bottom:8px}
+    .faq-item p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+    .pricing-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;align-items:stretch}
+    .pricing-panel{border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.018));padding:22px}
+    .pricing-panel h3{margin:0 0 10px;color:#fff;font-family:var(--serif);font-size:30px}
+    .pricing-panel p{margin:0;color:var(--muted);line-height:1.75}
+    .pricing-list{display:grid;gap:8px;margin-top:18px}
+    .pricing-list span{display:flex;gap:9px;color:#eadfce;font-size:14px}
+    .pricing-list span:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);margin-top:8px;flex:0 0 7px}
+    .pricing-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .final-cta{min-height:54svh;display:grid;place-items:center;text-align:center;background:#090706;border-top:1px solid var(--line);position:relative;overflow:hidden}
+    .final-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.48;z-index:0}
+    .final-cta:before{content:"";position:absolute;inset:0;background:rgba(5,4,3,.72);z-index:1}
+    .final-cta .section-inner{position:relative;z-index:2}
+    .final-cta h2{font-size:clamp(42px,8vw,92px)}
+    .final-cta p{max-width:620px;margin:18px auto 28px;color:var(--muted);line-height:1.78}
+    .seal-lock{width:68px;height:68px;margin:0 auto 18px;border:1px solid rgba(229,189,105,.46);border-radius:8px;display:grid;place-items:center;background:rgba(168,47,36,.28);box-shadow:inset 0 0 28px rgba(229,189,105,.14);font-family:var(--tc);font-size:32px;color:var(--gold)}
+    footer{padding:28px clamp(16px,4vw,44px);border-top:1px solid var(--line);color:var(--faint);font-size:12px}
+    .footer-inner{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .footer-links a:hover{color:#fff}
+    .reveal{opacity:1;transform:none}
+    .js .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+    .js .reveal.on{opacity:1;transform:none}
+    @media (max-width:1060px){
+      .paths{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .path-card-featured{grid-column:span 2}
+      .surface-grid,.sciences,.trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:900px){
+      .nav-links{display:none}
+      .menu-toggle{display:inline-flex}
+      .hero,.hero-content{min-height:90svh}
+      .hero-content{grid-template-columns:1fr;align-items:end;padding-top:104px}
+      .oracle-panel{margin-bottom:0}
+      .result-grid,.fusion-grid,.split,.process,.pricing-grid{grid-template-columns:1fr}
+      .faq{grid-template-columns:1fr}
+    }
+    @media (max-width:620px){
+      .nav{padding:12px 14px}
+      .brand-name{font-size:12px}
+      .link-muted{display:none}
+      .lang-select{height:38px;min-width:62px;padding:0 6px;font-size:10px}
+      .btn{height:42px;padding:0 13px;font-size:13px}
+      .hero-content{padding:96px 14px 30px;gap:22px}
+      h1{font-size:clamp(52px,20vw,64px)}
+      .hero-sub{font-size:20px}
+      .hero-desc{font-size:14px}
+      .oracle-body{padding:14px}
+      .reading-row{grid-template-columns:74px 1fr}
+      .section{padding:62px 14px}
+      .section-head{display:block}
+      .section-note{margin-top:14px}
+      .fusion-lenses{grid-template-columns:1fr}
+      .fusion-visual,.fusion-visual img{min-height:280px}
+      .fusion-caption{display:block}
+      .fusion-caption span{display:inline-flex;margin-top:8px}
+      .paths,.surface-grid,.sciences,.trust-grid{grid-template-columns:1fr}
+      .path-card-featured{grid-column:span 1}
+      .path-card-featured h3{font-size:25px}
+      .path-card{min-height:0}
+      .answer-body{padding:16px}
+      .final-cta{min-height:60svh}
+      .footer-inner{display:block}
+      .footer-links{margin-top:12px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      .reveal,.btn,.path-card,.surface{transition:none}
+      .hero,.hero:after,.hero-video{animation:none}
+      .hero-video{transform:none}
+      .hero-video,.path-media video{display:none}
+      .hero{background:url("assets/landing-v2/hourkey-hero-poster-v2.jpg") center/cover no-repeat}
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+  <div class="page">
+    <nav class="nav" id="nav">
+      <div class="nav-inner">
+        <a class="brand" href="/" aria-label="Hourkey">
+          <div class="brand-mark"><span>時</span></div>
+          <div class="brand-name">hourkey</div>
+        </a>
+        <div class="nav-links">
+          <a href="#paths">เริ่มจากคำถาม</a>
+          <a href="#answer">คำตอบ</a>
+          <a href="#fusion">Fusion</a>
+          <a href="#process">วิธีทำงาน</a>
+          <a href="#products">ฟีเจอร์</a>
+          <a href="#pricing">แพ็กเกจ</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="nav-actions">
+          <select class="lang-select" id="landingLang" aria-label="ภาษา">
+            <option value="th">TH</option>
+            <option value="en">EN</option>
+            <option value="zh">中文</option>
+            <option value="vi">VI</option>
+            <option value="ja">JP</option>
+            <option value="ko">KO</option>
+            <option value="ru">RU</option>
+            <option value="es">ES</option>
+          </select>
+          <a class="link-muted" href="/signup?tab=login">เข้าสู่ระบบ</a>
+          <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถาม</a>
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="mobileDrawer"><span></span></button>
+        </div>
+      </div>
+    </nav>
+    <div class="mobile-drawer" id="mobileDrawer">
+      <a href="#paths">เริ่มจากคำถาม</a>
+      <a href="#answer">ตัวอย่างคำตอบ</a>
+      <a href="#fusion">Fusion</a>
+      <a href="#process">วิธีทำงาน</a>
+      <a href="#products">ฟีเจอร์</a>
+      <a href="#pricing">แพ็กเกจ</a>
+      <a href="#faq">FAQ</a>
+      <a href="/signup?tab=login">เข้าสู่ระบบ</a>
+      <a class="drawer-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
+    </div>
+
+    <header class="hero">
+      <video class="hero-video lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/hourkey-hero-poster-v2.jpg" data-src="assets/landing-v2/hourkey-hero-loop-v2.mp4" aria-hidden="true"></video>
+      <div class="hero-content">
+        <div class="hero-copy reveal">
+          <div class="eyebrow">BAZI · QI MEN · LUOPAN · AI SIFU</div>
+          <h1>Hourkey</h1>
+          <div class="hero-sub">ระบบวิเคราะห์ดวงจีนที่รวมเวลา ทิศ พื้นที่ และบริบทชีวิตเป็นคำตอบเดียว</div>
+          <p class="hero-desc">ถามเรื่องงาน ความสัมพันธ์ ฤกษ์ บ้าน ทิศ หรือจังหวะสำคัญ แล้วให้ AI Sifu อ่านจากชั้นข้อมูลที่ระบบคำนวณไว้ ไม่ใช่คำทำนายกว้าง ๆ</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
+            <a class="btn" href="#answer">ดูตัวอย่างคำตอบ</a>
+          </div>
+          <div class="hero-proof" aria-label="Core calculation signals">
+            <span class="proof-chip">True Solar Time · ปรับเวลาเกิดตามพื้นที่จริง</span>
+            <span class="proof-chip">用神 / 喜忌 · รู้ธาตุหนุนและควรเลี่ยง</span>
+            <span class="proof-chip">Qi Men · อ่านจังหวะและทิศเฉพาะหน้า</span>
+          </div>
+        </div>
+        <aside class="oracle-panel reveal" aria-label="Hourkey reading context">
+          <div class="oracle-top">
+            <div class="oracle-title">ตัวอย่างคำตอบจากบริบทจริง</div>
+            <div class="oracle-state">traceable</div>
+          </div>
+          <div class="oracle-body">
+            <div class="sample-answer">
+              <div class="sample-pillars" aria-label="sample bazi pillars">
+                <div class="pillar-mini"><small>Year</small><b>癸卯</b></div>
+                <div class="pillar-mini"><small>Month</small><b>甲寅</b></div>
+                <div class="pillar-mini"><small>Day</small><b>己亥</b></div>
+                <div class="pillar-mini"><small>Hour</small><b>壬申</b></div>
+              </div>
+              <div class="sample-result">
+                <strong>สรุป: ทำได้ แต่ต้องเลือกจังหวะและวัสดุให้ถูก</strong>
+                <p>ทิศนี้มีตัวหนุนเรื่องการใช้งานและการคุยงาน แต่มีปัจจัยดินที่ควรระบายก่อนลงมือ จึงควรใช้โลหะ/น้ำเป็นตัวปรับ และเลี่ยงช่วงไฟแรง</p>
+              </div>
+              <div class="sample-tags">
+                <span>Useful God: Wood</span>
+                <span>Luopan: NW</span>
+                <span>Timing: avoid fire day</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="trust-strip" aria-label="Hourkey trust signals">
+        <div class="trust-grid">
+          <div class="trust-item"><b>เห็นเหตุผลของคำตอบ</b><span>บอกว่าคำแนะนำอ้างอิงข้อมูลชั้นใด ไม่ใช่ตอบลอย ๆ</span></div>
+          <div class="trust-item"><b>เริ่มจากคำถามจริง</b><span>เลือกเรื่องก่อน แล้วระบบค่อยดึงดวง เวลา ทิศ และบริบทที่เกี่ยวข้อง</span></div>
+          <div class="trust-item"><b>บอกข้อจำกัดเมื่อข้อมูลไม่ครบ</b><span>ถ้าไม่มีเวลาเกิดหรือข้อมูลพื้นที่ คำตอบจะระบุความไม่แน่นอนให้รู้</span></div>
+          <div class="trust-item"><b>ใช้โปรไฟล์เดียวกันข้ามหน้า</b><span>Chart, Timing, Luopan และ AI Sifu ไม่แยกกันเป็นคนละเรื่อง</span></div>
+        </div>
+      </section>
+      <section class="section" id="paths">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">ทางเข้าการวิเคราะห์</div>
+              <h2>เริ่มจากเรื่องที่ต้องตัดสินใจ</h2>
+            </div>
+            <p class="section-note">เลือกทางเข้าให้ตรงกับคำถาม ระบบจะดึงข้อมูลดวง เวลา ทิศ และบริบทที่เกี่ยวข้องไปให้ AI Sifu เอง</p>
+          </div>
+          <div class="paths">
+            <a class="path-card path-card-featured reveal" href="/master">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-sifu-v2.webp" data-src="assets/landing-v2/card-sifu-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">AI Sifu</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">師</div><h3>ถาม AI Sifu</h3></div>
+                  <p>ถามคำถามเฉพาะเรื่อง แล้วรับคำตอบที่อ้างอิงดวง เวลา ทิศ และบริบทของคุณ</p>
+                </div>
+                <div class="go">เข้าไปถาม →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/today">
+              <div class="path-media">
+                <img src="assets/landing-v2/card-timing-v2.webp" alt="" loading="lazy" decoding="async" />
+                <span class="media-tag">Today</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">日</div><h3>ดูวันนี้</h3></div>
+                  <p>ดูว่าวันนี้เหมาะกับงานแบบไหน ควรใช้จังหวะไหน และควรเลี่ยงอะไร</p>
+                </div>
+                <div class="go">เปิดวันนี้ →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/picker">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-picker-v2.webp" data-src="assets/landing-v2/card-picker-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">Picker</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">擇</div><h3>วางฤกษ์</h3></div>
+                  <p>เลือกวันและช่วงเวลาที่สัมพันธ์กับงานสำคัญและดวงเจ้าของเรื่อง</p>
+                </div>
+                <div class="go">เลือกวัน →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/luopan">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-luopan-v2.webp" data-src="assets/landing-v2/card-luopan-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">Luopan</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">羅</div><h3>Luopan บ้านและทิศ</h3></div>
+                  <p>อ่านทิศ บ้าน ห้อง ประตู โต๊ะ เตียง และจุดพลังในพื้นที่จริง</p>
+                </div>
+                <div class="go">เปิดเข็ม →</div>
+              </div>
+            </a>
+            <a class="path-card reveal" href="/yongsennetwork">
+              <div class="path-media">
+                <video class="lazy-video" muted loop playsinline preload="none" poster="assets/landing-v2/card-network-v2.webp" data-src="assets/landing-v2/card-network-loop-v2.mp4" aria-hidden="true"></video>
+                <span class="media-tag">Network</span>
+              </div>
+              <div class="path-content">
+                <div>
+                  <div class="path-title"><div class="path-icon">人</div><h3>คนรอบตัว</h3></div>
+                  <p>อ่านแรงหนุน แรงปะทะ และความเหมาะสมในการร่วมงานจากดวงสัมพันธ์</p>
+                </div>
+                <div class="go">ดูเครือข่าย →</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section result-band" id="answer">
+        <div class="section-inner">
+          <div class="result-grid">
+            <div class="question-stack reveal">
+              <div class="label">คำตอบจากบริบทจริง</div>
+              <h2>คำถามเดียว ต้องได้คำตอบที่เอาไปใช้ได้</h2>
+              <div class="question"><b>คำถาม</b> “จะกั้นห้องทางตะวันตกเฉียงเหนือเป็นห้องนั่งเล่นได้ไหม?”</div>
+              <div class="question"><b>บริบทที่ระบบแนบ</b> ดวงเจ้าของบ้าน · ผังบ้าน · องศาเข็ม · ดาวเหิน · ดาวปี · จุดปักในแปลน</div>
+              <div class="question"><b>ผลลัพธ์ที่ควรได้</b> สรุปทิศทาง · แยกปัจจัยหนุน/เสี่ยง · เงื่อนไขลงมือ · วิธีแก้ที่ไม่ทำให้จุดอื่นเสีย</div>
+            </div>
+            <div class="answer reveal">
+              <div class="answer-head">
+                <b>AI Sifu Answer</b>
+                <span>อ้างอิงข้อมูลคำนวณ</span>
+              </div>
+              <div class="answer-body">
+                <div class="answer-line">
+                  <i>01</i>
+                  <div><strong>สรุปทิศทางให้ชัด</strong><p>อ่านว่าองศานั้นตกภูเขาใด วังใด ธาตุใด และสัมพันธ์กับดวงเจ้าของบ้านอย่างไร</p></div>
+                </div>
+                <div class="answer-line">
+                  <i>02</i>
+                  <div><strong>แยกปัจจัยหนุนและเสี่ยง</strong><p>บอกว่าดาว/ธาตุไหนช่วย จุดไหนต้องระวัง และอะไรคือเงื่อนไขที่ทำให้ใช้ได้จริง</p></div>
+                </div>
+                <div class="answer-line">
+                  <i>03</i>
+                  <div><strong>สรุปเป็นขั้นตอนลงมือ</strong><p>แนะนำเวลา สี วัสดุ ตำแหน่ง การใช้งาน และข้อควรเลี่ยงตามบริบทจริง</p></div>
+                </div>
+                <div class="answer-line">
+                  <i>04</i>
+                  <div><strong>ถามต่อได้ทันที</strong><p>คุยต่อจากคำตอบเดิมโดยไม่ต้องเล่าดวงใหม่ เพราะบริบทถูกผูกไว้กับ profile และพื้นที่จริง</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section fusion-band" id="fusion">
+        <div class="section-inner fusion-grid">
+          <div class="fusion-copy reveal">
+            <div class="label">AI Sifu Fusion</div>
+            <h2>6 ศาสตร์ Fusion · ฟ้าเดียวกัน คนละภาษา</h2>
+            <p class="section-note">จีน อินเดีย กรีก และศาสตร์โบราณหลายสายไม่ได้เริ่มจากตำราเดียวกัน แต่เริ่มจากฟ้าเดียวกัน: เวลา ฤดูกาล ทิศ วงกลม 360° จังหวะดาว และความสัมพันธ์ของมุม</p>
+            <p class="section-note">Hourkey ให้แต่ละศาสตร์อ่านด้วยภาษาของตัวเอง แล้วให้ AI Sifu รวมหลักฐานเป็นคำตอบเดียว พร้อมบอกว่าชั้นไหนเห็นตรงกัน ชั้นไหนเตือนต่างกัน และควรตัดสินใจอย่างไร</p>
+            <div class="fusion-line">One sky. Six classical lenses. One decision.</div>
+            <div class="fusion-lenses" aria-label="AI Sifu Fusion sciences">
+              <div class="fusion-lens"><b>BaZi · 八字</b><span>โครงสร้างดวงและธาตุประจำตัว</span></div>
+              <div class="fusion-lens"><b>Zi Wei · 紫微斗數</b><span>ดาวประจำวังและจังหวะชีวิต</span></div>
+              <div class="fusion-lens"><b>Real-Star · 七政四餘</b><span>ตำแหน่งดาวจริงบนฟ้า</span></div>
+              <div class="fusion-lens"><b>Western Astrology</b><span>มุมดาว เรือน และ dignity</span></div>
+              <div class="fusion-lens"><b>Vedic Astrology</b><span>นักษัตร ราศี sidereal และ dasha</span></div>
+              <div class="fusion-lens"><b>Uranian Astrology</b><span>midpoint และ planetary pictures</span></div>
+            </div>
+            <div class="fusion-actions">
+              <a class="btn btn-primary" href="/master-fusion">เปิด AI Sifu Fusion</a>
+              <a class="btn" href="/article-hourkey-guide.html">อ่านคู่มือศาสตร์ Hourkey</a>
+              <a class="btn" href="/article/geometry">อ่านบทความดวงดาว</a>
+            </div>
+          </div>
+          <div class="fusion-visual reveal">
+            <img src="assets/landing-v2/one-sky-six-lenses-v1.webp" alt="Luopan and six glass lenses under a shared starry sky" width="1672" height="941" loading="lazy" decoding="async" />
+            <div class="fusion-caption">
+              <span>generated for Hourkey</span>
+              <span>6 lenses · one sky</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="products">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">ฟีเจอร์ที่อ่านจากบริบทเดียวกัน</div>
+              <h2>ทุกเครื่องมืออ่านจากบริบทชุดเดียวกัน</h2>
+            </div>
+            <p class="section-note">โปรไฟล์ดวง เวลา ทิศ และคำถามของคุณถูกใช้ร่วมกันในแต่ละหน้า ทำให้ Chart, Timing, Luopan และ AI Sifu ไม่แยกกันเป็นคนละเรื่อง</p>
+          </div>
+          <div class="surface-grid">
+            <a class="surface reveal" href="/chart"><div><small>needs profile</small><em>命</em><b>ดวงปาจื้อ</b><p>โครงสร้างดวง ธาตุที่เป็นยา ธาตุที่ควรเลี่ยง และวัยจร</p></div><span class="go">เปิดดวง →</span></a>
+            <a class="surface reveal" href="/today"><div><small>daily context</small><em>日</em><b>วันนี้</b><p>จังหวะรายวัน ชั่วโมงดี ทิศหนุน และกิจที่เหมาะกับดวงคุณ</p></div><span class="go">ดูวันนี้ →</span></a>
+            <a class="surface reveal" href="/calendar"><div><small>month view</small><em>曆</em><b>ปฏิทินมงคล</b><p>ดูวันทั้งเดือน พร้อมคะแนนและเหตุผลที่อ่านออกง่าย</p></div><span class="go">เปิดปฏิทิน →</span></a>
+            <a class="surface reveal" href="/qimen"><div><small>situation</small><em>奇</em><b>Qi Men</b><p>อ่านสถานการณ์เฉพาะหน้า ทิศ ประตู ดาว เทพ และวังที่ใช้ได้</p></div><span class="go">เปิดฉีเหมิน →</span></a>
+            <a class="surface reveal" href="/book"><div><small>report</small><em>書</em><b>Natal Book</b><p>รวมรายงานดวงเชิงลึกสำหรับอ่านเป็นเล่มและเก็บอ้างอิง</p></div><span class="go">เปิดหนังสือ →</span></a>
+            <a class="surface reveal" href="/datepick"><div><small>important date</small><em>擇</em><b>Date Picking</b><p>เลือกฤกษ์ให้ตรงกับงานสำคัญและดวงเจ้าของงาน</p></div><span class="go">วางฤกษ์ →</span></a>
+            <a class="surface reveal" href="/luopan"><div><small>space data</small><em>羅</em><b>Luopan AI</b><p>องศาทิศจริง วงแหวนหล่อแก ดาวเหิน และ pin ในแปลน</p></div><span class="go">เปิดหล่อแก →</span></a>
+            <a class="surface reveal" href="/master"><div><small>ask anything</small><em>師</em><b>AI Sifu</b><p>ถามต่อจากข้อมูลจริง ไม่ใช่ chatbot ทั่วไปที่ตอบจาก prompt ลอย ๆ</p></div><span class="go">ถามซินแส →</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section result-band" id="process">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">หลังจากกดเริ่ม</div>
+              <h2>จากข้อมูลส่วนตัว ไปจนถึงคำแนะนำที่ลงมือได้</h2>
+            </div>
+            <p class="section-note">ยิ่งบริบทครบ คำตอบยิ่งเฉพาะตัว: วันเกิด เวลาเกิด สถานที่เกิด ความสัมพันธ์ งานที่ถาม และพื้นที่จริง</p>
+          </div>
+          <div class="process">
+            <div class="step reveal"><div class="num">01 · Profile</div><h3>ใส่วัน เวลา และสถานที่เกิด</h3><p>ระบบคำนวณด้วยเวลาสุริยะจริง แล้วสร้างโครงสร้างดวง ยงเสิน ธาตุหนุน และธาตุที่ควรระวัง</p></div>
+            <div class="step reveal"><div class="num">02 · Context</div><h3>เลือกเรื่องที่อยากถาม</h3><p>เมื่อถามเรื่องฤกษ์ ทิศ บ้าน หรือคนรอบตัว ระบบจะเพิ่มข้อมูลเฉพาะหน้าก่อนส่งเข้า AI Sifu</p></div>
+            <div class="step reveal"><div class="num">03 · Decision</div><h3>ได้คำตอบพร้อมเหตุผล</h3><p>ถ้าข้อมูลบางชั้นยังไม่ครบ ระบบจะบอกข้อจำกัดของคำตอบ ไม่สรุปเกินกว่าข้อมูลที่มี</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="sciences">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">ชั้นข้อมูลที่ใช้คำนวณ</div>
+              <h2>หลายศาสตร์ แต่ต้องกลายเป็นคำตอบเดียว</h2>
+            </div>
+            <p class="section-note">AI Sifu อ่านจากข้อมูลที่ระบบคำนวณไว้ ไม่ใช่แค่คำสวย ๆ จากโมเดลภาษา</p>
+          </div>
+          <div class="sciences">
+            <a class="science reveal" href="/articles/sciences/bazi.html">
+              <div class="science-media"><img src="assets/landing-v2/card-sifu-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>命理</em><b>BaZi</b><p>อ่านโครงสร้างดวง ธาตุที่หนุน ธาตุที่ควรระวัง วัยจร และปีจร เพื่อเข้าใจพื้นฐานของเจ้าของดวง</p></div>
+            </a>
+            <a class="science reveal" href="/articles/sciences/qimen.html">
+              <div class="science-media"><img src="assets/landing-v2/card-network-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>奇門</em><b>Qi Men</b><p>ประตู ดาว เทพ วัง ทิศ และจังหวะเฉพาะคำถามที่ต้องตัดสินใจตอนนี้</p></div>
+            </a>
+            <a class="science reveal" href="/articles/sciences/fengshui-luopan.html">
+              <div class="science-media"><img src="assets/landing-v2/card-luopan-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>羅盤</em><b>Luopan</b><p>อ่าน 24 ภูเขา ดาวเหิน ยุค องศาเข็ม ทิศบ้าน และตำแหน่งสำคัญในแปลนจริง</p></div>
+            </a>
+            <a class="science reveal" href="/articles/sciences/date-picking.html">
+              <div class="science-media"><img src="assets/landing-v2/card-timing-v2.webp" alt="" loading="lazy" decoding="async" /></div>
+              <div class="science-body"><em>通書</em><b>Tong Shu</b><p>วัน ชั่วโมง กิจที่เหมาะ ข้อควรเลี่ยง และการจับฤกษ์ตามบริบทผู้ใช้</p></div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="trust">
+        <div class="section-inner split">
+          <div class="media-frame reveal">
+            <img src="assets/landing-v2/hourkey-hero-v2.webp" alt="Hourkey luopan and AI reading desk" loading="lazy" decoding="async" />
+          </div>
+          <div class="quote-list reveal">
+            <div class="label">ทำไมคำตอบตรวจสอบได้</div>
+            <h2>สร้างมาเพื่อคำถามที่มีผลกับชีวิตจริง</h2>
+            <div class="quote">แสดงว่าคำตอบอ้างอิงข้อมูลชั้นใด เช่น ดวง เวลา ฤกษ์ ทิศ หรือข้อมูลพื้นที่<small>traceable layers</small></div>
+            <div class="quote">แยกคำแนะนำออกจากคำทำนายทั่วไป พร้อมบอกเงื่อนไขและข้อควรเลี่ยงก่อนลงมือ<small>decision support</small></div>
+            <div class="quote">ใช้โปรไฟล์เดียวกันข้ามหน้า เพื่อลดคำตอบที่ขัดกันเองระหว่าง Chart, Timing, Luopan และ AI Sifu<small>one context</small></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pricing">
+        <div class="section-inner">
+          <div class="pricing-grid">
+            <div class="pricing-panel reveal">
+              <div class="label">แพ็กเกจและการเริ่มใช้งาน</div>
+              <h2>เริ่มจากคำถามก่อน แล้วค่อยเลือกเครื่องมือที่ต้องใช้</h2>
+              <p>Hourkey เหมาะกับทั้งคนที่อยากถาม AI Sifu เป็นครั้งคราว และคนที่ต้องใช้ฤกษ์ ทิศ หรือรายงานดวงหลายชั้นเป็นประจำ</p>
+              <div class="pricing-actions">
+                <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
+                <a class="btn" href="/pricing">ดูแพ็กเกจ</a>
+              </div>
+            </div>
+            <div class="pricing-panel reveal">
+              <h3>สิ่งที่ควรรู้ก่อนเริ่ม</h3>
+              <div class="pricing-list">
+                <span>ต้องมีวันเกิดเป็นอย่างน้อย เวลาเกิดช่วยให้คำตอบละเอียดขึ้น</span>
+                <span>คำถามเรื่องบ้าน/ทิศจะชัดขึ้นเมื่อมีองศาเข็มหรือแปลน</span>
+                <span>ระบบจะแจ้งเมื่อข้อมูลบางชั้นยังไม่พอสำหรับสรุปแบบละเอียด</span>
+                <span>คำตอบใช้เป็นเครื่องมือช่วยคิด ไม่ใช่คำแนะนำทางแพทย์ กฎหมาย หรือการเงิน</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section result-band" id="faq">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="label">FAQ</div>
+              <h2>คำถามที่เจอบ่อย</h2>
+            </div>
+          </div>
+          <div class="faq">
+            <div class="faq-item reveal"><b>ต้องรู้ดวงจีนก่อนใช้ไหม?</b><p>ไม่จำเป็น เลือกเรื่องที่อยากถามได้เลย ระบบจะแปลงข้อมูลเชิงเทคนิคเป็นภาษาที่ใช้ตัดสินใจได้</p></div>
+            <div class="faq-item reveal"><b>AI Sifu ต่างจาก chatbot ทั่วไปยังไง?</b><p>คำตอบผูกกับข้อมูลดวง เวลา ทิศ และโปรไฟล์ของคุณ ไม่ใช่การถามแบบไม่มีบริบท</p></div>
+            <div class="faq-item reveal"><b>ใช้กับเรื่องบ้านและทิศได้ไหม?</b><p>ได้ หน้า Luopan อ่านองศาจริงและส่งข้อมูลทิศเข้าบริบท AI Sifu เพื่อวิเคราะห์ต่อ</p></div>
+            <div class="faq-item reveal"><b>ถ้าไม่มีเวลาเกิดทำได้ไหม?</b><p>เริ่มได้ แต่คำตอบบางส่วนจะกว้างขึ้น ระบบจะบอกเมื่อข้อมูลบางชั้นยังไม่ครบ</p></div>
+            <div class="faq-item reveal"><b>คำตอบเชื่อถือได้แค่ไหน?</b><p>Hourkey แสดงเหตุผลและชั้นข้อมูลที่ใช้ประกอบคำตอบ แต่ผลลัพธ์ควรใช้เป็นเครื่องมือช่วยคิด ไม่ใช่การรับประกันเหตุการณ์ในอนาคต</p></div>
+            <div class="faq-item reveal"><b>ข้อมูลของฉันถูกใช้ยังไง?</b><p>ข้อมูลโปรไฟล์และบริบทคำถามถูกใช้เพื่อคำนวณและสร้างคำตอบเฉพาะตัวในระบบ Hourkey</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <img class="final-bg" src="assets/landing-v2/hourkey-hero-v2.webp" alt="" loading="lazy" decoding="async" />
+        <div class="section-inner reveal">
+          <div class="seal-lock">時</div>
+          <div class="label">เริ่มจากโปรไฟล์ดวงจีนของคุณ</div>
+          <h2>ให้ Hourkey อ่านบริบทก่อนตัดสินใจ</h2>
+          <p>สร้างคำตอบจากวันเวลาเกิด ฤกษ์ ทิศ พื้นที่ และข้อมูลจริงของคำถามที่คุณกำลังตัดสินใจ</p>
+          <div class="hero-cta" style="justify-content:center">
+            <a class="btn btn-primary" href="/signup?tab=signup">เริ่มจากคำถามของฉัน</a>
+            <a class="btn" href="#answer">ดูตัวอย่างคำตอบ</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>hourkey · ระบบวิเคราะห์ดวงจีนเพื่อช่วยตัดสินใจ</span>
+        <div class="footer-links">
+          <a href="/article-hourkey-guide.html">คู่มือศาสตร์</a>
+          <a href="/article/geometry">ดวงดาว</a>
+          <a href="/methodology">วิธีคำนวณ</a>
+          <a href="/accuracy">ความแม่นยำ</a>
+          <a href="/pricing">แพ็กเกจ</a>
+          <a href="/signup?tab=login">เข้าสู่ระบบ</a>
+        </div>
+        <span>ใช้เพื่อประกอบการตัดสินใจ ไม่ใช่คำแนะนำทางแพทย์ กฎหมาย หรือการเงิน</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="assets/landing-v2/landing-i18n.js"></script>
+  <script>
+    const nav = document.getElementById('nav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 18);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive:true });
+
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    if(menuToggle && mobileDrawer){
+      const closeDrawer = () => {
+        mobileDrawer.classList.remove('open');
+        menuToggle.setAttribute('aria-expanded','false');
+      };
+      menuToggle.addEventListener('click', () => {
+        const open = mobileDrawer.classList.toggle('open');
+        menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      mobileDrawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeDrawer));
+      window.addEventListener('keydown', (event) => {
+        if(event.key === 'Escape') closeDrawer();
+      });
+    }
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+    const canPlayVideo = !reducedMotion && !saveData;
+    const attachVideo = (video) => {
+      if(!canPlayVideo || video.dataset.loaded === '1') return;
+      const src = video.dataset.src;
+      if(!src) return;
+      const source = document.createElement('source');
+      source.src = src;
+      source.type = 'video/mp4';
+      video.appendChild(source);
+      video.dataset.loaded = '1';
+      video.load();
+      video.play().catch(() => {});
+    };
+
+    const revealEls = Array.from(document.querySelectorAll('.reveal'));
+    const videoEls = Array.from(document.querySelectorAll('.lazy-video'));
+    if(!('IntersectionObserver' in window)){
+      revealEls.forEach((el) => el.classList.add('on'));
+      videoEls.forEach(attachVideo);
+    }else{
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('on');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold:.12 });
+      revealEls.forEach((el) => revealObserver.observe(el));
+
+      const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if(entry.isIntersecting){
+            attachVideo(entry.target);
+            videoObserver.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin:'260px 0px', threshold:.01 });
+      videoEls.forEach((video) => videoObserver.observe(video));
+    }
+  </script>
+</body>
+</html>

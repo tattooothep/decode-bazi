@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { hashPassword, setAuthCookie, signSession } from "@/lib/auth";
+import { hashPassword, setAuthCookie, signSession, readSessionVersion } from "@/lib/auth";
 import { q1 } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { ensureOrgMember } from "@/lib/ensure-org-member";
+import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
+import { applySignupProductDefaults } from "@/lib/product-entitlement";
 
 export const dynamic = "force-dynamic";
 
@@ -60,14 +63,24 @@ export async function POST(req: Request) {
   ).catch(async () => {
     await q1(`INSERT INTO organizations (id, name) VALUES ($1,$2)`, [orgId, name || "personal"]);
   });
-  await q1(
-    `INSERT INTO org_members (org_id, user_id, role, created_at)
-     VALUES ($1,$2,'owner',now())`,
-    [orgId, userId]
-  ).catch(() => null);
+  await ensureOrgMember(orgId, userId, "owner").catch((e) =>
+    console.warn("[mobile-signup] org_members", e instanceof Error ? e.message : String(e))
+  );
   await q1(`UPDATE users SET current_org_id=$1, last_active_at=now() WHERE id=$2`, [orgId, userId]);
 
-  const token = await signSession({ userId, email, orgId });
+  await recordSignupFingerprint({
+    userId,
+    request: req,
+    deviceId: body.deviceId || body.affiliateDeviceId || null,
+  });
+  await applySignupProductDefaults(userId);
+
+  const bal = await q1<{ hour_balance: number; tier: string }>(
+    `SELECT hour_balance, tier FROM users WHERE id=$1`,
+    [userId]
+  );
+  const sv = await readSessionVersion(userId);
+  const token = await signSession({ userId, email, orgId, sv });
   await setAuthCookie(token);
 
   return NextResponse.json(
@@ -81,8 +94,8 @@ export async function POST(req: Request) {
         id: userId,
         email,
         name,
-        tier: "free",
-        hour_balance: 500,
+        tier: bal?.tier || "free",
+        hour_balance: bal?.hour_balance ?? 0,
       },
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }

@@ -121,6 +121,8 @@
     light:    { th:'สว่าง', en:'Light', zh:'明亮', cn:'浅色', vi:'Sáng', ja:'ライト', ru:'Светлая', ko:'라이트', es:'Claro' },
     dark:     { th:'มืด', en:'Dark', zh:'暗色', cn:'深色', vi:'Tối', ja:'ダーク', ru:'Темная', ko:'다크', es:'Oscuro' },
     signin:   { th:'เข้าสู่ระบบ', en:'Sign in', zh:'登入', cn:'登录', vi:'Đăng nhập', ja:'ログイン', ru:'Войти', ko:'로그인', es:'Entrar' },
+    trialLeft:{ th:'ทดลองเหลือ {N} วัน', en:'Trial · {N} days left', zh:'試用剩 {N} 天', cn:'试用剩 {N} 天', vi:'Dùng thử còn {N} ngày', ja:'トライアル残り {N} 日', ru:'Пробный · осталось {N} дн.', ko:'체험 {N}일 남음', es:'Prueba · quedan {N} días' },
+    trialEnded:{ th:'หมดทดลอง · โหมดฟรี', en:'Trial ended · free mode', zh:'試用結束 · 免費模式', cn:'试用结束 · 免费模式', vi:'Hết dùng thử · miễn phí', ja:'トライアル終了 · フリー', ru:'Пробный закончен · бесплатно', ko:'체험 종료 · 무료', es:'Prueba terminada · gratis' },
   };
   function langState() {
     return window.HK_LANG_STATE || (window.HK && window.HK.langState) || null;
@@ -388,11 +390,14 @@
           <div class="hk-um-name">${escapeHtml(displayName)}</div>
           <div class="hk-um-email">${escapeHtml(user.email || '')}</div>
           <div class="hk-um-account" id="hk-um-account" style="display:none;margin-top:10px;padding:10px 12px;background:linear-gradient(135deg,rgba(200,164,77,.15),rgba(200,164,77,.05));border:1px solid rgba(200,164,77,.3);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:'JetBrains Mono',monospace;">
-            <span style="display:inline-flex;align-items:center;gap:6px;">
-              <span style="font-family:'Noto Serif TC',serif;font-size:14px;color:#c8a44d;font-weight:700;" id="hk-um-tier-badge">新</span>
-              <span style="font-size:9px;letter-spacing:.12em;color:rgba(246,241,230,.6);text-transform:uppercase;" id="hk-um-tier-name">FREE</span>
+            <span style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;">
+              <span style="display:inline-flex;align-items:center;gap:6px;">
+                <span style="font-family:'Noto Serif TC',serif;font-size:14px;color:#c8a44d;font-weight:700;" id="hk-um-tier-badge">新</span>
+                <span style="font-size:9px;letter-spacing:.12em;color:rgba(246,241,230,.6);text-transform:uppercase;" id="hk-um-tier-name">FREE</span>
+              </span>
+              <span style="font-size:9px;letter-spacing:.04em;color:rgba(200,164,77,.85);line-height:1.3;" id="hk-um-trial-line"></span>
             </span>
-            <a href="/account.html" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:#c8a44d;font-size:11px;letter-spacing:.05em;">
+            <a href="/account.html" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:#c8a44d;font-size:11px;letter-spacing:.05em;flex-shrink:0;">
               <span style="font-family:'Noto Serif TC',serif;font-weight:700;" id="hk-um-balance">—</span>
               <span style="font-family:'Noto Serif TC',serif;">時</span>
               <span style="opacity:.6;">▸</span>
@@ -462,9 +467,28 @@
         var bEl = wrap.querySelector('#hk-um-tier-badge');
         var nEl = wrap.querySelector('#hk-um-tier-name');
         var balEl = wrap.querySelector('#hk-um-balance');
-        if (bEl) bEl.textContent = TIER_BADGE[acc.tier] || '新';
-        if (nEl) nEl.textContent = TIER_NAME[acc.tier] || 'FREE';
+        var trialEl = wrap.querySelector('#hk-um-trial-line');
+        var plan = acc.plan || (acc.in_trial ? 'trial' : (acc.tier || 'free'));
+        if (bEl) bEl.textContent = acc.in_trial ? '試' : (TIER_BADGE[acc.tier] || '新');
+        if (nEl) {
+          if (acc.in_trial) nEl.textContent = 'TRIAL';
+          else if (acc.sub_active && acc.tier) nEl.textContent = TIER_NAME[acc.tier] || String(acc.tier).toUpperCase();
+          else nEl.textContent = 'FREE';
+        }
         if (balEl) balEl.textContent = (acc.hour_balance || 0).toLocaleString();
+        if (trialEl) {
+          if (acc.in_trial && acc.trial_ends_at) {
+            var left = Math.max(0, Math.ceil((new Date(acc.trial_ends_at).getTime() - Date.now()) / 86400000));
+            trialEl.textContent = t('trialLeft').replace('{N}', String(left));
+            trialEl.style.display = '';
+          } else if (acc.trial_ends_at && !acc.in_trial && !acc.sub_active) {
+            trialEl.textContent = t('trialEnded');
+            trialEl.style.display = '';
+          } else {
+            trialEl.textContent = '';
+            trialEl.style.display = 'none';
+          }
+        }
       })
       .catch(function(){ /* anon · silent */ });
     /* if avatar img fails to load, fall back to initials */

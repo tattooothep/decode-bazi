@@ -369,91 +369,225 @@
       Object.keys(UI_PATCH).forEach(function(k){ if (UI && UI[k]) merge(UI[k], UI_PATCH[k]); });
       if (typeof TX !== 'undefined') Object.keys(TX_PATCH).forEach(function(k){ if (TX[k]) merge(TX[k], TX_PATCH[k]); });
 
+      /* Sync với docs/PRODUCT_ENTITLEMENT.md · 1000 yam + 30-day trial · tool ~30% */
       patchTier(PRICING.tiers[0], {
         name:{ cn:'新人', vi:'Free', ja:'Free', ru:'Free', ko:'Free', es:'Free' },
-        tag:{ cn:'免费开始 · 建立第一张命盘 · 试用 AI 师傅', vi:'Bắt đầu miễn phí · tạo lá số đầu tiên · thử AI Sifu', ja:'無料で開始 · 最初の命盤作成 · AI Sifuを試す', ru:'Начните бесплатно · создайте первую карту · попробуйте AI Sifu', ko:'무료 시작 · 첫 차트 생성 · AI Sifu 체험', es:'Empieza gratis · crea tu primera carta · prueba AI Sifu' },
-        yam:{ cn:'注册送 500 时', vi:'500 lượt khi đăng ký', ja:'登録時に500クレジット', ru:'500 единиц при регистрации', ko:'가입 시 500 크레딧', es:'500 créditos al registrarte' },
-        cta:{ cn:'免费开始 · 建第一张命盘', vi:'Bắt đầu miễn phí · tạo lá số', ja:'無料で開始 · 命盤作成', ru:'Начать бесплатно · первая карта', ko:'무료 시작 · 첫 차트', es:'Empieza gratis · primera carta' },
+        tag:{
+          cn:'1,000 时 + 30 天试用 · 之后免费模式',
+          vi:'1.000 lượt + dùng thử 30 ngày · rồi chế độ miễn phí',
+          ja:'1,000クレジット + 30日トライアル · その後フリー',
+          ru:'1 000 единиц + 30 дней пробного · затем бесплатно',
+          ko:'1,000 크레딧 + 30일 체험 · 이후 무료 모드',
+          es:'1.000 créditos + prueba 30 días · luego modo gratis'
+        },
+        yam:{
+          cn:'注册送 1,000 时（永不过期）',
+          vi:'1.000 lượt khi đăng ký (không hết hạn)',
+          ja:'登録時 1,000クレジット（失効なし）',
+          ru:'1 000 единиц при регистрации (не сгорают)',
+          ko:'가입 시 1,000 크레딧 (만료 없음)',
+          es:'1.000 créditos al registrarte (no caducan)'
+        },
+        cta:{
+          cn:'免费开始 · 建第一张命盘',
+          vi:'Bắt đầu miễn phí · tạo lá số',
+          ja:'無料で開始 · 命盤作成',
+          ru:'Начать бесплатно · первая карта',
+          ko:'무료 시작 · 첫 차트',
+          es:'Empieza gratis · primera carta'
+        },
         feats:{
-          cn:['注册 + 输入出生资料 + 打开命盘','完整四柱八字命盘','首 500 时用于试问 AI 师傅','适合先试用再升级'],
-          vi:['Đăng ký + nhập ngày sinh + mở lá số','Lá số BaZi đủ 4 trụ','500 lượt đầu để thử AI Sifu','Dành cho thử trước khi nâng cấp'],
-          ja:['登録 + 生年月日入力 + 命盤を開く','4柱のBaZi命盤','最初の500クレジットでAI Sifuを試す','アップグレード前の試用向け'],
-          ru:['Регистрация + данные рождения + открытие карты','Полная карта BaZi из 4 столпов','Первые 500 единиц для пробы AI Sifu','Для пробы перед апгрейдом'],
-          ko:['가입 + 생년월일 입력 + 차트 열기','4기둥 BaZi 차트','첫 500 크레딧으로 AI Sifu 체험','업그레이드 전 체험용'],
-          es:['Registro + datos de nacimiento + abrir carta','Carta BaZi completa de 4 pilares','Primeros 500 créditos para probar AI Sifu','Pensado para probar antes de subir']
+          cn:[
+            '注册 + 出生资料 + 打开命盘',
+            '注册送 1,000 时 · AI 用到完',
+            '30 天试用：Fusion 最多 3 · 命书 2 · 择日 1 盘 · Vision 1 次 · 房宅 3 · 择日/罗盘/奇门约 30%',
+            '30 天后：命盘／历／今日 + 剩余时问 AI · 深工具需升级'
+          ],
+          vi:[
+            'Đăng ký + ngày sinh + mở lá số',
+            '1.000 lượt khi vào · AI dùng đến hết',
+            'Dùng thử 30 ngày: Fusion tối đa 3 · Sách 2 · chọn ngày 1 lá · Vision 1× · 3 nhà · chọn ngày/la bàn/Kỳ Môn ~30%',
+            'Sau ngày 30: lá số/lịch/hôm nay + AI bằng lượt còn · công cụ sâu cần nâng cấp'
+          ],
+          ja:[
+            '登録 + 生年月日 + 命盤を開く',
+            '登録時 1,000クレジット · AIは使い切りまで',
+            '30日トライアル：Fusion最大3 · 命書2 · 日取り1盤 · Vision 1回 · 家3 · 日取り/羅盤/奇門 約30%',
+            '30日後：命盤/暦/今日 + 残クレジットでAI · 深い機能はアップグレード'
+          ],
+          ru:[
+            'Регистрация + данные рождения + открыть карту',
+            '1 000 единиц при входе · AI до исчерпания',
+            'Пробный 30 дней: Fusion макс 3 · Книга 2 · дата 1 карта · Vision 1× · 3 дома · datepick/luopan/qimen ~30%',
+            'После 30 дней: карта/календарь/сегодня + AI с остатком · глубокие инструменты — апгрейд'
+          ],
+          ko:[
+            '가입 + 생년월일 + 차트 열기',
+            '가입 시 1,000 크레딧 · AI는 소진까지',
+            '30일 체험: Fusion 최대 3 · 명서 2 · 택일 1차트 · Vision 1회 · 집 3 · 택일/나경/기문 약 30%',
+            '30일 후: 차트/달력/오늘 + 남은 크레딧 AI · 심화 도구는 업그레이드'
+          ],
+          es:[
+            'Registro + datos de nacimiento + abrir carta',
+            '1.000 créditos al unirte · AI hasta agotarlos',
+            'Prueba 30 días: Fusion máx 3 · Libro 2 · fechas 1 carta · Vision 1× · 3 casas · fechas/luopan/qimen ~30%',
+            'Tras día 30: carta/calendario/hoy + AI con saldo · herramientas profundas con upgrade'
+          ]
         }
       });
       patchTier(PRICING.tiers[1], {
         name:{ cn:'Premium', vi:'Premium', ja:'Premium', ru:'Premium', ko:'Premium', es:'Premium' },
-        tag:{ cn:'推荐 · 解锁完整 6 术 + AI 师傅，适合正式使用', vi:'Khuyên dùng · mở 6 truyền thống + AI Sifu đầy đủ để dùng thật', ja:'おすすめ · 6占術 + 完全版AI Sifuを実用向けに開放', ru:'Рекомендуем · 6 традиций + полный AI Sifu для реальной работы', ko:'추천 · 6체계 + 전체 AI Sifu로 실사용', es:'Recomendado · 6 tradiciones + AI Sifu completo para uso real' },
-        yam:{ cn:'500 时/月', vi:'500 lượt / tháng', ja:'500クレジット / 月', ru:'500 единиц / месяц', ko:'500 크레딧 / 월', es:'500 créditos / mes' },
-        cta:{ cn:'解锁 Premium', vi:'Mở khóa Premium', ja:'Premiumを開放', ru:'Открыть Premium', ko:'Premium 잠금 해제', es:'Desbloquear Premium' },
-        badge:{ cn:'⭐ 推荐 · 最适合', vi:'⭐ Khuyên dùng · hợp nhất', ja:'⭐ おすすめ · 最適', ru:'⭐ Рекомендуем · лучший выбор', ko:'⭐ 추천 · 최적', es:'⭐ Recomendado · mejor ajuste' },
+        tag:{
+          cn:'推荐 · 单人命盘工具 + 有限 Fusion／命书',
+          vi:'Khuyên dùng · công cụ 1 lá + Fusion/Sách giới hạn',
+          ja:'おすすめ · 単命盤ツール + 制限付き Fusion/命書',
+          ru:'Рекомендуем · соло-инструменты + лимит Fusion/Книги',
+          ko:'추천 · 단일 차트 도구 + 제한 Fusion/명서',
+          es:'Recomendado · herramientas solo + Fusion/Libro limitado'
+        },
+        yam:{
+          cn:'购买时 +500 时（尚未每月自动补发）',
+          vi:'+500 lượt khi mua (chưa nạp lại hằng tháng tự động)',
+          ja:'購入時 +500クレジット（月次自動補充は未対応）',
+          ru:'+500 единиц при покупке (авто-пополнение пока нет)',
+          ko:'구매 시 +500 크레딧 (월 자동 충전 아직 없음)',
+          es:'+500 créditos al comprar (sin recarga mensual auto aún)'
+        },
+        cta:{
+          cn:'解锁 Premium',
+          vi:'Mở khóa Premium',
+          ja:'Premiumを開放',
+          ru:'Открыть Premium',
+          ko:'Premium 잠금 해제',
+          es:'Desbloquear Premium'
+        },
+        badge:{
+          cn:'⭐ 推荐 · 最适合',
+          vi:'⭐ Khuyên dùng · hợp nhất',
+          ja:'⭐ おすすめ · 最適',
+          ru:'⭐ Рекомендуем · лучший выбор',
+          ko:'⭐ 추천 · 최적',
+          es:'⭐ Recomendado · mejor ajuste'
+        },
         feats:{
-          cn:['完整 6 术 + Master Fusion','完整 AI 师傅，可重复提问','择日 / 天星 / 日历 正式使用','适合开始长期使用的一般用户'],
-          vi:['Đủ 6 truyền thống + Master Fusion','AI Sifu đầy đủ để hỏi lặp lại','Chọn ngày / Thiên Tinh / Lịch để dùng thật','Gói chính cho người dùng thường xuyên'],
-          ja:['6占術フル + Master Fusion','完全版AI Sifuで繰り返し質問','日取り選び / 天星 / 暦を実用','継続利用する一般ユーザー向け'],
-          ru:['Полные 6 традиций + Master Fusion','Полный AI Sifu для повторных вопросов','Выбор даты / Тяньсин / календарь для работы','Основной план для регулярных пользователей'],
-          ko:['6체계 전체 + Master Fusion','반복 질문 가능한 전체 AI Sifu','택일 / 천성 / 달력 실사용','정기 사용자를 위한 메인 플랜'],
-          es:['6 tradiciones completas + Master Fusion','AI Sifu completo para preguntas repetidas','Selección de fecha / Tianxing / calendario para uso real','El plan principal para usuarios regulares']
+          cn:['择日／天星／风水罗盘／奇门／天王星','Fusion 最多 4 术 · 1 命盘','命书最多 3 术（无深度融合章）','可存多房宅 · AI 师傅依使用扣时'],
+          vi:['Chọn ngày / Thiên Tinh / Phong thủy·la bàn / Kỳ Môn / Uranian','Fusion tối đa 4 · 1 lá','Sách mệnh tối đa 3 (chưa có chương hợp nhất sâu)','Lưu nhiều nhà · AI Sifu trừ lượt theo dùng'],
+          ja:['日取り / 天星 / 風水・羅盤 / 奇門 / Uranian','Fusion 最大4術 · 1命盤','命書最大3術（深い融合章なし）','複数の家を保存 · AI Sifuは使用分を消費'],
+          ru:['Дата / Тяньсин / фэн-шуй·луопань / Ци Мэнь / Uranian','Fusion до 4 · 1 карта','Книга до 3 (без глубокого синтеза)','Много домов · AI Sifu тратит единицы по факту'],
+          ko:['택일 / 천성 / 풍수·나경 / 기문 / Uranian','Fusion 최대 4 · 1차트','명서 최대 3 (심화 융합 장 없음)','여러 집 저장 · AI Sifu는 사용량만큼 차감'],
+          es:['Fechas / Tianxing / feng shui·luopan / Qi Men / Uranian','Fusion hasta 4 · 1 carta','Libro hasta 3 (sin capítulo de síntesis profunda)','Varias casas · AI Sifu gasta créditos al usarse']
         }
       });
       patchTier(PRICING.tiers[2], {
         name:{ cn:'Master', vi:'Master', ja:'Master', ru:'Master', ko:'Master', es:'Master' },
-        tag:{ cn:'多命盘 · 深度报告 · 专业使用', vi:'Nhiều lá số · báo cáo sâu · công việc chuyên nghiệp', ja:'多数の命盤 · 深いレポート · プロ用途', ru:'Много карт · глубокие отчеты · профессиональная работа', ko:'여러 차트 · 깊은 리포트 · 전문 작업', es:'Muchas cartas · reportes profundos · trabajo profesional' },
-        yam:{ cn:'2,000 时/月', vi:'2.000 lượt / tháng', ja:'2,000クレジット / 月', ru:'2 000 единиц / месяц', ko:'2,000 크레딧 / 월', es:'2.000 créditos / mes' },
-        cta:{ cn:'选择 Master', vi:'Chọn Master', ja:'Masterを選ぶ', ru:'Выбрать Master', ko:'Master 선택', es:'Elegir Master' },
+        tag:{
+          cn:'多命盘 · 完整命书 · 人脉／群组',
+          vi:'Nhiều lá · Sách đầy đủ · mạng lưới/nhóm',
+          ja:'多数命盤 · 完全命書 · 人脈/グループ',
+          ru:'Много карт · полная Книга · сеть/группа',
+          ko:'여러 차트 · 전체 명서 · 인맥/그룹',
+          es:'Muchas cartas · Libro completo · red/grupo'
+        },
+        yam:{
+          cn:'购买时 +2,000 时（尚未每月自动补发）',
+          vi:'+2.000 lượt khi mua (chưa nạp lại hằng tháng tự động)',
+          ja:'購入時 +2,000クレジット（月次自動補充は未対応）',
+          ru:'+2 000 единиц при покупке (авто-пополнение пока нет)',
+          ko:'구매 시 +2,000 크레딧 (월 자동 충전 아직 없음)',
+          es:'+2.000 créditos al comprar (sin recarga mensual auto aún)'
+        },
+        cta:{
+          cn:'选择大师',
+          vi:'Chọn Master',
+          ja:'Masterを選ぶ',
+          ru:'Выбрать Master',
+          ko:'Master 선택',
+          es:'Elegir Master'
+        },
         feats:{
-          cn:['Premium 的全部内容','深度命书 / 报告工作','合盘 / 人脉 / 群组','每月 2,000 时 + AI 优先'],
-          vi:['Tất cả trong Premium','Sách mệnh / báo cáo chuyên sâu','Hợp bàn / mạng lưới / nhóm','2.000 lượt/tháng + AI ưu tiên'],
-          ja:['Premiumのすべて','深い命書 / レポート作業','合盤 / 人脈 / グループ','月2,000クレジット + AI優先'],
-          ru:['Все из Premium','Глубокая работа с книгой / отчетом','Совместимость / сеть / группа','2 000 единиц/мес + приоритет AI'],
-          ko:['Premium의 모든 것','심화 명서 / 리포트 작업','합반 / 인맥 / 그룹','월 2,000 크레딧 + AI 우선'],
-          es:['Todo lo de Premium','Trabajo profundo de libro / reporte','Sinastría / red / grupo','2.000 créditos/mes + AI prioritario']
+          cn:['包含 Premium 全部','Fusion 完整 6 术 · 多命盘','完整命书 + 融合章 · 合盘／人脉／群组','购买时 +2,000 时 · 适合专业／多案'],
+          vi:['Tất cả trong Premium','Fusion đủ 6 · nhiều lá','Sách đầy đủ + hợp nhất · hợp bàn/mạng/nhóm','+2.000 lượt khi mua · pro / nhiều case'],
+          ja:['Premiumのすべて','Fusion 全6術 · 多命盤','完全命書 + 融合 · 合盤/人脈/グループ','購入時 +2,000 · プロ/多ケース向け'],
+          ru:['Всё из Premium','Fusion все 6 · много карт','Полная Книга + синтез · совместимость/сеть/группа','+2 000 при покупке · pro / много кейсов'],
+          ko:['Premium 전체','Fusion 6체계 전체 · 여러 차트','전체 명서 + 융합 · 합반/인맥/그룹','구매 시 +2,000 · 프로/다건 작업'],
+          es:['Todo lo de Premium','Fusion las 6 · multi-carta','Libro completo + síntesis · sinastría/red/grupo','+2.000 al comprar · pro / multi-caso']
         }
       });
       merge(PRICING.topups[0].tag, { cn:'入门', vi:'Khởi đầu', ja:'スターター', ru:'Старт', ko:'시작', es:'Inicial' });
       merge(PRICING.topups[1].tag, { cn:'最划算', vi:'Đáng giá nhất', ja:'最もお得', ru:'Лучшая цена', ko:'최고 가성비', es:'Mejor valor' });
       merge(PRICING.topups[2].tag, { cn:'高用量', vi:'Dùng nhiều', ja:'ヘビー', ru:'Интенсивно', ko:'대량 사용', es:'Intensivo' });
 
+      /* CMP indices sync với pricing.html ปัจจุบัน */
       [
-        [0,'grp',{ cn:'Activation — 免费完成首次使用', vi:'Activation — lần thành công đầu miễn phí', ja:'Activation — 無料で最初の成功', ru:'Activation — первый успех бесплатно', ko:'Activation — 무료 첫 성공', es:'Activation — primer éxito gratis' }],
-        [1,'name',{ cn:'注册 + 输入出生资料 + 打开命盘', vi:'Đăng ký + nhập ngày sinh + mở lá số', ja:'登録 + 生年月日入力 + 命盤を開く', ru:'Регистрация + данные рождения + открыть карту', ko:'가입 + 생년월일 입력 + 차트 열기', es:'Registro + datos de nacimiento + abrir carta' }],
+        [0,'grp',{ cn:'Activation — 免费注册', vi:'Activation — đăng ký miễn phí', ja:'Activation — 無料登録', ru:'Activation — бесплатная регистрация', ko:'Activation — 무료 가입', es:'Activation — registro gratis' }],
+        [1,'name',{ cn:'注册 + 出生资料 + 打开命盘', vi:'Đăng ký + ngày sinh + mở lá số', ja:'登録 + 生年月日 + 命盤を開く', ru:'Регистрация + рождение + открыть карту', ko:'가입 + 생년월일 + 차트 열기', es:'Registro + nacimiento + abrir carta' }],
         [2,'name',{ cn:'四柱八字命盘', vi:'Lá số BaZi 4 trụ', ja:'4柱 BaZi 命盤', ru:'Карта BaZi 4 столпа', ko:'4기둥 BaZi 차트', es:'Carta BaZi de 4 pilares' }],
-        [3,'name',{ cn:'首 500 时试用 AI 师傅', vi:'500 lượt đầu để thử AI Sifu', ja:'最初の500クレジットでAI Sifuを試す', ru:'Первые 500 единиц для пробы AI Sifu', ko:'첫 500 크레딧으로 AI Sifu 체험', es:'Primeros 500 créditos para probar AI Sifu' }],
-        [4,'grp',{ cn:'Premium — 正式使用', vi:'Premium — dùng thật hằng ngày', ja:'Premium — 実用', ru:'Premium — реальная ежедневная работа', ko:'Premium — 실사용', es:'Premium — uso real diario' }],
-        [5,'name',{ cn:'完整 6 术 + Master Fusion', vi:'Đủ 6 truyền thống + Master Fusion', ja:'6占術フル + Master Fusion', ru:'Полные 6 традиций + Master Fusion', ko:'6체계 전체 + Master Fusion', es:'6 tradiciones completas + Master Fusion' }],
-        [6,'name',{ cn:'AI 师傅重复提问 / 追问', vi:'AI Sifu hỏi lặp lại / hỏi tiếp', ja:'AI Sifu 繰り返し質問 / 続き', ru:'AI Sifu повторные вопросы / уточнения', ko:'AI Sifu 반복 질문 / 후속 질문', es:'AI Sifu preguntas repetidas / seguimiento' }],
-        [6,'free',{ cn:'首 500', vi:'500 đầu', ja:'最初の500', ru:'первые 500', ko:'첫 500', es:'primeros 500' }],
-        [7,'name',{ cn:'天王星 · 90° 盘', vi:'Uranian · vòng 90°', ja:'Uranian · 90° dial', ru:'Uranian · круг 90°', ko:'Uranian · 90° 다이얼', es:'Uranian · dial 90°' }],
-        [8,'grp',{ cn:'Premium 核心工具', vi:'Công cụ cốt lõi Premium', ja:'Premium 主要ツール', ru:'Ключевые инструменты Premium', ko:'Premium 핵심 도구', es:'Herramientas clave de Premium' }],
-        [9,'name',{ cn:'日历 / 今日 日常使用', vi:'Lịch / Hôm nay để dùng thường xuyên', ja:'暦 / 今日を日常利用', ru:'Календарь / сегодня для регулярного использования', ko:'달력 / 오늘 정기 사용', es:'Calendario / Hoy para uso regular' }],
-        [10,'name',{ cn:'董公择日', vi:'Chọn ngày 董公', ja:'董公の日取り選び', ru:'Выбор дат 董公', ko:'董公 택일', es:'Selección de fecha 董公' }],
-        [11,'name',{ cn:'真实天星七政择日', vi:'Chọn ngày 七政 theo sao thật', ja:'実天 七政 の日取り', ru:'Дата по реальному небу 七政', ko:'실제 하늘 七政 택일', es:'Fecha 七政 con cielo real' }],
-        [12,'name',{ cn:'风水 + 罗盘 羅盤', vi:'Phong thủy + la bàn 羅盤', ja:'風水 + 羅盤', ru:'Фэн-шуй + luopan 羅盤', ko:'풍수 + 나경 羅盤', es:'Feng shui + luopan 羅盤' }],
-        [13,'name',{ cn:'奇门遁甲', vi:'Qi Men 奇門', ja:'奇門遁甲', ru:'Qi Men 奇門', ko:'기문둔갑 奇門', es:'Qi Men 奇門' }],
-        [14,'grp',{ cn:'Master — 深度工作 / 多命盘', vi:'Master — việc sâu / nhiều lá số', ja:'Master — 深い作業 / 多数の命盤', ru:'Master — глубина / много карт', ko:'Master — 심화 작업 / 여러 차트', es:'Master — trabajo profundo / muchas cartas' }],
-        [15,'name',{ cn:'深度命书 / 报告', vi:'Sách mệnh / báo cáo chuyên sâu', ja:'深い命書 / レポート', ru:'Глубокая книга / отчет', ko:'심화 명서 / 리포트', es:'Libro / reporte profundo' }],
-        [15,'premium',{ cn:'有限', vi:'Giới hạn', ja:'制限あり', ru:'Лимит', ko:'제한', es:'Limitado' }],
-        [15,'master',{ cn:'深度', vi:'Chuyên sâu', ja:'深い', ru:'Глубоко', ko:'심화', es:'Profundo' }],
-        [16,'name',{ cn:'合盘 / 人脉 / 群组', vi:'Hợp bàn / mạng lưới / nhóm', ja:'合盤 / 人脈 / グループ', ru:'Совместимость / сеть / группа', ko:'합반 / 인맥 / 그룹', es:'Sinastría / red / grupo' }],
-        [17,'name',{ cn:'AI 师傅优先队列', vi:'Hàng đợi AI Sifu ưu tiên', ja:'AI Sifu 優先キュー', ru:'Приоритетная очередь AI Sifu', ko:'AI Sifu 우선 대기열', es:'Cola prioritaria de AI Sifu' }],
-        [18,'grp',{ cn:'每月时额度', vi:'Lượt hằng tháng', ja:'月次クレジット', ru:'Ежемесячные единицы', ko:'월 크레딧', es:'Créditos mensuales' }],
-        [19,'name',{ cn:'时 (時) / 月', vi:'Lượt (時) mỗi tháng', ja:'クレジット (時) / 月', ru:'Единицы (時) в месяц', ko:'월 크레딧 (時)', es:'Créditos (時) por mes' }],
-        [19,'free',{ cn:'注册 500', vi:'500 khi tham gia', ja:'登録時 500', ru:'500 при входе', ko:'가입 시 500', es:'500 al entrar' }]
+        [3,'name',{ cn:'注册 1,000 时（AI 用到完）', vi:'1.000 lượt khi vào (AI đến hết)', ja:'登録 1,000クレジット（AI使い切り）', ru:'1 000 единиц при входе (AI до конца)', ko:'가입 1,000 크레딧 (AI 소진까지)', es:'1.000 créditos al unirte (AI hasta agotar)' }],
+        [4,'name',{ cn:'30 天试用（工具较完整 · 约 30%）', vi:'Dùng thử 30 ngày (công cụ rộng hơn · ~30%)', ja:'30日トライアル（ツール拡大 · 約30%）', ru:'Пробный 30 дней (шире · ~30%)', ko:'30일 체험 (도구 확대 · 약 30%)', es:'Prueba 30 días (más herramientas · ~30%)' }],
+        [4,'tool',{ cn:'注册自动', vi:'tự động khi đăng ký', ja:'登録時自動', ru:'авто при регистрации', ko:'가입 시 자동', es:'auto al registrarse' }],
+        [4,'free',{ cn:'首 30 天', vi:'30 ngày đầu', ja:'最初の30日', ru:'первые 30 дней', ko:'첫 30일', es:'primeros 30 días' }],
+        [4,'premium',{ cn:'不需', vi:'n/a', ja:'不要', ru:'н/д', ko:'해당 없음', es:'n/a' }],
+        [4,'master',{ cn:'不需', vi:'n/a', ja:'不要', ru:'н/д', ko:'해당 없음', es:'n/a' }],
+        [5,'grp',{ cn:'Fusion / 深度 AI', vi:'Fusion / AI sâu', ja:'Fusion / 深度 AI', ru:'Fusion / глубокий AI', ko:'Fusion / 심층 AI', es:'Fusion / AI profunda' }],
+        [6,'name',{ cn:'Master Fusion（多术）', vi:'Master Fusion (đa hệ)', ja:'Master Fusion（多術）', ru:'Master Fusion (мульти)', ko:'Master Fusion (다중 체계)', es:'Master Fusion (multi)' }],
+        [6,'free',{ cn:'试用后最多 2 · 试用期 3', vi:'sau trial tối đa 2 · trial 3', ja:'トライアル後最大2 · 試用中3', ru:'после trial макс 2 · trial 3', ko:'체험 후 최대 2 · 체험 중 3', es:'tras trial máx 2 · trial 3' }],
+        [6,'premium',{ cn:'最多 4 术 · 1 盘', vi:'tối đa 4 · 1 lá', ja:'最大4術 · 1盤', ru:'макс 4 · 1 карта', ko:'최대 4 · 1차트', es:'máx 4 · 1 carta' }],
+        [6,'master',{ cn:'完整 6 · 多盘', vi:'đủ 6 · nhiều lá', ja:'全6 · 多盤', ru:'все 6 · много карт', ko:'전체 6 · 여러 차트', es:'las 6 · multi-carta' }],
+        [7,'name',{ cn:'AI 师傅追问', vi:'AI Sifu hỏi tiếp', ja:'AI Sifu 追問', ru:'AI Sifu уточнения', ko:'AI Sifu 후속 질문', es:'AI Sifu seguimiento' }],
+        [7,'free',{ cn:'扣时', vi:'trừ lượt', ja:'クレジット消費', ru:'тратит единицы', ko:'크레딧 차감', es:'gasta créditos' }],
+        [7,'premium',{ cn:'扣时', vi:'trừ lượt', ja:'クレジット消費', ru:'тратит единицы', ko:'크레딧 차감', es:'gasta créditos' }],
+        [7,'master',{ cn:'扣时', vi:'trừ lượt', ja:'クレジット消費', ru:'тратит единицы', ko:'크레딧 차감', es:'gasta créditos' }],
+        [8,'name',{ cn:'天王星 · 90° 盘', vi:'Uranian · vòng 90°', ja:'Uranian · 90° dial', ru:'Uranian · круг 90°', ko:'Uranian · 90° 다이얼', es:'Uranian · dial 90°' }],
+        [8,'free',{ cn:'试用期', vi:'trong trial', ja:'トライアル中', ru:'в trial', ko:'체험 중', es:'en trial' }],
+        [9,'grp',{ cn:'日常工具', vi:'Công cụ hằng ngày', ja:'日常ツール', ru:'Ежедневные инструменты', ko:'일상 도구', es:'Herramientas diarias' }],
+        [10,'name',{ cn:'日历 / 今日', vi:'Lịch / Hôm nay', ja:'暦 / 今日', ru:'Календарь / Сегодня', ko:'달력 / 오늘', es:'Calendario / Hoy' }],
+        [11,'name',{ cn:'董公择日（绑命盘）', vi:'Chọn ngày 董公 (gắn lá số)', ja:'董公择日（命盤連動）', ru:'Дата 董公 (с картами)', ko:'董公 택일 (차트 연동)', es:'Fechas 董公 (cartas vinculadas)' }],
+        [11,'free',{ cn:'trial/免费 · 1 盘 · 层约 30%', vi:'trial/free · 1 lá · lớp ~30%', ja:'trial/free · 1盤 · 層約30%', ru:'trial/free · 1 карта · ~30% слоёв', ko:'trial/free · 1차트 · 계층 ~30%', es:'trial/free · 1 carta · capas ~30%' }],
+        [11,'premium',{ cn:'最多 3 盘', vi:'tối đa 3 lá', ja:'最大3盤', ru:'макс 3 карты', ko:'최대 3차트', es:'máx 3 cartas' }],
+        [11,'master',{ cn:'最多 10 盘', vi:'tối đa 10 lá', ja:'最大10盤', ru:'макс 10 карт', ko:'최대 10차트', es:'máx 10 cartas' }],
+        [12,'name',{ cn:'天星七政', vi:'七政 / 天星 thật', ja:'天星七政', ru:'七政 / 天星', ko:'천성칠정', es:'七政 / 天星' }],
+        [12,'free',{ cn:'试用期', vi:'trong trial', ja:'トライアル中', ru:'в trial', ko:'체험 중', es:'en trial' }],
+        [13,'name',{ cn:'风水 + 罗盘 · 存房宅', vi:'Phong thủy + la bàn · lưu nhà', ja:'風水 + 羅盤 · 家を保存', ru:'Фэн-шуй + луопань · дома', ko:'풍수 + 나경 · 집 저장', es:'Feng shui + luopan · guardar casas' }],
+        [13,'free',{ cn:'可看 · 不能新存*', vi:'xem · không lưu mới*', ja:'閲覧可 · 新規保存不可*', ru:'смотр · без новых сохранений*', ko:'보기 · 신규 저장 불가*', es:'ver · sin guardados nuevos*' }],
+        [13,'premium',{ cn:'可存多宅', vi:'lưu nhiều nhà', ja:'複数保存可', ru:'много домов', ko:'여러 집 저장', es:'varias casas' }],
+        [13,'master',{ cn:'近乎不限', vi:'gần không giới hạn', ja:'ほぼ無制限', ru:'почти без лимита', ko:'거의 무제한', es:'casi ilimitado' }],
+        [14,'name',{ cn:'罗盘 · 平面图 AI Vision', vi:'La bàn · ảnh mặt bằng AI Vision', ja:'羅盤 · 間取り AI Vision', ru:'Луопань · план AI Vision', ko:'나경 · 평면도 AI Vision', es:'Luopan · plano AI Vision' }],
+        [14,'free',{ cn:'试用后关 · 试用 1 次 · 主盘约 30%', vi:'sau trial tắt · trial 1× · vòng chính ~30%', ja:'トライアル後オフ · 試用1回 · 主層約30%', ru:'после trial выкл · trial 1× · ядро ~30%', ko:'체험 후 끔 · 체험 1회 · 핵심 ~30%', es:'post-trial off · trial 1× · anillos base ~30%' }],
+        [14,'premium',{ cn:'额度较宽 · 扣时', vi:'hạn mức rộng · trừ lượt', ja:'枠が広い · クレジット消費', ru:'широкая квота · тратит', ko:'넓은 할당 · 차감', es:'cuota amplia · gasta' }],
+        [14,'master',{ cn:'近乎不限 · 扣时', vi:'gần không giới hạn · trừ lượt', ja:'ほぼ無制限 · 消費', ru:'почти без лимита · тратит', ko:'거의 무제한 · 차감', es:'casi ilimitado · gasta' }],
+        [15,'name',{ cn:'奇门遁甲', vi:'Kỳ Môn 奇門', ja:'奇門遁甲', ru:'Ци Мэнь 奇門', ko:'기문둔갑 奇門', es:'Qi Men 奇門' }],
+        [15,'free',{ cn:'试用：局盘+入门 · 搜索/师傅关', vi:'trial: bàn + cơ bản · search/sifu tắt', ja:'試用：盤+入門 · 検索/師傅オフ', ru:'trial: карта+новичок · search/sifu выкл', ko:'체험: 국판+입문 · 검색/sifu 끔', es:'trial: carta+principiante · search/sifu off' }],
+        [16,'grp',{ cn:'深度 / 多命盘', vi:'Việc sâu / nhiều lá', ja:'深度 / 多命盤', ru:'Глубина / много карт', ko:'심화 / 여러 차트', es:'Profundidad / muchas cartas' }],
+        [17,'name',{ cn:'命书（约 18 时／术 + 10 融合）', vi:'Sách mệnh (~18 lượt/hệ + 10 hợp nhất)', ja:'命書（約18/術 + 10融合）', ru:'Книга (~18/наука + 10 синтез)', ko:'명서 (약 18/체계 + 10 융합)', es:'Libro (~18/ciencia + 10 síntesis)' }],
+        [17,'free',{ cn:'试用后关 · 试用最多 2', vi:'sau trial tắt · trial tối đa 2', ja:'トライアル後オフ · 試用最大2', ru:'после trial выкл · trial макс 2', ko:'체험 후 끔 · 체험 최대 2', es:'post-trial off · trial máx 2' }],
+        [17,'premium',{ cn:'最多 3 术', vi:'tối đa 3 hệ', ja:'最大3術', ru:'макс 3', ko:'최대 3', es:'máx 3' }],
+        [17,'master',{ cn:'完整 6 + 融合', vi:'đủ 6 + hợp nhất', ja:'全6 + 融合', ru:'все 6 + синтез', ko:'전체 6 + 융합', es:'las 6 + síntesis' }],
+        [18,'name',{ cn:'合盘 / 人脉 / 群组', vi:'Hợp bàn / mạng / nhóm', ja:'合盤 / 人脈 / グループ', ru:'Совместимость / сеть / группа', ko:'합반 / 인맥 / 그룹', es:'Sinastría / red / grupo' }],
+        [19,'name',{ cn:'AI 优先队列', vi:'Hàng đợi AI ưu tiên', ja:'AI 優先キュー', ru:'Приоритет AI', ko:'AI 우선 대기열', es:'Cola AI prioritaria' }],
+        [19,'master',{ cn:'规划中', vi:'đang lên kế hoạch', ja:'計画中', ru:'в планах', ko:'계획 중', es:'planificado' }],
+        [20,'grp',{ cn:'时额度 — 尚未每月自动补发', vi:'Lượt (時) — chưa nạp lại hằng tháng tự động', ja:'時 — 月次自動補充は未対応', ru:'Единицы (時) — без авто-пополнения', ko:'크레딧 (時) — 월 자동 충전 없음', es:'Créditos (時) — sin recarga mensual auto' }],
+        [21,'name',{ cn:'可得时额', vi:'Lượt bạn nhận', ja:'もらえるクレジット', ru:'Единицы, которые вы получаете', ko:'받는 크레딧', es:'Créditos que obtienes' }],
+        [21,'free',{ cn:'注册 1,000', vi:'1.000 khi đăng ký', ja:'登録 1,000', ru:'1 000 при регистрации', ko:'가입 시 1,000', es:'1.000 al registrarte' }],
+        [21,'premium',{ cn:'购买 +500', vi:'+500 khi mua', ja:'購入 +500', ru:'+500 при покупке', ko:'구매 +500', es:'+500 al comprar' }],
+        [21,'master',{ cn:'购买 +2,000', vi:'+2.000 khi mua', ja:'購入 +2,000', ru:'+2 000 при покупке', ko:'구매 +2,000', es:'+2.000 al comprar' }]
       ].forEach(function(p){
-        if (CMP[p[0]] && CMP[p[0]][p[1]]) merge(CMP[p[0]][p[1]], p[2]);
+        if (CMP[p[0]] && (CMP[p[0]][p[1]] != null || p[1] === 'tool' || p[1] === 'free' || p[1] === 'premium' || p[1] === 'master' || p[1] === 'name' || p[1] === 'grp')) {
+          if (typeof CMP[p[0]][p[1]] === 'object' && CMP[p[0]][p[1]] !== null) merge(CMP[p[0]][p[1]], p[2]);
+          else if (CMP[p[0]][p[1]] == null || typeof CMP[p[0]][p[1]] === 'string') CMP[p[0]][p[1]] = Object.assign({ th:'', en:'', zh:'' }, p[2]);
+        }
       });
       merge(CMP[1], { tool:{ th:'สมัคร → กรอกวันเกิด → เปิดดวง', en:'Sign-up → birth data → chart', zh:'註冊 → 出生資料 → 命盤', cn:'注册 → 出生资料 → 命盘', vi:'Đăng ký → ngày sinh → lá số', ja:'登録 → 生年月日 → 命盤', ru:'Регистрация → рождение → карта', ko:'가입 → 생년월일 → 차트', es:'Registro → nacimiento → carta' } });
-      merge(CMP[2], { tool:{ th:'ผังดวง', en:'Chart', zh:'命盤', cn:'命盘', vi:'Lá số', ja:'命盤', ru:'Карта', ko:'차트', es:'Carta' } });
+      merge(CMP[2], { tool:{ th:'/chart', en:'/chart', zh:'/chart', cn:'/chart', vi:'/chart', ja:'/chart', ru:'/chart', ko:'/chart', es:'/chart' } });
       merge(CMP[3], { tool:{ th:'AI ซินแส', en:'AI Sifu', zh:'AI 師傅', cn:'AI 师傅', vi:'AI Sifu', ja:'AI Sifu', ru:'AI Sifu', ko:'AI Sifu', es:'AI Sifu' } });
-      merge(CMP[9], { tool:{ th:'ปฏิทิน · วันนี้', en:'Calendar · Today', zh:'曆 · 今日', cn:'日历 · 今日', vi:'Lịch · Hôm nay', ja:'暦 · 今日', ru:'Календарь · сегодня', ko:'달력 · 오늘', es:'Calendario · Hoy' } });
-      merge(CMP[10], { tool:{ th:'วางฤกษ์', en:'Date selection', zh:'董公擇日', cn:'董公择日', vi:'Chọn ngày', ja:'日取り選び', ru:'Выбор даты', ko:'택일', es:'Selección de fecha' } });
-      merge(CMP[11], { tool:{ th:'天星七政', en:'Real-sky date', zh:'天星七政', cn:'天星七政', vi:'Thiên tinh', ja:'天星七政', ru:'Тяньсин', ko:'천성칠정', es:'Tianxing' } });
-      merge(CMP[12], { tool:{ th:'風水羅盤', en:'Feng shui', zh:'風水羅盤', cn:'风水罗盘', vi:'Phong thủy', ja:'風水羅盤', ru:'Фэн-шуй', ko:'풍수 나경', es:'Feng shui' } });
-      merge(CMP[13], { tool:{ th:'奇門', en:'Qi Men', zh:'奇門', cn:'奇门', vi:'Kỳ Môn', ja:'奇門遁甲', ru:'Ци Мэнь', ko:'기문둔갑', es:'Qi Men' } });
-      merge(CMP[15], { tool:{ th:'命書 · รายงาน', en:'Book · report', zh:'命書 · 報告', cn:'命书 · 报告', vi:'Sách mệnh · báo cáo', ja:'命書 · レポート', ru:'Книга · отчет', ko:'명서 · 리포트', es:'Libro · reporte' } });
-      merge(CMP[16], { tool:{ th:'合盤 · เครือข่าย · กลุ่ม', en:'Synastry · network · group', zh:'合盤 · 人脈 · 群組', cn:'合盘 · 人脉 · 群组', vi:'Hợp bàn · mạng lưới · nhóm', ja:'合盤 · 人脈 · グループ', ru:'Совместимость · сеть · группа', ko:'합반 · 인맥 · 그룹', es:'Sinastría · red · grupo' } });
+      merge(CMP[10], { tool:{ th:'/calendar · /today', en:'/calendar · /today', zh:'/calendar · /today', cn:'/calendar · /today', vi:'/calendar · /today', ja:'/calendar · /today', ru:'/calendar · /today', ko:'/calendar · /today', es:'/calendar · /today' } });
+      merge(CMP[11], { tool:{ th:'/datepick', en:'/datepick', zh:'/datepick', cn:'/datepick', vi:'/datepick', ja:'/datepick', ru:'/datepick', ko:'/datepick', es:'/datepick' } });
+      merge(CMP[12], { tool:{ th:'/tianxing', en:'/tianxing', zh:'/tianxing', cn:'/tianxing', vi:'/tianxing', ja:'/tianxing', ru:'/tianxing', ko:'/tianxing', es:'/tianxing' } });
+      merge(CMP[13], { tool:{ th:'/fengshui', en:'/fengshui', zh:'/fengshui', cn:'/fengshui', vi:'/fengshui', ja:'/fengshui', ru:'/fengshui', ko:'/fengshui', es:'/fengshui' } });
+      merge(CMP[14], { tool:{ th:'/luopan', en:'/luopan', zh:'/luopan', cn:'/luopan', vi:'/luopan', ja:'/luopan', ru:'/luopan', ko:'/luopan', es:'/luopan' } });
+      merge(CMP[15], { tool:{ th:'/qimen', en:'/qimen', zh:'/qimen', cn:'/qimen', vi:'/qimen', ja:'/qimen', ru:'/qimen', ko:'/qimen', es:'/qimen' } });
+      merge(CMP[17], { tool:{ th:'/book', en:'/book', zh:'/book', cn:'/book', vi:'/book', ja:'/book', ru:'/book', ko:'/book', es:'/book' } });
+      merge(CMP[18], { tool:{ th:'/network', en:'/network', zh:'/network', cn:'/network', vi:'/network', ja:'/network', ru:'/network', ko:'/network', es:'/network' } });
+      merge(CMP[21], { tool:{ th:'เติมเพิ่มได้ที่ Top-up', en:'Top-up anytime', zh:'可隨時加值', cn:'可随时加值', vi:'Nạp thêm bất cứ lúc nào', ja:'いつでも追加', ru:'Пополнить в любое время', ko:'언제든 충전', es:'Recarga cuando quieras' } });
     } catch (_) {}
   }
 

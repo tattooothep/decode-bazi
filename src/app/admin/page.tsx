@@ -8,6 +8,7 @@ import {
   CircleDollarSign,
   FileSliders,
   FlaskConical,
+  Handshake,
   LibraryBig,
   MessageSquareText,
   Package,
@@ -57,10 +58,15 @@ type Dashboard = {
 };
 
 const MODULES: { href: string; Icon: Icon; title: string; desc: string; tone: string }[] = [
-  { href: "/admin/members", Icon: Users, title: "สมาชิก", desc: "ค้นหา เติม/หักยาม ระงับ เปลี่ยน tier และต่ออายุ", tone: "from-cyan-500/10" },
-  { href: "/admin/packages", Icon: Package, title: "แพ็คเกจ", desc: "แพ็คเติมยาม สมาชิก คูปอง และโปรโมชั่น", tone: "from-amber-500/10" },
-  { href: "/admin/finance", Icon: CircleDollarSign, title: "การเงิน", desc: "รายได้ ยามที่ขาย/ใช้ ต้นทุน AI ธุรกรรม และออเดอร์", tone: "from-emerald-500/10" },
-  { href: "/admin/settings", Icon: Settings, title: "ตั้งค่าเว็บ", desc: "อัตราเครดิต feature flag ประกาศ และ maintenance", tone: "from-violet-500/10" },
+  { href: "/admin/members", Icon: Users, title: "สมาชิก · User 360", desc: "ค้นหา เติม/หักยาม ระงับ tier free/premium/master · หน้ารายคน", tone: "from-cyan-500/10" },
+  { href: "/admin/orders", Icon: CircleDollarSign, title: "ออเดอร์", desc: "refund + clawback ยาม + reverse affiliate", tone: "from-rose-500/10" },
+  { href: "/admin/support", Icon: Users, title: "ซัพพอร์ต", desc: "ticket inbox + user reports", tone: "from-sky-500/10" },
+  { href: "/admin/packages", Icon: Package, title: "แพ็คเกจ", desc: "คูปอง/โปร · checkout SoT = packages.ts", tone: "from-amber-500/10" },
+  { href: "/admin/finance", Icon: CircleDollarSign, title: "การเงิน", desc: "รายได้ · margin · AI · affiliate reserve", tone: "from-emerald-500/10" },
+  { href: "/admin/ai-cost", Icon: Settings, title: "ต้นทุน AI", desc: "usage + kill switches", tone: "from-orange-500/10" },
+  { href: "/admin/iam", Icon: Settings, title: "แอดมิน & สิทธิ์", desc: "RBAC หลายบทบาท · invite · break-glass ADMIN_EMAILS", tone: "from-violet-500/10" },
+  { href: "/admin/affiliate", Icon: Handshake, title: "Affiliate", desc: "pilot allowlist, referral ledger, approval, payout และ reversal audit", tone: "from-teal-500/10" },
+  { href: "/admin/settings", Icon: Settings, title: "ตั้งค่าเว็บ", desc: "อัตราเครดิต feature flag ประกาศ และ maintenance", tone: "from-slate-500/10" },
 ];
 
 const CONTENT: { href: string; Icon: Icon; title: string; desc: string }[] = [
@@ -277,13 +283,13 @@ export default async function AdminHub() {
   const activeRate = pct(d.users.active7, d.users.total);
 
   return (
-    <main className="min-h-screen bg-[#0b0d12] text-[#f5f0e8]">
-      <div className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8">
+    <main className="hk-admin-frame" style={{ display: "block", maxWidth: "80rem", margin: "0 auto", padding: "1.5rem 1.25rem 3rem" }}>
+      <div>
         <header className="mb-6 grid gap-5 border-b border-white/10 pb-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-white/50">
                 <span className="rounded border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 font-mono text-amber-200">
-                HOURKEY ADMIN
+                時 HOURKEY ADMIN
               </span>
               <span>อัปเดต {d.generatedAt}</span>
             </div>
@@ -291,6 +297,22 @@ export default async function AdminHub() {
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/62">
               ภาพรวมธุรกิจ สมาชิก ยาม รายได้ ต้นทุน AI และเครื่องมือคุมระบบในหน้าเดียว สำหรับดูสถานะก่อนตัดสินใจทำงานหลังบ้านต่อ
             </p>
+            <nav className="mt-4 flex flex-wrap gap-2 text-xs">
+              {[
+                ["/admin/members", "สมาชิก"],
+                ["/admin/orders", "ออเดอร์"],
+                ["/admin/support", "ซัพพอร์ต"],
+                ["/admin/finance", "การเงิน"],
+                ["/admin/ai-cost", "ต้นทุน AI"],
+                ["/admin/packages", "แพ็กเกจ"],
+                ["/admin/iam", "สิทธิ์"],
+                ["/admin/settings", "ตั้งค่า"],
+              ].map(([href, label]) => (
+                <Link key={href} href={href} className="rounded-full border border-white/10 px-3 py-1 text-white/55 hover:border-amber-300/40 hover:text-amber-200">
+                  {label}
+                </Link>
+              ))}
+            </nav>
           </div>
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
             <StatusPill label="admin" value={admin.email} tone="neutral" />

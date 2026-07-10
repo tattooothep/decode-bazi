@@ -7,8 +7,11 @@
     "build": "next build",
     "check:pair-oracle": "node scripts/check-pair-classical-oracle.mjs",
     "check:pair-v2": "node scripts/check-pair-reaction-v2.mjs",
+    "audit:lang-persistence": "node scripts/audit-language-persistence.mjs",
     "test:sifu": "node scripts/run-sifu-tests.mjs",
-    "start": "next start"
+    "start": "next start",
+    "test:admin-p0": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p0.mjs",
+    "test:admin-p1": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p1.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

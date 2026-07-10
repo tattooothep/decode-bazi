@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
-import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { hashPassword, signSession, setAuthCookie, readSessionVersion } from "@/lib/auth";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
+import { ensureOrgMember } from "@/lib/ensure-org-member";
+import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
+import { applySignupProductDefaults } from "@/lib/product-entitlement";
 import crypto from "node:crypto";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const { email, password, name } = body;
+  const email = String(body.email || "").trim().toLowerCase();
+  const password = body.password;
+  const name = body.name;
   if (!email || !password) {
     return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
@@ -23,7 +28,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }, { status: 400 });
   }
 
-  const existing = await q1<{ id: string }>("SELECT id FROM users WHERE email=$1", [email]);
+  const existing = await q1<{ id: string }>("SELECT id FROM users WHERE lower(email)=lower($1)", [email]);
   if (existing) {
     return NextResponse.json({ error: "อีเมลนี้สมัครไว้แล้ว · ลองเข้าสู่ระบบหรือกดลืมรหัสผ่าน" }, { status: 409 });
   }
@@ -46,12 +51,17 @@ export async function POST(req: Request) {
     // org table may have different schema · try minimal insert
     await q1(`INSERT INTO organizations (id, name) VALUES ($1,$2)`, [orgId, name || "personal"]);
   });
-  await q1(
-    `INSERT INTO org_members (org_id, user_id, role, created_at)
-     VALUES ($1,$2,'owner',now())`,
-    [orgId, userId]
-  ).catch(() => null);
+  await ensureOrgMember(orgId, userId, "owner").catch((e) =>
+    console.warn("[signup] org_members", e instanceof Error ? e.message : String(e))
+  );
   await q1(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [orgId, userId]);
+
+  await recordSignupFingerprint({
+    userId,
+    request: req,
+    deviceId: body.affiliateDeviceId || body.deviceId || null,
+  });
+  await applySignupProductDefaults(userId);
 
   const referral = await captureAffiliateAttribution({
     referredUserId: userId,
@@ -61,7 +71,8 @@ export async function POST(req: Request) {
     deviceId: body.affiliateDeviceId || null,
   }).catch((e) => ({ ok: false, status: "error", reason: e instanceof Error ? e.message : String(e) }));
 
-  const token = await signSession({ userId, email, orgId });
+  const sv = await readSessionVersion(userId);
+  const token = await signSession({ userId, email, orgId, sv });
   await setAuthCookie(token);
 
   return NextResponse.json({

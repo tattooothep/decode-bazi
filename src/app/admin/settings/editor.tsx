@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AdminShell } from "@/components/admin/AdminShell";
 
 type S = Record<string, string>;
 
@@ -30,13 +31,8 @@ export default function SettingsAdmin() {
   };
 
   return (
-    <div className="min-h-screen px-5 py-8 max-w-2xl mx-auto">
-      <div className="flex items-baseline justify-between mb-5">
-        <h1 className="font-serif text-2xl">ตั้งค่าเว็บ</h1>
-        <Link href="/admin" className="text-sm opacity-60 hover:opacity-100">← หลังบ้าน</Link>
-      </div>
-
-      <div className="space-y-1">
+    <AdminShell title="ตั้งค่าเว็บ">
+      <div className="space-y-1 max-w-2xl">
         {META.map((m) => (
           <div key={m.key} className="flex items-center justify-between gap-4 border-b border-foreground/10 py-3">
             <div className="flex-1">
@@ -56,11 +52,11 @@ export default function SettingsAdmin() {
         ))}
       </div>
 
-      <div className="flex items-center gap-3 mt-6">
+      <div className="flex items-center gap-3 mt-6 max-w-2xl">
         <button disabled={!dirty} onClick={save} className="border border-foreground/40 px-5 py-2 text-sm hover:bg-foreground/10 disabled:opacity-30">บันทึก</button>
         {msg && <span className="text-sm opacity-70">{msg}</span>}
       </div>
-      <p className="text-xs opacity-40 mt-4">หมายเหตุ: อัตราเครดิตจะใช้ค่า env ก่อน ถ้ามี (CREDIT_CHARS_PER_YAM) · ตั้งค่านี้เป็น fallback กลางที่อ่านจากฐานข้อมูล</p>
-    </div>
+      <p className="text-xs opacity-40 mt-4 max-w-2xl">หมายเหตุ: อัตราเครดิตจะใช้ค่า env ก่อน ถ้ามี (CREDIT_CHARS_PER_YAM) · ตั้งค่านี้เป็น fallback กลางที่อ่านจากฐานข้อมูล</p>
+    </AdminShell>
   );
 }

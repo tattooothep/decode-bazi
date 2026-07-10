@@ -8,6 +8,7 @@
  */
 import { NextResponse } from "next/server";
 import { loadPromptMd } from "@/lib/prompt-md";
+import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 /* 25 พ.ค. · persona ย้ายไป prompts/forecast-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{METHOD}}+{{BODY}}=dynamic · fallback กันพัง */
 const FORECAST_TPL_FALLBACK = `คุณคือซินแสพยากรณ์ของ hourkey.io · ใช้วิธี "{{METHOD}}" ตอบคำถามนี้\n{{BODY}}\nตอบให้ตรงคำถาม · เริ่มด้วย "✓ ปิดได้" / "✗ ยังไม่ได้" / "⚠ ต้องระวัง" ตามผัง แล้วอธิบายเหตุผลจาก 卦/星/門/神 · ปิดท้ายด้วยคำแนะนำ 1-2 บรรทัด`;
 import { spawn } from "child_process";
@@ -267,6 +268,7 @@ const LANG_INSTR: Record<string, string> = {
   th: "ตอบเป็นภาษาไทย · สั้นกระชับ 4-6 บรรทัด · ใช้ markdown bold + emoji · อิงตำราคลาสสิก (子平真詮 · 滴天髓 · 三命通會 · 煙波釣叟賦)",
   en: "Reply in English · 4-6 lines · markdown bold + emoji · classical sources",
   zh: "用繁體中文回答 · 4-6 行 · markdown 粗體 + emoji · 子平真詮·滴天髓·三命通會·煙波釣叟賦",
+  ...LANG_ANSWER_DIRECTIVE, // r414-i18n9: ภาษาใหม่ 6 ตัว (cn/vi/ja/ko/ru/es) · th/en/zh คงเดิมทุกไบต์
 };
 const CAT_FOCUS: Record<string, string> = {
   general: "ทั่วไป — แนะนำดี/ระวัง",
@@ -310,7 +312,7 @@ export async function POST(req: Request) {
     const question: string = (body.question || "").trim();
     const method: Method = ["meihua", "qmdj", "coin"].includes(body.method) ? body.method : "qmdj";
     const category: string = body.category || "general";
-    const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
+    const lang: string = isSifuAnswerLang(body.lang) ? body.lang : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
 
     if (!question) return NextResponse.json({ error: "no question" }, { status: 400 });
     if (question.length > 500) return NextResponse.json({ error: "question too long (max 500 chars)" }, { status: 400 });

@@ -133,16 +133,42 @@ const QIMEN_DEITY_TH: Record<string, string> = {
   ZHI_FU: "เทพจื๋อฟู", TAI_YIN: "เทพไท่อิน", LIU_HE: "เทพลิ่วเหอ", JIU_TIAN: "เทพจิ่วเทียน", JIU_DI: "เทพจิ่วตี้",
   TENG_SHE: "เทพเถิงเสอ", XUAN_WU: "เทพเสวียนอู่", BAI_HU: "เทพไป๋หู่",
 };
+/* r420 · i18n additive · EN terms — ชุดเดียวกับ QIMEN_TERM_EN ใน /api/auspicious (ศัพท์ Qi Men วงการจริง) · ไม่แตะ logic */
+const QIMEN_DOOR_EN: Record<string, string> = {
+  XIU_MEN: "Rest Gate", SHENG_MEN: "Life Gate", KAI_MEN: "Open Gate",
+  JING_VIEW_MEN: "Scenery Gate", DU_MEN: "Closed Gate",
+  SHANG_MEN: "Injury Gate", JING_FEAR_MEN: "Fear Gate", SI_MEN: "Death Gate",
+};
+const QIMEN_STAR_EN: Record<string, string> = {
+  TIAN_XIN: "Tian Xin star", TIAN_FU: "Tian Fu star", TIAN_REN: "Tian Ren star", TIAN_QIN: "Tian Qin star",
+  TIAN_CHONG: "Tian Chong star", TIAN_YING: "Tian Ying star", TIAN_ZHU: "Tian Zhu star",
+  TIAN_PENG: "Tian Peng star", TIAN_RUI: "Tian Rui star",
+};
+const QIMEN_DEITY_EN: Record<string, string> = {
+  ZHI_FU: "Chief (Zhi Fu)", TAI_YIN: "Great Yin", LIU_HE: "Six Harmony", JIU_TIAN: "Nine Heavens", JIU_DI: "Nine Earth",
+  TENG_SHE: "Coiling Snake", XUAN_WU: "Black Tortoise", BAI_HU: "White Tiger",
+};
 const QIMEN_QUALITY_LABEL: Record<string, string> = {
   best: "ดีมาก", good: "ดี", ok: "กลาง", avoid: "เลี่ยง",
 };
+const QIMEN_QUALITY_LABEL_EN: Record<string, string> = {
+  best: "Excellent", good: "Good", ok: "Neutral", avoid: "Avoid",
+};
+const QIMEN_QUALITY_LABEL_ZH: Record<string, string> = {
+  best: "極佳", good: "吉", ok: "平", avoid: "忌",
+};
+const DIR_EN: Record<string,string> = {
+  N:"North", NE:"Northeast", E:"East", SE:"Southeast",
+  S:"South", SW:"Southwest", W:"West", NW:"Northwest",
+};
+const DIR_EN_FULL: Record<string,string> = { ...DIR_EN, C:"Center" };
 
 const FLYING_FOCUS_STARS = [5, 2, 9, 1];
-const FLYING_STAR_META: Record<number, { zh: string; th: string; quality: "good"|"bad" }> = {
-  5: { zh: "五黃", th: "ห้าเหลือง", quality: "bad" },
-  2: { zh: "二黑", th: "สองดำ", quality: "bad" },
-  9: { zh: "九紫", th: "เก้าม่วง", quality: "good" },
-  1: { zh: "一白", th: "หนึ่งขาว", quality: "good" },
+const FLYING_STAR_META: Record<number, { zh: string; th: string; en: string; quality: "good"|"bad" }> = {
+  5: { zh: "五黃", th: "ห้าเหลือง", en: "Five Yellow", quality: "bad" },
+  2: { zh: "二黑", th: "สองดำ", en: "Two Black", quality: "bad" },
+  9: { zh: "九紫", th: "เก้าม่วง", en: "Nine Purple", quality: "good" },
+  1: { zh: "一白", th: "หนึ่งขาว", en: "One White", quality: "good" },
 };
 const ZIBAI_DELTA: Record<number, number> = { 5: -30, 2: -24, 9: 22, 1: 16 };
 
@@ -230,36 +256,45 @@ function summarizeQimenPalace(p: any) {
   const deityScore = QIMEN_DEITY_SCORE[p.deity_code] ?? 0;
   let score = doorScore + starScore + deityScore;
   const reasons: string[] = [];
-  if (doorScore) reasons.push(`${p.door_zh || p.door_code} ${doorScore > 0 ? "+" : ""}${doorScore}`);
-  if (starScore) reasons.push(`${p.star_zh || p.star_code} ${starScore > 0 ? "+" : ""}${starScore}`);
-  if (deityScore) reasons.push(`${p.deity_zh || p.deity_code} ${deityScore > 0 ? "+" : ""}${deityScore}`);
-  if (p.heaven_is_three_qi) { score += 3; reasons.push(`天三奇${p.heaven_stem_zh || ""} +3`); }
-  if (p.earth_is_three_qi) { score += 2; reasons.push(`地三奇${p.earth_stem_zh || ""} +2`); }
-  if (p.is_traveling_horse) { score += 2; reasons.push("驛馬 +2"); }
-  if (p.is_void_any) { score -= 5; reasons.push("空亡 -5"); }
-  if (p.stem_combo_quality === "severe") { score -= 4; reasons.push(`${p.stem_combo_name_zh || "凶格"} -4`); }
+  /* r420 · reasons_en คู่ขนาน (additive) · reasons เดิมเป็น 中文 ใช้กับ zh ได้อยู่แล้ว */
+  const reasonsEn: string[] = [];
+  if (doorScore) { reasons.push(`${p.door_zh || p.door_code} ${doorScore > 0 ? "+" : ""}${doorScore}`); reasonsEn.push(`${QIMEN_DOOR_EN[p.door_code] || p.door_zh || p.door_code} ${doorScore > 0 ? "+" : ""}${doorScore}`); }
+  if (starScore) { reasons.push(`${p.star_zh || p.star_code} ${starScore > 0 ? "+" : ""}${starScore}`); reasonsEn.push(`${QIMEN_STAR_EN[p.star_code] || p.star_zh || p.star_code} ${starScore > 0 ? "+" : ""}${starScore}`); }
+  if (deityScore) { reasons.push(`${p.deity_zh || p.deity_code} ${deityScore > 0 ? "+" : ""}${deityScore}`); reasonsEn.push(`${QIMEN_DEITY_EN[p.deity_code] || p.deity_zh || p.deity_code} ${deityScore > 0 ? "+" : ""}${deityScore}`); }
+  if (p.heaven_is_three_qi) { score += 3; reasons.push(`天三奇${p.heaven_stem_zh || ""} +3`); reasonsEn.push(`Heaven Three Nobles ${p.heaven_stem_zh || ""} +3`); }
+  if (p.earth_is_three_qi) { score += 2; reasons.push(`地三奇${p.earth_stem_zh || ""} +2`); reasonsEn.push(`Earth Three Nobles ${p.earth_stem_zh || ""} +2`); }
+  if (p.is_traveling_horse) { score += 2; reasons.push("驛馬 +2"); reasonsEn.push("Post Horse 驛馬 +2"); }
+  if (p.is_void_any) { score -= 5; reasons.push("空亡 -5"); reasonsEn.push("Void (Kong Wang) 空亡 -5"); }
+  if (p.stem_combo_quality === "severe") { score -= 4; reasons.push(`${p.stem_combo_name_zh || "凶格"} -4`); reasonsEn.push(`${p.stem_combo_name_zh || "凶格"} (inauspicious combo) -4`); }
   const quality = qimenQuality(score);
   return {
     direction: p.direction,
     direction_th: DIR_TH_FULL[p.direction] || p.direction,
     direction_th_long: DIR_TH_LONG[p.direction] || DIR_TH_FULL[p.direction] || p.direction,
     direction_zh: DIR_ZH_FULL[p.direction] || p.direction,
+    direction_en: DIR_EN_FULL[p.direction] || p.direction,
     quality,
     label: QIMEN_QUALITY_LABEL[quality],
+    label_en: QIMEN_QUALITY_LABEL_EN[quality],
+    label_zh: QIMEN_QUALITY_LABEL_ZH[quality],
     score,
     palace_id: p.palace_id,
     door_score: doorScore,
     door: p.door_zh || p.door_code,
     door_th: QIMEN_DOOR_TH[p.door_code] || p.door_zh || p.door_code,
+    door_en: QIMEN_DOOR_EN[p.door_code] || p.door_zh || p.door_code,
     star_score: starScore,
     star: p.star_zh || p.star_code,
     star_th: QIMEN_STAR_TH[p.star_code] || p.star_zh || p.star_code,
+    star_en: QIMEN_STAR_EN[p.star_code] || p.star_zh || p.star_code,
     deity_score: deityScore,
     deity: p.deity_zh || p.deity_code,
     deity_th: QIMEN_DEITY_TH[p.deity_code] || p.deity_zh || p.deity_code,
+    deity_en: QIMEN_DEITY_EN[p.deity_code] || p.deity_zh || p.deity_code,
     heaven_stem: p.heaven_stem_zh || null,
     earth_stem: p.earth_stem_zh || null,
     reasons,
+    reasons_en: reasonsEn,
   };
 }
 
@@ -294,17 +329,20 @@ function summarizeFlyingLayer(layer: any) {
         direction_th: DIR_TH_FULL[dir] || dir,
         direction_th_long: DIR_TH_LONG[dir] || DIR_TH_FULL[dir] || dir,
         direction_zh: DIR_ZH_FULL[dir] || dir,
+        direction_en: DIR_EN_FULL[dir] || dir,
       }));
     const meta = FLYING_STAR_META[star];
     return {
       star,
       zh: meta.zh,
       th: meta.th,
+      en: meta.en,
       quality: meta.quality,
       direction: dirs[0]?.direction || null,
       direction_th: dirs[0]?.direction_th || null,
       direction_th_long: dirs[0]?.direction_th_long || null,
       direction_zh: dirs[0]?.direction_zh || null,
+      direction_en: dirs[0]?.direction_en || null,
     };
   });
   return {
@@ -381,12 +419,17 @@ function buildDirectionEnergy(opts: {
     const hasTwo = starNums.includes(2);
     const hasNineOrOne = starNums.some(n => n === 9 || n === 1);
     const caps: string[] = [];
-    if (hasFive && hasTwo) { raw = Math.min(raw, 60); caps.push("มีทั้ง 五黃 5 และ 二黑 2"); }
-    else if (hasFive) { raw = Math.min(raw, 72); caps.push("มี 五黃 5"); }
-    else if (hasTwo) { raw = Math.min(raw, 78); caps.push("มี 二黑 2"); }
+    /* r420 · caps_en/caps_zh คู่ขนาน (additive) — push พร้อมกันทุกจุด · ไม่แตะเงื่อนไข/ตัวเลข */
+    const capsEn: string[] = [];
+    const capsZh: string[] = [];
+    if (hasFive && hasTwo) { raw = Math.min(raw, 60); caps.push("มีทั้ง 五黃 5 และ 二黑 2"); capsEn.push("Both Five Yellow 5 and Two Black 2 present"); capsZh.push("五黃5與二黑2並臨"); }
+    else if (hasFive) { raw = Math.min(raw, 72); caps.push("มี 五黃 5"); capsEn.push("Five Yellow 5 present"); capsZh.push("五黃5臨方"); }
+    else if (hasTwo) { raw = Math.min(raw, 78); caps.push("มี 二黑 2"); capsEn.push("Two Black 2 present"); capsZh.push("二黑2臨方"); }
     if ((qh?.quality === "avoid" || qd?.quality === "avoid") && (hasFive || hasTwo)) {
       raw = Math.min(raw, 55);
       caps.push("ฉีเหมินติดเลี่ยงและมีดาวจรกด");
+      capsEn.push("Qi Men marks avoid and an afflicted flying star adds pressure");
+      capsZh.push("奇門顯忌且凶飛星加壓");
     }
     if ((qh?.quality === "best" || qd?.quality === "best") && hasNineOrOne && !hasFive && !hasTwo) {
       raw = Math.min(100, raw + 3);
@@ -398,9 +441,12 @@ function buildDirectionEnergy(opts: {
       direction_th: DIR_TH[dir],
       direction_th_long: DIR_TH_LONG[dir],
       direction_zh: DIR_ZH[dir],
+      direction_en: DIR_EN[dir],
       score,
       label,
       label_th: { best: "ดีมาก", good: "ดี", ok: "กลางบวก", caution: "ระวัง", avoid: "เลี่ยง" }[label],
+      label_en: { best: "Excellent", good: "Good", ok: "Mild positive", caution: "Caution", avoid: "Avoid" }[label],
+      label_zh: { best: "極佳", good: "吉", ok: "平吉", caution: "謹慎", avoid: "忌" }[label],
       qimen: {
         score: qimenScore,
         signal: layerSignal(qimenDelta),
@@ -414,10 +460,22 @@ function buildDirectionEnergy(opts: {
         hour: zh || null,
       },
       caps,
+      caps_en: capsEn,
+      caps_zh: capsZh,
       reasons: [
         qh ? `${qh.door_th} ${qh.door}` : null,
         zh ? `${zh.star} ${zh.th}` : null,
         caps[0] ? `จำกัดคะแนน: ${caps.join(" · ")}` : null,
+      ].filter(Boolean),
+      reasons_en: [
+        qh ? `${qh.door_en || qh.door_th} ${qh.door}` : null,
+        zh ? `${zh.star} ${zh.en || zh.th}` : null,
+        capsEn[0] ? `Score capped: ${capsEn.join(" · ")}` : null,
+      ].filter(Boolean),
+      reasons_zh: [
+        qh ? `${qh.door}` : null,
+        zh ? `${zh.star} ${zh.zh || ""}`.trim() : null,
+        capsZh[0] ? `封頂：${capsZh.join(" · ")}` : null,
       ].filter(Boolean),
     };
   }).sort((a, b) => b.score - a.score);
@@ -425,9 +483,13 @@ function buildDirectionEnergy(opts: {
     school: opts.school,
     school_label: opts.school === "zhirun" ? "置閏 Zhirun" : "拆補 Chaibu",
     school_use_th: opts.school === "zhirun" ? "ดูเหตุการณ์ใหญ่ / รอบใหญ่" : "ดูสถานการณ์เฉพาะหน้า",
+    school_use_en: opts.school === "zhirun" ? "For major events / long cycles" : "For immediate situations",
+    school_use_zh: opts.school === "zhirun" ? "看大事／大週期" : "看眼前情況",
     updated_time: opts.hourTime,
     date: opts.date,
     scoring_note: "พลังทิศ = ฉีเหมิน 70% + ดาวจรจื่อไป๋ 30% · ไม่รวมดวงคน",
+    scoring_note_en: "Direction power = Qi Men 70% + Zi Bai flying stars 30% · personal chart not included",
+    scoring_note_zh: "方位能量 = 奇門70% + 紫白飛星30% · 不含個人命盤",
     source: {
       qimen: qimenSource,
       zibai: opts.flyingFocus?.hour || opts.flyingFocus?.day ? "local-luxing" : "unavailable",
@@ -437,6 +499,16 @@ function buildDirectionEnergy(opts: {
         : qimenSource === "qimen-api-partial"
           ? "ฉีเหมินมาไม่ครบ จึงถ่วงคะแนนจากข้อมูลที่มี"
           : "ฉีเหมินไม่พร้อม คะแนนจึงอิงจื่อไป๋ร่วมกับค่ากลาง",
+      note_en: qimenSource === "qimen-api"
+        ? "Full Qi Men data used for both day and hour charts"
+        : qimenSource === "qimen-api-partial"
+          ? "Qi Men data was incomplete; scores are weighted from what is available"
+          : "Qi Men unavailable; scores rely on Zi Bai plus neutral baseline",
+      note_zh: qimenSource === "qimen-api"
+        ? "日盤與時盤均採用完整奇門資料"
+        : qimenSource === "qimen-api-partial"
+          ? "奇門資料不全，以現有資料加權計分"
+          : "奇門未就緒，計分以紫白與中性基準為主",
     },
     personal_overlay: {
       included_in_energy_score: false,
@@ -444,6 +516,12 @@ function buildDirectionEnergy(opts: {
       note_th: opts.hasUserChart
         ? "มีดวงส่วนตัวแล้ว แต่แยกจากคะแนนพลังทิศ"
         : "ยังไม่มีดวงส่วนตัวใน request จึงแสดงเฉพาะพลังทิศกลาง",
+      note_en: opts.hasUserChart
+        ? "Personal chart provided, but kept separate from the direction score"
+        : "No personal chart in this request, so only the neutral direction power is shown",
+      note_zh: opts.hasUserChart
+        ? "已有個人命盤，但與方位能量分數分開計算"
+        : "本次請求無個人命盤，僅顯示中性方位能量",
     },
     best: scores.slice(0, 3),
     avoid: scores.filter(s => s.label === "avoid" || s.label === "caution").slice(-4).reverse(),
@@ -499,6 +577,7 @@ export async function POST(req: Request) {
       direction_th: DIR_TH[d],
       direction_th_long: DIR_TH_LONG[d],
       direction_zh: DIR_ZH[d],
+      direction_en: DIR_EN[d],
       element: el,
       quality: q,
       stars: dStars,

@@ -1,12 +1,13 @@
 /**
  * GET /api/houses · list houses
- * POST /api/houses · create (enforce tier limit · free=1 / pro=999)
+ * POST /api/houses · create (enforce product entitlement house_limit)
  *
  * Source: อาเจ๊กฮ้ง compass_pages · port → Next.js 17 พ.ค. 2026
  */
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
+import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
 
 export async function GET() {
   const s = await getSession();
@@ -20,19 +21,14 @@ export async function GET() {
      ORDER BY is_primary DESC, last_used_at DESC`,
     [s.userId]
   );
-  // tier info
-  const tierRow = await q1<{ tier: string; count: number }>(
-    `SELECT COALESCE(s.tier, 'free') AS tier,
-            (SELECT COUNT(*) FROM ka_houses WHERE user_id = $1)::int AS count
-     FROM (SELECT $1::text AS user_id) u
-     LEFT JOIN ka_user_sub s ON s.user_id = u.user_id`,
-    [s.userId]
-  );
+  const access = await getProductAccess(s.userId);
+  const count = rows.length;
   return NextResponse.json({
     houses: rows,
-    tier: tierRow?.tier || 'free',
-    count: tierRow?.count || 0,
-    limit: (tierRow?.tier === 'free') ? 1 : 999,
+    tier: access?.tier || "free",
+    plan: access?.plan || "free",
+    count,
+    limit: access?.house_limit ?? 1,
   });
 }
 
@@ -40,22 +36,24 @@ export async function POST(req: Request) {
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
 
-  // tier limit
-  const tierRow = await q1<{ tier: string; count: number }>(
-    `SELECT COALESCE(s.tier, 'free') AS tier,
-            (SELECT COUNT(*) FROM ka_houses WHERE user_id = $1)::int AS count
-     FROM (SELECT $1::text AS user_id) u
-     LEFT JOIN ka_user_sub s ON s.user_id = u.user_id`,
+  const access = await getProductAccess(s.userId);
+  const limit = access?.house_limit ?? 0;
+  const countRow = await q1<{ n: number }>(
+    `SELECT COUNT(*)::int AS n FROM ka_houses WHERE user_id=$1`,
     [s.userId]
   );
-  const tier = tierRow?.tier || 'free';
-  const count = tierRow?.count || 0;
-  const limit = tier === 'free' ? 1 : 999;
+  const count = countRow?.n ?? 0;
   if (count >= limit) {
     return NextResponse.json({
-      error: 'House limit reached',
-      message: `Free tier เก็บได้ 1 บ้าน · upgrade เป็น Pro เพื่อบันทึกได้ไม่จำกัด`,
-      current: count, limit,
+      ...entitlementDenied("house_limit", {
+        message:
+          limit <= 0
+            ? "โหมดฟรีหลังทดลอง · บันทึกบ้านเพิ่มไม่ได้ · อัปเกรดที่ /pricing"
+            : `บันทึกบ้านได้สูงสุด ${limit} หลังในแพ็กเกจปัจจุบัน · อัปเกรดที่ /pricing`,
+        current: count,
+        limit,
+        plan: access?.plan,
+      }),
     }, { status: 403 });
   }
 

@@ -11,7 +11,8 @@
  */
 import { NextResponse } from "next/server";
 import { verifyOmiseCharge, omiseReady } from "@/lib/payment/omise";
-import { fulfillOrder } from "@/lib/payment/credit";
+import { clawbackYamForOrder, fulfillOrder } from "@/lib/payment/credit";
+import { q } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,6 +34,25 @@ export async function POST(req: Request) {
   // สนใจเฉพาะ event ที่เกี่ยวกับ charge
   const chargeId = body.data?.id || "";
   if (!chargeId) return NextResponse.json({ received: true, note: "no charge id" });
+  const eventKey = String(body.key || "");
+  if (/refund|reversed|charge\.reverse|dispute/i.test(eventKey)) {
+    const refs = [chargeId, `omise:${chargeId}`, `promptpay:${chargeId}`];
+    const orders = await q<{ id: string }>(
+      `SELECT id FROM orders WHERE pay_ref = ANY($1::varchar[])`,
+      [refs]
+    ).catch(() => [] as { id: string }[]);
+    const clawbacks = [];
+    for (const o of orders) clawbacks.push(await clawbackYamForOrder(o.id, `omise:${eventKey || "refund"}`));
+    let affiliate_reversed = 0;
+    try {
+      const mod = await import("@/lib/affiliate").catch(() => null as any);
+      if (mod?.reverseAffiliateRewardsForPaymentRefs) {
+        const r = await mod.reverseAffiliateRewardsForPaymentRefs(refs, `omise:${eventKey || "refund"}`);
+        affiliate_reversed = Number(r?.reversed || 0);
+      }
+    } catch { /* optional */ }
+    return NextResponse.json({ received: true, clawbacks, affiliate_reversed, key: eventKey });
+  }
 
   if (!omiseReady()) {
     // ยังไม่มี key = ยืนยันไม่ได้ → ไม่เติม (fail-closed)

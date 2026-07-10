@@ -187,3 +187,118 @@ export async function fulfillOrder(
     client.release();
   }
 }
+
+export type ClawbackResult =
+  | { ok: true; status: "clawed" | "already" | "nothing"; orderId: string; clawed: number; balance_after: number }
+  | { ok: false; status: "error"; orderId: string; error: string };
+
+/**
+ * ดึงยามคืนจาก order ที่ paid/refunded (idempotent via ref_payment_id).
+ * ใช้ตอน refund/admin reverse — ไม่แตะ affiliate tables (ให้ caller เรียก reverse แยก).
+ */
+export async function clawbackYamForOrder(orderId: string, note = "refund clawback"): Promise<ClawbackResult> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const ordRes = await client.query(
+      `SELECT id, user_id, yam_granted, status FROM orders WHERE id=$1 FOR UPDATE`,
+      [orderId]
+    );
+    const order = ordRes.rows[0];
+    if (!order) {
+      await client.query("ROLLBACK");
+      return { ok: false, status: "error", orderId, error: "order_not_found" };
+    }
+    if (!["paid", "refunded"].includes(order.status)) {
+      await client.query("ROLLBACK");
+      return { ok: false, status: "error", orderId, error: `order_status_${order.status}` };
+    }
+    const yam = Math.max(0, Number(order.yam_granted) || 0);
+    const refRefundId = `order_${orderId}_refund`;
+    const dup = await client.query(
+      `SELECT 1 FROM hour_transactions WHERE ref_payment_id=$1 LIMIT 1`,
+      [refRefundId]
+    );
+    if (dup.rows[0]) {
+      const bal = await client.query(`SELECT hour_balance FROM users WHERE id=$1`, [order.user_id]);
+      await client.query("COMMIT");
+      return {
+        ok: true,
+        status: "already",
+        orderId,
+        clawed: 0,
+        balance_after: Number(bal.rows[0]?.hour_balance ?? 0),
+      };
+    }
+    if (yam <= 0) {
+      await client.query("COMMIT");
+      return { ok: true, status: "nothing", orderId, clawed: 0, balance_after: 0 };
+    }
+    const balRes = await client.query(
+      `UPDATE users SET hour_balance = GREATEST(0, COALESCE(hour_balance,0) - $2)
+         WHERE id=$1 RETURNING hour_balance`,
+      [order.user_id, yam]
+    );
+    const balanceAfter = Number(balRes.rows[0]?.hour_balance ?? 0);
+    await client.query(
+      `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_payment_id, note)
+         VALUES ($1,$2,'refund_clawback',$3,$4,$5)`,
+      [order.user_id, -yam, balanceAfter, refRefundId, note.slice(0, 300)]
+    );
+    await client.query("COMMIT");
+    return { ok: true, status: "clawed", orderId, clawed: yam, balance_after: balanceAfter };
+  } catch (e) {
+    try { await client.query("ROLLBACK"); } catch { /* noop */ }
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/uq_hour_tx_ref_payment|duplicate key/i.test(msg)) {
+      return { ok: true, status: "already", orderId, clawed: 0, balance_after: 0 };
+    }
+    return { ok: false, status: "error", orderId, error: msg };
+  } finally {
+    client.release();
+  }
+}
+
+export type RefundOrderResult =
+  | {
+      ok: true;
+      orderId: string;
+      clawback: ClawbackResult;
+      affiliate_reversed: number;
+    }
+  | { ok: false; orderId: string; error: string };
+
+/**
+ * Admin/gateway refund: clawback ยาม + reverse affiliate reward (existing hook).
+ * Does not fork fulfillOrder; does not write hour_balance from affiliate module.
+ */
+export async function refundPaidOrder(
+  orderId: string,
+  reason: string,
+  actorUserId?: string | null
+): Promise<RefundOrderResult> {
+  const clawback = await clawbackYamForOrder(orderId, reason);
+  if (!clawback.ok) {
+    return { ok: false, orderId, error: clawback.error };
+  }
+  let affiliate_reversed = 0;
+  try {
+    const mod = await import("@/lib/affiliate").catch(() => null);
+    if (mod?.reverseAffiliateRewardsForOrder) {
+      const r = await mod.reverseAffiliateRewardsForOrder(orderId, reason, actorUserId);
+      affiliate_reversed = Number(r?.reversed || 0);
+    }
+  } catch (e) {
+    console.warn("[refund] affiliate reverse skipped", e instanceof Error ? e.message : String(e));
+  }
+  // Ensure order marked refunded even if no affiliate reward row
+  try {
+    await pool.query(
+      `UPDATE orders SET status='refunded',
+          note = COALESCE(note,'') || $2
+        WHERE id=$1 AND status='paid'`,
+      [orderId, ` refund:${reason.slice(0, 120)}`]
+    );
+  } catch { /* noop */ }
+  return { ok: true, orderId, clawback, affiliate_reversed };
+}

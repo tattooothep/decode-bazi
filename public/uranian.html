@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -175,7 +176,7 @@ details.coords input{width:120px;font-family:var(--mono);font-size:14px;}
     <div class="lang-seg" id="langSeg" role="group" aria-label="language">
       <button data-lang="th">TH</button><button data-lang="en">EN</button><button data-lang="zh">中</button>
     </div>
-    <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
+    <button class="tbtn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">☾</button>
   </div>
 </div>
 
@@ -283,7 +284,7 @@ details.coords input{width:120px;font-family:var(--mono);font-size:14px;}
 /* ═══════════ i18n ═══════════ */
 const I18N={
 th:{
-  back:"กลับหน้าดูดวงรวม",h1:"หน้าปัดยูเรเนียน",title:"ภาพดาว (Planetenbild) เห็นได้ด้วยตา",
+  back:"กลับหน้าดูดวงรวม",h1:"หน้าปัดยูเรเนียน",title:"ภาพดาว (Planetenbild) เห็นได้ด้วยตา",theme:"สลับธีม",
   sub:"พับ 4 ควอดแรนต์ทับกันเป็นหน้าปัด 90° — ดาวที่ทำมุมแข็ง (90°/180°/270°) จะมาเรียงซ้อนกัน เผยครึ่งผลรวม (Halbsumme) และภาพดาวของ Alfred Witte ทันที",
   honesty_chip:"ตำแหน่งดาว = เรขาคณิตจริง (tropical) · การอ่านภาพดาว = พจนานุกรมเชิงวิธี ไม่ใช่คำฟันธง",
   s_src:"เลือกดวง",m_profile:"โปรไฟล์",m_guest:"กรอกสด",l_profile:"โปรไฟล์",loading_p:"กำลังโหลด…",draw:"เปิดหน้าปัด",
@@ -308,7 +309,7 @@ th:{
   snap_lbl:"เลื่อนขึ้นยอด:"
 },
 en:{
-  back:"Back to fusion reading",h1:"Uranian dial",title:"See the planetary picture (Planetenbild)",
+  back:"Back to fusion reading",h1:"Uranian dial",title:"See the planetary picture (Planetenbild)",theme:"Toggle theme",
   sub:"Four quadrants folded onto one 90° dial — stars in hard aspect (90°/180°/270°) stack together, instantly revealing Alfred Witte's midpoints (Halbsumme) and planetary pictures.",
   honesty_chip:"Star positions = real geometry (tropical) · picture reading = a method dictionary, not a decree",
   s_src:"Choose a chart",m_profile:"Profile",m_guest:"Live entry",l_profile:"Profile",loading_p:"Loading…",draw:"Open dial",
@@ -333,7 +334,7 @@ en:{
   snap_lbl:"Bring to top:"
 },
 zh:{
-  back:"返回合盤解讀",h1:"漢堡學派九十度盤",title:"用眼睛看見星圖 Planetenbild",
+  back:"返回合盤解讀",h1:"漢堡學派九十度盤",title:"用眼睛看見星圖 Planetenbild",theme:"切換主題",
   sub:"將360°黃道折成四象疊為90°盤 — 相距90°／180°／270°之星曜疊於同點，Witte之半和（Halbsumme）與星圖一目了然。",
   honesty_chip:"星位＝真實幾何（回歸）· 星圖解讀＝方法辭典，非定斷",
   s_src:"選擇命盤",m_profile:"檔案",m_guest:"即時輸入",l_profile:"檔案",loading_p:"載入中…",draw:"開盤",
@@ -392,6 +393,8 @@ function applyLang(){
   document.documentElement.lang=LANG;
   document.title="90° "+T("h1")+" · "+T("title")+" · hourkey";
   document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('uranian.html',k,LANG);}catch(_){}const v=(ov!=null)?ov:(I18N[LANG]||I18N.th)[k];if(v!==undefined)el.textContent=v;});
+  const themeBtn=document.getElementById("themeBtn");
+  if(themeBtn){themeBtn.setAttribute("title",T("theme")||"Toggle theme");themeBtn.setAttribute("aria-label",T("theme")||"Toggle theme");}
   document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   document.getElementById("lineBtn").textContent=T(SHOW_LINES?"lines_on":"lines_off");
   if(DATA)render();else drawDial(null);

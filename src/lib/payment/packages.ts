@@ -1,9 +1,11 @@
 /**
- * payment/packages.ts · แหล่งความจริงเดียวของแพ็กเกจ (server-side เท่านั้น)
- * r408 · 5 ก.ค. 2026
+ * payment/packages.ts · แหล่งความจริงเดียวของแพ็กเกจ checkout (server-side เท่านั้น)
+ * r408 · 5 ก.ค. 2026 · confirmed SoT 2026-07-09 (admin packages DB = promo tooling only)
  *
  * ⚠️ กฎเหล็กความปลอดภัย: ราคา + จำนวนยาม + tier hardcode ที่นี่เท่านั้น
  *   client ส่งมาแค่ `code` · ห้ามเชื่อ amount/yam จาก client เด็ดขาด (กันแก้ราคา)
+ *   tier ค่าได้เฉพาะ free|premium|master (subscription grants premium|master)
+ * See docs/AFFILIATE_ISOLATION_CONTRACT.md
  */
 
 export type PackageKind = "topup" | "subscription";

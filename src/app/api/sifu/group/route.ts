@@ -31,6 +31,7 @@ import { getSession } from "@/lib/auth";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
+import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
 import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
 import { computeQiyunLock } from "@/lib/bazi-qiyun";
@@ -499,13 +500,15 @@ function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; 
     : "";
   const qaLang = loadPromptSections("prompts/sifu-lang.md");
   const groupInstruction = "\n\n" + (GROUP_INSTRUCTION[opts.lang] || GROUP_INSTRUCTION.th);
-  return loadPromptMd("prompts/sifu-qa.md")
+  const groupPrompt = loadPromptMd("prompts/sifu-qa.md")
     .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
     .replace("{{RULES}}", () => rulesBlock)
     .replace("{{INTERACTION}}", () => interactionBlock + engineBlock + extraBlock + qtbjCompactBlock)
     .replace("{{CTX}}", () => opts.ctx + groupInstruction)
     .replace("{{FOCUS_HIST}}", () => histText)
     .replace("{{MESSAGE}}", () => opts.message);
+  // r414-i18n9: ภาษาใหม่ 6 ตัว ย้ำ directive ท้าย prompt · th/en/zh ไม่มี entry = prompt เดิม byte-identical
+  return LANG_ANSWER_DIRECTIVE[opts.lang] ? groupPrompt + "\n\n" + LANG_ANSWER_DIRECTIVE[opts.lang] : groupPrompt;
 }
 
 /* ── Claude CLI · copy จาก /api/sifu (spawn sudo -u jarvis -H claude · cwd checklist-app) ── */
@@ -883,7 +886,7 @@ export async function POST(req: Request) {
     const message: string = (body.message || "").trim();
     const rawHistory: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
-    const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
+    const lang: string = isSifuAnswerLang(body.lang) ? body.lang : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
     const sifuModel = resolveSifuModel(body.model || url.searchParams.get("model"));
     const threadId = cleanSifuThreadId(body.threadId);
     const clientGroupBindingHash = cleanAuditToken(body.groupBindingHash);

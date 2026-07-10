@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond, Noto_Serif_TC, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -64,6 +65,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full bg-background text-foreground flex flex-col">
+        <Script src="/js/hk-lang-state.js?v=2" strategy="beforeInteractive" />
+        <Script src="/js/hk-tooltips.js?v=20260707" strategy="afterInteractive" />
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

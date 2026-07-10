@@ -200,18 +200,51 @@ export async function POST(req: Request) {
       } catch (e) { console.error("yongshen_v2 (3p) synth failed:", e); }
 
       const birthDateAnchor = new Date(`${date}T12:00:00+07:00`);
+      let qiyunLock: any = null;
+      let qiyunStartAge = 10;
+      try {
+        const { computeQiyunLock } = await import("@/lib/bazi-qiyun");
+        qiyunLock = await computeQiyunLock({
+          date,
+          gender: (gender === "F" ? "F" : "M"),
+          lng: typeof longitude === "number" ? longitude : 100.5018,
+          birthTimeKnown: false,
+          dayBoundary: (dayBoundary === "00:00" ? "00:00" : "23:00"),
+        });
+        qiyunStartAge = qiyunLock?.representativeStartAge ?? 10;
+      } catch (e) {
+        console.warn("[chart] 3p qiyun lock failed, falling back to startAge=10", e);
+      }
       const adjustedYongshenEls = (calc.yongshen || []).map(y => y.element).filter(Boolean);
       const ext = buildChartExtensions(
         natal as any,
         new Date(),
         (gender as "M" | "F") || "M",
         birthDateAnchor,
-        10,
+        qiyunStartAge,
         calc.geJu.structure || null,
         calc.strength.percent,
         calc.yongshen[0]?.element || null,
         adjustedYongshenEls
       );
+      if (qiyunLock?.mode === "unavailable" && qiyunLock.error) {
+        qiyunLock = { ...qiyunLock, error: "qiyun_unavailable" };
+      }
+      const qiyunTimingMethod = qiyunLock?.authority === "full_day_interval"
+        ? "HK_QIYUN_LOCK_V1 full_day_interval → representativeStartAge; no exact birth time"
+        : "HK_QIYUN_LOCK_V1 unavailable → fallback startAge";
+      if (Array.isArray((ext as any).luck_pillars)) {
+        (ext as any).luck_pillars = (ext as any).luck_pillars.map((p: any) => ({
+          ...p,
+          timing_method: qiyunTimingMethod,
+        }));
+      }
+      if (Array.isArray((ext as any).luck_decade_drilldown)) {
+        (ext as any).luck_decade_drilldown = (ext as any).luck_decade_drilldown.map((d: any) => ({
+          ...d,
+          timing_method: qiyunTimingMethod,
+        }));
+      }
       const systemBDistribution = await attachSystemBElementWeights(ext, natal);
 
       try {
@@ -273,6 +306,8 @@ export async function POST(req: Request) {
         tst: null,
         mode: "3p" as const,
         birthTimeKnown: false,
+        start_luck_age: qiyunStartAge,
+        qiyun_lock: qiyunLock,
         uncertainty: {
           dayBoundaryUncertain: calc.dayBoundaryUncertain,
           monthPillarUncertainNearJieqi: calc.monthPillarUncertainNearJieqi,
@@ -325,6 +360,8 @@ export async function POST(req: Request) {
           rootedness_explain: (ext as any).rootedness_explain,
           rootedness_explain_v2: (ext as any).rootedness_explain_v2,
           element_distribution: (ext as any).element_distribution,
+          start_luck_age: qiyunStartAge,
+          qiyun_lock: qiyunLock,
           daymaster_profile: overrideNeedsForFollow(daymasterProfile, yongshenV2_3p),
         },
         yongshen_v2: attachElementRoles(yongshenV2_3p, natal.day.stem, calc.strength?.level || null),

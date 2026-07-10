@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
       { source: "/mygoal-m.html", destination: "/mygoal", permanent: false },
       { source: "/picker-m", destination: "/picker", permanent: false },
       { source: "/picker-m.html", destination: "/picker", permanent: false },
+      { source: "/sifu-live.", destination: "/sifu-live", permanent: false },
     ];
   },
   async headers() {
@@ -37,7 +38,10 @@ const nextConfig: NextConfig = {
       "/signup.html",
       "/ask",
       "/ask.html",
+      "/sifu-live",
       "/reset-password.html",
+      "/verify-email-result.html",
+      "/verify-email/result",
       "/offline",
       "/offline.html",
       "/input",
@@ -144,6 +148,10 @@ const nextConfig: NextConfig = {
       { source: "/ask", destination: "/ask.html" },
       { source: "/reset-password", destination: "/reset-password.html" },
       { source: "/reset-password/:token", destination: "/reset-password.html" }, // 31 พ.ค. · หน้าตั้งรหัสใหม่ (ปลายทางลิงก์ลืมรหัส · เดิม 404)
+      // verify email · ลิงก์ในอีเมล = /verify-email/{token} → API · แล้ว redirect มา result
+      { source: "/verify-email/result", destination: "/verify-email-result.html" },
+      { source: "/verify-email-result", destination: "/verify-email-result.html" },
+      { source: "/verify-email/:token", destination: "/api/auth/verify-email/:token" },
       { source: "/offline", destination: "/offline.html" },
       { source: "/input", destination: "/input.html" },
       { source: "/goal", destination: "/goal.html" },

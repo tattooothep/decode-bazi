@@ -1,0 +1,392 @@
+/* Hourkey Admin · ธีมเดียวกับเว็บ (ink / gold / jade / dark paper)
+   ใช้กับทุกหน้าใต้ /admin ผ่าน layout */
+
+.hk-admin {
+  --hk-bg: #0c0a08;
+  --hk-bg-2: #14110e;
+  --hk-paper: #f3ebe0;
+  --hk-ink: #f0e8dc;
+  --hk-ink-soft: rgba(240, 232, 220, 0.72);
+  --hk-ink-faint: rgba(240, 232, 220, 0.4);
+  --hk-gold: #c9a45c;
+  --hk-gold-soft: #e0c48a;
+  --hk-gold-dim: rgba(201, 164, 92, 0.16);
+  --hk-gold-line: rgba(201, 164, 92, 0.3);
+  --hk-jade: #6aa98c;
+  --hk-jade-dim: rgba(106, 169, 140, 0.16);
+  --hk-cinnabar: #b4544a;
+  --hk-cinnabar-dim: rgba(180, 84, 74, 0.16);
+  --hk-tile: rgba(28, 24, 20, 0.82);
+  --hk-tile-2: rgba(20, 17, 14, 0.92);
+  --hk-border: rgba(240, 232, 220, 0.1);
+  --hk-radius: 12px;
+  --hk-radius-sm: 8px;
+  --hk-serif: "Cormorant Garamond", "Noto Serif TC", "Noto Serif Thai", Georgia, serif;
+  --hk-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  min-height: 100vh;
+  color: var(--hk-ink);
+  background:
+    radial-gradient(880px 460px at 10% -6%, rgba(201, 164, 92, 0.07), transparent 55%),
+    radial-gradient(720px 400px at 95% 0%, rgba(106, 169, 140, 0.045), transparent 50%),
+    linear-gradient(168deg, var(--hk-bg) 0%, var(--hk-bg-2) 50%, var(--hk-bg) 100%);
+  font-family: "Noto Serif Thai", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Force product tokens inside admin to dark-gold (overrides light ivory globals) */
+.hk-admin {
+  --background: var(--hk-bg);
+  --foreground: var(--hk-ink);
+  --card: var(--hk-tile);
+  --card-foreground: var(--hk-ink);
+  --muted: rgba(240, 232, 220, 0.06);
+  --muted-foreground: var(--hk-ink-soft);
+  --border: var(--hk-border);
+  --primary: var(--hk-gold);
+  --primary-foreground: var(--hk-bg);
+  --accent: var(--hk-gold-dim);
+  --accent-foreground: var(--hk-paper);
+  --ring: var(--hk-gold);
+  --cinnabar: var(--hk-cinnabar);
+  --gold: var(--hk-gold);
+  --jade: var(--hk-jade);
+  --ink: var(--hk-ink);
+  --ivory: var(--hk-paper);
+}
+
+.hk-admin .hk-admin-frame {
+  max-width: 80rem;
+  margin: 0 auto;
+  display: flex;
+  gap: 1.25rem;
+  padding: 1rem 0.85rem 2.75rem;
+}
+@media (min-width: 768px) {
+  .hk-admin .hk-admin-frame {
+    gap: 1.5rem;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+}
+
+.hk-admin .hk-admin-aside {
+  display: none;
+  width: 14.75rem;
+  flex-shrink: 0;
+}
+@media (min-width: 768px) {
+  .hk-admin .hk-admin-aside { display: block; }
+}
+
+.hk-admin .hk-admin-navcard {
+  position: sticky;
+  top: 1.25rem;
+  border: 1px solid var(--hk-gold-line);
+  background: var(--hk-tile-2);
+  backdrop-filter: blur(16px);
+  border-radius: var(--hk-radius);
+  padding: 1rem 0.9rem 1.1rem;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+}
+
+.hk-admin .hk-admin-brand {
+  font-family: var(--hk-serif);
+  font-size: 1.28rem;
+  color: var(--hk-paper);
+  letter-spacing: 0.01em;
+}
+.hk-admin .hk-admin-brand-sub {
+  margin-top: 0.2rem;
+  font-family: var(--hk-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hk-gold);
+  opacity: 0.9;
+}
+
+.hk-admin .hk-admin-nav {
+  margin-top: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+.hk-admin .hk-admin-nav a {
+  display: block;
+  border-radius: var(--hk-radius-sm);
+  padding: 0.48rem 0.68rem;
+  font-size: 0.875rem;
+  color: var(--hk-ink-soft);
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: 0.15s ease;
+}
+.hk-admin .hk-admin-nav a:hover {
+  background: var(--hk-gold-dim);
+  color: var(--hk-paper);
+  border-color: var(--hk-gold-line);
+}
+.hk-admin .hk-admin-nav a.is-active {
+  background: rgba(201, 164, 92, 0.16);
+  color: var(--hk-paper);
+  border-color: var(--hk-gold-line);
+}
+
+.hk-admin .hk-admin-lang-label {
+  margin-top: 1.2rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--hk-border);
+  font-family: var(--hk-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hk-ink-faint);
+  margin-bottom: 0.4rem;
+}
+.hk-admin .hk-admin-langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.22rem;
+}
+.hk-admin .hk-admin-langs button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--hk-ink-faint);
+  border-radius: 6px;
+  padding: 0.14rem 0.38rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--hk-mono);
+  cursor: pointer;
+}
+.hk-admin .hk-admin-langs button:hover {
+  color: var(--hk-ink-soft);
+  border-color: var(--hk-border);
+}
+.hk-admin .hk-admin-langs button.is-on {
+  color: var(--hk-bg);
+  background: var(--hk-gold);
+  border-color: var(--hk-gold);
+}
+
+.hk-admin .hk-admin-main { min-width: 0; flex: 1; }
+.hk-admin .hk-admin-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+.hk-admin .hk-admin-title {
+  margin: 0;
+  font-family: var(--hk-serif);
+  font-size: clamp(1.45rem, 2.3vw, 1.85rem);
+  font-weight: 400;
+  color: var(--hk-paper);
+  letter-spacing: 0.01em;
+}
+
+/* Shared panels / tables */
+.hk-admin .hk-panel {
+  border: 1px solid var(--hk-gold-line);
+  background: var(--hk-tile);
+  border-radius: var(--hk-radius);
+  padding: 1rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+}
+.hk-admin .hk-card {
+  border: 1px solid var(--hk-border);
+  background: var(--hk-tile);
+  border-radius: var(--hk-radius);
+  padding: 0.85rem 0.95rem;
+}
+.hk-admin .hk-card .lbl {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hk-ink-faint);
+  font-family: var(--hk-mono);
+}
+.hk-admin .hk-card .val {
+  margin-top: 0.25rem;
+  font-family: var(--hk-mono);
+  font-size: 1.15rem;
+  color: var(--hk-paper);
+}
+
+.hk-admin input,
+.hk-admin select,
+.hk-admin textarea {
+  background: rgba(10, 8, 6, 0.55) !important;
+  border: 1px solid var(--hk-border) !important;
+  color: var(--hk-ink) !important;
+  border-radius: var(--hk-radius-sm) !important;
+}
+.hk-admin input::placeholder,
+.hk-admin textarea::placeholder { color: var(--hk-ink-faint) !important; }
+.hk-admin input:focus,
+.hk-admin select:focus,
+.hk-admin textarea:focus {
+  outline: none !important;
+  border-color: var(--hk-gold-line) !important;
+  box-shadow: 0 0 0 2px rgba(201, 164, 92, 0.14);
+}
+.hk-admin button { cursor: pointer; }
+.hk-admin a { color: inherit; text-decoration: none; }
+
+.hk-admin h1,
+.hk-admin h2,
+.hk-admin .font-serif {
+  font-family: var(--hk-serif) !important;
+  color: var(--hk-paper);
+}
+
+/* Soften utility classes used across our admin pages */
+.hk-admin .text-cyan-200,
+.hk-admin .text-cyan-100,
+.hk-admin a.text-cyan-200,
+.hk-admin .hover\:text-amber-200:hover,
+.hk-admin .text-amber-200,
+.hk-admin .text-amber-100,
+.hk-admin .text-amber-200\/80 {
+  color: var(--hk-gold-soft) !important;
+}
+.hk-admin .bg-cyan-500\/20,
+.hk-admin .bg-cyan-500\/10,
+.hk-admin .bg-amber-300\/10,
+.hk-admin .bg-amber-500\/5 {
+  background: var(--hk-gold-dim) !important;
+}
+.hk-admin .border-cyan-400\/30,
+.hk-admin .border-cyan-400\/50,
+.hk-admin .border-cyan-300\/40,
+.hk-admin .border-amber-300\/20,
+.hk-admin .border-amber-300\/35,
+.hk-admin .border-amber-300\/40,
+.hk-admin .border-amber-400\/20,
+.hk-admin .border-amber-400\/30,
+.hk-admin .hover\:border-amber-300\/35:hover,
+.hk-admin .hover\:border-amber-300\/40:hover {
+  border-color: var(--hk-gold-line) !important;
+}
+
+.hk-admin .text-emerald-300,
+.hk-admin .text-emerald-400,
+.hk-admin .text-emerald-100,
+.hk-admin .text-emerald-200,
+.hk-admin .text-emerald-500 {
+  color: var(--hk-jade) !important;
+}
+.hk-admin .bg-emerald-500\/10,
+.hk-admin .border-emerald-400\/40,
+.hk-admin .border-emerald-400\/30,
+.hk-admin .border-emerald-500\/50 {
+  border-color: rgba(106, 169, 140, 0.35) !important;
+  background: var(--hk-jade-dim) !important;
+}
+
+.hk-admin .text-rose-200,
+.hk-admin .text-rose-300,
+.hk-admin .text-rose-400,
+.hk-admin .text-rose-500,
+.hk-admin .text-red-300 {
+  color: #d8a09a !important;
+}
+.hk-admin .border-rose-400\/30,
+.hk-admin .border-rose-400\/20,
+.hk-admin .border-red-500\/35,
+.hk-admin .bg-rose-500\/5,
+.hk-admin .bg-red-500\/10 {
+  border-color: var(--hk-cinnabar-dim) !important;
+  background: rgba(180, 84, 74, 0.1) !important;
+}
+
+.hk-admin .text-white,
+.hk-admin .text-white\/70,
+.hk-admin .text-white\/62,
+.hk-admin .text-white\/60,
+.hk-admin .text-white\/58,
+.hk-admin .text-white\/50,
+.hk-admin .text-white\/45,
+.hk-admin .text-white\/40,
+.hk-admin .text-white\/30 {
+  color: var(--hk-ink-soft) !important;
+}
+
+.hk-admin .border-white\/10,
+.hk-admin .border-white\/15,
+.hk-admin .border-white\/20,
+.hk-admin .border-white\/5,
+.hk-admin .border-foreground\/10,
+.hk-admin .border-foreground\/15,
+.hk-admin .border-foreground\/20,
+.hk-admin .border-foreground\/30,
+.hk-admin .border-foreground\/50 {
+  border-color: var(--hk-border) !important;
+}
+
+.hk-admin .bg-black\/20,
+.hk-admin .bg-black\/25,
+.hk-admin .bg-black\/30,
+.hk-admin .bg-black\/40,
+.hk-admin .bg-white\/\[\.035\],
+.hk-admin .bg-white\/\[\.055\],
+.hk-admin .bg-foreground\/5,
+.hk-admin .bg-foreground\/10,
+.hk-admin .bg-foreground\/15,
+.hk-admin .bg-card,
+.hk-admin .bg-card\/30,
+.hk-admin .bg-card\/50,
+.hk-admin .bg-background,
+.hk-admin .bg-background\/90,
+.hk-admin .bg-background\/95 {
+  background: var(--hk-tile) !important;
+  color: var(--hk-ink) !important;
+}
+
+/* Kill page-level harsh backgrounds (dashboard etc.) */
+.hk-admin main.min-h-screen,
+.hk-admin .min-h-screen {
+  min-height: auto !important;
+  background: transparent !important;
+  color: var(--hk-ink) !important;
+}
+.hk-admin [class*="bg-\\[\\#0b0d12\\]"],
+.hk-admin [class*="bg-\\[\\#0b0d12\\]"] {
+  background: transparent !important;
+}
+
+/* Explicit hex backgrounds used on dashboard */
+.hk-admin .bg-\[\#0b0d12\] {
+  background: transparent !important;
+}
+.hk-admin .text-\[\#f5f0e8\] {
+  color: var(--hk-ink) !important;
+}
+
+.hk-admin table thead {
+  color: var(--hk-ink-faint) !important;
+}
+.hk-admin table tbody tr:hover {
+  background: rgba(201, 164, 92, 0.05) !important;
+}
+
+.hk-admin .rounded-2xl.border,
+.hk-admin .rounded-xl.border,
+.hk-admin .rounded-lg.border {
+  border-color: var(--hk-border);
+}
+
+/* Buttons default soft */
+.hk-admin button.border,
+.hk-admin a.border {
+  border-color: var(--hk-border);
+  color: var(--hk-ink-soft);
+}
+.hk-admin button.border:hover,
+.hk-admin a.border:hover {
+  border-color: var(--hk-gold-line);
+  color: var(--hk-paper);
+  background: var(--hk-gold-dim);
+}

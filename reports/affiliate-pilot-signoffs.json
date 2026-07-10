@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "runId": "aff_1783598739919_71bb27",
-  "generatedAt": "2026-07-09T12:05:39.996Z",
+  "runId": "aff_1783630635692_c65b62",
+  "generatedAt": "2026-07-09T20:57:15.780Z",
   "signatures": [
     {
       "name": "01_schema_real_tables",
@@ -20,8 +20,8 @@
       "name": "02_attribution_constraints",
       "status": "PASS",
       "evidence": {
-        "code": "HK-F37D9D32",
-        "attribution_id": "bc699bbc-e739-4f92-be1d-c10e44090ba1",
+        "code": "HK-C2F5624B",
+        "attribution_id": "41064fc8-2943-4fdd-9f3c-d2bd90bc9733",
         "selfBlocked": true,
         "dupBlocked": true
       }
@@ -30,8 +30,8 @@
       "name": "03_paid_order_reward_reversal",
       "status": "PASS",
       "evidence": {
-        "order_id": "ed19809a-f6f1-4cf7-903e-9eb2b487e318",
-        "reward_id": "2a55606f-c437-4b1e-ac06-3c103a0ef2a0",
+        "order_id": "9eb4f4f7-f9de-44e3-8b10-b059e32c5cc3",
+        "reward_id": "9d238e67-1a0e-49cb-9e5d-f1eb8074cb67",
         "lifecycle": [
           "pending",
           "approved",

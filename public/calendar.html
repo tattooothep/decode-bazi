@@ -461,9 +461,9 @@
   <div class="cal-pdf-row noprint" style="text-align:center;margin:26px 0 10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
     <button id="cal-pdf-btn" onclick="exportCalendarPdf()" data-i18n="cal.pdf.btn"
       style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">⬇ ดาวน์โหลด PDF (ทั้งเดือน)</button>
-    <!-- 9 ก.ค. · Export สรุป PDF ด้วย AI (async job · 50 ยาม) · window.hkExportSummaryPdf · แยกจากปุ่ม client-print เดิมด้านบน -->
+    <!-- 9 ก.ค. · Export สรุป PDF ด้วย AI (async job · 20 ยาม) · window.hkExportSummaryPdf · แยกจากปุ่ม client-print เดิมด้านบน -->
     <button id="hk-calendar-summary-pdf" type="button" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()"
-      style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">📄 สร้างสรุป PDF (50 ยาม)</button>
+      style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">📄 สร้างสรุป PDF (20 ยาม)</button>
   </div>
 </div>
 
@@ -2545,7 +2545,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
   [300,900,1800,3000].forEach(function(ms){ setTimeout(fix, ms); });
 })();
 </script>
-<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 50 ยาม · async job + poll + resume · 9 ภาษา)
+<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 20 ยาม · async job + poll + resume · 9 ภาษา)
      ลอกโครงจาก palmistry.html · เปลี่ยน page="calendar" + inputs.calendar={month:MONTH_DATA,selected:state.selected}
      (engine 建除/黃黑道/神煞/宜忌 คำนวณเสร็จแล้วฝั่ง /api/calendar → ส่ง snapshot แทน re-fetch) -->
 <script>
@@ -2561,10 +2561,10 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังสรุปปฏิทิน… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is summarising the calendar… you can leave this open or close it; the job keeps running.", zh:"AI 正在總結黃曆…可保持開啟或關閉，工作會繼續。", cn:"AI 正在总结黄历…可保持开启或关闭，工作会继续。", vi:"AI đang tổng hợp lịch… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIが暦をまとめ中…開いたままでも閉じても処理は続きます。", ko:"AI가 달력을 요약 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет сводку календаря… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está resumiendo el calendario… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -2694,11 +2694,11 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(payload); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];

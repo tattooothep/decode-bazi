@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -405,6 +406,104 @@
     .cta-row{flex-direction:column-reverse;gap:8px;margin-top:14px;}
     .cta-row button{width:100%;padding:14px;font-size:11px;}
   }
+
+  /* landing-aligned refresh · dark editorial app shell */
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"]{
+    --bg:#090706;
+    --ink:#090706;
+    --paper:#f7efe3;
+    --paper-dim:rgba(247,239,227,.68);
+    --paper-soft:rgba(247,239,227,.42);
+    --gold:#e5bd69;
+    --gold-deep:#9f7436;
+    --gold-soft:rgba(232,197,128,.12);
+    --red:#a82f24;
+    --red-deep:#7e221b;
+    --jade:#6aa98c;
+    --card-bg-1:rgba(18,16,14,.82);
+    --card-bg-2:rgba(9,7,6,.84);
+    --line:rgba(232,197,128,.18);
+    --line-soft:rgba(232,197,128,.12);
+    --line-faint:rgba(232,197,128,.08);
+    --field:rgba(14,12,10,.62);
+    --field-2:rgba(9,7,6,.48);
+    --ring:rgba(232,197,128,.12);
+    --shine:rgba(255,244,214,.34);
+    --on-gold:#130d09;
+    --shadow:0 24px 80px rgba(0,0,0,.42);
+  }
+  :lang(en), :lang(es), :lang(ru), :lang(vi){font-family:ui-serif, Georgia, 'Noto Serif Thai', serif;}
+  :lang(ja){font-family:'Noto Serif TC','Hiragino Mincho ProN','Yu Mincho',serif;}
+  :lang(ko){font-family:'Noto Serif TC','Noto Serif CJK KR',serif;}
+  :lang(zh-Hans), :lang(zh-Hant){font-family:'Noto Serif TC',serif;}
+  html,body{cursor:auto;background:#090706;color:var(--paper);font-family:var(--thai);}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(9,7,6,.92),rgba(9,7,6,.72) 48%,rgba(9,7,6,.88)),url("assets/landing-v2/hourkey-hero-poster-v2.jpg") center/cover no-repeat;opacity:.94;}
+  body::after{content:'';position:fixed;right:-18vw;top:-22vh;width:76vw;height:76vw;z-index:0;pointer-events:none;border-radius:50%;background:repeating-radial-gradient(circle,rgba(232,197,128,.20) 0 1px,transparent 1px 58px),conic-gradient(from 18deg,transparent 0 16deg,rgba(232,197,128,.16) 16deg 17deg,transparent 17deg 34deg);mask-image:radial-gradient(circle,rgba(0,0,0,.8),transparent 68%);opacity:.62;}
+  .cursor,.cursor-dot,.bg{display:none!important;}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:1000;display:grid;grid-template-columns:auto minmax(180px,1fr) auto;align-items:center;gap:18px;padding:16px clamp(18px,4vw,56px);background:rgba(9,7,6,.72);border-bottom:1px solid var(--line);backdrop-filter:blur(18px);}
+  .logo{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#fff;}
+  .logo .seal{width:34px;height:34px;border-radius:6px;border-color:var(--line);background:rgba(232,197,128,.10);font-size:13px;color:var(--gold);}
+  .progress-pill{justify-self:center;min-height:42px;padding:0 14px;border:1px solid var(--line);border-radius:6px;background:rgba(18,16,14,.58);font-size:10px;letter-spacing:.14em;color:var(--paper-dim);}
+  .progress-pill .dots i{background:rgba(232,197,128,.18);}
+  .progress-pill .dots i.on,.progress-pill .dots i.cur{background:var(--gold);box-shadow:none;}
+  .top-r{justify-self:end;}
+  .hk-lang-select{height:42px;min-width:78px;border:1px solid var(--line);border-radius:6px;background:rgba(14,12,10,.76);color:#fff;padding:0 9px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
+  .hk-lang-select option{background:#120f0d;color:#fff;}
+  .hk-autosave-label{padding:0 10px;color:var(--jade)!important;}
+  .stage{max-width:1180px;margin:0 auto;grid-template-columns:minmax(0,.88fr) minmax(420px,1fr);gap:42px;padding:112px clamp(18px,4vw,56px) 52px;min-height:100svh;align-items:start;}
+  .poem{top:112px;padding:16px 0 0;}
+  .step-num,.poem h1,.card-title,.time-big{letter-spacing:0;}
+  .step-num{font-size:clamp(96px,13vw,180px);line-height:.82;color:var(--gold);background:linear-gradient(180deg,var(--gold),rgba(232,197,128,.16));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .step-of{margin-top:-8px;margin-bottom:24px;letter-spacing:.22em;color:rgba(247,239,227,.46);}
+  .poem h1{font-size:clamp(42px,5.4vw,70px);font-weight:500;text-shadow:0 20px 70px rgba(0,0,0,.55);}
+  .poem .lede{font-size:15px;max-width:470px;color:var(--paper-dim);}
+  .poem .quote{border-left-color:var(--gold);background:linear-gradient(90deg,rgba(232,197,128,.08),transparent);padding:22px 0 22px 22px;}
+  .step-tabs{border-top-color:var(--line);}
+  .step-tab{border-radius:6px;cursor:pointer;}
+  .step-tab.on{background:rgba(232,197,128,.10);border-top-color:var(--gold);}
+  .form-card,.preview,.hk-place-card{border-radius:8px!important;background:linear-gradient(160deg,var(--card-bg-1),var(--card-bg-2))!important;border:1px solid var(--line)!important;box-shadow:var(--shadow);backdrop-filter:blur(18px);}
+  .form-card{padding:34px;overflow:hidden;}
+  .form-card::before,.hk-place-card::before{background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+  .form-card::after{opacity:.035;color:var(--gold);}
+  .card-eyebrow .l,.preview .lab,.hk-place-coord-num{color:var(--gold);}
+  .card-title{font-size:34px;font-weight:500;}
+  .card-sub{color:var(--paper-dim);}
+  .hk-name-field input,.input-glyph,.hk-option-block,.hk-time-input,.hk-time-chip,.hk-place-input-row input,.hk-place-coord-box,.hk-place-note,.pillar.hk-pillar,.preview,.unsure{border-radius:8px!important;background:var(--field)!important;border-color:var(--line)!important;}
+  .hk-option-btn,.sh-cell,.ghost,.primary{border-radius:6px!important;cursor:pointer;}
+  .hk-option-btn.on,.primary{background:linear-gradient(135deg,var(--red),var(--red-deep))!important;color:#fff!important;border-color:transparent!important;}
+  .ghost{background:rgba(14,12,10,.42);border-color:var(--line);color:var(--paper-dim);}
+  .primary:hover,.ghost:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.24);}
+  input,select,button,.check,.sh-cell,.input-glyph{cursor:pointer!important;}
+  input[type="text"],input[type="number"],input[type="time"],select{cursor:text!important;}
+  .time-shichen{border-radius:6px;border-color:var(--line);background:rgba(232,197,128,.10);}
+  .sh-cell.on,.input-glyph.on{box-shadow:0 0 0 1px var(--gold) inset;background:rgba(232,197,128,.10)!important;}
+  .hk-place-note{background:rgba(232,197,128,.08)!important;}
+  .fine{border-top-color:var(--line);color:var(--paper-soft);}
+  .hk-quick-datetime{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(180px,.75fr);gap:12px;margin:0 0 24px;}
+  .hk-dt-field{background:rgba(14,12,10,.58);border:1px solid var(--line);border-radius:8px;padding:14px;}
+  .hk-dt-field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--paper-soft);text-transform:uppercase;margin-bottom:9px;}
+  .hk-date-native,.hk-time-native{width:100%;height:52px;border:1px solid rgba(232,197,128,.24);border-radius:6px;background:rgba(9,7,6,.66);color:var(--paper);font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:.04em;padding:0 13px;outline:none;color-scheme:dark;}
+  .hk-date-native:focus,.hk-time-native:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,197,128,.10);}
+  .hk-dt-summary{margin-top:9px;min-height:18px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--gold);line-height:1.5;}
+  .hk-dt-hint{margin-top:8px;font-size:11px;line-height:1.45;color:var(--paper-soft);}
+  .date-row,.time-display,.hk-time-editor{display:none!important;}
+  .time-section>.field{display:none;}
+  @media(max-width:900px){
+    .topbar{grid-template-columns:1fr auto;gap:12px;padding:12px 16px;}
+    .progress-pill{grid-column:1 / -1;grid-row:2;justify-self:stretch;justify-content:center;}
+    .top-r{gap:8px!important;}
+    .hk-lang-select{height:38px;min-width:66px;padding:0 6px;font-size:10px;}
+    .stage{grid-template-columns:1fr;padding:126px 16px 36px;gap:22px;}
+    .poem{position:relative;top:0;padding:0;}
+    .poem .step-num,.poem .step-of,.poem h1,.poem .lede,.poem .quote{display:block;}
+    .poem h1{font-size:36px;}
+    .poem .lede,.poem .quote{display:none;}
+    .step-tabs{margin-top:22px;}
+    .form-card{padding:22px 18px;}
+    .hk-quick-datetime{grid-template-columns:1fr;}
+  }
 </style>
 <link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
@@ -431,15 +530,20 @@
     <span data-i18n="in.step.title">กรอกข้อมูลเกิด</span>
   </div>
   <div class="top-r" style="display:flex;align-items:center;gap:14px;">
+    <select class="hk-lang-select" id="hk-lang-select" aria-label="Language">
+      <option value="th">TH</option>
+      <option value="en">EN</option>
+      <option value="zh-hant">繁</option>
+      <option value="zh-cn">简</option>
+      <option value="vi">VI</option>
+      <option value="ja">JA</option>
+      <option value="ko">KO</option>
+      <option value="ru">RU</option>
+      <option value="es">ES</option>
+    </select>
     <span class="hk-autosave-label" style="font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--paper-soft);" data-i18n="in.autosave">บันทึกอัตโนมัติ ●</span>
     <div id="hk-user-menu-mount"></div>
   </div>
-<style>
-.hk-lang-switch{display:inline-flex;background:var(--field);border:1px solid var(--line);border-radius:99px;padding:3px;}
-.hk-lang-switch button{min-width:30px;height:28px;padding:0 8px;border:none;background:transparent;color:var(--paper-soft);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
-.hk-lang-switch button.on{background:var(--gold);color:#0d0f12;}
-[data-theme="light"] .hk-lang-switch button.on{color:#f5efe2;}
-</style>
 </div>
 
 <div class="stage">
@@ -496,6 +600,21 @@
       </div>
     </div>
 
+    <div class="hk-quick-datetime">
+      <div class="hk-dt-field">
+        <label for="hk-birth-date" data-i18n="in.birthdate.label">วันเกิด · Birth date · 出生日</label>
+        <input id="hk-birth-date" class="hk-date-native" type="date" value="2026-05-07"/>
+        <div class="hk-dt-summary" id="hk-birth-date-human">07 พ.ค. 2026 · พฤ</div>
+        <div class="hk-dt-hint" data-i18n="in.birthdate.hint">ใช้ปฏิทินสากล ค.ศ. · ถ้าจำเป็นระบบยังอ่านปี พ.ศ. จากข้อมูลเดิมได้</div>
+      </div>
+      <div class="hk-dt-field">
+        <label for="hk-birth-time" data-i18n="in.birthtime.native_label">เวลาเกิด · Birth time · 出生時間</label>
+        <input id="hk-birth-time" class="hk-time-native" type="time" step="60" value="02:35"/>
+        <div class="hk-dt-summary" id="hk-birth-time-summary">02:35 · 丑 · 01:00-03:00</div>
+        <div class="hk-dt-hint" data-i18n="in.birthtime.native_hint">เลือกเวลาแบบ 24 ชั่วโมง · ชั่วยามจีนจะคำนวณให้อัตโนมัติ</div>
+      </div>
+    </div>
+
     <!-- Date -->
     <div class="date-row">
       <div class="field">
@@ -503,7 +622,7 @@
         <div class="input-glyph on">
           <span class="glyph">日</span>
           <input type="number" id="hk-day" class="hk-num-input" min="1" max="31" maxlength="2" placeholder="07" value="07" inputmode="numeric"/>
-          <div class="label" id="hk-day-label">SUN</div>
+          <div class="label" id="hk-day-label">พฤ</div>
         </div>
       </div>
       <div class="field">
@@ -524,7 +643,7 @@
             <option value="11" data-i18n="in.month.nov">พ.ย.</option>
             <option value="12" data-i18n="in.month.dec">ธ.ค.</option>
           </select>
-          <div class="label" id="hk-month-label">MAY · 巳</div>
+          <div class="label" id="hk-month-label">พ.ค. · 巳</div>
         </div>
       </div>
       <div class="field">
@@ -552,8 +671,8 @@
       </div>
       <div class="hk-time-editor">
         <div class="hk-time-input-wrap">
-          <label for="hk-birth-time" data-i18n="in.time.full">กรอกเวลาเต็ม · HH:MM</label>
-          <input id="hk-birth-time" class="hk-time-input" type="time" step="60" value="02:35"/>
+          <label for="hk-birth-time-old" data-i18n="in.time.full">กรอกเวลาเต็ม · HH:MM</label>
+          <input id="hk-birth-time-old" class="hk-time-input" type="time" step="60" value="02:35"/>
         </div>
         <div class="hk-time-quick">
           <button type="button" class="hk-time-chip" data-time="23:00">23:00 <b>子</b></button>
@@ -761,13 +880,18 @@
 
 <script>
   /* 📜 tx helper · i18n stray cleanup · ใช้ร่วมกันทุก <script> บล็อกผ่าน window */
-  window._inLang = function(){ try{ return document.documentElement.getAttribute('data-lang') || localStorage.getItem('hk_locale') || 'th'; }catch(_){ return 'th'; } };
+  window._inLang = function(){
+    try{
+      var st = window.HK_LANG_STATE && window.HK_LANG_STATE.current && window.HK_LANG_STATE.current();
+      return (st && st.raw) || document.documentElement.getAttribute('data-hk-locale') || localStorage.getItem('hk_locale') || document.documentElement.getAttribute('data-lang') || 'th';
+    }catch(_){ return 'th'; }
+  };
   window._intx = function(k, fb){
     try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('input.html',k,window._inLang());if(ov!=null)return ov;}catch(_){}
     var t = window.HK_I18N && window.HK_I18N[k];
     if (!t) return fb;
     var lang = window._inLang();
-    return t[lang] || t.th || fb;
+    return t[lang] || t.en || t.th || fb;
   };
   // cursor
   const c = document.getElementById('cursor'), cd = document.getElementById('cursorDot');
@@ -804,6 +928,7 @@
   const tName = document.querySelector('.time-shichen .name');
   const tRange = document.querySelector('.time-meta .range');
   const timeInput = document.getElementById('hk-birth-time');
+  const timeSummary = document.getElementById('hk-birth-time-summary');
   function idxForTime(v){
     const m = String(v || '').match(/^(\d{1,2}):(\d{2})$/);
     if (!m) return 0;
@@ -827,9 +952,11 @@
       var _L = window._inLang();
       if (_L === 'en') tName.innerHTML = '<b>'+namesEn[idx]+'</b> · Hour of the '+zodiacEn[idx];
       else if (_L === 'zh') tName.innerHTML = '<b>'+namesZh[idx]+'</b> · '+zodiacZh[idx]+'之時辰';
-      else tName.innerHTML = '<b>'+names[idx].split(' · ')[0]+'</b> · ชั่วยาม'+names[idx].split(' · ')[1];
+      else if (_L === 'th') tName.innerHTML = '<b>'+names[idx].split(' · ')[0]+'</b> · ชั่วยาม'+names[idx].split(' · ')[1];
+      else tName.innerHTML = '<b>'+namesEn[idx]+'</b> · '+zodiacEn[idx];
     }
     if (tRange) tRange.textContent = start+' — '+end+' · '+branches[idx]+'時';
+    if (timeSummary) timeSummary.textContent = val + ' · ' + branches[idx] + ' · ' + start + '-' + end;
     document.dispatchEvent(new CustomEvent('hkBirthChanged'));
   }
   window.hkSetBirthTime = setBirthTime;
@@ -915,37 +1042,97 @@
     const dayEl = document.getElementById('hk-day');
     const monthEl = document.getElementById('hk-month');
     const yearEl = document.getElementById('hk-year');
+    const birthDateEl = document.getElementById('hk-birth-date');
+    const birthDateHuman = document.getElementById('hk-birth-date-human');
     const dayLab = document.getElementById('hk-day-label');
     const monthLab = document.getElementById('hk-month-label');
     const yearLab = document.getElementById('hk-year-label');
-    const wkArr = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-    const moEnArr = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const wkByLang = {
+      th:['อา','จ','อ','พ','พฤ','ศ','ส'],
+      en:['SUN','MON','TUE','WED','THU','FRI','SAT'],
+      zh:['週日','週一','週二','週三','週四','週五','週六'],
+      vi:['CN','T2','T3','T4','T5','T6','T7'],
+      ja:['日','月','火','水','木','金','土'],
+      ko:['일','월','화','수','목','금','토'],
+      ru:['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'],
+      es:['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']
+    };
+    const moByLang = {
+      th:['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],
+      en:['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],
+      zh:['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+      vi:['','Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'],
+      ja:['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+      ko:['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+      ru:['','ЯНВ','ФЕВ','МАР','АПР','МАЙ','ИЮН','ИЮЛ','АВГ','СЕН','ОКТ','НОЯ','ДЕК'],
+      es:['','ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC']
+    };
     const moBranch = ['','寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'];
     const yearStems = ['庚','辛','壬','癸','甲','乙','丙','丁','戊','己'];
     const yearBranches = ['申','酉','戌','亥','子','丑','寅','卯','辰','巳','午','未'];
     /* smart detect ปี · ถ้า ≥ 2200 = พ.ศ. (-543) · ถ้า < 2200 = ค.ศ. */
     function smartYear(Y){
       var _L = window._inLang();
-      var beEra = _L === 'en' ? 'BE' : _L === 'zh' ? '佛曆' : 'พ.ศ.';
-      var ceEra = _L === 'en' ? 'CE' : _L === 'zh' ? '公元' : 'ค.ศ.';
+      var beEra = _L === 'th' ? 'พ.ศ.' : _L === 'zh' ? '佛曆' : 'BE';
+      var ceEra = _L === 'th' ? 'ค.ศ.' : _L === 'zh' ? '公元' : 'CE';
       if (!Y || isNaN(Y)) return { ad: 0, era: '?' };
       if (Y >= 2200) return { ad: Y - 543, era: beEra };
       return { ad: Y, era: ceEra };
     }
+    function labelLocale(){
+      var l = window._inLang();
+      if (String(l).indexOf('zh') === 0) return 'zh';
+      return wkByLang[l] ? l : 'en';
+    }
+    function pad2(n){ return String(n).padStart(2,'0'); }
+    function isoFromParts(Yc, M, D){
+      if (!(Yc>=1900 && Yc<=2100 && M>=1 && M<=12 && D>=1 && D<=31)) return '';
+      const dt = new Date(Yc, M-1, D);
+      if (dt.getFullYear() !== Yc || dt.getMonth() !== M-1 || dt.getDate() !== D) return '';
+      return Yc + '-' + pad2(M) + '-' + pad2(D);
+    }
+    function formatHumanDate(iso, weekdayIndex){
+      if (!iso) return '';
+      const L = labelLocale();
+      const localeMap = { th:'th-TH-u-ca-gregory', en:'en-US', zh:'zh-TW', vi:'vi-VN', ja:'ja-JP', ko:'ko-KR', ru:'ru-RU', es:'es-ES' };
+      try {
+        const parts = iso.split('-').map(Number);
+        const dt = new Date(parts[0], parts[1]-1, parts[2]);
+        var text = new Intl.DateTimeFormat(localeMap[L] || 'en-US', { day:'2-digit', month:'short', year:'numeric' }).format(dt);
+        return text + ' · ' + ((wkByLang[L] || wkByLang.en)[weekdayIndex]);
+      } catch(_) {
+        return iso + ' · ' + ((wkByLang[L] || wkByLang.en)[weekdayIndex]);
+      }
+    }
+    function setDateFromNative(v){
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(v || ''))) return;
+      const p = String(v).split('-').map(Number);
+      if (dayEl) dayEl.value = String(p[2]);
+      if (monthEl) monthEl.value = String(p[1]);
+      if (yearEl) yearEl.value = String(p[0]);
+      syncLabels();
+      document.dispatchEvent(new CustomEvent('hkBirthChanged'));
+    }
     function syncLabels(){
       try {
+        const L = labelLocale();
+        const wkArr = wkByLang[L] || wkByLang.en;
+        const moArr = moByLang[L] || moByLang.en;
         const D = parseInt(dayEl.value,10);
         const M = parseInt(monthEl.value,10);
         const Yraw = parseInt(yearEl.value,10);
         const sy = smartYear(Yraw);
         const Yc = sy.ad;
+        const iso = isoFromParts(Yc, M, D);
         if (D >=1 && D<=31 && M>=1 && M<=12 && Yc>=1900 && Yc<=2100) {
           const dt = new Date(Yc, M-1, D);
           if (dt.getFullYear() === Yc) {
             if (dayLab) dayLab.textContent = wkArr[dt.getDay()];
+            if (birthDateHuman) birthDateHuman.textContent = formatHumanDate(iso, dt.getDay());
           }
         }
-        if (M>=1 && M<=12 && monthLab) monthLab.textContent = moEnArr[M] + ' · ' + moBranch[M];
+        if (birthDateEl && iso && birthDateEl.value !== iso) birthDateEl.value = iso;
+        if (M>=1 && M<=12 && monthLab) monthLab.textContent = moArr[M] + ' · ' + moBranch[M];
         if (Yc>=1900 && Yc<=2100 && yearLab) {
           const stemIdx = Yc % 10;
           const branchIdx = Yc % 12;
@@ -955,10 +1142,16 @@
         }
       } catch(_) {}
     }
+    window.hkInputSyncLabels = syncLabels;
     [dayEl, monthEl, yearEl].forEach(function(el){
       if (el) el.addEventListener('input', syncLabels);
       if (el) el.addEventListener('change', syncLabels);
     });
+    if (birthDateEl) {
+      birthDateEl.addEventListener('input', function(){ setDateFromNative(birthDateEl.value); });
+      birthDateEl.addEventListener('change', function(){ setDateFromNative(birthDateEl.value); });
+    }
+    document.addEventListener('hk:locale', syncLabels);
     setTimeout(syncLabels, 100);
   } catch(_) {}
 
@@ -1204,8 +1397,16 @@ window.HK_I18N = {
   'in.day.label':   { th:'วัน · <b>日</b>', en:'Day · <b>日</b>', zh:'日 · <b>日</b>' },
   'in.month.label': { th:'เดือน · <b>月</b>', en:'Month · <b>月</b>', zh:'月 · <b>月</b>' },
   'in.year.label':  { th:'ปี · พ.ศ./ค.ศ. · <b>年</b>', en:'Year · BE/CE · <b>年</b>', zh:'年 · 公元/佛曆 · <b>年</b>' },
+  'in.birthdate.label': { th:'วันเกิด · Birth date · <b>出生日</b>', en:'Birth date · <b>出生日</b>', zh:'出生日期 · <b>出生日</b>' },
+  'in.birthdate.hint': { th:'ใช้ปฏิทินสากล ค.ศ. · ถ้าจำเป็นระบบยังอ่านปี พ.ศ. จากข้อมูลเดิมได้',
+                         en:'Use the Gregorian calendar · existing Buddhist-year data is still understood',
+                         zh:'使用公曆日期 · 既有佛曆年份資料仍可辨識' },
   'in.time.label':  { th:'เวลาเกิด · <b>時辰</b>', en:'Birth time · <b>時辰</b>', zh:'出生時辰 · <b>時辰</b>' },
   'in.time.full':   { th:'กรอกเวลาเต็ม · HH:MM', en:'Exact time · HH:MM', zh:'完整時間 · HH:MM' },
+  'in.birthtime.native_label': { th:'เวลาเกิด · Birth time · <b>出生時間</b>', en:'Birth time · <b>出生時間</b>', zh:'出生時間 · <b>出生時間</b>' },
+  'in.birthtime.native_hint': { th:'เลือกเวลาแบบ 24 ชั่วโมง · ชั่วยามจีนจะคำนวณให้อัตโนมัติ',
+                                en:'Use 24-hour time · Chinese shichen is calculated automatically',
+                                zh:'使用 24 小時制 · 系統自動換算中文時辰' },
   'in.notime.label':{ th:'ไม่ทราบเวลาเกิด · คำนวณแบบ 3 เสา (ไม่มีเสายาม)', en:"Don't know birth time · 3-pillar mode (no Hour Pillar)", zh:'不知道出生時辰 · 三柱推算 (略時柱)' },
   'in.notime.hint': { th:'ตามตำราคลาสสิก · ถ้าไม่ทราบเวลาเกิด คำนวณเฉพาะ ปี เดือน วัน · แม่นยำกว่าการเดาเวลา', en:'Classical method · without birth time we compute Year/Month/Day only · more honest than guessing hour', zh:'依循古法 · 不知時辰時只推年月日 · 比猜測時辰更誠實' },
   'in.place.label': { th:'สถานที่เกิด · <b>出生地</b>', en:'Place of birth · <b>出生地</b>', zh:'出生地 · <b>出生地</b>' },
@@ -1260,7 +1461,7 @@ function applyI18N(lang){
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
     var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('input.html',key,lang);}catch(_){}
-    var v=(ov!=null)?ov:t[lang];
+    var v=(ov!=null)?ov:(t[lang] || t.en || t.th);
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
       if (v !== undefined) {
         if (v.indexOf('<') >= 0) el.innerHTML = v;
@@ -1270,20 +1471,41 @@ function applyI18N(lang){
   });
 }
 window.applyI18N = applyI18N;
-window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 (function(){
-  var sw = document.getElementById('hk-lang-switch');
+  var sw = document.getElementById('hk-lang-select');
   if (!sw) return;
-  var btns = sw.querySelectorAll('button');
-  function apply(lang){
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
-    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
-    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
-    applyI18N(lang);
+  function choiceFromState(st){
+    if (!st) return 'th';
+    if (st.raw === 'zh') {
+      try { return localStorage.getItem('hk_zh_variant') === 'cn' ? 'zh-cn' : 'zh-hant'; } catch(_) {}
+      return st.variant === 'cn' ? 'zh-cn' : 'zh-hant';
+    }
+    return st.raw || 'th';
   }
-  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  function loadOverlayThen(raw, cb){
+    if (raw === 'th' || raw === 'en' || raw === 'zh') { cb(); return; }
+    if (window.HK && window.HK.i18n && typeof window.HK.i18n.loadOverlay === 'function') {
+      window.HK.i18n.loadOverlay(raw).then(function(){ cb(); }).catch(function(){ cb(); });
+      return;
+    }
+    cb();
+  }
+  function apply(lang){
+    var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.set?window.HK_LANG_STATE.set(lang):null;
+    var raw = st ? st.raw : lang;
+    document.documentElement.setAttribute('lang', st?st.html:lang);
+    document.documentElement.setAttribute('data-lang', st?st.app:raw);
+    sw.value = choiceFromState(st || { raw: raw });
+    try{ localStorage.setItem('hk_locale', raw); localStorage.setItem('hk_lang', raw); }catch(e){}
+    loadOverlayThen(raw, function(){
+      applyI18N(raw);
+      try { if (typeof window.hkInputSyncLabels === 'function') window.hkInputSyncLabels(); } catch(_) {}
+      try { if (typeof window.hkSetBirthTime === 'function') window.hkSetBirthTime(window.hkGetBirthTime ? window.hkGetBirthTime() : '02:35'); } catch(_) {}
+    });
+  }
+  window.__hkOverlayApply=function(l){ apply(l); };
+  sw.addEventListener('change', function(){ apply(sw.value); });
+  try{ var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current(); if (st) apply(choiceFromState(st)); else apply('th'); }catch(e){ apply('th'); }
 })();
 </script>
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
@@ -1301,5 +1523,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 </body>
 </html>

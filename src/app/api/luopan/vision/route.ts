@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { reserveHour, drainHoursByChars } from "@/lib/spend-hours";
+import { getProductAccess, entitlementDenied, countLuopanVisionUses } from "@/lib/product-entitlement";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,41 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ ok: false, error: "vision_unavailable" }, { status: 503 });
+    }
+
+    // สิทธิ์: trial = อัป/ถาม Vision ได้ 1 ครั้ง · free หลัง trial = 0 · paid = กว้าง (ยังหักยาม)
+    const access = await getProductAccess(s.userId);
+    const maxVis = access?.luopan_vision_max ?? 0;
+    if (maxVis <= 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          ...entitlementDenied("luopan_vision_locked", {
+            message: "โหมดฟรี · อัปแปลนถาม AI ไม่ได้ · ทดลองใช้ได้ 1 ครั้งช่วง trial หรืออัปเกรด /pricing",
+            plan: access?.plan || "free",
+          }),
+        },
+        { status: 403 }
+      );
+    }
+    // นับเฉพาะ reserve pre 1 ครั้ง/รอบ (ไม่นับ drain ตามตัวอักษรซ้ำ)
+    const usedN = await countLuopanVisionUses(s.userId);
+    if (usedN >= maxVis) {
+      return NextResponse.json(
+        {
+          ok: false,
+          ...entitlementDenied("luopan_vision_limit", {
+            message:
+              maxVis === 1
+                ? "ช่วงทดลองใช้อัปแปลนถาม AI ได้ 1 ครั้งแล้ว · อัปเกรดที่ /pricing"
+                : `ใช้อัปแปลนถาม AI ครบโควตา (${maxVis}) แล้ว`,
+            used: usedN,
+            max: maxVis,
+            plan: access?.plan,
+          }),
+        },
+        { status: 403 }
+      );
     }
 
     // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนเรียก AI (บล็อกยอด 0 + กัน race) · ใช้ users.hour_balance

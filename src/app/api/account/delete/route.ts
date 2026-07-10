@@ -60,6 +60,8 @@ export async function POST(req: Request) {
           'password_hash', password_hash,
           'google_user_id', google_user_id,
           'line_user_id', line_user_id,
+          'phone', phone,
+          'phone_verified', phone_verified,
           'avatar_url', avatar_url,
           'deleted_by', 'self',
           'deleted_at', now()
@@ -68,6 +70,8 @@ export async function POST(req: Request) {
         password_hash = NULL,
         google_user_id = NULL,
         line_user_id = NULL,
+        phone = NULL,
+        phone_verified = false,
         avatar = NULL,
         avatar_url = NULL,
         last_active_at = now()

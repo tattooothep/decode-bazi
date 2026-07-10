@@ -25,6 +25,10 @@ import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type Fusion
 import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
 import { notifyFusionDone } from "@/lib/push-sender";
 import { buildScienceChartSvg } from "@/lib/book/chart-svg";
+import {
+  BOOK_SCIENCE_YAM as _BOOK_SCI,
+  BOOK_SYNTHESIS_YAM as _BOOK_SYN,
+} from "@/lib/product-entitlement";
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
@@ -34,10 +38,9 @@ const CHILD_TIMEOUT_MS = Number(process.env.SIFU_BOOK_CHILD_TIMEOUT_MS || 360_00
 const FEATURE = "natal_book";
 const SERVER_STARTED_AT = new Date();
 
-// ยาม/เล่ม (r401 · เจ้านายสั่ง): บทละ 50 ยาม (flat ทุกศาสตร์) + บทหลอมรวม 50 (เมื่อติ๊ก+เลือก ≥2 ศาสตร์)
-// รวม 6 ศาสตร์ + หลอมรวม = 50×6 + 50 = 350 · เลือก 2 ศาสตร์ไม่หลอมรวม = 100
-export const BOOK_SCIENCE_YAM = 50;
-export const BOOK_SYNTHESIS_YAM = 50;
+// ยาม/เล่ม · SoT ร่วม product-entitlement (UI book.html ต้องตรง)
+export const BOOK_SCIENCE_YAM = _BOOK_SCI;
+export const BOOK_SYNTHESIS_YAM = _BOOK_SYN;
 function bookPanelYam(_s: ScienceId): number { return BOOK_SCIENCE_YAM; }
 export function computeBookYam(sciences: ScienceId[], includeSynthesis: boolean): number {
   const valid = sciences.filter((s) => DISCIPLINES[s]?.available);
@@ -419,7 +422,7 @@ export async function POST(req: Request) {
     }
 
     // บทหลอมรวม: ติ๊กได้ (r401) · default true (เมื่อไม่ส่ง = พฤติกรรมเดิม) · ต้อง ≥2 ศาสตร์ถึงมีผล
-    const includeSynthesis = body.includeSynthesis === undefined
+    let includeSynthesis = body.includeSynthesis === undefined
       ? true
       : (body.includeSynthesis === true || body.includeSynthesis === 1 || body.includeSynthesis === "1");
     const includePalm = body.includePalm === true; // ศาสตร์ที่ 7: ลายมือ
@@ -437,6 +440,25 @@ export async function POST(req: Request) {
     const skippedReasons: Partial<Record<ScienceId, string>> = {};
     for (const s of skipped) skippedReasons[s] = "no_birth_time";
     if (!runSciences.length) return NextResponse.json({ error: "all_sciences_need_birthtime", skipped, skippedReasons }, { status: 400 });
+
+    // สิทธิ์แพ็กเกจ: free หลัง trial ปิด book · trial/premium จำกัดจำนวนศาสตร์
+    const { getProductAccess, entitlementDenied } = await import("@/lib/product-entitlement");
+    const access = await getProductAccess(userId);
+    if (!access || access.book_max_sciences <= 0) {
+      return NextResponse.json(entitlementDenied("book_requires_plan", { plan: access?.plan || "free" }), { status: 403 });
+    }
+    if (runSciences.length > access.book_max_sciences) {
+      return NextResponse.json(
+        entitlementDenied("book_science_limit", {
+          max: access.book_max_sciences,
+          requested: runSciences.length,
+          plan: access.plan,
+        }),
+        { status: 403 }
+      );
+    }
+    // บังคับ synthesis ตามแพ็ก (premium/trial ปิด)
+    includeSynthesis = !!(includeSynthesis && access.book_synthesis);
 
     // rate limit: เล่มกำลังทำอยู่ (running) ≥ 2 = ปฏิเสธ (งานหนัก 7 AI call/เล่ม)
     const runningCnt = await q1<{ n: string }>(

@@ -1,6 +1,6 @@
 /**
- * POST/GET /api/export/summary · "Export สรุป PDF ด้วย AI" (registry: chart/palm/fusion · 50 ยาม/ครั้ง)
- * ─ async job แบบเดียวกับ /api/book: POST → spend 50 ยาม → INSERT running → คืน job_id → worker detached
+ * POST/GET /api/export/summary · "Export สรุป PDF ด้วย AI" (registry: chart/palm/fusion · 20 ยาม/ครั้ง)
+ * ─ async job แบบเดียวกับ /api/book: POST → spend 20 ยาม → INSERT running → คืน job_id → worker detached
  *   GET poll · deliver-once (seen_at) · refund ถ้าพัง · reconcileStale (running > 25 นาที / ก่อน server start)
  * ─ cache: 1 (user_id,page,lang,data_hash) done ที่ยังไม่หมดอายุ = reuse ฟรี (ไม่หักยาม) · running เดิม = คืน id เดิม
  * ─ registry: HANDLERS[page] (src/lib/export/{chart,palm,fusion}.ts) — resolveInputs(rawInputs,session)→{dataHash,ctx}
@@ -27,7 +27,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const FEATURE = "export_pdf";
-const EXPORT_YAM = 50;
+const EXPORT_YAM = 20;
 const CACHE_TTL_DAYS = 30;
 const SERVER_STARTED_AT = new Date();
 
@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       [userId, page, lang, dataHash]);
     if (running) return NextResponse.json({ job_id: running.id, status: "running", reused: true });
 
-    // spend 50 ยาม (atomic · 402 ถ้าไม่พอ)
+    // spend 20 ยาม (atomic · 402 ถ้าไม่พอ)
     const spend = await spendHoursForUser(userId, EXPORT_YAM, FEATURE);
     if (!spend.ok) return NextResponse.json({ error: "insufficient_hours", needed: EXPORT_YAM, balance: spend.balance ?? 0 }, { status: 402 });
     chargedYam = EXPORT_YAM;

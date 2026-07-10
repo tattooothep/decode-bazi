@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark" data-lang="th">
 <head>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -221,7 +222,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
         <option value="fr">FR</option>
       </select>
     </div>
-    <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
+    <button class="tbtn" id="themeBtn" title="Toggle theme" aria-label="toggle theme">☾</button>
   </div>
 </div>
 
@@ -843,7 +844,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
     try{
       var u=new URLSearchParams(location.search).get("lang");
       if(u&&LANGS.indexOf(u)>-1)return u;
-      var s=localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang");
+      var s=localStorage.getItem("hk_article_locale")||localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang");
       if(s&&LANGS.indexOf(s)>-1)return s;
     }catch(e){}
     return "th";
@@ -866,7 +867,10 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
   }
   document.getElementById("geoLang").addEventListener("change",function(e){
     LANG=e.target.value;
-    try{localStorage.setItem("hk_locale",LANG);localStorage.setItem("hk_lang",LANG);}catch(err){}
+    try{
+      localStorage.setItem("hk_article_locale",LANG);
+      if(LANG!=="fr"){localStorage.setItem("hk_locale",LANG);localStorage.setItem("hk_lang",LANG);}
+    }catch(err){}
     applyLang();
   });
   document.getElementById("themeBtn").onclick=function(){

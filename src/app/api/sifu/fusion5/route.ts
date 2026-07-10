@@ -12,9 +12,14 @@ import { NextResponse } from "next/server";
 import { getSession, signSession, type Session } from "@/lib/auth";
 import { q1, q } from "@/lib/db";
 import { renderPalmBlock } from "@/lib/palm/prompt";
-import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
+import {
+  spendHoursForUser,
+  refundHoursForUser,
+  charsToHours,
+  getHourBalanceForUser,
+} from "@/lib/spend-hours";
 import { createHash } from "crypto";
-import { DISCIPLINES, computeYam, JUDGE_MODEL, JUDGE_YAM, type ScienceId } from "@/lib/fusion5/disciplines";
+import { DISCIPLINES, JUDGE_MODEL, type ScienceId } from "@/lib/fusion5/disciplines";
 import { buildSciencePrompt, buildJudgePrompt, resolveFusionTimingReference, type BirthData } from "@/lib/fusion5/build-prompt";
 import { isSifuAnswerLang } from "@/lib/sifu-answer-lang"; // r414-i18n9: allowlist ภาษาคำตอบ 9 ภาษา
 import { renderMultiYearBlock, resolveFusionYearRange, type FusionBirthLike } from "@/lib/fusion5/multi-year";
@@ -35,6 +40,19 @@ const INTERNAL_BASE = process.env.SIFU_INTERNAL_BASE_URL || "http://127.0.0.1:33
 const CHILD_TIMEOUT_MS = Number(process.env.SIFU_FUSION5_CHILD_TIMEOUT_MS || 360_000);
 const FEATURE = "sifu_fusion5";
 const SERVER_STARTED_AT = new Date();
+/**
+ * กัน "ยามน้อยแต่ติ๊กหลายศาสตร์" — จองขั้นต่ำก่อนเรียก AI (escrow)
+ * หักจริงท้ายงานตามตัวอักษร (≈30 ตัว/1 ยาม) · เกิน escrow ดูดเพิ่ม · เหลือน้อยกว่าคืน
+ * ไม่ส่งยอดยามเข้า prompt AI (gate อยู่ฝั่ง server เท่านั้น)
+ */
+const ESCROW_YAM_PER_PANEL = Math.max(1, Math.floor(Number(process.env.FUSION_ESCROW_YAM_PER_SCI || 5)));
+export function fusionEscrowYam(scienceCount: number, chartCount: number): number {
+  const nSci = Math.max(1, Math.floor(scienceCount) || 1);
+  const nCharts = Math.max(1, Math.floor(chartCount) || 1);
+  const panels = nSci * nCharts;
+  const judge = nSci >= 2 ? ESCROW_YAM_PER_PANEL : 0;
+  return panels * ESCROW_YAM_PER_PANEL + judge;
+}
 const BAZI_DECISIVE_READING_NOTE = [
   "นโยบายคำตอบ Fusion5:",
   "นี่คือโหมดอ่านดวง ไม่ใช่โหมด audit ระบบ: ห้ามทำ Gap Register, readiness %, production checklist, หรือสรุปว่าเว็บพร้อม/ไม่พร้อม เว้นแต่คำถามผู้ใช้ถามตรวจระบบโดยตรง",
@@ -321,7 +339,8 @@ type WorkerParams = {
   guestBirths: GuestBirthStored[];     // r381: guest ที่ sanitize แล้ว (เก็บ jobs.guest_births + history)
   question: string;
   lang: string;
-  yam: number;
+  /** ยามจองตอน POST (1 ยาม · แบบ sifu) · หักจริงตามตัวอักษรหลังได้คำตอบ */
+  reservedYam: number;
   skipped: ScienceId[];
   skippedReasons: Partial<Record<ScienceId, string>>;
   history: Msg[];
@@ -378,10 +397,11 @@ async function reconcileStaleJob(row: Fusion5JobRow, userId: string): Promise<Fu
     [row.id, userId, reason]
   );
   if (upd) {
-    // r381: จำนวนดวง = profiles + guests (guest นับยามเท่าดวงปกติ · ต้อง refund เท่าที่หักจริง)
-    const guestCnt = Array.isArray(upd.guest_births) ? upd.guest_births.length : 0;
-    const refYam = computeYam((upd.sciences || []) as ScienceId[], ((upd.profile_ids || []).length + guestCnt) || 1);
-    if (refYam > 0) await refundHoursForUser(userId, refYam, FEATURE).catch(() => {});
+    // งานยัง running = escrow ยังค้างเต็ม · คืนตามสูตรจอง (ยังไม่ settle ตามตัวอักษร)
+    const nSci = (upd.sciences || []).length || 1;
+    const nCharts = ((upd.profile_ids || []).length || 0) + (Array.isArray(upd.guest_births) ? upd.guest_births.length : 0) || 1;
+    const escrow = fusionEscrowYam(nSci, nCharts);
+    if (escrow > 0) await refundHoursForUser(userId, escrow, FEATURE).catch(() => {});
   }
   return { ...row, status: "error", result: null, error: reason };
 }
@@ -408,7 +428,14 @@ function jobJson(row: Fusion5JobRow) {
   };
 }
 
-async function logFusion5History(jobId: string, result: Record<string, unknown>, p: WorkerParams, status: "done" | "degraded" | "fail", totalRefund: number): Promise<string | null> {
+async function logFusion5History(
+  jobId: string,
+  result: Record<string, unknown>,
+  p: WorkerParams,
+  status: "done" | "degraded" | "fail",
+  spent: number,
+  refunded: number
+): Promise<string | null> {
   try {
     const fusion5 = (result.fusion5 && typeof result.fusion5 === "object" ? result.fusion5 as Record<string, unknown> : {});
     const panels = Array.isArray(fusion5.panels) ? fusion5.panels as Array<Record<string, unknown>> : [];
@@ -427,6 +454,7 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
         science: x.science,
       })),
     ];
+    const net = Math.max(0, spent - refunded);
     const responseMeta = {
       fusion_history_version: "sifu_fusion5_history_v1",
       fusion_status: status,
@@ -445,9 +473,10 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
       ai_answered_count: okPanels.length,
       ai_requested_count: panels.length,
       ai_failed_models: failed,
-      spent: p.yam,
-      refunded: totalRefund,
-      net_spent: Math.max(0, p.yam - totalRefund),
+      spent,
+      refunded,
+      net_spent: net,
+      billing: "chars", // ตรง sifu · ≈30 ตัวอักษร/1 ยาม
       ms: Date.now() - p.started,
       reason: "fusion5",
       run_id: jobId,
@@ -485,7 +514,7 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
       model: "fusion5",
       status: status === "fail" ? "error" : "ok",
       error: status === "fail" ? "all_panels_failed" : null,
-      spent: Math.max(0, p.yam - totalRefund),
+      spent: net,
       durationMs: Date.now() - p.started,
       cached: false,
       profileSnapshot: p.births.map((b, i) => ({
@@ -518,9 +547,19 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
 /** 🔄 worker เบื้องหลัง · ไม่ผูก req.signal → user ปิดจอ/พับมือถือได้ งานวิ่งต่อบน server → เก็บผลลง DB
  *  เรียกแบบ detached (ไม่ await) · ต้องไม่ throw ออกนอก (อัปเดต job เสมอ ทั้งสำเร็จ/พลาด) */
 async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
+  // billing: escrow จองตอน POST · นับยามจริงจากความยาวคำตอบ · settle ท้ายงาน (คืนส่วนเกิน / ดูดเพิ่ม)
+  // ห้ามส่ง hour_balance เข้า AI prompt — gate อยู่ที่ server เท่านั้น
+  let actualYam = 0; // Σ charsToHours ต่อคำตอบ (แต่ละ panel/judge ขั้นต่ำ 1 ถ้ามีข้อความ)
+  let settled = false;
   try {
-    const { cookie, runSciences, births, profileIds, question, lang, yam, skipped, userId } = p;
+    const { cookie, runSciences, births, profileIds, question, lang, reservedYam, skipped, userId } = p;
     const timingRef = resolveFusionTimingReference(question, new Date());
+
+    function tallyReply(text: string | undefined | null): void {
+      const s = String(text || "").trim();
+      if (!s) return;
+      actualYam += charsToHours(s.length);
+    }
 
     // panel แยกศาสตร์ (ขนาน) · ทุก path คืน {ok:false} ไม่ throw · ⚠️ ไม่ส่ง signal (งานต้องวิ่งจบแม้ client หลุด)
     const panels: PanelOut[] = await Promise.all(runSciences.map(async (science): Promise<PanelOut> => {
@@ -585,18 +624,26 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
             }
             if (r?.ok && r.reply) { okCount++; parts.push(births.length > 1 ? `【${targetBirths[i].name}】\n${r.reply}` : r.reply); }
           }
-          const failCount = targetBirths.length - okCount;
-          if (okCount > 0 && failCount > 0) await refundHoursForUser(userId, bind.costYam * failCount, FEATURE).catch(() => {});
+          // ไม่ refund แบบ flat costYam · หักตามตัวอักษรเฉพาะคำตอบที่สำเร็จ
           const modelLabel = usedModels.size ? Array.from(usedModels).join("+") : bind.defaultModel;
-          return okCount > 0 ? { science, label, model: modelLabel, ok: true, reply: parts.join("\n\n") } : { science, label, model: bind.defaultModel, ok: false, error: `bazi_failed:${lastError}`.slice(0, 120) };
+          if (okCount > 0) {
+            const joined = parts.join("\n\n");
+            tallyReply(joined);
+            return { science, label, model: modelLabel, ok: true, reply: joined };
+          }
+          return { science, label, model: bind.defaultModel, ok: false, error: `bazi_failed:${lastError}`.slice(0, 120) };
         }
         const prompt = withHistoryPrompt(buildSciencePrompt(science, births, question, lang, timingRef.refDate, timingRef), p.history);
         const panelPayload = { message: question, externalPrompt: prompt, lang, profileId: profileIds[0], threadId: p.threadId, threadProfileId: p.threadProfileId || profileIds[0], historyProfileIds: profileIds, fusionRunId: jobId };
         const res = await callSifu(cookie, panelPayload, bind.defaultModel);
         if (!res.ok && bind.fallbackModels[0]) {
           const fb = await callSifu(cookie, panelPayload, bind.fallbackModels[0]);
-          if (fb.ok) return { science, label, model: bind.fallbackModels[0], ...fb };
+          if (fb.ok) {
+            tallyReply(fb.reply);
+            return { science, label, model: bind.fallbackModels[0], ...fb };
+          }
         }
+        if (res.ok && res.reply) tallyReply(res.reply);
         return { science, label, model: bind.defaultModel, ...res };
       } catch (e) {
         return { science, label, model: bind.defaultModel, ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "engine_error" };
@@ -606,6 +653,7 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     const okPanels = panels.filter((x) => x.ok && x.reply);
 
     let judge: { ok: boolean; reply?: string; error?: string; model: string } = { ok: false, model: JUDGE_MODEL };
+    const wantedJudge = runSciences.length >= 2;
     if (okPanels.length >= 2) {
       try {
         // r373: resonance block ส่งเฉพาะเมื่อมีเนื้อจริง (shell ที่ถือ daySniper อย่างเดียว = ไม่ส่ง RESONANCE_PACKET เปล่า)
@@ -641,15 +689,38 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
         const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, resBlock, dsBlock, myBlock, palmBlock);
         const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL);
         judge = { ...jr, model: JUDGE_MODEL };
+        if (judge.ok && judge.reply) tallyReply(judge.reply);
       } catch (e) { judge = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "judge_error", model: JUDGE_MODEL }; }
     }
 
-    // ยามคืน (refund · ForUser เพราะ background ไม่มี session)
-    const panelRefund = panels.filter((x) => !x.ok).reduce((s, x) => s + DISCIPLINES[x.science].costYam * births.length, 0);
-    const judgeCharged = runSciences.length >= 2 ? JUDGE_YAM : 0;
-    const judgeRefund = judgeCharged > 0 && !judge.ok ? JUDGE_YAM : 0;
-    const totalRefund = panelRefund + judgeRefund;
+    // settle escrow vs actual (chars): คืนส่วนเกิน · ดูดเพิ่มถ้าคำตอบยาวเกินจอง · ล้มทั้งงาน = คืนเต็ม
+    let refunded = 0;
+    let extraSpent = 0;
+    if (okPanels.length === 0) {
+      if (reservedYam > 0) {
+        await refundHoursForUser(userId, reservedYam, FEATURE).catch(() => {});
+        refunded = reservedYam;
+      }
+      actualYam = 0;
+    } else if (actualYam < reservedYam) {
+      refunded = reservedYam - actualYam;
+      if (refunded > 0) await refundHoursForUser(userId, refunded, FEATURE).catch(() => {});
+    } else if (actualYam > reservedYam) {
+      const extra = actualYam - reservedYam;
+      const sp = await spendHoursForUser(userId, extra, FEATURE);
+      if (sp.ok) extraSpent = extra;
+      else {
+        // ยอดไม่พอสำหรับส่วนเกิน · ดูดเท่าที่มีถึง 0 (คำตอบส่งแล้ว · ไม่ปล่อยฟรีทั้งหมด)
+        const bal = await getHourBalanceForUser(userId);
+        if (bal > 0) {
+          const sp2 = await spendHoursForUser(userId, bal, FEATURE);
+          if (sp2.ok) extraSpent = bal;
+        }
+      }
+    }
+    settled = true;
 
+    const netSpent = okPanels.length === 0 ? 0 : Math.max(0, reservedYam - refunded + extraSpent);
     const reply = judge.ok && judge.reply ? judge.reply
       : okPanels.length === 1 ? okPanels[0].reply!
       : okPanels.length ? okPanels.map((x) => `【${x.label}】\n${x.reply}`).join("\n\n")
@@ -664,27 +735,35 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
         judge: { ok: judge.ok, model: judge.model },
         skipped,
         skippedReasons: p.skippedReasons,
-        yam: { charged: yam, refunded: totalRefund },
+        yam: {
+          billing: "chars+escrow",
+          escrow: reservedYam,
+          actual_chars_yam: actualYam,
+          extra: extraSpent,
+          charged: netSpent,
+          refunded,
+          chars_per_yam: Math.max(1, Number(process.env.CREDIT_CHARS_PER_YAM || 30)),
+        },
       },
     };
     const fusionStatus: "done" | "degraded" | "fail" = okPanels.length === 0
       ? "fail"
-      : (okPanels.length < panels.length || (judgeCharged > 0 && !judge.ok)) ? "degraded" : "done";
-    const historyId = await logFusion5History(jobId, result, p, fusionStatus, totalRefund);
+      : (okPanels.length < panels.length || (wantedJudge && !judge.ok)) ? "degraded" : "done";
+    const historyId = await logFusion5History(jobId, result, p, fusionStatus, reservedYam + extraSpent, refunded);
     if (historyId) (result.fusion5 as Record<string, unknown>).historyId = historyId;
-    // UPDATE ก่อน → ค่อย refund partial (ถ้า UPDATE throw → catch คืนเต็มแทน · กัน over-refund ซ้ำ)
     await q(`UPDATE fusion5_jobs SET status='done', result=$2, updated_at=now() WHERE id=$1`, [jobId, JSON.stringify(result)]);
     notifyFusionDone(p.userId); // r380: fire-and-forget · push-sender เคารพ prefs/quiet hours + ไม่ throw
-    if (totalRefund > 0) await refundHoursForUser(p.userId, totalRefund, FEATURE).catch(() => {});
   } catch (e) {
-    // throw ก่อน UPDATE สำเร็จ (partial refund ยังไม่ทำ) → คืนยามเต็ม + mark error (กันเงินหาย/job ค้าง)
-    await refundHoursForUser(p.userId, p.yam, FEATURE).catch(() => {});
+    // error กลางทาง · ยังไม่ settle = คืน escrow ทั้งก้อน (AI อาจวิ่งไปแล้วบางส่วน · ยอม trade-off นี้)
+    if (!settled && p.reservedYam > 0) {
+      await refundHoursForUser(p.userId, p.reservedYam, FEATURE).catch(() => {});
+    }
     await q(`UPDATE fusion5_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1`, [jobId, (e instanceof Error ? e.message : String(e)).slice(0, 200)]).catch(() => {});
   }
 }
 
 export async function POST(req: Request) {
-  let chargedYam = 0, userId = "";
+  let reservedYam = 0, userId = "";
   try {
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const session = await getSession();
@@ -754,10 +833,60 @@ export async function POST(req: Request) {
 
     const runningCnt = await q1<{ n: string }>(`SELECT count(*)::text AS n FROM fusion5_jobs WHERE user_id=$1 AND status='running' AND created_at > now() - interval '25 min'`, [userId]);
     if (runningCnt && Number(runningCnt.n) >= 2) return NextResponse.json({ error: "too_many_running" }, { status: 429 });
-    const yam = computeYam(runSciences, births.length);
-    const spend = await spendHoursForUser(userId, yam, FEATURE);
-    if (!spend.ok) return NextResponse.json({ error: "insufficient_hours", needed: yam }, { status: 402 });
-    chargedYam = yam;
+
+    // สิทธิ์: จำกัดจำนวนศาสตร์/ดวงตาม trial|free|premium|master
+    const { getProductAccess, entitlementDenied } = await import("@/lib/product-entitlement");
+    const access = await getProductAccess(userId);
+    if (!access) return NextResponse.json(entitlementDenied("not_entitled"), { status: 403 });
+    if (runSciences.length > access.fusion_max_sciences) {
+      return NextResponse.json(
+        entitlementDenied("fusion_science_limit", {
+          max: access.fusion_max_sciences,
+          requested: runSciences.length,
+          plan: access.plan,
+        }),
+        { status: 403 }
+      );
+    }
+    if (births.length > access.fusion_max_profiles) {
+      return NextResponse.json(
+        entitlementDenied("fusion_profile_limit", {
+          max: access.fusion_max_profiles,
+          requested: births.length,
+          plan: access.plan,
+        }),
+        { status: 403 }
+      );
+    }
+
+    // ยาม: จองขั้นต่ำตามจำนวนศาสตร์×ดวง (กันยามน้อยติ๊กหลายศาสตร์) · settle ตามตัวอักษรท้ายงาน
+    // ไม่ส่งยอดยามเข้า AI — gate อยู่ server เท่านั้น
+    const escrow = fusionEscrowYam(runSciences.length, births.length);
+    const balNow = await getHourBalanceForUser(userId);
+    if (balNow < escrow) {
+      return NextResponse.json(
+        {
+          error: "insufficient_hours",
+          needed: escrow,
+          balance: balNow,
+          billing: "chars+escrow",
+          escrow_per_panel: ESCROW_YAM_PER_PANEL,
+          message:
+            balNow <= 0
+              ? "ยามหมด · เติมที่ /pricing หรือ /account"
+              : `ยามไม่พอสำหรับ ${runSciences.length} ศาสตร์ × ${births.length} ดวง (ต้องมีอย่างน้อย ${escrow} ยาม) · ลดจำนวนศาสตร์หรือเติมยาม`,
+        },
+        { status: 402 }
+      );
+    }
+    const rsv = await spendHoursForUser(userId, escrow, FEATURE);
+    if (!rsv.ok) {
+      return NextResponse.json(
+        { error: "insufficient_hours", needed: escrow, balance: rsv.balance ?? balNow, billing: "chars+escrow" },
+        { status: 402 }
+      );
+    }
+    reservedYam = escrow;
 
     // r369: Cross-Science Resonance — engine deterministic หา "จุดหลายศาสตร์ตรงกัน" ก่อน AI (additive)
     // คำนวณ sync ตอน POST (มีงบเวลาใน buildResonance: คนแรกเสมอ · คนถัดไปข้ามถ้าเกิน 8s) · พังทั้งก้อน = null (ไม่ล้ม job)
@@ -801,15 +930,38 @@ export async function POST(req: Request) {
       [userId, orgId, question, runSciences, profileIds, births.length > 1, resonance ? JSON.stringify(resonance) : null,
        guestInputs.length ? JSON.stringify(guestInputs) : null] // r381: resume/GET คืน guest ให้ UI วาดชื่อได้ (ไม่มี PII เกิน)
     );
-    if (!job) { await refundHoursForUser(userId, yam, FEATURE).catch(() => {}); return NextResponse.json({ error: "job_create_failed" }, { status: 500 }); }
-    chargedYam = 0; // job รับช่วงดูแล refund แล้ว (outer catch ไม่ต้องคืนซ้ำ)
+    if (!job) {
+      await refundHoursForUser(userId, reservedYam, FEATURE).catch(() => {});
+      return NextResponse.json({ error: "job_create_failed" }, { status: 500 });
+    }
+    reservedYam = 0; // job รับช่วงดูแล refund แล้ว (outer catch ไม่ต้องคืนซ้ำ)
 
     // 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
-    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, guestBirths: guestInputs, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance, includePalm });
+    void processFusion5(job.id, {
+      session, userId, cookie, runSciences, births, profileIds, guestBirths: guestInputs,
+      question, lang, reservedYam: escrow, skipped, skippedReasons, history,
+      threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance, includePalm,
+    });
 
-    return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, skippedReasons, profileNames: births.map((b) => b.name), pairMode: births.length > 1, guestBirths: guestInputs, resonance });
+    return NextResponse.json({
+      jobId: job.id,
+      status: "running",
+      threadId: threadId || job.id,
+      yam: {
+        billing: "chars+escrow",
+        escrow,
+        escrow_per_panel: ESCROW_YAM_PER_PANEL,
+        note: "escrow_then_settle_by_reply_length",
+      },
+      skipped,
+      skippedReasons,
+      profileNames: births.map((b) => b.name),
+      pairMode: births.length > 1,
+      guestBirths: guestInputs,
+      resonance,
+    });
   } catch {
-    if (chargedYam > 0 && userId) await refundHoursForUser(userId, chargedYam, FEATURE).catch(() => {});
+    if (reservedYam > 0 && userId) await refundHoursForUser(userId, reservedYam, FEATURE).catch(() => {});
     return NextResponse.json({ error: "fusion5_error" }, { status: 500 });
   }
 }

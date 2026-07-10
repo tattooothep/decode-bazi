@@ -1989,11 +1989,6 @@
     "en": "🖨 Print chart · 印刷",
     "zh": "🖨 列印命盤"
   },
-  "chart.html::c.cta.deep": {
-    "th": "📜 ดูเชิงลึก 38 หมวด · 詳細",
-    "en": "📜 Full 38 sections · 詳細",
-    "zh": "📜 詳細 38 項"
-  },
   "chart.html::c.sec7.h2": {
     "th": "<span class=\"tc\">大運</span>คลื่นโชค 8 รอบ · ตลอดชีวิต",
     "en": "<span class=\"tc\">大運</span>8 Luck Pillars · lifetime",

@@ -69,10 +69,34 @@ export async function GET(req: NextRequest) {
     `SELECT COALESCE(SUM(cost_cents),0)::int AS cost_cents, COALESCE(SUM(tokens_used),0)::int AS tokens FROM ai_usage`);
   const aiCost30 = await q1<{ cost_cents: number }>(
     `SELECT COALESCE(SUM(cost_cents),0)::int AS cost_cents FROM ai_usage WHERE date >= (now() - interval '30 days')::date`);
-  const users = await q1<{ total: number; paying: number; balance_outstanding: number }>(
+  const users = await q1<{
+    total: number;
+    paying: number;
+    in_trial: number;
+    post_trial_free: number;
+    balance_outstanding: number;
+  }>(
     `SELECT COUNT(*)::int AS total,
-            COUNT(*) FILTER (WHERE tier <> 'free')::int AS paying,
-            COALESCE(SUM(hour_balance),0)::int AS balance_outstanding FROM users`);
+            COUNT(*) FILTER (
+              WHERE LOWER(COALESCE(tier,'free')) IN ('premium','master')
+                AND sub_expires_at IS NOT NULL AND sub_expires_at > now()
+            )::int AS paying,
+            COUNT(*) FILTER (
+              WHERE trial_ends_at IS NOT NULL AND trial_ends_at > now()
+                AND NOT (
+                  LOWER(COALESCE(tier,'free')) IN ('premium','master')
+                  AND sub_expires_at IS NOT NULL AND sub_expires_at > now()
+                )
+            )::int AS in_trial,
+            COUNT(*) FILTER (
+              WHERE NOT (
+                LOWER(COALESCE(tier,'free')) IN ('premium','master')
+                AND sub_expires_at IS NOT NULL AND sub_expires_at > now()
+              )
+              AND NOT (trial_ends_at IS NOT NULL AND trial_ends_at > now())
+            )::int AS post_trial_free,
+            COALESCE(SUM(hour_balance),0)::int AS balance_outstanding
+       FROM users WHERE deleted_at IS NULL`);
   // รายได้รายวัน 14 วัน
   const daily = await q(
     `SELECT to_char(date_trunc('day', paid_at),'MM-DD') AS day, COALESCE(SUM(amount_thb),0)::int AS thb
@@ -84,12 +108,51 @@ export async function GET(req: NextRequest) {
        FROM hour_transactions WHERE delta < 0
        GROUP BY 1 ORDER BY yam DESC LIMIT 8`);
 
+  // P1 margin: revenue − AI − affiliate commissions (read-only on affiliate_rewards) − fee estimate
+  const refunds = await q1<{ thb: number; n: number }>(
+    `SELECT COALESCE(SUM(amount_thb),0)::int AS thb, COUNT(*)::int AS n
+       FROM orders WHERE status='refunded'`
+  ).catch(() => ({ thb: 0, n: 0 }));
+  const affiliate = await q1<{ pending: number; paid: number; approved: number }>(
+    `SELECT
+       COALESCE(SUM(commission_thb) FILTER (WHERE status='pending'),0)::int AS pending,
+       COALESCE(SUM(commission_thb) FILTER (WHERE status='paid'),0)::int AS paid,
+       COALESCE(SUM(commission_thb) FILTER (WHERE status='approved'),0)::int AS approved
+     FROM affiliate_rewards`
+  ).catch(() => ({ pending: 0, paid: 0, approved: 0 }));
+  const feeBps = 300; // ~3% gateway estimate
+  const gross = rev?.revenue_thb ?? 0;
+  const refundThb = refunds?.thb ?? 0;
+  const netRev = Math.max(0, gross - refundThb);
+  const aiThb = Math.round((aiCost?.cost_cents ?? 0) / 100);
+  const affPaid = affiliate?.paid ?? 0;
+  const affReserve = (affiliate?.pending ?? 0) + (affiliate?.approved ?? 0);
+  const feeEst = Math.round((netRev * feeBps) / 10000);
+  const margin = netRev - aiThb - affPaid - feeEst;
+
   return NextResponse.json({
     ok: true,
     revenue: { paid_orders: rev?.paid_orders ?? 0, total_thb: rev?.revenue_thb ?? 0, thb_30d: rev30?.revenue_thb ?? 0, yam_sold: rev?.yam_sold ?? 0 },
     yam: { spent: yamSpent?.spent ?? 0, given: yamGiven?.given ?? 0, outstanding: users?.balance_outstanding ?? 0 },
-    ai_cost: { total_thb: Math.round((aiCost?.cost_cents ?? 0) / 100), thb_30d: Math.round((aiCost30?.cost_cents ?? 0) / 100), tokens: aiCost?.tokens ?? 0 },
-    users: { total: users?.total ?? 0, paying: users?.paying ?? 0 },
+    ai_cost: { total_thb: aiThb, thb_30d: Math.round((aiCost30?.cost_cents ?? 0) / 100), tokens: aiCost?.tokens ?? 0 },
+    users: {
+      total: users?.total ?? 0,
+      paying: users?.paying ?? 0,
+      in_trial: users?.in_trial ?? 0,
+      post_trial_free: users?.post_trial_free ?? 0,
+    },
     daily, byFeature,
+    margin: {
+      gross_thb: gross,
+      refunds_thb: refundThb,
+      refunds_n: refunds?.n ?? 0,
+      net_revenue_thb: netRev,
+      ai_cogs_thb: aiThb,
+      affiliate_paid_thb: affPaid,
+      affiliate_reserve_thb: affReserve,
+      gateway_fee_est_thb: feeEst,
+      contribution_thb: margin,
+      fee_bps: feeBps,
+    },
   });
 }

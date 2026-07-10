@@ -13,6 +13,7 @@ import { q, q1 } from "@/lib/db";
 import { logResearchAiMessage } from "@/lib/research-log";
 import { ensureServerEnv } from "@/lib/server-env";
 import { refundHours, spendHours, type RefundResult, type SpendResult } from "@/lib/spend-hours";
+import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 
 loadEnvConfig(process.cwd(), false, console, true);
 ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
@@ -335,7 +336,7 @@ function cleanHistory(raw: unknown): Msg[] {
 
 function cleanLang(v: unknown): string {
   const s = String(v || "th").trim().toLowerCase();
-  return ["th", "en", "zh"].includes(s) ? s : "th";
+  return isSifuAnswerLang(s) ? s : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
 }
 
 function cleanTopic(v: unknown): string | undefined {
@@ -694,13 +695,20 @@ async function getFusionAccess(session: Session): Promise<{
     if (member && ["owner", "admin"].includes(member.role)) adminRole = member.role;
   }
   const allowAll = process.env.SIFU_FUSION_ALLOW_ALL === "1";
+  // product entitlement: trial / premium / master (paid or trial) · free หมด trial = ไม่ผ่าน
+  let productOk = false;
+  try {
+    const { getProductAccess } = await import("@/lib/product-entitlement");
+    const acc = await getProductAccess(session.userId);
+    productOk = !!acc?.fusion_suite;
+  } catch { /* fall through */ }
   const minRank = tierRank(MIN_TIER);
   const currentRank = tierRank(tier) ?? 0;
   const tierAllowed = minRank !== null && currentRank >= minRank && subActive;
-  const allowed = allowAll || !!adminRole || tierAllowed;
+  const allowed = allowAll || !!adminRole || productOk || tierAllowed;
   return {
     allowed,
-    reason: allowed ? undefined : `requires_${MIN_TIER}_tier_or_admin`,
+    reason: allowed ? undefined : `requires_premium_or_trial`,
     tier,
     hour_balance: user?.hour_balance ?? 0,
     sub_expires_at: user?.sub_expires_at || null,
@@ -1015,7 +1023,9 @@ function buildJudgeMessage(question: string, panel: PanelResult[], lang: string)
     ? "\nAnswer in English as one final answer. Do not reveal internal process."
     : lang === "zh"
       ? "\n請用中文給出一個最終答案，不要揭露內部流程。"
-      : "\nตอบภาษาไทยเป็นคำตอบสุดท้ายเดียว ไม่ต้องแจกแจง process ภายใน";
+      : LANG_ANSWER_DIRECTIVE[lang] // r414-i18n9: ภาษาใหม่ 6 ตัว · th ยังลงเคสเดิม byte-identical
+        ? `\n${LANG_ANSWER_DIRECTIVE[lang]} ให้คำตอบสุดท้ายเดียว ไม่ต้องแจกแจง process ภายใน`
+        : "\nตอบภาษาไทยเป็นคำตอบสุดท้ายเดียว ไม่ต้องแจกแจง process ภายใน";
   return clip(`${fixed}\n${blocks}${tail}`, MAX_JUDGE_MESSAGE_CHARS);
 }
 

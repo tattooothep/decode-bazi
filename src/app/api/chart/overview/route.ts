@@ -236,7 +236,99 @@ ${profile ? `
 
 ปิดท้ายด้วย 1 บรรทัด: "🙏 ขอให้ท่าน..." (อวยพรสั้นๆ)
 `
-    : "" /* TODO: EN/ZH template ทำใน phase ถัดไป · ตอนนี้รองรับ TH หลัก */;
+    : lang === "en" && !question ? `
+Read all 13 sections in order (markdown · start each section with ## and the given emoji · do not skip):
+
+## 🎭 1. Chart Structure
+Explain what this structure is and why it is special (3-5 lines)
+
+## ☯️ 2. Dominant & Missing Elements
+Read from the % · which element is excessive, which is missing · how the inner energy flows (3-5 lines)
+
+## 💊 3. Medicine · Nourishing · Avoid
+Explain 用神/喜神/忌神 in plain language (3-5 lines)
+
+## 🎯 4. Life Strategy
+How to apply the progressive/regressive strategy in real life (2-3 lines)
+
+## ⚕️ 5. Illness · Medicine
+What is this chart's "illness" and which "medicine" resolves it (2-3 lines)
+
+## 💪 6. Strengths
+Your standout strengths and how to use them (3-5 bullets)
+
+## ⚠️ 7. Watch-outs
+Limitations/traps of this chart (3-5 bullets)
+
+## 📜 8. Key Advice
+The 3 main things Sifu wants you to keep (3 bullets)
+
+## 💼 9. Suitable Careers
+Careers that fit the 用神 · careers to avoid (2-3 lines)
+
+## ❤️ 10. Love · Partner
+The partner shown in the chart · what to watch (2-3 lines)
+
+## 🌿 11. Health
+Organs to care for (from unbalanced elements) (2-3 lines)
+
+## 🎯 12. Current Luck Cycle (大運)
+Is this cycle favorable or not · why (3-5 lines)
+
+## 📅 13. This Year + the Next 10 Years
+How is ${ctx.cy_year} · how to prepare for the next 10 years (3-5 lines)
+
+—
+
+Close with 1 line: "🙏 May you..." (a short blessing)
+`
+    : lang === "zh" && !question ? `
+依序讀滿 13 項（markdown · 每項以 ## 加指定表情開頭 · 不可跳過）：
+
+## 🎭 1. 命局格局
+說明此格局為何 · 特別之處（3-5行）
+
+## ☯️ 2. 旺缺五行
+由 % 讀出 · 何者過旺 何者缺 · 內在氣勢如何（3-5行）
+
+## 💊 3. 藥 · 養 · 避
+淺白說明 用神/喜神/忌神（3-5行）
+
+## 🎯 4. 人生策略
+progressive/regressive 策略如何用於現實（2-3行）
+
+## ⚕️ 5. 病 · 藥
+此命之病為何 · 以何藥化解（2-3行）
+
+## 💪 6. 強項
+您的突出優勢 · 如何善用（3-5點）
+
+## ⚠️ 7. 須留意處
+此命的限制/陷阱（3-5點）
+
+## 📜 8. 主要叮嚀
+老師想留給您的 3 件事（3點）
+
+## 💼 9. 合適行業
+合用神之業 · 宜避之業（2-3行）
+
+## ❤️ 10. 感情 · 配偶
+命中配偶之象 · 須看之處（2-3行）
+
+## 🌿 11. 健康
+須調養之臟腑（由失衡五行）（2-3行）
+
+## 🎯 12. 現行大運
+此運吉凶 · 緣由（3-5行）
+
+## 📅 13. 今年 + 未來十年
+${ctx.cy_year} 年如何 · 未來十年如何準備（3-5行）
+
+—
+
+以一行作結：「🙏 願您……」（簡短祝福）
+`
+    : "";
 
   return `${systemPrompt ? systemPrompt + "\n\n" : ""}${intro}\n${dataBlock}\n${followupBlock}\n${structureBlock}`.trim();
 }

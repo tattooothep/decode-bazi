@@ -1,0 +1,328 @@
+/**
+ * สิทธิ์ผลิตภัณฑ์ · trial 30 วัน / free / premium / master
+ * ศูนย์กลางเกตความสามารถ (SoT เดียว · routes + me + docs อ่านจากนี่)
+ *
+ * Trial tools ~30% บน datepick / luopan / qimen (capability slice · หน้าเปิดได้)
+ */
+import { q1 } from "@/lib/db";
+
+export const FREE_SIGNUP_YAM = 1000;
+export const TRIAL_DAYS = 30;
+
+/** ตรง /api/book + public/book.html */
+export const BOOK_SCIENCE_YAM = 18;
+export const BOOK_SYNTHESIS_YAM = 10;
+
+/** นับการใช้ Vision 1 ครั้ง = 1 แถว reserve pre (ไม่นับ drain ซ้ำ) */
+export const LUOPAN_VISION_USAGE_REASON = "spend_luopan_vision_pre";
+
+/** โมดูลวางฤกษ์ทั้งหมดที่ server รู้จัก (sync กับ auspicious ModuleKey) */
+export const DATEPICK_ALL_MODULES = [
+  "ba_zi",
+  "ze_ri",
+  "dong_gong",
+  "tai_sui",
+  "qi_men",
+  "tian_xing",
+  "moon_void",
+  "moon_sign",
+  "retro_window",
+  "eclipse_zone",
+  "rahu_kalam",
+  "panchanga",
+  "yong_shen",
+  "tara_bala",
+  "twelve_officers",
+  "twenty_eight",
+  "twelve_spirits",
+  "nine_stars",
+  "he_luo",
+  "hex64",
+] as const;
+
+export type DatepickModuleId = (typeof DATEPICK_ALL_MODULES)[number];
+
+/**
+ * Trial ~30% (6/20) · แกนฤกษ์คลาสสิก
+ * free หลัง trial แคบกว่า · premium/master = ครบ
+ */
+export const DATEPICK_MODULES_TRIAL: readonly DatepickModuleId[] = [
+  "ze_ri",
+  "twelve_officers",
+  "dong_gong",
+  "tai_sui",
+  "ba_zi",
+  "twenty_eight",
+];
+
+export const DATEPICK_MODULES_FREE: readonly DatepickModuleId[] = [
+  "ze_ri",
+  "twelve_officers",
+  "ba_zi",
+];
+
+export type LuopanMode = "core" | "pro" | "full";
+export type LuopanPins = "basic" | "full";
+export type QimenDetailMode = "beginner" | "pro";
+
+export type ProductPlan = "trial" | "free" | "premium" | "master";
+
+export type ProductAccess = {
+  plan: ProductPlan;
+  tier: string;
+  in_trial: boolean;
+  /**
+   * true = บัญชีเก่าที่ไม่เคยมี trial_ends_at
+   * นโยบาย: ไม่ backfill trial อัตโนมัติ · house_limit=1 (legacy) · caps อื่น = free แคบ
+   * ต่างจาก post-trial free (เคยมี trial แล้วหมด) ที่ house_limit=0
+   */
+  legacy_free: boolean;
+  trial_ends_at: string | null;
+  sub_active: boolean;
+  sub_expires_at: string | null;
+  hour_balance: number;
+  house_limit: number;
+  fusion_max_sciences: number;
+  fusion_max_profiles: number;
+  book_max_sciences: number;
+  book_synthesis: boolean;
+  fusion_suite: boolean;
+  network_multi: boolean;
+  luopan_vision_max: number;
+  datepick_max_people: number;
+  /** allowlist โมดูลวางฤกษ์ */
+  datepick_modules: DatepickModuleId[];
+  /** ความกว้างช่วงค้น (วัน) */
+  datepick_max_range_days: number;
+  /** จำนวนผลสูงสุดต่อคำขอ */
+  datepick_max_results: number;
+  /** หล่อแก: core≈30% · pro · full */
+  luopan_mode: LuopanMode;
+  luopan_pins: LuopanPins;
+  /** ฉีเหมิน */
+  qimen_detail_mode: QimenDetailMode;
+  qimen_search: boolean;
+  qimen_sifu: boolean;
+};
+
+export type ProductUserRow = {
+  tier: string | null;
+  hour_balance: number | null;
+  sub_expires_at: string | null;
+  trial_ends_at: string | null;
+};
+
+/** pure · ใช้เทสได้โดยไม่แตะ DB */
+export function deriveProductAccess(row: ProductUserRow, nowMs: number = Date.now()): ProductAccess {
+  const tier = (row.tier || "free").toLowerCase();
+  const subActive = !!(row.sub_expires_at && new Date(row.sub_expires_at).getTime() > nowMs);
+  const inTrial = !!(row.trial_ends_at && new Date(row.trial_ends_at).getTime() > nowMs);
+  const paidMaster = tier === "master" && subActive;
+  const paidPremium = tier === "premium" && subActive;
+
+  let plan: ProductPlan = "free";
+  if (paidMaster) plan = "master";
+  else if (paidPremium) plan = "premium";
+  else if (inTrial) plan = "trial";
+
+  /* legacy: ไม่มี trial_ends_at เลย · ไม่แจก trial ย้อนหลัง · บ้านได้ 1 หลัง */
+  const legacy_free = !row.trial_ends_at && plan === "free";
+  let house_limit = 0;
+  if (paidMaster) house_limit = 999;
+  else if (paidPremium) house_limit = 50;
+  else if (inTrial) house_limit = 3;
+  else if (legacy_free) house_limit = 1;
+  // else post-trial free: house_limit = 0
+
+  let fusion_max_sciences = 2;
+  let fusion_max_profiles = 1;
+  if (paidMaster) {
+    fusion_max_sciences = 6;
+    fusion_max_profiles = 8;
+  } else if (paidPremium) {
+    fusion_max_sciences = 4;
+    fusion_max_profiles = 1;
+  } else if (inTrial) {
+    fusion_max_sciences = 3;
+    fusion_max_profiles = 1;
+  }
+
+  let book_max_sciences = 0;
+  let book_synthesis = false;
+  if (paidMaster) {
+    book_max_sciences = 6;
+    book_synthesis = true;
+  } else if (paidPremium) {
+    book_max_sciences = 3;
+    book_synthesis = false;
+  } else if (inTrial) {
+    book_max_sciences = 2;
+    book_synthesis = false;
+  }
+
+  const fusion_suite = paidMaster || paidPremium || inTrial;
+  const network_multi = paidMaster;
+
+  let luopan_vision_max = 0;
+  if (paidMaster) luopan_vision_max = 999;
+  else if (paidPremium) luopan_vision_max = 50;
+  else if (inTrial) luopan_vision_max = 1;
+
+  let datepick_max_people = 1;
+  if (paidMaster) datepick_max_people = 10;
+  else if (paidPremium) datepick_max_people = 3;
+  else if (inTrial) datepick_max_people = 1;
+
+  /* ── datepick / luopan / qimen · trial ~30% ── */
+  let datepick_modules: DatepickModuleId[] = [...DATEPICK_MODULES_FREE];
+  let datepick_max_range_days = 30;
+  let datepick_max_results = 10;
+  let luopan_mode: LuopanMode = "core";
+  let luopan_pins: LuopanPins = "basic";
+  let qimen_detail_mode: QimenDetailMode = "beginner";
+  let qimen_search = false;
+  let qimen_sifu = false;
+
+  if (paidMaster) {
+    datepick_modules = [...DATEPICK_ALL_MODULES];
+    datepick_max_range_days = 365;
+    datepick_max_results = 100;
+    luopan_mode = "full";
+    luopan_pins = "full";
+    qimen_detail_mode = "pro";
+    qimen_search = true;
+    qimen_sifu = true;
+  } else if (paidPremium) {
+    datepick_modules = [...DATEPICK_ALL_MODULES];
+    datepick_max_range_days = 90;
+    datepick_max_results = 50;
+    luopan_mode = "pro";
+    luopan_pins = "full";
+    qimen_detail_mode = "pro";
+    qimen_search = true;
+    qimen_sifu = true;
+  } else if (inTrial) {
+    datepick_modules = [...DATEPICK_MODULES_TRIAL];
+    datepick_max_range_days = 45;
+    datepick_max_results = 20;
+    luopan_mode = "core";
+    luopan_pins = "basic";
+    qimen_detail_mode = "beginner";
+    qimen_search = false;
+    qimen_sifu = false;
+  }
+  // free post-trial: DATEPICK_MODULES_FREE · core · beginner · no search/sifu (ด้านบน)
+
+  return {
+    plan,
+    tier,
+    in_trial: inTrial,
+    legacy_free,
+    trial_ends_at: row.trial_ends_at,
+    sub_active: subActive,
+    sub_expires_at: row.sub_expires_at,
+    hour_balance: Number(row.hour_balance) || 0,
+    house_limit,
+    fusion_max_sciences,
+    fusion_max_profiles,
+    book_max_sciences,
+    book_synthesis,
+    fusion_suite,
+    network_multi,
+    luopan_vision_max,
+    datepick_max_people,
+    datepick_modules,
+    datepick_max_range_days,
+    datepick_max_results,
+    luopan_mode,
+    luopan_pins,
+    qimen_detail_mode,
+    qimen_search,
+    qimen_sifu,
+  };
+}
+
+export async function getProductAccess(userId: string): Promise<ProductAccess | null> {
+  if (!userId) return null;
+  const row = await q1<ProductUserRow>(
+    `SELECT tier, hour_balance, sub_expires_at, trial_ends_at FROM users WHERE id=$1 AND deleted_at IS NULL`,
+    [userId]
+  );
+  if (!row) return null;
+  return deriveProductAccess(row);
+}
+
+/** กรอง activeModules ตาม plan · คืน allowed + stripped */
+export function filterDatepickModules(
+  requested: string[],
+  access: ProductAccess
+): { allowed: DatepickModuleId[]; stripped: string[] } {
+  const allow = new Set(access.datepick_modules);
+  const allowed: DatepickModuleId[] = [];
+  const stripped: string[] = [];
+  for (const m of requested) {
+    const key = String(m) as DatepickModuleId;
+    if (allow.has(key)) allowed.push(key);
+    else stripped.push(String(m));
+  }
+  return { allowed, stripped };
+}
+
+/** นับการใช้ Vision จริง (reserve pre เท่านั้น) */
+export async function countLuopanVisionUses(userId: string): Promise<number> {
+  const used = await q1<{ n: number }>(
+    `SELECT COUNT(*)::int AS n FROM hour_transactions
+      WHERE user_id=$1 AND reason = $2`,
+    [userId, LUOPAN_VISION_USAGE_REASON]
+  ).catch(() => ({ n: 0 }));
+  return Number(used?.n) || 0;
+}
+
+export async function applySignupProductDefaults(userId: string): Promise<void> {
+  if (!userId) return;
+  await q1(
+    `UPDATE users SET
+       hour_balance = $2,
+       trial_ends_at = COALESCE(trial_ends_at, now() + ($3::text || ' days')::interval)
+     WHERE id = $1`,
+    [userId, FREE_SIGNUP_YAM, String(TRIAL_DAYS)]
+  ).catch((e) =>
+    console.warn("[product] applySignupProductDefaults", e instanceof Error ? e.message : e)
+  );
+}
+
+export function entitlementDenied(
+  code: string,
+  extra: Record<string, unknown> = {}
+): { error: string; code: string; upgrade: string } & Record<string, unknown> {
+  return {
+    error: code,
+    code,
+    upgrade: "/pricing",
+    ...extra,
+  };
+}
+
+/** payload caps สำหรับ /api/account/me (web + mobile) */
+export function productAccessToCaps(access: ProductAccess) {
+  return {
+    house_limit: access.house_limit,
+    legacy_free: !!access.legacy_free,
+    fusion_max_sciences: access.fusion_max_sciences,
+    fusion_max_profiles: access.fusion_max_profiles,
+    book_max_sciences: access.book_max_sciences,
+    book_synthesis: access.book_synthesis,
+    fusion_suite: access.fusion_suite,
+    network_multi: access.network_multi,
+    luopan_vision_max: access.luopan_vision_max,
+    datepick_max_people: access.datepick_max_people,
+    datepick_modules: access.datepick_modules,
+    datepick_max_range_days: access.datepick_max_range_days,
+    datepick_max_results: access.datepick_max_results,
+    luopan_mode: access.luopan_mode,
+    luopan_pins: access.luopan_pins,
+    qimen_detail_mode: access.qimen_detail_mode,
+    qimen_search: access.qimen_search,
+    qimen_sifu: access.qimen_sifu,
+  };
+}

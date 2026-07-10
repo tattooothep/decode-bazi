@@ -11,7 +11,7 @@
  *   6. อื่น ๆ                     → ไม่แตะ
  */
 
-const HK_SW_VERSION = 'r384d';
+const HK_SW_VERSION = 'r384f';
 const CACHE_NAME = 'hk-pwa-' + HK_SW_VERSION;
 
 const PRECACHE_URLS = [
@@ -23,8 +23,8 @@ const PRECACHE_URLS = [
   '/icons/apple-touch-icon-180.png'
 ];
 
-/* 2 ไฟล์ kill-switch เดิม (no-store) — ห้าม SW cache เด็ดขาด */
-const NEVER_CACHE_PATHS = ['/js/hk-user-menu.js', '/css/mobile-safe.css'];
+/* kill-switch/no-store surfaces — ห้าม SW cache เด็ดขาด */
+const NEVER_CACHE_PATHS = ['/js/hk-lang-state.js', '/js/hk-user-menu.js', '/js/hk-tooltips.js', '/css/mobile-safe.css'];
 
 const CACHEABLE_DESTINATIONS = ['script', 'style', 'image', 'font'];
 
