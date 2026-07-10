@@ -8,6 +8,7 @@ import {
   CircleDollarSign,
   FileSliders,
   FlaskConical,
+  Handshake,
   LibraryBig,
   MessageSquareText,
   Package,
@@ -20,6 +21,9 @@ import {
 } from "lucide-react";
 import { q, q1 } from "@/lib/db";
 import { requireAdmin, type AdminSession } from "@/lib/admin-guard";
+import { adminDict, normalizeAdminLocale } from "@/lib/admin-i18n";
+import { loadUserStats, type UserStats, type RecentUser, type SignupDailyPoint } from "@/lib/admin-user-stats";
+import { SIFU_PROMPT_FILES } from "@/lib/sifu-prompt-files";
 
 export const metadata = { title: "หลังบ้าน · Admin" };
 export const dynamic = "force-dynamic";
@@ -57,10 +61,15 @@ type Dashboard = {
 };
 
 const MODULES: { href: string; Icon: Icon; title: string; desc: string; tone: string }[] = [
-  { href: "/admin/members", Icon: Users, title: "สมาชิก", desc: "ค้นหา เติม/หักยาม ระงับ เปลี่ยน tier และต่ออายุ", tone: "from-cyan-500/10" },
-  { href: "/admin/packages", Icon: Package, title: "แพ็คเกจ", desc: "แพ็คเติมยาม สมาชิก คูปอง และโปรโมชั่น", tone: "from-amber-500/10" },
-  { href: "/admin/finance", Icon: CircleDollarSign, title: "การเงิน", desc: "รายได้ ยามที่ขาย/ใช้ ต้นทุน AI ธุรกรรม และออเดอร์", tone: "from-emerald-500/10" },
-  { href: "/admin/settings", Icon: Settings, title: "ตั้งค่าเว็บ", desc: "อัตราเครดิต feature flag ประกาศ และ maintenance", tone: "from-violet-500/10" },
+  { href: "/admin/members", Icon: Users, title: "สมาชิก · User 360", desc: "ค้นหา เติม/หักยาม ระงับ tier free/premium/master · หน้ารายคน", tone: "from-cyan-500/10" },
+  { href: "/admin/orders", Icon: CircleDollarSign, title: "ออเดอร์", desc: "refund + clawback ยาม + reverse affiliate", tone: "from-rose-500/10" },
+  { href: "/admin/support", Icon: Users, title: "ซัพพอร์ต", desc: "ticket inbox + user reports", tone: "from-sky-500/10" },
+  { href: "/admin/packages", Icon: Package, title: "แพ็คเกจ", desc: "คูปอง/โปร · checkout SoT = packages.ts", tone: "from-amber-500/10" },
+  { href: "/admin/finance", Icon: CircleDollarSign, title: "การเงิน", desc: "รายได้ · margin · AI · affiliate reserve", tone: "from-emerald-500/10" },
+  { href: "/admin/ai-cost", Icon: Settings, title: "ต้นทุน AI", desc: "usage + kill switches", tone: "from-orange-500/10" },
+  { href: "/admin/iam", Icon: Settings, title: "แอดมิน & สิทธิ์", desc: "RBAC หลายบทบาท · invite · break-glass ADMIN_EMAILS", tone: "from-violet-500/10" },
+  { href: "/admin/affiliate", Icon: Handshake, title: "Affiliate", desc: "pilot allowlist, referral ledger, approval, payout และ reversal audit", tone: "from-teal-500/10" },
+  { href: "/admin/settings", Icon: Settings, title: "ตั้งค่าเว็บ", desc: "อัตราเครดิต feature flag ประกาศ และ maintenance", tone: "from-slate-500/10" },
 ];
 
 const CONTENT: { href: string; Icon: Icon; title: string; desc: string }[] = [
@@ -158,10 +167,9 @@ async function loadDashboard(): Promise<Dashboard> {
            (SELECT COUNT(*)::int FROM packages WHERE active=true) AS packages,
            (SELECT COUNT(*)::int FROM coupons WHERE active=true) AS coupons,
            (SELECT COUNT(*)::int FROM ref_engine_configs WHERE is_active=true) AS engine_configs,
-           (SELECT COUNT(*)::int FROM ref_formulas WHERE is_active=true) AS formulas,
-           24::int AS prompts`,
+           (SELECT COUNT(*)::int FROM ref_formulas WHERE is_active=true) AS formulas`,
         [],
-        { packages: 0, coupons: 0, engine_configs: 0, formulas: 0, prompts: 0 }
+        { packages: 0, coupons: 0, engine_configs: 0, formulas: 0 }
       ),
       safeQ1(
         `SELECT
@@ -241,7 +249,8 @@ async function loadDashboard(): Promise<Dashboard> {
       coupons: num(catalog.coupons),
       engineConfigs: num(catalog.engine_configs),
       formulas: num(catalog.formulas),
-      prompts: num(catalog.prompts),
+      // นับจริงจาก whitelist เดียวกับ /admin/sifu-prompts (เดิม hardcode 24 ใน SQL = ตัวเลขปลอม)
+      prompts: Object.keys(SIFU_PROMPT_FILES).length,
     },
     settings: {
       maintenance: String(settings.maintenance || "off"),
@@ -264,26 +273,33 @@ async function getAdmin(): Promise<AdminSession | null> {
   try {
     return await requireAdmin();
   } catch (err) {
-    if (err instanceof Response && err.status === 401) return null;
+    if (err instanceof Response && (err.status === 401 || err.status === 403)) return null;
     throw err;
   }
 }
 
-export default async function AdminHub() {
+export default async function AdminHub({
+  searchParams,
+}: {
+  searchParams?: Promise<{ lang?: string }>;
+}) {
   const admin = await getAdmin();
-  if (!admin) redirect("/signup?tab=login&next=/admin");
-  const d = await loadDashboard();
+  if (!admin) redirect("/today");
+  const sp = searchParams ? await searchParams : {};
+  const locale = normalizeAdminLocale(sp?.lang || "th");
+  const dict = adminDict(locale);
+  const [d, us] = await Promise.all([loadDashboard(), loadUserStats()]);
   const conversion = pct(d.users.paying, d.users.total);
   const activeRate = pct(d.users.active7, d.users.total);
 
   return (
-    <main className="min-h-screen bg-[#0b0d12] text-[#f5f0e8]">
-      <div className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8">
+    <main className="hk-admin-frame" style={{ display: "block", maxWidth: "80rem", margin: "0 auto", padding: "1.5rem 1.25rem 3rem" }}>
+      <div>
         <header className="mb-6 grid gap-5 border-b border-white/10 pb-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-white/50">
                 <span className="rounded border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 font-mono text-amber-200">
-                HOURKEY ADMIN
+                時 HOURKEY ADMIN
               </span>
               <span>อัปเดต {d.generatedAt}</span>
             </div>
@@ -291,6 +307,22 @@ export default async function AdminHub() {
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/62">
               ภาพรวมธุรกิจ สมาชิก ยาม รายได้ ต้นทุน AI และเครื่องมือคุมระบบในหน้าเดียว สำหรับดูสถานะก่อนตัดสินใจทำงานหลังบ้านต่อ
             </p>
+            <nav className="mt-4 flex flex-wrap gap-2 text-xs">
+              {[
+                ["/admin/members", "สมาชิก"],
+                ["/admin/orders", "ออเดอร์"],
+                ["/admin/support", "ซัพพอร์ต"],
+                ["/admin/finance", "การเงิน"],
+                ["/admin/ai-cost", "ต้นทุน AI"],
+                ["/admin/packages", "แพ็กเกจ"],
+                ["/admin/iam", "สิทธิ์"],
+                ["/admin/settings", "ตั้งค่า"],
+              ].map(([href, label]) => (
+                <Link key={href} href={href} className="rounded-full border border-white/10 px-3 py-1 text-white/55 hover:border-amber-300/40 hover:text-amber-200">
+                  {label}
+                </Link>
+              ))}
+            </nav>
           </div>
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
             <StatusPill label="admin" value={admin.email} tone="neutral" />
@@ -305,6 +337,8 @@ export default async function AdminHub() {
           <KpiCard Icon={CircleDollarSign} label="รายได้รวม" value={baht(d.revenue.totalThb)} sub={`${fmtInt(d.revenue.paidOrders)} paid orders · 30 วัน ${baht(d.revenue.thb30)}`} />
           <KpiCard Icon={Activity} label="ต้นทุน AI" value={baht(d.ai.costThb)} sub={`${fmtInt(d.ai.tokens)} tokens · ${fmtInt(d.ai.calls)} logs`} />
         </section>
+
+        <UserStatsSection stats={us} dict={dict} />
 
         <section className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,.85fr)]">
           <div className="rounded-lg border border-white/10 bg-white/[.035] p-4 shadow-2xl shadow-black/20">
@@ -560,4 +594,191 @@ function fmtDate(v: string) {
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleString("th-TH", { timeZone: "Asia/Bangkok", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+/* ───────────────────────── สถิติผู้ใช้ (User Statistics) ─────────────────────────
+ * ข้อมูลจริงทั้งหมดจาก loadUserStats() (src/lib/admin-user-stats.ts · 2 query)
+ * แหล่งเดียวกับ /api/admin/user-stats · ไม่มี mockup
+ */
+
+function UserStatsSection({ stats, dict }: { stats: UserStats; dict: Record<string, string> }) {
+  const t = (k: string) => dict[k] || k;
+  const u = stats.users;
+  const f = stats.features;
+  const rev = stats.revenue;
+  const featureRows: { key: string; today: number; week: number }[] = [
+    { key: "stats.feature_fusion", today: f.fusionToday, week: f.fusion7d },
+    { key: "stats.feature_palm", today: f.palmToday, week: f.palm7d },
+    { key: "stats.feature_export", today: f.exportToday, week: f.export7d },
+    { key: "stats.feature_hourkey", today: f.hourkeyToday, week: f.hourkey7d },
+  ];
+  return (
+    <section className="mb-6 rounded-lg border border-white/10 bg-white/[.035] p-4 shadow-2xl shadow-black/20" data-section="user-stats">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-medium">{t("stats.title")}</div>
+          <div className="mt-1 text-xs text-white/45">
+            {t("stats.online_def").replace("{m}", String(stats.onlineWindowMinutes))}
+          </div>
+        </div>
+        <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${stats.onlineNow > 0 ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100" : "border-white/10 bg-white/[.03] text-white/45"}`}>
+          <span className={`h-2 w-2 rounded-full ${stats.onlineNow > 0 ? "bg-emerald-300" : "bg-white/25"}`} />
+          {t("stats.online_now")} {fmtInt(stats.onlineNow)}
+        </span>
+      </div>
+
+      <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-lg border border-white/10 bg-black/15 p-3">
+          <div className="text-xs uppercase tracking-wide text-white/45">{t("stats.online_now")}</div>
+          <div className="mt-1 font-serif text-3xl">{fmtInt(stats.onlineNow)}</div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {stats.onlineUsers.length ? (
+              stats.onlineUsers.map((o) => (
+                <span key={o.email} className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-emerald-300/25 bg-emerald-300/10 px-2 py-0.5 text-[11px] text-emerald-100" title={`${o.email} · ${fmtDate(o.last_active_at)}`}>
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-300" />
+                  <span className="truncate">{o.name || o.email}</span>
+                </span>
+              ))
+            ) : (
+              <span className="text-xs text-white/38">{t("stats.no_online")}</span>
+            )}
+          </div>
+        </div>
+        <MiniStat label={t("stats.new_today")} value={fmtInt(u.newToday)} sub={`${t("stats.new_7d")} ${fmtInt(u.new7d)} · ${t("stats.new_30d")} ${fmtInt(u.new30d)}`} />
+        <MiniStat label={t("stats.active_users")} value={`${fmtInt(u.dau)} DAU`} sub={`WAU ${fmtInt(u.wau)} · MAU ${fmtInt(u.mau)}`} />
+        <MiniStat label={t("stats.yam_total")} value={fmtInt(stats.yam.balanceTotal)} sub={`${t("stats.yam_avg")} ${fmtInt(stats.yam.balanceAvg)} · ${t("stats.yam_spent")} ${fmtInt(stats.yam.spentTotal)}`} />
+      </div>
+
+      <div className="mb-4 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,.9fr)]">
+        <div className="rounded-lg border border-white/10 bg-black/15 p-3">
+          <div className="mb-2 flex items-center justify-between text-xs text-white/45">
+            <span>{t("stats.signup_trend")}</span>
+            <span className="font-mono">{stats.signupDaily.length ? `${stats.signupDaily[0].d} → ${stats.signupDaily[stats.signupDaily.length - 1].d}` : ""}</span>
+          </div>
+          <SignupLineChart points={stats.signupDaily} />
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <MiniStat label={t("stats.verified")} value={fmtInt(u.verified)} sub={`${t("stats.unverified")} ${fmtInt(u.unverified)}`} />
+          <MiniStat label={t("stats.by_signup")} value={`${fmtInt(u.signupEmail)} email`} sub={`${fmtInt(u.signupPhone)} phone · ${fmtInt(u.signupGoogle)} google · ${fmtInt(u.signupLine)} LINE`} />
+          <MiniStat label={t("stats.plan_free")} value={fmtInt(u.planFree)} sub={pct(u.planFree, u.total)} />
+          <MiniStat label={t("stats.plan_paid")} value={fmtInt(u.planPaid)} sub={pct(u.planPaid, u.total)} />
+        </div>
+      </div>
+
+      <div className="mb-4 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-lg border border-white/10 bg-black/15 p-3">
+          <div className="mb-2 text-xs text-white/45">{t("stats.features")}</div>
+          <table className="w-full text-sm">
+            <thead className="text-[11px] uppercase tracking-wide text-white/38">
+              <tr>
+                <th className="pb-1 text-left font-normal">Feature</th>
+                <th className="pb-1 text-right font-normal">{t("stats.today")}</th>
+                <th className="pb-1 text-right font-normal">{t("stats.week7")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {featureRows.map((row) => (
+                <tr key={row.key} className="border-t border-white/5">
+                  <td className="py-1.5 text-white/72">{t(row.key)}</td>
+                  <td className="py-1.5 text-right font-mono">{fmtInt(row.today)}</td>
+                  <td className="py-1.5 text-right font-mono text-white/60">{fmtInt(row.week)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="rounded-lg border border-white/10 bg-black/15 p-3">
+          <div className="mb-2 text-xs text-white/45">{t("stats.revenue")} · {t("stats.orders_paid")}</div>
+          <div className="grid grid-cols-2 gap-2">
+            <MiniStat label={t("stats.this_week")} value={baht(rev.thbWeek)} sub={`${fmtInt(rev.ordersWeek)} ${t("stats.orders_paid")}`} />
+            <MiniStat label={t("stats.this_month")} value={baht(rev.thbMonth)} sub={`${fmtInt(rev.ordersMonth)} ${t("stats.orders_paid")}`} />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-white/10 bg-black/15 p-3" data-section="user-stats-recent">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="text-xs text-white/45">{t("stats.recent_users")}</div>
+          <Link href="/admin/members" className="inline-flex items-center gap-1 rounded border border-white/10 px-2.5 py-1 text-xs text-white/60 hover:border-amber-300/40 hover:text-amber-200">
+            {t("stats.view_all")} <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm">
+            <thead className="text-[11px] uppercase tracking-wide text-white/38">
+              <tr>
+                <th className="p-2 text-left font-normal">{t("col.email")}</th>
+                <th className="p-2 text-left font-normal">{t("col.name")}</th>
+                <th className="p-2 text-center font-normal">{t("col.tier")}</th>
+                <th className="p-2 text-right font-normal">{t("col.yam")}</th>
+                <th className="p-2 text-center font-normal">{t("stats.verified")}</th>
+                <th className="p-2 text-center font-normal">{t("stats.by_signup")}</th>
+                <th className="p-2 text-center font-normal">{t("col.joined")}</th>
+                <th className="p-2 text-center font-normal">{t("stats.col_online")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.recentUsers.map((r) => (
+                <RecentUserRow key={r.id} r={r} dict={dict} />
+              ))}
+              {!stats.recentUsers.length && (
+                <tr><td colSpan={8} className="p-6 text-center text-sm text-white/40">{t("empty")}</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RecentUserRow({ r, dict }: { r: RecentUser; dict: Record<string, string> }) {
+  const t = (k: string) => dict[k] || k;
+  return (
+    <tr className="border-t border-white/5">
+      <td className="max-w-[220px] truncate p-2">
+        <Link href={`/admin/users/${r.id}`} className="text-cyan-200 hover:underline">{r.email}</Link>
+      </td>
+      <td className="max-w-[140px] truncate p-2 text-white/70">{r.name || "—"}</td>
+      <td className="p-2 text-center">
+        <span className={`rounded-full border px-2 py-0.5 text-xs ${r.tier !== "free" ? "border-amber-300/35 text-amber-100" : "border-white/10 text-white/60"}`}>{r.tier}</span>
+      </td>
+      <td className="p-2 text-right font-mono">{fmtInt(r.hour_balance)}</td>
+      <td className="p-2 text-center text-xs">{r.verified ? <span className="text-emerald-300">✓</span> : <span className="text-white/30">—</span>}</td>
+      <td className="p-2 text-center text-[11px] text-white/55">{r.signup_method}</td>
+      <td className="p-2 text-center text-xs text-white/50">{fmtDate(r.created_at)}</td>
+      <td className="p-2 text-center text-xs">
+        {r.online ? (
+          <span className="inline-flex items-center gap-1.5 text-emerald-200"><span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />{t("stats.col_online")}</span>
+        ) : (
+          <span className="text-white/40" title={t("stats.last_active")}>{r.last_active_at ? fmtDate(r.last_active_at) : "—"}</span>
+        )}
+      </td>
+    </tr>
+  );
+}
+
+/* กราฟเส้นสมัครใหม่รายวัน 30 วัน · SVG เบาๆ กลไกเดียวกับ sparkline เดิมของหน้า */
+function SignupLineChart({ points }: { points: SignupDailyPoint[] }) {
+  const values = points.map((p) => p.n);
+  const max = Math.max(1, ...values);
+  const spark = sparkline(values, 360, 90);
+  return (
+    <div>
+      <div className="relative h-28 overflow-hidden rounded-lg border border-white/10 bg-black/20 px-2 py-1">
+        <svg className="h-full w-full" viewBox="0 0 360 90" preserveAspectRatio="none" aria-hidden="true">
+          <path d={spark.area} fill="rgba(252,211,77,.10)" />
+          <path d={spark.line} fill="none" stroke="rgba(252,211,77,.85)" strokeWidth="2" />
+        </svg>
+        <div className="pointer-events-none absolute right-2 top-1 font-mono text-[10px] text-white/38">max {fmtInt(max)}</div>
+      </div>
+      <div className="mt-1.5 flex justify-between font-mono text-[10px] text-white/34">
+        {points.length ? (
+          [0, Math.floor(points.length / 2), points.length - 1].map((i) => <span key={`lbl-${i}`}>{points[i].d}</span>)
+        ) : (
+          <span>—</span>
+        )}
+      </div>
+    </div>
+  );
 }
