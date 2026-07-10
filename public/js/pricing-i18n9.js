@@ -590,17 +590,66 @@
           else if (CMP[p[0]][p[1]] == null || typeof CMP[p[0]][p[1]] === 'string') CMP[p[0]][p[1]] = Object.assign({ th:'', en:'', zh:'' }, p[2]);
         }
       });
+
+      /* Compact comparison table v3. The base file owns th/en/zh; this file
+         completes the same concise labels for the other six live locales. */
+      delete CMP[16].grp;
+      [
+        [2,'free',{cn:'摘要 · 试用引导版',vi:'Tóm tắt · hướng dẫn trong Trial',ja:'要約 · Trialはガイド付き',ru:'Кратко · с подсказками в Trial',ko:'요약 · Trial 안내형',es:'Resumen · guiado en Trial'}],
+        [2,'premium',{cn:'完整详情',vi:'Chi tiết đầy đủ',ja:'詳細すべて',ru:'Полная детализация',ko:'전체 상세',es:'Detalle completo'}],
+        [2,'master',{cn:'技术层',vi:'Lớp kỹ thuật',ja:'技術レイヤー',ru:'Технический слой',ko:'기술 계층',es:'Capa técnica'}],
+        [4,'name',{cn:'14 天试用',vi:'Dùng thử 14 ngày',ja:'14日トライアル',ru:'Пробный период 14 дней',ko:'14일 체험',es:'Prueba de 14 días'}],
+        [4,'free',{cn:'包含 · 首 14 天',vi:'Có sẵn · 14 ngày đầu',ja:'込み · 最初の14日',ru:'Включено · первые 14 дней',ko:'포함 · 첫 14일',es:'Incluida · primeros 14 días'}],
+        [4,'premium',{cn:'通行证已包含',vi:'Có trong Pass',ja:'Passに含む',ru:'Включено в Pass',ko:'Pass에 포함',es:'Incluida en el Pass'}],
+        [4,'master',{cn:'通行证已包含',vi:'Có trong Pass',ja:'Passに含む',ru:'Включено в Pass',ko:'Pass에 포함',es:'Incluida en el Pass'}],
+        [6,'name',{cn:'多术合参',vi:'Fusion đa hệ',ja:'多術Fusion',ru:'Fusion нескольких систем',ko:'다중 체계 Fusion',es:'Fusion de varias ciencias'}],
+        [6,'free',{cn:'2 术 · 试用 3',vi:'2 hệ · Trial 3',ja:'2術 · Trialは3',ru:'2 системы · 3 в Trial',ko:'2체계 · Trial 3',es:'2 ciencias · 3 en Trial'}],
+        [6,'premium',{cn:'4 术 · 1 盘',vi:'4 hệ · 1 lá',ja:'4術 · 1命盤',ru:'4 системы · 1 карта',ko:'4체계 · 1차트',es:'4 ciencias · 1 carta'}],
+        [6,'master',{cn:'完整 6 术 · 多盘',vi:'Đủ 6 · nhiều lá',ja:'全6術 · 多命盤',ru:'Все 6 · много карт',ko:'전체 6체계 · 여러 차트',es:'Las 6 · varias cartas'}],
+        [7,'free',{cn:'可用 · 按回答扣时',vi:'Có sẵn · trừ theo câu trả lời',ja:'利用可 · 回答分を消費',ru:'Доступно · по длине ответа',ko:'사용 가능 · 답변만큼 차감',es:'Incluido · según respuesta'}],
+        [7,'premium',{cn:'可用 · 按回答扣时',vi:'Có sẵn · trừ theo câu trả lời',ja:'利用可 · 回答分を消費',ru:'Доступно · по длине ответа',ko:'사용 가능 · 답변만큼 차감',es:'Incluido · según respuesta'}],
+        [7,'master',{cn:'可用 · 支援群组',vi:'Có sẵn · hỗ trợ nhóm',ja:'利用可 · グループ対応',ru:'Доступно · контекст группы',ko:'사용 가능 · 그룹 지원',es:'Incluido · contexto de grupo'}],
+        [10,'free',{cn:'目前 · 试用扩展',vi:'Hiện tại · rộng hơn trong Trial',ja:'現在 · Trialで範囲拡大',ru:'Текущие · шире в Trial',ko:'현재 · Trial에서 확장',es:'Actual · más rango en Trial'}],
+        [10,'premium',{cn:'30 天 · 12 个月',vi:'30 ngày · 12 tháng',ja:'30日 · 12か月',ru:'30 дней · 12 месяцев',ko:'30일 · 12개월',es:'30 días · 12 meses'}],
+        [10,'master',{cn:'365 天 · 60 个月',vi:'365 ngày · 60 tháng',ja:'365日 · 60か月',ru:'365 дней · 60 месяцев',ko:'365일 · 60개월',es:'365 días · 60 meses'}],
+        [11,'name',{cn:'预测 / 手相',vi:'Dự báo / Xem tay',ja:'予測 / 手相',ru:'Прогноз / Хиромантия',ko:'예측 / 손금',es:'Pronóstico / Quiromancia'}],
+        [12,'name',{cn:'董公择日',vi:'Chọn ngày 董公',ja:'董公择日',ru:'Выбор дат 董公',ko:'董公 택일',es:'Fechas 董公'}],
+        [12,'free',{cn:'3 法 · 试用 6',vi:'3 phép · Trial 6',ja:'3法 · Trialは6',ru:'3 метода · 6 в Trial',ko:'3기법 · Trial 6',es:'3 métodos · 6 en Trial'}],
+        [12,'premium',{cn:'20 法 · 3 盘',vi:'20 phép · 3 lá',ja:'20法 · 3命盤',ru:'20 методов · 3 карты',ko:'20기법 · 3차트',es:'20 métodos · 3 cartas'}],
+        [12,'master',{cn:'20 法 · 10 盘',vi:'20 phép · 10 lá',ja:'20法 · 10命盤',ru:'20 методов · 10 карт',ko:'20기법 · 10차트',es:'20 métodos · 10 cartas'}],
+        [13,'name',{cn:'天星七政',vi:'Thiên Tinh 七政',ja:'天星七政',ru:'Тяньсин 七政',ko:'천성칠정',es:'Tianxing 七政'}],
+        [14,'name',{cn:'风水 + 罗盘',vi:'Phong thủy + la bàn',ja:'風水 + 羅盤',ru:'Фэн-шуй + луопань',ko:'풍수 + 나경',es:'Feng shui + luopan'}],
+        [14,'free',{cn:'基础 · 试用 3 宅',vi:'Cơ bản · Trial 3 nhà',ja:'基礎 · Trialは3軒',ru:'База · 3 дома в Trial',ko:'기본 · Trial 3채',es:'Básico · 3 casas en Trial'}],
+        [14,'premium',{cn:'完整层 · 50 宅',vi:'Đủ lớp · 50 nhà',ja:'全レイヤー · 50軒',ru:'Полные слои · 50 домов',ko:'전체 계층 · 50채',es:'Capas completas · 50 casas'}],
+        [14,'master',{cn:'专业 · 多命盘',vi:'Chuyên nghiệp · nhiều lá',ja:'プロ · 複数命盤',ru:'Профессионально · много карт',ko:'전문가 · 여러 차트',es:'Profesional · varias cartas'}],
+        [15,'name',{cn:'平面图分析',vi:'Phân tích mặt bằng',ja:'間取り分析',ru:'Анализ плана',ko:'평면도 분석',es:'Análisis de plano'}],
+        [15,'free',{cn:'试用 1 次 · 之后锁定',vi:'1 lần trong Trial · sau đó khóa',ja:'Trialで1回 · 以後ロック',ru:'1 раз в Trial · затем закрыто',ko:'Trial 1회 · 이후 잠금',es:'1 uso en Trial · luego bloqueado'}],
+        [15,'premium',{cn:'每日 10 次 · 扣时',vi:'10/ngày · trừ lượt',ja:'1日10回 · 消費あり',ru:'10/день · расход единиц',ko:'하루 10회 · 차감',es:'10/día · usa créditos'}],
+        [15,'master',{cn:'每日 10 次 · 扣时',vi:'10/ngày · trừ lượt',ja:'1日10回 · 消費あり',ru:'10/день · расход единиц',ko:'하루 10회 · 차감',es:'10/día · usa créditos'}],
+        [16,'name',{cn:'奇门遁甲',vi:'Kỳ Môn 奇門',ja:'奇門遁甲',ru:'Ци Мэнь 奇門',ko:'기문둔갑 奇門',es:'Qi Men 奇門'}],
+        [16,'free',{cn:'基础 · 试用全 12 时辰',vi:'Cơ bản · Trial đủ 12 giờ',ja:'基礎 · Trialは全12時辰',ru:'База · все 12 часов в Trial',ko:'기본 · Trial 12시진 전체',es:'Básico · 12 horas en Trial'}],
+        [16,'premium',{cn:'Pro · 搜寻 7 天',vi:'Pro · tìm 7 ngày',ja:'Pro · 7日検索',ru:'Pro · поиск 7 дней',ko:'Pro · 7일 검색',es:'Pro · búsqueda 7 días'}],
+        [16,'master',{cn:'技术 · 搜寻 30 天',vi:'Kỹ thuật · tìm 30 ngày',ja:'技術 · 30日検索',ru:'Техника · поиск 30 дней',ko:'기술 · 30일 검색',es:'Técnico · búsqueda 30 días'}],
+        [18,'name',{cn:'命书 · 深度报告',vi:'Sách mệnh · báo cáo sâu',ja:'命書 · 深層レポート',ru:'Книга судьбы · глубокий отчёт',ko:'명서 · 심층 보고서',es:'Libro del destino · informe profundo'}],
+        [18,'free',{cn:'试用 2 术 · 之后锁定',vi:'Trial 2 hệ · sau đó khóa',ja:'Trialで2術 · 以後ロック',ru:'2 системы в Trial · затем закрыто',ko:'Trial 2체계 · 이후 잠금',es:'2 ciencias en Trial · luego bloqueado'}],
+        [18,'premium',{cn:'3 术',vi:'3 hệ',ja:'3術',ru:'3 системы',ko:'3체계',es:'3 ciencias'}],
+        [18,'master',{cn:'完整 6 术 · 融合章',vi:'Đủ 6 · chương hợp nhất',ja:'全6術 · 統合章',ru:'Все 6 · глава синтеза',ko:'전체 6체계 · 융합 장',es:'Las 6 · capítulo de síntesis'}],
+        [19,'name',{cn:'人脉 / 关系',vi:'Mạng lưới / quan hệ',ja:'人脈 / 関係',ru:'Сеть / отношения',ko:'인맥 / 관계',es:'Red / relaciones'}],
+        [19,'free',{cn:'本人命盘 · 试用 3 盘',vi:'Lá của mình · Trial 3 lá',ja:'本人命盤 · Trialは3盤',ru:'Своя карта · 3 в Trial',ko:'내 차트 · Trial 3차트',es:'Carta propia · 3 en Trial'}],
+        [19,'premium',{cn:'双人关系 · 10 盘',vi:'Cặp đôi · 10 lá',ja:'ペア · 10命盤',ru:'Пары · 10 карт',ko:'관계 쌍 · 10차트',es:'Parejas · 10 cartas'}],
+        [19,'master',{cn:'群组/团队 · 100 盘',vi:'Nhóm/đội · 100 lá',ja:'グループ/チーム · 100盤',ru:'Группы/команды · 100 карт',ko:'그룹/팀 · 100차트',es:'Grupos/equipos · 100 cartas'}]
+      ].forEach(function(p){ if (CMP[p[0]] && CMP[p[0]][p[1]] && typeof CMP[p[0]][p[1]] === 'object') merge(CMP[p[0]][p[1]], p[2]); else if (CMP[p[0]]) CMP[p[0]][p[1]] = p[2]; });
       merge(CMP[1], { tool:{ th:'สมัคร → กรอกวันเกิด → เปิดดวง', en:'Sign-up → birth data → chart', zh:'註冊 → 出生資料 → 命盤', cn:'注册 → 出生资料 → 命盘', vi:'Đăng ký → ngày sinh → lá số', ja:'登録 → 生年月日 → 命盤', ru:'Регистрация → рождение → карта', ko:'가입 → 생년월일 → 차트', es:'Registro → nacimiento → carta' } });
       merge(CMP[2], { tool:{ th:'/chart', en:'/chart', zh:'/chart', cn:'/chart', vi:'/chart', ja:'/chart', ru:'/chart', ko:'/chart', es:'/chart' } });
       merge(CMP[3], { tool:{ th:'AI ซินแส', en:'AI Sifu', zh:'AI 師傅', cn:'AI 师傅', vi:'AI Sifu', ja:'AI Sifu', ru:'AI Sifu', ko:'AI Sifu', es:'AI Sifu' } });
       merge(CMP[10], { tool:{ th:'/calendar · /today', en:'/calendar · /today', zh:'/calendar · /today', cn:'/calendar · /today', vi:'/calendar · /today', ja:'/calendar · /today', ru:'/calendar · /today', ko:'/calendar · /today', es:'/calendar · /today' } });
-      merge(CMP[11], { tool:{ th:'/datepick', en:'/datepick', zh:'/datepick', cn:'/datepick', vi:'/datepick', ja:'/datepick', ru:'/datepick', ko:'/datepick', es:'/datepick' } });
-      merge(CMP[12], { tool:{ th:'/tianxing', en:'/tianxing', zh:'/tianxing', cn:'/tianxing', vi:'/tianxing', ja:'/tianxing', ru:'/tianxing', ko:'/tianxing', es:'/tianxing' } });
-      merge(CMP[13], { tool:{ th:'/fengshui', en:'/fengshui', zh:'/fengshui', cn:'/fengshui', vi:'/fengshui', ja:'/fengshui', ru:'/fengshui', ko:'/fengshui', es:'/fengshui' } });
-      merge(CMP[14], { tool:{ th:'/luopan', en:'/luopan', zh:'/luopan', cn:'/luopan', vi:'/luopan', ja:'/luopan', ru:'/luopan', ko:'/luopan', es:'/luopan' } });
-      merge(CMP[15], { tool:{ th:'/qimen', en:'/qimen', zh:'/qimen', cn:'/qimen', vi:'/qimen', ja:'/qimen', ru:'/qimen', ko:'/qimen', es:'/qimen' } });
-      merge(CMP[17], { tool:{ th:'/book', en:'/book', zh:'/book', cn:'/book', vi:'/book', ja:'/book', ru:'/book', ko:'/book', es:'/book' } });
-      merge(CMP[18], { tool:{ th:'/network', en:'/network', zh:'/network', cn:'/network', vi:'/network', ja:'/network', ru:'/network', ko:'/network', es:'/network' } });
+      merge(CMP[12], { tool:{ th:'/datepick', en:'/datepick', zh:'/datepick', cn:'/datepick', vi:'/datepick', ja:'/datepick', ru:'/datepick', ko:'/datepick', es:'/datepick' } });
+      merge(CMP[13], { tool:{ th:'/tianxing', en:'/tianxing', zh:'/tianxing', cn:'/tianxing', vi:'/tianxing', ja:'/tianxing', ru:'/tianxing', ko:'/tianxing', es:'/tianxing' } });
+      merge(CMP[14], { tool:{ th:'/fengshui', en:'/fengshui', zh:'/fengshui', cn:'/fengshui', vi:'/fengshui', ja:'/fengshui', ru:'/fengshui', ko:'/fengshui', es:'/fengshui' } });
+      merge(CMP[15], { tool:{ th:'/luopan', en:'/luopan', zh:'/luopan', cn:'/luopan', vi:'/luopan', ja:'/luopan', ru:'/luopan', ko:'/luopan', es:'/luopan' } });
+      merge(CMP[16], { tool:{ th:'/qimen', en:'/qimen', zh:'/qimen', cn:'/qimen', vi:'/qimen', ja:'/qimen', ru:'/qimen', ko:'/qimen', es:'/qimen' } });
+      merge(CMP[18], { tool:{ th:'/book', en:'/book', zh:'/book', cn:'/book', vi:'/book', ja:'/book', ru:'/book', ko:'/book', es:'/book' } });
+      merge(CMP[19], { tool:{ th:'/network', en:'/network', zh:'/network', cn:'/network', vi:'/network', ja:'/network', ru:'/network', ko:'/network', es:'/network' } });
       merge(CMP[21], { tool:{ th:'เติมเพิ่มได้ที่ Top-up', en:'Top-up anytime', zh:'可隨時加值', cn:'可随时加值', vi:'Nạp thêm bất cứ lúc nào', ja:'いつでも追加', ru:'Пополнить в любое время', ko:'언제든 충전', es:'Recarga cuando quieras' } });
     } catch (_) {}
   }

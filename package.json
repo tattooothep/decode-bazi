@@ -9,6 +9,7 @@
     "check:pair-v2": "node scripts/check-pair-reaction-v2.mjs",
     "audit:lang-persistence": "node scripts/audit-language-persistence.mjs",
     "test:sifu": "node scripts/run-sifu-tests.mjs",
+    "test:pricing-contract": "node --experimental-strip-types scripts/test-pricing-entitlement-contract.mjs",
     "start": "next start",
     "test:admin-p0": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p0.mjs",
     "test:admin-p1": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p1.mjs"

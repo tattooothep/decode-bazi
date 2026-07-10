@@ -172,13 +172,14 @@ table.cmp thead .colh{font-family:var(--mono);font-size:9.5px;letter-spacing:.14
 table.cmp td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:middle;}
 table.cmp tbody tr:last-child td{border-bottom:none;}
 table.cmp .feat-name{color:var(--fg);}
-table.cmp .feat-name .tool{display:block;font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.02em;margin-top:1px;}
 table.cmp .cell{text-align:center;font-variant-numeric:tabular-nums;}
-table.cmp .cell.feat-col{background:var(--gold-soft);}
+table.cmp .cell.feat-col{background:rgba(200,164,77,.055);}
 table.cmp .yes{color:var(--gold);font-size:16px;font-weight:700;}
 table.cmp .no{color:var(--dim);font-size:15px;}
-table.cmp .chip{display:inline-block;font-size:11px;font-weight:600;color:var(--gold-bright);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:2px 9px;letter-spacing:.01em;}
-table.cmp tr.grp td{background:var(--bg-3);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);padding:8px 16px;}
+table.cmp .cell-value{display:block;color:var(--fg);font-size:12.5px;font-weight:700;line-height:1.35;}
+table.cmp .cell-note{display:block;color:var(--fg-faint);font-size:10.5px;font-weight:400;line-height:1.45;margin-top:3px;}
+table.cmp .feat-col .cell-value{color:var(--gold-bright);}
+table.cmp tr.grp td{background:var(--bg-3);font-size:11px;font-weight:700;letter-spacing:0;color:var(--gold);padding:9px 16px;}
 
 /* ── topups ── */
 .topups{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
@@ -477,23 +478,24 @@ const PRICING = {
 const CMP = [
   { grp:{ th:'Activation — สมัครฟรี', en:'Activation — free signup', zh:'Activation — 免費註冊' } },
   { name:{ th:'สมัคร + กรอกวันเกิด + เปิดดวง', en:'Sign up + birth data + open chart', zh:'註冊 + 出生資料 + 打開命盤' }, tool:{ th:'สมัคร → input → chart', en:'Sign-up → input → chart', zh:'註冊 → 輸入 → 命盤' }, free:true, premium:true, master:true },
-  { name:{ th:'ผังดวงปาจื้อ 4 เสา', en:'4-pillar BaZi chart', zh:'四柱八字命盤' }, tool:{ th:'/chart', en:'/chart', zh:'/chart' }, free:true, premium:true, master:true },
+  { name:{ th:'ดวงปาจื้อ 4 เสา', en:'4-pillar BaZi chart', zh:'四柱八字命盤' }, tool:'/chart', free:{th:'สรุป · Trial แบบแนะนำ',en:'Summary · guided in Trial',zh:'摘要 · 試用引導版'}, premium:{th:'รายละเอียดเต็ม',en:'Full detail',zh:'完整詳情'}, master:{th:'ชั้นเทคนิค',en:'Technical layer',zh:'技術層'} },
   { name:{ th:'1,000 ยามแรกเข้า (ใช้ AI ได้จนกว่าจะหมด)', en:'1,000 credits on join (AI until empty)', zh:'註冊 1,000 時（AI 用到完）' }, tool:{ th:'AI ซินแส', en:'AI Sifu', zh:'AI 師傅' }, free:true, premium:true, master:true },
-  { name:{ th:'ทดลอง 14 วัน (เห็นฟีเจอร์ลึกพร้อมกุญแจ)', en:'14-day trial (deeper features stay visible and locked)', zh:'14 天試用（進階功能顯示鎖定）' }, tool:{ th:'อัตโนมัติตอนสมัคร', en:'automatic on signup', zh:'註冊自動' }, free:{th:'14 วันแรก',en:'first 14 days',zh:'首 14 天'}, premium:{th:'ไม่ต้อง',en:'n/a',zh:'不需'}, master:{th:'ไม่ต้อง',en:'n/a',zh:'不需'} },
+  { name:{ th:'ทดลอง 14 วัน', en:'14-day trial', zh:'14 天試用' }, tool:{ th:'อัตโนมัติตอนสมัคร', en:'automatic on signup', zh:'註冊自動' }, free:{th:'รวม · 14 วันแรก',en:'Included · first 14 days',zh:'包含 · 首 14 天'}, premium:{th:'รวมใน Pass',en:'Included in pass',zh:'通行證已包含'}, master:{th:'รวมใน Pass',en:'Included in pass',zh:'通行證已包含'} },
   { grp:{ th:'Fusion / AI วิเคราะห์', en:'Fusion / deep AI', zh:'Fusion / 深度 AI' } },
-  { name:{ th:'Master Fusion (หลายศาสตร์)', en:'Master Fusion (multi-science)', zh:'Master Fusion（多術）' }, tool:'/master-fusion', free:{th:'หลัง trial สูงสุด 2 · ช่วง trial 3',en:'after trial max 2 · trial max 3',zh:'試用後最多 2 · 試用期 3'}, premium:{th:'สูงสุด 4 ศาสตร์ · 1 ดวง',en:'max 4 · 1 chart',zh:'最多 4 術 · 1 盤'}, master:{th:'ครบ 6 · หลายดวง',en:'all 6 · multi-chart',zh:'完整 6 · 多盤'} },
-  { name:{ th:'AI Sifu ถามต่อเนื่อง', en:'AI Sifu follow-ups', zh:'AI 師傅追問' }, tool:'/master', free:{th:'หักยาม',en:'uses credits',zh:'扣時'}, premium:{th:'หักยาม',en:'uses credits',zh:'扣時'}, master:{th:'หักยาม',en:'uses credits',zh:'扣時'} },
+  { name:{ th:'Fusion หลายศาสตร์', en:'Multi-science Fusion', zh:'多術合參' }, tool:'/master-fusion', free:{th:'2 ศาสตร์ · Trial 3',en:'2 sciences · 3 in Trial',zh:'2 術 · 試用 3'}, premium:{th:'4 ศาสตร์ · 1 ดวง',en:'4 sciences · 1 chart',zh:'4 術 · 1 盤'}, master:{th:'ครบ 6 ศาสตร์ · หลายดวง',en:'All 6 · multi-chart',zh:'完整 6 術 · 多盤'} },
+  { name:{ th:'AI Sifu ถามต่อเนื่อง', en:'AI Sifu follow-ups', zh:'AI 師傅追問' }, tool:'/master', free:{th:'ใช้ได้ · หักยามตามคำตอบ',en:'Included · credits by answer',zh:'可用 · 按回答扣時'}, premium:{th:'ใช้ได้ · หักยามตามคำตอบ',en:'Included · credits by answer',zh:'可用 · 按回答扣時'}, master:{th:'ใช้ได้ · รองรับกลุ่ม',en:'Included · group context',zh:'可用 · 支援群組'} },
   { name:{ th:'ยูเรเนียน · วงล้อ 90°', en:'Uranian · 90° dial', zh:'天王星 · 90° 盤' }, tool:'/uranian', free:{th:'ช่วง trial',en:'in trial',zh:'試用期'}, premium:true, master:true },
   { grp:{ th:'เครื่องมือรายวัน', en:'Daily tools', zh:'日常工具' } },
-  { name:{ th:'ปฏิทิน / วันนี้', en:'Calendar / Today', zh:'曆 / 今日' }, tool:{ th:'/calendar · /today', en:'/calendar · /today', zh:'/calendar · /today' }, free:true, premium:true, master:true },
-  { name:{ th:'วางฤกษ์ 董公 (ผูกดวง)', en:'董公 datepick (linked charts)', zh:'董公擇日（綁命盤）' }, tool:'/datepick', free:{th:'trial/free · 1 ดวง · ชั้น ~30%',en:'trial/free · 1 chart · layers ~30%',zh:'試用/免費 · 1 盤 · 層約 30%'}, premium:{th:'สูงสุด 3 ดวง',en:'max 3 charts',zh:'最多 3 盤'}, master:{th:'สูงสุด 10 ดวง',en:'max 10 charts',zh:'最多 10 盤'} },
+  { name:{ th:'ปฏิทิน / วันนี้', en:'Calendar / Today', zh:'曆 / 今日' }, tool:{ th:'/calendar · /today', en:'/calendar · /today', zh:'/calendar · /today' }, free:{th:'ปัจจุบัน · Trial ขยายช่วง',en:'Current · wider in Trial',zh:'目前 · 試用擴展'}, premium:{th:'30 วัน · 12 เดือน',en:'30 days · 12 months',zh:'30 天 · 12 個月'}, master:{th:'365 วัน · 60 เดือน',en:'365 days · 60 months',zh:'365 天 · 60 個月'} },
+  { name:{ th:'พยากรณ์ / ลายมือ', en:'Forecast / Palmistry', zh:'預測 / 手相' }, free:true, premium:true, master:true },
+  { name:{ th:'วางฤกษ์ 董公', en:'董公 date selection', zh:'董公擇日' }, tool:'/datepick', free:{th:'3 เกณฑ์ · Trial 6',en:'3 methods · 6 in Trial',zh:'3 法 · 試用 6'}, premium:{th:'20 เกณฑ์ · 3 ดวง',en:'20 methods · 3 charts',zh:'20 法 · 3 盤'}, master:{th:'20 เกณฑ์ · 10 ดวง',en:'20 methods · 10 charts',zh:'20 法 · 10 盤'} },
   { name:{ th:'ฤกษ์ดาวจริง 七政 天星', en:'Real-sky 七政 / 天星', zh:'天星七政' }, tool:'/tianxing', free:{th:'ช่วง trial',en:'in trial',zh:'試用期'}, premium:true, master:true },
-  { name:{ th:'ฮวงจุ้ย + หล่อแก · บันทึกบ้าน', en:'Feng shui + luopan · save houses', zh:'風水羅盤 · 存房宅' }, tool:'/fengshui', free:{th:'ดูได้ · บันทึกเพิ่มไม่ได้*',en:'view · no new saves*',zh:'可看 · 不能新存*'}, premium:{th:'บันทึกได้หลายหลัง',en:'many houses',zh:'可存多宅'}, master:{th:'เกือบไม่จำกัด',en:'near unlimited',zh:'近乎不限'} },
-  { name:{ th:'หล่อแก · อัปแปลนถาม AI (Vision)', en:'Luopan · plan photo AI (Vision)', zh:'羅盤 · 平面圖 AI Vision' }, tool:'/luopan', free:{th:'หลัง trial ปิด · trial 1× · วงหลัก ~30%',en:'post-trial off · trial 1× · core ~30%',zh:'試用後關 · 試用 1 次 · 主盤約 30%'}, premium:{th:'โควตากว้าง · หักยาม',en:'wide quota · spends credits',zh:'額度較寬 · 扣時'}, master:{th:'เกือบไม่จำกัด · หักยาม',en:'near unlimited · spends credits',zh:'近乎不限 · 扣時'} },
-  { name:{ th:'ฉีเหมิน 奇門', en:'Qi Men 奇門', zh:'奇門遁甲' }, tool:'/qimen', free:{th:'trial: ผัง+มือใหม่ · search/sifu ปิด',en:'trial: chart+beginner · search/sifu off',zh:'試用：局盤+入門 · 搜尋/師傅關'}, premium:true, master:true },
+  { name:{ th:'ฮวงจุ้ย + หล่อแก', en:'Feng shui + Luopan', zh:'風水羅盤' }, tool:'/fengshui', free:{th:'พื้นฐาน · Trial 3 บ้าน',en:'Basic · 3 houses in Trial',zh:'基礎 · 試用 3 宅'}, premium:{th:'ชั้นเต็ม · 50 บ้าน',en:'Full layers · 50 houses',zh:'完整層 · 50 宅'}, master:{th:'มืออาชีพ · หลายดวง',en:'Professional · multi-profile',zh:'專業 · 多命盤'} },
+  { name:{ th:'อ่านแปลนบ้าน', en:'Floor-plan analysis', zh:'平面圖分析' }, tool:'/luopan', free:{th:'Trial 1 ครั้ง · แล้วปิด',en:'1 use in Trial · then locked',zh:'試用 1 次 · 之後鎖定'}, premium:{th:'10 ครั้ง/วัน · หักยาม',en:'10/day · uses credits',zh:'每日 10 次 · 扣時'}, master:{th:'10 ครั้ง/วัน · หักยาม',en:'10/day · uses credits',zh:'每日 10 次 · 扣時'} },
+  { name:{ th:'ฉีเหมิน 奇門', en:'Qi Men 奇門', zh:'奇門遁甲' }, tool:'/qimen', free:{th:'พื้นฐาน · Trial ครบ 12 ยาม',en:'Basic · all 12 hours in Trial',zh:'基礎 · 試用全 12 時辰'}, premium:{th:'Pro · ค้นหา 7 วัน',en:'Pro · 7-day search',zh:'Pro · 搜尋 7 天'}, master:{th:'เทคนิค · ค้นหา 30 วัน',en:'Technical · 30-day search',zh:'技術 · 搜尋 30 天'} },
   { grp:{ th:'งานลึก / หลายดวง', en:'Deep work / many charts', zh:'深度 / 多命盤' } },
-  { name:{ th:'命書 (ยาม ~18/ศาสตร์ + 10 หลอมรวม)', en:'Book (~18 credits/science + 10 synthesis)', zh:'命書（約 18 時／術 + 10 融合）' }, tool:'/book', free:{th:'หลัง trial ปิด · trial สูงสุด 2',en:'post-trial off · trial max 2',zh:'試用後關 · 試用最多 2'}, premium:{th:'สูงสุด 3 ศาสตร์',en:'max 3 sciences',zh:'最多 3 術'}, master:{th:'ครบ 6 + หลอมรวม',en:'all 6 + synthesis',zh:'完整 6 + 融合'} },
-  { name:{ th:'合盤 / เครือข่าย / กลุ่ม', en:'Synastry / Network / Group', zh:'合盤 / 人脈 / 群組' }, tool:{ th:'/network', en:'/network', zh:'/network' }, free:false, premium:false, master:true },
+  { name:{ th:'命書 · รายงานเชิงลึก', en:'Destiny Book · deep report', zh:'命書 · 深度報告' }, tool:'/book', free:{th:'Trial 2 ศาสตร์ · แล้วปิด',en:'2 sciences in Trial · then locked',zh:'試用 2 術 · 之後鎖定'}, premium:{th:'3 ศาสตร์',en:'3 sciences',zh:'3 術'}, master:{th:'ครบ 6 · มีบทหลอมรวม',en:'All 6 · synthesis chapter',zh:'完整 6 術 · 融合章'} },
+  { name:{ th:'เครือข่าย / ความสัมพันธ์', en:'Network / relationships', zh:'人脈 / 關係' }, tool:'/network', free:{th:'ดวงตนเอง · Trial 3 ดวง',en:'Own chart · 3 in Trial',zh:'本人命盤 · 試用 3 盤'}, premium:{th:'คู่สัมพันธ์ · 10 ดวง',en:'Pairs · 10 charts',zh:'雙人關係 · 10 盤'}, master:{th:'กลุ่ม/ทีม · 100 ดวง',en:'Groups/teams · 100 charts',zh:'群組/團隊 · 100 盤'} },
   { grp:{ th:'ยาม (時) — ไม่ใช่รายเดือนอัตโนมัติ', en:'Credits (時) — not monthly auto-refill yet', zh:'時額度 — 尚未每月自動補發' } },
   { name:{ th:'ยามที่ได้', en:'Credits you get', zh:'可得時額' }, tool:{ th:'เติมเพิ่มได้ที่ Top-up', en:'Top-up anytime', zh:'可隨時加值' }, free:{th:'1,000 ตอนสมัคร',en:'1,000 on signup',zh:'註冊 1,000'}, premium:{th:'+500 ตอนซื้อ',en:'+500 on buy',zh:'購買 +500'}, master:{th:'+2,000 ตอนซื้อ',en:'+2,000 on buy',zh:'購買 +2,000'} }
 ];
@@ -518,7 +520,7 @@ const UI = {
   themeBtn:{ th:'สลับธีม', en:'Toggle theme', zh:'切換主題' }
 };
 function lang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
-function L(o, fb){ if(o==null) return fb||''; if(typeof o==='string') return o; return o[lang()]||o.th||o.en||fb||''; }
+function L(o, fb){ if(o==null) return fb||''; if(typeof o==='string') return o; const c=lang(); return o[c]||(c==='th'?o.th:o.en)||o.th||fb||''; }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function fmt(n){ return Number(n||0).toLocaleString('en-US'); }
 
@@ -598,7 +600,10 @@ function cell(v, feat){
   const cls = 'cell' + (feat ? ' feat-col' : '');
   if (v === true) return `<td class="${cls}"><span class="yes">✓</span></td>`;
   if (v === false || v == null) return `<td class="${cls}"><span class="no">—</span></td>`;
-  return `<td class="${cls}"><span class="chip">${esc(L(v))}</span></td>`;
+  const parts = String(L(v)).split(/\s*·\s*/).filter(Boolean);
+  const main = parts.shift() || '';
+  const note = parts.length ? `<span class="cell-note">${esc(parts.join(' · '))}</span>` : '';
+  return `<td class="${cls}"><span class="cell-value">${esc(main)}</span>${note}</td>`;
 }
 function renderCmp(){
   const tb = document.getElementById('cmpTable');
@@ -611,7 +616,7 @@ function renderCmp(){
   const rows = CMP.map(r => {
     if (r.grp) return `<tr class="grp"><td colspan="4">${esc(L(r.grp))}</td></tr>`;
     return `<tr>
-      <td class="feat-name">${esc(L(r.name))}${r.tool?`<span class="tool">${esc(L(r.tool))}</span>`:''}</td>
+      <td class="feat-name">${esc(L(r.name))}</td>
       ${cell(r.free,false)}${cell(r.premium,true)}${cell(r.master,false)}
     </tr>`;
   }).join('');
@@ -774,7 +779,7 @@ document.getElementById('themeBtn').onclick=function(){
   window.addEventListener('load', positionThumb);
 })();
 </script>
-<script src="/js/pricing-i18n9.js?v=2"></script>
+<script src="/js/pricing-i18n9.js?v=3"></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
 <script>
