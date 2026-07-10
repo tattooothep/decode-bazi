@@ -2,23 +2,23 @@
   "_comment": "Condiciones según la carta o el día · choque · armonía · dirección · colores · traducido del original tailandés 10 jul 2026",
 
   "chong_personal": {
-    "chip": "⚠ Hoy es tu día de choque",
+    "chip": "⚠ Tu día de choque",
     "line": "Hoy el día choca con tu año de nacimiento: la energía del día golpea de frente la tuya. Asuntos grandes, firmas, lanzamientos o viajes largos, pospónlos si puedes. Si no hay opción, sal con tiempo de sobra, revisa todo dos veces y no decidas nada en caliente."
   },
   "chong_universal": {
-    "chip": "Choca con el año del {animal}",
-    "line": "Hoy el día choca con quienes nacieron en el año del {animal}. Si es tu año, aplaza los asuntos grandes; si no lo es, sigue adelante con normalidad."
+    "chip": "Choque: año {animal}",
+    "line": "Hoy el día choca con quienes nacieron en el año {animal}. Si es tu año, aplaza los asuntos grandes; si no lo es, sigue adelante con normalidad."
   },
   "he_personal": {
-    "chip": "✦ Hoy es tu día de armonía",
+    "chip": "✦ Tu día de armonía",
     "line": "Hoy el día armoniza con tu año de nacimiento y trae un empuje extra durante toda la jornada. Ese asunto importante que guardabas esperando el momento, hoy puedes ponerlo en marcha. La gente a tu alrededor está más dispuesta que nunca a apoyarte."
   },
   "he_universal": {
-    "chip": "Armoniza con el año del {animal}",
-    "line": "Hoy el día da puntos extra a quienes nacieron en el año del {animal}. Si es tu año, avanza con todo en tus asuntos importantes."
+    "chip": "Armonía: año {animal}",
+    "line": "Hoy el día da puntos extra a quienes nacieron en el año {animal}. Si es tu año, avanza con todo en tus asuntos importantes."
   },
   "harm_personal": {
-    "chip": "△ Hoy es tu día sensible",
+    "chip": "△ Tu día sensible",
     "line": "Hoy hay corrientes ocultas frente a tu energía: nada se rompe, pero incomoda. Cuidado con malentendidos y citas que se cruzan; confirma cada compromiso una vez más."
   },
 
