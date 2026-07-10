@@ -129,10 +129,15 @@ const nextConfig: NextConfig = {
     ];
 
     return [
+      /* 10 ก.ค. · คลังปฏิทินภาษาคน: เนื้อคงที่ + วินัย bump ?v= เมื่อแก้ → browser จำยาว ตัด revalidate ~390k req/วันที่ 5k user */
+      { source: "/data/calendar-daytext/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      { source: "/js/hk-daytext.js", headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }] },
       ...htmlSurfaces.map((source) => ({ source, headers: noStoreHeaders })),
       { source: "/css/mobile-safe.css", headers: noStoreHeaders },
       { source: "/js/hk-lang-state.js", headers: noStoreHeaders },
       { source: "/js/hk-user-menu.js", headers: noStoreHeaders },
+      { source: "/js/hk-i18n-core.js", headers: noStoreHeaders },
+      { source: "/js/hk-settings-drawer.js", headers: noStoreHeaders },
       { source: "/js/hk-tooltips.js", headers: noStoreHeaders },
       // PWA r376 · no-store: deploy ใหม่ = SW/flag ใหม่ถูกเห็นใน navigation ถัดไป (kill-switch สด)
       { source: "/sw.js", headers: noStoreHeaders },

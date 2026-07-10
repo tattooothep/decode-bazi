@@ -19,13 +19,18 @@ import type { ProductPageEntitlements } from "@/lib/product-page-entitlements";
 
 type CalendarCacheEntry = { exp: number; payload: unknown };
 const CALENDAR_CACHE_TTL_MS = 10 * 60 * 1000;
-const CALENDAR_CACHE_MAX = 96;
+/* 10 ก.ค. · 96→2000: คีย์ส่วนตัว unique ต่อคน ที่ 5k user ช่อง 96 = hit แทบ 0 · payload ~18KB × 2000 ≈ 36MB/instance รับได้ */
+const CALENDAR_CACHE_MAX = Number(process.env.CALENDAR_CACHE_MAX || 2000);
 const CALENDAR_CACHE_VERSION = "calendar-v1";
 const calendarCacheGlobal = globalThis as typeof globalThis & {
   __hkCalendarMonthCache?: Map<string, CalendarCacheEntry>;
+  __hkCalendarInflight?: Map<string, Promise<unknown>>;
 };
 const CALENDAR_MONTH_CACHE = calendarCacheGlobal.__hkCalendarMonthCache ?? new Map<string, CalendarCacheEntry>();
 calendarCacheGlobal.__hkCalendarMonthCache = CALENDAR_MONTH_CACHE;
+/* 10 ก.ค. · กันคำนวณซ้อน: ดวงเดียวกันกด refresh ระหว่างคำนวณ (10-13s) ต้องรอผลก้อนเดียว ไม่คำนวณคู่ */
+const CALENDAR_INFLIGHT = calendarCacheGlobal.__hkCalendarInflight ?? new Map<string, Promise<unknown>>();
+calendarCacheGlobal.__hkCalendarInflight = CALENDAR_INFLIGHT;
 
 function calendarCacheKey(input: {
   year: number;
@@ -391,6 +396,23 @@ export async function GET(req: Request) {
     "hit"
   );
 
+  /* 10 ก.ค. · คีย์เดียวกันกำลังคำนวณอยู่ → รอผลเดียวกัน (กัน stampede ตอน compute ส่วนตัวหนัก) */
+  const inflightExisting = CALENDAR_INFLIGHT.get(cacheKey);
+  if (inflightExisting) {
+    try {
+      const payload = await inflightExisting;
+      return calendarJson(
+        shapeCalendarPayload(payload, dateAccess.plan, dateAccess.caps as ProductPageEntitlements["calendar"]),
+        "hit"
+      );
+    } catch { /* ตัวหลักพัง — ปล่อยไหลไปคำนวณเองตามปกติ */ }
+  }
+  let inflightResolve: (p: unknown) => void = () => {};
+  let inflightReject: (e: unknown) => void = () => {};
+  const inflightPromise = new Promise<unknown>((res, rej) => { inflightResolve = res; inflightReject = rej; });
+  inflightPromise.catch(() => {}); /* กัน unhandledRejection เมื่อไม่มีใครรอ */
+  CALENDAR_INFLIGHT.set(cacheKey, inflightPromise);
+
   try {
     const tyme = await import("tyme4ts");
 
@@ -699,11 +721,15 @@ export async function GET(req: Request) {
       days,
     };
     setCalendarCache(cacheKey, payload);
+    inflightResolve(payload);
+    CALENDAR_INFLIGHT.delete(cacheKey);
     return calendarJson(
       shapeCalendarPayload(payload, dateAccess.plan, dateAccess.caps as ProductPageEntitlements["calendar"]),
       "miss"
     );
   } catch (e: unknown) {
+    inflightReject(e);
+    CALENDAR_INFLIGHT.delete(cacheKey);
     const err = e as Error;
     console.error("[calendar] error:", err);
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
