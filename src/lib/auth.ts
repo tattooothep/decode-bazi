@@ -91,10 +91,13 @@ export async function getSession(): Promise<Session | null> {
     const gate = await checkAccountUsable(session.userId);
     if (!gate.ok) return null;
     // session_version revoke
-    const row = await q1<{ session_version: number | null }>(
-      `SELECT session_version FROM users WHERE id=$1`,
+    const row = await q1<{ session_version: number | null; current_org_id: string | null }>(
+      `SELECT session_version, current_org_id FROM users WHERE id=$1`,
       [session.userId]
     ).catch(() => null);
+    // JWTs can outlive an org repair/migration. Always use the current DB org so
+    // profile-backed pages do not become empty until the user signs in again.
+    if (row) session.orgId = row.current_org_id || null;
     if (row && row.session_version != null) {
       const dbSv = Number(row.session_version) || 0;
       const tokSv = Number(session.sv) || 0;

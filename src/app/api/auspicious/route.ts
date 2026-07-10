@@ -309,7 +309,7 @@ export async function POST(req: NextRequest) {
       const s = await getSession();
       if (!s?.orgId) return NextResponse.json({ error: "not logged in" }, { status: 401 });
       const uuids = peopleIds.map((i: string) => String(i).replace(/^hk_/, "")).filter((u: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(u));
-      const rows = await q<{ id: string }>("SELECT id FROM profiles WHERE id = ANY($1::uuid[]) AND org_id=$2 AND is_archived=false", [uuids, s.orgId]).catch(() => []);
+      const rows = await q<{ id: string }>("SELECT id FROM profiles WHERE id = ANY($1::uuid[]) AND org_id=$2 AND created_by_user_id=$3 AND is_archived=false", [uuids, s.orgId, s.userId]).catch(() => []);
       const ok = new Set(rows.map(r => "hk_" + r.id));
       ownedPeopleIds = peopleIds.filter((i: string) => ok.has(i));
       // trial/free = 1 ดวง · premium 3 · master 10

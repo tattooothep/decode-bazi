@@ -1544,7 +1544,25 @@
     fetch('/api/profile', { credentials:'same-origin', cache:'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(j){
-        if (!j || !Array.isArray(j.profiles) || !j.profiles.length) return;
+        if (!j || !Array.isArray(j.profiles) || !j.profiles.length) {
+          var emptySel = document.getElementById('sifu-profile');
+          var emptySel2 = document.getElementById('sifu-profile-2');
+          var emptyWrap = document.getElementById('sifu-profile-wrap');
+          var emptyGroup = document.getElementById('hkg-wrap');
+          var ownerName = (j && j.owner && j.owner.name) || _mstx('mst.gate.self_fallback','ตัวฉัน');
+          if (emptySel) {
+            emptySel.innerHTML = '<option value="">' + ownerName.replace(/[<>&"]/g, '') + ' · ' + _mstx('mst.gate.noinfo.date','กรุณากรอกข้อมูลก่อน') + '</option>';
+            emptySel.disabled = true;
+          }
+          if (emptySel2) { emptySel2.innerHTML = '<option value="">—</option>'; emptySel2.disabled = true; }
+          if (emptyWrap) emptyWrap.style.display = 'flex';
+          if (emptyGroup) emptyGroup.style.display = 'flex';
+          selectedProfileId = '';
+          window.hkActiveProfileId = '';
+          try { localStorage.removeItem('hk_profile_id'); } catch(_){}
+          sifuProfileSigLoaded = true;
+          return;
+        }
         hkgProfiles = j.profiles;
         sifuProfileSigById = {};
         j.profiles.forEach(function(p){

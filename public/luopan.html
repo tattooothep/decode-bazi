@@ -4406,7 +4406,11 @@ let houses = [];
 let houseCloudMeta = { count: 0, limit: null, plan: null, ready: false };
 
 function saveProfiles(){ try{ localStorage.setItem(LS_PROFILES_KEY, JSON.stringify(profiles)); }catch(e){} }
-function loadProfiles(){ try{ const raw = localStorage.getItem(LS_PROFILES_KEY); profiles = raw ? (JSON.parse(raw)||[]) : []; }catch(e){ profiles=[]; } }
+function loadProfiles(){
+  /* รายชื่อดวงต้องมาจากบัญชีปัจจุบันเท่านั้น ห้ามวาด cache ของบัญชีก่อนหน้า */
+  profiles = [];
+  try { localStorage.removeItem(LS_PROFILES_KEY); } catch(e){}
+}
 function getSelectedProfileId(){ return localStorage.getItem(LS_SELECTED_PROFILE_KEY) || ''; }
 function setSelectedProfileId(id){ try{ localStorage.setItem(LS_SELECTED_PROFILE_KEY, id || ''); }catch(e){} }
 function saveHousesCache(){ try{ localStorage.setItem(LS_HOUSES_KEY, JSON.stringify(houses)); }catch(e){} }
@@ -4507,7 +4511,14 @@ function renderProfileSelect(){
   const sel = document.getElementById('profileSelect');
   const st = document.getElementById('profileStatus');
   if(!sel) return;
-  sel.innerHTML = '<option value="">'+T('prof.none')+'</option>' + profiles.map(p => `<option value="${hkEsc(p.id)}">${hkEsc(p.name)}</option>`).join('');
+  if(!profiles.length){
+    sel.innerHTML = '<option value="">'+T('prof.empty')+' · /input</option>';
+    sel.disabled = true;
+    if(st) st.innerHTML = `<a href="/input" style="color:var(--gold)">${T('prof.empty')} · ${T('prof.owner')}</a>`;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = profiles.map(p => `<option value="${hkEsc(p.id)}">${p.is_self ? '⭐ ' : ''}${hkEsc(p.name)}</option>`).join('');
   const selected = getSelectedProfileId();
   if(selected) sel.value = selected;
   const cur = profiles.find(p => p.id === sel.value);
@@ -4521,8 +4532,12 @@ async function loadMasterProfiles(){
     if(!r.ok) return;
     const d = await r.json();
     if(!d?.ok || !Array.isArray(d.profiles)) return;
-    const localOnly = (profiles||[]).filter(p => String(p.id||'').startsWith('p_'));
-    profiles = [...d.profiles.map((p)=>({ id:p.id, name:p.name, source:'master' })), ...localOnly];
+    profiles = d.profiles.map((p)=>({ id:p.id, name:p.name, is_self:!!p.is_self, source:'master' }));
+    const activeId = String(d.active_profile_id || '');
+    const selected = getSelectedProfileId();
+    const selectedValid = profiles.some((p) => String(p.id) === String(selected));
+    if(activeId && (!selectedValid || !selected)) setSelectedProfileId(activeId);
+    else if(!selectedValid) setSelectedProfileId('');
     saveProfiles();
     renderProfileSelect();
   }catch(e){}

@@ -1041,6 +1041,8 @@ const state = {
   peopleGroup: 'all',
   peopleQuery: '',
   peopleVisible: 6,
+  peopleLoadState: 'loading',
+  accountOwner: null,
   /* product-entitlement · datepick_max_people จาก /api/account/me */
   datepickMaxPeople: 1,
   productPlan: 'free',
@@ -1739,10 +1741,21 @@ function toggleDatepickPerson(idx){
 async function loadNetworkPeople(){
   try {
     const r = await fetch('/api/profile', { credentials:'include' });
-    if (!r.ok) return; // ไม่ login ใช้ DEFAULT_PEOPLE
+    if (!r.ok) { state.peopleLoadState = 'empty'; renderPeople(); return; }
     const d = await r.json();
-    const profiles = (d.profiles||[]).filter(p => !p.is_archived);
-    if (!profiles.length) return;
+    state.accountOwner = d.owner || null;
+    const activeId = d.active_profile && d.active_profile.id ? String(d.active_profile.id) : '';
+    const profiles = (d.profiles||[]).filter(p => !p.is_archived).sort((a, b) => {
+      const aa = String(a.id) === activeId || a.is_self ? 1 : 0;
+      const bb = String(b.id) === activeId || b.is_self ? 1 : 0;
+      return bb - aa;
+    });
+    if (!profiles.length) {
+      state.people = [];
+      state.peopleLoadState = 'empty';
+      renderPeople();
+      return;
+    }
     /* group map จาก localStorage เก่าเป็น fallback; DB network_group ชนะก่อน */
     let groupMap = {};
     try { groupMap = JSON.parse(localStorage.getItem('hk_network_groups')||'{}'); } catch(_){}
@@ -1761,18 +1774,21 @@ async function loadNetworkPeople(){
         branch: yearBranch,
         dm: dm,
         kua: 0,
-        group: normGroup(p.network_group) || normGroup(groupMap[p.id]) || (p.relationship_type ? 'general' : 'friend'),
-        enabled: false,
+        group: (String(p.id) === activeId || p.is_self) ? 'general' : (normGroup(p.network_group) || normGroup(groupMap[p.id]) || (p.relationship_type ? 'general' : 'friend')),
+        enabled: String(p.id) === activeId || !!p.is_self,
         profileId: p.id,
         personId: 'hk_' + p.id, // aj_user_profile.person_id mapping
 	        birthDate: p.birth_datetime ? p.birth_datetime.slice(0,10) : null,
 	        birthTime: p.birth_datetime ? p.birth_datetime.slice(11,16) : '12:00',
 	        birthTimeKnown: p.birth_time_known !== false,
 	        birthLng: p.birth_lng || 100.5018,
+        gender: p.gender || 'M',
         rel: p.relationship_type || '',
       };
     });
     state.people = network;
+    state.peopleLoadState = 'ready';
+    enforcePeopleCap();
     renderPeople();
     // 16 พ.ค. fix: ensure aj_user_profile มีของแต่ละคน (auto-create เงียบๆ)
     ensureAjProfiles(network);
@@ -1790,7 +1806,7 @@ async function ensureAjProfiles(people){
 	          birthTime: p.birthTime || '12:00',
 	          birthTimeKnown: p.birthTimeKnown !== false,
 	          longitude: p.birthLng || 100.5018,
-          gender: 'M',
+	          gender: p.gender || 'M',
         })
       });
     } catch(_){}
@@ -1840,7 +1856,14 @@ function renderPeople(){
   const c = document.getElementById('peopleMini');
   const filtered = peopleFiltered();
   if (!filtered.length) {
-    c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">${_dptx('dp.people.notfound','ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา')}</div>`;
+    if (state.peopleLoadState === 'loading') {
+      c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">${_dptx('dp.people.loading','กำลังโหลดดวงเจ้าของบัญชี...')}</div>`;
+    } else if (!state.people.length) {
+      const ownerName = escHtml(state.accountOwner?.name || _dptx('dp.people.owner','เจ้าของบัญชี'));
+      c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.7;"><strong style="display:block;color:var(--fg);margin-bottom:5px;">${ownerName}</strong>${_dptx('dp.people.owner_setup','กรอกข้อมูลเกิดของเจ้าของบัญชีให้ครบเพื่อผูกดวงวางฤกษ์')}<br><a href="/input" style="color:var(--gold);">${_dptx('dp.people.owner_cta','กรอกข้อมูลดวงเจ้าของบัญชี')}</a></div>`;
+    } else {
+      c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">${_dptx('dp.people.notfound','ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา')}</div>`;
+    }
     renderSelectedPeople();
     updatePeopleCount();
     return;

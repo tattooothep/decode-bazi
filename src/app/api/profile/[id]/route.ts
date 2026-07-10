@@ -276,6 +276,15 @@ export async function DELETE(_req: Request, ctx: Ctx) {
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const { id } = await ctx.params;
+  const target = await q1<{ is_self: boolean }>(
+    `SELECT (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self
+       FROM profiles WHERE id=$1 AND created_by_user_id=$2`,
+    [id, s.userId]
+  );
+  if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (target.is_self) {
+    return NextResponse.json({ error: "owner_profile_cannot_be_archived" }, { status: 409 });
+  }
   const row = await q1(
     `UPDATE profiles SET is_archived=true, updated_at=now()
      WHERE id=$1 AND created_by_user_id=$2

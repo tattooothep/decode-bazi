@@ -883,28 +883,9 @@
     } catch(_){ return false; }
   }
   function loadPeople(){
-    const logged = isLoggedIn();
-    try {
-      const stored = localStorage.getItem('hk_network_people');
-      if (stored) {
-        const p = JSON.parse(stored);
-        if (Array.isArray(p) && p.length) {
-          const clean = p.filter(x => !isJunkProfile(x));
-          if (clean.length !== p.length) {
-            try { localStorage.setItem('hk_network_people', JSON.stringify(clean)); } catch(_){}
-            console.log('[network] purged', p.length - clean.length, 'junk from cache');
-          }
-          if (clean.length) return clean;
-        }
-      }
-    } catch(e){}
-    /* ถ้า logged in + cache ไม่มี → empty state รอ async DB · ห้าม DEMO */
-    if (logged) {
-      console.log('[network] logged in + no cache · waiting DB');
-      return [];
-    }
-    /* anonymous fallback DEMO */
-    return DEMO_PEOPLE;
+    /* บัญชี/API เป็น source of truth เท่านั้น ห้ามวาด demo หรือ cache ของบัญชีก่อนหน้า */
+    try { localStorage.removeItem('hk_network_people'); } catch(_){}
+    return [];
   }
   /* Phase 3.2 · ดึงจาก /api/profile (logged-in) · เปลี่ยน DEMO เป็นเครือข่ายจริง */
   /* Junk detector · ชื่อ/nickname ที่ดูเหมือนของ test (ตัวอักษรเดียวซ้ำ, สั้นเกิน, สุ่มจริง) */
@@ -974,15 +955,9 @@
       const r = await fetch('/api/profile', { credentials:'include' });
       if (!r.ok) return null;
       const d = await r.json();
-      const all = (d.profiles||[]).filter(p=>!p.is_archived);
-      /* แยก junk · auto-archive ใน background */
-      const junk = all.filter(isJunkProfile);
-      const profiles = all.filter(p => !isJunkProfile(p));
-      junk.forEach(p => {
-        fetch('/api/profile/' + p.id, { method:'DELETE', credentials:'include' })
-          .then(()=>console.log('[network] auto-archived junk:', p.name))
-          .catch(()=>{});
-      });
+      const profiles = (d.profiles||[]).filter(p=>!p.is_archived);
+      window._networkOwner = d.owner || null;
+      window._networkProfileSetupRequired = d.profile_setup_required === true;
       if (!profiles.length) return null;
       const ELEM_OF = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
       /* ใช้ active_profile/is_self จาก backend เป็นหลัก · localStorage เป็น fallback เท่านั้น */
@@ -1002,8 +977,8 @@
         const yongshenRaw = Array.isArray(ys) ? ys : (Array.isArray(ys.top3) ? ys.top3 : []);
         const yongshenTop3 = yongshenRaw.slice(0, 3).map(y => ({element: y.element, score: y.finalScore || 0}));
         const yongshenClimate = (!Array.isArray(ys) && ys.climate) ? ys.climate : null;
-        /* self detection: ตรงกับ active_profile/is_self ก่อน · ถ้าไม่มีให้ใช้ index 0 (legacy fallback) */
-        const isSelf = selfPid ? (p.id === selfPid) : (i === 0);
+        /* self ต้องมาจาก backend เท่านั้น ห้ามเดาจาก index แรก */
+        const isSelf = !!p.is_self || !!(selfPid && p.id === selfPid);
         /* 16 พ.ค. 2026: extract birth_datetime → birthDate + birthTime · เติม locationName/lat/lng/gender ให้ openPersonModal populate ค่าได้ตอนแก้ไข */
         let birthDate = '', birthTime = '12:00';
         if (p.birth_datetime) {
@@ -1088,7 +1063,7 @@
   let PEOPLE = loadPeople();
   window.PEOPLE = PEOPLE;
   /* loading state · ถ้า login แต่ยังไม่มีดวง */
-  window._networkLoadState = isLoggedIn() && !PEOPLE.length ? 'loading' : 'ready';
+  window._networkLoadState = 'loading';
 
   async function syncNetworkFromDB(opts){
     const force = opts?.force;
@@ -1103,14 +1078,11 @@
       dbPeople.forEach(p => PEOPLE.push(p));
       window._networkLoadState = 'ready';
       console.log('[network] loaded', PEOPLE.length, 'people from DB');
-    } else if (isLoggedIn()) {
-      /* login + DB ไม่ส่งคน → empty state */
+    } else {
+      /* login + DB ไม่ส่งคน → ให้กรอกดวงเจ้าของ ห้าม fallback demo */
       PEOPLE.length = 0;
       window._networkLoadState = 'empty';
       console.warn('[network] logged in but DB returned no usable profiles');
-    } else {
-      window._networkLoadState = 'ready';
-      console.log('[network] anonymous · keeping DEMO');
     }
     if (window.renderNetwork) window.renderNetwork();
     if (window.recomputeAllScores) await window.recomputeAllScores();
@@ -2495,9 +2467,9 @@
       overlay.className = 'hk-empty-state';
       overlay.innerHTML = `
         <div class="icon">👥</div>
-        <h3>${escHtml(_tx('n.empty.title', 'ยังไม่มีดวงในเครือข่าย'))}</h3>
-        <p>${escHtml(_tx('n.empty.body', 'เพิ่มดวงคนรอบตัวคุณ'))}</p>
-        <a href="/input">${escHtml(_tx('n.empty.cta', '+ เพิ่มดวงใหม่'))}</a>
+        <h3>${escHtml((window._networkOwner && window._networkOwner.name) || _tx('n.empty.title', 'ดวงเจ้าของบัญชียังไม่พร้อม'))}</h3>
+        <p>${escHtml(_tx('n.empty.body', 'กรอกข้อมูลเกิดของเจ้าของบัญชีให้ครบก่อนเพิ่มคนอื่น'))}</p>
+        <a href="/input">${escHtml(_tx('n.empty.cta', 'กรอกข้อมูลดวงเจ้าของบัญชี'))}</a>
       `;
     } else if (overlay) {
       overlay.remove();
