@@ -380,6 +380,12 @@ async function processQueuedFusion5(req: Request, body: Record<string, unknown>)
     const row = found.rows[0];
     if (!row) return NextResponse.json({ error: "job_not_found" }, { status: 404 });
     if (row.status === "done" || row.status === "error") {
+      await client.query(
+        `UPDATE hourkey_jobs
+            SET status=$2,finished_at=COALESCE(finished_at,now()),updated_at=now()
+          WHERE id=$1 AND status IN ('waiting','running')`,
+        [jobId, row.status === "done" ? "succeeded" : "failed"]
+      );
       return NextResponse.json({ ok: true, terminal: true, status: row.status });
     }
     if (!row.payload?.session) return NextResponse.json({ error: "payload_missing" }, { status: 422 });
