@@ -18,6 +18,7 @@ const D: Dict = {
   "nav.finance": { th: "การเงิน", en: "Finance", zh: "財務", vi: "Tài chính", ja: "財務", ko: "재무", ru: "Финансы", es: "Finanzas" },
   "nav.packages": { th: "แพ็กเกจ", en: "Packages", zh: "方案", vi: "Gói", ja: "プラン", ko: "패키지", ru: "Пакеты", es: "Paquetes" },
   "nav.iam": { th: "แอดมิน & สิทธิ์", en: "Staff & roles", zh: "權限", vi: "Nhân sự", ja: "権限", ko: "권한", ru: "Роли", es: "Roles" },
+  "nav.chatmon": { th: "มอนิเตอร์แชท", en: "Chat Monitor", zh: "對話監控", vi: "Giám sát chat", ja: "チャット監視", ko: "채팅 모니터", ru: "Мониторинг чатов", es: "Monitor de chats" },
   "nav.settings": { th: "ตั้งค่า", en: "Settings", zh: "設定", vi: "Cài đặt", ja: "設定", ko: "설정", ru: "Настройки", es: "Ajustes" },
   "nav.affiliate": { th: "แอฟฟิลิเอต", en: "Affiliate", zh: "聯盟", vi: "Affiliate", ja: "アフィリエイト", ko: "제휴", ru: "Партнёры", es: "Afiliados" },
   "nav.back": { th: "← หลังบ้าน", en: "← Admin", zh: "← 後台", vi: "← Admin", ja: "← 管理", ko: "← 관리", ru: "← Админ", es: "← Admin" },
