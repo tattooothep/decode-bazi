@@ -109,13 +109,15 @@
       out.chipType = 'chong-universal';
     }
 
-    /* บรรทัดรอง: ค่ำจันทรคติ + นาอินชื่อเต็ม + นักษัตรวัน (ไม่มีตัวจีน) */
+    /* บรรทัดรอง: ค่ำจันทรคติ + ธาตุหยินหยางของก้านวัน + นักษัตรวัน (ตามฟอร์มกระดาษ · 10 ก.ค. เจ้านายติ: ห้ามใช้ชื่อนาอินในช่อง คนงง) */
     var parts = [];
     var ln = lunarNum(d.lunar);
     if (ln) parts.push(fmt(L.labels.lunarDay.format, { n: ln }));
-    if (opts.nayinZh && L.nayin[opts.nayinZh]) parts.push(L.nayin[opts.nayinZh].name);
+    if (L.labels.stem && L.labels.stem[d.stem]) parts.push(L.labels.stem[d.stem]);
     if (L.labels.branch[branch]) parts.push(L.labels.branch[branch].label);
     out.subline = parts.join(' · ');
+    /* นาอินยังคืนแยกไว้ให้แผงข้าง/PDF ใช้ ไม่โชว์ในช่อง */
+    out.nayin = (opts.nayinZh && L.nayin[opts.nayinZh]) ? L.nayin[opts.nayinZh].name : '';
 
     /* บรรทัดเป้า (เฉพาะเมื่อเลือก) */
     if (opts.goal && opts.goal !== 'all' && L.goals[officer + '|' + opts.goal]) {

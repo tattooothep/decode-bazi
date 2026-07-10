@@ -177,20 +177,22 @@
   .day-cell.selected{background:var(--gold-soft);box-shadow:inset 0 0 0 1px var(--gold);}
   /* 10 ก.ค. · โหมดอ่านง่าย (ปฏิทินภาษาคน) · ชั้นครอบใหม่ ไม่แตะ CSS เดิม · ถอด = ลบ block นี้ */
   .control-bar{grid-template-columns:auto 1fr auto auto;} /* เพิ่มช่องที่ 4 รองรับ #view-toggle · มือถือยัง 1fr เดิม */
-  .day-cell.ez{aspect-ratio:auto;min-height:150px;}
+  .day-cell.ez{aspect-ratio:auto;min-height:112px;padding:8px;gap:3px;}
   .ez-top{display:flex;align-items:center;gap:6px;}
   .ez-num{font-weight:700;font-size:14px;}
-  .ez-power{color:var(--gold);font-weight:700;font-size:11.5px;}
+  .ez-power{color:var(--gold);font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .ez-chip{margin-left:auto;font-size:9.5px;padding:1px 6px;border-radius:99px;white-space:nowrap;}
   .ez-chip.ch{background:rgba(198,40,40,.14);color:#c62828;}
   .ez-chip.he{background:rgba(46,125,50,.14);color:#2e7d32;}
   [data-theme="dark"] .ez-chip.ch{color:#ef9a9a;}
   [data-theme="dark"] .ez-chip.he{color:#81c784;}
   .ez-chip.chu{color:var(--fg-soft);border:1px solid var(--tile-bd);}
-  .ez-sub{font-size:9.5px;color:var(--fg-soft);}
-  .ez-title{font-size:11px;font-weight:600;}
-  .ez-text{font-size:10.5px;line-height:1.45;opacity:.85;}
-  .ez-goal{font-size:9.5px;color:var(--gold);border-top:1px dashed var(--tile-bd);padding-top:3px;}
+  .ez-sub{font-size:9px;color:var(--fg-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ez-title{font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ez-text{font-size:10px;line-height:1.4;opacity:.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .ez-goal{font-size:9px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ez-dir{font-size:9px;color:var(--fg-soft);display:flex;align-items:center;gap:4px;margin-top:auto;border-top:1px dashed var(--tile-bd);padding-top:3px;white-space:nowrap;overflow:hidden;}
+  .ez-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none;}
   @media(max-width:768px){.ez-text,.ez-title,.ez-sub,.ez-goal{display:none;}.ez-chip{max-width:55%;overflow:hidden;text-overflow:ellipsis;}.day-cell.ez{min-height:auto;}}
 
   .d-head{display:flex;justify-content:space-between;align-items:flex-start;}
@@ -366,7 +368,7 @@
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 <script src="/js/hk-tongshu-dict.js?v=1" defer></script>
-<script src="/js/hk-daytext.js?v=1" defer></script>
+<script src="/js/hk-daytext.js?v=2" defer></script>
 <link rel="stylesheet" href="/css/hk-print.css?v=4">
 </head>
 <body>
@@ -837,6 +839,12 @@
   function scoreLabel(s){ return s>=20?'★ 大吉':s>=10?'用 吉':s>=-9?'平 中和':s>=-19?'慎 凶':'凶 大凶'; }
 
   // ─── RENDER CALENDAR ───
+  /* 10 ก.ค. · ทิศมงคลรายวันตามก้านวัน — ตารางเดียวกับเครื่อง /api/today/directions (喜神/財神 玉匣記) ห้ามแก้ค่าโดยไม่เทียบ route นั้น */
+  const EZ_CAISHEN = {甲:'NE',乙:'NE',丙:'SE',丁:'SE',戊:'S',己:'S',庚:'SW',辛:'SW',壬:'NW',癸:'NW'};
+  const EZ_XISHEN  = {甲:'NE',己:'NE',乙:'NW',庚:'NW',丙:'SW',辛:'SW',丁:'S',壬:'S',戊:'SE',癸:'SE'};
+  const EZ_DIR_TH  = {N:'เหนือ',NE:'ตอ.เฉียงเหนือ',E:'ตะวันออก',SE:'ตอ.เฉียงใต้',S:'ใต้',SW:'ตต.เฉียงใต้',W:'ตะวันตก',NW:'ตต.เฉียงเหนือ'};
+  const EZ_EL_COLOR = {wood:'#66a06a',fire:'#d96a5f',earth:'#c9a04e',metal:'#a8b0b8',water:'#5f8fc9'};
+  function ezDirName(code){ const l=getRawLang(); if(l==='th') return EZ_DIR_TH[code]||code; const m=DIR_LABELS[code]; return m?(m[l]||m.en||code):code; }
   /* 10 ก.ค. · โหมดอ่านง่าย · โหลดคลังข้อความปฏิทินภาษาคนตามภาษา (fallback→en) · โหลดครั้งเดียวต่อภาษา */
   let DT_STATE = { loc:'', useLoc:'', ok:false, map:null };
   function dtLocale(){ const l=getRawLang(); return ['th','en','zh','vi','ja','ko','ru','es'].indexOf(l)>=0?l:'en'; }
@@ -947,6 +955,7 @@
           ${c.title && c.title!==c.label ? `<div class="ez-title">${ez(c.title)}</div>` : ''}
           <div class="ez-text">${ez(c.text)}</div>
           ${c.goalLine?`<div class="ez-goal">▸ ${ez(c.goalLine)}</div>`:''}
+          <div class="ez-dir">💰${ez(ezDirName(EZ_CAISHEN[d.stem]||''))}${EZ_XISHEN[d.stem]&&EZ_XISHEN[d.stem]!==EZ_CAISHEN[d.stem]?` · 🌸${ez(ezDirName(EZ_XISHEN[d.stem]))}`:''}<span style="margin-left:auto;display:inline-flex;gap:3px;">${['stem_element','branch_element'].map(k=>EZ_EL_COLOR[d[k]]?`<i class="ez-dot" style="background:${EZ_EL_COLOR[d[k]]}"></i>`:'').join('')}</span></div>
         </div>`);
           return;
         } catch(_) { /* ตกกลับ render แบบลึกเดิมด้านล่าง */ }
