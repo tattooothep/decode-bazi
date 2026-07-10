@@ -619,7 +619,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="mst.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="mst.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="mst.nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="mst.nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -735,7 +735,7 @@
     const t = window.HK_I18N && window.HK_I18N[k];
     if (!t) return fb;
     const lang = (function(){ try{ return localStorage.getItem('hk_locale')||'th'; }catch(_){ return 'th'; } })();
-    return t[lang] || t.th || fb;
+    return t[lang] || (lang !== 'th' ? t.en : '') || t.th || fb;
   }
 
   /* ── แนบไฟล์ / ลากวาง / วางรูป (paste) ── เก็บไฟล์ใน window._hkAttach (ส่ง backend ตอน send) */
@@ -1159,7 +1159,7 @@
       box.innerHTML=h;
       if(window.applyI18N) applyI18N(tLoc());
     }
-    function addWelcomeMsg(){ var d=addMsg('sifu',''); renderMd(d,_mstx('mst.chat.welcome','สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ')); }
+    function addWelcomeMsg(){ var d=addMsg('sifu',''); d.dataset.masterWelcome='1'; renderMd(d,_mstx('mst.chat.welcome','สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ')); }
 
     /* account history sync · DB เป็นชั้นกลางให้ desktop/mobile เห็น Q&A เดียวกัน */
     var SERVER_HISTORY_IMPORTED_KEY = 'hk_sifu_history_import_v2';
@@ -1376,7 +1376,7 @@
       var loc; try { loc = localStorage.getItem('hk_locale') || 'th'; } catch(_){ loc = 'th'; }
       try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('master.html',key,loc);if(ov!=null)return ov;}catch(_){}
       var d = window.HK_I18N && window.HK_I18N[key];
-      return d ? (d[loc] || d.th || fallback) : fallback;
+      return d ? (d[loc] || (loc !== 'th' ? d.en : '') || d.th || fallback) : fallback;
     }
     function copyText(raw, btn){
       var ok = function(){ var old = btn.dataset.lbl; btn.textContent = '✓ ' + mstActLabel('mst.act.copied','คัดลอกแล้ว'); setTimeout(function(){ btn.textContent = old; }, 1500); };
@@ -1387,11 +1387,23 @@
       if (!el || el.querySelector('.msg-actions')) return;
       var bar = document.createElement('div'); bar.className = 'msg-actions';
       var copyBtn = document.createElement('button'); copyBtn.type = 'button'; copyBtn.className = 'msg-act';
+      copyBtn.dataset.masterActionKey = 'mst.act.copy';
       copyBtn.dataset.lbl = '📋 ' + mstActLabel('mst.act.copy','คัดลอก'); copyBtn.textContent = copyBtn.dataset.lbl;
       copyBtn.addEventListener('click', function(){ copyText(raw || el.dataset.raw || '', copyBtn); });
       bar.appendChild(copyBtn);
       el.appendChild(bar);
     }
+    window.refreshMasterDynamicI18N = function(){
+      document.querySelectorAll('[data-master-welcome="1"]').forEach(function(el){
+        renderMd(el, _mstx('mst.chat.welcome','สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ'));
+      });
+      document.querySelectorAll('[data-master-action-key]').forEach(function(btn){
+        var key = btn.dataset.masterActionKey;
+        var label = '📋 ' + mstActLabel(key, 'คัดลอก');
+        btn.dataset.lbl = label;
+        btn.textContent = label;
+      });
+    };
 
 	    /* โหลดประวัติแชทเก่าของดวงที่เลือก → render เป็นฟอง */
 	    function loadHistory(){
@@ -2365,6 +2377,7 @@ function applyI18N(lang){
     document.querySelectorAll('[data-i18n-aria="'+key+'"]').forEach(function(el){ if (v !== undefined) el.setAttribute('aria-label', v); });
     document.querySelectorAll('[data-i18n-title="'+key+'"]').forEach(function(el){ if (v !== undefined) el.setAttribute('title', v); });
   });
+  try { if (window.refreshMasterDynamicI18N) window.refreshMasterDynamicI18N(); } catch(e) {}
 }
 window.applyI18N = applyI18N;
 window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('lang',l);document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};

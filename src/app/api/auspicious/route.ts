@@ -292,7 +292,7 @@ export async function POST(req: NextRequest) {
           const { entitlementDenied } = await import("@/lib/product-entitlement");
           return NextResponse.json(
             entitlementDenied("datepick_range_limit", {
-              message: `แพ็กเกจนี้ค้นฤกษ์ได้ช่วงสูงสุด ${productCaps.datepick_max_range_days} วัน · อัปเกรดที่ /pricing`,
+              message_key: "datepick_range_limit",
               max: productCaps.datepick_max_range_days,
               requested: days,
               plan: productPlan,
@@ -320,10 +320,7 @@ export async function POST(req: NextRequest) {
         if (ownedPeopleIds.length > maxP) {
           return NextResponse.json(
             entitlementDenied("datepick_people_limit", {
-              message:
-                maxP <= 1
-                  ? "ช่วงทดลอง/ฟรี · วางฤกษ์ผูกดวงได้ 1 คน (ตัวเอง) · อัปเกรดที่ /pricing"
-                  : `แพ็กเกจนี้วางฤกษ์ได้สูงสุด ${maxP} ดวง`,
+              message_key: "datepick_people_limit",
               max: maxP,
               requested: ownedPeopleIds.length,
               plan: access?.plan,

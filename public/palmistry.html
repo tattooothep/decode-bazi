@@ -244,7 +244,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="c.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="c.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="c.nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="c.nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     
@@ -369,14 +369,15 @@
     <p class="tiny" data-i18n="rt.saveNote">บันทึกแล้ว → ลายมือเข้าไปหลอมรวมกับปาจื้อ/ดาว/จื่อเหวย… ในหน้าดูดวงรวม</p>
     <button class="cta ghost" id="btnRestart" style="margin-top:9px" data-i18n="rt.restart">↺ เริ่มใหม่</button>
     <button class="cta noprint" id="btnPalmPdf" type="button" style="margin-top:9px;background:transparent;border:1px solid var(--gold);color:var(--gold)" data-i18n="rt.pdf">⬇ ดาวน์โหลด PDF</button>
-    <button class="cta noprint" id="hk-palm-summary-pdf" type="button" style="margin-top:9px" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 สร้างสรุป PDF (20 ยาม)</button>
+    <button class="cta noprint" id="hk-palm-summary-pdf" type="button" style="margin-top:9px" data-i18n="rt.aiPdf" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 รายงาน AI · 20 ยาม</button>
   </section>
 
   <div style="text-align:center"><a href="/" class="homelink" data-i18n="home">← กลับหน้าหลัก</a></div>
 </div>
 
 <script src="/js/hk-print.js?v=4"></script>
-<script src="/js/palmistry-app.js?v=483"></script>
+<script src="/js/hk-i18n-core.js?v=2" defer></script>
+<script src="/js/palmistry-app.js?v=484"></script>
 <script src="/js/hk-user-menu.js?v=23" defer></script>
 <script>
 var p = window.location.pathname.replace(/\/$/,'') || '/chart';

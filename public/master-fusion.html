@@ -1140,7 +1140,7 @@
           <div id="sniper-card" class="hidden"></div>
           <div class="dl-pdf-wrap hidden noprint" id="download-pdf-wrap">
             <button class="btn" id="download-pdf" type="button" data-i18n="dl.pdf">⬇ ดาวน์โหลด PDF</button>
-            <button class="btn" id="hk-fusion-summary-pdf" type="button" style="margin-left:8px" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 สร้างสรุป PDF (20 ยาม)</button>
+            <button class="btn" id="hk-fusion-summary-pdf" type="button" style="margin-left:8px" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 รายงาน AI · 20 ยาม</button>
           </div>
           <div class="chat" id="chat"></div>
           <div id="fusion-meta"></div>
@@ -4409,6 +4409,7 @@
   var LANGS = ["th", "en", "zh", "cn", "vi", "ja", "ko", "ru", "es"];
 
   var I = {
+    cta:        { th:"📄 รายงาน AI · 20 ยาม", en:"📄 AI report · 20 units", zh:"📄 AI 報告 · 20 時", cn:"📄 AI 报告 · 20 时", vi:"📄 Báo cáo AI · 20 đơn vị", ja:"📄 AIレポート · 20時", ko:"📄 AI 리포트 · 20단위", ru:"📄 AI-отчёт · 20 единиц", es:"📄 Informe IA · 20 unidades" },
     title:      { th:"สร้างสรุป PDF ด้วย AI", en:"Create AI summary PDF", zh:"用 AI 生成總結 PDF", cn:"用 AI 生成总结 PDF", vi:"Tạo PDF tổng hợp bằng AI", ja:"AIでまとめPDFを作成", ko:"AI 요약 PDF 만들기", ru:"Создать AI-сводку PDF", es:"Crear PDF resumen con IA" },
     desc:       { th:"ซินแส AI จะเรียบเรียงคำพยากรณ์หลอมรวม 5 ศาสตร์ของคุณเป็นรายงาน PDF ฉบับเต็ม (ภาพรวม · Resonance · งาน/เงิน/รัก · จังหวะเวลา · คำแนะนำ)", en:"The AI sifu turns your 5-science fusion reading into a full PDF report (overview · Resonance · career/money/love · timeline · advice).", zh:"AI 命理師會把你的五術合盤結果整理成完整 PDF 報告（總覽・共振・事業/財/感情・時間軸・建議）。", cn:"AI 命理师会把你的五术合盘结果整理成完整 PDF 报告（总览・共振・事业/财/感情・时间轴・建议）。", vi:"Thầy AI biên soạn kết quả hợp nhất 5 môn thành báo cáo PDF đầy đủ (tổng quan · Resonance · sự nghiệp/tài chính/tình cảm · dòng thời gian · lời khuyên).", ja:"AI鑑定師があなたの5術統合結果を完全なPDFレポート（概要・共鳴・仕事/金/恋・タイムライン・助言）にまとめます。", ko:"AI 명리사가 5술 융합 결과를 완전한 PDF 리포트(개요·공명·일/돈/사랑·타임라인·조언)로 정리합니다.", ru:"AI-мастер оформит синтез 5 систем в полноценный PDF-отчёт (обзор · резонанс · карьера/деньги/любовь · хронология · советы).", es:"El maestro IA convierte tu lectura de fusión de 5 ciencias en un informe PDF completo (resumen · Resonancia · trabajo/dinero/amor · cronología · consejos)." },
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
@@ -4437,6 +4438,12 @@
     return "th";
   }
   function T(o) { var L = locale(); return (o && (o[L] || o.en || o.th)) || ""; }
+  function updateCta() {
+    var el = document.getElementById("hk-fusion-summary-pdf");
+    if (el) el.textContent = T(I.cta);
+  }
+  updateCta();
+  document.addEventListener("hk:locale", updateCta);
   function esc(s) { return (window.HKPrint ? window.HKPrint.esc(s) : String(s == null ? "" : s)); }
   function store(j) { try { localStorage.setItem(KEY, JSON.stringify(j)); } catch (e) {} }
   function loadJob() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } }

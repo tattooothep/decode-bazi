@@ -264,7 +264,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan" class="on"><span class="glyph">羅</span><span class="lbl" data-i18n="nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry" class="on"><span class="glyph">手</span><span class="lbl" data-i18n="nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry" class="on"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div id="errBanner" style="display:none;position:fixed;top:0;left:0;right:0;background:#7a1c1c;color:#fff;padding:8px 16px;font-family:var(--mono);font-size:12px;z-index:9999;"></div>
   <div class="top-r"><div id="hk-user-menu-mount"></div></div>
@@ -4698,13 +4698,21 @@ async function deleteHouseFromCloud(){
   if(!id){ $houseStatus.textContent = T('house.pickToDelete'); return; }
   const h = houses.find(x => String(x.id) === String(id));
   if(!h) return;
-  if(!confirm('ลบบ้าน "' + (h.name||'') + '" ?')) return;
+  const deleteI18n = {
+    th:{confirm:'ลบบ้าน "{name}" ?',failed:'ลบไม่สำเร็จ'}, en:{confirm:'Delete house "{name}"?',failed:'Delete failed'},
+    zh:{confirm:'刪除住宅「{name}」？',failed:'刪除失敗'}, cn:{confirm:'删除住宅“{name}”？',failed:'删除失败'},
+    vi:{confirm:'Xóa ngôi nhà "{name}"?',failed:'Xóa không thành công'}, ja:{confirm:'住宅「{name}」を削除しますか？',failed:'削除できませんでした'},
+    ko:{confirm:'"{name}" 주택을 삭제할까요?',failed:'삭제하지 못했습니다'}, ru:{confirm:'Удалить дом «{name}»?',failed:'Не удалось удалить'},
+    es:{confirm:'¿Eliminar la casa «{name}»?',failed:'No se pudo eliminar'}
+  };
+  const deleteWords = deleteI18n[lpSifuLang()] || deleteI18n.en;
+  if(!confirm(deleteWords.confirm.replace('{name}', h.name||''))) return;
   const serverId = h.serverId || (/^\d+$/.test(String(h.id)) ? h.id : null);
   try{
     if(serverId){
       const r = await fetch('/api/houses/' + serverId, { method:'DELETE', credentials:'same-origin' });
       const d = await r.json().catch(()=>({}));
-      if(!r.ok){ $houseStatus.textContent = 'ลบไม่สำเร็จ: ' + (d.error||r.status); return; }
+      if(!r.ok){ $houseStatus.textContent = deleteWords.failed + ': ' + (d.error||r.status); return; }
     }
     houses = houses.filter(x => String(x.id) !== String(id));
     saveHousesCache();
@@ -4712,7 +4720,7 @@ async function deleteHouseFromCloud(){
     houseCloudMeta.count = houses.length;
     $houseStatus.textContent = T('house.deletedMsg').replace('{name}', h?.name || '');
     updateHouseQuotaStatus();
-  }catch(e){ $houseStatus.textContent = 'ลบไม่สำเร็จ: ' + (e.message||e); }
+  }catch(e){ $houseStatus.textContent = deleteWords.failed + ': ' + (e.message||e); }
 }
 
 document.getElementById('btnSave').addEventListener('click', () => { saveHouseToCloud(); });

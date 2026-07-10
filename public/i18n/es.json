@@ -1,4 +1,5 @@
 {
+  "*::hk.nav.palmistry": "Mano",
   "account.html::mg.title": "Gestionar cuenta",
   "account.html::mg.sub": "Foto de perfil · nombre visible · contraseña · dispositivos · datos personales (PDPA)",
   "account.html::mg.profile": "Perfil",

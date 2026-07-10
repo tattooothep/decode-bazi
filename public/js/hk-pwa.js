@@ -8,7 +8,7 @@
  *        canary + localStorage.hk_pwa_canary==='1' → ทีมภายในเท่านั้น
  *        off / อื่น ๆ               → ไม่ทำอะไร + unregister SW เดิมถ้ามี
  *   2. inject <link rel="manifest"> + apple-touch-icon PNG + <meta theme-color> (2 ธีม)
- *   3. register /sw.js + update banner "มีเวอร์ชันใหม่" 3 ภาษา
+ *   3. register /sw.js + update banner "มีเวอร์ชันใหม่" 9 ภาษา
  *      (ห้ามโชว์ระหว่างซินแสกำลัง stream/มี job วิ่ง — รอ idle)
  *   4. install prompt UX: มือถือ + เข้าครั้งที่ ≥2 + cooloff 30 วัน + การ์ดสอน iOS
  */
@@ -35,8 +35,25 @@
   }
 
   function currentLang() {
-    var l = (lsGet('hk_locale') || document.documentElement.lang || 'th').slice(0, 2);
-    return (l === 'en' || l === 'zh') ? l : 'th';
+    try {
+      var state = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+      if (state && typeof state.sifu === 'function') {
+        var stateLang = state.sifu();
+        if (I18N[stateLang]) return stateLang;
+      }
+      if (state && typeof state.current === 'function') {
+        var current = state.current();
+        if (current && current.raw === 'zh' && current.variant === 'cn') return 'cn';
+        if (current && I18N[current.raw]) return current.raw;
+      }
+    } catch (_) {}
+    var raw = lsGet('hk_locale') || lsGet('hk_lang') ||
+      document.documentElement.getAttribute('data-hk-locale') || document.documentElement.lang || 'th';
+    raw = String(raw || 'th').trim().toLowerCase().replace('_', '-');
+    if (raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans') return 'cn';
+    if (raw.indexOf('zh') === 0) return lsGet('hk_zh_variant') === 'cn' ? 'cn' : 'zh';
+    raw = raw.split('-')[0];
+    return I18N[raw] ? raw : 'th';
   }
 
   var I18N = {
@@ -59,19 +76,73 @@
       iosStep2: '2. Choose “Add to Home Screen”'
     },
     zh: {
+      update: '有新版本 · 點一下重新整理',
+      install: '將 Hourkey 加到主畫面 — 一點即可開啟命盤',
+      installBtn: '安裝',
+      later: '稍後',
+      iosTitle: '將 Hourkey 加到主畫面',
+      iosStep1: '1. 點 Safari 底部的分享按鈕 ⎋',
+      iosStep2: '2. 選擇「加入主畫面」'
+    },
+    cn: {
       update: '有新版本 · 点击刷新',
-      install: '把 Hourkey 安装到主屏幕 — 一键开启命盘',
+      install: '把 Hourkey 添加到主屏幕 — 一键打开命盘',
       installBtn: '安装',
       later: '稍后',
-      iosTitle: '把 Hourkey 安装到主屏幕',
+      iosTitle: '把 Hourkey 添加到主屏幕',
       iosStep1: '1. 点击 Safari 底部的分享按钮 ⎋',
-      iosStep2: '2. 选择「添加到主屏幕」'
+      iosStep2: '2. 选择“添加到主屏幕”'
+    },
+    vi: {
+      update: 'Có phiên bản mới · Chạm để tải lại',
+      install: 'Cài Hourkey lên màn hình chính — mở lá số chỉ với một chạm',
+      installBtn: 'Cài đặt',
+      later: 'Để sau',
+      iosTitle: 'Thêm Hourkey vào màn hình chính',
+      iosStep1: '1. Chạm nút Chia sẻ ⎋ ở cuối Safari',
+      iosStep2: '2. Chọn “Thêm vào Màn hình chính”'
+    },
+    ja: {
+      update: '新しいバージョンがあります · タップして更新',
+      install: 'Hourkeyをホーム画面に追加 — ワンタップで命盤を開けます',
+      installBtn: 'インストール',
+      later: '後で',
+      iosTitle: 'Hourkeyをホーム画面に追加',
+      iosStep1: '1. Safari下部の共有ボタン ⎋ をタップ',
+      iosStep2: '2. 「ホーム画面に追加」を選択'
+    },
+    ko: {
+      update: '새 버전이 있습니다 · 눌러서 새로고침',
+      install: 'Hourkey를 홈 화면에 추가 — 한 번 눌러 명식을 여세요',
+      installBtn: '설치',
+      later: '나중에',
+      iosTitle: 'Hourkey를 홈 화면에 추가',
+      iosStep1: '1. Safari 하단의 공유 버튼 ⎋ 누르기',
+      iosStep2: '2. “홈 화면에 추가” 선택'
+    },
+    ru: {
+      update: 'Доступна новая версия · Нажмите, чтобы обновить',
+      install: 'Добавьте Hourkey на главный экран — открывайте карту одним нажатием',
+      installBtn: 'Установить',
+      later: 'Позже',
+      iosTitle: 'Добавьте Hourkey на главный экран',
+      iosStep1: '1. Нажмите кнопку «Поделиться» ⎋ внизу Safari',
+      iosStep2: '2. Выберите «На экран Домой»'
+    },
+    es: {
+      update: 'Hay una nueva versión · Toca para actualizar',
+      install: 'Añade Hourkey a la pantalla de inicio — abre tu carta con un toque',
+      installBtn: 'Instalar',
+      later: 'Más tarde',
+      iosTitle: 'Añade Hourkey a la pantalla de inicio',
+      iosStep1: '1. Toca el botón Compartir ⎋ al pie de Safari',
+      iosStep2: '2. Elige “Añadir a pantalla de inicio”'
     }
   };
 
   function t(key) {
-    var pack = I18N[currentLang()] || I18N.th;
-    return pack[key] || I18N.th[key] || '';
+    var pack = I18N[currentLang()] || I18N.en;
+    return pack[key] || I18N.en[key] || I18N.th[key] || '';
   }
 
   /* ---------- head injection (manifest + apple icon + theme-color) ---------- */

@@ -18,6 +18,17 @@
   var LIVE = ['th', 'en', 'zh']; // ภาษาที่เปิดใช้จริงแล้ว — เพิ่มทีละภาษาเมื่อผ่าน native review
 
   window.HK_I18N = window.HK_I18N || {};
+  window.HK_I18N['hk.nav.palmistry'] = {
+    th: 'ลายมือ',
+    en: 'Palm',
+    zh: '手相',
+    cn: '手相',
+    vi: 'Chỉ tay',
+    ja: '手相',
+    ko: '손금',
+    ru: 'Ладонь',
+    es: 'Mano'
+  };
 
   function stateLocale() {
     try {
@@ -159,10 +170,22 @@
     });
   }
 
+  function applySharedPalmistryNav() {
+    document.querySelectorAll('[data-i18n="hk.nav.palmistry"]').forEach(function (el) {
+      el.textContent = t('hk.nav.palmistry', el.textContent);
+    });
+  }
+
   window.HK = window.HK || {};
   window.HK.i18n = {
     getLocale: getLocale, setLocale: setLocale, t: t, term: term, termWithGlyph: termWithGlyph,
     loadTerms: loadTerms, apply: applyI18N, SUPPORTED: SUPPORTED, LIVE: LIVE,
     loadOverlay: loadOverlay, getPageId: getPageId, overlayGet: overlayGet,
   };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySharedPalmistryNav, { once: true });
+  } else {
+    applySharedPalmistryNav();
+  }
 })();

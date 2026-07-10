@@ -1,4 +1,5 @@
 {
+  "*::hk.nav.palmistry": "손금",
   "account.html::mg.title": "계정 관리",
   "account.html::mg.sub": "프로필 사진 · 표시 이름 · 비밀번호 · 기기 · 개인정보(PDPA)",
   "account.html::mg.profile": "프로필",

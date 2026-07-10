@@ -1,4 +1,5 @@
 {
+  "*::hk.nav.palmistry": "手相",
   "luopan.html::ctrl.pinTool": "間取り図にピンを打つ · Pin Tool",
   "chart.html::c.hex.h2": "坤",
   "today.html::t.p.lab": "今日の柱 · 日柱",

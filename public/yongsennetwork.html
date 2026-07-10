@@ -577,7 +577,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="n.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="n.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="n.nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="n.nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -3219,6 +3219,7 @@ window.applyI18N = applyI18N;
 	    if (typeof renderSolar === 'function') try{ renderSolar(); }catch(e){}
 	    if (typeof updateMeta === 'function') try{ updateMeta(); }catch(e){}
 	    if (typeof window.renderTeam === 'function') try{ window.renderTeam(); }catch(e){}
+	    if (typeof renderLoadStateOverlay === 'function') try{ renderLoadStateOverlay(); }catch(e){}
 	  }
   /* 🌐 overlay re-apply · ถูกเรียกเฉพาะเมื่อ overlay ภาษาใหม่โหลดสำเร็จ */
   window.__hkOverlayApply=function(l){ apply(l); };
@@ -4390,10 +4391,12 @@ window.applyI18N = applyI18N;
     'n.cm.ys.medicine': { th:'藥', en:'Medicine', zh:'藥' },
     'n.cm.ys.bridge':   { th:'通關', en:'Bridge', zh:'通關' },
     'n.cm.breakdownT': { th:'📊 รายละเอียดคะแนน', en:'📊 Score Breakdown', zh:'📊 計分明細' },
-    'n.pc.view':    { th:'📊 ดูดวง', en:'📊 View Chart', zh:'📊 看命盤' }
-  });
+	    'n.pc.view':    { th:'📊 ดูดวง', en:'📊 View Chart', zh:'📊 看命盤' }
+	  });
+	  /* These keys load after the first language pass; refresh the new-account state now. */
+	  if (typeof renderLoadStateOverlay === 'function') try { renderLoadStateOverlay(); } catch(e) {}
 
-  /* Stem table for filling demo pillars (last char of glyph generates extras) */
+	  /* Stem table for filling demo pillars (last char of glyph generates extras) */
   const STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
   const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   function _hash(str){ let h=0; for(let i=0;i<str.length;i++) h = (h*31 + str.charCodeAt(i))|0; return Math.abs(h); }

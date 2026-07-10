@@ -860,7 +860,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="t.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="t.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="t.nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="t.nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -2886,7 +2886,12 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
           const n = parseInt(btn.getAttribute('data-hex-deep'),10);
           const l = parseInt(btn.getAttribute('data-hex-line'),10) || 0;
           if (window.showHexDeep) window.showHexDeep(n, l);
-          else alert('ตำรากำลังโหลด · ลองใหม่อีกครั้ง');
+          else alert(HK9.pick({
+            th:'ตำรากำลังโหลด · ลองใหม่อีกครั้ง', en:'The reference is still loading · please try again',
+            zh:'典籍仍在載入 · 請再試一次', cn:'典籍仍在加载 · 请再试一次', vi:'Tài liệu vẫn đang tải · vui lòng thử lại',
+            ja:'典籍を読み込み中です · もう一度お試しください', ko:'자료를 불러오는 중입니다 · 다시 시도해 주세요',
+            ru:'Справочник ещё загружается · попробуйте снова', es:'La referencia aún se está cargando · inténtalo de nuevo'
+          }, HK9.current()));
         });
       });
     }

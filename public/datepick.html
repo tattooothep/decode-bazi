@@ -2774,6 +2774,30 @@ function _dptx(k, fb){
   if (lang !== 'th' && lang !== 'zh' && !t[lang]) return t.en || t.th || fb;
   return t[lang] || t.th || fb;
 }
+const DP_ENTITLEMENT_I18N = {
+  th:{range:'แพ็กเกจนี้ค้นฤกษ์ได้ช่วงสูงสุด {max} วัน',people:'แพ็กเกจนี้วางฤกษ์ผูกดวงได้สูงสุด {max} คน'},
+  en:{range:'Your plan can search a maximum range of {max} days',people:'Your plan supports up to {max} people per date search'},
+  zh:{range:'你的方案最多可搜尋 {max} 天',people:'你的方案每次擇日最多可加入 {max} 人'},
+  cn:{range:'你的方案最多可搜索 {max} 天',people:'你的方案每次择日最多可加入 {max} 人'},
+  vi:{range:'Gói của bạn có thể tìm trong phạm vi tối đa {max} ngày',people:'Gói của bạn hỗ trợ tối đa {max} người cho mỗi lần chọn ngày'},
+  ja:{range:'現在のプランで検索できる期間は最大 {max} 日です',people:'現在のプランでは1回の日取り検索に最大 {max} 人まで指定できます'},
+  ko:{range:'현재 요금제의 검색 기간은 최대 {max}일입니다',people:'현재 요금제는 날짜 검색 1회당 최대 {max}명까지 지원합니다'},
+  ru:{range:'Ваш тариф позволяет искать в диапазоне до {max} дней',people:'Ваш тариф поддерживает до {max} человек в одном поиске даты'},
+  es:{range:'Tu plan permite buscar en un intervalo máximo de {max} días',people:'Tu plan admite hasta {max} personas por búsqueda de fecha'}
+};
+function dpEntitlementMessage(payload){
+  const code = String(payload?.code || payload?.error || '');
+  if (code !== 'datepick_range_limit' && code !== 'datepick_people_limit') return '';
+  let lang = 'th';
+  try { lang = localStorage.getItem('hk_locale') || document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th'; } catch(_) {}
+  lang = String(lang).toLowerCase().replace('_','-');
+  if (lang === 'zh-hans' || lang === 'zh-cn') lang = 'cn';
+  else if (lang.startsWith('zh')) lang = 'zh';
+  else lang = lang.split('-')[0];
+  const bag = DP_ENTITLEMENT_I18N[lang] || DP_ENTITLEMENT_I18N.en;
+  const template = code === 'datepick_range_limit' ? bag.range : bag.people;
+  return template.replace('{max}', String(Number(payload?.max) || 0));
+}
 async function performSearch(){
   const btn = document.getElementById('btnSearch');
   btn.disabled = true;
@@ -2895,8 +2919,9 @@ async function performSearch(){
       });
       const aj = await r.json();
       if (!r.ok) {
-        const entMsg = (aj && (aj.message || aj.error)) ? String(aj.message || aj.error) : '';
-        const isCap = aj && (aj.code === 'datepick_people_limit' || aj.error === 'datepick_people_limit');
+        const localizedEntMsg = dpEntitlementMessage(aj);
+        const entMsg = localizedEntMsg || ((aj && aj.message) ? String(aj.message) : '');
+        const isCap = !!localizedEntMsg;
         document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${isCap || entMsg ? escHtml(entMsg || _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')) : _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}${isCap ? ' · <a href="/pricing" style="color:var(--gold)">/pricing</a>' : ''}</p></div>`;
         console.warn('[datepick] /api/auspicious error:', aj.error || r.statusText);
         btn.disabled = false; btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');

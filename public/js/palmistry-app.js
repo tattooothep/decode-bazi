@@ -63,8 +63,8 @@
     "c.nav.picker":{th:"วางฤกษ์",en:"Picker",zh:"擇日",cn:"择日",vi:"Trạch Nhật",ja:"択日",ko:"택일",ru:"Дата",es:"Fecha"},
     "c.nav.fengshui":{th:"ทิศมงคล",en:"Direction",zh:"方位",cn:"方位",vi:"Hướng tốt",ja:"方位",ko:"방위",ru:"Направление",es:"Dirección"},
     "c.nav.luopan":{th:"หล่อแก",en:"Luopan",zh:"羅盤",cn:"罗盘",vi:"La Bàn",ja:"羅盤",ko:"나경",ru:"Лопань",es:"Luopan"},
-    "c.nav.palmistry":{th:"ลายมือ",en:"Palm",zh:"手相",cn:"手相",vi:"Chỉ tay",ja:"手相",ko:"손금",ru:"Ладонь",es:"Mano"},
     "rt.pdf":{th:"⬇ ดาวน์โหลด PDF",en:"⬇ Download PDF",zh:"⬇ 下載 PDF",cn:"⬇ 下载 PDF",vi:"⬇ Tải PDF",ja:"⬇ PDF をダウンロード",ko:"⬇ PDF 다운로드",ru:"⬇ Скачать PDF",es:"⬇ Descargar PDF"},
+    "rt.aiPdf":{th:"📄 รายงาน AI · 20 ยาม",en:"📄 AI report · 20 units",zh:"📄 AI 報告 · 20 時",cn:"📄 AI 报告 · 20 时",vi:"📄 Báo cáo AI · 20 đơn vị",ja:"📄 AIレポート · 20時",ko:"📄 AI 리포트 · 20단위",ru:"📄 AI-отчёт · 20 единиц",es:"📄 Informe IA · 20 unidades"},
     home:{th:"← กลับหน้าหลัก",en:"← Back home",zh:"← 返回首頁",cn:"← 返回首页",vi:"← Về trang chủ",ja:"← ホームへ",ko:"← 홈으로",ru:"← На главную",es:"← Volver al inicio"}
   };
 
@@ -119,7 +119,8 @@
     var lang = getLang();
     document.documentElement.lang = lang === "cn" ? "zh" : lang;
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
-      var v = I18N[el.getAttribute("data-i18n")];
+      var key = el.getAttribute("data-i18n");
+      var v = I18N[key] || (window.HK_I18N && window.HK_I18N[key]);
       if (v) el.textContent = pick(v, lang);
     });
     document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
