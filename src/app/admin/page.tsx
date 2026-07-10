@@ -7,7 +7,6 @@ import {
   Boxes,
   CircleDollarSign,
   FileSliders,
-  FlaskConical,
   Handshake,
   LibraryBig,
   MessageSquareText,
@@ -78,7 +77,7 @@ const CONTENT: { href: string; Icon: Icon; title: string; desc: string }[] = [
   { href: "/admin/formulas", Icon: FileSliders, title: "สูตร", desc: "สูตรหลักและ verification" },
   { href: "/admin/sifu-prompts", Icon: MessageSquareText, title: "Prompt ซินแส", desc: "persona และ guardrail" },
   { href: "/admin/paraphrase", Icon: BookOpenText, title: "Paraphrase", desc: "คลังข้อความอธิบาย" },
-  { href: "/admin/research", Icon: FlaskConical, title: "Research", desc: "ผู้ใช้ทดสอบ consent และ event" },
+  { href: "/admin/research", Icon: MessageSquareText, title: "มอนิเตอร์แชท AI", desc: "ดูบทสนทนาผู้ใช้กับ AI ทุกแหล่ง" },
 ];
 
 const fmtInt = (n: number) => Number(n || 0).toLocaleString("th-TH");
