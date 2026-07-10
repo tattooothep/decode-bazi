@@ -29,6 +29,7 @@
     "ctx.q":{th:"คำถามหลัก",en:"Main question",zh:"主要問題",cn:"主要问题",vi:"Câu hỏi chính",ja:"主な質問",ko:"주요 질문",ru:"Главный вопрос",es:"Pregunta principal"},
     "ctx.q_ph":{th:"งาน เงิน ความรัก หรือภาพรวมชีวิต",en:"career, money, love, or life overview",zh:"事業、財運、感情或人生總覽",cn:"事业、财运、感情或人生总览",vi:"sự nghiệp, tiền bạc, tình cảm hoặc tổng quan",ja:"仕事、金運、恋愛、人生全体",ko:"일, 돈, 사랑 또는 인생 전반",ru:"работа, деньги, любовь или обзор жизни",es:"trabajo, dinero, amor o panorama vital"},
     "up.btn":{th:"✋ วิเคราะห์ลายมือ",en:"✋ Read my palm",zh:"✋ 解讀掌紋",cn:"✋ 解读掌纹",vi:"✋ Xem chỉ tay",ja:"✋ 手相を読む",ko:"✋ 손금 보기",ru:"✋ Прочитать ладонь",es:"✋ Leer mi mano"},
+    "up.cost":{th:"AI คิดยามตามความยาวคำอ่าน · แสดงยอดจริงและคืนยามอัตโนมัติหากอ่านไม่สำเร็จ",en:"AI uses credits based on reading length · actual use is shown and failures are refunded automatically",zh:"AI 依解讀長度扣時 · 顯示實際用量，失敗自動退還",cn:"AI 按解读长度扣时 · 显示实际用量，失败自动退还",vi:"AI trừ lượt theo độ dài bài đọc · hiển thị mức thực tế và tự hoàn nếu thất bại",ja:"AIは鑑定文の長さに応じて消費 · 実使用量を表示し、失敗時は自動返還",ko:"AI는 해석 길이에 따라 차감 · 실제 사용량 표시, 실패 시 자동 환불",ru:"ИИ списывает по длине чтения · показывается факт, при сбое возврат автоматический",es:"La IA cobra según la longitud · muestra el uso real y reembolsa automáticamente si falla"},
     "up.privacy":{th:"🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก",en:"🔒 Photos are deleted right after reading, never stored · saved only if you choose",zh:"🔒 圖片解讀後立即刪除，不存伺服器 · 你選擇才會保存",cn:"🔒 图片解读后立即删除，不存服务器 · 你选择才会保存",vi:"🔒 Ảnh bị xóa ngay sau khi đọc, không lưu trên máy chủ · chỉ lưu nếu bạn chọn",ja:"🔒 画像は読み取り後すぐ削除、サーバー保存なし · 選択時のみ保存",ko:"🔒 사진은 판독 후 즉시 삭제, 서버 저장 안 함 · 선택 시에만 저장",ru:"🔒 Фото удаляются сразу после чтения, не хранятся · сохраняются только по вашему выбору",es:"🔒 Las fotos se borran tras la lectura, no se almacenan · se guardan solo si eliges"},
     "an.title":{th:"กำลังอ่านลายมือ",en:"Reading your palm",zh:"正在解讀掌紋",cn:"正在解读掌纹",vi:"Đang đọc chỉ tay",ja:"手相を読み取り中",ko:"손금 읽는 중",ru:"Читаем ладонь",es:"Leyendo tu mano"},
     "an.sub":{th:"เทียบเส้นกับคัมภีร์ 3 อารยธรรม",en:"Matching lines against 3 civilizations' canons",zh:"對照三大文明典籍",cn:"对照三大文明典籍",vi:"Đối chiếu với kinh điển 3 nền văn minh",ja:"三大文明の典籍と照合",ko:"3대 문명 경전과 대조",ru:"Сверяем с канонами 3 цивилизаций",es:"Cotejando con los cánones de 3 civilizaciones"},
@@ -255,7 +256,7 @@
   function analyze() {
     show("stAnalyzing");
     startProgress();
-    fetch("/api/palmistry/read", { method: "POST", body: buildForm() })
+    fetch("/api/palmistry/read", { method: "POST", body: buildForm(), credentials: "include" })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
         if (!res.ok || !res.j.ok || !res.j.job_id) { stopProgress(false); return onError(res.j); }
@@ -266,7 +267,9 @@
   }
   function onError(j) {
     var lang = getLang();
+    if (j && j.error === "auth_required") { location.href = "/signup?tab=login&next=/palmistry"; return; }
     var msg = (j && j.error === "parse_failed") ? pick(MSG.errBlur, lang)
+      : (j && j.error === "insufficient_hours") ? pick({th:"ยามไม่พอสำหรับเริ่มอ่านลายมือ",en:"Not enough credits to start the palm reading",zh:"時額不足，無法開始手相解讀",cn:"时额不足，无法开始手相解读",vi:"Không đủ lượt để bắt đầu xem tay",ja:"手相鑑定を開始するクレジットが不足しています",ko:"손금 판독을 시작할 크레딧이 부족합니다",ru:"Недостаточно единиц для чтения руки",es:"No hay créditos suficientes para iniciar la lectura"}, lang)
       : (j && j.message) ? j.message : pick(MSG.errNet, lang);
     show("stUpload");
     var box = $("stUpload"); var old = box.querySelector(".err"); if (old) old.remove();

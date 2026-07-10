@@ -7,7 +7,7 @@
 | | |
 |--|--|
 | `hour_balance` | **1000** (`FREE_SIGNUP_YAM`) |
-| `trial_ends_at` | **now + 30 days** (`TRIAL_DAYS`) |
+| `trial_ends_at` | **now + 14 days** (`TRIAL_DAYS`) |
 | `tier` | `free` (ไม่ปน premium จ่ายเงิน) |
 
 Channels: email JSON/form, phone, mobile, Google/LINE (is_new).
@@ -30,7 +30,7 @@ Channels: email JSON/form, phone, mobile, Google/LINE (is_new).
 | book_synthesis | no | no | no | yes |
 | fusion_suite | no | yes | yes | yes |
 | network_multi | no | no | no | yes |
-| luopan_vision_max | **0** | **1** | 50 | 999 |
+| luopan_vision_max | **0** | **1 ครั้งตลอด trial** | 10/วัน | 10/วัน |
 | datepick_max_people | **1** | **1** | 3 | 10 |
 | datepick_modules | 3 ชั้นพื้นฐาน | **6 ชั้น (~30%)** | ครบ | ครบ |
 | datepick_max_range_days | 30 | **45** | 90 | 365 |
@@ -44,8 +44,8 @@ Channels: email JSON/form, phone, mobile, Google/LINE (is_new).
 \* **Legacy free policy (no backfill trial):**
   - `trial_ends_at IS NULL` + not paid → `plan=free`, `legacy_free=true`, **house_limit=1**
   - post-trial free (`trial_ends_at` in the past) → `legacy_free=false`, **house_limit=0**
-  - **Do not** mass-set `trial_ends_at` for legacy users (would re-open 30-day trial)
-  - New signups always get `trial_ends_at = now+30d` via `applySignupProductDefaults`
+  - **Do not** mass-set `trial_ends_at` for legacy users (would open a new 14-day trial)
+  - New signups always get `trial_ends_at = now+14d` via `applySignupProductDefaults`
   - Admin may `extend_trial` case-by-case only
 
 ### Trial ~30% tool slices (datepick / luopan / qimen)

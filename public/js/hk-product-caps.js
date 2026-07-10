@@ -49,15 +49,15 @@
    */
   var I18N = {
     plan_trial: {
-      th: "ทดลอง 30 วัน",
-      en: "30-day trial",
-      zh: "30 天試用",
-      cn: "30 天试用",
-      vi: "Dùng thử 30 ngày",
-      ja: "30日トライアル",
-      ko: "30일 체험",
-      ru: "Пробный 30 дней",
-      es: "Prueba 30 días",
+      th: "ทดลอง 14 วัน",
+      en: "14-day trial",
+      zh: "14 天試用",
+      cn: "14 天试用",
+      vi: "Dùng thử 14 ngày",
+      ja: "14日トライアル",
+      ko: "14일 체험",
+      ru: "Пробный 14 дней",
+      es: "Prueba 14 días",
     },
     plan_premium: {
       th: "Premium",
@@ -115,15 +115,15 @@
       es: " · quedan {N} días",
     },
     trial_default: {
-      th: "ช่วงทดลอง · ใช้ได้ ~30% เครื่องมือหน้านี้",
-      en: "Trial · ~30% of tools on this page",
-      zh: "試用期 · 本頁約 30% 工具",
-      cn: "试用期 · 本页约 30% 工具",
-      vi: "Dùng thử · ~30% công cụ trên trang này",
-      ja: "トライアル · このページの約30%の機能",
-      ko: "체험 · 이 페이지 도구 약 30%",
-      ru: "Пробный · ~30% инструментов на странице",
-      es: "Prueba · ~30% de herramientas en esta página",
+      th: "ช่วงทดลอง 14 วัน · ฟีเจอร์ขั้นสูงจะแสดงพร้อมกุญแจและ Pass ที่ต้องใช้",
+      en: "14-day trial · advanced features stay visible with their required-pass lock",
+      zh: "14 天試用 · 進階功能保留顯示並標示所需通行證",
+      cn: "14 天试用 · 进阶功能保留显示并标示所需通行证",
+      vi: "Dùng thử 14 ngày · tính năng nâng cao vẫn hiện cùng khóa và pass cần dùng",
+      ja: "14日トライアル · 上位機能は必要なPassの鍵付きで表示",
+      ko: "14일 체험 · 심화 기능은 필요한 Pass 잠금과 함께 표시",
+      ru: "Пробный период 14 дней · расширенные функции видны с указанием нужного Pass",
+      es: "Prueba de 14 días · las funciones avanzadas siguen visibles con el Pass requerido",
     },
     free_default: {
       th: "โหมดฟรี · เครื่องมือจำกัด",
@@ -611,7 +611,7 @@
     else if (page === "luopan") applyLuopanLocks();
     else if (page === "qimen") {
       applyQimenLocks();
-    } else {
+    } else if (page !== "forecast" && page !== "palmistry") {
       /* generic banner if plan limited */
       injectBanner({});
     }

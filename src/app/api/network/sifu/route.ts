@@ -13,9 +13,11 @@ import { spawn } from "child_process";
 import { loadPromptMd } from "@/lib/prompt-md";
 import { getSession } from "@/lib/auth";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
+import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
+import { q1 } from "@/lib/db";
 
 /* 25 พ.ค. · persona ย้ายไป md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}} = ส่วน dynamic · fallback กันพัง */
-const PAIR_TPL_FALLBACK = `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ความสัมพันธ์ระหว่าง 2 คน · ตำรา子平真詮·三命通會\n{{BODY}}\nตอบสั้นกระชับ · เน้นหลักตำรา · อย่าโฆษณา · ตรงประเด็น:`;
+const PAIR_TPL_FALLBACK = `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ความสัมพันธ์ระหว่าง 2 คน · ตำรา子平真詮·三命通會\n{{BODY}}\nตอบเต็มโดยมีข้อสรุป หลักฐาน เหตุผล และคำแนะนำลงมือทำ · ห้ามลดเป็นคำตอบสั้นตามแพ็กเกจ:`;
 const TEAM_TPL_FALLBACK = `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ภาพรวมทีม/ครอบครัว/เครือข่ายของลูกค้า\n{{BODY}}\nตอบโดยยึด "ทีมที่เลือก" และ "กิจกรรม" เป็นหลัก · ถ้าต้องเสนอคนเพิ่ม ค่อยดูจากสมาชิกทั้งหมด · ให้บอกบทบาท ใครตัดสินใจ ใครเป็น challenger ใครควรถือรายละเอียด และจุดที่ต้องคุม:`;
 
 const CHILD_USER = "jarvis";
@@ -24,9 +26,9 @@ const TIMEOUT_MS = 60_000;
 type Msg = { role: "user" | "assistant"; content: string };
 
 const LANG_INSTR: Record<string, string> = {
-  th: "ตอบเป็นภาษาไทย · กระชับ · markdown bold/list/emoji · ตำราคลาสสิก 子平真詮·淵海子平·三命通會",
-  en: "Reply in English · concise · markdown bold/list/emoji · classical BaZi sources",
-  zh: "用简体中文回答 · 简洁直接 · markdown · 子平真詮·淵海子平·三命通會",
+  th: "ตอบเป็นภาษาไทยแบบเต็ม · มีข้อสรุป หลักฐาน เหตุผล และคำแนะนำ · markdown bold/list · ตำราคลาสสิก 子平真詮·淵海子平·三命通會",
+  en: "Reply in full English with conclusion, evidence, reasoning and actions · markdown · classical BaZi sources",
+  zh: "用简体中文完整回答，包含结论、依据、推理与行动建议 · markdown · 子平真詮·淵海子平·三命通會",
 };
 
 const PAIR_FOCUS: Record<string, string> = {
@@ -178,6 +180,14 @@ export async function POST(req: Request) {
   /* 1 มิ.ย. · AI เครือข่ายต้องสมัคร/login ก่อน (เจ้านายสั่ง · defense-in-depth เสริม spendHours) */
   const session = await getSession();
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  let reservedFeature: string | null = null;
+  const refundReservation = async () => {
+    const feature = reservedFeature;
+    if (!feature) return;
+    reservedFeature = null;
+    const { refundReservedHourForUser } = await import("@/lib/spend-hours");
+    await refundReservedHourForUser(session.userId, feature).catch(() => {});
+  };
   try {
     const reqT0 = Date.now();
     const body = await req.json().catch(() => ({}));
@@ -190,11 +200,39 @@ export async function POST(req: Request) {
 
     if (!message) return NextResponse.json({ error: "message required" }, { status: 400 });
 
+    const access = await getProductAccess(session.userId);
+    const networkCaps = access?.pages.network;
+    if (mode === "team" && !networkCaps?.team_ai) {
+      return NextResponse.json(entitlementDenied("network_team_ai_locked", { plan: access?.plan || "free" }), { status: 403 });
+    }
+    if (mode === "team" && Array.isArray(payload?.members) && payload.members.length > (networkCaps?.team_people || 0)) {
+      return NextResponse.json(entitlementDenied("network_team_people_limit", {
+        plan: access?.plan || "free",
+        max: networkCaps?.team_people || 0,
+      }), { status: 403 });
+    }
+    if (mode === "pair" && (!networkCaps || networkCaps.pair_ai === "locked")) {
+      return NextResponse.json(entitlementDenied("network_pair_ai_locked", { plan: access?.plan || "free" }), { status: 403 });
+    }
+    if (mode === "pair" && networkCaps?.pair_ai === "once") {
+      const used = await q1<{ n: number }>(
+        `SELECT GREATEST(0,
+           COUNT(*) FILTER (WHERE reason='spend_sifu_network_pair_pre') -
+           COUNT(*) FILTER (WHERE reason='refund_sifu_network_pair_pre')
+         )::int AS n FROM hour_transactions WHERE user_id=$1`,
+        [session.userId]
+      );
+      if ((Number(used?.n) || 0) >= 1) {
+        return NextResponse.json(entitlementDenied("network_pair_ai_trial_used", { plan: access?.plan, max: 1 }), { status: 403 });
+      }
+    }
+
     /* 📜 เครดิต: เช็คยามก่อน · หักตามจำนวนตัวอักษรคำตอบหลังได้คำตอบ (char-based ÷30) · 29 มิ.ย. */
-    const { reserveHourForUser, drainHoursByCharsForUser } = await import("@/lib/spend-hours");
+    const { reserveHourForUser, settleReservedHourByCharsForUser } = await import("@/lib/spend-hours");
     if (session?.userId) {
       const rsv = await reserveHourForUser(session.userId, `sifu_network_${mode}`);
       if (!rsv.ok) return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
+      reservedFeature = `sifu_network_${mode}`;
     }
 
     const prompt = mode === "team"
@@ -233,6 +271,7 @@ export async function POST(req: Request) {
           activeChild = child;
           const timer = setTimeout(() => {
             try { child.kill("SIGKILL"); } catch {}
+            void refundReservation();
             send("error", { error: "timeout" });
             safeClose();
           }, TIMEOUT_MS);
@@ -254,7 +293,9 @@ export async function POST(req: Request) {
             clearTimeout(timer);
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
-              if (session?.userId) drainHoursByCharsForUser(session.userId, full.length, `sifu_network_${mode}`).catch(() => {}); // หักยามตามตัวอักษร (stream · drain)
+              const hadReservation = !!reservedFeature;
+              reservedFeature = null;
+              if (hadReservation && session?.userId) settleReservedHourByCharsForUser(session.userId, full.length, `sifu_network_${mode}`).catch(() => {});
               logResearchAiMessageSafe({
                 session,
                 req,
@@ -273,6 +314,7 @@ export async function POST(req: Request) {
               });
               send("done", { ms, mode, model: "claude-max-cli", chars: full.length, cached: false });
             } else {
+              void refundReservation();
               send("error", { error: `claude exit ${code}`, ms });
             }
             safeClose();
@@ -281,6 +323,7 @@ export async function POST(req: Request) {
         cancel() {
           try { activeChild?.kill("SIGKILL"); } catch {}
           activeChild = null;
+          void refundReservation();
         },
       });
       return new Response(stream, {
@@ -293,7 +336,8 @@ export async function POST(req: Request) {
     }
 
     const reply = await runClaudeCli(prompt);
-    const sp = await drainHoursByCharsForUser(session?.userId || "", reply.length, `sifu_network_${mode}`);
+    reservedFeature = null;
+    const sp = await settleReservedHourByCharsForUser(session?.userId || "", reply.length, `sifu_network_${mode}`);
     const spent = sp.spent;
     const balanceAfter = sp.balance_after;
     logResearchAiMessageSafe({
@@ -316,6 +360,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ reply, mode, model: "claude-max-cli", balance_after: balanceAfter, spent });
   } catch (e: any) {
+    await refundReservation();
     console.error("[network/sifu]", e instanceof Error ? e.message : String(e));
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }

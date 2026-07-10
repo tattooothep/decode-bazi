@@ -55,7 +55,7 @@ export const PACKAGES: Record<string, PackageDef> = {
     yam: 500,
     tier: "premium",
     days: 30,
-    name: { th: "Premium รายเดือน", en: "Premium monthly", zh: "賢者月費" },
+    name: { th: "Premium Pass 30 วัน", en: "Premium 30-day pass", zh: "Premium 30 天通行證" },
   },
   premium_1y: {
     code: "premium_1y",
@@ -74,7 +74,7 @@ export const PACKAGES: Record<string, PackageDef> = {
     yam: 2000,
     tier: "master",
     days: 30,
-    name: { th: "Master รายเดือน", en: "Master monthly", zh: "大師月費" },
+    name: { th: "Master Pass 30 วัน", en: "Master 30-day pass", zh: "Master 30 天通行證" },
   },
   master_1y: {
     code: "master_1y",
@@ -93,6 +93,13 @@ export function getPackage(code: string | null | undefined): PackageDef | null {
   return PACKAGES[String(code)] || null;
 }
 
+/** Annual grants are retained for old-order fulfillment, but are not for sale. */
+export function getCheckoutPackage(code: string | null | undefined): PackageDef | null {
+  const pkg = getPackage(code);
+  if (!pkg || pkg.days === 365) return null;
+  return pkg;
+}
+
 /** จำนวนสตางค์ (satang) สำหรับ gateway (Stripe/Omise คิดหน่วยเล็กสุด) */
 export function thbToSatang(thb: number): number {
   return Math.round(Number(thb) * 100);
@@ -100,7 +107,7 @@ export function thbToSatang(thb: number): number {
 
 /** รายการแพ็กเกจสำหรับแสดงผลฝั่ง client (ไม่มีข้อมูลลับ) */
 export function listPackagesPublic() {
-  return Object.values(PACKAGES).map((p) => ({
+  return Object.values(PACKAGES).filter((p) => p.days !== 365).map((p) => ({
     code: p.code,
     key: p.code, // alias สำหรับ account.html
     kind: p.kind,

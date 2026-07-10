@@ -546,7 +546,7 @@ window.HK_I18N = {
   'ac.trial.left': { th:'เหลือ {N} วัน (ถึง {D})', en:'{N} days left (until {D})', zh:'剩 {N} 天（至 {D}）', cn:'剩 {N} 天（至 {D}）', vi:'Còn {N} ngày (đến {D})', ja:'残り {N} 日（{D} まで）', ko:'{N}일 남음 ({D}까지)', ru:'Осталось {N} дн. (до {D})', es:'Quedan {N} días (hasta {D})' },
   'ac.trial.ended': { th:'หมดช่วงทดลองแล้ว · โหมดฟรี', en:'Trial ended · free mode', zh:'試用已結束 · 免費模式', cn:'试用已结束 · 免费模式', vi:'Đã hết dùng thử · chế độ miễn phí', ja:'トライアル終了 · フリーモード', ko:'체험 종료 · 무료 모드', ru:'Пробный период закончен · бесплатный режим', es:'Prueba terminada · modo gratuito' },
   'ac.trial.none': { th:'—', en:'—', zh:'—', cn:'—', vi:'—', ja:'—', ko:'—', ru:'—', es:'—' },
-  'ac.plan.trial': { th:'ช่วงทดลอง 30 วัน', en:'30-day trial', zh:'30 天試用', cn:'30 天试用', vi:'Dùng thử 30 ngày', ja:'30日トライアル', ko:'30일 체험', ru:'Пробный 30 дней', es:'Prueba de 30 días' },
+  'ac.plan.trial': { th:'ช่วงทดลอง 14 วัน', en:'14-day trial', zh:'14 天試用', cn:'14 天试用', vi:'Dùng thử 14 ngày', ja:'14日トライアル', ko:'14일 체험', ru:'Пробный 14 дней', es:'Prueba de 14 días' },
   'ac.plan.free': { th:'โหมดฟรี (หลังทดลอง)', en:'Free mode (after trial)', zh:'免費模式（試用後）', cn:'免费模式（试用后）', vi:'Chế độ miễn phí (sau dùng thử)', ja:'フリーモード（トライアル後）', ko:'무료 모드 (체험 후)', ru:'Бесплатный режим (после пробного)', es:'Modo gratuito (tras la prueba)' },
   'ac.note.trial': { th:'ช่วงทดลอง: ใช้เครื่องมือกว้างขึ้น (~30% บนวางฤกษ์/หล่อแก/ฉีเหมิน) · ยามใช้ AI ได้ตามยอด · ดูแพ็กที่ /pricing', en:'Trial: wider tools (~30% on datepick/luopan/qimen) · AI uses your credit balance · plans at /pricing', zh:'試用期工具較完整（擇日／羅盤／奇門約 30%）· AI 依時額度 · 方案見 /pricing', cn:'试用期工具较完整（择日／罗盘／奇门约 30%）· AI 依时额度 · 方案见 /pricing', vi:'Dùng thử: công cụ rộng hơn (~30% chọn ngày/la bàn/Kỳ Môn) · AI dùng lượt còn lại · gói tại /pricing', ja:'トライアル：ツールが広がる（日取り／羅盤／奇門は約30%）· AIはクレジット残高 · /pricing', ko:'체험: 도구가 더 넓음(택일/나경/기문 약 30%) · AI는 잔여 크레딧 · /pricing', ru:'Пробный: шире инструменты (~30% datepick/luopan/qimen) · AI с баланса · /pricing', es:'Prueba: más herramientas (~30% en fechas/luopan/qimen) · AI con saldo · /pricing' },
   'ac.note.trialend': { th:'หมดทดลองแล้ว: ยังดูดวง/ปฏิทินได้ · ยามเหลือใช้ AI ต่อ · ของลึกอัปที่ /pricing', en:'Trial over: chart/calendar stay · remaining credits still work for AI · upgrade at /pricing', zh:'試用結束：仍可看命盤／曆 · 剩餘時可問 AI · 升級見 /pricing', cn:'试用结束：仍可看命盘／历 · 剩余时可问 AI · 升级见 /pricing', vi:'Hết dùng thử: vẫn xem lá số/lịch · lượt còn dùng AI · nâng cấp /pricing', ja:'トライアル終了：命盤／暦は利用可 · 残クレジットでAI · アップグレードは /pricing', ko:'체험 종료: 차트/달력 유지 · 남은 크레딧으로 AI · 업그레이드 /pricing', ru:'Пробный закончен: карта/календарь остаются · остаток на AI · апгрейд /pricing', es:'Prueba terminada: carta/calendario siguen · créditos para AI · upgrade en /pricing' },
@@ -628,13 +628,13 @@ const PACKAGE_META = {
     benefits:{ th:['เครดิตพื้นฐานสำหรับทดลอง flow','เหมาะกับบัญชีเริ่มต้น'], en:['Basic test credits','Best for a new account'], zh:['基礎測試額度','適合新帳戶'] }
   },
   topup_550:{
-    tag:{ th:'คุ้มสุด', en:'Best value', zh:'推薦' },
+    tag:{ th:'ยอดนิยม', en:'Popular', zh:'熱門' },
     name:{ th:'550 ยาม', en:'550 credits', zh:'550 時' },
     desc:{ th:'แพ็กหลักสำหรับใช้งานประจำ ยามคุ้มกว่าแพ็กเริ่มต้น', en:'Main recurring package with better unit price.', zh:'日常使用方案，單位更划算。' },
     benefits:{ th:['ได้ 550 ยาม','ต้นทุนต่อยามลดลง'], en:['550 credits','Lower unit cost'], zh:['550 時','單位成本較低'] }
   },
   topup_1700:{
-    tag:{ th:'งานหนัก', en:'Power', zh:'大量' },
+    tag:{ th:'คุ้มสุด', en:'Best value', zh:'最划算' },
     name:{ th:'1,700 ยาม', en:'1,700 credits', zh:'1,700 時' },
     desc:{ th:'เหมาะกับผู้ใช้หลายเครื่องมือ หรือมีทีม/เครือข่ายที่ต้องดูบ่อย', en:'For heavier use across tools, teams, or network work.', zh:'適合大量工具與人脈分析。' },
     benefits:{ th:['ได้ 1,700 ยาม','คุ้มสุดต่อยาม'], en:['1,700 credits','Best unit price'], zh:['1,700 時','最佳單位價'] }
@@ -760,7 +760,7 @@ function renderMe(){
   var plan = me.plan || (me.in_trial ? 'trial' : (me.sub_active ? (me.tier || 'free') : 'free'));
   var statusText = me.sub_active
     ? tx('ac.active','ใช้งานได้')
-    : (me.in_trial ? tx('ac.plan.trial','ช่วงทดลอง 30 วัน') : tx('ac.plan.free','โหมดฟรี (หลังทดลอง)'));
+    : (me.in_trial ? tx('ac.plan.trial','ช่วงทดลอง 14 วัน') : tx('ac.plan.free','โหมดฟรี (หลังทดลอง)'));
   if (me.sub_active && me.tier) statusText = pick(TIER_LABEL[me.tier], me.tier) + ' · ' + tx('ac.active','ใช้งานได้');
   document.getElementById('account-status').textContent = statusText;
   document.getElementById('tier-exp').textContent = me.sub_active ? fmtDate(me.sub_expires_at) : tx('ac.noexp','ไม่มีวันหมดอายุ');
@@ -834,9 +834,9 @@ function renderPackages(){
     return;
   }
   const hourPkgs = state.packages.filter(p => !p.tier);
-  const subPkgs = state.packages.filter(p => p.tier);
+  const subPkgs = state.packages.filter(p => p.tier && Number(p.days || 0) === 30);
   hourWrap.innerHTML = hourPkgs.map(p => packageCard(p, p.key === 'topup_550')).join('');
-  subWrap.innerHTML = subPkgs.map(p => packageCard(p, p.key === 'master_1y')).join('');
+  subWrap.innerHTML = subPkgs.map(p => packageCard(p, p.key === 'premium_1m')).join('');
 }
 function renderHistory(){
   const list = document.getElementById('history-list');

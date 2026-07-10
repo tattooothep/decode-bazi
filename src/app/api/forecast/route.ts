@@ -15,6 +15,12 @@ import { spawn } from "child_process";
 import { calcBazi } from "@/lib/bazi-calc";
 import { hexagramForStemBranch, HEXAGRAMS_64, TRIGRAMS_8 } from "@/lib/year-hexagram";
 import { q1 } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import {
+  reserveHourForUser,
+  settleReservedHourByCharsForUser,
+  refundReservedHourForUser,
+} from "@/lib/spend-hours";
 
 const TIMEOUT_MS = 60_000;
 const CHILD_USER = "jarvis";
@@ -305,9 +311,11 @@ async function runClaudeCli(prompt: string): Promise<string> {
 }
 
 export async function POST(req: Request) {
+  let reservedUserId: string | null = null;
   try {
     /* 1 มิ.ย. · AI พยากรณ์ต้องสมัคร/login ก่อน (กัน anonymous spawn Claude ฟรี · cost abuse) */
-    if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    const session = await getSession();
+    if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const body = await req.json().catch(() => ({}));
     const question: string = (body.question || "").trim();
     const method: Method = ["meihua", "qmdj", "coin"].includes(body.method) ? body.method : "qmdj";
@@ -335,26 +343,52 @@ export async function POST(req: Request) {
                             (typeof s?.changing_line === 'number' && s.changing_line > 0 ? [s.changing_line] : []);
     const yaoCi = (s?.ben_hex?.num && lines.length) ? await fetchYaoCi(s.ben_hex.num, lines) : [];
 
-    /* AI sifu — ใช้ deep + yao ci ในการตอบ */
+    /* Deterministic engine is free; reserve only before the optional AI layer. */
     let ai = "";
+    let aiBilling: Record<string, unknown> = { charged: 0, estimated: true };
+    const reserve = await reserveHourForUser(session.userId, "forecast_ai");
+    if (!reserve.ok) {
+      return NextResponse.json({
+        ok: true, method,
+        engine: result.engine,
+        ai: "",
+        ai_error: "insufficient_hours",
+        ai_billing: { charged: 0, balance: reserve.balance ?? 0 },
+        structured: result.structured,
+        ben_deep: benDeep,
+        bian_deep: bianDeep,
+        yao_ci: yaoCi,
+      });
+    }
+    reservedUserId = session.userId;
     try {
       const ctx = { ...result.structured as object, ben_deep: benDeep, bian_deep: bianDeep, yao_ci: yaoCi };
       ai = await runClaudeCli(buildPrompt(question, method, category, lang, ctx));
+      if (!ai) throw new Error("empty_reply");
+      const settled = await settleReservedHourByCharsForUser(session.userId, ai.length, "forecast_ai");
+      aiBilling = { charged: settled.spent, balance: settled.balance_after };
+      reservedUserId = null;
     } catch (e: unknown) {
       console.warn("[forecast] AI failed:", (e as Error).message);
-      ai = "(ระบบ AI ไม่ตอบกลับในเวลา · ลองอีกครั้งสักครู่)";
+      await refundReservedHourForUser(session.userId, "forecast_ai").catch(() => {});
+      reservedUserId = null;
+      ai = "";
+      aiBilling = { charged: 0, refunded: 1 };
     }
 
     return NextResponse.json({
       ok: true, method,
       engine: result.engine,
       ai,
+      ai_error: ai ? null : "ai_unavailable",
+      ai_billing: aiBilling,
       structured: result.structured,
       ben_deep: benDeep,  // 16 พ.ค. v2: deep interpretation สำหรับ UI tooltip
       bian_deep: bianDeep,
       yao_ci: yaoCi,      // 16 พ.ค. v3: 384 爻辭 ของเส้นที่เปลี่ยน
     });
   } catch (e: unknown) {
+    if (reservedUserId) await refundReservedHourForUser(reservedUserId, "forecast_ai").catch(() => {});
     const err = e as Error;
     console.error("[forecast] failed:", err);
     return NextResponse.json({ error: "internal_error" }, { status: 500 });

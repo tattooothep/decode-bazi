@@ -1,21 +1,27 @@
 /**
  * POST /api/tianxing/sifu · ซินแสสังเคราะห์ฤกษ์เชิงลึกจากผังดาวจริง (七政四餘)
- * login-gated + หักยาม (reserveHour + drainHoursByChars ÷30) เหมือน luopan/vision
+ * login-gated + reserve/settle/refund ยามตามคำตอบ เหมือน luopan/vision
  * AI สรุป "ภาษาทีหลัง" จากผล engine deterministic (กฎ9 · ห้ามให้ AI เดาตำแหน่งดาว)
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { reserveHour, drainHoursByChars } from "@/lib/spend-hours";
+import { reserveHour, settleReservedHourByChars, refundReservedHour } from "@/lib/spend-hours";
 import { tianxingReading } from "@/lib/tianxing";
+import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
 
 export const runtime = "nodejs";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
 
 export async function POST(req: NextRequest) {
+  let reserved = false;
   try {
     const s = await getSession();
     if (!s?.orgId) return NextResponse.json({ ok: false, error: "Login required" }, { status: 401 });
+    const access = await getProductAccess(s.userId);
+    if (!access?.pages.datepick.sifu) {
+      return NextResponse.json(entitlementDenied("tianxing_sifu_locked", { plan: access?.plan || "free" }), { status: 403 });
+    }
 
     const b = await req.json().catch(() => ({} as Record<string, unknown>));
     const dt = new Date(String(b.dtUTC || ""));
@@ -33,6 +39,7 @@ export async function POST(req: NextRequest) {
     // จองยาม atomic ก่อนเรียก AI
     const rsv = await reserveHour("tianxing_sifu");
     if (!rsv.ok) return NextResponse.json({ ok: false, error: "insufficient_hours", credit_yam: 0 }, { status: 402 });
+    reserved = true;
 
     const starLines = r.stars.map((x) => `${x.zh}(${x.th}) ราศี${x.signTh} ${x.deg}° 宿${x.shu}${x.shuDeg}° ${x.status}${x.retro ? " ถอย" : ""}`).join(" · ");
     const facts = [
@@ -58,14 +65,22 @@ export async function POST(req: NextRequest) {
     });
     if (!resp.ok) {
       const t = await resp.text().catch(() => "");
+      await refundReservedHour("tianxing_sifu").catch(() => {});
+      reserved = false;
       return NextResponse.json({ ok: false, error: `ai ${resp.status}`, detail: t.slice(0, 150) }, { status: 502 });
     }
     const j = await resp.json();
     const reply = String(j?.choices?.[0]?.message?.content || "").trim();
-    if (!reply) return NextResponse.json({ ok: false, error: "empty_reply" }, { status: 502 });
-    const sp = await drainHoursByChars(reply.length, "tianxing_sifu");
+    if (!reply) {
+      await refundReservedHour("tianxing_sifu").catch(() => {});
+      reserved = false;
+      return NextResponse.json({ ok: false, error: "empty_reply" }, { status: 502 });
+    }
+    const sp = await settleReservedHourByChars(reply.length, "tianxing_sifu");
+    reserved = false;
     return NextResponse.json({ ok: true, reply, model: MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after });
   } catch (e) {
+    if (reserved) await refundReservedHour("tianxing_sifu").catch(() => {});
     console.error("[tianxing/sifu]", e instanceof Error ? e.message : String(e));
     return NextResponse.json({ ok: false, error: "tianxing_sifu_failed" }, { status: 500 });
   }

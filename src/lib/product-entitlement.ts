@@ -1,13 +1,22 @@
 /**
- * สิทธิ์ผลิตภัณฑ์ · trial 30 วัน / free / premium / master
+ * สิทธิ์ผลิตภัณฑ์ · trial 14 วัน / free / premium / master
  * ศูนย์กลางเกตความสามารถ (SoT เดียว · routes + me + docs อ่านจากนี่)
  *
  * Trial tools ~30% บน datepick / luopan / qimen (capability slice · หน้าเปิดได้)
  */
 import { q1 } from "@/lib/db";
+import {
+  PRODUCT_CONTRACT_VERSION,
+  PRODUCT_PAGE_ENTITLEMENTS,
+  type ProductPageEntitlements,
+  type ProductPlan,
+} from "@/lib/product-page-entitlements";
+
+export { PRODUCT_CONTRACT_VERSION, PRODUCT_PAGE_ENTITLEMENTS };
+export type { ProductPlan };
 
 export const FREE_SIGNUP_YAM = 1000;
-export const TRIAL_DAYS = 30;
+export const TRIAL_DAYS = 14;
 
 /** ตรง /api/book + public/book.html */
 export const BOOK_SCIENCE_YAM = 18;
@@ -65,8 +74,6 @@ export type LuopanMode = "core" | "pro" | "full";
 export type LuopanPins = "basic" | "full";
 export type QimenDetailMode = "beginner" | "pro";
 
-export type ProductPlan = "trial" | "free" | "premium" | "master";
-
 export type ProductAccess = {
   plan: ProductPlan;
   tier: string;
@@ -103,6 +110,8 @@ export type ProductAccess = {
   qimen_detail_mode: QimenDetailMode;
   qimen_search: boolean;
   qimen_sifu: boolean;
+  /** สิทธิ์รายหน้า v2 - payload เดียวกันสำหรับ web/mobile และ API gates */
+  pages: ProductPageEntitlements;
 };
 
 export type ProductUserRow = {
@@ -164,8 +173,8 @@ export function deriveProductAccess(row: ProductUserRow, nowMs: number = Date.no
   const network_multi = paidMaster;
 
   let luopan_vision_max = 0;
-  if (paidMaster) luopan_vision_max = 999;
-  else if (paidPremium) luopan_vision_max = 50;
+  if (paidMaster) luopan_vision_max = 10;
+  else if (paidPremium) luopan_vision_max = 10;
   else if (inTrial) luopan_vision_max = 1;
 
   let datepick_max_people = 1;
@@ -239,6 +248,7 @@ export function deriveProductAccess(row: ProductUserRow, nowMs: number = Date.no
     qimen_detail_mode,
     qimen_search,
     qimen_sifu,
+    pages: PRODUCT_PAGE_ENTITLEMENTS[plan],
   };
 }
 
@@ -269,11 +279,15 @@ export function filterDatepickModules(
 }
 
 /** นับการใช้ Vision จริง (reserve pre เท่านั้น) */
-export async function countLuopanVisionUses(userId: string): Promise<number> {
+export async function countLuopanVisionUses(userId: string, daily = false): Promise<number> {
   const used = await q1<{ n: number }>(
-    `SELECT COUNT(*)::int AS n FROM hour_transactions
-      WHERE user_id=$1 AND reason = $2`,
-    [userId, LUOPAN_VISION_USAGE_REASON]
+    `SELECT GREATEST(0,
+       COUNT(*) FILTER (WHERE reason = $2) -
+       COUNT(*) FILTER (WHERE reason = $3)
+     )::int AS n
+     FROM hour_transactions WHERE user_id=$1
+       AND ($4::boolean=false OR created_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Bangkok') AT TIME ZONE 'Asia/Bangkok')`,
+    [userId, LUOPAN_VISION_USAGE_REASON, "refund_luopan_vision_pre", daily]
   ).catch(() => ({ n: 0 }));
   return Number(used?.n) || 0;
 }
@@ -306,6 +320,7 @@ export function entitlementDenied(
 /** payload caps สำหรับ /api/account/me (web + mobile) */
 export function productAccessToCaps(access: ProductAccess) {
   return {
+    contract_version: PRODUCT_CONTRACT_VERSION,
     house_limit: access.house_limit,
     legacy_free: !!access.legacy_free,
     fusion_max_sciences: access.fusion_max_sciences,
@@ -324,5 +339,6 @@ export function productAccessToCaps(access: ProductAccess) {
     qimen_detail_mode: access.qimen_detail_mode,
     qimen_search: access.qimen_search,
     qimen_sifu: access.qimen_sifu,
+    pages: access.pages,
   };
 }

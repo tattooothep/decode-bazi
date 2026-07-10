@@ -77,7 +77,7 @@ Platform may change free signup yam, trial days, and capability caps via `src/li
 3. No change to `fulfillOrder` commission hook order
 4. No change to checkout prices/yam in `payment/packages.ts` without dual review
 
-Free 1000 yam + 30-day trial is **not** a payable conversion event for affiliates.
+Free 1000 yam + 14-day trial is **not** a payable conversion event for affiliates.
 
 ## Contact
 

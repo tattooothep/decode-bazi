@@ -11,7 +11,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q1 } from "@/lib/db";
-import { getPackage, listPackagesPublic } from "@/lib/payment/packages";
+import { getCheckoutPackage, listPackagesPublic } from "@/lib/payment/packages";
 import { createStripeCheckout } from "@/lib/payment/stripe";
 import { createOmiseCharge } from "@/lib/payment/omise";
 import { markCouponUsed, resolveCheckoutPricing } from "@/lib/payment/coupons";
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
   const pricing = await resolveCheckoutPricing(
     String(body.packageCode || ""),
     body.couponCode || body.coupon,
-    getPackage
+    getCheckoutPackage
   );
   if (!pricing.ok) {
     return NextResponse.json(

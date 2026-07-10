@@ -6,7 +6,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { reserveHour, drainHoursByChars } from "@/lib/spend-hours";
+import { reserveHourForUser, settleReservedHourByCharsForUser, refundReservedHourForUser } from "@/lib/spend-hours";
 import { getProductAccess, entitlementDenied, countLuopanVisionUses } from "@/lib/product-entitlement";
 
 export const runtime = "nodejs";
@@ -17,6 +17,7 @@ const MAX_IMAGE_CHARS = 8_000_000; // ~6MB base64 · กัน payload ใหญ
 const MAX_Q = 600;
 
 export async function POST(req: NextRequest) {
+  let reservedUserId: string | null = null;
   try {
     const s = await getSession();
     if (!s?.orgId) {
@@ -59,7 +60,8 @@ export async function POST(req: NextRequest) {
       );
     }
     // นับเฉพาะ reserve pre 1 ครั้ง/รอบ (ไม่นับ drain ตามตัวอักษรซ้ำ)
-    const usedN = await countLuopanVisionUses(s.userId);
+    const dailyLimit = access?.plan === "premium" || access?.plan === "master";
+    const usedN = await countLuopanVisionUses(s.userId, dailyLimit);
     if (usedN >= maxVis) {
       return NextResponse.json(
         {
@@ -68,7 +70,7 @@ export async function POST(req: NextRequest) {
             message:
               maxVis === 1
                 ? "ช่วงทดลองใช้อัปแปลนถาม AI ได้ 1 ครั้งแล้ว · อัปเกรดที่ /pricing"
-                : `ใช้อัปแปลนถาม AI ครบโควตา (${maxVis}) แล้ว`,
+                : `ใช้อัปแปลนถาม AI ครบโควตาวันนี้ (${maxVis}/วัน) แล้ว`,
             used: usedN,
             max: maxVis,
             plan: access?.plan,
@@ -79,10 +81,11 @@ export async function POST(req: NextRequest) {
     }
 
     // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนเรียก AI (บล็อกยอด 0 + กัน race) · ใช้ users.hour_balance
-    const rsv = await reserveHour("luopan_vision");
+    const rsv = await reserveHourForUser(s.userId, "luopan_vision");
     if (!rsv.ok) {
       return NextResponse.json({ ok: false, error: "insufficient_hours", credit_yam: 0 }, { status: 402 });
     }
+    reservedUserId = s.userId;
 
     const sysText = [
       "คุณคือซินแสฮวงจุ้ยที่กำลังดูภาพ 'แปลนบ้าน' ที่ผู้ใช้แนบมา ตอบสั้น กระชับ เป็นภาษาไทย",
@@ -119,17 +122,22 @@ export async function POST(req: NextRequest) {
 
     if (!r.ok) {
       const t = await r.text().catch(() => "");
+      await refundReservedHourForUser(s.userId, "luopan_vision").catch(() => {});
+      reservedUserId = null;
       return NextResponse.json({ ok: false, error: `vision ${r.status}`, detail: t.slice(0, 200) }, { status: 502 });
     }
     const j = await r.json();
     const reply = String(j?.choices?.[0]?.message?.content || "").trim();
     if (!reply) {
+      await refundReservedHourForUser(s.userId, "luopan_vision").catch(() => {});
+      reservedUserId = null;
       return NextResponse.json({ ok: false, error: "empty_reply" }, { status: 502 });
     }
-    // หักยามตามจำนวนตัวอักษรคำตอบ (drain · ดูดเท่าที่มีถึง 0)
-    const sp = await drainHoursByChars(reply.length, "luopan_vision");
+    const sp = await settleReservedHourByCharsForUser(s.userId, reply.length, "luopan_vision");
+    reservedUserId = null;
     return NextResponse.json({ ok: true, reply, model: VISION_MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after });
   } catch (e) {
+    if (reservedUserId) await refundReservedHourForUser(reservedUserId, "luopan_vision").catch(() => {});
     console.error("[luopan/vision]", e instanceof Error ? e.message : String(e));
     return NextResponse.json({ ok: false, error: "vision_failed" }, { status: 500 });
   }

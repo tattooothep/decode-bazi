@@ -149,7 +149,7 @@ async function main() {
   assert(master.book_synthesis === true, "master book synth");
 
   assert(FREE_SIGNUP_YAM === 1000, "FREE_SIGNUP_YAM=1000");
-  assert(TRIAL_DAYS === 30, "TRIAL_DAYS=30");
+  assert(TRIAL_DAYS === 14, "TRIAL_DAYS=14");
   assert(BOOK_SCIENCE_YAM === 18 && BOOK_SYNTHESIS_YAM === 10, "book yam 18+10");
   assert(LUOPAN_VISION_USAGE_REASON === "spend_luopan_vision_pre", "vision reason constant");
 
@@ -259,7 +259,7 @@ async function main() {
     assert(row.trial_ends_at, "DB trial_ends_at set");
     const days =
       (new Date(row.trial_ends_at).getTime() - Date.now()) / 86400000;
-    assert(days > 29 && days < 31.5, "trial ~30d (got " + days.toFixed(2) + ")");
+    assert(days > 13 && days < 15.5, "trial ~14d (got " + days.toFixed(2) + ")");
     const mem = await c.query(`SELECT 1 FROM org_members WHERE user_id=$1`, [userId]);
     assert(mem.rows.length >= 1, "org_members row exists");
 

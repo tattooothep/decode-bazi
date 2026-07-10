@@ -16,7 +16,8 @@ import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
 import { getSession, type Session } from "@/lib/auth";
-import { reserveHourForUser, drainHoursByCharsForUser } from "@/lib/spend-hours";
+import { reserveHourForUser, settleReservedHourByCharsForUser, refundReservedHourForUser } from "@/lib/spend-hours";
+import { getProductAccess, entitlementDenied, type ProductAccess } from "@/lib/product-entitlement";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
@@ -2386,8 +2387,41 @@ async function streamOpenRouter(prompt: string, onText: (text: string) => boolea
   }
 }
 
+async function sifuProfileAllowed(access: ProductAccess | null, orgId: string | null, profileId: string): Promise<boolean> {
+  if (!orgId || !profileId) return false;
+  const selected = await q1<{ is_self: boolean }>(
+    `SELECT (relationship_type IS NULL OR btrim(relationship_type)='') AS is_self
+       FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+    [profileId, orgId]
+  );
+  if (!selected) return false;
+  if (selected.is_self) return true;
+  const max = Math.max(0, access?.pages.sifu.other_profile_contexts || 1);
+  const allowed = await q<{ id: string }>(
+    `SELECT id FROM profiles
+      WHERE org_id=$1 AND is_archived=false
+        AND NOT (relationship_type IS NULL OR btrim(relationship_type)='')
+      ORDER BY created_at,id LIMIT $2`,
+    [orgId, max]
+  );
+  return allowed.some((row) => row.id === profileId);
+}
+
 export async function POST(req: Request) {
   const reqT0 = Date.now();
+  let reservedUserId: string | null = null;
+  const refundBilling = async () => {
+    const userId = reservedUserId;
+    if (!userId) return;
+    reservedUserId = null;
+    await refundReservedHourForUser(userId, "sifu_master").catch(() => {});
+  };
+  const settleBilling = async (chars: number) => {
+    const userId = reservedUserId;
+    if (!userId) return;
+    reservedUserId = null;
+    await settleReservedHourByCharsForUser(userId, chars, "sifu_master").catch(() => {});
+  };
   try {
     const parsedBody = await req.json().catch(() => ({}));
     const body = parsedBody && typeof parsedBody === "object" && !Array.isArray(parsedBody)
@@ -2419,8 +2453,9 @@ export async function POST(req: Request) {
     const session = await getSession();
     /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
-    if (sifuModel === "gemini-api" && !isFusionInternalCall) {
-      return NextResponse.json({ error: "model_not_available_on_master" }, { status: 400 });
+    const productAccess = await getProductAccess(session.userId);
+    if (sifuModel === "gemini-api" && !isFusionInternalCall && !productAccess?.pages.sifu.model_choice) {
+      return NextResponse.json(entitlementDenied("sifu_model_choice", { plan: productAccess?.plan || "free" }), { status: 403 });
     }
     /* P1 kill switches (app_settings) — admin AI cost page · not affiliate */
     if (!isFusionInternalCall) {
@@ -2463,17 +2498,17 @@ export async function POST(req: Request) {
       }
     }
 
-    // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนสร้างคำตอบ (บล็อกยอด 0 + กัน race) · ข้าม fusion-internal · หักจริงตามตัวอักษรหลังได้คำตอบ
-    if (!isFusionInternalCall && session?.userId) {
-      const rsv = await reserveHourForUser(session.userId, "sifu_master");
-      if (!rsv.ok) return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
-    }
-
     if (mode !== "intro" && !profileId) {
       return NextResponse.json({ error: "profile_required" }, { status: 400 });
     }
     if (body.profileId && !profileId) {
       return NextResponse.json({ error: "invalid_profileId" }, { status: 400 });
+    }
+    if (profileId && !(await sifuProfileAllowed(productAccess, orgId, profileId))) {
+      return NextResponse.json(entitlementDenied("sifu_profile_context_limit", {
+        plan: productAccess?.plan || "free",
+        max: productAccess?.pages.sifu.other_profile_contexts || 1,
+      }), { status: 403 });
     }
     const historyProfileIds = Array.isArray(body.historyProfileIds)
       ? body.historyProfileIds.map(cleanProfileId).filter((x: string | null): x is string => !!x)
@@ -2502,6 +2537,11 @@ export async function POST(req: Request) {
     const pillarLockFromCtx = mode !== "intro" ? firstContextLine(ctx, "PILLAR LOCK") : null;
     if (mode !== "intro" && (ctx.startsWith("(ไม่") || !expectedDMFromCtx || !factLockFromCtx || !pillarLockFromCtx)) {
       return NextResponse.json({ error: "profile_context_unlocked" }, { status: ctx.startsWith("(ไม่") ? 404 : 500 });
+    }
+    if (!isFusionInternalCall && session?.userId) {
+      const rsv = await reserveHourForUser(session.userId, "sifu_master");
+      if (!rsv.ok) return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
+      reservedUserId = session.userId;
     }
     /* 💾 Cache หลัง build context เท่านั้น: profile/dayBoundary/packet เปลี่ยน = ctx hash เปลี่ยน = ไม่คืนคำตอบดวงเก่า */
     const key = cacheKey({ profileId: profileId || undefined, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
@@ -2575,6 +2615,7 @@ export async function POST(req: Request) {
         route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
         promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
       });
+      reservedUserId = null; // cached answer costs the one-yam reservation only
       return NextResponse.json({ ...cached, reply: safeCachedReply, cached: true, key: key.slice(0, 8) });
       }
     }
@@ -2653,14 +2694,14 @@ export async function POST(req: Request) {
           });
           /* 2 มิ.ย. · เข้าคิว slot ก่อน spawn · ถ้าเต็มเกิน MAX_QUEUE → เด้ง safety · heartbeat ข้างบนส่ง ping ระหว่างรอคิว user จึงไม่เห็นค้าง */
           const _slotOk = await acquireSifuSlot();
-          if (!_slotOk) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
+          if (!_slotOk) { void refundBilling(); send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
           let _slotReleased = false;
           const releaseSlotOnce = () => { if (!_slotReleased) { _slotReleased = true; releaseSifuSlot(); } };
           let child: ReturnType<typeof spawnSifuStreaming>;
           try { child = spawnSifuStreaming(prompt, sifuModel); }
           catch (e) {
             releaseSlotOnce();
-            send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
+            void refundBilling(); send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
             safeClose();
             return;
           }
@@ -2668,7 +2709,7 @@ export async function POST(req: Request) {
           child.on("error", releaseSlotOnce);
           const killTimer = setTimeout(() => {
             try { child.kill("SIGKILL"); } catch {}
-            send("error", { error: "timeout" });
+            void refundBilling(); send("error", { error: "timeout" });
             safeClose();
           }, TIMEOUT_MS);
 
@@ -2814,18 +2855,18 @@ export async function POST(req: Request) {
             releaseSlotOnce();
             activeChild = null;
             clearTimeout(killTimer);
-            if (idRejected) { safeClose(); return; } // ตัดไปแล้วจาก identity-lock
+            if (idRejected) { void refundBilling(); safeClose(); return; } // ตัดไปแล้วจาก identity-lock
             const ms = Date.now() - t0;
             if (expectedDM && !idChecked && idBuf) {
               const rest = releaseStreamGuard("close");
               if (rest !== null) emitVisible(rest);
             }
             flushVisible();
-            if (idRejected) { safeClose(); return; }
+            if (idRejected) { void refundBilling(); safeClose(); return; }
             if (expectedDM && !idChecked) { // AI ตอบจบโดยไม่มี text ให้ปล่อย
               console.error(`[sifu] stream guard empty on close (expect=${expectedDM})`);
               send("error", { error: "identity_mismatch", reason: "no_visible_text" });
-              safeClose(); return;
+              void refundBilling(); safeClose(); return;
             }
             if (code === 0 && full.trim()) {
               let finalReply = full.trim(); // full = strip ID/TRACE แล้ว (idBuf ไม่เข้า full)
@@ -2835,7 +2876,7 @@ export async function POST(req: Request) {
               if (!finalFactClaim.ok) {
                 console.error(`[sifu] stream fact claim FAIL on close (${finalFactClaim.violations.map((v) => v.code).join(",")})`);
                 send("error", { error: "fact_claim_mismatch", violations: finalFactClaim.violations });
-                safeClose();
+                void refundBilling(); safeClose();
                 return;
               }
               if (!finalCritical.ok) {
@@ -2851,7 +2892,7 @@ export async function POST(req: Request) {
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
               if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
-              if (!isFusionInternalCall && session?.userId) drainHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (POST stream)
+              if (!isFusionInternalCall && session?.userId) void settleBilling(payload.reply.length);
               scheduleSifuSourceShadowAudit({
                 session,
                 req,
@@ -2898,6 +2939,7 @@ export async function POST(req: Request) {
                 promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
               });
             } else {
+              void refundBilling();
               send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}`, ms });
               sifuTimingLog("stream-error", {
                 route: "POST", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
@@ -3071,9 +3113,10 @@ export async function POST(req: Request) {
       route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
     });
-    if (!isFusionInternalCall && session?.userId) drainHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (non-stream)
+    if (!isFusionInternalCall && session?.userId) await settleBilling(payload.reply.length);
     return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
   } catch (e: unknown) {
+    await refundBilling();
     const err = e as Error;
     console.error("[sifu] error:", err);
     return NextResponse.json({ error: err.message === "aborted" || String(err.message || "").startsWith("sifu_busy") ? err.message : "internal_error" }, { status: 500 });
@@ -3112,8 +3155,22 @@ export async function GET(req: Request) {
   const session = await getSession();
   /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
-  if (sifuModel === "gemini-api" && !isTrustedFusionInternalCall(req)) {
-    return NextResponse.json({ error: "model_not_available_on_master" }, { status: 400 });
+  let reservedUserIdG: string | null = null;
+  const refundBillingG = async () => {
+    const userId = reservedUserIdG;
+    if (!userId) return;
+    reservedUserIdG = null;
+    await refundReservedHourForUser(userId, "sifu_master").catch(() => {});
+  };
+  const settleBillingG = async (chars: number) => {
+    const userId = reservedUserIdG;
+    if (!userId) return;
+    reservedUserIdG = null;
+    await settleReservedHourByCharsForUser(userId, chars, "sifu_master").catch(() => {});
+  };
+  const productAccess = await getProductAccess(session.userId);
+  if (sifuModel === "gemini-api" && !isTrustedFusionInternalCall(req) && !productAccess?.pages.sifu.model_choice) {
+    return NextResponse.json(entitlementDenied("sifu_model_choice", { plan: productAccess?.plan || "free" }), { status: 403 });
   }
   const orgId = session?.orgId ?? null;
   if (mode !== "intro" && !profileId) {
@@ -3122,17 +3179,17 @@ export async function GET(req: Request) {
   if (rawProfileId && !profileId) {
     return NextResponse.json({ error: "invalid_profileId" }, { status: 400 });
   }
+  if (profileId && !(await sifuProfileAllowed(productAccess, orgId, profileId))) {
+    return NextResponse.json(entitlementDenied("sifu_profile_context_limit", {
+      plan: productAccess?.plan || "free",
+      max: productAccess?.pages.sifu.other_profile_contexts || 1,
+    }), { status: 403 });
+  }
   if (mode === "intro" && !profileId) {
     const birthParams = parseIntroBirthParams(url);
     const noProfileReply = !birthParams && LANG_ANSWER_DIRECTIVE[lang] ? localizedIntroNeedsProfile(lang) : null;
     if (noProfileReply) return streamStaticSifuReply(noProfileReply);
   }
-  // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนเปิด stream (บล็อกยอด 0 + กัน race) · GET = แชทหลัก (EventSource)
-  if (session?.userId) {
-    const rsv = await reserveHourForUser(session.userId, "sifu_master");
-    if (!rsv.ok) return new Response(JSON.stringify({ error: "insufficient_hours" }), { status: 402, headers: { "Content-Type": "application/json" } });
-  }
-
   const ajekVersion = buildSifuRuleVersion(sifuModel);
   const dayKey = await getDayPillarKey();
   const ctxT0 = Date.now();
@@ -3163,6 +3220,9 @@ export async function GET(req: Request) {
   if (mode !== "intro" && (ctx.startsWith("(ไม่") || !extractExpectedDM(ctx) || !firstContextLine(ctx, "FACT LOCK:") || !firstContextLine(ctx, "PILLAR LOCK"))) {
     return NextResponse.json({ error: "profile_context_unlocked" }, { status: ctx.startsWith("(ไม่") ? 404 : 500 });
   }
+  const rsv = await reserveHourForUser(session.userId, "sifu_master");
+  if (!rsv.ok) return new Response(JSON.stringify({ error: "insufficient_hours" }), { status: 402, headers: { "Content-Type": "application/json" } });
+  reservedUserIdG = session.userId;
   const key = cacheKey({ profileId: profileId || undefined, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
   const cached = useCache ? await getCachedReply(key) : null;
@@ -3256,6 +3316,7 @@ export async function GET(req: Request) {
         send("meta", { cached: true, key: key.slice(0, 8), timing: { ctxMs, promptMs: auditPromptMs, promptChars: auditPrompt.length, contextCache } });
         send("chunk", { text: safeReply });
         send("done", { ms: 0, model: cached.model, cached: true });
+        reservedUserIdG = null; // cached answer costs the one-yam reservation only
         sifuTimingLog("stream-cache-hit", {
           route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
           promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
@@ -3444,14 +3505,14 @@ export async function GET(req: Request) {
 
       /* 2 มิ.ย. · เข้าคิว slot ก่อน spawn (เหมือน POST · heartbeat ส่ง ping ระหว่างรอ) */
       const _slotOkG = await acquireSifuSlot();
-      if (!_slotOkG) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
+      if (!_slotOkG) { void refundBillingG(); send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
       let _slotReleasedG = false;
       const releaseSlotOnceG = () => { if (!_slotReleasedG) { _slotReleasedG = true; releaseSifuSlot(); } };
       let c: ReturnType<typeof spawnSifuStreaming>;
       try { c = spawnSifuStreaming(prompt, sifuModel); }
       catch (e) {
         releaseSlotOnceG();
-        send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
+        void refundBillingG(); send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
         safeClose();
         return;
       }
@@ -3489,7 +3550,7 @@ export async function GET(req: Request) {
 
       const killTimer = setTimeout(() => {
         try { c.kill("SIGKILL"); } catch {}
-        send("error", { error: "timeout" });
+        void refundBillingG(); send("error", { error: "timeout" });
         safeClose();
       }, TIMEOUT_MS);
 
@@ -3635,15 +3696,15 @@ export async function GET(req: Request) {
         releaseSlotOnceG();
         clearTimeout(killTimer);
         clearGuardTimer();
-        if (idRejected) { safeClose(); return; }
+        if (idRejected) { void refundBillingG(); safeClose(); return; }
         const ms = Date.now() - t0;
         if (expectedDM && !idChecked && idBuf) {
           const rest = releaseStreamGuardG("close");
           if (rest !== null) emitVisibleG(rest);
         }
         flushVisibleG();
-        if (idRejected) { safeClose(); return; }
-        if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_visible_text" }); safeClose(); return; }
+        if (idRejected) { void refundBillingG(); safeClose(); return; }
+        if (expectedDM && !idChecked) { void refundBillingG(); send("error", { error: "identity_mismatch", reason: "no_visible_text" }); safeClose(); return; }
         if (code === 0 && full.trim()) {
           let finalReply = full.trim();
           const finalRawForAudit = idBuf;
@@ -3652,7 +3713,7 @@ export async function GET(req: Request) {
           if (!finalFactClaim.ok) {
             console.error(`[sifu] GET stream fact claim FAIL on close (${finalFactClaim.violations.map((v) => v.code).join(",")})`);
             send("error", { error: "fact_claim_mismatch", violations: finalFactClaim.violations });
-            safeClose();
+            void refundBillingG(); safeClose();
             return;
           }
           if (!finalCritical.ok) {
@@ -3662,7 +3723,7 @@ export async function GET(req: Request) {
           const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
           const payload: SifuPayload = { reply: finalReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
           if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
-          if (session?.userId) drainHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (GET stream)
+          if (session?.userId) void settleBillingG(payload.reply.length);
           scheduleSifuSourceShadowAudit({
             session,
             req,
@@ -3722,6 +3783,7 @@ export async function GET(req: Request) {
             promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
           });
         } else {
+          void refundBillingG();
           send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}` });
           sifuTimingLog("stream-error", {
             route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,

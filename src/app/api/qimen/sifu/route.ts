@@ -1596,6 +1596,7 @@ async function runClaudeCli(prompt: string): Promise<string> {
 }
 
 export async function POST(req: Request) {
+  let reserved = false;
   /* 1 มิ.ย. · AI ฉีเหมินต้องสมัคร/login ก่อน (เจ้านายสั่ง · defense-in-depth เสริม spendHours) */
   const session = await getSession();
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
@@ -1646,22 +1647,28 @@ export async function POST(req: Request) {
     }
 
     /* 📜 เครดิต: เช็คยามก่อนเรียก Claude · หักตามจำนวนตัวอักษรคำตอบหลังได้คำตอบ (char-based ÷30) · 29 มิ.ย. */
-    const { reserveHour, drainHoursByChars } = await import("@/lib/spend-hours");
+    const { reserveHour, settleReservedHourByChars, refundReservedHour } = await import("@/lib/spend-hours");
     const rsv = await reserveHour("sifu_qimen");
     if (!rsv.ok) {
       return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
     }
+    reserved = true;
 
     const built = buildPrompt({ message, history, lang, topic, payload });
     _inflight++;
     let reply: string;
     try {
       reply = await runClaudeCli(built.prompt);
+    } catch (error) {
+      await refundReservedHour("sifu_qimen").catch(() => {});
+      reserved = false;
+      throw error;
     } finally {
       _inflight--;
     }
     /* หักยามตามจำนวนตัวอักษรคำตอบ */
-    const spend = await drainHoursByChars(reply.length, "sifu_qimen");
+    const spend = await settleReservedHourByChars(reply.length, "sifu_qimen");
+    reserved = false;
     const spent = spend.spent;
     const balanceAfter = spend.balance_after;
     logResearchAiMessageSafe({
@@ -1710,6 +1717,10 @@ export async function POST(req: Request) {
       qimen_source_trace_items: built.sourceTraceItems,
     });
   } catch (e: any) {
+    if (reserved) {
+      const { refundReservedHour } = await import("@/lib/spend-hours");
+      await refundReservedHour("sifu_qimen").catch(() => {});
+    }
     console.error("[qimen/sifu]", e instanceof Error ? e.message : String(e));
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" data-hk-product-page="palmistry">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -310,6 +310,7 @@
       </div>
     </div>
     <button class="cta" id="btnAnalyze" disabled data-i18n="up.btn">✋ วิเคราะห์ลายมือ</button>
+    <p class="tiny" data-i18n="up.cost">AI คิดยามตามความยาวคำอ่าน · ระบบจะแสดงยอดที่ใช้จริงและคืนยามอัตโนมัติหากอ่านไม่สำเร็จ</p>
     <p class="tiny" data-i18n="up.privacy">🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก</p>
     <input type="file" id="fileL" class="hidden" accept="image/*">
 
@@ -556,5 +557,6 @@ var p = window.location.pathname.replace(/\/$/,'') || '/chart';
   } catch (e) {}
 })();
 </script>
+<script src="/js/hk-product-caps.js?v=4" defer></script>
 </body>
 </html>

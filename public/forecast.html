@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-hk-product-page="forecast">
 <head>
 <script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
@@ -906,6 +906,13 @@ function CR_chargeEnd(e){
   const power = Math.min(elapsed / 2000, 1);
   CR_castCoins(power);
 }
+function forecastAiText(d){
+  if (d && d.ai) return d.ai;
+  var l = (localStorage.getItem('hk_locale') || 'th').toLowerCase();
+  var insufficient = {th:'ยามไม่พอสำหรับคำอธิบายจาก AI · ผลคำนวณด้านบนยังดูได้ฟรี',en:'Not enough credits for the AI explanation · the calculated result above remains free',zh:'時額不足，無法產生 AI 說明 · 上方計算結果仍免費',cn:'时额不足，无法生成 AI 说明 · 上方计算结果仍免费',vi:'Không đủ lượt cho phần giải thích AI · kết quả tính phía trên vẫn miễn phí',ja:'AI解説のクレジットが不足しています · 上の計算結果は無料です',ko:'AI 설명 크레딧이 부족합니다 · 위 계산 결과는 무료입니다',ru:'Недостаточно единиц для пояснения AI · расчёт выше остаётся бесплатным',es:'No hay créditos suficientes para la explicación de IA · el cálculo superior sigue siendo gratis'};
+  var unavailable = {th:'AI ไม่ตอบกลับและระบบคืนยามแล้ว · ผลคำนวณด้านบนยังดูได้ฟรี',en:'AI did not respond and the reservation was refunded · the calculated result above remains free',zh:'AI 未回應，已退還預留時額 · 上方計算結果仍免費',cn:'AI 未响应，已退还预留时额 · 上方计算结果仍免费',vi:'AI không phản hồi và lượt giữ chỗ đã được hoàn · kết quả tính vẫn miễn phí',ja:'AIが応答せず予約分は返還されました · 上の計算結果は無料です',ko:'AI가 응답하지 않아 예약분이 환불되었습니다 · 위 계산 결과는 무료입니다',ru:'AI не ответил, резерв возвращён · расчёт выше остаётся бесплатным',es:'La IA no respondió y se reembolsó la reserva · el cálculo superior sigue siendo gratis'};
+  return (d && d.ai_error === 'insufficient_hours' ? insufficient : unavailable)[l] || insufficient.en;
+}
 function CR_showResult(sum){
   const meanings = {
     9:'老陽 · Yang Changing → Becomes Yin',
@@ -964,7 +971,7 @@ async function CR_revealAnswer(){
     document.getElementById('cr-loading').classList.remove('show');
     if (!r.ok) throw new Error(d.error || 'failed');
     engineEl.innerHTML = d.engine || '';
-    aiEl.textContent = d.ai || '';
+    aiEl.textContent = forecastAiText(d);
     renderHexDeep(d);
     /* อาม่า: ซ่อนปุ่ม submit + แสดง reset (ปุ่ม cast ก็ซ่อนไปแล้วใน CR_revealAnswer) */
     document.getElementById('fc-submit').style.display = 'none';
@@ -1294,7 +1301,7 @@ document.getElementById('fc-submit').addEventListener('click', async () => {
       renderQmdjDisplay(d.structured);
     }
     engineEl.innerHTML = d.engine || '';
-    aiEl.textContent = d.ai || '';
+    aiEl.textContent = forecastAiText(d);
     renderHexDeep(d);
     /* 16 พ.ค. (อาม่า request): ซ่อนปุ่ม "ดูคำตอบ" หลังตอบ + แสดงปุ่ม "ทำนายใหม่" */
     document.getElementById('fc-submit').style.display = 'none';
@@ -1324,5 +1331,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 }catch(_){}})();
 </script>
 <script src="/js/hk-nonthai-page-guard.js?v=1"></script>
+<script src="/js/hk-product-caps.js?v=4" defer></script>
 </body>
 </html>

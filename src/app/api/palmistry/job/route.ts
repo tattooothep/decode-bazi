@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q1, q } from "@/lib/db";
 import { rm } from "fs/promises";
+import { refundPalmJobBilling } from "@/lib/palm-billing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,6 +42,7 @@ async function reconcileStaleJob(row: PalmJobRow): Promise<PalmJobRow> {
   if (!stale && !orphanedByRestart) return row;
   const reason = orphanedByRestart ? "server_restart_orphan" : "timeout";
   await q(`UPDATE palm_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1 AND status='running'`, [row.id, reason]).catch(() => {});
+  await refundPalmJobBilling(row.id, reason).catch(() => {});
   if (row.job_dir) await rm(row.job_dir, { recursive: true, force: true }).catch(() => {}); // runner ตายแล้ว = ลบรูปที่ค้าง
   return { ...row, status: "error", result: null, error: reason };
 }
@@ -63,12 +65,10 @@ export async function GET(req: Request) {
   );
   if (!row) return NextResponse.json({ ok: false, error: "job_not_found" }, { status: 404 });
 
-  // ownership guard — งานที่ผูก user ต้อง login + userId ตรง (guest job = เข้าถึงด้วย uuid ได้)
-  if (row.user_id) {
-    const session = await getSession();
-    if (!session || session.userId !== row.user_id) {
-      return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
-    }
+  // All new palm jobs are private and login-bound. Legacy guest jobs are closed.
+  const session = await getSession();
+  if (!row.user_id || !session || session.userId !== row.user_id) {
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
   const safeRow = await reconcileStaleJob(row);

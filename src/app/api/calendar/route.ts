@@ -13,6 +13,8 @@ import { summarizeStars } from "@/lib/star-dict-th";
 import { computeIntentStatus, pickTopWorst } from "@/lib/tongshu-intents";
 import { universalDayScore, universalGoals } from "@/lib/tongshu-universal";
 import { computeDailyPersonalVerdict } from "@/lib/daily-personal-verdict";
+import { currentDateWindow, withinMonthWindow } from "@/lib/product-date-gate";
+import { entitlementDenied } from "@/lib/product-entitlement";
 
 type CalendarCacheEntry = { exp: number; payload: unknown };
 const CALENDAR_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -299,6 +301,13 @@ export async function GET(req: Request) {
   const dayBoundary = url.searchParams.get("dayBoundary") === "00:00" ? "00:00" : "23:00";
   if (!year || !month || month < 1 || month > 12) {
     return NextResponse.json({ error: "year + month (1-12) required" }, { status: 400 });
+  }
+  const dateAccess = await currentDateWindow("calendar");
+  if (!withinMonthWindow(year, month, dateAccess.max)) {
+    return NextResponse.json(
+      entitlementDenied("calendar_month_window", { plan: dateAccess.plan, max_months: dateAccess.max }),
+      { status: 403 }
+    );
   }
   const cacheKey = calendarCacheKey({ year, month, dmArg, birthDate, birthTime, birthTimeKnown, birthLng, gender, dayBoundary });
   const cached = getCalendarCache(cacheKey);

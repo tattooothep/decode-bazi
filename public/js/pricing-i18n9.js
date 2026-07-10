@@ -218,11 +218,24 @@
     }
   };
 
+  /* Commercial copy is kept separate from legacy editorial translations so
+     pricing, trial length, passes and FAQ cannot drift by locale. */
+  var COMMERCIAL = {
+    en:{compareP:'Start free, choose Premium for complete personal tools, or Master for multiple charts, groups, and technical evidence.',topupP:'Credits from signup, a pass, or a top-up never expire.',faqs:[['What is a credit (時)?','Credits power AI Sifu and deep analysis and are charged by answer length. Charts, calendar and daily scores are free.'],['Does the 30-day pass auto-renew?','No. It lasts 30 days after successful payment and never renews or charges automatically.'],['How far does Free go?','Signup includes 1,000 credits and a 14-day trial. Afterwards Chart, Calendar, Today, Forecast and Palmistry remain available; deeper features stay visibly locked.'],['Do pass credits refill monthly?','No. Premium adds 500 and Master adds 2,000 once per purchase. Credits never expire and can be topped up.'],['How do I pay - is it safe?','Stripe handles cards and PromptPay. Hourkey does not store card numbers; access is granted server-side after payment.'],['Can I cancel?','There is nothing to cancel: passes do not auto-renew and remain active through their paid 30 days.']],footerNote:'Prices are in THB. Passes last 30 days with no auto-renewal. The 14-day trial starts at signup. Credits never expire.'},
+    zh:{compareP:'先免費開始；完整個人工具選 Premium，多命盤、群組與技術依據選 Master。',topupP:'註冊、購買通行證或加值所得的時永不過期。',faqs:[['「時」是什麼？','「時」用於 AI 師傅與深度分析，依答案長度扣除；命盤、曆與每日分數免費。'],['30 天通行證會自動續期嗎？','不會。付款成功後有效 30 天，不自動續期或扣款。'],['免費能用到哪？','註冊送 1,000 時與 14 天試用；之後命盤、曆、今日、預測與手相仍可用，進階功能保留鎖定提示。'],['通行證的時每月補發嗎？','不會。Premium 每次購買加 500 時，Master 加 2,000 時；時永不過期並可加值。'],['如何付款、安全嗎？','Stripe 處理信用卡與 PromptPay；Hourkey 不保存卡號，付款成功後由伺服器核發權益。'],['可以取消嗎？','無需取消：通行證不自動續期，已購權益會使用至 30 天期滿。']],footerNote:'價格為泰銖。通行證有效 30 天且不自動續期；14 天試用自註冊起算；時永不過期。'},
+    cn:{compareP:'先免费开始；完整个人工具选 Premium，多命盘、群组和技术依据选 Master。',topupP:'注册、购买通行证或加值所得的时永不过期。',faqs:[['“时”是什么？','“时”用于 AI 师傅和深度分析，按答案长度扣除；命盘、日历和每日分数免费。'],['30 天通行证会自动续期吗？','不会。付款成功后有效 30 天，不自动续期或扣款。'],['Free 能用到哪里？','注册送 1,000 时和 14 天试用；之后命盘、日历、今日、预测和手相仍可用，进阶功能保留锁定提示。'],['通行证的时每月补发吗？','不会。Premium 每次购买加 500 时，Master 加 2,000 时；时永不过期并可加值。'],['怎么付款，安全吗？','Stripe 处理银行卡和 PromptPay；Hourkey 不保存卡号，付款成功后由服务器发放权益。'],['可以取消吗？','无需取消：通行证不自动续期，已购权益会使用至 30 天期满。']],footerNote:'价格为泰铢。通行证有效 30 天且不自动续期；14 天试用从注册开始；时永不过期。'},
+    vi:{compareP:'Bắt đầu miễn phí, chọn Premium cho công cụ cá nhân đầy đủ, hoặc Master cho nhiều lá số, nhóm và bằng chứng kỹ thuật.',topupP:'Lượt từ đăng ký, pass hoặc nạp thêm không hết hạn.',faqs:[['Lượt (時) là gì?','Lượt dùng cho AI Sifu và phân tích sâu, tính theo độ dài câu trả lời; lá số, lịch và điểm ngày miễn phí.'],['Pass 30 ngày có tự gia hạn không?','Không. Pass có hiệu lực 30 ngày sau thanh toán và không tự gia hạn hay trừ tiền.'],['Free dùng được đến đâu?','Đăng ký nhận 1.000 lượt và dùng thử 14 ngày. Sau đó Lá số, Lịch, Hôm nay, Dự báo và Xem tay vẫn dùng được; tính năng sâu vẫn hiện kèm khóa.'],['Lượt của pass có nạp lại hằng tháng không?','Không. Premium cộng 500 và Master cộng 2.000 mỗi lần mua; lượt không hết hạn và có thể nạp thêm.'],['Thanh toán có an toàn không?','Stripe xử lý thẻ và PromptPay; Hourkey không lưu số thẻ và chỉ cấp quyền từ máy chủ sau thanh toán.'],['Có cần hủy không?','Không cần: pass không tự gia hạn và dùng đến hết 30 ngày đã mua.']],footerNote:'Giá bằng THB. Pass dùng 30 ngày, không tự gia hạn. Dùng thử 14 ngày bắt đầu khi đăng ký. Lượt không hết hạn.'},
+    ja:{compareP:'無料で始め、個人機能を十分に使うなら Premium、複数命盤・グループ・技術根拠なら Master を選べます。',topupP:'登録、Pass購入、追加購入で得たクレジットは失効しません。',faqs:[['クレジット（時）とは？','AI Sifu と深い分析に使い、回答の長さで消費します。命盤・暦・毎日のスコアは無料です。'],['30日Passは自動更新されますか？','いいえ。支払い後30日間有効で、自動更新・自動請求はありません。'],['Freeではどこまで使えますか？','登録時に1,000クレジットと14日試用。終了後も命盤・暦・今日・予測・手相は使え、深い機能は鍵付きで表示されます。'],['Passのクレジットは毎月補充されますか？','いいえ。購入ごとにPremiumは500、Masterは2,000を追加。失効せず追加購入できます。'],['支払いは安全ですか？','カードとPromptPayはStripeが処理し、Hourkeyはカード番号を保存しません。支払い後にサーバー側で権限を付与します。'],['解約できますか？','解約は不要です。Passは自動更新せず、購入した30日間の終了まで有効です。']],footerNote:'価格はTHB。Passは30日間で自動更新なし。14日試用は登録時開始。クレジットは失効しません。'},
+    ko:{compareP:'무료로 시작하고, 개인 도구 전체는 Premium, 여러 차트·그룹·기술 근거는 Master를 선택하세요.',topupP:'가입, Pass 구매, 추가 충전으로 받은 크레딧은 만료되지 않습니다.',faqs:[['크레딧(時)이란?','AI Sifu와 심층 분석에 쓰며 답변 길이에 따라 차감됩니다. 차트·달력·일일 점수는 무료입니다.'],['30일 Pass는 자동 갱신되나요?','아니요. 결제 후 30일 동안 유효하며 자동 갱신이나 자동 결제가 없습니다.'],['Free는 어디까지 가능한가요?','가입 시 1,000 크레딧과 14일 체험을 받습니다. 이후에도 차트·달력·오늘·예측·손금은 사용 가능하고 심화 기능은 잠금 상태로 보입니다.'],['Pass 크레딧은 매월 충전되나요?','아니요. 구매할 때 Premium은 500, Master는 2,000이 한 번 추가되며 만료 없이 추가 충전할 수 있습니다.'],['결제는 안전한가요?','Stripe가 카드와 PromptPay를 처리하며 Hourkey는 카드 번호를 저장하지 않습니다. 결제 후 서버가 권한을 부여합니다.'],['해지해야 하나요?','필요 없습니다. Pass는 자동 갱신되지 않고 구매한 30일이 끝날 때까지 유효합니다.']],footerNote:'가격은 THB입니다. Pass는 30일이며 자동 갱신이 없습니다. 14일 체험은 가입 때 시작하고 크레딧은 만료되지 않습니다.'},
+    ru:{compareP:'Начните бесплатно, выберите Premium для полных личных инструментов или Master для многих карт, групп и технических оснований.',topupP:'Единицы за регистрацию, Pass или пополнение не сгорают.',faqs:[['Что такое единица (時)?','Она нужна для AI Sifu и глубокого анализа и списывается по длине ответа. Карта, календарь и дневной балл бесплатны.'],['Pass на 30 дней продлевается автоматически?','Нет. Он действует 30 дней после оплаты без автопродления и автосписания.'],['Что доступно в Free?','При регистрации даются 1 000 единиц и 14 дней пробного доступа. Затем остаются Карта, Календарь, Сегодня, Прогноз и Хиромантия; глубокие функции видны с замком.'],['Единицы Pass пополняются ежемесячно?','Нет. При каждой покупке Premium добавляет 500, Master 2 000; единицы не сгорают и пополняются отдельно.'],['Оплата безопасна?','Stripe обрабатывает карты и PromptPay; Hourkey не хранит номера карт, доступ выдает сервер после оплаты.'],['Нужно отменять?','Нет: Pass не продлевается автоматически и действует до конца купленных 30 дней.']],footerNote:'Цены в THB. Pass действует 30 дней без автопродления. Пробный период 14 дней начинается при регистрации. Единицы не сгорают.'},
+    es:{compareP:'Empieza gratis, elige Premium para herramientas personales completas o Master para varias cartas, grupos y evidencia técnica.',topupP:'Los créditos de registro, pass o recarga no caducan.',faqs:[['¿Qué es un crédito (時)?','Sirve para AI Sifu y análisis profundo y se cobra según la longitud de la respuesta. Carta, calendario y puntuación diaria son gratis.'],['¿El pass de 30 días se renueva solo?','No. Dura 30 días tras el pago y no se renueva ni cobra automáticamente.'],['¿Hasta dónde llega Free?','El registro incluye 1.000 créditos y prueba de 14 días. Después siguen Carta, Calendario, Hoy, Pronóstico y Quiromancia; lo profundo queda visible con candado.'],['¿Los créditos del pass se recargan cada mes?','No. Cada compra añade 500 en Premium o 2.000 en Master; no caducan y puedes recargar.'],['¿El pago es seguro?','Stripe procesa tarjetas y PromptPay; Hourkey no guarda números de tarjeta y el servidor activa el acceso tras el pago.'],['¿Hay que cancelar?','No: el pass no se renueva solo y sigue activo hasta terminar los 30 días comprados.']],footerNote:'Precios en THB. El pass dura 30 días sin renovación automática. La prueba de 14 días empieza al registrarte. Los créditos no caducan.'}
+  };
+
   var UI_PATCH = {
-    monthly:{ cn:'月付', vi:'Hằng tháng', ja:'月払い', ru:'Ежемесячно', ko:'월간', es:'Mensual' },
+    monthly:{ cn:'30 天通行证', vi:'Pass 30 ngày', ja:'30日Pass', ru:'Pass на 30 дней', ko:'30일 Pass', es:'Pass de 30 días' },
     yearly:{ cn:'年付', vi:'Hằng năm', ja:'年払い', ru:'Годовой', ko:'연간', es:'Anual' },
     save:{ cn:'省 2 个月', vi:'Miễn 2 tháng', ja:'2か月無料', ru:'2 месяца бесплатно', ko:'2개월 무료', es:'2 meses gratis' },
-    perMonth:{ cn:'／月', vi:'/tháng', ja:'/月', ru:'/мес', ko:'/월', es:'/mes' },
+    perMonth:{ cn:'／30 天', vi:'/30 ngày', ja:'/30日', ru:'/30 дней', ko:'/30일', es:'/30 días' },
     perYear:{ cn:'／年', vi:'/năm', ja:'/年', ru:'/год', ko:'/년', es:'/año' },
     yearlyNote:{ cn:'≈฿{M}/月 · 送 {F} 个月', vi:'≈฿{M}/tháng · miễn {F} tháng', ja:'≈฿{M}/月 · {F}か月無料', ru:'≈฿{M}/мес · {F} мес. бесплатно', ko:'≈฿{M}/월 · {F}개월 무료', es:'≈฿{M}/mes · {F} meses gratis' },
     free:{ cn:'免费开始', vi:'Miễn phí để bắt đầu', ja:'無料で開始', ru:'Бесплатно для старта', ko:'무료로 시작', es:'Gratis para empezar' },
@@ -333,29 +346,30 @@
     var latin = (code !== 'th' && code !== 'zh' && code !== 'cn' && STATIC[code]) ? STATIC[code] : STATIC.en;
     var han = code === 'cn' ? STATIC.cn : STATIC.zh;
     var meta = STATIC[code] || STATIC.en;
+    var commercial = COMMERCIAL[code] || COMMERCIAL.en;
 
-    setMeta(meta);
+    if (code !== 'th') setMeta(meta);
     setOne('header.hero h1[data-l="en"]', latin.heroTitle, true);
     setOne('header.hero p.sub[data-l="en"]', latin.heroSub, true);
     setAll('.art small[data-l="en"]', latin.arts);
     setAll('.sec-head .kicker[data-l="en"]', [latin.compareKicker, latin.topupKicker, latin.faqKicker]);
     setAll('.sec-head h2[data-l="en"]', [latin.compareH2, latin.topupH2, latin.faqH2], true);
-    setAll('.sec-head p[data-l="en"]', [latin.compareP, latin.topupP]);
-    setAll('details.q summary[data-l="en"]', latin.faqs.map(function(x){ return x[0]; }));
-    setAll('details.q .a[data-l="en"]', latin.faqs.map(function(x){ return x[1]; }));
+    setAll('.sec-head p[data-l="en"]', [commercial.compareP, commercial.topupP]);
+    setAll('details.q summary [data-l="en"]', commercial.faqs.map(function(x){ return x[0]; }));
+    setAll('details.q .a[data-l="en"]', commercial.faqs.map(function(x){ return x[1]; }));
     setAll('footer .flinks a[data-l="en"]', latin.footerLinks);
-    setOne('footer > div[data-l="en"]', latin.footerNote);
+    setOne('footer > div[data-l="en"]', commercial.footerNote);
 
     setOne('header.hero h1[data-l="zh"]', han.heroTitle, true);
     setOne('header.hero p.sub[data-l="zh"]', han.heroSub, true);
     setAll('.art small[data-l="zh"]', han.arts);
     setAll('.sec-head .kicker[data-l="zh"]', [han.compareKicker, han.topupKicker, han.faqKicker]);
     setAll('.sec-head h2[data-l="zh"]', [han.compareH2, han.topupH2, han.faqH2], true);
-    setAll('.sec-head p[data-l="zh"]', [han.compareP, han.topupP]);
-    setAll('details.q summary[data-l="zh"]', han.faqs.map(function(x){ return x[0]; }));
-    setAll('details.q .a[data-l="zh"]', han.faqs.map(function(x){ return x[1]; }));
+    setAll('.sec-head p[data-l="zh"]', [commercial.compareP, commercial.topupP]);
+    setAll('details.q summary [data-l="zh"]', commercial.faqs.map(function(x){ return x[0]; }));
+    setAll('details.q .a[data-l="zh"]', commercial.faqs.map(function(x){ return x[1]; }));
     setAll('footer .flinks a[data-l="zh"]', han.footerLinks);
-    setOne('footer > div[data-l="zh"]', han.footerNote);
+    setOne('footer > div[data-l="zh"]', commercial.footerNote);
     setOne('footer .mono', meta.footerMono || STATIC.en.footerMono);
   }
 
@@ -369,16 +383,16 @@
       Object.keys(UI_PATCH).forEach(function(k){ if (UI && UI[k]) merge(UI[k], UI_PATCH[k]); });
       if (typeof TX !== 'undefined') Object.keys(TX_PATCH).forEach(function(k){ if (TX[k]) merge(TX[k], TX_PATCH[k]); });
 
-      /* Sync với docs/PRODUCT_ENTITLEMENT.md · 1000 yam + 30-day trial · tool ~30% */
+      /* Sync with entitlement contract: 1,000 yam + 14-day trial. */
       patchTier(PRICING.tiers[0], {
         name:{ cn:'新人', vi:'Free', ja:'Free', ru:'Free', ko:'Free', es:'Free' },
         tag:{
-          cn:'1,000 时 + 30 天试用 · 之后免费模式',
-          vi:'1.000 lượt + dùng thử 30 ngày · rồi chế độ miễn phí',
-          ja:'1,000クレジット + 30日トライアル · その後フリー',
-          ru:'1 000 единиц + 30 дней пробного · затем бесплатно',
-          ko:'1,000 크레딧 + 30일 체험 · 이후 무료 모드',
-          es:'1.000 créditos + prueba 30 días · luego modo gratis'
+          cn:'1,000 时 + 14 天试用 · 之后免费模式',
+          vi:'1.000 lượt + dùng thử 14 ngày · rồi chế độ miễn phí',
+          ja:'1,000クレジット + 14日トライアル · その後フリー',
+          ru:'1 000 единиц + 14 дней пробного · затем бесплатно',
+          ko:'1,000 크레딧 + 14일 체험 · 이후 무료 모드',
+          es:'1.000 créditos + prueba 14 días · luego modo gratis'
         },
         yam:{
           cn:'注册送 1,000 时（永不过期）',
@@ -400,38 +414,38 @@
           cn:[
             '注册 + 出生资料 + 打开命盘',
             '注册送 1,000 时 · AI 用到完',
-            '30 天试用：Fusion 最多 3 · 命书 2 · 择日 1 盘 · Vision 1 次 · 房宅 3 · 择日/罗盘/奇门约 30%',
-            '30 天后：命盘／历／今日 + 剩余时问 AI · 深工具需升级'
+            '14 天试用：Fusion 最多 3 · 命书 2 · 择日 1 盘 · Vision 1 次 · 房宅 3',
+            '14 天后：命盘／历／今日／预测／手相 + 剩余时问 AI · 深层功能保留锁定提示'
           ],
           vi:[
             'Đăng ký + ngày sinh + mở lá số',
             '1.000 lượt khi vào · AI dùng đến hết',
-            'Dùng thử 30 ngày: Fusion tối đa 3 · Sách 2 · chọn ngày 1 lá · Vision 1× · 3 nhà · chọn ngày/la bàn/Kỳ Môn ~30%',
-            'Sau ngày 30: lá số/lịch/hôm nay + AI bằng lượt còn · công cụ sâu cần nâng cấp'
+            'Dùng thử 14 ngày: Fusion tối đa 3 · Sách 2 · chọn ngày 1 lá · Vision 1× · 3 nhà',
+            'Sau ngày 14: lá số/lịch/hôm nay/dự báo/xem tay + AI bằng lượt còn · công cụ sâu vẫn hiện khóa'
           ],
           ja:[
             '登録 + 生年月日 + 命盤を開く',
             '登録時 1,000クレジット · AIは使い切りまで',
-            '30日トライアル：Fusion最大3 · 命書2 · 日取り1盤 · Vision 1回 · 家3 · 日取り/羅盤/奇門 約30%',
-            '30日後：命盤/暦/今日 + 残クレジットでAI · 深い機能はアップグレード'
+            '14日トライアル：Fusion最大3 · 命書2 · 日取り1盤 · Vision 1回 · 家3',
+            '14日後：命盤/暦/今日/予測/手相 + 残クレジットでAI · 深い機能は鍵付き表示'
           ],
           ru:[
             'Регистрация + данные рождения + открыть карту',
             '1 000 единиц при входе · AI до исчерпания',
-            'Пробный 30 дней: Fusion макс 3 · Книга 2 · дата 1 карта · Vision 1× · 3 дома · datepick/luopan/qimen ~30%',
-            'После 30 дней: карта/календарь/сегодня + AI с остатком · глубокие инструменты — апгрейд'
+            'Пробный 14 дней: Fusion макс 3 · Книга 2 · дата 1 карта · Vision 1× · 3 дома',
+            'После 14 дней: карта/календарь/сегодня/прогноз/хиромантия + AI с остатком · глубокие функции видны с замком'
           ],
           ko:[
             '가입 + 생년월일 + 차트 열기',
             '가입 시 1,000 크레딧 · AI는 소진까지',
-            '30일 체험: Fusion 최대 3 · 명서 2 · 택일 1차트 · Vision 1회 · 집 3 · 택일/나경/기문 약 30%',
-            '30일 후: 차트/달력/오늘 + 남은 크레딧 AI · 심화 도구는 업그레이드'
+            '14일 체험: Fusion 최대 3 · 명서 2 · 택일 1차트 · Vision 1회 · 집 3',
+            '14일 후: 차트/달력/오늘/예측/손금 + 남은 크레딧 AI · 심화 기능은 잠금 표시'
           ],
           es:[
             'Registro + datos de nacimiento + abrir carta',
             '1.000 créditos al unirte · AI hasta agotarlos',
-            'Prueba 30 días: Fusion máx 3 · Libro 2 · fechas 1 carta · Vision 1× · 3 casas · fechas/luopan/qimen ~30%',
-            'Tras día 30: carta/calendario/hoy + AI con saldo · herramientas profundas con upgrade'
+            'Prueba 14 días: Fusion máx 3 · Libro 2 · fechas 1 carta · Vision 1× · 3 casas',
+            'Tras día 14: carta/calendario/hoy/pronóstico/quiromancia + AI con saldo · funciones profundas visibles con candado'
           ]
         }
       });
@@ -514,8 +528,8 @@
         }
       });
       merge(PRICING.topups[0].tag, { cn:'入门', vi:'Khởi đầu', ja:'スターター', ru:'Старт', ko:'시작', es:'Inicial' });
-      merge(PRICING.topups[1].tag, { cn:'最划算', vi:'Đáng giá nhất', ja:'最もお得', ru:'Лучшая цена', ko:'최고 가성비', es:'Mejor valor' });
-      merge(PRICING.topups[2].tag, { cn:'高用量', vi:'Dùng nhiều', ja:'ヘビー', ru:'Интенсивно', ko:'대량 사용', es:'Intensivo' });
+      merge(PRICING.topups[1].tag, { cn:'热门', vi:'Phổ biến', ja:'人気', ru:'Популярно', ko:'인기', es:'Popular' });
+      merge(PRICING.topups[2].tag, { cn:'最划算', vi:'Đáng giá nhất', ja:'最もお得', ru:'Лучшая цена', ko:'최고 가성비', es:'Mejor valor' });
 
       /* CMP indices sync với pricing.html ปัจจุบัน */
       [
@@ -523,9 +537,9 @@
         [1,'name',{ cn:'注册 + 出生资料 + 打开命盘', vi:'Đăng ký + ngày sinh + mở lá số', ja:'登録 + 生年月日 + 命盤を開く', ru:'Регистрация + рождение + открыть карту', ko:'가입 + 생년월일 + 차트 열기', es:'Registro + nacimiento + abrir carta' }],
         [2,'name',{ cn:'四柱八字命盘', vi:'Lá số BaZi 4 trụ', ja:'4柱 BaZi 命盤', ru:'Карта BaZi 4 столпа', ko:'4기둥 BaZi 차트', es:'Carta BaZi de 4 pilares' }],
         [3,'name',{ cn:'注册 1,000 时（AI 用到完）', vi:'1.000 lượt khi vào (AI đến hết)', ja:'登録 1,000クレジット（AI使い切り）', ru:'1 000 единиц при входе (AI до конца)', ko:'가입 1,000 크레딧 (AI 소진까지)', es:'1.000 créditos al unirte (AI hasta agotar)' }],
-        [4,'name',{ cn:'30 天试用（工具较完整 · 约 30%）', vi:'Dùng thử 30 ngày (công cụ rộng hơn · ~30%)', ja:'30日トライアル（ツール拡大 · 約30%）', ru:'Пробный 30 дней (шире · ~30%)', ko:'30일 체험 (도구 확대 · 약 30%)', es:'Prueba 30 días (más herramientas · ~30%)' }],
+        [4,'name',{ cn:'14 天试用（深入功能保留锁定）', vi:'Dùng thử 14 ngày (tính năng sâu vẫn hiện khóa)', ja:'14日トライアル（深い機能も鍵付き表示）', ru:'Пробный 14 дней (глубокие функции видны с замком)', ko:'14일 체험 (심화 기능 잠금 표시)', es:'Prueba 14 días (funciones profundas visibles con candado)' }],
         [4,'tool',{ cn:'注册自动', vi:'tự động khi đăng ký', ja:'登録時自動', ru:'авто при регистрации', ko:'가입 시 자동', es:'auto al registrarse' }],
-        [4,'free',{ cn:'首 30 天', vi:'30 ngày đầu', ja:'最初の30日', ru:'первые 30 дней', ko:'첫 30일', es:'primeros 30 días' }],
+        [4,'free',{ cn:'首 14 天', vi:'14 ngày đầu', ja:'最初の14日', ru:'первые 14 дней', ko:'첫 14일', es:'primeros 14 días' }],
         [4,'premium',{ cn:'不需', vi:'n/a', ja:'不要', ru:'н/д', ko:'해당 없음', es:'n/a' }],
         [4,'master',{ cn:'不需', vi:'n/a', ja:'不要', ru:'н/д', ko:'해당 없음', es:'n/a' }],
         [5,'grp',{ cn:'Fusion / 深度 AI', vi:'Fusion / AI sâu', ja:'Fusion / 深度 AI', ru:'Fusion / глубокий AI', ko:'Fusion / 심층 AI', es:'Fusion / AI profunda' }],

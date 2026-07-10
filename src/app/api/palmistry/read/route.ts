@@ -3,14 +3,16 @@
  * flow: validate รูป → เซฟลง job_dir ถาวรชั่วคราว → INSERT palm_jobs(running) → คืน job_id ทันที (202)
  *       → background: enhance → คัมภีร์ → grok/gemini อ่าน → parse → UPDATE done + ลบรูป (privacy)
  * รูป biometric: temp + ลบทันทีเสมอ (ไม่เก็บ server) · งานวิ่งต่อบน server แม้ client พับจอ/ปิดแอป
- * ⚠️ ไม่มี auth (guest ใช้ได้) · session แบบ optional (ผูก user_id ถ้ามี · ไม่มีก็ null)
+ * ต้อง login · reserve 1 ยามก่อนสร้าง job · settle ตามคำตอบหรือ refund เมื่อพลาด
  */
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import { mkdir, writeFile, chmod, rm } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
-import { q1, q } from "@/lib/db";
+import { q } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import { createReservedPalmJob, settlePalmJobBilling, refundPalmJobBilling } from "@/lib/palm-billing";
 import { readPalmVision } from "@/lib/palm/vision";
 import { loadPalmCanon, buildPalmPrompt, parsePalmResult, reshootTargets, type PalmContext, type PalmImageMeta } from "@/lib/palm/prompt";
 
@@ -75,15 +77,6 @@ function enhance(src: string, stem: string): Promise<{ clarity: number; clear: s
   });
 }
 
-/* getSession แบบ optional — login แล้วผูก user_id/org_id · guest = null (ห้ามบังคับ login) */
-async function tryGetSession(): Promise<{ userId: string; orgId: string | null } | null> {
-  try {
-    const mod = await import("@/lib/auth");
-    const s = await mod.getSession();
-    return s ? { userId: s.userId, orgId: s.orgId ?? null } : null;
-  } catch { return null; }
-}
-
 type PalmJobParams = {
   jobId: string;
   jobDir: string;
@@ -119,11 +112,14 @@ async function processPalmJob(p: PalmJobParams): Promise<void> {
     let reading;
     try { reading = parsePalmResult(vision.text); }
     catch {
+      await refundPalmJobBilling(jobId, "parse_failed").catch(() => {});
       await q(`UPDATE palm_jobs SET status='error', error=$2, engine=$3, updated_at=now() WHERE id=$1`,
         [jobId, "parse_failed", vision.engine]).catch(() => {});
       return;
     }
 
+    const readingText = JSON.stringify(reading);
+    const billing = await settlePalmJobBilling(jobId, readingText.length);
     const result = {
       ok: true,
       engine: vision.engine,
@@ -132,11 +128,13 @@ async function processPalmJob(p: PalmJobParams): Promise<void> {
       reading,
       reshoot: reshootTargets(reading),
       image_count: srcPaths.length,
+      yam: billing.ok ? { charged: billing.charged, balance: billing.balance_after } : null,
     };
     await q(`UPDATE palm_jobs SET status='done', result=$2, engine=$3, updated_at=now() WHERE id=$1`,
       [jobId, JSON.stringify(result), vision.engine]);
   } catch (e) {
     const msg = ((e as Error)?.message || "read_failed").slice(0, 200);
+    await refundPalmJobBilling(jobId, msg).catch(() => {});
     await q(`UPDATE palm_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1`, [jobId, msg]).catch(() => {});
   } finally {
     await rm(jobDir, { recursive: true, force: true }).catch(() => {}); // ลบรูปทันทีหลังอ่านเสร็จ/พลาด (privacy)
@@ -144,6 +142,8 @@ async function processPalmJob(p: PalmJobParams): Promise<void> {
 }
 
 export async function POST(req: NextRequest) {
+  const sess = await getSession();
+  if (!sess) return NextResponse.json({ ok: false, error: "auth_required" }, { status: 401 });
   // IP จริงจาก nginx (X-Real-IP=$remote_addr) ก่อน · ถ้าไม่มีใช้ hop ขวาสุดของ XFF (=ที่ proxy เห็น) · ห้ามใช้ตัวซ้ายสุด (client ปลอมได้ → ข้าม rate limit)
   const _xff = req.headers.get("x-forwarded-for");
   const ip = req.headers.get("x-real-ip")?.trim() || (_xff ? _xff.split(",").pop()!.trim() : "") || "unknown";
@@ -170,9 +170,6 @@ export async function POST(req: NextRequest) {
     gender: rawGender === "M" || rawGender === "F" ? rawGender as "M" | "F" : undefined,
     birthDate: cleanText(form.get("birth_date"), 30),
   };
-
-  // session optional (guest = null) → ผูก ownership กัน IDOR ที่ GET /job (ถ้ามี user)
-  const sess = await tryGetSession();
 
   const jobId = randomUUID();
   const jobDir = path.join(JOBS_ROOT, jobId);
@@ -207,12 +204,18 @@ export async function POST(req: NextRequest) {
     }
 
     // 2) INSERT palm_jobs (running) → คืน job_id ทันที (user พับจอ/ปิดแอปได้)
-    const job = await q1<{ id: string }>(
-      `INSERT INTO palm_jobs(id, user_id, org_id, status, lang, job_dir, image_count)
-       VALUES ($1,$2,$3,'running',$4,$5,$6) RETURNING id`,
-      [jobId, sess?.userId ?? null, sess?.orgId ?? null, lang, jobDir, files.length]
-    );
-    if (!job) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "job_create_failed" }, { status: 500 }); }
+    const job = await createReservedPalmJob({
+      id: jobId,
+      userId: sess.userId,
+      orgId: sess.orgId ?? null,
+      lang,
+      jobDir,
+      imageCount: files.length,
+    });
+    if (!job.ok) {
+      await rm(jobDir, { recursive: true, force: true }).catch(() => {});
+      return NextResponse.json({ ok: false, error: job.error }, { status: 402 });
+    }
 
     // 3) 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
     void processPalmJob({ jobId, jobDir, srcPaths, metas, labels, lang, context });

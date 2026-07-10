@@ -10,6 +10,8 @@
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
 import { loadPromptMd } from "@/lib/prompt-md";
+import { getSession } from "@/lib/auth";
+import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
 
 const CHILD_USER = "jarvis";
 const TIMEOUT_MS = 60_000;
@@ -107,16 +109,24 @@ function extractJson(raw: string): any[] {
 }
 
 export async function POST(req: Request) {
+  let reserved = false;
   try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+    const access = await getProductAccess(session.userId);
+    if (!access?.pages.network.bulk_ai) {
+      return NextResponse.json(entitlementDenied("network_bulk_ai_locked", { plan: access?.plan || "free" }), { status: 403 });
+    }
     const body = await req.json().catch(() => ({}));
     const text: string = (body.text || "").trim();
     if (!text) return NextResponse.json({ error: "text required" }, { status: 400 });
     if (text.length > 8000) return NextResponse.json({ error: "text too long (max 8000)" }, { status: 400 });
 
     /* เครดิต: เช็คยามก่อน · หักตามจำนวนตัวอักษรผลลัพธ์ AI (char-based ÷30) · 29 มิ.ย. */
-    const { reserveHour, drainHoursByChars } = await import("@/lib/spend-hours");
+    const { reserveHour, settleReservedHourByChars } = await import("@/lib/spend-hours");
     const rsv = await reserveHour("network_ai_parse_bulk");
     if (!rsv.ok) return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
+    reserved = true;
 
     const prompt = `${loadPromptMd("prompts/ai-parse-bulk.md", SYSTEM_PROMPT_FALLBACK)}
 
@@ -126,7 +136,8 @@ ${text}`;
     const raw = await runClaudeCli(prompt);
     const parsed = extractJson(raw);
     /* หักยามตามจำนวนตัวอักษรผลลัพธ์ AI */
-    const spend = await drainHoursByChars(raw.length, "network_ai_parse_bulk");
+    const spend = await settleReservedHourByChars(raw.length, "network_ai_parse_bulk");
+    reserved = false;
     const spent = spend.spent;
     const balanceAfter = spend.balance_after;
 
@@ -152,6 +163,10 @@ ${text}`;
       spent,
     });
   } catch (e: any) {
+    if (reserved) {
+      const { refundReservedHour } = await import("@/lib/spend-hours");
+      await refundReservedHour("network_ai_parse_bulk").catch(() => {});
+    }
     console.error("[ai-parse-bulk]", e instanceof Error ? e.message : String(e));
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }

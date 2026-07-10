@@ -1,5 +1,5 @@
 -- migrate-palm-jobs-r479.sql · ศาสตร์ที่ 7 ลายมือ → async job (งานวิ่งต่อฝั่ง server แม้ user พับจอ/ปิดแอป)
--- เลียนแบบ fusion5_jobs ทุกประการ · guest ใช้ได้ (user_id NULL) · ไม่มี yam/credit (ลายมือไม่คิดยาม)
+-- ลายมือใช้ AI จึงต้อง login และ reserve/settle/refund ยามแบบ idempotent ต่อ job
 -- ⚠️ ห้ามรันจนกว่าเจ้านาย review + apply เอง
 
 CREATE TABLE IF NOT EXISTS palm_jobs (
@@ -17,5 +17,12 @@ CREATE TABLE IF NOT EXISTS palm_jobs (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS billing_status text NOT NULL DEFAULT 'legacy';
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS yam_reserved int NOT NULL DEFAULT 0;
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS yam_charged int NOT NULL DEFAULT 0;
+ALTER TABLE palm_jobs ADD COLUMN IF NOT EXISTS billed_at timestamptz NULL;
 CREATE INDEX IF NOT EXISTS idx_palm_jobs_status ON palm_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_palm_jobs_created ON palm_jobs(created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_hour_transactions_ai_billing_ref
+  ON hour_transactions(ref_payment_id)
+  WHERE ref_payment_id LIKE 'palm_job:%';

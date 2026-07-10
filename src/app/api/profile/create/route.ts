@@ -11,6 +11,7 @@ import { q, q1 } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
 import { normalizeNetworkGroup, normalizeNonSelfRelationship } from "@/lib/profile-groups";
 import { findMatchingSelfProfile } from "@/lib/profile-clone-guard";
+import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
 
 export async function POST(req: Request) {
   const s = await getSession();
@@ -105,6 +106,25 @@ export async function POST(req: Request) {
       [existed.id]
     );
     return NextResponse.json({ ok: true, created: false, duplicate: true, profile: fullExisting });
+  }
+
+  const access = await getProductAccess(s.userId);
+  const profileLimit = access?.pages.network.saved_profiles ?? 1;
+  const profileCount = await q1<{ n: number }>(
+    `SELECT COUNT(*)::int AS n FROM profiles
+      WHERE org_id=$1 AND is_archived=false
+        AND NOT (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type)=''))`,
+    [s.orgId, s.userId]
+  );
+  if ((Number(profileCount?.n) || 0) >= profileLimit) {
+    return NextResponse.json(
+      entitlementDenied("network_profile_limit", {
+        plan: access?.plan || "free",
+        used: Number(profileCount?.n) || 0,
+        max: profileLimit,
+      }),
+      { status: 403 }
+    );
   }
 
   /* compute BaZi via Layer 0/1 helper · ห้าม inline tyme4ts
