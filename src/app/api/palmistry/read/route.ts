@@ -6,27 +6,23 @@
  * ต้อง login · reserve 1 ยามก่อนสร้าง job · settle ตามคำตอบหรือ refund เมื่อพลาด
  */
 import { NextRequest, NextResponse } from "next/server";
-import { spawn } from "child_process";
 import { mkdir, writeFile, chmod, rm } from "fs/promises";
 import path from "path";
-import { randomUUID } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { q } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { createReservedPalmJob, settlePalmJobBilling, refundPalmJobBilling } from "@/lib/palm-billing";
-import { readPalmVision } from "@/lib/palm/vision";
-import { loadPalmCanon, buildPalmPrompt, parsePalmResult, reshootTargets, type PalmContext, type PalmImageMeta } from "@/lib/palm/prompt";
+import { createReservedPalmJob, refundPalmJobBilling } from "@/lib/palm-billing";
+import { type PalmContext, type PalmImageMeta } from "@/lib/palm/prompt";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { enqueuePalmJob } from "@/lib/jobs/queue";
+import type { PalmJobPayload } from "@/lib/palm/job-worker";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 240;
 
-// ตั้ง process-global "เวลาบูต" ตั้งแต่ read route โหลด (POST มาก่อน poll เสมอ) → job route ใช้ค่าเดียวกัน
-// กัน orphan false-positive: งานแรกหลัง restart ต้องไม่ถูก mark error เพราะ SERVER_STARTED_AT ตั้งช้ากว่า created_at
-((globalThis as unknown as { __palmServerStartedAt?: Date }).__palmServerStartedAt ||= new Date());
-
 const MAX_IMAGES = 6;
 const MAX_BYTES = 12 * 1024 * 1024; // 12MB/รูป
-const ENHANCE = path.join(process.cwd(), "scripts/palm-enhance.py");
 // โฟลเดอร์ถาวรชั่วคราว (ไม่ใช่ os.tmpdir ที่อาจโดนล้าง) เพราะ background อ่านทีหลัง · ลบทิ้งหลังอ่านเสร็จ
 const JOBS_ROOT = "/var/tmp/palm-jobs";
 const ALLOWED_ROLES = new Set(["left", "right", "closeup"]);
@@ -48,106 +44,11 @@ function cleanText(v: FormDataEntryValue | null, max: number): string {
     .slice(0, max);
 }
 
-/* rate limit เบา ๆ in-memory: 15 คำขอ/นาที/ip */
-const hits = new Map<string, number[]>();
-function limited(ip: string): boolean {
-  const now = Date.now(), win = 60_000, cap = 15;
-  const arr = (hits.get(ip) || []).filter(t => now - t < win);
-  arr.push(now); hits.set(ip, arr);
-  if (hits.size > 5000) for (const [k, v] of hits) if (!v.some(t => now - t < win)) hits.delete(k);
-  return arr.length > cap;
-}
-
-/* spawn python enhance → {clarity, clear, lines, advise} */
-function enhance(src: string, stem: string): Promise<{ clarity: number; clear: string; advise: string }> {
-  return new Promise((resolve) => {
-    const c = spawn("python3", [ENHANCE, src, stem]);
-    let out = "", err = "", settled = false;
-    const finish = (v: { clarity: number; clear: string; advise: string }) => { if (settled) return; settled = true; clearTimeout(timer); resolve(v); };
-    const timer = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} finish({ clarity: 0, clear: src, advise: "enhance_timeout" }); }, 30_000); // กันแฮงก์
-    c.stdout.on("data", d => (out += d)); c.stderr.on("data", d => (err += d));
-    c.on("close", () => {
-      try {
-        const j = JSON.parse(out.trim());
-        if (j.ok) return finish({ clarity: j.clarity, clear: j.clear, advise: j.advise });
-      } catch { /* fall through */ }
-      finish({ clarity: 0, clear: src, advise: "enhance_failed" }); // ใช้ต้นฉบับ
-    });
-    c.on("error", () => finish({ clarity: 0, clear: src, advise: "enhance_error" }));
-  });
-}
-
-type PalmJobParams = {
-  jobId: string;
-  jobDir: string;
-  srcPaths: string[];        // รูปต้นฉบับที่เขียนลง job_dir แล้ว (background enhance ต่อ)
-  metas: PalmImageMeta[];    // role/target/label/hand ต่อรูป (คำนวณตอน POST · cheap)
-  labels: string[];          // ป้ายกำกับสำหรับ clarity hint
-  lang: string;
-  context: PalmContext;
-};
-
-/* 🔄 worker เบื้องหลัง · ไม่ผูก req.signal → user ปิดจอ/พับมือถือได้ งานวิ่งต่อบน server → เก็บผลลง DB
- * เรียกแบบ detached (ไม่ await) · ต้องไม่ throw ออกนอก (อัปเดต job เสมอ ทั้งสำเร็จ/พลาด) · ลบรูปเสมอ (privacy) */
-async function processPalmJob(p: PalmJobParams): Promise<void> {
-  const { jobId, jobDir, srcPaths, metas, labels, lang, context } = p;
-  try {
-    // 1) enhance ทุกรูป (งานหนัก · อยู่ใน background)
-    const clarityHints: { label: string; clarity: number; advise: string }[] = [];
-    const sendPaths: string[] = [];
-    for (let i = 0; i < srcPaths.length; i++) {
-      const stem = path.join(jobDir, `e_${i}`);
-      const en = await enhance(srcPaths[i], stem);
-      await chmod(en.clear, 0o644).catch(() => {});
-      sendPaths.push(en.clear);
-      clarityHints.push({ label: labels[i] || `image_${i + 1}`, clarity: en.clarity, advise: en.advise });
-    }
-
-    // 2) build prompt + อ่าน (⚠️ ไม่ส่ง signal — งานต้องวิ่งจบแม้ client หลุด)
-    const canon = await loadPalmCanon();
-    const prompt = buildPalmPrompt({ canon, lang, images: metas, clarityHints, context });
-    const vision = await readPalmVision(sendPaths, prompt, undefined);
-
-    // 3) parse
-    let reading;
-    try { reading = parsePalmResult(vision.text); }
-    catch {
-      await refundPalmJobBilling(jobId, "parse_failed").catch(() => {});
-      await q(`UPDATE palm_jobs SET status='error', error=$2, engine=$3, updated_at=now() WHERE id=$1`,
-        [jobId, "parse_failed", vision.engine]).catch(() => {});
-      return;
-    }
-
-    const readingText = JSON.stringify(reading);
-    const billing = await settlePalmJobBilling(jobId, readingText.length);
-    const result = {
-      ok: true,
-      engine: vision.engine,
-      lang,
-      clarity_hints: clarityHints,
-      reading,
-      reshoot: reshootTargets(reading),
-      image_count: srcPaths.length,
-      yam: billing.ok ? { charged: billing.charged, balance: billing.balance_after } : null,
-    };
-    await q(`UPDATE palm_jobs SET status='done', result=$2, engine=$3, updated_at=now() WHERE id=$1`,
-      [jobId, JSON.stringify(result), vision.engine]);
-  } catch (e) {
-    const msg = ((e as Error)?.message || "read_failed").slice(0, 200);
-    await refundPalmJobBilling(jobId, msg).catch(() => {});
-    await q(`UPDATE palm_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1`, [jobId, msg]).catch(() => {});
-  } finally {
-    await rm(jobDir, { recursive: true, force: true }).catch(() => {}); // ลบรูปทันทีหลังอ่านเสร็จ/พลาด (privacy)
-  }
-}
-
 export async function POST(req: NextRequest) {
   const sess = await getSession();
   if (!sess) return NextResponse.json({ ok: false, error: "auth_required" }, { status: 401 });
-  // IP จริงจาก nginx (X-Real-IP=$remote_addr) ก่อน · ถ้าไม่มีใช้ hop ขวาสุดของ XFF (=ที่ proxy เห็น) · ห้ามใช้ตัวซ้ายสุด (client ปลอมได้ → ข้าม rate limit)
-  const _xff = req.headers.get("x-forwarded-for");
-  const ip = req.headers.get("x-real-ip")?.trim() || (_xff ? _xff.split(",").pop()!.trim() : "") || "unknown";
-  if (limited(ip)) return NextResponse.json({ ok: false, error: "rate_limited", message: "คำขอถี่เกินไป รอสักครู่แล้วลองใหม่" }, { status: 429 });
+  const limit = await rateLimit(`palm:${sess.userId}:${clientIp(req)}`, 15, 60_000);
+  if (!limit.ok) return NextResponse.json({ ok: false, error: "rate_limited", message: "คำขอถี่เกินไป รอสักครู่แล้วลองใหม่" }, { status: 429 });
 
   let form: FormData;
   try { form = await req.formData(); }
@@ -175,20 +76,25 @@ export async function POST(req: NextRequest) {
   const jobDir = path.join(JOBS_ROOT, jobId);
   try {
     await mkdir(jobDir, { recursive: true });
-    await chmod(jobDir, 0o755); // ให้ user jarvis (codex/grok) เข้าถึงได้
+    await chmod(jobDir, 0o700);
 
     // 1) validate + เขียนรูปลง job_dir (ถาวรชั่วคราว) · เตรียม metas/labels (background อ่านต่อ)
     const srcPaths: string[] = [];
     const metas: PalmImageMeta[] = [];
     const labels: string[] = [];
+    const requestHash = createHash("sha256")
+      .update(sess.userId)
+      .update(JSON.stringify(context))
+      .update(String(Math.floor(Date.now() / 600_000)));
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
       if (!f.size) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "empty_image", message: `รูปที่ ${i + 1} ว่างเปล่า/ไฟล์เสีย` }, { status: 400 }); }
       if (f.size > MAX_BYTES) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "too_big", message: `รูปที่ ${i + 1} ใหญ่เกิน 12MB` }, { status: 400 }); }
       const buf = Buffer.from(await f.arrayBuffer());
       if (!isImageMagic(buf)) { await rm(jobDir, { recursive: true, force: true }).catch(() => {}); return NextResponse.json({ ok: false, error: "not_image", message: `รูปที่ ${i + 1} ไม่ใช่ไฟล์ภาพ (รองรับ JPEG/PNG/WEBP)` }, { status: 400 }); }
+      requestHash.update(buf);
       const src = path.join(jobDir, `src_${i}.jpg`);
-      await writeFile(src, buf); await chmod(src, 0o644);
+      await writeFile(src, buf); await chmod(src, 0o600);
       srcPaths.push(src);
 
       const role = (ALLOWED_ROLES.has(roles[i]) ? roles[i] : (i === 0 ? "left" : i === 1 ? "right" : "closeup")) as PalmImageMeta["role"];
@@ -203,7 +109,13 @@ export async function POST(req: NextRequest) {
       labels.push(label);
     }
 
-    // 2) INSERT palm_jobs (running) → คืน job_id ทันที (user พับจอ/ปิดแอปได้)
+    const suppliedIdempotency = String(req.headers.get("idempotency-key") || "")
+      .replace(/[^a-zA-Z0-9_.:-]/g, "")
+      .slice(0, 80);
+    const idempotencyKey = suppliedIdempotency || requestHash.digest("hex");
+    const payload: PalmJobPayload = { jobId, jobDir, srcPaths, metas, labels, lang, context };
+
+    // Reserve once, persist the worker payload, then publish to BullMQ.
     const job = await createReservedPalmJob({
       id: jobId,
       userId: sess.userId,
@@ -211,16 +123,30 @@ export async function POST(req: NextRequest) {
       lang,
       jobDir,
       imageCount: files.length,
+      idempotencyKey,
+      payload,
     });
     if (!job.ok) {
       await rm(jobDir, { recursive: true, force: true }).catch(() => {});
       return NextResponse.json({ ok: false, error: job.error }, { status: 402 });
     }
+    if (job.existing) {
+      await rm(jobDir, { recursive: true, force: true }).catch(() => {});
+      return NextResponse.json({ ok: true, job_id: job.id, status: job.status, deduplicated: true }, { status: 202 });
+    }
 
-    // 3) 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
-    void processPalmJob({ jobId, jobDir, srcPaths, metas, labels, lang, context });
+    try {
+      await enqueuePalmJob(jobId);
+    } catch (error) {
+      const message = (error as Error).message || "queue_unavailable";
+      await refundPalmJobBilling(jobId, "queue_unavailable").catch(() => {});
+      await q(`UPDATE palm_jobs SET status='error',error='queue_unavailable',updated_at=now() WHERE id=$1`, [jobId]).catch(() => {});
+      await rm(jobDir, { recursive: true, force: true }).catch(() => {});
+      console.error("[palmistry/queue]", message);
+      return NextResponse.json({ ok: false, error: "queue_unavailable" }, { status: 503 });
+    }
 
-    return NextResponse.json({ ok: true, job_id: jobId, status: "running" }, { status: 202 });
+    return NextResponse.json({ ok: true, job_id: jobId, status: "queued" }, { status: 202 });
   } catch (e) {
     await rm(jobDir, { recursive: true, force: true }).catch(() => {});
     const msg = (e as Error).message || "error";

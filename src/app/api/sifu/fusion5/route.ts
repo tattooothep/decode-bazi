@@ -10,15 +10,14 @@
  */
 import { NextResponse } from "next/server";
 import { getSession, signSession, type Session } from "@/lib/auth";
-import { q1, q } from "@/lib/db";
+import { pool, q1, q } from "@/lib/db";
 import { renderPalmBlock } from "@/lib/palm/prompt";
 import {
-  spendHoursForUser,
-  refundHoursForUser,
   charsToHours,
   getHourBalanceForUser,
 } from "@/lib/spend-hours";
-import { createHash } from "crypto";
+import { createHash, randomUUID, timingSafeEqual } from "crypto";
+import { enqueueFusionJob } from "@/lib/jobs/queue";
 import { DISCIPLINES, JUDGE_MODEL, type ScienceId } from "@/lib/fusion5/disciplines";
 import { buildSciencePrompt, buildJudgePrompt, resolveFusionTimingReference, type BirthData } from "@/lib/fusion5/build-prompt";
 import { isSifuAnswerLang } from "@/lib/sifu-answer-lang"; // r414-i18n9: allowlist ภาษาคำตอบ 9 ภาษา
@@ -39,7 +38,6 @@ const INTERNAL_BASE = process.env.SIFU_INTERNAL_BASE_URL || "http://127.0.0.1:33
 // panel ขนาน(parallel) + judge(sequential หลัง) ต้อง < maxDuration 800s → ตั้ง 360s ต่อ call (360+360=720<800)
 const CHILD_TIMEOUT_MS = Number(process.env.SIFU_FUSION5_CHILD_TIMEOUT_MS || 360_000);
 const FEATURE = "sifu_fusion5";
-const SERVER_STARTED_AT = new Date();
 /**
  * กัน "ยามน้อยแต่ติ๊กหลายศาสตร์" — จองขั้นต่ำก่อนเรียก AI (escrow)
  * หักจริงท้ายงานตามตัวอักษร (≈30 ตัว/1 ยาม) · เกิน escrow ดูดเพิ่ม · เหลือน้อยกว่าคืน
@@ -351,6 +349,62 @@ type WorkerParams = {
   includePalm: boolean;                // ศาสตร์ที่ 7: ลายมือ (toggle · ดึง palm_readings ที่บันทึก · ไม่ birth-based)
 };
 
+type StoredWorkerParams = Omit<WorkerParams, "cookie">;
+
+function authorizedWorker(req: Request): boolean {
+  const expected = process.env.HOURKEY_INTERNAL_JOB_TOKEN || "";
+  const supplied = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+  if (!expected || !supplied) return false;
+  const a = Buffer.from(expected);
+  const b = Buffer.from(supplied);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+async function processQueuedFusion5(req: Request, body: Record<string, unknown>) {
+  if (!authorizedWorker(req)) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  const jobId = cleanId(body.jobId);
+  if (!jobId) return NextResponse.json({ error: "bad_job_id" }, { status: 400 });
+  const client = await pool.connect();
+  let locked = false;
+  try {
+    const lock = await client.query<{ locked: boolean }>(
+      `SELECT pg_try_advisory_lock(hashtext($1)) AS locked`,
+      [`fusion5-worker:${jobId}`]
+    );
+    locked = Boolean(lock.rows[0]?.locked);
+    if (!locked) return NextResponse.json({ error: "already_running" }, { status: 409 });
+    const found = await client.query<{ status: string; payload: StoredWorkerParams | null }>(
+      `SELECT status,payload FROM fusion5_jobs WHERE id=$1`,
+      [jobId]
+    );
+    const row = found.rows[0];
+    if (!row) return NextResponse.json({ error: "job_not_found" }, { status: 404 });
+    if (row.status === "done" || row.status === "error") {
+      return NextResponse.json({ ok: true, terminal: true, status: row.status });
+    }
+    if (!row.payload?.session) return NextResponse.json({ error: "payload_missing" }, { status: 422 });
+    await client.query(
+      `UPDATE fusion5_jobs SET status='running',attempt_count=attempt_count+1,heartbeat_at=now(),updated_at=now() WHERE id=$1`,
+      [jobId]
+    );
+    await client.query(
+      `UPDATE hourkey_jobs SET status='running',attempts=attempts+1,started_at=COALESCE(started_at,now()),heartbeat_at=now(),updated_at=now() WHERE id=$1`,
+      [jobId]
+    );
+    const params: WorkerParams = {
+      ...row.payload,
+      cookie: await authCookie(row.payload.session),
+      started: Date.now(),
+    };
+    await processFusion5(jobId, params);
+    const final = await client.query<{ status: string }>(`SELECT status FROM fusion5_jobs WHERE id=$1`, [jobId]);
+    return NextResponse.json({ ok: true, status: final.rows[0]?.status || "unknown" });
+  } finally {
+    if (locked) await client.query(`SELECT pg_advisory_unlock(hashtext($1))`, [`fusion5-worker:${jobId}`]).catch(() => {});
+    client.release();
+  }
+}
+
 type Fusion5JobRow = {
   id: string;
   status: string;
@@ -386,23 +440,16 @@ function cleanIdListFromSearch(url: URL): string[] {
 async function reconcileStaleJob(row: Fusion5JobRow, userId: string): Promise<Fusion5JobRow> {
   const createdMs = new Date(row.created_at).getTime();
   const stale = row.status === "running" && Date.now() - createdMs > 25 * 60_000;
-  const orphanedByRestart = row.status === "running" && Number.isFinite(createdMs) && createdMs < SERVER_STARTED_AT.getTime() - 1_000;
-  if (!stale && !orphanedByRestart) return row;
-  const reason = orphanedByRestart ? "server_restart_orphan" : "timeout";
-  const upd = await q1<{ sciences: string[] | null; profile_ids: string[] | null; guest_births: unknown }>(
+  if (!stale) return row;
+  const reason = "timeout";
+  const upd = await q1<{ id: string }>(
     `UPDATE fusion5_jobs
         SET status='error', error=$3, updated_at=now()
       WHERE id=$1 AND user_id=$2 AND status='running'
-      RETURNING sciences, profile_ids, guest_births`,
+      RETURNING id`,
     [row.id, userId, reason]
   );
-  if (upd) {
-    // งานยัง running = escrow ยังค้างเต็ม · คืนตามสูตรจอง (ยังไม่ settle ตามตัวอักษร)
-    const nSci = (upd.sciences || []).length || 1;
-    const nCharts = ((upd.profile_ids || []).length || 0) + (Array.isArray(upd.guest_births) ? upd.guest_births.length : 0) || 1;
-    const escrow = fusionEscrowYam(nSci, nCharts);
-    if (escrow > 0) await refundHoursForUser(userId, escrow, FEATURE).catch(() => {});
-  }
+  if (upd) await settleFusion5Billing(row.id, userId, 0).catch(() => {});
   return { ...row, status: "error", result: null, error: reason };
 }
 
@@ -541,6 +588,87 @@ async function logFusion5History(
   } catch (e) {
     console.warn("[fusion5] history log failed:", e instanceof Error ? e.message : e);
     return null;
+  }
+}
+
+type FusionBillingResult = { charged: number; refunded: number; extra: number };
+
+async function settleFusion5Billing(jobId: string, userId: string, targetCharge: number): Promise<FusionBillingResult> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const found = await client.query<{
+      billing_status: string;
+      yam_reserved: number;
+      yam_charged: number;
+      yam_refunded: number;
+      yam_extra: number;
+    }>(
+      `SELECT billing_status,yam_reserved,yam_charged,yam_refunded,yam_extra
+         FROM fusion5_jobs WHERE id=$1 AND user_id=$2 FOR UPDATE`,
+      [jobId, userId]
+    );
+    const job = found.rows[0];
+    if (!job) throw new Error("fusion_billing_job_missing");
+    if (job.billing_status !== "reserved") {
+      await client.query("COMMIT");
+      return {
+        charged: Number(job.yam_charged) || 0,
+        refunded: Number(job.yam_refunded) || 0,
+        extra: Number(job.yam_extra) || 0,
+      };
+    }
+
+    const reserved = Math.max(0, Number(job.yam_reserved) || 0);
+    const wanted = Math.max(0, Math.floor(targetCharge));
+    let refunded = 0;
+    let extra = 0;
+    if (wanted < reserved) {
+      refunded = reserved - wanted;
+      const user = await client.query<{ hour_balance: number }>(
+        `UPDATE users SET hour_balance=hour_balance+$2 WHERE id=$1 RETURNING hour_balance`,
+        [userId, refunded]
+      );
+      if (!user.rows[0]) throw new Error("fusion_billing_user_missing");
+      await client.query(
+        `INSERT INTO hour_transactions
+         (user_id,delta,reason,balance_after,ref_feature,ref_payment_id)
+         VALUES ($1,$2,'refund_sifu_fusion5',$3,$4,$5)`,
+        [userId, refunded, user.rows[0].hour_balance, FEATURE, `fusion5_job:${jobId}:refund`]
+      );
+    } else if (wanted > reserved) {
+      const user = await client.query<{ old_balance: number; hour_balance: number }>(
+        `WITH current AS (SELECT hour_balance AS old_balance FROM users WHERE id=$1 FOR UPDATE)
+         UPDATE users SET hour_balance=GREATEST(0,hour_balance-$2)
+         FROM current WHERE users.id=$1
+         RETURNING current.old_balance,users.hour_balance`,
+        [userId, wanted - reserved]
+      );
+      if (!user.rows[0]) throw new Error("fusion_billing_user_missing");
+      extra = Math.max(0, Number(user.rows[0].old_balance) - Number(user.rows[0].hour_balance));
+      if (extra > 0) {
+        await client.query(
+          `INSERT INTO hour_transactions
+           (user_id,delta,reason,balance_after,ref_feature,ref_payment_id)
+           VALUES ($1,$2,'spend_sifu_fusion5',$3,$4,$5)`,
+          [userId, -extra, user.rows[0].hour_balance, FEATURE, `fusion5_job:${jobId}:extra`]
+        );
+      }
+    }
+    const charged = Math.max(0, reserved - refunded + extra);
+    await client.query(
+      `UPDATE fusion5_jobs
+          SET billing_status=$2,yam_charged=$3,yam_refunded=$4,yam_extra=$5,billed_at=now(),updated_at=now()
+        WHERE id=$1`,
+      [jobId, charged > 0 ? "settled" : "refunded", charged, refunded, extra]
+    );
+    await client.query("COMMIT");
+    return { charged, refunded, extra };
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
+  } finally {
+    client.release();
   }
 }
 
@@ -693,34 +821,15 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
       } catch (e) { judge = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "judge_error", model: JUDGE_MODEL }; }
     }
 
-    // settle escrow vs actual (chars): คืนส่วนเกิน · ดูดเพิ่มถ้าคำตอบยาวเกินจอง · ล้มทั้งงาน = คืนเต็ม
-    let refunded = 0;
-    let extraSpent = 0;
-    if (okPanels.length === 0) {
-      if (reservedYam > 0) {
-        await refundHoursForUser(userId, reservedYam, FEATURE).catch(() => {});
-        refunded = reservedYam;
-      }
-      actualYam = 0;
-    } else if (actualYam < reservedYam) {
-      refunded = reservedYam - actualYam;
-      if (refunded > 0) await refundHoursForUser(userId, refunded, FEATURE).catch(() => {});
-    } else if (actualYam > reservedYam) {
-      const extra = actualYam - reservedYam;
-      const sp = await spendHoursForUser(userId, extra, FEATURE);
-      if (sp.ok) extraSpent = extra;
-      else {
-        // ยอดไม่พอสำหรับส่วนเกิน · ดูดเท่าที่มีถึง 0 (คำตอบส่งแล้ว · ไม่ปล่อยฟรีทั้งหมด)
-        const bal = await getHourBalanceForUser(userId);
-        if (bal > 0) {
-          const sp2 = await spendHoursForUser(userId, bal, FEATURE);
-          if (sp2.ok) extraSpent = bal;
-        }
-      }
-    }
+    // One transaction owns settlement for this job. A stalled BullMQ retry can
+    // re-enter safely without charging or refunding the account twice.
+    if (okPanels.length === 0) actualYam = 0;
+    const billing = await settleFusion5Billing(jobId, userId, okPanels.length ? actualYam : 0);
+    const refunded = billing.refunded;
+    const extraSpent = billing.extra;
     settled = true;
 
-    const netSpent = okPanels.length === 0 ? 0 : Math.max(0, reservedYam - refunded + extraSpent);
+    const netSpent = billing.charged;
     const reply = judge.ok && judge.reply ? judge.reply
       : okPanels.length === 1 ? okPanels[0].reply!
       : okPanels.length ? okPanels.map((x) => `【${x.label}】\n${x.reply}`).join("\n\n")
@@ -752,20 +861,21 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     const historyId = await logFusion5History(jobId, result, p, fusionStatus, reservedYam + extraSpent, refunded);
     if (historyId) (result.fusion5 as Record<string, unknown>).historyId = historyId;
     await q(`UPDATE fusion5_jobs SET status='done', result=$2, updated_at=now() WHERE id=$1`, [jobId, JSON.stringify(result)]);
+    await q(`UPDATE hourkey_jobs SET status='succeeded',finished_at=now(),heartbeat_at=now(),updated_at=now() WHERE id=$1`, [jobId]).catch(() => {});
     notifyFusionDone(p.userId); // r380: fire-and-forget · push-sender เคารพ prefs/quiet hours + ไม่ throw
   } catch (e) {
     // error กลางทาง · ยังไม่ settle = คืน escrow ทั้งก้อน (AI อาจวิ่งไปแล้วบางส่วน · ยอม trade-off นี้)
-    if (!settled && p.reservedYam > 0) {
-      await refundHoursForUser(p.userId, p.reservedYam, FEATURE).catch(() => {});
-    }
+    if (!settled && p.reservedYam > 0) await settleFusion5Billing(jobId, p.userId, 0).catch(() => {});
     await q(`UPDATE fusion5_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1`, [jobId, (e instanceof Error ? e.message : String(e)).slice(0, 200)]).catch(() => {});
+    await q(`UPDATE hourkey_jobs SET status='failed',error_code='fusion_failed',finished_at=now(),heartbeat_at=now(),updated_at=now() WHERE id=$1`, [jobId]).catch(() => {});
   }
 }
 
 export async function POST(req: Request) {
-  let reservedYam = 0, userId = "";
+  let userId = "";
   try {
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    if (body.__worker === true) return processQueuedFusion5(req, body);
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "not_logged_in" }, { status: 401 });
     const orgId = session.orgId ?? null;
@@ -831,7 +941,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: onlyGroupSkip ? "bazi_group_not_supported" : "all_sciences_need_birthtime", skipped, skippedReasons }, { status: 400 });
     }
 
-    const runningCnt = await q1<{ n: string }>(`SELECT count(*)::text AS n FROM fusion5_jobs WHERE user_id=$1 AND status='running' AND created_at > now() - interval '25 min'`, [userId]);
+    const suppliedIdempotency = String(req.headers.get("idempotency-key") || "")
+      .replace(/[^a-zA-Z0-9_.:-]/g, "")
+      .slice(0, 80);
+    const idempotencyKey = suppliedIdempotency || createHash("sha256")
+      .update(JSON.stringify({ userId, profileIds, guestInputs, runSciences, includePalm, question, bucket: Math.floor(Date.now() / 600_000) }))
+      .digest("hex");
+    const duplicate = await q1<{ id: string; status: string }>(
+      `SELECT id,status FROM fusion5_jobs WHERE user_id=$1 AND idempotency_key=$2 LIMIT 1`,
+      [userId, idempotencyKey]
+    );
+    if (duplicate) {
+      return NextResponse.json({ jobId: duplicate.id, status: duplicate.status, deduplicated: true, threadId: threadId || duplicate.id });
+    }
+
+    const runningCnt = await q1<{ n: string }>(`SELECT count(*)::text AS n FROM fusion5_jobs WHERE user_id=$1 AND status IN ('queued','running') AND created_at > now() - interval '25 min'`, [userId]);
     if (runningCnt && Number(runningCnt.n) >= 2) return NextResponse.json({ error: "too_many_running" }, { status: 429 });
 
     // สิทธิ์: จำกัดจำนวนศาสตร์/ดวงตาม trial|free|premium|master
@@ -888,15 +1012,6 @@ export async function POST(req: Request) {
         { status: 402 }
       );
     }
-    const rsv = await spendHoursForUser(userId, escrow, FEATURE);
-    if (!rsv.ok) {
-      return NextResponse.json(
-        { error: "insufficient_hours", needed: escrow, balance: rsv.balance ?? balNow, billing: "chars+escrow" },
-        { status: 402 }
-      );
-    }
-    reservedYam = escrow;
-
     // r369: Cross-Science Resonance — engine deterministic หา "จุดหลายศาสตร์ตรงกัน" ก่อน AI (additive)
     // คำนวณ sync ตอน POST (มีงบเวลาใน buildResonance: คนแรกเสมอ · คนถัดไปข้ามถ้าเกิน 8s) · พังทั้งก้อน = null (ไม่ล้ม job)
     let resonance: FusionResonance | null = null;
@@ -931,31 +1046,73 @@ export async function POST(req: Request) {
       console.warn("[fusion5] day sniper failed:", e instanceof Error ? e.message : e);
     }
 
-    // สร้าง job (running) → คืน jobId ทันที → ประมวลผลเบื้องหลัง (user พับจอได้)
-    const cookie = await authCookie(session);
-    const job = await q1<{ id: string }>(
-      `INSERT INTO fusion5_jobs(user_id, org_id, status, question, sciences, profile_ids, pair_mode, resonance, guest_births)
-       VALUES ($1,$2,'running',$3,$4,$5,$6,$7,$8) RETURNING id`,
-      [userId, orgId, question, runSciences, profileIds, births.length > 1, resonance ? JSON.stringify(resonance) : null,
-       guestInputs.length ? JSON.stringify(guestInputs) : null] // r381: resume/GET คืน guest ให้ UI วาดชื่อได้ (ไม่มี PII เกิน)
-    );
-    if (!job) {
-      await refundHoursForUser(userId, reservedYam, FEATURE).catch(() => {});
-      return NextResponse.json({ error: "job_create_failed" }, { status: 500 });
-    }
-    reservedYam = 0; // job รับช่วงดูแล refund แล้ว (outer catch ไม่ต้องคืนซ้ำ)
-
-    // 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
-    void processFusion5(job.id, {
-      session, userId, cookie, runSciences, births, profileIds, guestBirths: guestInputs,
+    const jobId = randomUUID();
+    const storedPayload: StoredWorkerParams = {
+      session, userId, runSciences, births, profileIds, guestBirths: guestInputs,
       question, lang, reservedYam: escrow, skipped, skippedReasons, history,
-      threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance, includePalm,
-    });
+      threadId: threadId || jobId, threadProfileId, started: Date.now(), resonance, includePalm,
+    };
+    const client = await pool.connect();
+    let reservationFailed = false;
+    try {
+      await client.query("BEGIN");
+      const held = await client.query<{ hour_balance: number }>(
+        `UPDATE users SET hour_balance=hour_balance-$2
+          WHERE id=$1 AND hour_balance >= $2
+          RETURNING hour_balance`,
+        [userId, escrow]
+      );
+      if (!held.rows[0]) {
+        reservationFailed = true;
+        await client.query("ROLLBACK");
+      } else {
+        await client.query(
+          `INSERT INTO hour_transactions
+           (user_id,delta,reason,balance_after,ref_feature,ref_payment_id)
+           VALUES ($1,$2,'spend_sifu_fusion5_pre',$3,$4,$5)`,
+          [userId, -escrow, held.rows[0].hour_balance, FEATURE, `fusion5_job:${jobId}:reserve`]
+        );
+        await client.query(
+          `INSERT INTO fusion5_jobs
+           (id,user_id,org_id,status,question,sciences,profile_ids,pair_mode,resonance,guest_births,idempotency_key,payload,billing_status,yam_reserved)
+           VALUES ($1,$2,$3,'queued',$4,$5,$6,$7,$8,$9,$10,$11,'reserved',$12)`,
+          [jobId, userId, orgId, question, runSciences, profileIds, births.length > 1,
+           resonance ? JSON.stringify(resonance) : null,
+           guestInputs.length ? JSON.stringify(guestInputs) : null,
+           idempotencyKey, JSON.stringify(storedPayload), escrow]
+        );
+        await client.query(
+          `INSERT INTO hourkey_jobs
+           (id,user_id,org_id,feature,queue_name,status,priority,idempotency_key,request_hash,max_attempts)
+           VALUES ($1,$2,$3,'fusion5','hourkey-ai-fusion','waiting',40,$4,$4,3)`,
+          [jobId, userId, orgId, idempotencyKey]
+        );
+        await client.query("COMMIT");
+      }
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+    if (reservationFailed) {
+      return NextResponse.json({ error: "insufficient_hours", needed: escrow, balance: await getHourBalanceForUser(userId), billing: "chars+escrow" }, { status: 402 });
+    }
+
+    try {
+      await enqueueFusionJob(jobId);
+    } catch (error) {
+      await settleFusion5Billing(jobId, userId, 0).catch(() => {});
+      await q(`UPDATE fusion5_jobs SET status='error',error='queue_unavailable',updated_at=now() WHERE id=$1`, [jobId]).catch(() => {});
+      await q(`UPDATE hourkey_jobs SET status='failed',error_code='queue_unavailable',finished_at=now(),updated_at=now() WHERE id=$1`, [jobId]).catch(() => {});
+      console.error("[fusion5/queue]", error instanceof Error ? error.message : error);
+      return NextResponse.json({ error: "queue_unavailable" }, { status: 503 });
+    }
 
     return NextResponse.json({
-      jobId: job.id,
-      status: "running",
-      threadId: threadId || job.id,
+      jobId,
+      status: "queued",
+      threadId: threadId || jobId,
       yam: {
         billing: "chars+escrow",
         escrow,
@@ -970,7 +1127,6 @@ export async function POST(req: Request) {
       resonance,
     });
   } catch {
-    if (reservedYam > 0 && userId) await refundHoursForUser(userId, reservedYam, FEATURE).catch(() => {});
     return NextResponse.json({ error: "fusion5_error" }, { status: 500 });
   }
 }
@@ -1006,7 +1162,7 @@ export async function GET(req: Request) {
     if (sciences.length) where.push(`sciences && ${push(sciences)}::text[]`);
     // ไม่มีคำถามจาก pending client = กู้งานที่ยัง running + งาน done ที่ยังไม่เคยแสดงผล (deliver-once ผ่าน seen_at)
     // → มือถือพับจอจนงานเสร็จ + localStorage หาย ก็ยังได้คำตอบกลับ · แสดงแล้ว mark seen ไม่เด้งซ้ำ
-    if (!question) where.push(`(status='running' OR (status='done' AND seen_at IS NULL))`);
+    if (!question) where.push(`(status IN ('queued','running') OR (status='done' AND seen_at IS NULL))`);
 
     const row = await q1<Fusion5JobRow>(
       `SELECT id, status, result, error, created_at::text AS created_at,

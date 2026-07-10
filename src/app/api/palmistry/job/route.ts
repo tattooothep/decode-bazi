@@ -13,11 +13,6 @@ import { refundPalmJobBilling } from "@/lib/palm-billing";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// ⚠️ ต้องเป็น process-global ร่วมกับ read route (คนละ module แต่ process เดียว) — read route โหลดก่อนเสมอ (POST มาก่อน poll)
-// ถ้าตั้งใน job module เอง มันโหลด lazy ตอน poll แรก → อาจ "หลัง" งานที่เพิ่งสร้าง → orphan false-positive กับงานแรกหลัง restart
-const _g = globalThis as unknown as { __palmServerStartedAt?: Date };
-const SERVER_STARTED_AT: Date = _g.__palmServerStartedAt || (_g.__palmServerStartedAt = new Date());
-
 function cleanId(x: unknown): string | null {
   const s = String(x || "").trim();
   return /^[0-9a-f-]{8,40}$/i.test(s) ? s : null;
@@ -34,13 +29,13 @@ type PalmJobRow = {
   created_at: string;
 };
 
-/* recovery: งาน running เก่า >25 นาที หรือสร้างก่อน server restart → mark error 'timeout' + ลบรูปค้าง (privacy) */
+/* BullMQ retries across web restarts. Only a genuinely stale running job is
+ * reconciled here; a restart is no longer proof that the worker was lost. */
 async function reconcileStaleJob(row: PalmJobRow): Promise<PalmJobRow> {
   const createdMs = new Date(row.created_at).getTime();
   const stale = row.status === "running" && Date.now() - createdMs > 25 * 60_000;
-  const orphanedByRestart = row.status === "running" && Number.isFinite(createdMs) && createdMs < SERVER_STARTED_AT.getTime() - 1_000;
-  if (!stale && !orphanedByRestart) return row;
-  const reason = orphanedByRestart ? "server_restart_orphan" : "timeout";
+  if (!stale) return row;
+  const reason = "timeout";
   await q(`UPDATE palm_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1 AND status='running'`, [row.id, reason]).catch(() => {});
   await refundPalmJobBilling(row.id, reason).catch(() => {});
   if (row.job_dir) await rm(row.job_dir, { recursive: true, force: true }).catch(() => {}); // runner ตายแล้ว = ลบรูปที่ค้าง
@@ -82,5 +77,5 @@ export async function GET(req: Request) {
   if (safeRow.status === "error") {
     return NextResponse.json({ ok: false, status: "error", error: safeRow.error || "read_failed", engine: safeRow.engine || null }, { headers });
   }
-  return NextResponse.json({ ok: true, status: "running", job_id: safeRow.id }, { headers });
+  return NextResponse.json({ ok: true, status: safeRow.status, job_id: safeRow.id }, { headers });
 }

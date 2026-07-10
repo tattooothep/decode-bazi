@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const raw = String(body.identifier || body.email || body.phone || "").trim();
   if (!raw) return NextResponse.json({ error: "กรอกอีเมลหรือเบอร์โทร" }, { status: 400 });
   /* 1 มิ.ย. · กันยิง email/SMS รีเซ็ตเปลืองเงิน · 3 ครั้ง/10 นาที ต่อ (IP + identifier) */
-  const rl = rateLimit(`forgot:${clientIp(req)}:${raw.toLowerCase()}`, 3, 600_000);
+  const rl = await rateLimit(`forgot:${clientIp(req)}:${raw.toLowerCase()}`, 3, 600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ขอรีเซ็ตบ่อยเกินไป · กรุณารอสักครู่" },

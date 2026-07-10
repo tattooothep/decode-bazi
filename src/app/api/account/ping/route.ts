@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const acc = await getAccountUser();
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
 
-  const rl = rateLimit(`acct-ping:${acc.u.id}`, 60, 3600_000);
+  const rl = await rateLimit(`acct-ping:${acc.u.id}`, 60, 3600_000);
   if (!rl.ok) return NextResponse.json({ ok: true, skipped: true });
 
   const body = await req.json().catch(() => ({}));

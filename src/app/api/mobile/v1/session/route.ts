@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
 
-  const rl = rateLimit(`mobile-login:${clientIp(req)}:${email}`, 5, 60_000);
+  const rl = await rateLimit(`mobile-login:${clientIp(req)}:${email}`, 5, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { ok: false, error: "ลองเข้าสู่ระบบบ่อยเกินไป · กรุณารอสักครู่แล้วลองใหม่" },

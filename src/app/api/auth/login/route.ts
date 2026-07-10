@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
   /* 1 มิ.ย. · กัน brute-force เดารหัส · 5 ครั้ง/นาที ต่อ (IP + อีเมล) */
-  const rl = rateLimit(`login:${clientIp(req)}:${email}`, 5, 60_000);
+  const rl = await rateLimit(`login:${clientIp(req)}:${email}`, 5, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ลองเข้าสู่ระบบบ่อยเกินไป · กรุณารอสักครู่แล้วลองใหม่" },

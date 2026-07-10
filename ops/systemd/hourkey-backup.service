@@ -1,0 +1,10 @@
+[Unit]
+Description=Hourkey PostgreSQL backup and restore verification
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/releases/current
+ExecStart=/root/releases/current/scripts/ops/backup-hourkey.sh
+TimeoutStartSec=1800

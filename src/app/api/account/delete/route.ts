@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const { u } = acc;
 
-  const rl = rateLimit(`acct-del:${u.id}:${clientIpFrom(req)}`, 5, 3600_000);
+  const rl = await rateLimit(`acct-del:${u.id}:${clientIpFrom(req)}`, 5, 3600_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "ลองยืนยันบ่อยเกินไป กรุณารอ 1 ชั่วโมง" }, { status: 429 });
   }

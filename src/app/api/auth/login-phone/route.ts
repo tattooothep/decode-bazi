@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ระบุเบอร์โทรและรหัสผ่าน" }, { status: 400 });
   }
   /* 1 มิ.ย. · กัน brute-force เดารหัส · 5 ครั้ง/นาที ต่อ (IP + เบอร์) */
-  const rl = rateLimit(`loginphone:${clientIp(req)}:${phone}`, 5, 60_000);
+  const rl = await rateLimit(`loginphone:${clientIp(req)}:${phone}`, 5, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ลองเข้าสู่ระบบบ่อยเกินไป · กรุณารอสักครู่แล้วลองใหม่" },

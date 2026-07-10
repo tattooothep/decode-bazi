@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const acc = await getAccountUser();
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
 
-  const rl = rateLimit(`avatar:${acc.u.id}`, 20, 3600_000);
+  const rl = await rateLimit(`avatar:${acc.u.id}`, 20, 3600_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "อัปโหลดบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   }

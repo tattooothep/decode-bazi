@@ -7,6 +7,7 @@ import { spawn } from "child_process";
 import { StringDecoder } from "string_decoder";
 import { readFile } from "fs/promises";
 import { readFileSync } from "fs";
+import { runWithProviderCircuit } from "@/lib/ai/provider-health";
 
 const CHILD_USER = process.env.PALM_CHILD_USER || "jarvis";
 const CODEX_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
@@ -160,7 +161,7 @@ export async function readPalmVision(imagePaths: string[], prompt: string, signa
   let lastErr: unknown;
   for (const name of order) {
     try {
-      return await engines[name](imagePaths, prompt, signal);
+      return await runWithProviderCircuit(`palm:${name}`, () => engines[name](imagePaths, prompt, signal));
     } catch (e) {
       if (signal?.aborted) throw e;
       lastErr = e;

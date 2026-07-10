@@ -14,6 +14,7 @@ import { logResearchAiMessage } from "@/lib/research-log";
 import { ensureServerEnv } from "@/lib/server-env";
 import { refundHours, spendHours, type RefundResult, type SpendResult } from "@/lib/spend-hours";
 import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
+import { getRedis } from "@/lib/redis";
 
 loadEnvConfig(process.cwd(), false, console, true);
 ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
@@ -178,6 +179,38 @@ const fusionStatusGlobal = globalThis as typeof globalThis & {
 const fusionStatusStore = fusionStatusGlobal.__hkSifuFusionStatus || new Map<string, FusionRunStatus>();
 fusionStatusGlobal.__hkSifuFusionStatus = fusionStatusStore;
 
+function fusionStatusKey(runId: string): string {
+  return `hk:fusion:status:${runId}`;
+}
+
+async function persistFusionStatus(status: FusionRunStatus): Promise<void> {
+  try {
+    const redis = getRedis();
+    if (redis.status === "wait") await redis.connect();
+    await redis.set(fusionStatusKey(status.runId), JSON.stringify(status), "PX", FUSION_STATUS_TTL_MS);
+  } catch (error) {
+    console.error("[sifu-fusion] progress persistence failed", error instanceof Error ? error.message : error);
+  }
+}
+
+async function readFusionStatus(runId: string): Promise<FusionRunStatus | null> {
+  const local = fusionStatusStore.get(runId);
+  if (local) return local;
+  try {
+    const redis = getRedis();
+    if (redis.status === "wait") await redis.connect();
+    const raw = await redis.get(fusionStatusKey(runId));
+    if (!raw) return null;
+    const status = JSON.parse(raw) as FusionRunStatus;
+    if (!status || status.runId !== runId || typeof status.userId !== "string") return null;
+    fusionStatusStore.set(runId, status);
+    return status;
+  } catch (error) {
+    console.error("[sifu-fusion] progress read failed", error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
 function pruneFusionStatusStore() {
   const cutoff = Date.now() - FUSION_STATUS_TTL_MS;
   for (const [runId, status] of fusionStatusStore.entries()) {
@@ -213,12 +246,14 @@ function initFusionStatus(runId: string | null, panelModels: SifuModel[], userId
     judge: {},
   };
   fusionStatusStore.set(runId, status);
+  void persistFusionStatus(status);
   return status;
 }
 
 function saveFusionStatus(status: FusionRunStatus) {
   status.updatedAt = Date.now();
   fusionStatusStore.set(status.runId, status);
+  void persistFusionStatus(status);
 }
 
 function stateFromResult(result: PanelResult): ProgressModelState["state"] {
@@ -1394,7 +1429,7 @@ export async function GET(req: Request) {
   const runId = cleanRunId(url.searchParams.get("runId") || url.searchParams.get("run_id"));
   if (!runId) return NextResponse.json({ error: "run_id_required" }, { status: 400 });
   pruneFusionStatusStore();
-  const status = fusionStatusStore.get(runId);
+  const status = await readFusionStatus(runId);
   if (!status) return NextResponse.json({ error: "run_not_found" }, { status: 404 });
   if (status.userId !== session.userId) return NextResponse.json({ error: "run_not_found" }, { status: 404 });
   const publicStatus = { ...status } as Record<string, unknown>;

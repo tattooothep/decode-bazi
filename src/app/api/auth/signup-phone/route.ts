@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "เบอร์โทรไม่ถูกต้อง (เริ่มต้นด้วย 06, 08, 09 · 10 หลัก)" }, { status: 400 });
   }
   /* 1 มิ.ย. · กัน spam สร้างบัญชี + ยิง SMS · 5 ครั้ง/ชม. ต่อ (IP + เบอร์) */
-  const rl = rateLimit(`signupphone:${clientIp(req)}:${phone}`, 5, 3_600_000);
+  const rl = await rateLimit(`signupphone:${clientIp(req)}:${phone}`, 5, 3_600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "สมัครบ่อยเกินไป · กรุณารอสักครู่" },

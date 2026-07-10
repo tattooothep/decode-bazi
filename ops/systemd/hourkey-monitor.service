@@ -1,0 +1,9 @@
+[Unit]
+Description=Hourkey production health monitor
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/releases/current
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /root/releases/current/scripts/monitor/uptime-check.mjs

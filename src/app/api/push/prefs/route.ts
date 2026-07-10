@@ -25,7 +25,7 @@ function cleanHour(x: unknown): number | null {
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not_logged_in" }, { status: 401 });
-  const r = rateLimit("push-prefs:" + clientIp(req), 30, 60_000);
+  const r = await rateLimit("push-prefs:" + clientIp(req), 30, 60_000);
   if (!r.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
 
   const row = await q1<PrefRow>(
@@ -46,7 +46,7 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not_logged_in" }, { status: 401 });
-  const r = rateLimit("push-prefs-w:" + clientIp(req), 20, 60_000);
+  const r = await rateLimit("push-prefs-w:" + clientIp(req), 20, 60_000);
   if (!r.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
 
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run verified Hourkey database backup daily
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 Asia/Bangkok
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target

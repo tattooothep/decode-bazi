@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }, { status: 400 });
   }
 
-  const rl = rateLimit(`mobile-signup:${clientIp(req)}`, 10, 3_600_000);
+  const rl = await rateLimit(`mobile-signup:${clientIp(req)}`, 10, 3_600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { ok: false, error: "สมัครบ่อยเกินไป · กรุณารอสักครู่" },

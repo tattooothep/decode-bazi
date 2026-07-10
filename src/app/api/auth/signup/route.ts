@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
   /* 1 มิ.ย. · กัน spam สร้างบัญชี · 10 บัญชี/ชม. ต่อ IP */
-  const rl = rateLimit(`signup:${clientIp(req)}`, 10, 3_600_000);
+  const rl = await rateLimit(`signup:${clientIp(req)}`, 10, 3_600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "สมัครบ่อยเกินไป · กรุณารอสักครู่" },

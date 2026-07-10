@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "เบอร์โทรไม่ถูกต้อง" }, { status: 400 });
   }
   /* 1 มิ.ย. · กันยิง SMS เปลืองเงิน · 3 ครั้ง/10 นาที ต่อ (IP + เบอร์) */
-  const rl = rateLimit(`otp:${clientIp(req)}:${phone}`, 3, 600_000);
+  const rl = await rateLimit(`otp:${clientIp(req)}:${phone}`, 3, 600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ขอ OTP บ่อยเกินไป · กรุณารอสักครู่" },

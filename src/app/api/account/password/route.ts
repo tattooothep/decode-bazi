@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const acc = await getAccountUser();
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
 
-  const rl = rateLimit(`acct-pw:${acc.u.id}:${clientIpFrom(req)}`, 5, 3600_000);
+  const rl = await rateLimit(`acct-pw:${acc.u.id}:${clientIpFrom(req)}`, 5, 3600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ลองเปลี่ยนรหัสผ่านบ่อยเกินไป กรุณารอ 1 ชั่วโมง" },

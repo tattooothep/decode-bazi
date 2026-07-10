@@ -11,7 +11,7 @@ import { rateLimit, clientIp } from "@/lib/rate-limit";
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not_logged_in" }, { status: 401 });
-  const r = rateLimit("push-unsub:" + clientIp(req), 20, 60_000);
+  const r = await rateLimit("push-unsub:" + clientIp(req), 20, 60_000);
   if (!r.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
 
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;

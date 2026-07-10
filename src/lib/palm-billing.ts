@@ -8,12 +8,23 @@ type PalmJobCreate = {
   lang: string;
   jobDir: string;
   imageCount: number;
+  idempotencyKey: string;
+  payload: unknown;
 };
 
 export async function createReservedPalmJob(input: PalmJobCreate) {
   const c = await pool.connect();
   try {
     await c.query("BEGIN");
+    await c.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [`palm:${input.userId}:${input.idempotencyKey}`]);
+    const existing = await c.query<{ id: string; status: string }>(
+      `SELECT id,status FROM palm_jobs WHERE user_id=$1 AND idempotency_key=$2 LIMIT 1`,
+      [input.userId, input.idempotencyKey]
+    );
+    if (existing.rows[0]) {
+      await c.query("COMMIT");
+      return { ok: true as const, existing: true as const, id: existing.rows[0].id, status: existing.rows[0].status };
+    }
     const user = await c.query<{ hour_balance: number }>(
       `UPDATE users SET hour_balance=hour_balance-1
        WHERE id=$1 AND deleted_at IS NULL AND hour_balance >= 1
@@ -26,9 +37,15 @@ export async function createReservedPalmJob(input: PalmJobCreate) {
     }
     await c.query(
       `INSERT INTO palm_jobs
-       (id,user_id,org_id,status,lang,job_dir,image_count,billing_status,yam_reserved,yam_charged)
-       VALUES ($1,$2,$3,'running',$4,$5,$6,'reserved',1,1)`,
-      [input.id, input.userId, input.orgId, input.lang, input.jobDir, input.imageCount]
+       (id,user_id,org_id,status,lang,job_dir,image_count,billing_status,yam_reserved,yam_charged,idempotency_key,payload)
+       VALUES ($1,$2,$3,'queued',$4,$5,$6,'reserved',1,1,$7,$8)`,
+      [input.id, input.userId, input.orgId, input.lang, input.jobDir, input.imageCount, input.idempotencyKey, JSON.stringify(input.payload)]
+    );
+    await c.query(
+      `INSERT INTO hourkey_jobs
+       (id,user_id,org_id,feature,queue_name,status,priority,idempotency_key,request_hash,max_attempts)
+       VALUES ($1,$2,$3,'palm','hourkey-vision-palm','waiting',20,$4,$4,3)`,
+      [input.id, input.userId, input.orgId, input.idempotencyKey]
     );
     await c.query(
       `INSERT INTO hour_transactions
@@ -37,7 +54,7 @@ export async function createReservedPalmJob(input: PalmJobCreate) {
       [input.userId, user.rows[0].hour_balance, `palm_job:${input.id}:reserve`]
     );
     await c.query("COMMIT");
-    return { ok: true as const, balance_after: Number(user.rows[0].hour_balance) };
+    return { ok: true as const, existing: false as const, id: input.id, status: "queued", balance_after: Number(user.rows[0].hour_balance) };
   } catch (error) {
     await c.query("ROLLBACK").catch(() => {});
     throw error;
@@ -92,6 +109,10 @@ export async function settlePalmJobBilling(jobId: string, chars: number) {
       `UPDATE palm_jobs SET billing_status='settled',yam_charged=$2,billed_at=now(),updated_at=now() WHERE id=$1`,
       [jobId, charged]
     );
+    await c.query(
+      `UPDATE hourkey_jobs SET status='succeeded',finished_at=now(),heartbeat_at=now(),updated_at=now() WHERE id=$1`,
+      [jobId]
+    );
     await c.query("COMMIT");
     return { ok: true as const, charged, balance_after: balanceAfter };
   } catch (error) {
@@ -131,6 +152,10 @@ export async function refundPalmJobBilling(jobId: string, reason: string) {
       `UPDATE palm_jobs SET billing_status='refunded',yam_charged=0,billed_at=now(),updated_at=now() WHERE id=$1`,
       [jobId]
     );
+    await c.query(
+      `UPDATE hourkey_jobs SET status='failed',error_code=$2,finished_at=now(),heartbeat_at=now(),updated_at=now() WHERE id=$1`,
+      [jobId, reason.slice(0, 80)]
+    );
     await c.query("COMMIT");
     return { ok: true as const, refunded: amount, balance_after: Number(user.rows[0].hour_balance) };
   } catch (error) {
@@ -140,4 +165,3 @@ export async function refundPalmJobBilling(jobId: string, reason: string) {
     c.release();
   }
 }
-

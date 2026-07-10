@@ -113,7 +113,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "missing org" }, { status: 400 });
   }
 
-  const rl = rateLimit(`mobile-upload:${clientIp(req)}:${session.userId}`, 20, 60_000);
+  const rl = await rateLimit(`mobile-upload:${clientIp(req)}:${session.userId}`, 20, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { ok: false, error: "อัปโหลดถี่เกินไป · กรุณารอสักครู่แล้วลองใหม่" },
