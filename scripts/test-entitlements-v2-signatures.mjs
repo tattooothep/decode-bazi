@@ -22,6 +22,10 @@ assert.equal(FREE_SIGNUP_YAM, 1000);
 assert.equal(TRIAL_DAYS, 14);
 assert.deepEqual(PRODUCT_PAGE_ENTITLEMENTS.free.forecast, PRODUCT_PAGE_ENTITLEMENTS.master.forecast);
 assert.deepEqual(PRODUCT_PAGE_ENTITLEMENTS.free.palmistry, PRODUCT_PAGE_ENTITLEMENTS.master.palmistry);
+for (const plan of ["free", "trial", "premium", "master"]) {
+  assert.equal(PRODUCT_PAGE_ENTITLEMENTS[plan].today.detailed_hours, 12);
+  assert.equal(PRODUCT_PAGE_ENTITLEMENTS[plan].today.directions, 8);
+}
 assert.equal(PRODUCT_PAGE_ENTITLEMENTS.master.network.team_people, 12);
 assert.equal(PRODUCT_PAGE_ENTITLEMENTS.trial.network.saved_profiles, 3);
 assert.equal(PRODUCT_PAGE_ENTITLEMENTS.premium.network.saved_profiles, 10);

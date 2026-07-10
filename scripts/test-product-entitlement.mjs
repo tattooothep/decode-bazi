@@ -100,6 +100,7 @@ async function main() {
   assert(free.datepick_modules && free.datepick_modules.length === 3, "free narrower modules");
   assert(free.qimen_search === false, "free no qimen search");
   assert(free.legacy_free === false, "post-trial not legacy_free");
+  assert(free.pages.today.detailed_hours === 12 && free.pages.today.directions === 8, "free Today opens all current-day hours and directions");
 
   const legacy = deriveProductAccess(
     {

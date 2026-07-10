@@ -32,7 +32,7 @@ const samePalmistry = { full_analysis: true, history: true, pdf: true, ai_uses_y
 export const PRODUCT_PAGE_ENTITLEMENTS: Record<ProductPlan, ProductPageEntitlements> = {
   free: {
     chart: { detail: "summary", luck_cycles: "current", ai_summary_pdf: false },
-    today: { day_window: 0, detailed_hours: 2, directions: 1, goals: "one", multi_profile: false },
+    today: { day_window: 0, detailed_hours: 12, directions: 8, goals: "all", multi_profile: false },
     calendar: { month_window: 0, intents: "one", ranked_days: 1, full_hours_directions: false, multi_profile: false, pdf: false },
     network: { saved_profiles: 1, visualization_profiles: 1, groups: 0, group_people: 0, pair_compare: "locked", team_analysis: false, team_people: 0, pair_ai: "locked", team_ai: false, bulk_ai: false },
     fusion: { enabled: true, max_sciences: 2, max_profiles: 1 },
@@ -47,7 +47,7 @@ export const PRODUCT_PAGE_ENTITLEMENTS: Record<ProductPlan, ProductPageEntitleme
   },
   trial: {
     chart: { detail: "guided", luck_cycles: "current_next", ai_summary_pdf: true },
-    today: { day_window: 1, detailed_hours: 3, directions: 3, goals: "all", multi_profile: false },
+    today: { day_window: 1, detailed_hours: 12, directions: 8, goals: "all", multi_profile: false },
     calendar: { month_window: 2, intents: "all", ranked_days: 3, full_hours_directions: false, multi_profile: false, pdf: true },
     network: { saved_profiles: 3, visualization_profiles: 3, groups: 1, group_people: 3, pair_compare: "once", team_analysis: false, team_people: 0, pair_ai: "once", team_ai: false, bulk_ai: false },
     fusion: { enabled: true, max_sciences: 3, max_profiles: 1 },
