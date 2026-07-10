@@ -1408,8 +1408,8 @@
           goal: state.goal, nayinZh: nz
         });
         const L = HK.daytext._lib[DT_STATE.useLoc];
-        const nyLine = (nz && L && L.nayin[nz]) ? `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;">✨ ${L.nayin[nz].name} — ${L.nayin[nz].line}</div>` : '';
         const ezE = s => String(s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+        const nyLine = (nz && L && L.nayin[nz]) ? `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;">✨ ${ezE(L.nayin[nz].name)} — ${ezE(L.nayin[nz].line)}</div>` : '';
         ezPanel = `
         <div style="border:1px solid var(--gold-line);background:var(--gold-soft);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
           <div style="font-weight:700;color:var(--gold);font-size:13px;">${ezE(c.label)}${c.chip?` · ${ezE(c.chip)}`:''}</div>
