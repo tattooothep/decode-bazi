@@ -1,9 +1,8 @@
-/* hk-print.js · ตัวช่วยสร้าง PDF ร่วมทุกหน้า (client window.print · CSP-safe · ไม่มี lib นอก)
+/* hk-print.js · ตัวช่วยสร้าง PDF ร่วมทุกหน้า (server render + direct download)
  * ใช้: หน้าไหนจะ export → โหลด /css/hk-print.css + /js/hk-print.js
  *   HKPrint.open({ docTitle, cover:{...}, pages:[ {sections:[htmlString...]} ], land })
- * — สร้าง DOM print-only (.hkp-root) ต่อท้าย body แล้ว window.print() แล้วลบทิ้ง
- * ⚠️ ยัง "ยังไม่ wire หน้า production" — รอเจ้านาย approve mockup ก่อน (goal ลำดับบังคับ)
- *   หน้าจริงจะสร้าง sections จาก JSON เดียวกับที่ render อยู่ (chart/palm/fusion...) ไม่ดึงซ้ำ ไม่แตะ engine
+ * — PdfDocumentV2 ส่งไป server render แล้วบันทึก .pdf โดยไม่เปิด print dialog
+ * หน้าจริงสร้าง sections จาก JSON เดียวกับที่ render อยู่ (chart/palm/fusion...) ไม่ดึงซ้ำ ไม่แตะ engine
  */
 (function () {
   "use strict";
@@ -52,42 +51,61 @@
       return p + '-' + ymd + '-' + rnd;
     },
 
+    _downloadPayload: function (payload, reportId) {
+      return fetch('/api/export/pdf', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (response) {
+        if (!response.ok) throw new Error('pdf_download_' + response.status);
+        return response.blob();
+      }).then(function (blob) {
+        if (!blob || blob.size < 400) throw new Error('pdf_download_empty');
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        var id = String(reportId || 'report').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64) || 'report';
+        link.href = url;
+        link.download = 'hourkey-' + id + '.pdf';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+        return true;
+      });
+    },
+
     /* opts: { docTitle, headTitle, cover, pages:[{sections:[html]}], land:bool } */
     open: function (opts) {
       opts = opts || {};
-      var total = (opts.pages ? opts.pages.length : 0) + (opts.cover ? 1 : 0);
-      var pn = 0;
-      var html = "";
-      var cls = "hkp-page" + (opts.land ? " land" : "");
-      var reportId = opts.reportId || '';
-      // ปก = หน้าแรก
-      if (opts.cover) {
-        pn++;
-        var coverCls = cls + (opts.coverClass ? ' ' + String(opts.coverClass).replace(/[^a-z0-9_-]/gi, '') : '');
-        html += '<div class="' + coverCls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน", reportId) + coverHtml(opts.cover) + foot(pn, total, opts) + "</div>";
-      }
-      // เนื้อหาแต่ละหน้า
-      (opts.pages || []).forEach(function (p) {
-        pn++;
-        var pageCls = cls + (p.landscape ? " land" : "");
-        html += '<div class="' + pageCls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน", reportId) +
-          (p.sections || []).join("\n") + foot(pn, total, opts) + "</div>";
+      var reportId = opts.reportId || HKPrint.reportId('HKPDF');
+      var storedLang = '';
+      try { storedLang = localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || ''; } catch (e) {}
+      var lang = String(opts.lang || storedLang || document.documentElement.lang || 'en').toLowerCase().slice(0, 10) || 'en';
+      var cover = opts.cover ? {
+        kick: String(opts.cover.kick || ''), title: String(opts.cover.title || opts.docTitle || 'HourKey report'),
+        who: String(opts.cover.who || ''), metaHtml: String(opts.cover.metaHtml || opts.cover.meta || ''),
+        big: String(opts.cover.big || ''), sub: String(opts.cover.sub || ''), badge: String(opts.cover.badge || '')
+      } : undefined;
+      var legacy = {
+        version: 'hourkey.pdf.legacy.v1',
+        report: {
+          id: reportId, lang: lang, title: String(opts.docTitle || 'HourKey report'),
+          headerTitle: String(opts.headTitle || opts.docTitle || 'HourKey report'),
+          verificationLabel: String(opts.verificationLabel || '')
+        },
+        cover: cover,
+        pages: (opts.pages || []).map(function (page) {
+          return { sections: (page.sections || []).map(String), landscape: !!(opts.land || page.landscape) };
+        })
+      };
+      return HKPrint._downloadPayload({ legacy: legacy }, reportId).catch(function (error) {
+        console.error('[hk-print] legacy PDF download failed', error);
+        try { window.alert(lang.indexOf('th') === 0 ? 'สร้างไฟล์ PDF ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' : 'Could not create the PDF file. Please try again.'); } catch (e) {}
+        return false;
       });
-
-      // ตั้งชื่อไฟล์ PDF = docTitle · สร้าง root print-only · พิมพ์ · ลบ
-      var prevTitle = document.title;
-      if (opts.docTitle) document.title = opts.docTitle;
-      var root = document.createElement("div");
-      root.className = "hkp-root";
-      root.innerHTML = html;
-      document.body.appendChild(root);
-      // ซ่อนเนื้อหาปกติตอนพิมพ์: เติมคลาส hkp-active ให้ body → print.css ซ่อน body.hkp-active>*:not(.hkp-root)
-      // (ผูกกับคลาสนี้เท่านั้น เพื่อไม่กระทบหน้าที่พิมพ์ตัวเอง เช่น book ที่ไม่มี .hkp-root)
-      root.setAttribute("data-hkp-print", "1");
-      document.body.classList.add("hkp-active");
-      var cleanup = function () { try { document.body.removeChild(root); } catch (e) {} document.body.classList.remove("hkp-active"); document.title = prevTitle; window.removeEventListener("afterprint", cleanup); };
-      window.addEventListener("afterprint", cleanup);
-      setTimeout(function () { window.print(); }, 60);
     },
 
     // helper สร้าง section html (หน้าจริงเรียกใช้ประกอบจาก data)
@@ -98,67 +116,23 @@
     },
     verdict: function (lab, text) { return '<div class="hkp-verdict"><span class="lab">' + esc(lab) + "</span><p>" + esc(text) + "</p></div>"; },
 
+    _downloadDocument: function (doc) {
+      return HKPrint._downloadPayload({ document: doc }, doc.report.id);
+    },
+
     /* Structured report renderer shared by deterministic quick PDFs and AI reports. */
     openDocument: function (doc) {
       if (!doc || doc.version !== 'hourkey.pdf.v2' || !doc.report || !doc.cover || !Array.isArray(doc.pages)) {
         throw new Error('invalid_pdf_document_v2');
       }
-      function block(b) {
-        if (!b || !b.type) return '';
-        if (b.type === 'heading') {
-          return b.level === 3 ? '<h3 class="hkp-subsec">' + esc(b.text) + '</h3>' : HKPrint.section(b.text, '');
-        }
-        if (b.type === 'callout') {
-          return '<div class="hkp-callout ' + esc(b.tone || 'neutral') + '">' +
-            (b.label ? '<span class="lab">' + esc(b.label) + '</span>' : '') + '<p>' + esc(b.text) + '</p></div>';
-        }
-        if (b.type === 'facts') {
-          var cols = Math.max(1, Math.min(3, Number(b.columns) || 2));
-          return '<div class="hkp-facts cols-' + cols + '">' + (b.items || []).map(function (x) {
-            return '<div class="x"><span class="l">' + esc(x.label) + '</span><span class="v">' + esc(x.value) + '</span></div>';
-          }).join('') + '</div>';
-        }
-        if (b.type === 'table') {
-          var cols2 = (b.columns || []).slice(0, 6);
-          var cg = cols2.some(function (c) { return c.width; }) ? '<colgroup>' + cols2.map(function (c) { return '<col' + (c.width ? ' style="width:' + esc(c.width) + '"' : '') + '>'; }).join('') + '</colgroup>' : '';
-          return '<div class="hkp-table-wrap"><table class="hkp-table' + (b.compact ? ' compact' : '') + '">' + cg + '<thead><tr>' +
-            cols2.map(function (c) { return '<th>' + esc(c.label) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-            (b.rows || []).map(function (r) { return '<tr>' + cols2.map(function (c) { return '<td>' + esc(r[c.key] == null ? '' : r[c.key]) + '</td>'; }).join('') + '</tr>'; }).join('') +
-            '</tbody></table></div>';
-        }
-        if (b.type === 'list') {
-          var tag = b.ordered ? 'ol' : 'ul';
-          return '<' + tag + ' class="hkp-list">' + (b.items || []).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</' + tag + '>';
-        }
-        if (b.type === 'prose') {
-          return '<div class="hkp-prose">' + (b.paragraphs || []).map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') + '</div>';
-        }
-        if (b.type === 'figure') {
-          return '<figure class="hkp-figure">' + String(b.svg || '') + (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
-        }
-        return '';
-      }
-      var issued = doc.report.issuedAt ? new Date(doc.report.issuedAt) : new Date();
-      if (!isNaN(issued.getTime())) HKPrint._now = issued;
-      var cover = {
-        kick: doc.cover.kick || '', title: doc.cover.title || doc.report.title,
-        who: doc.cover.who || '', metaHtml: (doc.cover.meta || []).map(esc).join('<br>'),
-        big: doc.cover.glyph || '', badge: doc.cover.badge || '', qr: false
-      };
-      var pages = doc.pages.map(function (p) {
-        var sections = [];
-        if (p.title) sections.push(HKPrint.section(p.title, ''));
-        (p.blocks || []).forEach(function (b) { var h = block(b); if (h) sections.push(h); });
-        return { sections: sections, landscape: !!p.landscape };
-      });
-      HKPrint.open({
-        docTitle: doc.report.title,
-        headTitle: doc.report.headerTitle || doc.report.title,
-        reportId: doc.report.id,
-        verificationLabel: doc.report.verificationLabel || '',
-        coverClass: doc.report.kind === 'ai' ? 'premium-cover' : 'quick-cover',
-        cover: cover,
-        pages: pages
+      return HKPrint._downloadDocument(doc).catch(function (error) {
+        console.error('[hk-print] direct PDF download failed', error);
+        var lang = String(doc.report.lang || document.documentElement.lang || 'en').toLowerCase();
+        var message = lang.indexOf('th') === 0
+          ? 'สร้างไฟล์ PDF ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'
+          : 'Could not create the PDF file. Please try again.';
+        try { window.alert(message); } catch (e) {}
+        return false;
       });
     },
 

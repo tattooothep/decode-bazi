@@ -10,7 +10,14 @@ import { spawn } from "child_process";
 import { mkdirSync, writeFileSync, readFileSync, rmSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { randomBytes } from "crypto";
-import { parsePdfDocumentV2, type PdfBlockV2, type PdfDocumentV2 } from "@/lib/pdf-document-v2";
+import {
+  assertLegacyPdfDocumentServerSafe,
+  parseLegacyPdfDocument,
+  parsePdfDocumentV2,
+  type LegacyPdfDocument,
+  type PdfBlockV2,
+  type PdfDocumentV2,
+} from "@/lib/pdf-document-v2";
 
 const SEAL = "時";
 const CHROME_TIMEOUT_MS = Number(process.env.EXPORT_CHROME_TIMEOUT_MS || 30_000);
@@ -21,7 +28,7 @@ export type ExportCover = {
   kick?: string; title?: string; who?: string; metaHtml?: string; meta?: string;
   big?: string; sub?: string; badge?: string; qrLabel?: string; qr?: boolean;
 };
-export type ExportResult = { markdown?: string; cover?: ExportCover; figs?: ExportFig[]; page?: string; lang?: string; document?: unknown };
+export type ExportResult = { markdown?: string; cover?: ExportCover; figs?: ExportFig[]; page?: string; lang?: string; document?: unknown; legacy?: unknown };
 
 /* ── i18n เล็ก (หัว/ท้ายกระดาษ · เนื้อหลักมาจาก result แล้ว) ── */
 const PAGE_WORD: Record<string, string> = { th: "หน้า", en: "Page", zh: "頁", cn: "页", vi: "Trang", ja: "ページ", ko: "페이지", ru: "Стр.", es: "Pág." };
@@ -164,6 +171,25 @@ function structuredDocPages(doc: PdfDocumentV2, lang: string): string {
   return pages;
 }
 
+function legacyDocPages(doc: LegacyPdfDocument, lang: string): string {
+  const reportId = doc.report.id;
+  const headTitle = doc.report.headerTitle || doc.report.title;
+  const total = doc.pages.length + (doc.cover ? 1 : 0);
+  let pageNo = 0;
+  let pages = "";
+  if (doc.cover) {
+    pageNo += 1;
+    pages += '<div class="hkp-page">' + head(headTitle, lang, reportId) + coverHtml(doc.cover) +
+      foot(pageNo, total, lang, reportId, doc.report.verificationLabel || "") + "</div>";
+  }
+  doc.pages.forEach((page) => {
+    pageNo += 1;
+    pages += '<div class="hkp-page' + (page.landscape ? " land" : "") + '">' + head(headTitle, lang, reportId) +
+      page.sections.join("\n") + foot(pageNo, total, lang, reportId, doc.report.verificationLabel || "") + "</div>";
+  });
+  return pages;
+}
+
 /* ── CSS จาก public/css/hk-print.css (อ่านครั้งเดียว · cache) ── */
 let CSS_CACHE: string | null = null;
 function loadCss(): string {
@@ -205,11 +231,24 @@ function resolveChrome(): string {
 
 /* ── HTML เต็มหน้า (ปก + figs + สรุป) · โครงเดียวกับ hk-print.js summaryFromMarkdown ── */
 function buildDocHtml(result: ExportResult, lang: string): string {
+  const legacy = result.legacy ? parseLegacyPdfDocument(result.legacy) : null;
+  if (legacy) {
+    assertLegacyPdfDocumentServerSafe(legacy);
+    const css = loadCss();
+    const pages = legacyDocPages(legacy, lang);
+    return "<!doctype html><html lang=\"" + esc(lang) + "\"><head><meta charset=\"utf-8\">" +
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      "<title>" + esc(legacy.report.title) + "</title>" +
+      "<style>" + css + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
+      '</head><body class="hkp-active"><div class="hkp-root">' + pages + "</div></body></html>";
+  }
   const structured = result.document ? parsePdfDocumentV2(result.document) : null;
   if (structured) {
     const css = loadCss();
     const pages = structuredDocPages(structured, lang);
     return "<!doctype html><html lang=\"" + esc(lang) + "\"><head><meta charset=\"utf-8\">" +
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:">' +
       '<meta name="viewport" content="width=device-width, initial-scale=1">' +
       "<title>" + esc(structured.report.title) + "</title>" +
       "<style>" + css + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
@@ -257,6 +296,7 @@ function buildDocHtml(result: ExportResult, lang: string): string {
   const docTitle = "hourkey-summary" + (cover.title ? "-" + cover.title : "");
   // chromium --print-to-pdf render เป็น print media → @media print ใน hk-print.css ทำงาน (.hkp-root โผล่)
   return "<!doctype html><html lang=\"" + esc(lang) + "\"><head><meta charset=\"utf-8\">" +
+    '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:">' +
     '<meta name="viewport" content="width=device-width, initial-scale=1">' +
     "<title>" + esc(docTitle) + "</title>" +
     "<style>" + css + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
@@ -268,6 +308,7 @@ function runChrome(chrome: string, inPath: string, outPath: string): Promise<voi
   return new Promise((resolve, reject) => {
     const args = [
       "--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
+      "--disable-background-networking", "--disable-sync",
       "--no-pdf-header-footer", "--print-to-pdf=" + outPath, inPath,
     ];
     const child = spawn(chrome, args, { stdio: ["ignore", "ignore", "pipe"] });

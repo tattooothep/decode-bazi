@@ -1,5 +1,5 @@
-/* hk-print.css · เทมเพลต PDF ร่วมทุกหน้า (client window.print) · ยกจาก mockup /export-preview
- * ใช้: หน้าไหนจะ export ให้โหลดไฟล์นี้ + ครอบ DOM print ด้วย .hkp-root แล้ว window.print()
+/* hk-print.css · เทมเพลต PDF ร่วมทุกหน้า (server Chromium render) · ยกจาก mockup /export-preview
+ * ใช้: หน้าไหนจะ export ให้โหลดไฟล์นี้ แล้วส่งเอกสารผ่าน /api/export/pdf
  * ⚠️ ห้าม jsPDF/html2pdf (CSP) · ฟอนต์ไทย+จีนพึ่ง browser (Noto Serif Thai/TC)
  */
 :root{

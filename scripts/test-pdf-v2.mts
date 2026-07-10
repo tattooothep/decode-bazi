@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parsePdfDocumentV2 } from "../src/lib/pdf-document-v2";
+import {
+  assertLegacyPdfDocumentServerSafe,
+  assertPdfDocumentServerSafe,
+  parseLegacyPdfDocument,
+  parsePdfDocumentV2,
+} from "../src/lib/pdf-document-v2";
 import { aiSectionsFromMarkdown, assertAiSectionCount, assertEvidenceBoundMeasurements, pdfReportId } from "../src/lib/export/pdf-v2";
 
 const root = new URL("../", import.meta.url);
@@ -50,6 +55,40 @@ ok("Shared renderer removes fake QR and supports contextual verification", () =>
   assert.doesNotMatch(server, /QR<br>/);
   assert.doesNotMatch(client, /TST verified/);
   assert.doesNotMatch(server, /TST verified/);
+});
+ok("Structured client reports download a PDF without opening print", () => {
+  const client = read("public/js/hk-print.js");
+  const route = read("src/app/api/export/pdf/route.ts");
+  assert.match(client, /fetch\('\/api\/export\/pdf'/);
+  assert.match(client, /link\.download = 'hourkey-' \+ id \+ '\.pdf'/);
+  assert.doesNotMatch(client.match(/openDocument: function[\s\S]*?\n    },/)?.[0] || "", /window\.print/);
+  assert.doesNotMatch(client.match(/open: function[\s\S]*?\n    },/)?.[0] || "", /window\.print/);
+  assert.match(route, /Content-Type": "application\/pdf"/);
+  assert.match(route, /Content-Disposition/);
+});
+ok("Legacy quick reports use the same direct-download boundary", () => {
+  const legacy = parseLegacyPdfDocument({
+    version: "hourkey.pdf.legacy.v1",
+    report: { id: "HK-LEGACY", lang: "th", title: "Legacy report" },
+    cover: { title: "Legacy report", metaHtml: "<b>Safe</b>" },
+    pages: [{ sections: ["<h2>Result</h2><table><tr><td>42</td></tr></table>"], landscape: false }],
+  });
+  assert.doesNotThrow(() => assertLegacyPdfDocumentServerSafe(legacy));
+  const unsafe = structuredClone(legacy) as any;
+  unsafe.pages[0].sections[0] = '<img src="file:///etc/passwd">';
+  assert.throws(() => assertLegacyPdfDocumentServerSafe(unsafe));
+  unsafe.pages[0].sections[0] = "<img src=file:///etc/passwd>";
+  assert.throws(() => assertLegacyPdfDocumentServerSafe(unsafe));
+});
+ok("Direct PDF renderer rejects active or external SVG content", () => {
+  const safe = parsePdfDocumentV2(fixture);
+  assert.doesNotThrow(() => assertPdfDocumentServerSafe(safe));
+  const active = structuredClone(fixture) as any;
+  active.pages[0].blocks.push({ type: "figure", svg: "<svg><script>alert(1)</script></svg>" });
+  assert.throws(() => assertPdfDocumentServerSafe(parsePdfDocumentV2(active)));
+  const external = structuredClone(fixture) as any;
+  external.pages[0].blocks.push({ type: "figure", svg: '<svg><image href="https://example.com/x.png"/></svg>' });
+  assert.throws(() => assertPdfDocumentServerSafe(parsePdfDocumentV2(external)));
 });
 ok("All three product pages expose separate quick and AI report controls", () => {
   const luopan = read("public/luopan.html");

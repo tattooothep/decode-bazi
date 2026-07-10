@@ -36,7 +36,7 @@ export const pdfBlockSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("figure"),
-    svg: z.string().max(250_000),
+    svg: z.string().max(1_000_000),
     caption: z.string().max(500).optional(),
   }),
 ]);
@@ -70,6 +70,85 @@ export const pdfDocumentV2Schema = z.object({
 export type PdfBlockV2 = z.infer<typeof pdfBlockSchema>;
 export type PdfDocumentV2 = z.infer<typeof pdfDocumentV2Schema>;
 
+const legacyHtmlSchema = z.string().max(500_000);
+export const legacyPdfDocumentSchema = z.object({
+  version: z.literal("hourkey.pdf.legacy.v1"),
+  report: z.object({
+    id: z.string().min(4).max(100),
+    lang: z.string().min(2).max(10),
+    title: z.string().min(1).max(300),
+    headerTitle: z.string().max(300).optional(),
+    verificationLabel: z.string().max(180).optional(),
+  }),
+  cover: z.object({
+    kick: z.string().max(300).optional(),
+    title: z.string().min(1).max(300),
+    who: z.string().max(500).optional(),
+    metaHtml: legacyHtmlSchema.optional(),
+    big: z.string().max(20).optional(),
+    sub: z.string().max(1000).optional(),
+    badge: z.string().max(500).optional(),
+  }).optional(),
+  pages: z.array(z.object({
+    sections: z.array(legacyHtmlSchema).max(60),
+    landscape: z.boolean().default(false),
+  })).min(1).max(30),
+});
+
+export type LegacyPdfDocument = z.infer<typeof legacyPdfDocumentSchema>;
+
 export function parsePdfDocumentV2(value: unknown): PdfDocumentV2 {
   return pdfDocumentV2Schema.parse(value);
+}
+
+export function parseLegacyPdfDocument(value: unknown): LegacyPdfDocument {
+  return legacyPdfDocumentSchema.parse(value);
+}
+
+function assertPassiveMarkup(value: string): void {
+  if (/<\/?(?:script|foreignObject|iframe|object|embed|link|meta|base|form|input|button)\b/i.test(value)
+    || /<!\s*(?:DOCTYPE|ENTITY)\b/i.test(value)
+    || /\son[a-z]+\s*=/i.test(value)
+    || /javascript\s*:/i.test(value)
+    || /@import/i.test(value)) {
+    throw new Error("pdf_unsafe_markup");
+  }
+  const refs = value.matchAll(/\s(?:href|xlink:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi);
+  for (const match of refs) {
+    const ref = match[1] ?? match[2] ?? match[3] ?? "";
+    if (!/^#[A-Za-z_][\w:.-]*$/.test(ref)
+      && !/^data:image\/(?:png|jpe?g|webp);base64,[a-z0-9+/=\s]+$/i.test(ref)) {
+      throw new Error("pdf_external_reference");
+    }
+  }
+  const urls = value.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/gi);
+  for (const match of urls) {
+    const ref = match[1] ?? match[2] ?? match[3] ?? "";
+    if (!/^#[A-Za-z_][\w:.-]*$/.test(ref)
+      && !/^data:image\/(?:png|jpe?g|webp);base64,[a-z0-9+/=\s]+$/i.test(ref)) {
+      throw new Error("pdf_external_url");
+    }
+  }
+}
+
+/** Client-built quick reports may contain inline SVG diagrams. Keep Chromium
+ * rendering data-only: no active markup and no external file/network loads. */
+export function assertPdfDocumentServerSafe(doc: PdfDocumentV2): void {
+  for (const page of doc.pages) {
+    for (const block of page.blocks) {
+      if (block.type !== "figure") continue;
+      const svg = block.svg.trim();
+      if (!/^<svg(?:\s|>)/i.test(svg) || !/<\/svg>\s*$/i.test(svg)) {
+        throw new Error("pdf_figure_invalid_svg");
+      }
+      assertPassiveMarkup(svg);
+    }
+  }
+}
+
+export function assertLegacyPdfDocumentServerSafe(doc: LegacyPdfDocument): void {
+  if (doc.cover?.metaHtml) assertPassiveMarkup(doc.cover.metaHtml);
+  for (const page of doc.pages) {
+    for (const section of page.sections) assertPassiveMarkup(section);
+  }
 }
