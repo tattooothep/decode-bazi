@@ -175,6 +175,38 @@
   .day-cell.is-today{background:var(--gold-soft);box-shadow:inset 0 0 0 2px var(--gold);}
   .day-cell.is-today .d-num{color:var(--gold);}
   .day-cell.selected{background:var(--gold-soft);box-shadow:inset 0 0 0 1px var(--gold);}
+  /* 10 ก.ค. · โหมดอ่านง่าย (ปฏิทินภาษาคน) · ชั้นครอบใหม่ ไม่แตะ CSS เดิม · ถอด = ลบ block นี้ */
+  .control-bar{grid-template-columns:auto 1fr auto auto;} /* เพิ่มช่องที่ 4 รองรับ #view-toggle · มือถือยัง 1fr เดิม */
+  .day-cell.ez{aspect-ratio:auto;height:142px;min-height:0;padding:8px;gap:3px;overflow:hidden;} /* สูงเท่ากันเป๊ะทุกช่อง · 142px พอ 7 บรรทัด+เป้า ไม่บีบสระไทย */
+  .ez-top,.ez-sub,.ez-title,.ez-text,.ez-goal{flex:none;} /* ห้าม flex บีบแถวจนตัวอักษรขาด */
+  .ez-dir{margin-top:auto;}
+  .ez-top{display:flex;align-items:center;gap:6px;}
+  .ez-num{font-weight:700;font-size:14px;}
+  .ez-power{color:var(--gold);font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ez-chip{margin-left:auto;font-size:9.5px;padding:1px 6px;border-radius:99px;white-space:nowrap;}
+  .ez-chip.ch{background:rgba(198,40,40,.14);color:#c62828;}
+  .ez-chip.he{background:rgba(46,125,50,.14);color:#2e7d32;}
+  [data-theme="dark"] .ez-chip.ch{color:#ef9a9a;}
+  [data-theme="dark"] .ez-chip.he{color:#81c784;}
+  .ez-chip.chu{color:var(--fg-soft);border:1px solid var(--tile-bd);}
+  .ez-sub{font-size:9px;color:var(--fg-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ez-title{font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ez-text{font-size:10px;line-height:1.4;opacity:.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .ez-goal{font-size:9px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ez-dir{font-size:9px;color:var(--fg-soft);display:flex;align-items:center;gap:4px;margin-top:auto;border-top:1px dashed var(--tile-bd);padding-top:3px;}
+  .ez-dir-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} /* ตัดด้วย … ห้ามหั่นกลางตัวอักษร */
+  .ez-dots{flex:none;display:inline-flex;gap:3px;margin-left:auto;} /* จุดสีไม่หลุดขอบ */
+  .ez-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none;}
+  /* มือถือ: 3 บรรทัด — เลขวัน+ป้าย / ชิพชง / ทิศ+สี · แตะช่องดูเต็มในแผงข้าง */
+  @media(max-width:768px){
+    .ez-text,.ez-title,.ez-sub,.ez-goal{display:none;}
+    .day-cell.ez{height:64px;padding:5px;gap:2px;}
+    .ez-top{flex-wrap:wrap;row-gap:2px;}
+    .ez-chip{flex-basis:auto;margin-left:0;max-width:3em;overflow:hidden;text-overflow:ellipsis;} /* มือถือเห็นไอคอน ⚠/✦ + สี ก็แยกชง/สมพงษ์ได้ */
+    .ez-chip.chu{display:none;} /* ชิพชงสากล (ทุกคนเหมือนกัน) ซ่อนบนมือถือ · แตะช่องดูในแผงข้าง */
+    .ez-num{font-size:12px;}.ez-power{font-size:10px;flex:1 1 0;min-width:0;} /* คงบรรทัดเดียวกับเลขวัน */
+    .ez-dir{border-top:none;padding-top:0;flex-shrink:0;} /* แถวทิศห้ามหดหาย */
+  }
 
   .d-head{display:flex;justify-content:space-between;align-items:flex-start;}
   .d-num{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1;}
@@ -349,6 +381,7 @@
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 <script src="/js/hk-tongshu-dict.js?v=1" defer></script>
+<script src="/js/hk-daytext.js?v=2" defer></script>
 <link rel="stylesheet" href="/css/hk-print.css?v=4">
 </head>
 <body>
@@ -403,6 +436,10 @@
       <button id="next-m">›</button>
     </div>
     <div></div>
+    <div class="toggle-group" id="view-toggle">
+      <button class="on" data-view="easy" data-i18n="cal.view.easy">อ่านง่าย</button>
+      <button data-view="deep" data-i18n="cal.view.deep">แบบลึก</button>
+    </div>
     <div class="toggle-group" id="overlay-toggle">
       <button class="on" data-mode="personal" data-i18n="cal.mode.personal">ดวงฉัน · 我</button>
       <button data-mode="tongshu" data-i18n="cal.mode.general">ทั่วไป · 黃曆</button>
@@ -504,6 +541,7 @@
     if (!p) return null;
     const raw = p.bazi_pillars || {};
     const bp = raw.pillars || raw;
+    if (bp.year && bp.year.branch) SELF_YEAR_BRANCH = bp.year.branch;
     return applySelfDay({
       stem: p.day_master || bp.day?.stem || '',
       branch: bp.day?.branch || ''
@@ -522,6 +560,7 @@
           if (va && va.pillars && va.pillars.day && va.pillars.day.stem) {
             sessionStorage.setItem('hk_view_as', JSON.stringify(va));
             SELF_BRANCH = va.pillars.day.branch || '';
+            SELF_YEAR_BRANCH = (va.pillars.year && va.pillars.year.branch) || '';
             return va.pillars.day.stem;
           }
         }
@@ -552,6 +591,7 @@
   let MONTH_DATA = { year:null, month:null, days:[], month_pillar:'', year_pillar:'' };
   let SELF_DM = null;
   let SELF_BRANCH = ''; /* กิ่งวันเกิด · ใช้ตรวจ 沖 ในชั่วยาม */
+  let SELF_YEAR_BRANCH = ''; /* 10 ก.ค. · กิ่งปีเกิด (นักษัตร) · ชิพชง/สมพงษ์โหมดอ่านง่าย · ว่าง=โชว์แบบสากล */
   /* cache · hour grid + directions ต่อวัน · lazy fetch ตอนคลิก */
   const DAY_DETAILS = {}; /* key = "YYYY-MM-DD" → { hours, directions } */
 
@@ -812,7 +852,43 @@
   function scoreLabel(s){ return s>=20?'★ 大吉':s>=10?'用 吉':s>=-9?'平 中和':s>=-19?'慎 凶':'凶 大凶'; }
 
   // ─── RENDER CALENDAR ───
+  /* 10 ก.ค. · ทิศมงคลรายวันตามก้านวัน — ตารางเดียวกับเครื่อง /api/today/directions (喜神/財神 玉匣記) ห้ามแก้ค่าโดยไม่เทียบ route นั้น */
+  const EZ_CAISHEN = {甲:'NE',乙:'NE',丙:'SE',丁:'SE',戊:'S',己:'S',庚:'SW',辛:'SW',壬:'NW',癸:'NW'};
+  const EZ_XISHEN  = {甲:'NE',己:'NE',乙:'NW',庚:'NW',丙:'SW',辛:'SW',丁:'S',壬:'S',戊:'SE',癸:'SE'};
+  const EZ_DIR_TH  = {N:'เหนือ',NE:'ตอ.เฉียงเหนือ',E:'ตะวันออก',SE:'ตอ.เฉียงใต้',S:'ใต้',SW:'ตต.เฉียงใต้',W:'ตะวันตก',NW:'ตต.เฉียงเหนือ'};
+  const EZ_EL_COLOR = {wood:'#66a06a',fire:'#d96a5f',earth:'#c9a04e',metal:'#a8b0b8',water:'#5f8fc9'};
+  function ezDirName(code){ const l=getRawLang(); if(l==='th') return EZ_DIR_TH[code]||code; const m=DIR_LABELS[code]; return m?(m[l]||m.en||code):code; }
+  /* 10 ก.ค. · โหมดอ่านง่าย · โหลดคลังข้อความปฏิทินภาษาคนตามภาษา (fallback→en) · โหลดครั้งเดียวต่อภาษา */
+  let DT_STATE = { loc:'', useLoc:'', ok:false, map:null };
+  function dtLocale(){ const l=getRawLang(); return ['th','en','zh','vi','ja','ko','ru','es'].indexOf(l)>=0?l:'en'; }
+  function ensureDaytext(){
+    if (!(window.HK && HK.daytext)) { setTimeout(()=>{ if(window.HK && HK.daytext) renderCal(); }, 400); return false; }
+    const loc = dtLocale();
+    if (DT_STATE.loc === loc) return DT_STATE.ok;
+    /* สลับภาษา: คงคลังภาษาเดิมโชว์ไว้ก่อน (ไม่แวบกลับแบบลึก) · โหลดเสร็จค่อยสลับข้อความ */
+    DT_STATE = { loc, useLoc:DT_STATE.useLoc, ok:DT_STATE.ok, map:DT_STATE.map };
+    Promise.all([
+      HK.daytext.loadBrowser(loc).then(()=>loc).catch(()=>HK.daytext.loadBrowser('en').then(()=>'en')),
+      DT_STATE.map ? Promise.resolve(DT_STATE.map) : fetch('/data/calendar-daytext/nayin-map.json?v=1').then(r=>r.json())
+    ]).then(([useLoc, m])=>{
+        if (DT_STATE.loc !== loc) return; /* กันผลภาษาเก่ามาทับภาษาที่เลือกล่าสุด */
+        DT_STATE.useLoc=useLoc; DT_STATE.map=m; DT_STATE.ok=true; renderCal();
+        try{ renderSide(); }catch(_){} /* แผงข้างวันที่เลือกไว้ได้ก้อนอ่านง่ายทันที ไม่ต้องคลิกซ้ำ */
+        /* โหลดภาษาหลักที่เหลือรอไว้เงียบๆ → กดสลับแล้วเปลี่ยนทันที ไม่ต้องรอ */
+        setTimeout(()=>{ ['th','en','zh'].forEach(l=>{ if(l!==useLoc) HK.daytext.loadBrowser(l).catch(()=>{}); }); }, 2500);
+      })
+      .catch(()=>{
+        if (DT_STATE.loc !== loc) return;
+        DT_STATE.loc=''; /* เปิดทางลองโหลดใหม่รอบหน้า ไม่ตายถาวร */
+        state.viewMode='deep';
+        const vt=document.getElementById('view-toggle');
+        if (vt) vt.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.view==='deep'));
+        renderCal();
+      });
+    return false;
+  }
   function renderCal(){
+    if (state.viewMode !== 'deep') ensureDaytext();
     const grid = document.getElementById('cal-grid');
 
     const days = MONTH_DATA.days || [];
@@ -874,6 +950,30 @@
       const intentsHtml = (topIcons || worstIcons) && !intentSel ? `<div class="d-intents">${topIcons}${worstIcons}</div>` : '';
       const isToday = d.date === todayStr;
       const isSelected = d.day === state.selected;
+
+      /* 10 ก.ค. · โหมดอ่านง่าย: ช่องวันภาษาคนจากคลัง calendar-daytext · แตะช่องเปิดแผงข้างเหมือนเดิม · error ใดๆ ตกกลับแบบลึก */
+      if (state.viewMode !== 'deep' && DT_STATE.ok) {
+        try {
+          const nz = DT_STATE.map ? (DT_STATE.map[(d.stem||'')+(d.branch||'')] || '') : '';
+          const c = HK.daytext.cell(DT_STATE.useLoc, d, {
+            mode: isTongshu ? 'tongshu' : 'self',
+            userYearBranch: isTongshu ? '' : SELF_YEAR_BRANCH,
+            goal: state.goal, nayinZh: nz
+          });
+          const chipCls = c.chipType==='chong' ? 'ch' : c.chipType==='he' ? 'he' : 'chu';
+          const ez = s => String(s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+          html.push(`
+        <div class="day-cell ez ${isToday?'is-today':''} ${isSelected?'selected':''} ${intentClass}" data-day="${d.day}">
+          <div class="ez-top"><span class="ez-num">${d.day}</span><span class="ez-power">${ez(c.label)}</span>${c.chip?`<span class="ez-chip ${chipCls}">${ez(c.chip)}</span>`:''}</div>
+          <div class="ez-sub">${ez(c.subline)}</div>
+          ${c.title && c.title!==c.label ? `<div class="ez-title">${ez(c.title)}</div>` : ''}
+          <div class="ez-text">${ez(c.text)}</div>
+          ${c.goalLine?`<div class="ez-goal">▸ ${ez(c.goalLine)}</div>`:''}
+          <div class="ez-dir"><span class="ez-dir-t">💰${ez(ezDirName(EZ_CAISHEN[d.stem]||''))}${EZ_XISHEN[d.stem]&&EZ_XISHEN[d.stem]!==EZ_CAISHEN[d.stem]?` · 🌸${ez(ezDirName(EZ_XISHEN[d.stem]))}`:''}</span><span class="ez-dots">${['stem_element','branch_element'].map(k=>EZ_EL_COLOR[d[k]]?`<i class="ez-dot" style="background:${EZ_EL_COLOR[d[k]]}"></i>`:'').join('')}</span></div>
+        </div>`);
+          return;
+        } catch(_) { /* ตกกลับ render แบบลึกเดิมด้านล่าง */ }
+      }
 
       let tags = '';
       if(state.overlay==='personal'){
@@ -1301,8 +1401,32 @@
     else if (lang==='zh') monthLabel = `${MONTH_DATA.year}年${MONTH_DATA.month}月`;
     else { try { monthLabel = new Date(MONTH_DATA.year, MONTH_DATA.month-1, 1).toLocaleDateString(_bcp47(lang),{month:'long',year:'numeric'}); } catch(e){ monthLabel = new Date(MONTH_DATA.year, MONTH_DATA.month-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'}); } }
 
+    /* 10 ก.ค. · ก้อนอ่านง่ายบนสุดแผงข้าง: ข้อความเต็ม + นาอินพร้อมคำอธิบาย (นาอินย้ายจากช่องวันมาที่นี่) */
+    let ezPanel = '';
+    try {
+      if (state.viewMode !== 'deep' && DT_STATE.ok) {
+        const nz = DT_STATE.map ? (DT_STATE.map[(d.stem||'')+(d.branch||'')] || '') : '';
+        const c = HK.daytext.cell(DT_STATE.useLoc, d, {
+          mode: isTongshu ? 'tongshu' : 'self',
+          userYearBranch: isTongshu ? '' : SELF_YEAR_BRANCH,
+          goal: state.goal, nayinZh: nz
+        });
+        const L = HK.daytext._lib[DT_STATE.useLoc];
+        const ezE = s => String(s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+        const nyLine = (nz && L && L.nayin[nz]) ? `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;">✨ ${ezE(L.nayin[nz].name)} — ${ezE(L.nayin[nz].line)}</div>` : '';
+        ezPanel = `
+        <div style="border:1px solid var(--gold-line);background:var(--gold-soft);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-weight:700;color:var(--gold);font-size:13px;">${ezE(c.label)}${c.chip?` · ${ezE(c.chip)}`:''}</div>
+          ${c.title&&c.title!==c.label?`<div style="font-weight:600;font-size:12.5px;margin-top:4px;">${ezE(c.title)}</div>`:''}
+          <div style="font-size:12px;line-height:1.6;margin-top:4px;">${ezE(c.text)}</div>
+          ${c.goalLine?`<div style="font-size:11px;color:var(--gold);margin-top:6px;">▸ ${ezE(c.goalLine)}</div>`:''}
+          ${nyLine}
+        </div>`;
+      }
+    } catch(_) { ezPanel = ''; }
+
     const sp = document.getElementById('side-panel');
-    sp.innerHTML = `
+    sp.innerHTML = ezPanel + `
       <div class="sp-head">
         <div class="sp-date">
           <div>
@@ -2164,6 +2288,20 @@
     }
   });
 
+  /* 10 ก.ค. · ปุ่มสลับ อ่านง่าย/แบบลึก · จำค่าใน localStorage */
+  state.viewMode = (localStorage.getItem('hk_cal_view') === 'deep') ? 'deep' : 'easy';
+  (function(){
+    const vt = document.getElementById('view-toggle'); if (!vt) return;
+    vt.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.view===state.viewMode));
+    vt.addEventListener('click', e=>{
+      const b = e.target.closest('button[data-view]'); if (!b) return;
+      state.viewMode = b.dataset.view;
+      localStorage.setItem('hk_cal_view', state.viewMode);
+      vt.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
+      renderCal();
+      try{ renderSide(); }catch(_){} /* แผงข้างตามโหมดที่เลือก ไม่ค้างก้อนเก่า */
+    });
+  })();
   document.getElementById('overlay-toggle').addEventListener('click', e=>{
     const btn = e.target.closest('button[data-mode]');
     if(!btn) return;
@@ -2422,6 +2560,8 @@ window.HK_I18N = {
   'cal.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
   'cal.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
   'cal.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'cal.view.easy':{ th:'อ่านง่าย', en:'Easy read', zh:'白話版', vi:'Dễ đọc', ja:'かんたん表示', ko:'쉽게 보기', ru:'Просто', es:'Fácil' },
+  'cal.view.deep':{ th:'แบบลึก', en:'Expert', zh:'專業版', vi:'Chuyên sâu', ja:'詳細表示', ko:'전문가 보기', ru:'Подробно', es:'Experto' },
   'cal.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
   'cal.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
   'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
@@ -2546,6 +2686,8 @@ window.__hkOverlayApply=function(l){
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
     try{ localStorage.setItem('hk_locale', lang); }catch(e){}
     applyI18N(lang);
+    /* 10 ก.ค. · โหมดอ่านง่ายต้องวาดตารางใหม่ตามภาษา (ข้อความมาจากคลัง ไม่ใช่ data-i18n) */
+    try{ if (typeof renderCal==='function' && typeof MONTH_DATA!=='undefined' && (MONTH_DATA.days||[]).length) renderCal(); }catch(_){}
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
   try{

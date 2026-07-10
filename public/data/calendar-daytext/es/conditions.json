@@ -1,0 +1,41 @@
+{
+  "_comment": "Condiciones según la carta o el día · choque · armonía · dirección · colores · traducido del original tailandés 10 jul 2026",
+
+  "chong_personal": {
+    "chip": "⚠ Tu día de choque",
+    "line": "Hoy el día choca con tu año de nacimiento: la energía del día golpea de frente la tuya. Asuntos grandes, firmas, lanzamientos o viajes largos, pospónlos si puedes. Si no hay opción, sal con tiempo de sobra, revisa todo dos veces y no decidas nada en caliente."
+  },
+  "chong_universal": {
+    "chip": "Choque: año {animal}",
+    "line": "Hoy el día choca con quienes nacieron en el año {animal}. Si es tu año, aplaza los asuntos grandes; si no lo es, sigue adelante con normalidad."
+  },
+  "he_personal": {
+    "chip": "✦ Tu día de armonía",
+    "line": "Hoy el día armoniza con tu año de nacimiento y trae un empuje extra durante toda la jornada. Ese asunto importante que guardabas esperando el momento, hoy puedes ponerlo en marcha. La gente a tu alrededor está más dispuesta que nunca a apoyarte."
+  },
+  "he_universal": {
+    "chip": "Armonía: año {animal}",
+    "line": "Hoy el día da puntos extra a quienes nacieron en el año {animal}. Si es tu año, avanza con todo en tus asuntos importantes."
+  },
+  "harm_personal": {
+    "chip": "△ Tu día sensible",
+    "line": "Hoy hay corrientes ocultas frente a tu energía: nada se rompe, pero incomoda. Cuidado con malentendidos y citas que se cruzan; confirma cada compromiso una vez más."
+  },
+
+  "direction_use": {
+    "wealth":  "Para el dinero de hoy, orienta tus gestiones hacia el {dir} y tendrás ventaja",
+    "noble":   "Para ver a superiores, negociar o una entrevista, elige el {dir}: encontrarás quien te ayude",
+    "joy":     "Celebraciones, citas importantes y buenos comienzos: el {dir} potencia tu día",
+    "fortune": "Para probar suerte o abrir oportunidades nuevas, intenta primero hacia el {dir}",
+    "avoid":   "Hoy la energía no acompaña hacia el {dir}; para lo importante, evita esa dirección por ahora"
+  },
+
+  "color_line": "Colores de apoyo de hoy: {colors}. Llevar una sola prenda ya ayuda a atraer el buen ritmo",
+
+  "season_boost": {
+    "spring": "Los árboles echan hojas nuevas y la madera está fuerte: los comienzos y todo lo que crece llevan viento a favor",
+    "summer": "El fuego del verano arde con fuerza: presentaciones y momentos para brillar reciben energía extra, pero la impaciencia es tu enemiga",
+    "autumn": "El metal del otoño corta con precisión: decisiones y cosechas encuentran hoy su mejor momento",
+    "winter": "El agua del invierno es quieta y profunda: planificar y pensar a largo plazo gana hoy a la prisa"
+  }
+}
