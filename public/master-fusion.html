@@ -1463,7 +1463,7 @@
       var b = DISCIPLINES[s];
       if (!b) return '';
       var d = helpDict();
-      var yamText = b.isPalm ? '0 時' : (state.locale === 'th' ? 'หักตามตัวอักษร' : (state.locale === 'zh' ? '按字數計時' : 'by char length'));
+      var yamText = b.isPalm ? '0 時' : yamUiCopy().rateShort;
       var timeText = b.needsBirthTime ? d.needTimeYes : d.needTimeNo;
       return '<div class="sci-tip-body">' + esc(sciTipBody(s)) + '</div>' +
         '<div class="sci-tip-meta">' + esc(d.aiLabel) + ': ' + esc(b.ai) + ' · ' + esc(d.yamLabel) + ': ' + esc(yamText) + ' · ' + esc(timeText) + '</div>';
@@ -1695,11 +1695,25 @@
       return panels * ESCROW_PER + judge;
     }
     function currentYam(){ return escrowYam(); } // ขั้นต่ำที่ต้องมีก่อนรัน (escrow)
+    var YAM_UI_COPY = {
+      th:{ hold:'สำรองขั้นต่ำ', rate:'คิดจริงตามความยาวคำตอบ · ประมาณ 30 ตัวอักษร = 1 ยาม', rateShort:'ตามความยาวคำตอบ', need:'ต้องมีอย่างน้อย', unit:'ยาม' },
+      en:{ hold:'Minimum hold', rate:'Final charge follows reply length · about 30 characters = 1 yam', rateShort:'By reply length', need:'Minimum required', unit:'yam' },
+      zh:{ hold:'最低預留', rate:'按回答字數實際計費 · 約 30 字 = 1 時', rateShort:'按回答字數', need:'至少需要', unit:'時' },
+      cn:{ hold:'最低预留', rate:'按回答字数实际计费 · 约 30 字 = 1 时', rateShort:'按回答字数', need:'至少需要', unit:'时' },
+      vi:{ hold:'Giữ tối thiểu', rate:'Tính thực tế theo độ dài câu trả lời · khoảng 30 ký tự = 1 yam', rateShort:'Theo độ dài trả lời', need:'Cần tối thiểu', unit:'yam' },
+      ja:{ hold:'最低確保', rate:'回答の文字数で精算 · 約30文字 = 1時', rateShort:'回答の文字数で計算', need:'最低必要', unit:'時' },
+      ko:{ hold:'최소 확보', rate:'답변 길이에 따라 실제 차감 · 약 30자 = 1시간', rateShort:'답변 길이 기준', need:'최소 필요', unit:'시간' },
+      ru:{ hold:'Минимальный резерв', rate:'Итог зависит от длины ответа · около 30 знаков = 1 ед.', rateShort:'По длине ответа', need:'Нужно минимум', unit:'ед.' },
+      es:{ hold:'Reserva mínima', rate:'El cargo final depende de la respuesta · unos 30 caracteres = 1 yam', rateShort:'Según la respuesta', need:'Mínimo necesario', unit:'yam' }
+    };
+    function yamUiCopy(){
+      return YAM_UI_COPY[state.locale] || YAM_UI_COPY.en;
+    }
+    function yamAmount(value){
+      return value + ' ' + yamUiCopy().unit;
+    }
     function yamBillingLabel(){
-      var e = escrowYam();
-      if (state.locale === 'th') return 'จอง≥' + e + ' · หักตามตัวอักษร(≈30/1時)';
-      if (state.locale === 'zh') return '預扣≥' + e + ' · 按字數(≈30字/1時)';
-      return 'hold≥' + e + ' · by length(≈30/1時)';
+      return yamAmount(escrowYam());
     }
     // ===== gate: Fusion suite เปิดตั้งแต่ Trial ขึ้นไป · server enforce ซ้ำ =====
     function isLoggedIn(){ return !!state.account; }
@@ -1716,9 +1730,7 @@
       return 0;
     }
     function yamShortMsg(spend){
-      if (state.locale === 'th') return t('needYam') + ' (ต้องมีอย่างน้อย ' + spend + ' ยามสำหรับศาสตร์ที่เลือก)';
-      if (state.locale === 'zh') return t('needYam') + '（所選術數至少需 ' + spend + ' 時）';
-      return t('needYam') + ' (need at least ' + spend + ' yam for selected sciences)';
+      return t('needYam') + ' · ' + yamUiCopy().need + ' ' + yamAmount(spend);
     }
     function canUseFusion(){
       if (!isLoggedIn()) return false;
@@ -1752,32 +1764,28 @@
       }
       var need = escrowYam();
       if (hourBalance() < need) return yamShortMsg(need);
-      return t('readyRun') + ' · ' + yamBillingLabel() + ' · ≤' + maxSciences() + ' sci';
+      return t('readyRun') + ' · ' + yamUiCopy().hold + ' ' + yamBillingLabel();
     }
     function updateSendAvailability(){
       els.send.disabled = state.busy || state.resuming || !state.ready || !canUseFusion();
       if (typeof updateComposer === 'function') updateComposer(); // r385: ปุ่มส่งห้องแชท (ราคายาม/disabled/ปุ่มเติมยาม) ตามเกตเดียวกัน
     }
     function applyFusionGate(){
-      els.send.textContent = t('run') + ' · ' + yamBillingLabel();
+      els.send.textContent = t('run');
       if (!isLoggedIn()) { els.gate.textContent = 'LOGIN'; els.gate.className = 'badge warn'; }
       else if (!fusionSuiteAllowed()) { els.gate.textContent = 'LOCKED · TRIAL+'; els.gate.className = 'badge warn'; }
       else if (!selectedProfileIds().length && !selectedGuests().length) { els.gate.textContent = 'ADD CHART'; els.gate.className = 'badge warn'; }
       else if (canUseFusion()) { els.gate.textContent = '5-SCIENCE READY'; els.gate.className = 'badge ok'; }
       else if (!activeSciences().length) { els.gate.textContent = 'PICK SCIENCE'; els.gate.className = 'badge warn'; }
-      else { els.gate.textContent = 'NEED ' + escrowYam() + ' 時'; els.gate.className = 'badge warn'; }
+      else { els.gate.textContent = yamUiCopy().need + ' ' + yamBillingLabel(); els.gate.className = 'badge warn'; }
       updateSendAvailability();
     }
     function updateYam(){
+      var yamLabel = document.querySelector('.yam-label');
+      if (yamLabel) yamLabel.textContent = yamUiCopy().hold;
       if (els.yamValue) els.yamValue.textContent = yamBillingLabel();
       if (els.yamBreak) {
-        var n = profileCount();
-        var list = activeSciences();
-        var parts = list.map(function(s){ return sciLabel(s).split(' ')[0]; });
-        if (list.length >= 2) parts.push(state.locale === 'th' ? 'Judge หลอมรวม' : 'Judge');
-        if (n > 1) parts.unshift(n + (state.locale === 'th' ? ' ดวง' : ' charts'));
-        parts.push(state.locale === 'th' ? 'หักตามความยาวคำตอบ' : 'charged by reply length');
-        els.yamBreak.textContent = parts.join(' · ');
+        els.yamBreak.textContent = yamUiCopy().rate;
       }
       applyFusionGate();
     }
@@ -3341,7 +3349,7 @@
       var need = escrowYam();
       var short = isLoggedIn() && !!activeSciences().length && hourBalance() < need;
       state.composerTopup = short;
-      roomEls.composerSend.textContent = short ? t('chat.topup') : (t('chat.send') + ' · ' + yamBillingLabel());
+      roomEls.composerSend.textContent = short ? t('chat.topup') : t('chat.send');
       roomEls.composerSend.disabled = !short && (state.busy || state.resuming || !state.ready || !canUseFusion());
       if (roomEls.composerInput) roomEls.composerInput.placeholder = t('chat.ph');
     }

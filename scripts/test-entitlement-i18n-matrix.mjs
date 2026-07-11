@@ -16,7 +16,7 @@ for (const lang of languages) {
         HK_ALLOW_FIXTURE_DB: "1",
         HK_MATRIX_BASE: base,
         HK_MATRIX_LANG: lang,
-        HK_MATRIX_PAGES: "pricing,account,today,qimen",
+        HK_MATRIX_PAGES: "pricing,account,today,qimen,fusion",
         HK_MATRIX_TIERS: "free",
         HK_MATRIX_VIEWPORTS: "mobile,desktop",
       },
@@ -26,7 +26,7 @@ for (const lang of languages) {
   assert.equal(run.status, 0, `language ${lang} failed:\n${run.stderr}\n${run.stdout}`);
   const summary = run.stdout.split("\n").find((line) => line.startsWith("browser matrix PASS"));
   assert.ok(summary?.includes(`lang=${lang}`), `language ${lang} has no PASS summary`);
-  console.log(`LANG PASS · ${lang} · mobile+desktop · Pricing+Account+Today+Qimen`);
+  console.log(`LANG PASS · ${lang} · mobile+desktop · Pricing+Account+Today+Qimen+Fusion`);
 }
 
 console.log("9/9 language matrix passed");

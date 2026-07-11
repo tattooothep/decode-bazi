@@ -48,11 +48,12 @@ const paths = {
   fengshui: "/fengshui",
   luopan: "/luopan",
   palmistry: "/palmistry",
+  fusion: "/master-fusion",
   pricing: "/pricing",
   account: "/account",
 };
 const visibleBadgeLimits = { today: 0, qimen: 2, datepick: 1, luopan: 3, chart: 5, network: 8, fengshui: 4 };
-const standalonePages = new Set(["pricing", "account"]);
+const standalonePages = new Set(["pricing", "account", "fusion"]);
 for (const page of requestedPages) assert.ok(paths[page], `unknown matrix page ${page}`);
 
 const now = Date.now();
@@ -156,6 +157,8 @@ try {
             .filter(Boolean)
             .map((el) => ({ tag: el.tagName, cls: String(el.className || ""), clientWidth: el.clientWidth, scrollWidth: el.scrollWidth, overflowX: getComputedStyle(el).overflowX })),
           path: location.pathname,
+          yamLabel: document.querySelector(".yam-label")?.textContent?.trim() || "",
+          yamBreak: document.querySelector("#yam-break")?.textContent?.trim() || "",
         }));
         console.log(JSON.stringify({ accountState: fixture.state, plan: fixture.plan, viewport: viewport.name, page: pageName, locks: state.locks, visibleLockBadges: state.visibleLockBadges, overflow: state.overflow, path: state.path }));
         if (!standalonePages.has(pageName)) {
@@ -164,6 +167,15 @@ try {
         }
         const expectedPageLang = targetLang === "cn" && standalonePages.has(pageName) ? "zh" : targetLang;
         assert.equal(state.locale, expectedPageLang, `${fixture.state}/${viewport.name}/${pageName} language`);
+        if (pageName === "fusion") {
+          const holdLabels = {
+            th: "สำรองขั้นต่ำ", en: "Minimum hold", zh: "最低預留", cn: "最低预留",
+            vi: "Giữ tối thiểu", ja: "最低確保", ko: "최소 확보", ru: "Минимальный резерв", es: "Reserva mínima",
+          };
+          assert.equal(state.yamLabel, holdLabels[targetLang], `${fixture.state}/${viewport.name}/fusion billing language`);
+          assert.ok(state.yamBreak.length > 12, `${fixture.state}/${viewport.name}/fusion billing explanation`);
+          assert.doesNotMatch(state.yamBreak, /จอง≥|hold≥|預扣≥|≈30\/1時/, `${fixture.state}/${viewport.name}/fusion old billing copy`);
+        }
         assert.ok(state.overflow <= 2, `${fixture.plan}/${viewport.name}/${pageName} overflow=${state.overflow}`);
         assert.equal(pageErrors.length, 0, `${fixture.plan}/${viewport.name}/${pageName} page errors: ${pageErrors.join(" | ")}`);
         if (fixture.plan === "master") {
