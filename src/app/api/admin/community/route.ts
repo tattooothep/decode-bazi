@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
             admin.email,
           ]
         );
-        await writeAdminAudit({ actor: admin, action: "admin.community.news.update", targetType: "news_item", targetId: row?.id || id, payload: { kind: vals.kind, active: vals.active }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
+        await writeAdminAudit({ actor: admin, action: "admin.community.news.update", targetType: "news_item", targetId: null, payload: { news_item_id: row?.id || id, kind: vals.kind, active: vals.active }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
         return NextResponse.json({ ok: true, id: row?.id, ...(await loadPayload()) });
       }
       const row = await q1<{ id: string }>(
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
           admin.email,
         ]
       );
-      await writeAdminAudit({ actor: admin, action: "admin.community.news.create", targetType: "news_item", targetId: row?.id || null, payload: { kind: vals.kind, active: vals.active }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
+      await writeAdminAudit({ actor: admin, action: "admin.community.news.create", targetType: "news_item", targetId: null, payload: { news_item_id: row?.id || null, kind: vals.kind, active: vals.active }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
       return NextResponse.json({ ok: true, id: row?.id, ...(await loadPayload()) });
     }
 
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
       const id = cleanText(body.id, 30);
       if (!id) return NextResponse.json({ ok: false, error: "id_required" }, { status: 400 });
       await q1(`DELETE FROM news_items WHERE id=$1`, [id]);
-      await writeAdminAudit({ actor: admin, action: "admin.community.news.delete", targetType: "news_item", targetId: id, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
+      await writeAdminAudit({ actor: admin, action: "admin.community.news.delete", targetType: "news_item", targetId: null, payload: { news_item_id: id }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
       return NextResponse.json({ ok: true, ...(await loadPayload()) });
     }
 
@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
           WHERE id=$1`,
         [id, status, cleanText(body.adminNote ?? body.admin_note, 1600)]
       );
-      await writeAdminAudit({ actor: admin, action: "admin.community.report.update", targetType: "support_report", targetId: id, payload: { status }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
+      await writeAdminAudit({ actor: admin, action: "admin.community.report.update", targetType: "support_report", targetId: null, payload: { support_report_id: id, status }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
       return NextResponse.json({ ok: true, ...(await loadPayload()) });
     }
 
