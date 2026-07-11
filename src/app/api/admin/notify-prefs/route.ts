@@ -5,7 +5,7 @@
  */
 import { NextResponse } from "next/server";
 import { q, q1 } from "@/lib/db";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requireAdmin, adminHas } from "@/lib/admin-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,9 +54,19 @@ export async function PUT(req: Request) {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const incoming = (body.prefs && typeof body.prefs === "object" ? body.prefs : body) as Record<string, unknown>;
 
+  /* ลายเซน 1: เปิดรับเหตุการณ์ที่มี PII/การเงิน ต้องมีสิทธิ์อ่านหมวดนั้นจริง */
+  const EVENT_PERM: Partial<Record<EventType, string>> = {
+    user_signup: "admin.users.read",
+    order_paid: "admin.orders.read",
+  };
+
   let changed = 0;
   for (const ev of EVENTS) {
     if (typeof incoming[ev] !== "boolean") continue;
+    const need = EVENT_PERM[ev];
+    if (incoming[ev] === true && need && !adminHas(admin, need)) {
+      return NextResponse.json({ ok: false, error: "forbidden_event", event: ev }, { status: 403, headers: NO_STORE });
+    }
     await q(
       `INSERT INTO admin_notify_prefs (user_id, event_type, enabled, updated_at)
        VALUES ($1, $2, $3, now())

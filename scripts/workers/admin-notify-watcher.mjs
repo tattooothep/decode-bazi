@@ -73,14 +73,22 @@ function thTime(d) {
   } catch { return String(d); }
 }
 
-/** แอดมินที่เปิดเหตุการณ์นี้ + subscription ทุกเครื่องของเขา */
+/** แอดมินที่เปิดเหตุการณ์นี้ + subscription ทุกเครื่องของเขา
+ *  ลายเซน 1: เช็คซ้ำ "ยังเป็นแอดมิน + บัญชียังใช้ได้" ณ เวลาส่งทุกครั้ง — ถูกถอดสิทธิ์ = หยุดรับทันที */
 async function recipients(eventType) {
+  const adminEmails = (process.env.ADMIN_EMAILS || "")
+    .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   const r = await db.query(
     `SELECT p.user_id, s.id AS sub_id, s.endpoint, s.p256dh, s.auth, s.fail_count
        FROM admin_notify_prefs p
+       JOIN users u ON u.id = p.user_id AND u.is_active AND u.deleted_at IS NULL
        JOIN push_subscriptions s ON s.user_id = p.user_id
-      WHERE p.event_type = $1 AND p.enabled`,
-    [eventType]
+      WHERE p.event_type = $1 AND p.enabled
+        AND ( lower(u.email) = ANY($2::text[])
+              OR EXISTS (SELECT 1 FROM admin_user_roles ur
+                          WHERE ur.user_id = p.user_id AND ur.revoked_at IS NULL
+                            AND (ur.expires_at IS NULL OR ur.expires_at > now())) )`,
+    [eventType, adminEmails]
   );
   return r.rows;
 }

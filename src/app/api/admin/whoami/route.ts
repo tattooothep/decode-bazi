@@ -13,11 +13,9 @@ const NO_STORE = { "Cache-Control": "no-store, max-age=0" };
 
 export async function GET() {
   try {
-    const admin = await requireAdmin();
-    return NextResponse.json(
-      { ok: true, email: admin.email, roles: admin.roles, isSuper: admin.isSuper },
-      { headers: NO_STORE }
-    );
+    await requireAdmin();
+    /* ลายเซน 1: client ใช้แค่ ok — ตัด email/roles ออก ให้ minimal ที่สุด */
+    return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (e) {
     if (e instanceof Response) {
       return new NextResponse(JSON.stringify({ ok: false }), {
