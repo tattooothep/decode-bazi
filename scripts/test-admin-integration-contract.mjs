@@ -67,6 +67,13 @@ for (const file of adminRouteFiles.concat([
     }
   }
 }
-signature("5/5 release: Next route files expose only supported exports", invalidRouteExports.length === 0);
+const rootLayout = read("src/app/layout.tsx");
+const langState = read("public/js/hk-lang-state.js");
+signature(
+  "5/5 release/browser: valid route exports and legacy scripts cannot mutate React hydration",
+  invalidRouteExports.length === 0 &&
+    rootLayout.includes('data-hk-react-app="1"') &&
+    langState.includes("!isReactApp && !window.__HK_LANG_UPGRADE_LOADER__")
+);
 
 console.log(`${passed}/5 admin integration signatures passed`);

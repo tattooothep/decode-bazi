@@ -64,7 +64,7 @@ export default function RootLayout({
       className={`${inter.variable} ${cormorant.variable} ${notoSerifTC.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full bg-background text-foreground flex flex-col">
+      <body data-hk-react-app="1" className="min-h-full bg-background text-foreground flex flex-col">
         <Script src="/js/hk-lang-state.js?v=2" strategy="beforeInteractive" />
         <Script src="/js/hk-tooltips.js?v=20260707" strategy="afterInteractive" />
         <TooltipProvider>{children}</TooltipProvider>

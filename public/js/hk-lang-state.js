@@ -281,7 +281,10 @@
       z.defer = true;
       document.head.appendChild(z);
     }
-    if (!window.__HK_LANG_UPGRADE_LOADER__) {
+    /* Legacy DOM upgrader mutates selects/buttons. React owns those nodes and
+       must hydrate them unchanged; static HTML pages still receive the upgrader. */
+    var isReactApp = document.body && document.body.getAttribute('data-hk-react-app') === '1';
+    if (!isReactApp && !window.__HK_LANG_UPGRADE_LOADER__) {
       window.__HK_LANG_UPGRADE_LOADER__ = true;
       var u = document.createElement('script');
       u.src = '/js/hk-lang-upgrade.js?v=20260707';
