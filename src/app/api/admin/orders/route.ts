@@ -4,6 +4,7 @@ import { writeAdminAudit } from "@/lib/admin-audit";
 import { q, q1 } from "@/lib/db";
 import { refundPaidOrder } from "@/lib/payment/credit";
 import { clientIp } from "@/lib/rate-limit";
+import { enqueueNotification } from "@/lib/notification-outbox";
 
 export const runtime = "nodejs";
 
@@ -106,6 +107,13 @@ export async function POST(req: NextRequest) {
     }
     const result = await refundPaidOrder(orderId, reason, admin.userId);
     if (!result.ok) {
+      await enqueueNotification({
+        eventType: "refund_failed", severity: "critical", audienceKind: "admin",
+        audienceRoles: ["finance", "superadmin"], requiredPermission: "admin.orders.refund",
+        dedupeKey: `refund-failed:${orderId}:${String(result.error || "error")}`,
+        targetUrl: `/admin/orders?id=${encodeURIComponent(orderId)}`,
+        payload: { order_id: orderId, failure: String(result.error || "refund_failed") },
+      }).catch((e) => console.warn("[notify] refund failed", e instanceof Error ? e.message : String(e)));
       return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
     }
     await writeAdminAudit({

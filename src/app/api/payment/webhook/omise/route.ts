@@ -14,6 +14,7 @@ import { verifyOmiseCharge, omiseReady } from "@/lib/payment/omise";
 import { clawbackYamForOrder, fulfillOrder } from "@/lib/payment/credit";
 import { q } from "@/lib/db";
 import { timingSafeEqual } from "crypto";
+import { enqueueNotification } from "@/lib/notification-outbox";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,6 +72,13 @@ export async function POST(req: Request) {
 
   const result = await fulfillOrder(orderId, `omise:${chargeId}`, "promptpay", verified.amountThb);
   if (!result.ok) {
+    await enqueueNotification({
+      eventType: "payment_exception", severity: "critical", audienceKind: "admin",
+      audienceRoles: ["finance", "superadmin"], requiredPermission: "admin.finance.read",
+      dedupeKey: `payment-exception:omise:${orderId}:${result.status}`,
+      targetUrl: `/admin/orders?id=${encodeURIComponent(orderId)}`,
+      payload: { order_id: orderId, gateway: "omise", failure: result.status },
+    }).catch((e) => console.warn("[notify] omise payment exception", e instanceof Error ? e.message : String(e)));
     return NextResponse.json({ error: "fulfillment_failed", result }, { status: 500 });
   }
   return NextResponse.json({ received: true, result });

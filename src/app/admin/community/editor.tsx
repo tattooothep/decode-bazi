@@ -50,7 +50,12 @@ type ReportRow = {
   user_agent: string | null;
   created_at: string;
   updated_at: string;
+  assignee_id: string | null;
+  assignee_email: string | null;
+  unread_count: number;
+  last_message_at: string | null;
 };
+type MessageRow = { id: string; author_type: "user" | "admin" | "system"; author_email: string | null; visibility: "public" | "internal"; body: string; created_at: string };
 
 const LOCALES: { key: LocaleKey; label: string; name: string }[] = [
   { key: "th", label: "TH", name: "ไทย" },
@@ -63,7 +68,7 @@ const LOCALES: { key: LocaleKey; label: string; name: string }[] = [
   { key: "ko", label: "KO", name: "한국어" },
   { key: "es", label: "ES", name: "Español" },
 ];
-const STATUSES = ["new", "triaged", "in_progress", "resolved", "closed"];
+const STATUSES = ["new", "triaged", "in_progress", "waiting_user", "user_replied", "resolved", "closed"];
 
 function emptyDraft(): NewsDraft {
   const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -117,9 +122,13 @@ export default function CommunityAdmin({ email }: { email: string }) {
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [draft, setDraft] = useState<NewsDraft>(() => emptyDraft());
   const [activeLang, setActiveLang] = useState<LocaleKey>("th");
-  const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [currentAdminId, setCurrentAdminId] = useState("");
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<MessageRow[]>([]);
+  const [reply, setReply] = useState("");
+  const [internalNote, setInternalNote] = useState("");
 
   const selectedLocale = useMemo(() => LOCALES.find((l) => l.key === activeLang) || LOCALES[0], [activeLang]);
 
@@ -131,12 +140,26 @@ export default function CommunityAdmin({ email }: { email: string }) {
     }
     setNews(r.news || []);
     setReports(r.reports || []);
-    const nextNotes: Record<string, string> = {};
-    for (const row of r.reports || []) nextNotes[row.id] = row.admin_note || "";
-    setNotes(nextNotes);
+    setCurrentAdminId(r.current_admin?.user_id || "");
   };
 
   useEffect(() => { load(); }, []);
+
+  const openReport = async (id: string) => {
+    setSelectedReportId(id);
+    const r = await fetch(`/api/admin/community?report_id=${encodeURIComponent(id)}`, { cache: "no-store" }).then((x) => x.json()).catch(() => null);
+    if (!r?.ok) { setMsg("โหลดบทสนทนาไม่สำเร็จ"); return; }
+    setReports(r.reports || []);
+    setMessages(r.messages || []);
+    setCurrentAdminId(r.current_admin?.user_id || currentAdminId);
+    await fetch("/api/admin/community", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "mark_report_read", id }) }).catch(() => null);
+    try { history.replaceState(null, "", `/admin/community?report=${encodeURIComponent(id)}`); } catch {}
+  };
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("report");
+    if (id && /^\d+$/.test(id)) openReport(id);
+  }, []);
 
   const setMap = (field: "title" | "body" | "ctaLabel", value: string) => {
     setDraft((old) => ({ ...old, [field]: { ...old[field], [activeLang]: value } }));
@@ -179,20 +202,18 @@ export default function CommunityAdmin({ email }: { email: string }) {
     }
   };
 
-  const updateReport = async (report: ReportRow, status = report.status) => {
+  const reportAction = async (action: string, extra: Record<string, unknown> = {}) => {
+    if (!selectedReportId) return;
     setBusy(true);
     const r = await fetch("/api/admin/community", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "update_report", id: report.id, status, adminNote: notes[report.id] || "" }),
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, id: selectedReportId, clientMessageId: crypto.randomUUID(), ...extra }),
     }).then((x) => x.json()).catch(() => null);
     setBusy(false);
-    if (r?.ok) {
-      setReports(r.reports || []);
-      setMsg("อัปเดต ticket แล้ว");
-    } else {
-      setMsg("อัปเดต ticket ไม่สำเร็จ");
-    }
+    if (!r?.ok) { setMsg(`ทำรายการไม่สำเร็จ: ${r?.error || "error"}`); return; }
+    setReports(r.reports || []);
+    setMessages(r.messages || []);
+    setReply(""); setInternalNote(""); setMsg("อัปเดต ticket แล้ว");
   };
 
   return (
@@ -335,32 +356,65 @@ export default function CommunityAdmin({ email }: { email: string }) {
             </div>
             <button onClick={load} className="rounded border border-white/10 px-3 py-1.5 text-sm text-white/65 hover:border-amber-300/35">รีเฟรช</button>
           </div>
-          <div className="grid gap-3">
-            {reports.length ? reports.map((row) => (
-              <div key={row.id} className="rounded-lg border border-white/10 bg-black/20 p-3">
-                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
-                  <div>
-                    <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-white/45">
-                      <span className="rounded border border-white/10 px-2 py-0.5">#{row.id}</span>
-                      <span>{row.category}</span>
-                      <span>{row.locale || "n/a"}</span>
-                      <span>{new Date(row.created_at).toLocaleString("th-TH")}</span>
-                      <span>{row.email || "no email"}</span>
+          <div className="grid gap-4 lg:grid-cols-[minmax(280px,.75fr)_minmax(0,1.25fr)]">
+            <div className="grid content-start gap-2 lg:max-h-[720px] lg:overflow-auto lg:pr-1">
+              {reports.length ? reports.map((row) => (
+                <button key={row.id} type="button" onClick={() => openReport(row.id)} className={`w-full rounded-lg border p-3 text-left ${selectedReportId === row.id ? "border-amber-300/50 bg-amber-300/10" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-white/45">
+                      <span>#{row.id}</span><span>{row.category}</span><span>{row.status}</span>
                     </div>
-                    <p className="whitespace-pre-wrap text-sm leading-6 text-white/78">{row.message}</p>
-                    {row.page_path ? <div className="mt-2 break-all font-mono text-xs text-cyan-100/55">{row.page_path}</div> : null}
-                    {row.user_agent ? <div className="mt-1 line-clamp-1 text-xs text-white/35">{row.user_agent}</div> : null}
+                    {Number(row.unread_count || 0) > 0 ? <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{row.unread_count}</span> : null}
                   </div>
-                  <div className="grid gap-2">
-                    <select value={row.status} onChange={(e) => updateReport(row, e.target.value)} className="rounded border border-white/10 bg-black/25 px-3 py-2 text-sm">
-                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                    <textarea value={notes[row.id] || ""} onChange={(e) => setNotes((o) => ({ ...o, [row.id]: e.target.value }))} rows={4} className="rounded border border-white/10 bg-black/25 px-3 py-2 text-sm leading-5" placeholder="admin note" />
-                    <button disabled={busy} onClick={() => updateReport(row)} className="rounded border border-white/10 px-3 py-2 text-sm text-white/70 hover:border-amber-300/35 disabled:opacity-45">บันทึก note</button>
+                  <div className="mt-2 line-clamp-2 text-sm leading-5 text-white/75">{row.message}</div>
+                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-white/35"><span>{row.email || "no email"}</span><span>{new Date(row.last_message_at || row.created_at).toLocaleString("th-TH")}</span></div>
+                </button>
+              )) : <div className="rounded border border-dashed border-white/15 p-6 text-center text-sm text-white/40">ยังไม่มี ticket</div>}
+            </div>
+
+            <div className="min-h-[360px] rounded-lg border border-white/10 bg-black/20 p-4">
+              {selectedReportId ? (() => {
+                const row = reports.find((item) => item.id === selectedReportId);
+                if (!row) return <div className="text-sm text-white/40">ไม่พบ ticket</div>;
+                return <div>
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div>
+                      <div className="text-xs text-white/40">Ticket #{row.id} · {row.email || "no email"}</div>
+                      <div className="mt-1 text-sm text-white/75">{row.category} · {row.locale || "n/a"}</div>
+                      {row.page_path ? <a href={row.page_path} target="_blank" rel="noreferrer" className="mt-1 block break-all font-mono text-xs text-cyan-200/65">{row.page_path}</a> : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button disabled={busy} onClick={() => reportAction("assign_report", { assigneeId: row.assignee_id ? null : currentAdminId })} className="rounded border border-white/10 px-3 py-1.5 text-xs text-white/65">{row.assignee_id ? `ยกเลิกผู้รับผิดชอบ · ${row.assignee_email || "admin"}` : "รับผิดชอบ ticket นี้"}</button>
+                      <select value={row.status} onChange={(e) => reportAction("update_report", { status: e.target.value })} className="rounded border border-white/10 bg-black/40 px-3 py-1.5 text-xs">
+                        {STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+                      </select>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )) : <div className="rounded border border-dashed border-white/15 p-6 text-center text-sm text-white/40">ยังไม่มี ticket</div>}
+
+                  <div className="grid max-h-[390px] gap-2 overflow-auto pr-1">
+                    {messages.map((message) => (
+                      <div key={message.id} className={`max-w-[88%] rounded-lg border px-3 py-2 ${message.visibility === "internal" ? "mx-auto w-full max-w-full border-violet-300/25 bg-violet-400/10" : message.author_type === "user" ? "ml-auto border-cyan-300/25 bg-cyan-400/10" : "mr-auto border-amber-300/25 bg-amber-300/10"}`}>
+                        <div className="mb-1 flex justify-between gap-3 text-[10px] text-white/35"><span>{message.visibility === "internal" ? "Internal note" : message.author_type} · {message.author_email || "system"}</span><span>{new Date(message.created_at).toLocaleString("th-TH")}</span></div>
+                        <div className="whitespace-pre-wrap break-words text-sm leading-6 text-white/78">{message.body.startsWith("status:") ? `สถานะ → ${message.body.slice(7)}` : message.body}</div>
+                      </div>
+                    ))}
+                    {!messages.length ? <div className="p-6 text-center text-sm text-white/35">ยังไม่มีข้อความ</div> : null}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <div>
+                      <textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={4} placeholder="ตอบผู้ใช้" className="w-full rounded border border-amber-300/20 bg-black/30 px-3 py-2 text-sm leading-6" />
+                      <button disabled={busy || !reply.trim()} onClick={() => reportAction("reply_report", { message: reply })} className="mt-2 rounded border border-amber-300 bg-amber-300 px-4 py-2 text-sm font-semibold text-black disabled:opacity-40">ส่งถึงผู้ใช้</button>
+                    </div>
+                    <div>
+                      <textarea value={internalNote} onChange={(e) => setInternalNote(e.target.value)} rows={4} placeholder="โน้ตภายใน · ผู้ใช้มองไม่เห็น" className="w-full rounded border border-violet-300/20 bg-black/30 px-3 py-2 text-sm leading-6" />
+                      <button disabled={busy || !internalNote.trim()} onClick={() => reportAction("add_internal_note", { message: internalNote })} className="mt-2 rounded border border-violet-300/30 px-4 py-2 text-sm text-violet-100 disabled:opacity-40">บันทึกโน้ตภายใน</button>
+                    </div>
+                  </div>
+                  {row.user_agent ? <div className="mt-3 line-clamp-2 text-[11px] text-white/30">{row.user_agent}</div> : null}
+                </div>;
+              })() : <div className="flex min-h-[330px] items-center justify-center text-sm text-white/35">เลือก ticket เพื่อเปิดบทสนทนา</div>}
+            </div>
           </div>
         </section>
       </div>

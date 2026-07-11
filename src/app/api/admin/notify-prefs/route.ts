@@ -10,8 +10,16 @@ import { requireAdmin, adminHas } from "@/lib/admin-guard";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const EVENTS = ["user_signup", "order_paid", "job_fail_spike"] as const;
+const EVENTS = [
+  "user_signup", "order_paid", "job_fail_spike", "support_report_new", "support_user_reply",
+  "payment_exception", "refund_failed", "service_unhealthy", "service_recovered", "admin_role_changed",
+] as const;
 type EventType = (typeof EVENTS)[number];
+const DEFAULTS: Record<EventType, boolean> = {
+  user_signup: false, order_paid: false, job_fail_spike: false,
+  support_report_new: true, support_user_reply: true, payment_exception: true, refund_failed: true,
+  service_unhealthy: true, service_recovered: true, admin_role_changed: true,
+};
 
 const NO_STORE = { "Cache-Control": "no-store, max-age=0" };
 
@@ -31,7 +39,7 @@ export async function GET() {
     `SELECT event_type, enabled FROM admin_notify_prefs WHERE user_id=$1`,
     [admin.userId]
   );
-  const prefs: Record<EventType, boolean> = { user_signup: false, order_paid: false, job_fail_spike: false };
+  const prefs: Record<EventType, boolean> = { ...DEFAULTS };
   for (const r of rows) if (EVENTS.includes(r.event_type)) prefs[r.event_type] = !!r.enabled;
 
   const nsub = await q1<{ n: number }>(
@@ -58,6 +66,13 @@ export async function PUT(req: Request) {
   const EVENT_PERM: Partial<Record<EventType, string>> = {
     user_signup: "admin.users.read",
     order_paid: "admin.orders.read",
+    support_report_new: "admin.community.read",
+    support_user_reply: "admin.community.read",
+    payment_exception: "admin.finance.read",
+    refund_failed: "admin.orders.refund",
+    service_unhealthy: "admin.dashboard.read",
+    service_recovered: "admin.dashboard.read",
+    admin_role_changed: "admin.iam.read",
   };
 
   let changed = 0;
@@ -73,6 +88,14 @@ export async function PUT(req: Request) {
        ON CONFLICT (user_id, event_type) DO UPDATE SET enabled=EXCLUDED.enabled, updated_at=now()`,
       [admin.userId, ev, incoming[ev] as boolean]
     );
+    if (ev === "service_unhealthy") {
+      await q(
+        `INSERT INTO admin_notify_prefs (user_id,event_type,enabled,updated_at)
+         VALUES ($1,'service_recovered',$2,now())
+         ON CONFLICT (user_id,event_type) DO UPDATE SET enabled=EXCLUDED.enabled,updated_at=now()`,
+        [admin.userId, incoming[ev] as boolean]
+      );
+    }
     changed++;
   }
   if (!changed) return NextResponse.json({ ok: false, error: "no_valid_event" }, { status: 400, headers: NO_STORE });
@@ -81,7 +104,7 @@ export async function PUT(req: Request) {
     `SELECT event_type, enabled FROM admin_notify_prefs WHERE user_id=$1`,
     [admin.userId]
   );
-  const prefs: Record<EventType, boolean> = { user_signup: false, order_paid: false, job_fail_spike: false };
+  const prefs: Record<EventType, boolean> = { ...DEFAULTS };
   for (const r of rows) if (EVENTS.includes(r.event_type)) prefs[r.event_type] = !!r.enabled;
   return NextResponse.json({ ok: true, prefs }, { headers: NO_STORE });
 }

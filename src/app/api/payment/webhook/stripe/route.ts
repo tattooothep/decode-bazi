@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { constructStripeEvent, retrieveStripeSession } from "@/lib/payment/stripe";
 import { clawbackYamForOrder, fulfillOrder } from "@/lib/payment/credit";
 import { q } from "@/lib/db";
+import { enqueueNotification } from "@/lib/notification-outbox";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -87,6 +88,13 @@ export async function POST(req: Request) {
 
   const result = await fulfillOrder(orderId, `stripe:${payRef}`, "stripe", amountThb);
   if (!result.ok) {
+    await enqueueNotification({
+      eventType: "payment_exception", severity: "critical", audienceKind: "admin",
+      audienceRoles: ["finance", "superadmin"], requiredPermission: "admin.finance.read",
+      dedupeKey: `payment-exception:stripe:${orderId}:${result.status}`,
+      targetUrl: `/admin/orders?id=${encodeURIComponent(orderId)}`,
+      payload: { order_id: orderId, gateway: "stripe", failure: result.status },
+    }).catch((e) => console.warn("[notify] stripe payment exception", e instanceof Error ? e.message : String(e)));
     // Stripe retries non-2xx. Never acknowledge a paid event that was not credited.
     return NextResponse.json({ error: "fulfillment_failed", result }, { status: 500 });
   }

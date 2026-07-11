@@ -10,8 +10,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { AdminShell, useAdminDict } from "@/components/admin/AdminShell";
 
-type EventType = "user_signup" | "order_paid" | "job_fail_spike";
-const EVENTS: EventType[] = ["user_signup", "order_paid", "job_fail_spike"];
+type EventType = "user_signup" | "order_paid" | "job_fail_spike" | "support_report_new" | "support_user_reply" | "payment_exception" | "refund_failed" | "service_unhealthy" | "admin_role_changed";
+const EVENTS: EventType[] = ["support_report_new", "support_user_reply", "payment_exception", "refund_failed", "service_unhealthy", "admin_role_changed", "job_fail_spike", "order_paid", "user_signup"];
+type InboxRow = { id: string; event_type: string; severity: string; title: string; body: string; target_url: string; read_at: string | null; created_at: string };
 
 type PushState = { supported: boolean; needsInstall: boolean; permission: string; subscribed: boolean };
 
@@ -39,8 +40,10 @@ function loadHkPush(): Promise<Window["hkPush"] | undefined> {
 export default function NotifyClient({ lang }: { lang: string }) {
   const { dict } = useAdminDict();
   const [prefs, setPrefs] = useState<Record<EventType, boolean>>({
-    user_signup: false, order_paid: false, job_fail_spike: false,
+    user_signup: false, order_paid: false, job_fail_spike: false, support_report_new: true,
+    support_user_reply: true, payment_exception: true, refund_failed: true, service_unhealthy: true, admin_role_changed: true,
   });
+  const [history, setHistory] = useState<InboxRow[]>([]);
   const [devices, setDevices] = useState(0);
   const [push, setPush] = useState<PushState | null>(null);
   const [msg, setMsg] = useState("");
@@ -58,6 +61,8 @@ export default function NotifyClient({ lang }: { lang: string }) {
       setPrefs(r.prefs);
       setDevices(r.devices || 0);
     }
+    const inbox = await fetch("/api/notifications", { cache: "no-store" }).then((x) => x.json()).catch(() => null);
+    if (inbox?.ok) setHistory(inbox.rows || []);
     await refreshPushState();
   }, [refreshPushState]);
 
@@ -108,11 +113,23 @@ export default function NotifyClient({ lang }: { lang: string }) {
     user_signup: dict["notify.ev.user_signup"],
     order_paid: dict["notify.ev.order_paid"],
     job_fail_spike: dict["notify.ev.job_fail_spike"],
+    support_report_new: dict["notify.ev.support_report_new"],
+    support_user_reply: dict["notify.ev.support_user_reply"],
+    payment_exception: dict["notify.ev.payment_exception"],
+    refund_failed: dict["notify.ev.refund_failed"],
+    service_unhealthy: dict["notify.ev.service_unhealthy"],
+    admin_role_changed: dict["notify.ev.admin_role_changed"],
   };
   const evDesc: Record<EventType, string> = {
     user_signup: dict["notify.ev.user_signup.desc"],
     order_paid: dict["notify.ev.order_paid.desc"],
     job_fail_spike: dict["notify.ev.job_fail_spike.desc"],
+    support_report_new: dict["notify.ev.support_report_new.desc"],
+    support_user_reply: dict["notify.ev.support_user_reply.desc"],
+    payment_exception: dict["notify.ev.payment_exception.desc"],
+    refund_failed: dict["notify.ev.refund_failed.desc"],
+    service_unhealthy: dict["notify.ev.service_unhealthy.desc"],
+    admin_role_changed: dict["notify.ev.admin_role_changed.desc"],
   };
 
   return (
@@ -168,6 +185,22 @@ export default function NotifyClient({ lang }: { lang: string }) {
           ))}
         </div>
         <p className="mt-3 text-xs text-white/40">{dict["notify.worker_note"]}</p>
+      </section>
+
+      <section className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+        <h2 className="mb-3 text-sm font-bold text-white/85">{dict["notify.history"]}</h2>
+        <div className="grid gap-2">
+          {history.slice(0, 20).map((row) => (
+            <a key={row.id} href={row.target_url || "/admin"} className="rounded-lg border border-white/10 bg-white/[.03] px-3 py-2 hover:border-cyan-300/30">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-white/85">{row.title}</span>
+                <span className="text-[11px] text-white/35">{new Date(row.created_at).toLocaleString(lang || "th")}</span>
+              </div>
+              <p className="mt-1 text-xs text-white/50">{row.body}</p>
+            </a>
+          ))}
+          {!history.length && <div className="rounded border border-dashed border-white/10 p-4 text-center text-xs text-white/40">{dict["empty"]}</div>}
+        </div>
       </section>
     </AdminShell>
   );
