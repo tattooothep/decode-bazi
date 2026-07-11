@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th" data-lang="th" data-theme="dark">
+<head>
+<script src="/js/hk-lang-state.js?v=2"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>hourkey · ข่าวสารและโปรโมชั่น</title>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<style>
+:root{--bg:#0d0f12;--panel:#171a21;--panel2:#1d222b;--fg:#f6f1e6;--soft:rgba(246,241,230,.68);--faint:rgba(246,241,230,.42);--line:rgba(200,164,77,.20);--gold:#c8a44d;--gold2:#8b6e2f;--green:#72c27d;--blue:#74a9df;--red:#df6c5f;--shadow:0 18px 50px rgba(0,0,0,.28)}
+[data-theme="light"]{--bg:#f5efe2;--panel:#fffaf0;--panel2:#f2e8d6;--fg:#1a1612;--soft:rgba(26,22,18,.68);--faint:rgba(26,22,18,.42);--line:rgba(138,109,42,.28);--gold:#8a6d2a;--gold2:#6f5723;--green:#4f8a58;--blue:#3c6f9e;--red:#b04d41;--shadow:0 18px 45px rgba(86,63,27,.13)}
+*{box-sizing:border-box;margin:0;padding:0}html{background:var(--bg)}body{min-height:100vh;background:linear-gradient(180deg,rgba(200,164,77,.08),transparent 260px),var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}a{color:inherit;text-decoration:none}button,select{font:inherit}.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.brand{display:inline-flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:650}.seal{width:30px;height:30px;border:1px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;color:var(--gold);font-size:13px}.nav{display:flex;align-items:center;gap:10px;min-width:0}.nav-link{height:34px;display:inline-flex;align-items:center;border:1px solid var(--line);padding:0 12px;color:var(--soft);font-size:12px;white-space:nowrap}.nav-link:hover{color:var(--fg);border-color:var(--gold)}.langbox{height:34px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);padding:0 9px;color:var(--soft);font-size:12px}.langbox select{border:0;background:transparent;color:var(--fg);outline:none;min-width:96px}.langbox option{background:var(--panel);color:var(--fg)}.stage{width:min(1120px,100%);margin:0 auto;padding:34px 22px 70px}.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:20px}.eyebrow{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:42px;font-weight:650;line-height:1.15;letter-spacing:0}.lede{max-width:680px;color:var(--soft);font-size:14px;line-height:1.8;margin-top:10px}.hero-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.btn{min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:0 14px;font-size:13px;cursor:pointer}.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:750}.btn:hover{border-color:var(--gold)}.filters{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.filter{height:34px;border:1px solid var(--line);background:var(--panel);color:var(--soft);padding:0 12px;cursor:pointer;font-size:12px}.filter.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:750}.news-list{display:grid;gap:14px}.news-item{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,320px);gap:18px;align-items:stretch;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 80%,var(--bg)));box-shadow:var(--shadow);padding:18px;border-radius:8px}.news-main{min-width:0;display:flex;flex-direction:column;gap:12px}.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--faint);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;text-transform:uppercase}.kind{border:1px solid var(--line);color:var(--gold);padding:4px 7px}.badge{border:1px solid color-mix(in srgb,var(--blue) 50%,transparent);color:var(--blue);padding:4px 7px}.news-title{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:24px;line-height:1.3;font-weight:650}.news-body{color:var(--soft);font-size:14px;line-height:1.8;white-space:pre-wrap}.news-media{min-height:178px;border:1px solid rgba(255,255,255,.08);background:var(--panel2);overflow:hidden;border-radius:6px}.news-media img,.news-media video{width:100%;height:100%;min-height:178px;object-fit:cover;display:block}.empty,.loading{border:1px dashed var(--line);background:var(--panel);padding:34px 18px;text-align:center;color:var(--soft);border-radius:8px}.empty b{display:block;color:var(--fg);font-weight:650;margin-bottom:6px}.footer-note{margin-top:18px;color:var(--faint);font-size:12px;line-height:1.7}@media(max-width:760px){.topbar{padding:12px 14px}.nav-link{display:none}.stage{padding:24px 14px 54px}.hero{grid-template-columns:1fr}.hero-actions{justify-content:flex-start}h1{font-size:32px}.news-item{grid-template-columns:1fr}.news-media{min-height:200px}.langbox select{min-width:74px}}@media(max-width:420px){.brand span:last-child{display:none}.langbox{padding:0 7px}.filters{display:grid;grid-template-columns:1fr 1fr}.filter{width:100%}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a href="/" class="brand"><span class="seal">時</span><span>hourkey</span></a>
+  <div class="nav">
+    <a class="nav-link" href="/today" data-t="navToday">วันนี้</a>
+    <a class="nav-link" href="/support" data-t="navSupport">แจ้งปัญหา</a>
+    <label class="langbox"><span>🌐</span><select id="lang-select" aria-label="Language"></select></label>
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</header>
+
+<main class="stage">
+  <section class="hero">
+    <div>
+      <div class="eyebrow" data-t="eyebrow">NEWS · OFFERS</div>
+      <h1 data-t="h1">ข่าวสารและโปรโมชั่น</h1>
+      <p class="lede" data-t="sub">ดูสิ่งที่อัปเดตใหม่ แพ็กเกจที่เปิดให้ใช้ และประกาศสำคัญของ hourkey ในภาษาที่คุณเลือก</p>
+    </div>
+    <div class="hero-actions">
+      <a class="btn" href="/support" id="support-link" data-t="supportCta">แจ้งปัญหาการใช้งาน</a>
+      <a class="btn primary" href="/pricing" data-t="pricingCta">ดูแพ็กเกจ</a>
+    </div>
+  </section>
+
+  <div class="filters" id="filters"></div>
+  <div class="news-list" id="news-list"><div class="loading" data-t="loading">กำลังโหลดข่าวสาร...</div></div>
+  <p class="footer-note" data-t="note">ข่าวที่แสดงมาจากหลังบ้านและจะเปลี่ยนตามภาษาที่เลือก หากเนื้อหาภาษานั้นยังไม่ถูกกรอก ระบบจะแสดงภาษาสำรองที่มีอยู่</p>
+</main>
+
+<script>
+(function(){
+  var LANGS=[
+    {v:'th',label:'TH · ไทย'},{v:'en',label:'EN · English'},{v:'zh',label:'繁 · 繁體'},{v:'cn',label:'简 · 简体'},
+    {v:'vi',label:'VI · Tiếng Việt'},{v:'ja',label:'JA · 日本語'},{v:'ru',label:'RU · Русский'},{v:'ko',label:'KO · 한국어'},{v:'es',label:'ES · Español'}
+  ];
+  var COPY={
+    th:{title:'hourkey · ข่าวสารและโปรโมชั่น',navToday:'วันนี้',navSupport:'แจ้งปัญหา',eyebrow:'NEWS · OFFERS',h1:'ข่าวสารและโปรโมชั่น',sub:'ดูสิ่งที่อัปเดตใหม่ แพ็กเกจที่เปิดให้ใช้ และประกาศสำคัญของ hourkey ในภาษาที่คุณเลือก',supportCta:'แจ้งปัญหาการใช้งาน',pricingCta:'ดูแพ็กเกจ',all:'ทั้งหมด',update:'อัปเดต',promo:'โปรโมชั่น',system:'ระบบ',loading:'กำลังโหลดข่าวสาร...',emptyTitle:'ยังไม่มีข่าวที่เผยแพร่',emptyBody:'เมื่อทีมงานเพิ่มข่าวหรือโปรโมชั่นใหม่จากหลังบ้าน รายการจะแสดงที่นี่',readMore:'ดูรายละเอียด',published:'เผยแพร่',note:'ข่าวที่แสดงมาจากหลังบ้านและจะเปลี่ยนตามภาษาที่เลือก หากเนื้อหาภาษานั้นยังไม่ถูกกรอก ระบบจะแสดงภาษาสำรองที่มีอยู่'},
+    en:{title:'hourkey · News and Offers',navToday:'Today',navSupport:'Report issue',eyebrow:'NEWS · OFFERS',h1:'News and offers',sub:'Follow product updates, available plans, and important hourkey announcements in your selected language.',supportCta:'Report an issue',pricingCta:'View plans',all:'All',update:'Updates',promo:'Offers',system:'System',loading:'Loading news...',emptyTitle:'No published news yet',emptyBody:'When the team adds updates or promotions from admin, they will appear here.',readMore:'Read more',published:'Published',note:'News comes from the admin backend and follows your selected language. If a language is missing, hourkey shows the best available fallback.'},
+    zh:{title:'hourkey · 最新消息與優惠',navToday:'今日',navSupport:'回報問題',eyebrow:'NEWS · OFFERS',h1:'最新消息與優惠',sub:'查看 hourkey 的功能更新、可用方案與重要公告，內容會依你選擇的語言顯示。',supportCta:'回報使用問題',pricingCta:'查看方案',all:'全部',update:'更新',promo:'優惠',system:'系統',loading:'正在載入消息...',emptyTitle:'尚無已發布消息',emptyBody:'當團隊在後台新增更新或優惠時，會顯示在這裡。',readMore:'查看詳情',published:'發布',note:'消息由後台管理，並依選擇語言顯示；若該語言尚未填寫，會使用可用的備用語言。'},
+    cn:{title:'hourkey · 新闻与优惠',navToday:'今日',navSupport:'反馈问题',eyebrow:'NEWS · OFFERS',h1:'新闻与优惠',sub:'查看 hourkey 的功能更新、可用套餐与重要公告，内容会按你选择的语言显示。',supportCta:'反馈使用问题',pricingCta:'查看套餐',all:'全部',update:'更新',promo:'优惠',system:'系统',loading:'正在加载新闻...',emptyTitle:'暂无已发布新闻',emptyBody:'团队从后台新增更新或优惠后，会显示在这里。',readMore:'查看详情',published:'发布',note:'新闻由后台管理，并按所选语言显示；如果该语言未填写，会显示可用的备用语言。'},
+    vi:{title:'hourkey · Tin tức và ưu đãi',navToday:'Hôm nay',navSupport:'Báo lỗi',eyebrow:'NEWS · OFFERS',h1:'Tin tức và ưu đãi',sub:'Theo dõi cập nhật sản phẩm, gói dịch vụ và thông báo quan trọng của hourkey bằng ngôn ngữ bạn chọn.',supportCta:'Báo lỗi sử dụng',pricingCta:'Xem gói',all:'Tất cả',update:'Cập nhật',promo:'Ưu đãi',system:'Hệ thống',loading:'Đang tải tin tức...',emptyTitle:'Chưa có tin đã xuất bản',emptyBody:'Khi đội ngũ thêm cập nhật hoặc ưu đãi từ trang quản trị, nội dung sẽ xuất hiện tại đây.',readMore:'Xem chi tiết',published:'Đã đăng',note:'Tin tức lấy từ backend quản trị và đổi theo ngôn ngữ đã chọn. Nếu thiếu bản dịch, hệ thống sẽ dùng ngôn ngữ dự phòng.'},
+    ja:{title:'hourkey · ニュースと特典',navToday:'今日',navSupport:'問題を報告',eyebrow:'NEWS · OFFERS',h1:'ニュースと特典',sub:'hourkey の更新、利用可能なプラン、重要なお知らせを選択中の言語で確認できます。',supportCta:'利用上の問題を報告',pricingCta:'プランを見る',all:'すべて',update:'更新',promo:'特典',system:'システム',loading:'ニュースを読み込み中...',emptyTitle:'公開済みニュースはまだありません',emptyBody:'管理画面から更新や特典が追加されると、ここに表示されます。',readMore:'詳細を見る',published:'公開',note:'ニュースは管理画面から配信され、選択中の言語に合わせて表示されます。翻訳が未入力の場合は利用可能な言語を表示します。'},
+    ru:{title:'hourkey · Новости и акции',navToday:'Сегодня',navSupport:'Сообщить о проблеме',eyebrow:'NEWS · OFFERS',h1:'Новости и акции',sub:'Следите за обновлениями продукта, доступными планами и важными объявлениями hourkey на выбранном языке.',supportCta:'Сообщить о проблеме',pricingCta:'Планы',all:'Все',update:'Обновления',promo:'Акции',system:'Система',loading:'Загрузка новостей...',emptyTitle:'Пока нет опубликованных новостей',emptyBody:'Когда команда добавит обновления или акции в админке, они появятся здесь.',readMore:'Подробнее',published:'Опубликовано',note:'Новости поступают из админки и отображаются на выбранном языке. Если перевод не заполнен, будет показан доступный резервный язык.'},
+    ko:{title:'hourkey · 소식과 혜택',navToday:'오늘',navSupport:'문제 신고',eyebrow:'NEWS · OFFERS',h1:'소식과 혜택',sub:'hourkey의 제품 업데이트, 이용 가능한 플랜, 주요 공지를 선택한 언어로 확인하세요.',supportCta:'사용 문제 신고',pricingCta:'플랜 보기',all:'전체',update:'업데이트',promo:'혜택',system:'시스템',loading:'소식을 불러오는 중...',emptyTitle:'게시된 소식이 없습니다',emptyBody:'관리자가 업데이트나 혜택을 추가하면 여기에 표시됩니다.',readMore:'자세히 보기',published:'게시',note:'소식은 관리자 백엔드에서 제공되며 선택한 언어에 맞춰 표시됩니다. 번역이 없으면 가능한 대체 언어가 표시됩니다.'},
+    es:{title:'hourkey · Noticias y ofertas',navToday:'Hoy',navSupport:'Reportar problema',eyebrow:'NEWS · OFFERS',h1:'Noticias y ofertas',sub:'Sigue las novedades del producto, los planes disponibles y los avisos importantes de hourkey en tu idioma elegido.',supportCta:'Reportar un problema',pricingCta:'Ver planes',all:'Todo',update:'Novedades',promo:'Ofertas',system:'Sistema',loading:'Cargando noticias...',emptyTitle:'Aún no hay noticias publicadas',emptyBody:'Cuando el equipo agregue novedades u ofertas desde admin, aparecerán aquí.',readMore:'Ver detalles',published:'Publicado',note:'Las noticias vienen del backend de admin y siguen el idioma seleccionado. Si falta una traducción, se muestra el mejor idioma disponible.'}
+  };
+  var currentKind='all';
+  var items=[];
+  function norm(){
+    var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current?window.HK_LANG_STATE.current():null;
+    if(st&&st.raw==='zh')return st.variant==='cn'?'cn':'zh';
+    var raw=(st&&st.raw)||localStorage.getItem('hk_locale')||'th';
+    raw=String(raw).toLowerCase();
+    if(raw==='zh-cn'||raw==='zh-hans'||raw==='cn')return'cn';
+    if(raw.indexOf('zh')===0)return'zh';
+    return COPY[raw]?raw:'en';
+  }
+  function setLocale(lang){
+    if(window.HK_LANG_STATE&&window.HK_LANG_STATE.set){
+      window.HK_LANG_STATE.set(lang==='cn'?'zh-cn':lang==='zh'?'zh-hant':lang);
+    }else{
+      try{localStorage.setItem('hk_locale',lang==='cn'?'zh':lang);}catch(_){}
+    }
+    applyText();
+    loadNews();
+  }
+  function t(k){var lang=norm();return(COPY[lang]&&COPY[lang][k])||COPY.en[k]||k}
+  function applyText(){
+    document.title=t('title');
+    document.querySelectorAll('[data-t]').forEach(function(el){el.textContent=t(el.getAttribute('data-t'))});
+    var select=document.getElementById('lang-select');
+    select.innerHTML=LANGS.map(function(l){return'<option value="'+l.v+'">'+l.label+'</option>'}).join('');
+    select.value=norm();
+    renderFilters();
+    document.getElementById('support-link').href='/support?from='+encodeURIComponent(location.pathname+location.search);
+  }
+  function renderFilters(){
+    var box=document.getElementById('filters');
+    box.innerHTML=['all','update','promo','system'].map(function(k){
+      return'<button class="filter '+(currentKind===k?'on':'')+'" data-kind="'+k+'">'+t(k)+'</button>';
+    }).join('');
+    box.querySelectorAll('button').forEach(function(b){b.onclick=function(){currentKind=b.dataset.kind;renderFilters();renderNews();};});
+  }
+  function fmtDate(iso){
+    if(!iso)return'';
+    var map={th:'th-TH',en:'en-US',zh:'zh-Hant',cn:'zh-Hans-CN',vi:'vi-VN',ja:'ja-JP',ru:'ru-RU',ko:'ko-KR',es:'es-ES'};
+    try{return new Intl.DateTimeFormat(map[norm()]||'en-US',{year:'numeric',month:'short',day:'numeric'}).format(new Date(iso));}catch(_){return String(iso).slice(0,10);}
+  }
+  function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+  function renderMedia(it){
+    if(it.videoUrl)return'<div class="news-media"><video src="'+escapeHtml(it.videoUrl)+'" controls preload="metadata"></video></div>';
+    if(it.mediaUrl)return'<div class="news-media"><img src="'+escapeHtml(it.mediaUrl)+'" alt=""></div>';
+    return'';
+  }
+  function renderNews(){
+    var box=document.getElementById('news-list');
+    var visible=items.filter(function(it){return currentKind==='all'||it.kind===currentKind});
+    if(!visible.length){
+      box.innerHTML='<div class="empty"><b>'+escapeHtml(t('emptyTitle'))+'</b><span>'+escapeHtml(t('emptyBody'))+'</span></div>';
+      return;
+    }
+    box.innerHTML=visible.map(function(it){
+      var cta=it.ctaUrl?'<a class="btn primary" href="'+escapeHtml(it.ctaUrl)+'">'+escapeHtml(it.ctaLabel||t('readMore'))+'</a>':'';
+      return'<article class="news-item"><div class="news-main"><div class="meta"><span class="kind">'+escapeHtml(t(it.kind)||it.kind)+'</span>'+(it.badge?'<span class="badge">'+escapeHtml(it.badge)+'</span>':'')+'<span>'+escapeHtml(t('published'))+' · '+escapeHtml(fmtDate(it.publishedAt))+'</span></div><h2 class="news-title">'+escapeHtml(it.title||'hourkey')+'</h2><p class="news-body">'+escapeHtml(it.body||'')+'</p><div>'+cta+'</div></div>'+renderMedia(it)+'</article>';
+    }).join('');
+  }
+  async function loadNews(){
+    var box=document.getElementById('news-list');
+    box.innerHTML='<div class="loading">'+escapeHtml(t('loading'))+'</div>';
+    try{
+      var r=await fetch('/api/news?lang='+encodeURIComponent(norm()),{cache:'no-store'});
+      var j=await r.json();
+      items=j&&j.ok?j.items||[]:[];
+    }catch(_){items=[];}
+    renderNews();
+  }
+  document.getElementById('lang-select').addEventListener('change',function(e){setLocale(e.target.value);});
+  document.addEventListener('hk:locale',function(){applyText();loadNews();});
+  applyText();
+  loadNews();
+})();
+</script>
+<script src="/js/hk-user-menu.js?v=24" defer></script>
+</body>
+</html>

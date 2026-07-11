@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -465,9 +466,9 @@
   });
   // theme
   const tL = document.getElementById('t-light'), tD = document.getElementById('t-dark');
-  function setTheme(m){ document.documentElement.setAttribute('data-theme', m); tL.classList.toggle('on', m==='light'); tD.classList.toggle('on', m==='dark'); try{localStorage.setItem('hourkey-theme', m);}catch(e){} }
-  tL.addEventListener('click', ()=>setTheme('light'));
-  tD.addEventListener('click', ()=>setTheme('dark'));
+  function setTheme(m){ document.documentElement.setAttribute('data-theme', m); if(tL) tL.classList.toggle('on', m==='light'); if(tD) tD.classList.toggle('on', m==='dark'); try{localStorage.setItem('hourkey-theme', m);}catch(e){} }
+  if (tL) tL.addEventListener('click', ()=>setTheme('light'));
+  if (tD) tD.addEventListener('click', ()=>setTheme('dark'));
   try{ const s=localStorage.getItem('hourkey-theme'); if (s) setTheme(s); }catch(e){}
 </script>
 
@@ -696,7 +697,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('d
 })();
 </script>
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=23" defer></script>
+<script src="/js/hk-user-menu.js?v=24" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
 <script>
@@ -710,5 +711,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 </body>
 </html>
