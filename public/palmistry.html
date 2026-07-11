@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" data-hk-product-page="palmistry">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -244,7 +244,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="c.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="c.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="c.nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="c.nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     
@@ -255,7 +255,7 @@
 .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
 .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
 @media(max-width:768px){.hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}}
-/* 20 พ.ค. Codex รอบ 44 fix · force [hidden] respect inline display:flex */
+/* 20 พ.ค. review รอบ 44 fix · force [hidden] respect inline display:flex */
 #hk-3p-banner[hidden]{display:none !important;}
 </style>
 </header>
@@ -310,6 +310,7 @@
       </div>
     </div>
     <button class="cta" id="btnAnalyze" disabled data-i18n="up.btn">✋ วิเคราะห์ลายมือ</button>
+    <p class="tiny" data-i18n="up.cost">AI คิดยามตามความยาวคำอ่าน · ระบบจะแสดงยอดที่ใช้จริงและคืนยามอัตโนมัติหากอ่านไม่สำเร็จ</p>
     <p class="tiny" data-i18n="up.privacy">🔒 รูปใช้อ่านแล้วลบทันที ไม่เก็บบนเซิร์ฟเวอร์ · จะบันทึกก็ต่อเมื่อคุณเลือก</p>
     <input type="file" id="fileL" class="hidden" accept="image/*">
 
@@ -368,14 +369,15 @@
     <p class="tiny" data-i18n="rt.saveNote">บันทึกแล้ว → ลายมือเข้าไปหลอมรวมกับปาจื้อ/ดาว/จื่อเหวย… ในหน้าดูดวงรวม</p>
     <button class="cta ghost" id="btnRestart" style="margin-top:9px" data-i18n="rt.restart">↺ เริ่มใหม่</button>
     <button class="cta noprint" id="btnPalmPdf" type="button" style="margin-top:9px;background:transparent;border:1px solid var(--gold);color:var(--gold)" data-i18n="rt.pdf">⬇ ดาวน์โหลด PDF</button>
-    <button class="cta noprint" id="hk-palm-summary-pdf" type="button" style="margin-top:9px" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 สร้างสรุป PDF (50 ยาม)</button>
+    <button class="cta noprint" id="hk-palm-summary-pdf" type="button" style="margin-top:9px" data-i18n="rt.aiPdf" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()">📄 รายงาน AI · 20 ยาม</button>
   </section>
 
   <div style="text-align:center"><a href="/" class="homelink" data-i18n="home">← กลับหน้าหลัก</a></div>
 </div>
 
-<script src="/js/hk-print.js?v=4"></script>
-<script src="/js/palmistry-app.js?v=483"></script>
+<script src="/js/hk-print.js?v=6"></script>
+<script src="/js/hk-i18n-core.js?v=2" defer></script>
+<script src="/js/palmistry-app.js?v=484"></script>
 <script src="/js/hk-user-menu.js?v=24" defer></script>
 <script>
 var p = window.location.pathname.replace(/\/$/,'') || '/chart';
@@ -385,7 +387,7 @@ var p = window.location.pathname.replace(/\/$/,'') || '/chart';
     });
 </script>
 
-<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 50 ยาม · async job + poll + resume · 9 ภาษา)
+<!-- 📄 Export สรุป PDF ด้วย AI · window.hkExportSummaryPdf (additive · 20 ยาม · async job + poll + resume · 9 ภาษา)
      ลอกโครงจาก chart.html · เปลี่ยน page="palm" + inputs.palm=curResult (รูปลบแล้ว re-run ไม่ได้ → ส่ง snapshot ผลอ่านแทน) -->
 <script>
 (function () {
@@ -400,10 +402,10 @@ var p = window.location.pathname.replace(/\/$/,'') || '/chart';
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังเรียบเรียงคำอ่านลายมือ… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is composing your palm report… you can leave this open or close it; the job keeps running.", zh:"AI 正在整理手相報告…可保持開啟或關閉，工作會繼續。", cn:"AI 正在整理手相报告…可保持开启或关闭，工作会继续。", vi:"AI đang biên soạn báo cáo xem tay… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIが手相レポートを作成中…開いたままでも閉じても処理は続きます。", ko:"AI가 손금 리포트를 작성 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет отчёт по руке… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está redactando tu informe de mano… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -530,11 +532,11 @@ var p = window.location.pathname.replace(/\/$/,'') || '/chart';
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(result); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];
@@ -556,5 +558,6 @@ var p = window.location.pathname.replace(/\/$/,'') || '/chart';
   } catch (e) {}
 })();
 </script>
+<script src="/js/hk-product-caps.js?v=6" defer></script>
 </body>
 </html>

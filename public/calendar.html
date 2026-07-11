@@ -399,7 +399,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="cal.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="cal.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="cal.nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="cal.nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -502,7 +502,7 @@
     <button id="cal-pdf-btn" onclick="exportCalendarPdf()" data-i18n="cal.pdf.btn"
       style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">⬇ ดาวน์โหลด PDF (ทั้งเดือน)</button>
     <!-- 9 ก.ค. · Export สรุป PDF ด้วย AI (async job · 20 ยาม) · window.hkExportSummaryPdf · แยกจากปุ่ม client-print เดิมด้านบน -->
-    <button id="hk-calendar-summary-pdf" type="button" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()"
+    <button id="hk-calendar-summary-pdf" type="button" data-i18n="cal.pdf.ai" onclick="if(window.hkExportSummaryPdf)window.hkExportSummaryPdf()"
       style="display:inline-flex;align-items:center;gap:8px;font-family:var(--thai);font-size:14px;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:11px 26px;cursor:pointer;">📄 สร้างสรุป PDF (20 ยาม)</button>
   </div>
 </div>
@@ -2034,7 +2034,7 @@
   function _dirNm(code){ const m = DIR_LABELS[code]; if(!m) return code; const l = getRawLang(); return m[l] || m.en || code; }
 
   /* render 8 directions · 3×3 grid · ใช้ /api/today/directions ถ้ามี */
-  /* 19 พ.ค. Phase 13 · Option B · card stack + mini compass · Codex approved */
+  /* 19 พ.ค. Phase 13 · Option B · card stack + mini compass · reviewed */
   function renderDirs(d, det){
     const lang = _calDirLang();
     const T = (k) => { try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('calendar.html',k,lang);if(ov!=null)return ov;}catch(_){} return (window.HK_I18N && window.HK_I18N[k] && (window.HK_I18N[k][lang] || window.HK_I18N[k].th)) || ''; };
@@ -2552,6 +2552,7 @@
 window.HK_I18N = {
   'cal.page.title':  { th:'hourkey · ปฏิทินมงคล · 黃曆', en:'hourkey · Tongshu Calendar', zh:'hourkey · 通書' },
   'cal.pdf.btn':     { th:'⬇ ดาวน์โหลด PDF (ทั้งเดือน)', en:'⬇ Download PDF (whole month)', zh:'⬇ 下載 PDF（整月）' },
+  'cal.pdf.ai':     { th:'📄 สร้างสรุป PDF (20 ยาม)', en:'📄 AI summary PDF (20 units)', zh:'📄 AI 總結 PDF（20 時）', cn:'📄 AI 总结 PDF（20 时）', vi:'📄 PDF tổng hợp AI (20 đơn vị)', ja:'📄 AIまとめPDF（20時）', ko:'📄 AI 요약 PDF (20단위)', ru:'📄 AI-сводка PDF (20 единиц)', es:'📄 PDF resumen con IA (20 unidades)' },
   'cal.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'cal.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
   'cal.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
@@ -2908,7 +2909,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
   } catch (e) {}
 })();
 </script>
-<script src="/js/hk-print.js?v=4" defer></script>
-<script src="/js/hk-product-caps.js?v=5" defer></script>
+<script src="/js/hk-print.js?v=6" defer></script>
+<script src="/js/hk-product-caps.js?v=6" defer></script>
 </body>
 </html>

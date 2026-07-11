@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="dark">
+<html lang="th" data-theme="dark" data-hk-product-page="network">
 <head>
 <script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
@@ -473,8 +473,8 @@
   /* ─────────── responsive ─────────── */
   @media (max-width:980px){
     .stage{padding:22px 18px 60px;}
-    .topbar{padding:14px 18px;flex-wrap:wrap;gap:10px;}
-    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .topbar{padding:14px 18px;flex-wrap:wrap;gap:10px;max-width:100vw;min-width:0;}
+    .nav{order:3;width:100%;max-width:100%;min-width:0;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
     .nav::-webkit-scrollbar{display:none;}
     .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
     .nav a .glyph{font-size:14px;}
@@ -577,6 +577,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="n.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="n.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="n.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -882,28 +883,9 @@
     } catch(_){ return false; }
   }
   function loadPeople(){
-    const logged = isLoggedIn();
-    try {
-      const stored = localStorage.getItem('hk_network_people');
-      if (stored) {
-        const p = JSON.parse(stored);
-        if (Array.isArray(p) && p.length) {
-          const clean = p.filter(x => !isJunkProfile(x));
-          if (clean.length !== p.length) {
-            try { localStorage.setItem('hk_network_people', JSON.stringify(clean)); } catch(_){}
-            console.log('[network] purged', p.length - clean.length, 'junk from cache');
-          }
-          if (clean.length) return clean;
-        }
-      }
-    } catch(e){}
-    /* ถ้า logged in + cache ไม่มี → empty state รอ async DB · ห้าม DEMO */
-    if (logged) {
-      console.log('[network] logged in + no cache · waiting DB');
-      return [];
-    }
-    /* anonymous fallback DEMO */
-    return DEMO_PEOPLE;
+    /* บัญชี/API เป็น source of truth เท่านั้น ห้ามวาด demo หรือ cache ของบัญชีก่อนหน้า */
+    try { localStorage.removeItem('hk_network_people'); } catch(_){}
+    return [];
   }
   /* Phase 3.2 · ดึงจาก /api/profile (logged-in) · เปลี่ยน DEMO เป็นเครือข่ายจริง */
   /* Junk detector · ชื่อ/nickname ที่ดูเหมือนของ test (ตัวอักษรเดียวซ้ำ, สั้นเกิน, สุ่มจริง) */
@@ -973,23 +955,17 @@
       const r = await fetch('/api/profile', { credentials:'include' });
       if (!r.ok) return null;
       const d = await r.json();
-      const all = (d.profiles||[]).filter(p=>!p.is_archived);
-      /* แยก junk · auto-archive ใน background */
-      const junk = all.filter(isJunkProfile);
-      const profiles = all.filter(p => !isJunkProfile(p));
-      junk.forEach(p => {
-        fetch('/api/profile/' + p.id, { method:'DELETE', credentials:'include' })
-          .then(()=>console.log('[network] auto-archived junk:', p.name))
-          .catch(()=>{});
-      });
+      const profiles = (d.profiles||[]).filter(p=>!p.is_archived);
+      window._networkOwner = d.owner || null;
+      window._networkProfileSetupRequired = d.profile_setup_required === true;
       if (!profiles.length) return null;
       const ELEM_OF = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
-      /* ใช้ active_profile/is_self จาก backend เป็นหลัก · localStorage เป็น fallback เท่านั้น */
+      /* เจ้าของบัญชีต้องมาจาก backend เท่านั้น */
       let selfPid = (d.active_profile && d.active_profile.id)
         || (profiles.find(p => !!p.is_self) || {}).id
         || null;
       if (!selfPid) {
-        try { selfPid = localStorage.getItem('hk_profile_id'); } catch(_){}
+        return null;
       }
       let people = profiles.map((p,i) => {
         /* bazi_pillars อาจห่อ {pillars:{...}} หรือไม่ห่อ · unwrap ทั้งสอง */
@@ -1001,8 +977,8 @@
         const yongshenRaw = Array.isArray(ys) ? ys : (Array.isArray(ys.top3) ? ys.top3 : []);
         const yongshenTop3 = yongshenRaw.slice(0, 3).map(y => ({element: y.element, score: y.finalScore || 0}));
         const yongshenClimate = (!Array.isArray(ys) && ys.climate) ? ys.climate : null;
-        /* self detection: ตรงกับ active_profile/is_self ก่อน · ถ้าไม่มีให้ใช้ index 0 (legacy fallback) */
-        const isSelf = selfPid ? (p.id === selfPid) : (i === 0);
+        /* self ต้องมาจาก backend เท่านั้น ห้ามเดาจาก index แรก */
+        const isSelf = !!p.is_self || !!(selfPid && p.id === selfPid);
         /* 16 พ.ค. 2026: extract birth_datetime → birthDate + birthTime · เติม locationName/lat/lng/gender ให้ openPersonModal populate ค่าได้ตอนแก้ไข */
         let birthDate = '', birthTime = '12:00';
         if (p.birth_datetime) {
@@ -1087,7 +1063,7 @@
   let PEOPLE = loadPeople();
   window.PEOPLE = PEOPLE;
   /* loading state · ถ้า login แต่ยังไม่มีดวง */
-  window._networkLoadState = isLoggedIn() && !PEOPLE.length ? 'loading' : 'ready';
+  window._networkLoadState = 'loading';
 
   async function syncNetworkFromDB(opts){
     const force = opts?.force;
@@ -1102,14 +1078,11 @@
       dbPeople.forEach(p => PEOPLE.push(p));
       window._networkLoadState = 'ready';
       console.log('[network] loaded', PEOPLE.length, 'people from DB');
-    } else if (isLoggedIn()) {
-      /* login + DB ไม่ส่งคน → empty state */
+    } else {
+      /* login + DB ไม่ส่งคน → ให้กรอกดวงเจ้าของ ห้าม fallback demo */
       PEOPLE.length = 0;
       window._networkLoadState = 'empty';
       console.warn('[network] logged in but DB returned no usable profiles');
-    } else {
-      window._networkLoadState = 'ready';
-      console.log('[network] anonymous · keeping DEMO');
     }
     if (window.renderNetwork) window.renderNetwork();
     if (window.recomputeAllScores) await window.recomputeAllScores();
@@ -1244,6 +1217,7 @@
       const r = await fetch('/api/network/score', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
+          purpose: 'visualization',
           scoringVersion: NETWORK_SCORING_VERSION,
           self: self.pillars,
           others: others.map(p=>({id:p.id, ...p.pillars})),
@@ -2493,9 +2467,9 @@
       overlay.className = 'hk-empty-state';
       overlay.innerHTML = `
         <div class="icon">👥</div>
-        <h3>${escHtml(_tx('n.empty.title', 'ยังไม่มีดวงในเครือข่าย'))}</h3>
-        <p>${escHtml(_tx('n.empty.body', 'เพิ่มดวงคนรอบตัวคุณ'))}</p>
-        <a href="/input">${escHtml(_tx('n.empty.cta', '+ เพิ่มดวงใหม่'))}</a>
+        <h3>${escHtml((window._networkOwner && window._networkOwner.name) || _tx('n.empty.title', 'ดวงเจ้าของบัญชียังไม่พร้อม'))}</h3>
+        <p>${escHtml(_tx('n.empty.body', 'กรอกข้อมูลเกิดของเจ้าของบัญชีให้ครบก่อนเพิ่มคนอื่น'))}</p>
+        <a href="/input">${escHtml(_tx('n.empty.cta', 'กรอกข้อมูลดวงเจ้าของบัญชี'))}</a>
       `;
     } else if (overlay) {
       overlay.remove();
@@ -3245,6 +3219,7 @@ window.applyI18N = applyI18N;
 	    if (typeof renderSolar === 'function') try{ renderSolar(); }catch(e){}
 	    if (typeof updateMeta === 'function') try{ updateMeta(); }catch(e){}
 	    if (typeof window.renderTeam === 'function') try{ window.renderTeam(); }catch(e){}
+	    if (typeof renderLoadStateOverlay === 'function') try{ renderLoadStateOverlay(); }catch(e){}
 	  }
   /* 🌐 overlay re-apply · ถูกเรียกเฉพาะเมื่อ overlay ภาษาใหม่โหลดสำเร็จ */
   window.__hkOverlayApply=function(l){ apply(l); };
@@ -4344,7 +4319,7 @@ window.applyI18N = applyI18N;
     'n.sifu.t.fm':     { th:'ครอบครัว', en:'Family', zh:'家' },
     'n.sifu.t.bs':     { th:'หุ้นส่วน', en:'Partner', zh:'合夥' },
     'n.sifu.send':     { th:'ส่ง', en:'Send', zh:'送' },
-    'n.sifu.hint':     { th:'ใช้ซินแสดิจิทัล · อ้างอิงโครงสร้างใหม่ · 10-30 วินาที', en:'Powered by Claude AI · uses v2 structure · 10-30s', zh:'Claude AI · 用 v2 結構 · 10-30 秒' },
+    'n.sifu.hint':     { th:'ใช้ซินแสดิจิทัล · อ้างอิงข้อมูลความสัมพันธ์ · 10-30 วินาที', en:'Specialist relationship analysis · 10-30s', zh:'專業關係分析 · 10-30 秒' },
     'n.sifu.thinking': { th:'ซินแสกำลังคิด...', en:'Sifu is thinking...', zh:'師父思考中...' },
     'n.sifu.err':      { th:'ขออภัย · ขัดข้องชั่วคราว', en:'Sorry, temporary error', zh:'抱歉 · 暫時錯誤' },
     'n.chat.role_user': { th:'ผม', en:'You', zh:'我' },
@@ -4416,10 +4391,12 @@ window.applyI18N = applyI18N;
     'n.cm.ys.medicine': { th:'藥', en:'Medicine', zh:'藥' },
     'n.cm.ys.bridge':   { th:'通關', en:'Bridge', zh:'通關' },
     'n.cm.breakdownT': { th:'📊 รายละเอียดคะแนน', en:'📊 Score Breakdown', zh:'📊 計分明細' },
-    'n.pc.view':    { th:'📊 ดูดวง', en:'📊 View Chart', zh:'📊 看命盤' }
-  });
+	    'n.pc.view':    { th:'📊 ดูดวง', en:'📊 View Chart', zh:'📊 看命盤' }
+	  });
+	  /* These keys load after the first language pass; refresh the new-account state now. */
+	  if (typeof renderLoadStateOverlay === 'function') try { renderLoadStateOverlay(); } catch(e) {}
 
-  /* Stem table for filling demo pillars (last char of glyph generates extras) */
+	  /* Stem table for filling demo pillars (last char of glyph generates extras) */
   const STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
   const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   function _hash(str){ let h=0; for(let i=0;i<str.length;i++) h = (h*31 + str.charCodeAt(i))|0; return Math.abs(h); }
@@ -6837,5 +6814,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-product-caps.js?v=6" defer></script>
 </body>
 </html>

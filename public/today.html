@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-hk-product-page="today">
 <head>
 <script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
@@ -338,6 +338,9 @@
   .act-card li b{color:var(--fg);font-weight:600;}
   .act-card .when{margin-top:auto;padding-top:10px;border-top:1px dashed var(--tile-bd);font-family:var(--mono);font-size:9px;color:var(--fg-soft);letter-spacing:.14em;text-transform:uppercase;}
   .act-card .when b{color:var(--gold);}
+  .hk-entitlement-locked{position:relative!important;opacity:.46;filter:saturate(.25);cursor:pointer!important;overflow:hidden;}
+  .hk-entitlement-locked::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(10,12,14,.12),rgba(10,12,14,.72));color:#f1c96b;font-size:18px;z-index:5;pointer-events:none;}
+  .act-card.hk-entitlement-locked::after{content:'🔒  ' attr(data-required-plan);font-family:var(--thai);font-size:12px;font-weight:700;letter-spacing:0;text-transform:uppercase;}
 
   /* row: people + color */
   .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-top:18px;}
@@ -815,42 +818,24 @@
   <a href="/network" class="back" data-i18n="t.va.back">← กลับ</a>
 </div>
 <script>
-/* read view-as context · บอก /today ให้เปลี่ยน mode
- * 18 พ.ค. fix · mobile new tab fallback อ่าน localStorage 'hk_view_as_xfer' (TTL 60s) */
-(function(){
+/* Render view-as only after the server confirms this profile belongs to the user. */
+(async function(){
   try {
-    let raw = sessionStorage.getItem('hk_view_as');
     const params = new URLSearchParams(location.search);
     const asId = params.get('as');
     if (!asId) {
       try { sessionStorage.removeItem('hk_view_as'); } catch(_){}
       return;
     }
-    if (!raw) {
-      /* mobile cross-tab fallback */
-      try {
-        const xferRaw = localStorage.getItem('hk_view_as_xfer');
-        if (xferRaw) {
-          const xfer = JSON.parse(xferRaw);
-          if (xfer && String(xfer.id||'')===String(asId) && (Date.now()-(xfer.ts||0) < 60000)) {
-            sessionStorage.setItem('hk_view_as', xferRaw);
-            localStorage.removeItem('hk_view_as_xfer');
-            raw = xferRaw;
-          } else {
-            localStorage.removeItem('hk_view_as_xfer');
-          }
-        }
-      } catch(_){}
-    }
-    if (!raw) {
+    const r = await fetch('/api/profile/' + encodeURIComponent(String(asId).replace(/^p_/, '')) + '/snapshot', { credentials:'include', cache:'no-store' });
+    if (!r.ok) {
       try { sessionStorage.removeItem('hk_view_as'); } catch(_){}
       return;
     }
-    const p = JSON.parse(raw);
-    if (!p || !p.name || p.id !== asId) {
-      try { sessionStorage.removeItem('hk_view_as'); } catch(_){}
-      return;
-    }
+    const j = await r.json();
+    const p = j && j.snapshot;
+    if (!p || !p.name || String(p.id || '') !== String(asId).replace(/^p_/, '')) return;
+    try { sessionStorage.setItem('hk_view_as', JSON.stringify(p)); } catch(_){}
     const bar = document.getElementById('hk-viewas-bar');
     document.getElementById('va-glyph').textContent = p.glyph || '人';
     document.getElementById('va-name').textContent = p.name;
@@ -875,7 +860,7 @@
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="t.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="t.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="t.nav.luopan">หล่อแก</span></a>
-    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="t.nav.palmistry">ลายมือ</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="top-r">
     <div id="hk-user-menu-mount"></div>
@@ -1596,11 +1581,16 @@
             if(p.date && (p.birthTimeKnown === false || p.time)) return {date:p.date,time:p.time||'12:00',birthTimeKnown:p.birthTimeKnown !== false};
           }
         } catch(_){}
-        return {date:'1990-01-15',time:'10:30',birthTimeKnown:true};
+        return null;
       }
       async function loadBasic(){
         try { if (window.__hkProfileReady) await window.__hkProfileReady; } catch(_){}
         const b=getBirth();
+        if (!b) {
+          const section = document.getElementById('hk-basic-bazi');
+          if (section) section.style.display = 'none';
+          return;
+        }
         try{
           const d = await window.__hkFetchChart({date:b.date,time:b.time,longitude:100.5018,birthTimeKnown:b.birthTimeKnown !== false});
           if(!d||!d.pillars) return;
@@ -2317,7 +2307,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
     try{ localStorage.setItem('hk_locale', lang); }catch(e){}
     applyI18N(lang);
-    /* 18 พ.ค. · Codex flag · re-render hours from cache เมื่อสลับภาษา · กัน static i18n เขียนทับ */
+    /* 18 พ.ค. · review flag · re-render hours from cache เมื่อสลับภาษา · กัน static i18n เขียนทับ */
     try {
       if (window._hours && typeof window.__renderHoursFromCache === 'function') {
         window.__renderHoursFromCache();
@@ -2397,11 +2387,17 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
     let viewAs = null;
     const viewAsId = new URLSearchParams(location.search).get('as');
     try {
-      viewAs = viewAsId ? JSON.parse(sessionStorage.getItem('hk_view_as')||'null') : null;
       if (!viewAsId) sessionStorage.removeItem('hk_view_as');
-      if (viewAs && viewAs.id !== viewAsId) {
-        sessionStorage.removeItem('hk_view_as');
-        viewAs = null;
+      if (viewAsId) {
+        const vr = await fetch('/api/profile/' + encodeURIComponent(String(viewAsId).replace(/^p_/, '')) + '/snapshot', { credentials:'include', cache:'no-store' });
+        if (vr.ok) {
+          const vj = await vr.json();
+          viewAs = vj && vj.snapshot;
+          if (viewAs) sessionStorage.setItem('hk_view_as', JSON.stringify(viewAs));
+        } else {
+          sessionStorage.removeItem('hk_view_as');
+          viewAs = null;
+        }
       }
     } catch(e){ viewAs = null; }
     let selfBirth = null;
@@ -2447,23 +2443,15 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         }
       } catch(e){ console.warn('profile fallback failed:', e); }
     }
-    if (!userChart) {
-      try {
-        const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
-        if (birth && birth.date) {
-	          const cd = await window.__hkFetchChart({ date: birth.date, time: birth.time||'12:00', gender: birth.gender||'M', longitude: Number(birth.longitude || birth.lng || 100.5018), birthTimeKnown: birth.birthTimeKnown !== false, dayBoundary: birth.dayBoundary || '23:00' });
-          if (cd && cd.pillars) {
-            userChart = cd.pillars;
-            selfBirth = birth;
-          }
-        }
-      } catch(e){}
-    }
-
     /* ยังไม่มีดวง (login แล้วแต่ไม่มี profile) → empty-state banner · ไม่ redirect/ไม่ blank
      * ข้อมูลวันด้านล่างยังใช้ได้ตามปกติ · self-contained i18n 9 ภาษา · theme-aware (9 ก.ค. 2026) */
     if (!userChart && !document.getElementById('t-no-profile')) {
       try {
+        document.documentElement.setAttribute('data-profile-state', 'missing');
+        ['.hero','#t-de-board','#hk-basic-bazi','.row2','#t-scoring-explain'].forEach(function(selector){
+          var personal = document.querySelector(selector);
+          if (personal) personal.style.display = 'none';
+        });
         var _nloc = '';
         try { _nloc = localStorage.getItem('hk_locale') || ''; } catch(_){}
         var _nl = (_nloc || document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'th').toLowerCase();
@@ -2500,9 +2488,6 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
      * ส่ง birth ให้ backend calc yongshen ภายใน · score ตรง /calendar + /network */
     const dmStem = userChart?.day?.stem || '';
     let _birth = selfBirth || null;
-    if (!_birth) {
-      try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
-    }
     const _postBody = { date: dateStr, userChart };
 	    if (_birth && _birth.date) { _postBody.birthDate = _birth.date; _postBody.birthTime = _birth.time || '12:00'; _postBody.birthLng = _birth.lng || _birth.longitude || 100.5018; _postBody.birthTimeKnown = _birth.birthTimeKnown !== false; _postBody.gender = _birth.gender || 'M'; _postBody.dayBoundary = _birth.dayBoundary || '23:00'; }
     const tr = (userChart && userChart.day && userChart.day.branch)
@@ -2565,7 +2550,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
     if (td.verdict) {
       d.personal = { score: td.verdict.score, label: td.verdict.label, breakdown: null, bonuses: [], warnings: [] };
     }
-    /* 18 พ.ค. · #2 · render userSummary banner · Codex flag #1 · ใช้ DOM nodes กัน XSS
+    /* 18 พ.ค. · #2 · render userSummary banner · review flag #1 · ใช้ DOM nodes กัน XSS
      * 5 ก.ค. · เพิ่ม 3 ภาษา · backend ส่งมาแค่ .th + .el (english slug) → ต่อ en/zh เองจาก ELEM_NAME_TX ในเครื่อง
      * (ไม่แตะ /api/today หรือ yongshen-cache.ts เลย · ใช้ field .el ที่มีอยู่แล้ว) */
     if (td.userSummary) {
@@ -2901,7 +2886,12 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
           const n = parseInt(btn.getAttribute('data-hex-deep'),10);
           const l = parseInt(btn.getAttribute('data-hex-line'),10) || 0;
           if (window.showHexDeep) window.showHexDeep(n, l);
-          else alert('ตำรากำลังโหลด · ลองใหม่อีกครั้ง');
+          else alert(HK9.pick({
+            th:'ตำรากำลังโหลด · ลองใหม่อีกครั้ง', en:'The reference is still loading · please try again',
+            zh:'典籍仍在載入 · 請再試一次', cn:'典籍仍在加载 · 请再试一次', vi:'Tài liệu vẫn đang tải · vui lòng thử lại',
+            ja:'典籍を読み込み中です · もう一度お試しください', ko:'자료를 불러오는 중입니다 · 다시 시도해 주세요',
+            ru:'Справочник ещё загружается · попробуйте снова', es:'La referencia aún se está cargando · inténtalo de nuevo'
+          }, HK9.current()));
         });
       });
     }
@@ -2931,7 +2921,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
 
     /* 5 ก.ค. · ห่อ display ทั้งหมดของ §1 Day Verdict + §2 Pillar เป็น renderVerdictBlock(lang)
      * ให้สลับภาษาได้จริงเมื่อกดปุ่ม TH/EN/ZH · ไม่แตะ levelOf()/threshold/lv.key logic เดิมเลย
-     * (Codex flag เดิม: ก่อนหน้านี้ทั้งบล็อกเขียนไทยตรงๆ ครั้งเดียวตอนโหลด ไม่รีเรนเดอร์ตอนสลับภาษา) */
+     * (review flag เดิม: ก่อนหน้านี้ทั้งบล็อกเขียนไทยตรงๆ ครั้งเดียวตอนโหลด ไม่รีเรนเดอร์ตอนสลับภาษา) */
     function renderVerdictBlock(lang){
       const L = HK9.norm(lang);
       const pick3 = (obj) => {
@@ -3360,7 +3350,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         const hd = await hr.json();
         if (hr.ok && hd.hours) {
           window._hours = hd; /* 18 พ.ค. · cache ก่อน */
-          /* 18 พ.ค. · Codex flag · refactor render เป็น function ที่เรียกซ้ำได้ตอนเปลี่ยน lang */
+          /* 18 พ.ค. · review flag · refactor render เป็น function ที่เรียกซ้ำได้ตอนเปลี่ยน lang */
           window.__renderHoursFromCache = function(){
             const cached = window._hours;
             if (!cached || !cached.hours) return;
@@ -3427,6 +3417,11 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
               return r;
             };
             grid.innerHTML = srcHours.map(h => {
+              if (h.locked) {
+                const rg = String(h.range || '').replace(/^(\d+):00-/,'$1-').replace(':00','');
+                const lockTxt = HK9.pick({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'}, _lang);
+                return `<div class="h-cell hk-entitlement-locked" title="${escHtml(lockTxt)}" data-required-plan="${escHtml(h.required_plan||'Premium')}"><div class="br">${escHtml(h.branch||'')}</div><div class="rg">${escHtml(rg)}</div><div class="q">${escHtml(lockTxt)}</div></div>`;
+              }
               const displayQuality = _gateQuality(h.quality);
               const qCls = (displayQuality === 'best' || displayQuality === 'good') ? 'good' : (displayQuality === 'ok' ? 'ok' : 'bad');
               const cls = (h.isNow ? 'now ' : '') + qCls; /* NOW = กรอบทอง + สีตาม quality (ไม่บังคับ ok) */
@@ -3450,18 +3445,21 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
               const body = document.createElement('span'); body.style.cssText='margin-top:6px;display:inline-block;'; body.textContent = r; reasonBox.appendChild(body);
               reasonBox.style.display = 'block';
             }
-            grid.querySelectorAll('.h-cell').forEach(c => c.addEventListener('click', () => showReason(c)));
+            grid.querySelectorAll('.h-cell').forEach(c => c.addEventListener('click', () => {
+              if (c.classList.contains('hk-entitlement-locked')) { location.href='/pricing'; return; }
+              showReason(c);
+            }));
             const nowCell = grid.querySelector('.h-cell.now');
             if (nowCell) showReason(nowCell);
             /* update NOW card · ถ้าไม่มี isNow ให้ใช้ hour ตามเวลาตอนนี้ของ user เอง */
-            let nowH = srcHours.find(h => h.isNow);
+            let nowH = srcHours.find(h => h.isNow && !h.locked);
             if (!nowH) {
               /* fallback · คำนวณจากเวลาเครื่อง user */
               const userH = new Date().getHours();
               const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
               const branchIdx = Math.floor(((userH + 1) % 24) / 2);
               const wantBranch = BRANCHES[branchIdx];
-              nowH = srcHours.find(h => h.branch === wantBranch) || srcHours[0];
+              nowH = srcHours.find(h => h.branch === wantBranch && !h.locked) || srcHours.find(h => !h.locked);
             }
             if (nowH) {
               const ELN = { th:{wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'},
@@ -3515,11 +3513,11 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
       /* 18 พ.ค. · A · client TST · ให้ตรงกับ server side · longitude default Bangkok */
       const _BIRTH_CACHE = (function(){ try { return JSON.parse(localStorage.getItem('hk_birth')||'null') || {}; } catch { return {}; } })();
       const _LNG = Number(_BIRTH_CACHE.longitude || _BIRTH_CACHE.lng || 100.5018);
-      /* 18 พ.ค. · Codex flag · ใช้ Bangkok time (UTC+7) ทุก timezone ของ user
+      /* 18 พ.ค. · review flag · ใช้ Bangkok time (UTC+7) ทุก timezone ของ user
        * server marks isNow จาก Bangkok time · client ต้องตรงกัน */
       function curBranchLocalTST(){
         const now = new Date();
-        /* 18 พ.ค. · Codex round 2 · getTime() คือ UTC epoch แล้ว · +7h ตรง = Bangkok */
+        /* 18 พ.ค. · review round 2 · getTime() คือ UTC epoch แล้ว · +7h ตรง = Bangkok */
         const bkk = new Date(now.getTime() + (7 * 3600000));
         const y = bkk.getUTCFullYear(), m = bkk.getUTCMonth()+1, dd = bkk.getUTCDate();
         const h = bkk.getUTCHours(), mm = bkk.getUTCMinutes();
@@ -3633,6 +3631,13 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
             return tips;
           };
           grid.innerHTML = ad.actions.map(a => {
+            if (a.locked) {
+              const lockTxt = pk3({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'});
+              return `<article class="act-card ${goalClass[a.goal]||''} hk-entitlement-locked" data-required-plan="${escHtml(a.required_plan||'Premium')}" title="${escHtml(lockTxt)}" onclick="location.href='/pricing'">
+                <div class="h"><div class="ico">${a.icon||'✦'}</div><h4>${aTitle(a)}</h4></div>
+                <ul><li>${escHtml(lockTxt)}</li><li>••••••••••••</li></ul>
+              </article>`;
+            }
             const w = goalWindow[a.goal];
             const winHtml = w ? `<div class="when" style="margin-top:4px;font-size:11px;opacity:.85">${w.label} · <b>${w.t}</b></div>` : '';
             const displaySignal = gateSignal(a.signal);
@@ -3717,10 +3722,13 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
 	          C:{th:'กลาง',en:'Center',zh:'中',cn:'中',vi:'Trung tâm',ja:'中央',ru:'Центр',ko:'중앙',es:'Centro'}
 	        };
 	        const dirName = x => x ? (DIR_TX[x.direction] ? pk(DIR_TX[x.direction]) : (curLang === 'en' ? (x.direction_en || x.direction) : (x.direction_zh || x.direction))) : '—';
-	        const top = en.best?.[0] || en.scores[0];
+	        const unlockedScores = (en.scores || []).filter(x => !x.locked);
+	        const top = en.best?.[0] || unlockedScores[0];
+	        if (!top) return;
 	        const scoreByDir = new Map((en.scores || []).map(x => [x.direction, x]));
 	        const savedDir = window.__todayDirSelected;
-	        const selectedDir = scoreByDir.has(savedDir) ? savedDir : top.direction;
+	        const savedEntry = scoreByDir.get(savedDir);
+	        const selectedDir = savedEntry && !savedEntry.locked ? savedDir : top.direction;
 	        window.__todayDirSelected = selectedDir;
 	        const selected = scoreByDir.get(selectedDir) || top;
 	        const sqh = selected.qimen?.hour || null;
@@ -3787,6 +3795,13 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
 	        const mapCell = dir => {
 	          const x = scoreByDir.get(dir);
 	          if (!x) return '<div class="de-map-cell"></div>';
+	          if (x.locked) {
+	            const lockTxt = pk({th:'ล็อก · ดูแพ็กเกจ',en:'Locked · see plans',zh:'已鎖定 · 查看方案',cn:'已锁定 · 查看套餐',vi:'Đã khóa · xem gói',ja:'ロック中 · プランを見る',ru:'Закрыто · тарифы',ko:'잠김 · 요금제 보기',es:'Bloqueado · ver planes'});
+	            return `<button type="button" class="de-map-cell hk-entitlement-locked" data-required-plan="${escHtml(x.required_plan||'Premium')}" title="${escHtml(lockTxt)}" onclick="location.href='/pricing'">
+	              <div class="de-cell-dir"><span>${escHtml(dirName(x))}</span><span class="tc">🔒</span></div>
+	              <div class="de-cell-score"><b>••</b><span>${escHtml(lockTxt)}</span></div>
+	            </button>`;
+	          }
 	          const qh = x.qimen?.hour || null;
 	          const zh = x.zibai?.hour || null;
 	          const active = x.direction === selected.direction ? ' is-selected' : '';
@@ -3912,6 +3927,10 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         const dirNameL = dir => DIR_TX2[dir.direction] ? pk(DIR_TX2[dir.direction]) : (dir.direction_zh || dir.direction);
         if (compass) {
           compass.innerHTML = dd.directions.map(dir => {
+            if (dir.locked) {
+              const lockTxt = pk({th:'ล็อก',en:'Locked',zh:'已鎖定',cn:'已锁定',vi:'Đã khóa',ja:'ロック',ru:'Закрыто',ko:'잠김',es:'Bloqueado'});
+              return `<div class="dot hk-entitlement-locked" title="${escHtml(lockTxt)}" style="${positions[dir.direction]}" onclick="location.href='/pricing'">${escHtml(dirNameL(dir))}<span class="tc">🔒</span></div>`;
+            }
             const cls = dir.quality === 'best' || dir.quality === 'good' ? 'good' : dir.quality === 'avoid' ? 'bad' : '';
             const title = `${dirNameL(dir)} · ${dir.direction_zh || ''} · ${dir.quality}`;
             return `<div class="dot ${cls}" title="${escHtml(title)}" style="${positions[dir.direction]}">${escHtml(dirNameL(dir))}<span class="tc">${curLang === 'zh' ? '' : escHtml(dir.direction_zh || '')}</span></div>`;
@@ -4043,7 +4062,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
         const ELEM_LABEL = { wood:{th:'ไม้',en:'Wood',zh:'木',cn:'木',vi:'Mộc',ja:'木',ru:'Дерево',ko:'목',es:'Madera'}, fire:{th:'ไฟ',en:'Fire',zh:'火',cn:'火',vi:'Hỏa',ja:'火',ru:'Огонь',ko:'화',es:'Fuego'}, earth:{th:'ดิน',en:'Earth',zh:'土',cn:'土',vi:'Thổ',ja:'土',ru:'Земля',ko:'토',es:'Tierra'}, metal:{th:'ทอง',en:'Metal',zh:'金',cn:'金',vi:'Kim',ja:'金',ru:'Металл',ko:'금',es:'Metal'}, water:{th:'น้ำ',en:'Water',zh:'水',cn:'水',vi:'Thủy',ja:'水',ru:'Вода',ko:'수',es:'Agua'} };
         const useTxt = { th:'ใช้', en:'Use', zh:'用', cn:'用', vi:'Dùng', ja:'使う', ru:'Использовать', ko:'사용', es:'Usar' };
         const avoidTxt = { th:'เลี่ยง', en:'Avoid', zh:'忌', cn:'忌', vi:'Tránh', ja:'避ける', ru:'Избегать', ko:'피함', es:'Evitar' };
-        /* swatches · รวมสีทุก yongshen (positive) + แต่ละ jishen (skip) · Codex flag · DOM nodes */
+        /* swatches · รวมสีทุก yongshen (positive) + แต่ละ jishen (skip) · review flag · DOM nodes */
         const sw = document.getElementById('t-color-swatches');
         if (sw) {
           sw.textContent = '';
@@ -4081,7 +4100,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
           if (skipEls.length) {
             const glyph = skipEls.map(s => s.info.zh).join('·');
             const label = pk(avoidTxt) + ' ' + skipEls.map(s => pk(ELEM_LABEL[s.el]) + (s.dominant?'⚡':'')).join(' · ');
-            /* 18 พ.ค. · Codex flag · ใช้ avoid_s (ลดสีของธาตุนี้) ไม่ใช่ skip_s (legacy opposite) */
+            /* 18 พ.ค. · review flag · ใช้ avoid_s (ลดสีของธาตุนี้) ไม่ใช่ skip_s (legacy opposite) */
             const sub = skipEls.map(s => pk(s.info.avoid_s || s.info.skip_s)).join(' / ');
             elRecs.appendChild(mkRow('skip', glyph, label, sub));
           }
@@ -4162,7 +4181,7 @@ window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('l
             else if (ELEMENT_PRODUCES_LOC[myEl] === oEl) { cat='neutral'; reason=ptx('output'); }
             else if (myEl === 'wood' && oEl==='earth' || myEl==='earth' && oEl==='water' || myEl==='water' && oEl==='fire' || myEl==='fire' && oEl==='metal' || myEl==='metal' && oEl==='wood') { cat='meet'; reason=ptx('wealth'); }
             else { cat='avoid'; reason=ptx('pressure'); }
-            /* 18 พ.ค. · Codex flag · ใช้ DOM nodes กัน XSS · p.nickname/name อาจมี HTML */
+            /* 18 พ.ค. · review flag · ใช้ DOM nodes กัน XSS · p.nickname/name อาจมี HTML */
             const chip = document.createElement('span'); chip.className='ppl-chip';
             const av = document.createElement('span'); av.className='av '+oEl; av.textContent=String(otherStem||''); chip.appendChild(av);
             const nm = document.createElement('span'); nm.className='nm'; nm.textContent=String(p.nickname||p.name||'—'); chip.appendChild(nm);
@@ -4202,5 +4221,6 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 })();
 }catch(_){}})();
 </script>
+<script src="/js/hk-product-caps.js?v=6" defer></script>
 </body>
 </html>

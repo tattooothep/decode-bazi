@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-hk-product-page="datepick">
 <head>
 <script src="/js/hk-lang-state.js?v=1"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
 <!-- 📄 8 ก.ค. 2569 · เทมเพลต PDF ร่วม (client window.print · additive · ไม่กระทบ engine หน้า) -->
-<link rel="stylesheet" href="/css/hk-print.css?v=4"/>
+<link rel="stylesheet" href="/css/hk-print.css?v=5"/>
 <style>
 :root{
   --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
@@ -1015,9 +1015,9 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
       <!-- 📄 8 ก.ค. 2569 · ดาวน์โหลดรายงานฤกษ์เป็น PDF (โผล่หลังค้นหา · additive) -->
       <div class="dp-pdf-bar noprint" id="dp-pdf-bar">
-        <button class="dp-pdf-btn" id="dp-pdf-btn" type="button" data-i18n="dp.pdf.btn" onclick="dpExportPdf()">⬇ ดาวน์โหลด PDF</button>
-        <!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI (async job 50 ยาม · เพิ่มข้าง dp-pdf-btn เดิม · ไม่แตะปุ่มเดิม) -->
-        <button class="dp-pdf-btn" id="dp-ai-pdf-btn" type="button" onclick="if(window.hkExportSummaryPdfDatepick)window.hkExportSummaryPdfDatepick()">📄 สร้างสรุป PDF (50 ยาม)</button>
+        <button class="dp-pdf-btn" id="dp-pdf-btn" type="button" data-i18n="dp.pdf.btn" onclick="dpExportPdfV2()">⬇ รายงานด่วน</button>
+        <!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI (async job 20 ยาม · เพิ่มข้าง dp-pdf-btn เดิม · ไม่แตะปุ่มเดิม) -->
+        <button class="dp-pdf-btn" id="dp-ai-pdf-btn" type="button" onclick="if(window.hkExportSummaryPdfDatepick)window.hkExportSummaryPdfDatepick()">📄 รายงาน AI · 20 ยาม</button>
       </div>
 
     </section>
@@ -1041,6 +1041,11 @@ const state = {
   peopleGroup: 'all',
   peopleQuery: '',
   peopleVisible: 6,
+  peopleLoadState: 'loading',
+  accountOwner: null,
+  /* product-entitlement · datepick_max_people จาก /api/account/me */
+  datepickMaxPeople: 1,
+  productPlan: 'free',
   /* r372 · default = preset ครบเครื่อง (①+②+③) · กลุ่ม ④ ชั้นสูง (qimen/heluo) ปิด */
   filters: { tongshu:true, bazi:true, qimen:false, heluo:false, hex:true },
   qmCalc: 'chaibu',
@@ -1447,6 +1452,8 @@ function init(){
   renderActivityProfiles();
   renderPeople();
   bindPeopleControls();
+  /* caps จาก me (trial=1 · premium=3 · master=10) · server ยัง enforce ซ้ำ */
+  loadDatepickCaps();
   /* P_B (เจ้านาย 16 พ.ค.): พยายามดึงคนจาก network จริง · login user เห็นเครือข่ายเอง */
   const networkReady = loadNetworkPeople();
 
@@ -1682,13 +1689,74 @@ const PERSON_GROUP_TH = {all:'ทั้งหมด',general:'ทั่วไป
 const PERSON_GROUP_EN = {all:'All',general:'General',family:'Family',work:'Team',friend:'Friends',love:'Partner',rival:'Rival'};
 const PERSON_GROUP_ZH = {all:'全部',general:'一般',family:'家人',work:'團隊',friend:'朋友',love:'伴侶',rival:'對手'};
 
+async function loadDatepickCaps(){
+  try {
+    const r = await fetch('/api/account/me', { credentials:'same-origin', cache:'no-store' });
+    if (!r.ok) return;
+    const me = await r.json().catch(() => ({}));
+    if (me && me.caps) {
+      const m = Number(me.caps.datepick_max_people);
+      state.datepickMaxPeople = isFinite(m) && m > 0 ? m : 1;
+      state.productPlan = me.plan || 'free';
+    }
+    enforcePeopleCap();
+    renderPeople();
+  } catch (_) { /* guest / offline */ }
+}
+function peopleCapMax(){
+  const m = Number(state.datepickMaxPeople);
+  return isFinite(m) && m > 0 ? m : 1;
+}
+function enforcePeopleCap(){
+  const max = peopleCapMax();
+  let n = 0;
+  (state.people || []).forEach((p) => {
+    if (!p.enabled) return;
+    n += 1;
+    if (n > max) p.enabled = false;
+  });
+}
+function toggleDatepickPerson(idx){
+  const p = state.people[idx];
+  if (!p) return;
+  if (p.enabled) {
+    p.enabled = false;
+    renderPeople();
+    return;
+  }
+  const max = peopleCapMax();
+  const n = state.people.filter((x) => x.enabled).length;
+  if (n >= max) {
+    const tip = document.getElementById('peopleCount');
+    if (tip) {
+      tip.textContent = (max <= 1
+        ? _dptx('dp.people.cap1', 'แพ็กเกจนี้ผูกดวงได้ 1 คน · อัปเกรด /pricing')
+        : _dptx('dp.people.capN', 'แพ็กเกจนี้สูงสุด {N} ดวง · /pricing').replace('{N}', String(max)));
+    }
+    return;
+  }
+  p.enabled = true;
+  renderPeople();
+}
 async function loadNetworkPeople(){
   try {
     const r = await fetch('/api/profile', { credentials:'include' });
-    if (!r.ok) return; // ไม่ login ใช้ DEFAULT_PEOPLE
+    if (!r.ok) { state.peopleLoadState = 'empty'; renderPeople(); return; }
     const d = await r.json();
-    const profiles = (d.profiles||[]).filter(p => !p.is_archived);
-    if (!profiles.length) return;
+    state.accountOwner = d.owner || null;
+    const activeId = d.active_profile && d.active_profile.id ? String(d.active_profile.id) : '';
+    const profiles = (d.profiles||[]).filter(p => !p.is_archived).sort((a, b) => {
+      const aa = String(a.id) === activeId || a.is_self ? 1 : 0;
+      const bb = String(b.id) === activeId || b.is_self ? 1 : 0;
+      return bb - aa;
+    });
+    const selfProfile = profiles.find(p => String(p.id) === activeId || !!p.is_self) || null;
+    if (!selfProfile) {
+      state.people = [];
+      state.peopleLoadState = 'empty';
+      renderPeople();
+      return;
+    }
     /* group map จาก localStorage เก่าเป็น fallback; DB network_group ชนะก่อน */
     let groupMap = {};
     try { groupMap = JSON.parse(localStorage.getItem('hk_network_groups')||'{}'); } catch(_){}
@@ -1707,18 +1775,21 @@ async function loadNetworkPeople(){
         branch: yearBranch,
         dm: dm,
         kua: 0,
-        group: normGroup(p.network_group) || normGroup(groupMap[p.id]) || (p.relationship_type ? 'general' : 'friend'),
-        enabled: false,
+        group: (String(p.id) === activeId || p.is_self) ? 'general' : (normGroup(p.network_group) || normGroup(groupMap[p.id]) || (p.relationship_type ? 'general' : 'friend')),
+        enabled: String(p.id) === activeId || !!p.is_self,
         profileId: p.id,
         personId: 'hk_' + p.id, // aj_user_profile.person_id mapping
 	        birthDate: p.birth_datetime ? p.birth_datetime.slice(0,10) : null,
 	        birthTime: p.birth_datetime ? p.birth_datetime.slice(11,16) : '12:00',
 	        birthTimeKnown: p.birth_time_known !== false,
 	        birthLng: p.birth_lng || 100.5018,
+        gender: p.gender || 'M',
         rel: p.relationship_type || '',
       };
     });
     state.people = network;
+    state.peopleLoadState = 'ready';
+    enforcePeopleCap();
     renderPeople();
     // 16 พ.ค. fix: ensure aj_user_profile มีของแต่ละคน (auto-create เงียบๆ)
     ensureAjProfiles(network);
@@ -1736,7 +1807,7 @@ async function ensureAjProfiles(people){
 	          birthTime: p.birthTime || '12:00',
 	          birthTimeKnown: p.birthTimeKnown !== false,
 	          longitude: p.birthLng || 100.5018,
-          gender: 'M',
+	          gender: p.gender || 'M',
         })
       });
     } catch(_){}
@@ -1786,7 +1857,14 @@ function renderPeople(){
   const c = document.getElementById('peopleMini');
   const filtered = peopleFiltered();
   if (!filtered.length) {
-    c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">${_dptx('dp.people.notfound','ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา')}</div>`;
+    if (state.peopleLoadState === 'loading') {
+      c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">${_dptx('dp.people.loading','กำลังโหลดดวงเจ้าของบัญชี...')}</div>`;
+    } else if (!state.people.length) {
+      const ownerName = escHtml(state.accountOwner?.name || _dptx('dp.people.owner','เจ้าของบัญชี'));
+      c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.7;"><strong style="display:block;color:var(--fg);margin-bottom:5px;">${ownerName}</strong>${_dptx('dp.people.owner_setup','กรอกข้อมูลเกิดของเจ้าของบัญชีให้ครบเพื่อผูกดวงวางฤกษ์')}<br><a href="/input" style="color:var(--gold);">${_dptx('dp.people.owner_cta','กรอกข้อมูลดวงเจ้าของบัญชี')}</a></div>`;
+    } else {
+      c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">${_dptx('dp.people.notfound','ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา')}</div>`;
+    }
     renderSelectedPeople();
     updatePeopleCount();
     return;
@@ -1799,7 +1877,7 @@ function renderPeople(){
         <div class="nm">${escHtml(p.name)}${p.rel ? ` <span class="rel">· ${escHtml(p.rel)}</span>` : ''}</div>
         <div class="stats">${personAstroText(p)}</div>
       </div>
-      <button type="button" class="pick" onclick="state.people[${idx}].enabled=!state.people[${idx}].enabled;renderPeople();">${p.enabled ? _dptx('dp.people.picked','เลือกแล้ว') : _dptx('dp.people.pick','+ เพิ่ม')}</button>
+      <button type="button" class="pick" onclick="toggleDatepickPerson(${idx})">${p.enabled ? _dptx('dp.people.picked','เลือกแล้ว') : _dptx('dp.people.pick','+ เพิ่ม')}</button>
     </div>`;
   }).join('') + (filtered.length > visible.length ? `<button type="button" class="people-more" onclick="state.peopleVisible += ${PEOPLE_BATCH_SIZE};renderPeople();">${_dptx('dp.people.showmore','แสดงเพิ่ม')} ${Math.min(PEOPLE_BATCH_SIZE, filtered.length - visible.length)} ${_dptx('dp.unit.people','คน')}</button>` : '');
   renderSelectedPeople();
@@ -1808,11 +1886,12 @@ function renderPeople(){
 function updatePeopleCount(){
   const enabled = state.people.filter(p=>p.enabled).length;
   const total = state.people.length;
+  const max = peopleCapMax();
   const el = document.getElementById('peopleCount');
   const filtered = peopleFiltered().length;
   const lang = getCurrentLang();
   const grp = (lang === 'zh' ? PERSON_GROUP_ZH : lang === 'th' ? PERSON_GROUP_TH : PERSON_GROUP_EN)[state.peopleGroup || 'all'] || PERSON_GROUP_TH.all;
-  if (el) el.textContent = `${_dptx('dp.people.selected','เลือก')} ${enabled} / ${total} ${_dptx('dp.unit.people','คน')} · ${_dptx('dp.people.viewing','กำลังดู')} ${grp} ${filtered} ${_dptx('dp.unit.people','คน')}`;
+  if (el) el.textContent = `${_dptx('dp.people.selected','เลือก')} ${enabled}/${max} ${_dptx('dp.unit.people','คน')} (max) · ${total} ${_dptx('dp.people.inlist','ในรายการ')} · ${_dptx('dp.people.viewing','กำลังดู')} ${grp} ${filtered}`;
 }
 /* bind group selector + toolbar (ครั้งเดียวตอน DOM ready) */
 function bindPeopleControls(){
@@ -1839,7 +1918,14 @@ function bindPeopleControls(){
     renderPeople();
   });
   document.getElementById('peopleSelectAll')?.addEventListener('click', () => {
-    peopleFiltered().forEach(p => p.enabled = true);
+    const max = peopleCapMax();
+    let n = state.people.filter((p) => p.enabled).length;
+    peopleFiltered().forEach((p) => {
+      if (p.enabled) return;
+      if (n >= max) return;
+      p.enabled = true;
+      n += 1;
+    });
     renderPeople();
   });
   document.getElementById('peopleClear')?.addEventListener('click', () => {
@@ -2688,6 +2774,30 @@ function _dptx(k, fb){
   if (lang !== 'th' && lang !== 'zh' && !t[lang]) return t.en || t.th || fb;
   return t[lang] || t.th || fb;
 }
+const DP_ENTITLEMENT_I18N = {
+  th:{range:'แพ็กเกจนี้ค้นฤกษ์ได้ช่วงสูงสุด {max} วัน',people:'แพ็กเกจนี้วางฤกษ์ผูกดวงได้สูงสุด {max} คน'},
+  en:{range:'Your plan can search a maximum range of {max} days',people:'Your plan supports up to {max} people per date search'},
+  zh:{range:'你的方案最多可搜尋 {max} 天',people:'你的方案每次擇日最多可加入 {max} 人'},
+  cn:{range:'你的方案最多可搜索 {max} 天',people:'你的方案每次择日最多可加入 {max} 人'},
+  vi:{range:'Gói của bạn có thể tìm trong phạm vi tối đa {max} ngày',people:'Gói của bạn hỗ trợ tối đa {max} người cho mỗi lần chọn ngày'},
+  ja:{range:'現在のプランで検索できる期間は最大 {max} 日です',people:'現在のプランでは1回の日取り検索に最大 {max} 人まで指定できます'},
+  ko:{range:'현재 요금제의 검색 기간은 최대 {max}일입니다',people:'현재 요금제는 날짜 검색 1회당 최대 {max}명까지 지원합니다'},
+  ru:{range:'Ваш тариф позволяет искать в диапазоне до {max} дней',people:'Ваш тариф поддерживает до {max} человек в одном поиске даты'},
+  es:{range:'Tu plan permite buscar en un intervalo máximo de {max} días',people:'Tu plan admite hasta {max} personas por búsqueda de fecha'}
+};
+function dpEntitlementMessage(payload){
+  const code = String(payload?.code || payload?.error || '');
+  if (code !== 'datepick_range_limit' && code !== 'datepick_people_limit') return '';
+  let lang = 'th';
+  try { lang = localStorage.getItem('hk_locale') || document.documentElement.getAttribute('data-hk-locale') || document.documentElement.getAttribute('data-lang') || 'th'; } catch(_) {}
+  lang = String(lang).toLowerCase().replace('_','-');
+  if (lang === 'zh-hans' || lang === 'zh-cn') lang = 'cn';
+  else if (lang.startsWith('zh')) lang = 'zh';
+  else lang = lang.split('-')[0];
+  const bag = DP_ENTITLEMENT_I18N[lang] || DP_ENTITLEMENT_I18N.en;
+  const template = code === 'datepick_range_limit' ? bag.range : bag.people;
+  return template.replace('{max}', String(Number(payload?.max) || 0));
+}
 async function performSearch(){
   const btn = document.getElementById('btnSearch');
   btn.disabled = true;
@@ -2809,7 +2919,10 @@ async function performSearch(){
       });
       const aj = await r.json();
       if (!r.ok) {
-        document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</p></div>`;
+        const localizedEntMsg = dpEntitlementMessage(aj);
+        const entMsg = localizedEntMsg || ((aj && aj.message) ? String(aj.message) : '');
+        const isCap = !!localizedEntMsg;
+        document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${isCap || entMsg ? escHtml(entMsg || _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')) : _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}${isCap ? ' · <a href="/pricing" style="color:var(--gold)">/pricing</a>' : ''}</p></div>`;
         console.warn('[datepick] /api/auspicious error:', aj.error || r.statusText);
         btn.disabled = false; btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
         return;
@@ -3915,7 +4028,41 @@ function formatThaiDate(d){
 function dpSetPdfBtnLabel(){
   const b = document.getElementById('dp-pdf-btn'); if (!b) return;
   const L = getCurrentLang();
-  b.textContent = L === 'zh' ? '⬇ 下載 PDF' : L === 'th' ? '⬇ ดาวน์โหลด PDF' : '⬇ Download PDF';
+  b.textContent = L === 'zh' ? '⬇ 快速報告' : L === 'cn' ? '⬇ 快速报告' : L === 'th' ? '⬇ รายงานด่วน' : '⬇ Quick report';
+}
+
+function dpExportPdfV2(){
+  const data=window._dpLastSearch,L=getCurrentLang();
+  if(!window.HKPrint||!HKPrint.openDocument||!data||!Array.isArray(data.top)||!data.top.length){alert(L==='th'?'ยังไม่มีผลฤกษ์ กรุณาค้นหาก่อน':'No date-picking result is available.');return;}
+  const tx={
+    th:{title:'รายงานวางฤกษ์',kick:'รายงานด่วนจาก Engine · 擇日',snapshot:'ภาพรวมการค้นหา',ranking:'อันดับฤกษ์จาก Engine',details:'หลักฐานของฤกษ์เด่น',veto:'วันที่ถูกตัดและคำเตือน',method:'วิธีคำนวณและขอบเขต'},
+    en:{title:'Date-picking report',kick:'Quick Engine Report · 擇日',snapshot:'Search snapshot',ranking:'Engine-ranked timings',details:'Evidence for leading timings',veto:'Vetoes and warnings',method:'Method and scope'},
+    zh:{title:'擇日報告',kick:'引擎快速報告 · 擇日',snapshot:'搜尋概覽',ranking:'引擎擇日排名',details:'首選吉時依據',veto:'實裁與警示',method:'算法與範圍'},
+    cn:{title:'择日报告',kick:'引擎快速报告 · 择日',snapshot:'搜索概览',ranking:'引擎择日排名',details:'首选吉时依据',veto:'实裁与警示',method:'算法与范围'},
+    vi:{title:'Báo cáo chọn ngày',kick:'Báo cáo nhanh từ hệ thống · 擇日',snapshot:'Tổng quan tìm kiếm',ranking:'Xếp hạng từ hệ thống',details:'Căn cứ cho giờ tốt',veto:'Loại trừ và cảnh báo',method:'Phương pháp và phạm vi'},
+    ja:{title:'択日レポート',kick:'エンジン・クイックレポート · 擇日',snapshot:'検索概要',ranking:'エンジン順位',details:'上位候補の根拠',veto:'除外と注意',method:'計算方法と範囲'},
+    ko:{title:'택일 리포트',kick:'엔진 빠른 리포트 · 擇日',snapshot:'검색 개요',ranking:'엔진 순위',details:'상위 시간 근거',veto:'제외와 주의',method:'계산 방법과 범위'},
+    ru:{title:'Отчёт по выбору даты',kick:'Быстрый отчёт движка · 擇日',snapshot:'Обзор поиска',ranking:'Рейтинг движка',details:'Основания лучших вариантов',veto:'Отсев и предупреждения',method:'Метод и границы'},
+    es:{title:'Informe de selección de fecha',kick:'Informe rápido del motor · 擇日',snapshot:'Resumen de búsqueda',ranking:'Clasificación del motor',details:'Evidencia de los mejores horarios',veto:'Descartes y avisos',method:'Método y alcance'}
+  }[L]||null;
+  const T2=tx||{title:'Date-picking report',kick:'Quick Engine Report · 擇日',snapshot:'Search snapshot',ranking:'Engine-ranked timings',details:'Evidence for leading timings',veto:'Vetoes and warnings',method:'Method and scope'};
+  const esc=HKPrint.esc,top=data.top.slice(0,8),am=(typeof currentActivityMeta==='function'?currentActivityMeta():{name:'',han:''});
+  const activity=[am.name,am.han].filter(Boolean).join(' · ')||'擇日';
+  const win=data.search_window?.label||window._dpLastPageContext?.search_window?.label||'';
+  let place='';try{place=(typeof dpReadEventLocation==='function'&&dpReadEventLocation()?.place)||'';}catch(_){}
+  const people=(state.people||[]).filter(p=>p.enabled).map(p=>p.name||p.label).filter(Boolean);
+  const rows=top.map((s,i)=>({rank:String(i+1),datetime:`${s.date||''} ${s.time||''}`.trim(),score:String(s.score??'—'),verdict:(Number(s.score)>=55?'Recommended':Number(s.score)>=50?'Usable':'Caution'),evidence:(s.science_reasons||s.matches||[]).slice(0,3).map(x=>typeof x==='string'?x:(x.text||x.thai||x.label||'')).filter(Boolean).join(' · ')||'—'}));
+  const bh=top.length*34+28;
+  const bars=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 ${bh}" role="img" aria-label="Date ranking">${top.map((s,i)=>{const n=Math.max(0,Math.min(100,Number(s.score)||0)),y=12+i*34,w=n*3.2,col=n>=70?'#1f6b4f':n>=50?'#a47f2d':'#9f3434';return `<text x="0" y="${y+15}" font-size="12" fill="#171b24">${i+1}. ${esc(`${s.date||''} ${s.time||''}`)}</text><rect x="210" y="${y}" width="320" height="18" fill="#ece8df"/><rect x="210" y="${y}" width="${w}" height="18" fill="${col}"/><text x="540" y="${y+14}" text-anchor="end" font-size="11" fill="#171b24">${n}</text>`;}).join('')}</svg>`;
+  const detailBlocks=top.slice(0,3).flatMap((s,i)=>[{type:'heading',text:`#${i+1} · ${s.date||''} ${s.time||''}`,level:3},{type:'list',ordered:false,items:(s.science_reasons||s.matches||[]).slice(0,8).map(x=>typeof x==='string'?x:(x.text||x.thai||x.label||'')).filter(Boolean).length?(s.science_reasons||s.matches||[]).slice(0,8).map(x=>typeof x==='string'?x:(x.text||x.thai||x.label||'')).filter(Boolean):['No additional evidence was returned.']}]);
+  const cut=(data.cutSlots||[]).slice(0,20).map(s=>`${s.date||''} ${s.time||''} · ${(s.vetoes||[]).map(v=>typeof v==='string'?v:(v.reasonTh||v.reason||v.code||'')).filter(Boolean).join(' · ')||'Canon veto'}`);
+  const doc={version:'hourkey.pdf.v2',report:{id:HKPrint.reportId('HKDP'),kind:'quick',lang:L,title:T2.title,headerTitle:T2.kick,issuedAt:new Date().toISOString(),verificationLabel:'Deterministic date-picking engine'},cover:{kick:T2.kick,title:T2.title,who:activity,meta:[win,place,people.join(', ')].filter(Boolean),glyph:'擇',badge:'Quick Engine Report · no AI · no credit charge'},pages:[
+    {title:T2.snapshot,landscape:false,blocks:[{type:'facts',columns:2,items:[{label:'Activity',value:activity},{label:'Search window',value:win||'—'},{label:'Venue',value:place||'—'},{label:'People',value:people.join(', ')||'—'},{label:'Scanned slots',value:String(data.total_scanned??'—')},{label:'Candidate pool',value:String(data.candidate_pool??'—')}]},{type:'figure',svg:bars,caption:T2.ranking}]},
+    {title:T2.ranking,landscape:false,blocks:[{type:'table',compact:true,columns:[{key:'rank',label:'#',width:'7%'},{key:'datetime',label:'Date / time',width:'20%'},{key:'score',label:'Score',width:'10%'},{key:'verdict',label:'Verdict',width:'17%'},{key:'evidence',label:'Engine evidence',width:'46%'}],rows}]},
+    {title:T2.details,landscape:false,blocks:detailBlocks},
+    {title:T2.veto,landscape:false,blocks:[{type:'list',ordered:false,items:cut.length?cut:['No canon veto was returned in this search.']},{type:'heading',text:T2.method,level:3},{type:'callout',label:'Rule',text:'Almanac and Dong Gong vetoes are hard exclusions. Personal chart interactions are warnings unless the engine explicitly marks a hard veto.',tone:'neutral'},{type:'callout',label:'Boundary',text:'This report reproduces the saved engine ranking. It does not recalculate, rerank or add dates.',tone:'warning'}]}
+  ]};
+  HKPrint.openDocument(doc);
 }
 
 function dpExportPdf(){
@@ -4138,7 +4285,7 @@ init();
 console.log('🐉 Date Picking · 擇吉 · loaded');
 </script>
 
-<!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI · window.hkExportSummaryPdfDatepick (additive · 50 ยาม · async job + poll + resume · 9 ภาษา)
+<!-- 📄 9 ก.ค. 2569 · Export สรุป PDF ด้วย AI · window.hkExportSummaryPdfDatepick (additive · 20 ยาม · async job + poll + resume · 9 ภาษา)
      ลอกโครงจาก chart.html window.hkExportSummaryPdf ตรง ๆ · เปลี่ยนแค่ page:"datepick" + inputs.datepick + localStorage key แยก -->
 <script>
 (function () {
@@ -4154,10 +4301,10 @@ console.log('🐉 Date Picking · 擇吉 · loaded');
     balance:    { th:"ยอดคงเหลือ", en:"Balance", zh:"餘額", cn:"余额", vi:"Số dư", ja:"残高", ko:"잔액", ru:"Баланс", es:"Saldo" },
     cost:       { th:"ค่าใช้จ่าย", en:"Cost", zh:"費用", cn:"费用", vi:"Chi phí", ja:"費用", ko:"비용", ru:"Стоимость", es:"Costo" },
     unit:       { th:"ยาม", en:"units", zh:"時", cn:"时", vi:"đơn vị", ja:"時", ko:"단위", ru:"ед.", es:"unid." },
-    confirm:    { th:"ยืนยัน หัก 50 ยาม", en:"Confirm · use 50 units", zh:"確認 · 扣 50 時", cn:"确认 · 扣 50 时", vi:"Xác nhận · trừ 50 đơn vị", ja:"確認 · 50時を使用", ko:"확인 · 50단위 차감", ru:"Подтвердить · списать 50", es:"Confirmar · usar 50" },
+    confirm:    { th:"ยืนยัน หัก 20 ยาม", en:"Confirm · use 20 units", zh:"確認 · 扣 20 時", cn:"确认 · 扣 20 时", vi:"Xác nhận · trừ 20 đơn vị", ja:"確認 · 20時を使用", ko:"확인 · 20단위 차감", ru:"Подтвердить · списать 20", es:"Confirmar · usar 20" },
     cancel:     { th:"ยกเลิก", en:"Cancel", zh:"取消", cn:"取消", vi:"Hủy", ja:"キャンセル", ko:"취소", ru:"Отмена", es:"Cancelar" },
     topup:      { th:"เติมยาม", en:"Top up", zh:"儲值", cn:"充值", vi:"Nạp thêm", ja:"チャージ", ko:"충전", ru:"Пополнить", es:"Recargar" },
-    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 50 ยาม)", en:"Not enough units (need 50)", zh:"時數不足（需 50 時）", cn:"时数不足（需 50 时）", vi:"Không đủ đơn vị (cần 50)", ja:"時が不足しています（50必要）", ko:"단위가 부족합니다 (50 필요)", ru:"Недостаточно единиц (нужно 50)", es:"Unidades insuficientes (se necesitan 50)" },
+    notEnough:  { th:"ยามไม่พอ (ต้องใช้ 20 ยาม)", en:"Not enough units (need 20)", zh:"時數不足（需 20 時）", cn:"时数不足（需 20 时）", vi:"Không đủ đơn vị (cần 20)", ja:"時が不足しています（20必要）", ko:"단위가 부족합니다 (20 필요)", ru:"Недостаточно единиц (нужно 20)", es:"Unidades insuficientes (se necesitan 20)" },
     generating: { th:"AI กำลังสรุปฤกษ์… เปิดค้างไว้หรือปิดจอก็ได้ งานวิ่งต่อ", en:"AI is summarising… you can leave this open or close it; the job keeps running.", zh:"AI 正在總結…可保持開啟或關閉，工作會繼續。", cn:"AI 正在总结…可保持开启或关闭，工作会继续。", vi:"AI đang tổng hợp… bạn có thể để mở hoặc đóng; công việc vẫn chạy.", ja:"AIがまとめ中…開いたままでも閉じても処理は続きます。", ko:"AI가 요약 중…열어두거나 닫아도 작업은 계속됩니다.", ru:"AI составляет сводку… можно оставить открытым или закрыть, задача продолжится.", es:"La IA está resumiendo… puedes dejarlo abierto o cerrarlo; el trabajo continúa." },
     ready:      { th:"สรุปพร้อมแล้ว เปิด PDF เลยไหม?", en:"Your summary is ready — open the PDF?", zh:"總結已完成，要開啟 PDF 嗎？", cn:"总结已完成，要打开 PDF 吗？", vi:"Bản tổng hợp đã sẵn sàng — mở PDF chứ?", ja:"まとめが完成しました — PDFを開きますか？", ko:"요약이 준비되었습니다 — PDF를 열까요?", ru:"Сводка готова — открыть PDF?", es:"Tu resumen está listo — ¿abrir el PDF?" },
     building:   { th:"กำลังสร้างไฟล์ PDF…", en:"Creating your PDF file…", zh:"正在生成 PDF 檔案…", cn:"正在生成 PDF 文件…", vi:"Đang tạo tệp PDF…", ja:"PDFファイルを作成中…", ko:"PDF 파일 생성 중…", ru:"Создаём PDF-файл…", es:"Creando el archivo PDF…" },
@@ -4215,6 +4362,7 @@ console.log('🐉 Date Picking · 擇吉 · loaded');
 
   /* fallback (เก็บไว้เผื่อ server เจน PDF ไม่ได้): เด้ง print dialog แบบเดิม */
   function renderPrint(result) {
+    if (result && result.document && window.HKPrint && window.HKPrint.openDocument) { window.HKPrint.openDocument(result.document); return; }
     if (!window.HKPrint || !window.HKPrint.summaryFromMarkdown) { try { alert("Print module not loaded"); } catch (e) {} return; }
     window.HKPrint.summaryFromMarkdown(result.markdown || "", {
       cover: result.cover,                 // ปกบังคับ (มาจาก worker เสมอ)
@@ -4303,11 +4451,11 @@ console.log('🐉 Date Picking · 擇吉 · loaded');
     }).then(function (me) {
       if (me === null) return;
       var bal = (me && typeof me.hour_balance === "number") ? me.hour_balance : 0;
-      var enough = bal >= 50;
+      var enough = bal >= 20;
       var body = '<h3 style="margin:0 0 10px;font-size:17px;color:#8a6d2a">' + esc(T(I.title)) + "</h3>" +
         '<div style="font-size:12.5px;color:#5f5847;line-height:1.65;margin-bottom:14px">' + esc(T(I.desc)) + "</div>" +
         '<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid #eee5cf;padding-top:10px"><span>' + esc(T(I.balance)) + '</span><b style="color:' + (enough ? "#5a8a48" : "#b03a2e") + '">' + esc(bal) + " " + esc(T(I.unit)) + "</b></div>" +
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>50 " + esc(T(I.unit)) + "</b></div>";
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>' + esc(T(I.cost)) + "</span><b>20 " + esc(T(I.unit)) + "</b></div>";
       var btns = enough
         ? [{ label: T(I.cancel) }, { label: T(I.confirm), primary: true, onClick: function () { startJob(data, lang); } }]
         : [{ label: T(I.cancel) }, { label: T(I.topup), primary: true, onClick: function () { location.href = "/pricing"; } }];
@@ -4718,6 +4866,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
 </script>
 <script src="/js/hk-nonthai-page-guard.js?v=1"></script>
 <!-- 📄 8 ก.ค. 2569 · ตัวช่วยสร้าง PDF ร่วม (window.HKPrint · additive) -->
-<script src="/js/hk-print.js?v=4" defer></script>
+<script src="/js/hk-print.js?v=6" defer></script>
+<script src="/js/hk-product-caps.js?v=6" defer></script>
 </body>
 </html>

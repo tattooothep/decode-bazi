@@ -1,7 +1,29 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="/js/hk-lang-state.js?v=1"></script>
+<script>
+(function(){
+  try {
+    var p = new URLSearchParams(location.search || '');
+    if (p.get('lang') || p.get('locale')) return;
+    var next = p.get('next') || '';
+    var qIndex = next.indexOf('?');
+    if (qIndex < 0) return;
+    var q = new URLSearchParams(next.slice(qIndex));
+    var raw = String(q.get('lang') || q.get('locale') || '').trim().toLowerCase().replace('_','-');
+    if (!raw) return;
+    var isCn = raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans';
+    var base = raw.indexOf('zh') === 0 || raw === 'cn' ? 'zh' : raw;
+    if (['th','en','zh','vi','ja','ru','ko','es'].indexOf(base) < 0) return;
+    localStorage.setItem('hk_locale', base);
+    localStorage.setItem('hk_lang', base);
+    localStorage.setItem('hk_article_locale', base);
+    if (base === 'zh') localStorage.setItem('hk_zh_variant', isCn ? 'cn' : 'hant');
+    else localStorage.removeItem('hk_zh_variant');
+  } catch (_) {}
+})();
+</script>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -13,16 +35,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   :root{
-    --gold:#c8a44d; --gold-deep:#8a6d2a;
+    --gold:#e5bd69; --gold-deep:#8a6d2a; --red:#a82f24; --jade:#6aa98c;
     --serif:'Cormorant Garamond','Noto Serif TC',serif;
     --tc:'Noto Serif TC',serif;
     --thai:'Noto Serif Thai',serif;
     --mono:'JetBrains Mono',monospace;
-    --bg:#0d0f12; --bg-2:#14171c;
-    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
-    --tile-bg:rgba(38,42,50,.5); --tile-bd:rgba(246,241,230,.12);
-    --gold-line:rgba(200,164,77,.22);
+    --bg:#090706; --bg-2:#12100e;
+    --fg:#f7efe3; --fg-soft:#cdbfa9; --fg-faint:#8f806c;
+    --tile-bg:rgba(14,12,10,.64); --tile-bd:rgba(232,197,128,.18);
+    --gold-line:rgba(232,197,128,.22); --line-strong:rgba(232,197,128,.38);
+    --shadow:0 24px 80px rgba(0,0,0,.48);
   }
+  :lang(en),:lang(vi),:lang(ru),:lang(es){--thai:'Noto Sans','Noto Sans Thai','Inter','Segoe UI',system-ui,sans-serif;--serif:'Noto Sans','Noto Serif Thai',Georgia,serif}
+  :lang(zh-Hant),:lang(zh-Hans){--thai:'Noto Sans TC','Noto Sans Thai','Noto Sans',system-ui,sans-serif;--serif:'Noto Serif TC','Noto Serif Thai',serif}
+  :lang(ja){--thai:'Noto Sans JP','Noto Sans',system-ui,sans-serif;--serif:'Noto Sans JP','Noto Serif TC',serif}
+  :lang(ko){--thai:'Noto Sans KR','Noto Sans',system-ui,sans-serif;--serif:'Noto Sans KR','Noto Serif TC',serif}
   body.light{
     --bg:#f6f1e6; --bg-2:#ede5d2;
     --fg:#1a1d24; --fg-soft:rgba(26,29,36,.7); --fg-faint:rgba(26,29,36,.35);
@@ -31,22 +58,34 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{background:var(--bg);font-family:var(--thai);min-height:100vh;color:var(--fg);transition:background .35s, color .35s;overflow-x:hidden;}
+  body:before{content:'';position:fixed;inset:0;background:
+    linear-gradient(90deg,rgba(5,4,3,.94) 0%,rgba(5,4,3,.72) 45%,rgba(5,4,3,.42) 70%,rgba(5,4,3,.82) 100%),
+    linear-gradient(180deg,rgba(5,4,3,.32) 0%,#090706 100%),
+    url("assets/landing-v2/hourkey-hero-poster-v2.jpg") center/cover no-repeat;z-index:-2;}
+  body:after{content:'';position:fixed;inset:0;background:
+    repeating-radial-gradient(circle at 62% 56%,rgba(229,189,105,.14) 0 1px,transparent 1px 76px),
+    conic-gradient(from 28deg at 62% 56%,transparent 0 11deg,rgba(229,189,105,.07) 11deg 12deg,transparent 12deg 30deg);
+    mask-image:linear-gradient(180deg,transparent 0%,#000 15%,#000 58%,transparent 100%);opacity:.34;z-index:-1;pointer-events:none;}
 
-  .theme-switch{position:fixed;top:24px;right:24px;z-index:200;display:flex;background:var(--tile-bg);border:1px solid var(--gold-line);border-radius:99px;padding:3px;backdrop-filter:blur(10px);}
-  .theme-switch button{width:30px;height:28px;border:none;background:transparent;color:var(--fg-soft);font-size:11px;border-radius:99px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
-  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .theme-switch{display:flex;background:rgba(14,12,10,.72);border:1px solid var(--line-strong);border-radius:6px;padding:3px;backdrop-filter:blur(10px);}
+  .theme-switch button{width:30px;height:34px;border:none;background:transparent;color:var(--fg-soft);font-size:11px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  .theme-switch button.on{background:var(--gold);color:#130d09;}
 
-  .topbar{position:fixed;top:24px;left:32px;z-index:100;display:flex;align-items:center;gap:10px;}
-  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:24px;font-weight:600;color:var(--fg);text-decoration:none;}
-  .logo .seal{width:32px;height:32px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:14px;color:var(--gold);}
-  .back{display:inline-flex;align-items:center;gap:6px;color:var(--fg-soft);font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-decoration:none;text-transform:uppercase;margin-left:24px;}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px clamp(16px,4vw,44px);display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(9,7,6,.66);border-bottom:1px solid rgba(232,197,128,.12);backdrop-filter:blur(18px);}
+  .topbar-main{display:flex;align-items:center;gap:18px;min-width:0;}
+  .topbar-actions{display:flex;align-items:center;gap:10px;}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:#fff;text-decoration:none;}
+  .logo .seal{width:34px;height:34px;border:1px solid var(--line-strong);border-radius:6px;background:rgba(12,10,8,.54);box-shadow:inset 0 0 22px rgba(229,189,105,.11);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:19px;color:var(--gold);}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--fg-soft);font-family:var(--mono);font-size:12px;letter-spacing:0;text-decoration:none;}
   .back:hover{color:var(--gold);}
+  .hk-lang-select{height:42px;min-width:78px;border:1px solid var(--line-strong);border-radius:6px;background:rgba(14,12,10,.72);color:#fff;padding:0 9px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
+  .hk-lang-select option{background:#120f0d;color:#fff;}
 
-  .stage{min-height:100vh;display:grid;grid-template-columns:1.05fr 1fr;}
-  @media (max-width: 1024px){.stage{grid-template-columns:1fr;}.left{display:none !important;}}
+  .stage{min-height:100svh;width:min(1180px,100%);margin:0 auto;padding:112px clamp(16px,4vw,44px) 48px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.72fr);align-items:center;gap:42px;}
+  @media (max-width: 1024px){.stage{grid-template-columns:1fr;max-width:620px;}.left{display:none !important;}}
 
   /* LEFT — poetic side */
-  .left{position:relative;background:linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:80px 80px;border-right:1px solid var(--gold-line);}
+  .left{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;min-height:620px;padding:60px 0;}
   .left .rings{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:720px;height:720px;pointer-events:none;}
   .left .rings .r{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid rgba(200,164,77,.13);border-radius:50%;}
   .left .rings .r1{width:240px;height:240px;animation:spin 50s linear infinite;}
@@ -72,7 +111,7 @@
 
   .left .copy{position:relative;z-index:5;}
   .left .num{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--gold);margin-bottom:20px;text-transform:uppercase;}
-  .left h2{font-family:var(--serif);font-size:80px;font-weight:300;line-height:.95;letter-spacing:-.02em;color:var(--fg);margin-bottom:18px;}
+  .left h2{font-family:var(--serif);font-size:clamp(58px,7.4vw,92px);font-weight:600;line-height:.92;letter-spacing:0;color:#fff;margin-bottom:18px;text-shadow:0 18px 70px rgba(0,0,0,.7);}
   .left h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
   .left h2 i{color:var(--gold);}
   .left .lede{font-size:15px;line-height:1.7;color:var(--fg-soft);max-width:440px;margin-bottom:44px;}
@@ -80,19 +119,19 @@
   .left .quote .at{display:block;font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:.25em;color:var(--gold);margin-top:10px;text-transform:uppercase;}
 
   /* RIGHT — form */
-  .right{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:80px 32px;position:relative;}
-  .card{width:100%;max-width:440px;}
+  .right{display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;}
+  .card{width:100%;max-width:440px;border:1px solid var(--gold-line);background:rgba(10,8,7,.66);backdrop-filter:blur(18px);box-shadow:var(--shadow);border-radius:8px;padding:22px;}
   .right .num{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--gold);margin-bottom:14px;text-transform:uppercase;}
   .right h1{font-family:var(--serif);font-size:44px;font-weight:300;line-height:1.05;color:var(--fg);margin-bottom:8px;}
   .right h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
   .right .sub{font-size:13px;color:var(--fg-soft);line-height:1.6;margin-bottom:32px;}
 
-  .tabs{display:flex;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;padding:4px;margin-bottom:24px;}
-  .tabs .t{flex:1;text-align:center;padding:12px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-soft);border-radius:99px;cursor:pointer;transition:.2s;}
-  .tabs .t.on{background:var(--gold);color:var(--bg);font-weight:700;}
+  .tabs{display:flex;background:rgba(255,255,255,.035);border:1px solid var(--tile-bd);border-radius:8px;padding:4px;margin-bottom:22px;}
+  .tabs .t{flex:1;text-align:center;padding:11px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-soft);border-radius:6px;cursor:pointer;transition:.2s;}
+  .tabs .t.on{background:var(--gold);color:#130d09;font-weight:700;}
 
   .social{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
-  .social .b{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;color:var(--fg);font-family:var(--mono);font-size:12px;font-weight:600;text-decoration:none;letter-spacing:.06em;transition:.2s;}
+  .social .b{display:flex;align-items:center;justify-content:center;gap:12px;padding:13px;background:rgba(14,12,10,.62);border:1px solid var(--tile-bd);border-radius:6px;color:var(--fg);font-family:var(--mono);font-size:12px;font-weight:600;text-decoration:none;letter-spacing:.04em;transition:.2s;}
   .social .b:hover{border-color:var(--gold);transform:translateY(-1px);}
   .social .b .ico{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--serif);}
   .social .b.line .ico{background:#06c755;color:#fff;}
@@ -104,22 +143,22 @@
 
   .form{display:flex;flex-direction:column;gap:14px;}
   .field label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--fg-soft);text-transform:uppercase;margin-bottom:6px;display:block;}
-  .field input{width:100%;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:10px;padding:14px 16px;color:var(--fg);font-family:var(--mono);font-size:14px;outline:none;transition:.2s;}
+  .field input{width:100%;background:rgba(14,12,10,.62);border:1px solid var(--tile-bd);border-radius:6px;padding:14px 16px;color:var(--fg);font-family:var(--mono);font-size:14px;outline:none;transition:.2s;}
   .field input:focus{border-color:var(--gold);}
   .hk-pw-wrap{position:relative;}
   .hk-pw-wrap input{padding-right:46px;}
   .hk-pw-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;padding:8px;color:var(--fg-soft);opacity:.6;transition:opacity .2s, color .2s;display:flex;align-items:center;justify-content:center;}
   .hk-pw-eye:hover{opacity:1;color:var(--gold);}
   .hk-pw-eye svg{display:block;}
-  .mode-tabs{display:flex;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;padding:3px;margin-bottom:14px;gap:0;}
-  .mode-tabs .m{flex:1;text-align:center;padding:9px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--fg-soft);border-radius:99px;cursor:pointer;transition:.2s;}
-  .mode-tabs .m.on{background:var(--gold);color:var(--bg);font-weight:700;}
+  .mode-tabs{display:flex;background:rgba(255,255,255,.035);border:1px solid var(--tile-bd);border-radius:8px;padding:3px;margin-bottom:14px;gap:0;}
+  .mode-tabs .m{flex:1;text-align:center;padding:9px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--fg-soft);border-radius:6px;cursor:pointer;transition:.2s;}
+  .mode-tabs .m.on{background:rgba(229,189,105,.18);color:#f3dfad;font-weight:700;}
   .field .hk-field-error{display:none;color:#e26b5d;font-family:var(--thai);font-size:12px;margin-top:6px;line-height:1.4;align-items:center;gap:6px;}
   .field .hk-field-error::before{content:'⚠';font-size:11px;}
   .field.error input{border-color:#e26b5d;background:rgba(226,107,93,.06);}
   .field.error .hk-field-error{display:flex;}
   .hk-auth-error{display:none;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(226,107,93,.42);border-radius:10px;background:rgba(226,107,93,.08);color:#e26b5d;font-family:var(--thai);font-size:12.5px;line-height:1.45;}
-  .cta{margin-top:10px;padding:17px;background:var(--gold);color:var(--bg);font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;border:none;border-radius:99px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;}
+  .cta{margin-top:10px;padding:17px;background:linear-gradient(180deg,#d74b36,#8e231b);color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(255,172,128,.42);border-radius:6px;box-shadow:0 16px 38px rgba(130,22,18,.34),inset 0 1px rgba(255,255,255,.22);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;}
   .cta::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg, transparent, rgba(255,255,255,.3), transparent);transform:translateX(-100%);transition:.6s;}
   .cta:hover::after{transform:translateX(100%);}
   .fine{font-size:11px;color:var(--fg-faint);text-align:center;margin-top:18px;line-height:1.6;}
@@ -127,7 +166,14 @@
 
   /* ─────────────── MOBILE PHONE (≤640px) ─────────────── */
   @media (max-width: 640px){
-    .right{padding:48px 22px;}
+    .topbar{padding:12px 14px;}
+    .topbar-main{gap:10px;}
+    .logo{font-size:12px;letter-spacing:.12em;}
+    .back{display:none;}
+    .hk-lang-select{height:38px;min-width:66px;padding:0 6px;font-size:10px;}
+    .theme-switch button{height:30px;width:27px;}
+    .stage{padding:88px 14px 28px;}
+    .card{padding:18px;}
     .right h1{font-size:32px;line-height:1.1;}
     .right .sub{font-size:13px;margin-bottom:24px;line-height:1.55;}
     .right .num{font-size:10px;letter-spacing:.3em;margin-bottom:12px;}
@@ -144,8 +190,6 @@
     .cta{padding:14px;font-size:11px;letter-spacing:.18em;}
     .fine{font-size:10px;line-height:1.5;}
 
-    .topbar-mobile{padding:14px 18px;}
-    .back{font-size:10px;}
   }
 </style>
 <script>
@@ -194,24 +238,52 @@
 	      }
 	    }catch(_){}
 	    window.hkAffiliateRef = affiliateRef || '';
-	    function afterLogin(hasProfile){
-	      if (!hasProfile) {
-	        window.location.href = '/input';
-	        return;
-	      }
-	      const next = safeNext(nextParam);
-	      window.location.href = next || '/today';
+	    function currentLocaleParam(){
+	      try {
+	        var st = window.HK_LANG_STATE && window.HK_LANG_STATE.sifu ? window.HK_LANG_STATE.sifu() : '';
+	        return st || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || '';
+	      } catch(_) { return ''; }
 	    }
-	    window.hkAfterLogin = afterLogin;
-	    const oauthNext = safeNext(nextParam);
-	    if (oauthNext || affiliateRef) {
+	    function withLocale(path){
+	      path = safeNext(path) || path || '/input';
+	      var l = currentLocaleParam();
+	      if (!l) return path;
+	      try {
+	        var u = new URL(path, location.origin);
+	        u.searchParams.set('lang', l);
+	        u.searchParams.delete('locale');
+	        return u.pathname + u.search + u.hash;
+	      } catch(_) {
+	        return path;
+	      }
+	    }
+	    function updateOAuthNext(){
+	      const oauthNext = safeNext(nextParam);
+	      if (!oauthNext && !affiliateRef) return;
+	      try {
+	        const cur = new URL(location.href);
+	        if (oauthNext) cur.searchParams.set('next', withLocale(oauthNext));
+	        if (affiliateRef) cur.searchParams.set('ref', affiliateRef);
+	        history.replaceState(null, '', cur.pathname + cur.search + cur.hash);
+	      } catch(_) {}
 	      document.querySelectorAll('.social a[href^="/api/auth/"]').forEach((a)=>{
 	        const u = new URL(a.getAttribute('href'), location.origin);
-	        if (oauthNext) u.searchParams.set('next', oauthNext);
+	        if (oauthNext) u.searchParams.set('next', withLocale(oauthNext));
 	        if (affiliateRef) u.searchParams.set('ref', affiliateRef);
 	        a.setAttribute('href', u.pathname + u.search);
 	      });
 	    }
+	    function afterLogin(hasProfile){
+	      if (!hasProfile) {
+	        window.location.href = withLocale('/input');
+	        return;
+	      }
+	      const next = safeNext(nextParam);
+	      window.location.href = withLocale(next || '/today');
+	    }
+	    window.hkAfterLogin = afterLogin;
+	    updateOAuthNext();
+	    document.addEventListener('hk:locale', updateOAuthNext);
 	    if (errParam) {
 	      const box = document.getElementById('hk-auth-error');
 	      if (box) { box.textContent = errParam; box.style.display = 'block'; }
@@ -300,25 +372,28 @@
 </head>
 <body>
 
-<div class="hk-lang-switch" id="hk-lang-switch">
-  <button data-lang="en" title="English">EN</button>
-  <button data-lang="zh" title="中文">中</button>
-  <button data-lang="th" class="on" title="ไทย">TH</button>
-</div>
-<div class="theme-switch">
-  <button class="on" data-theme="dark" title="Dark">☾</button>
-  <button data-theme="light" title="Light">☀</button>
-</div>
-<style>
-.hk-lang-switch{position:fixed;top:24px;right:120px;z-index:200;display:inline-flex;background:var(--tile-bg,rgba(38,42,50,.5));border:1px solid var(--gold-line,rgba(200,164,77,.3));border-radius:99px;padding:3px;backdrop-filter:blur(10px);}
-.hk-lang-switch button{min-width:30px;height:28px;padding:0 8px;border:none;background:transparent;color:var(--fg-soft,rgba(246,241,230,.55));font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
-.hk-lang-switch button.on{background:var(--gold,#c8a44d);color:var(--bg,#0d0f12);}
-@media(max-width:560px){.hk-lang-switch{right:88px;}}
-</style>
-
 <div class="topbar">
-  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
-  <a href="/" class="back" data-i18n="su.back">← กลับ</a>
+  <div class="topbar-main">
+    <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+    <a href="/" class="back" data-i18n="su.back">← กลับ</a>
+  </div>
+  <div class="topbar-actions">
+    <select class="hk-lang-select" id="hk-lang-select" aria-label="Language">
+      <option value="th">TH</option>
+      <option value="en">EN</option>
+      <option value="zh-hant">繁</option>
+      <option value="zh-cn">简</option>
+      <option value="vi">VI</option>
+      <option value="ja">JA</option>
+      <option value="ko">KO</option>
+      <option value="ru">RU</option>
+      <option value="es">ES</option>
+    </select>
+    <div class="theme-switch">
+      <button class="on" data-theme="dark" title="Dark">☾</button>
+      <button data-theme="light" title="Light">☀</button>
+    </div>
+  </div>
 </div>
 
 <div class="stage">
@@ -670,7 +745,7 @@ function applyI18N(lang){
     var key = entry[0], t = entry[1];
     /* 🌐 overlay hook · ภาษาใหม่ (vi/ja/ko/ru/es) · th/en/zh ได้ ov=null = พฤติกรรมเดิม */
     var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('signup.html',key,lang);}catch(_){}
-    var v=(ov!=null)?ov:t[lang];
+    var v=(ov!=null)?ov:(t[lang] || t.en || t.th);
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
       if (v !== undefined) {
         if (v.indexOf('<') >= 0) el.innerHTML = v;
@@ -684,21 +759,37 @@ function applyI18N(lang){
 }
 window.applyI18N = applyI18N;
 (function(){
-  var sw = document.getElementById('hk-lang-switch');
+  var sw = document.getElementById('hk-lang-select');
   if (!sw) return;
-  var btns = sw.querySelectorAll('button');
+  function choiceFromState(st){
+    if (!st) return 'th';
+    if (st.raw === 'zh') {
+      try { return localStorage.getItem('hk_zh_variant') === 'cn' ? 'zh-cn' : 'zh-hant'; } catch(_) {}
+      return st.variant === 'cn' ? 'zh-cn' : 'zh-hant';
+    }
+    return st.raw || 'th';
+  }
+  function loadOverlayThen(raw, cb){
+    if (raw === 'th' || raw === 'en' || raw === 'zh') { cb(); return; }
+    if (window.HK && window.HK.i18n && typeof window.HK.i18n.loadOverlay === 'function') {
+      window.HK.i18n.loadOverlay(raw).then(function(){ cb(); }).catch(function(){ cb(); });
+      return;
+    }
+    cb();
+  }
   function apply(lang){
     var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.set?window.HK_LANG_STATE.set(lang):null;
+    var raw = st ? st.raw : lang;
     document.documentElement.setAttribute('lang', st?st.html:lang);
-    document.documentElement.setAttribute('data-lang', st?st.app:lang);
-    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
-    try{ localStorage.setItem('hk_locale', st?st.raw:lang); localStorage.setItem('hk_lang', st?st.raw:lang); }catch(e){}
-    applyI18N(lang);
+    document.documentElement.setAttribute('data-lang', st?st.app:raw);
+    sw.value = choiceFromState(st || { raw: raw });
+    try{ localStorage.setItem('hk_locale', raw); localStorage.setItem('hk_lang', raw); }catch(e){}
+    loadOverlayThen(raw, function(){ applyI18N(raw); });
   }
   /* 🌐 overlay re-apply · ถูกเรียกเฉพาะเมื่อ overlay ภาษาใหม่โหลดสำเร็จ */
   window.__hkOverlayApply=function(l){ apply(l); };
-  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
-  try{ var s=(window.HK_LANG_STATE&&window.HK_LANG_STATE.raw&&window.HK_LANG_STATE.raw())||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+  sw.addEventListener('change', function(){ apply(sw.value); });
+  try{ var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current&&window.HK_LANG_STATE.current(); if (st) apply(choiceFromState(st)); else apply('th'); }catch(e){ apply('th'); }
 })();
 </script>
 <div id="hk-forgot-modal" class="hk-forgot-modal" onclick="if(event.target===this)this.classList.remove('show')">

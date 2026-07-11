@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="dark">
+<html lang="th" data-theme="dark" data-hk-product-page="network_compare">
 <head>
-<script src="/js/hk-lang-state.js?v=1"></script>
+<script src="/js/hk-lang-state.js?v=2"></script>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
@@ -252,6 +252,7 @@ body{padding-top:62px;}
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span data-i18n="hk.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan"><span class="glyph">羅</span><span class="lbl" data-i18n="hk.nav.luopan">หล่อแก</span></a>
+    <a href="/palmistry" data-r="/palmistry"><span class="glyph">手</span><span class="lbl" data-i18n="hk.nav.palmistry">ลายมือ</span></a>
   </nav>
   <div class="hk-top-r">
     <div class="hk-lang-switch" id="hk-lang-switch">
@@ -441,6 +442,7 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
     const r = await fetch('/api/network/score',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
+        purpose: 'pair_compare',
         self: p1,
         others: [{id:'p2', ...p2}],
         date: dateStr
@@ -531,7 +533,7 @@ function trimPersonForAI(p) {
 
 /* 19 พ.ค. Option α · AI compare · เรียก /api/sifu/compare */
 /* 19 พ.ค. Phase 12 · POST streaming · fetch + body.getReader + SSE parser
- * Codex approved · ห้าม EventSource (POST body) · ห้าม URL query (body 3KB) */
+ * reviewed · ห้าม EventSource (POST body) · ห้าม URL query (body 3KB) */
 async function parseSseStream(reader, onEvent, signal) {
   const decoder = new TextDecoder();
   let buf = '';
@@ -549,7 +551,7 @@ async function parseSseStream(reader, onEvent, signal) {
         else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
       }
       if (!dataLines.length) continue;
-      /* Codex รอบ 32 fix · parse JSON ใน try แยก · onEvent อยู่นอก try
+      /* review รอบ 32 fix · parse JSON ใน try แยก · onEvent อยู่นอก try
        * เพื่อให้ throw จาก onEvent หลุดเข้า outer catch ได้ (ไม่ถูกกลืน) */
       let parsed;
       try { parsed = JSON.parse(dataLines.join('\n')); }
@@ -624,6 +626,7 @@ document.getElementById('cmp-ai-close').addEventListener('click', function(){
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script src="/js/hk-product-caps.js?v=6" defer></script>
 <script>
 /* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
 (function(){try{
