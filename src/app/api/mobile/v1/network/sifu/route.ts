@@ -3,6 +3,7 @@ import { q } from "@/lib/db";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { buildNetworkScorePayload } from "@/lib/scoring/network-score-payload";
 import { publicAiPayload } from "@/lib/public-ai-response";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -244,7 +245,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "mobile session token missing" }, { status: 401 });
   }
 
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
   const networkResp = await fetch(`${origin}/api/network/sifu`, {
     body: JSON.stringify({
       history: cleanHistory((body as { history?: unknown }).history),

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "dateFrom/dateTo ต้องเป็น YYYY-MM-DD" }, { status: 400 });
   }
 
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
   const cookie = cookieHeaderForAuspicious(req);
   const payload = {
     activityType,

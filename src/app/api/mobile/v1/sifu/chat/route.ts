@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { q1 } from "@/lib/db";
 import { publicAiPayload } from "@/lib/public-ai-response";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -110,7 +111,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "mobile session token missing" }, { status: 401 });
   }
 
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
   const payload = {
     history,
     lang: ["th", "en", "zh"].includes(body.lang) ? body.lang : "th",

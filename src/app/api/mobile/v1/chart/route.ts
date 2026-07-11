@@ -4,6 +4,7 @@ import {
   loadMobileTimingProfile,
   mobileProfileSummary,
 } from "@/lib/mobile-timing-context";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -64,7 +65,7 @@ async function handle(req: Request) {
     time: birth.time,
   };
 
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
   const cookie = cookieHeaderForChart(req);
   const chartResp = await fetch(`${origin}/api/chart`, {
     body: JSON.stringify(payload),

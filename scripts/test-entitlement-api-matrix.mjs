@@ -188,10 +188,13 @@ try {
     }
 
     r = await request(fixture, `/api/mobile/v1/today/hours?date=${date}&profileId=${fixture.profileId}`, {}, true);
+    if (r.response.status !== 200) console.error("mobile today mismatch", fixture.state, r.response.status, r.data);
     check(r.response.status === 200 && r.data.entitlement?.plan === fixture.plan, `${fixture.plan} mobile today bearer`);
     r = await request(fixture, `/api/mobile/v1/calendar?year=${current.year}&month=${current.month}&profileId=${fixture.profileId}`, {}, true);
+    if (r.response.status !== 200) console.error("mobile calendar mismatch", fixture.state, r.response.status, r.data);
     check(r.response.status === 200 && r.data.entitlement?.plan === fixture.plan, `${fixture.plan} mobile calendar bearer`);
     r = await request(fixture, `/api/mobile/v1/chart?profileId=${fixture.profileId}`, {}, true);
+    if (r.response.status !== 200) console.error("mobile chart mismatch", fixture.state, r.response.status, r.data);
     check(r.response.status === 200 && r.data.entitlement?.plan === fixture.plan, `${fixture.plan} mobile chart bearer`);
 
     console.log(`API state PASS · ${fixture.state} → ${fixture.plan}`);

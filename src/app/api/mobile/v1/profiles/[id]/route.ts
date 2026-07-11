@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -60,7 +61,7 @@ async function proxyProfile(req: Request, ctx: Ctx, method: "GET" | "PUT" | "DEL
   }
 
   const body = method === "PUT" ? cleanBody((await req.json().catch(() => ({}))) as Record<string, unknown>) : undefined;
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
   const profileResp = await fetch(`${origin}/api/profile/${encodeURIComponent(id)}`, {
     body: body ? JSON.stringify(body) : undefined,
     cache: "no-store",

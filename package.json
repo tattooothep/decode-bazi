@@ -12,6 +12,7 @@
     "test:pricing-contract": "node --experimental-strip-types scripts/test-pricing-entitlement-contract.mjs",
     "test:entitlement-ux": "node scripts/test-entitlement-lock-ux.mjs",
     "test:entitlement-i18n": "node scripts/test-entitlement-i18n-matrix.mjs",
+    "test:mobile-internal-origin": "tsx scripts/test-mobile-internal-origin.mts",
     "audit:public-ai": "tsx scripts/audit-public-ai-identifiers.mts",
     "start": "next start",
     "test:admin-p0": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p0.mjs",
