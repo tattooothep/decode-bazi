@@ -43,6 +43,9 @@ const JAN_SEGMENT_RE = /(มกราคม|ม\.ค\.|January|Jan)/i;
 const MONTHLY_RANKING_RE = /(อันดับ|ranking|rank|top|best|worst|ดีที่สุด|แย่สุด|หนักที่สุด|เปิดโอกาสที่สุด|รายเดือน|เดือนที่|12 เดือน|monthly|流月)/i;
 const CHEN_XU_CLASH_RE = /辰\s*戌\s*(?:六)?[冲沖]|辰\s*(?:六)?[冲沖]\s*戌|戌\s*辰\s*(?:六)?[冲沖]|戌\s*(?:六)?[冲沖]\s*辰|มะโรง.{0,12}จอ.{0,12}(ชง|ปะทะ)|จอ.{0,12}มะโรง.{0,12}(ชง|ปะทะ)/i;
 const MONTH_SCENARIO_CONDITION_RE = /(ถ้า|กรณี|scenario|ฝั่ง|ก่อน|หลัง).{0,24}(壬辰|癸巳|เดือน\s*=\s*[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/i;
+/* คำบ่งชี้ "กำลังจะสลับ/ย่างเข้า大運ใหม่" · ใช้ยกเว้นเฉพาะปีรอยต่อ (交運) ที่พูดถึงวัยจรถัดไปได้ตามจริง
+ * เจตนา: จับเฉพาะภาษา "สลับ/เปลี่ยนวัยจร" ชัดๆ · เลี่ยงคำสามัญกว้าง (ต่อไป/ถัดไป/ข้างหน้า) ที่โผล่ในประโยคทั่วไป */
+const DAYUN_TRANSITION_RE = /กำลังจะ|จะสลับ|จะเข้าสู่|สลับเข้า|กำลังสลับ|ย่างเข้า|ย่างสู่|เปลี่ยนเข้า|กำลังเข้า|ก้าวเข้า|เริ่มเข้าสู่|เข้าสู่ช่วง|เข้าสู่วัยจรใหม่|ปลายวัยจร|ท้ายวัยจร|交運|交脫|approaching|entering|about to|upcoming|transition|switch(?:ing)?/i;
 
 function uniq<T>(xs: T[]): T[] {
   return Array.from(new Set(xs));
@@ -101,6 +104,58 @@ function extractYearDayunMap(ctx: string): Map<string, Set<string>> {
   while ((hit = re2.exec(ctx))) {
     add(hit[1], hit[3]);
     add(hit[2], hit[3]);
+  }
+  return out;
+}
+
+/* ปี → 流年 (year_pillar) จาก HK_YEAR_DAYUN_MAP_V2 · ใช้ยกเว้นกรณี AI พูดปีจรถูก แต่มีคำ "วัยจร" อยู่ใกล้จนด่านนึกว่าเป็นวัยจร */
+function extractYearLiunianMap(ctx: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const add = (year: string, pillar: string) => {
+    const ad = Number(year);
+    const keys = [String(ad)];
+    if (ad >= 1900 && ad < 2200) keys.push(String(ad + 543));
+    if (ad >= 2400 && ad < 2800) keys.push(String(ad - 543));
+    for (const key of keys) if (!out.has(key)) out.set(key, pillar);
+  };
+  const re = /(\d{4})\/(\d{4}):\s*year_pillar=([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/g;
+  let hit: RegExpExecArray | null;
+  while ((hit = re.exec(ctx))) {
+    add(hit[1], hit[3]);
+    add(hit[2], hit[3]);
+  }
+  return out;
+}
+
+/* ปี → ปีที่วัยจรนั้นสิ้นสุด (交運 ค.ศ.) จาก HK_QUERY_YEAR_LUCK_LOCK_V1 (…->干支[ค.ศ.start-end…]) หรือ HK_YEAR_DAYUN_MAP_V2 (…/dayun=干支[start-end…]) · ปีที่ = end คือปีรอยต่อ พูดวัยจรถัดไปได้ */
+function extractDayunEndYearMap(ctx: string): Map<string, number> {
+  const out = new Map<string, number>();
+  const conflict = new Set<string>();
+  const add = (year: string, end: number) => {
+    const ad = Number(year);
+    const keys = [String(ad)];
+    if (ad >= 1900 && ad < 2200) keys.push(String(ad + 543));
+    if (ad >= 2400 && ad < 2800) keys.push(String(ad - 543));
+    for (const key of keys) {
+      if (conflict.has(key)) continue;
+      const prev = out.get(key);
+      if (prev !== undefined && prev !== end) { out.delete(key); conflict.add(key); continue; } // ดวงกลุ่ม: ปีเดียวชนหลายช่วงวัยจร → ทิ้ง ไม่มาร์ค boundary (fail-closed)
+      out.set(key, end);
+    }
+  };
+  // ทน whitespace รอบเครื่องหมาย · กัน format packet เพี้ยนเล็กน้อยแล้ว dayunEndMap ตายเงียบ (ชี้โดยลายเซน edge-case)
+  const re1 = /(\d{4})\s*\/\s*(\d{4})\s*->\s*[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]\s*\[\s*ค\.ศ\.\s*\d{4}\s*-\s*(\d{4})/g;
+  const re2 = /(\d{4})\s*\/\s*(\d{4})\s*:[^◆\n]*?\/dayun=\s*[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]\s*\[\s*(\d{4})\s*-\s*(\d{4})/g;
+  let hit: RegExpExecArray | null;
+  while ((hit = re1.exec(ctx))) {
+    const end = Number(hit[3]);
+    add(hit[1], end);
+    add(hit[2], end);
+  }
+  while ((hit = re2.exec(ctx))) {
+    const end = Number(hit[4]);
+    add(hit[1], end);
+    add(hit[2], end);
   }
   return out;
 }
@@ -165,16 +220,32 @@ function dayunClaimsInSegment(segment: string): string[] {
 function hasDayunYearMismatch(reply: string, ctx: string): { year: string; expected: string; got: string; segment: string } | null {
   const map = extractYearDayunMap(ctx);
   if (!map.size) return null;
+  const liunianMap = extractYearLiunianMap(ctx);
+  const dayunEndMap = extractDayunEndYearMap(ctx);
   for (const segment of splitSegments(reply)) {
     if (NEGATED_REPLY_SEGMENT_RE.test(segment)) continue;
     const years = yearsInSegment(segment);
     if (years.length !== 1) continue;
-    const allowed = map.get(years[0]);
+    const year = years[0];
+    const allowed = map.get(year);
     if (!allowed || allowed.size !== 1) continue;
     const expected = Array.from(allowed)[0];
     const claims = dayunClaimsInSegment(segment);
-    const bad = claims.find((p) => p !== expected);
-    if (bad) return { year: years[0], expected, got: bad, segment };
+    /* ยกเว้นก่อนตัดสิน:
+     *  (ก) 流年 confusion — คำที่จับได้ = ปีจร (year_pillar) ของปีนั้น ไม่ใช่วัยจร (คำ "วัยจร" บังเอิญอยู่ใกล้)
+     *  (ข) 交運 boundary — ปีนั้นเป็นปีที่วัยจรปัจจุบันสิ้นสุด (year === dayunEnd) และประโยคใช้ภาษา "กำลังจะสลับ/ย่างเข้า" → พูดวัยจรถัดไปได้ตามจริง */
+    const liunian = liunianMap.get(year);
+    const adYear = Number(year) >= 2400 ? Number(year) - 543 : Number(year); // ปีจบวัยจรเก็บเป็น ค.ศ. เสมอ · แปลง พ.ศ.→ค.ศ. ก่อนเทียบ
+    const isBoundaryYear = dayunEndMap.get(year) === adYear;
+    const hasTransitionLang = DAYUN_TRANSITION_RE.test(segment);
+    const nextDayun = map.get(String(adYear + 1)); // วัยจรของปีถัดไป (ปีรอยต่อ → คือวัยจรที่กำลังจะเข้า)
+    const bad = claims.find((p) => {
+      if (p === expected) return false;
+      if (liunian && p === liunian) return false;                                 // (ก) เป็นปีจร ไม่ใช่วัยจรผิด
+      if (isBoundaryYear && hasTransitionLang && nextDayun && nextDayun.has(p)) return false; // (ข) ปีรอยต่อ + ภาษาสลับ + อ้างวัยจรถัดไป "จริง" เท่านั้น
+      return true;
+    });
+    if (bad) return { year, expected, got: bad, segment };
   }
   return null;
 }
