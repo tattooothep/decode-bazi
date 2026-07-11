@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const runtime = "nodejs";
 
@@ -56,7 +57,7 @@ async function genVideoByteplus(prompt: string, opts: { image_b64?: string; dura
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  if (!process.env.ARK_API_KEY) return NextResponse.json({ error: "ark_key_missing", detail: "ตั้งค่า ARK_API_KEY ก่อนใช้สร้างวิดีโอ" }, { status: 503 });
+  if (!process.env.ARK_API_KEY) return NextResponse.json({ error: "video_unavailable" }, { status: 503 });
   const contentLength = Number(req.headers.get("content-length") || 0);
   if (contentLength > 18 * 1024 * 1024) return NextResponse.json({ error: "payload_too_large" }, { status: 413 });
   const rl = await rateLimit(`ai-video:${session.userId}:${clientIp(req)}`, 3, 10 * 60_000);
@@ -74,6 +75,9 @@ export async function POST(req: Request) {
   const fast = body.fast !== false; // default fast (เร็ว/ถูกกว่า)
 
   const r = await genVideoByteplus(prompt, { image_b64, duration, fast });
-  if (!r.ok) return NextResponse.json({ error: "video_failed", detail: r.error }, { status: 502 });
-  return NextResponse.json({ ok: true, engine: "byteplus-seedance", mime: "video/mp4", duration_ms: r.duration_ms, bytes: r.video.length, video_base64: r.video.toString("base64") });
+  if (!r.ok) {
+    console.error("[ai/video] generation failed", r.error);
+    return NextResponse.json({ error: "video_failed" }, { status: 502 });
+  }
+  return NextResponse.json(publicAiPayload({ ok: true, mime: "video/mp4", duration_ms: r.duration_ms, bytes: r.video.length, video_base64: r.video.toString("base64") }));
 }

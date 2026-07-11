@@ -9,6 +9,7 @@ import { getSession } from "@/lib/auth";
 import { q1, q } from "@/lib/db";
 import { rm } from "fs/promises";
 import { refundPalmJobBilling } from "@/lib/palm-billing";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -72,10 +73,10 @@ export async function GET(req: Request) {
   const headers = { "Cache-Control": "no-store, max-age=0" };
   if (safeRow.status === "done") {
     const result = (safeRow.result && typeof safeRow.result === "object") ? safeRow.result as Record<string, unknown> : {};
-    return NextResponse.json({ status: "done", ...result }, { headers });
+    return NextResponse.json(publicAiPayload({ status: "done", ...result }), { headers });
   }
   if (safeRow.status === "error") {
-    return NextResponse.json({ ok: false, status: "error", error: safeRow.error || "read_failed", engine: safeRow.engine || null }, { headers });
+    return NextResponse.json(publicAiPayload({ ok: false, status: "error", error: safeRow.error || "read_failed", engine: safeRow.engine || null }), { headers });
   }
   return NextResponse.json({ ok: true, status: safeRow.status, job_id: safeRow.id }, { headers });
 }

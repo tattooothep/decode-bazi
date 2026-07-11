@@ -10,6 +10,7 @@ const PRIVATE_AI_KEYS = new Set([
   "preferred_panel_models",
   "fallback_judge_models",
   "primary_judge_model",
+  "engine",
 ]);
 
 const PROVIDER_ERROR_PATTERN =

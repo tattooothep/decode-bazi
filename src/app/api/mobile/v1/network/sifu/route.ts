@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { q } from "@/lib/db";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { buildNetworkScorePayload } from "@/lib/scoring/network-score-payload";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -274,11 +275,11 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    {
+    publicAiPayload({
       ok: networkResp.ok,
       ...data,
       source: "/api/network/sifu",
-    },
+    }),
     {
       headers: { "Cache-Control": "no-store, max-age=0" },
       status: networkResp.status,

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q } from "@/lib/db";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
            WHERE user_id = $1 AND profile_id IS NULL ORDER BY created_at DESC LIMIT 50`,
           [sess.userId]
         );
-    return NextResponse.json({ ok: true, readings: rows });
+    return NextResponse.json(publicAiPayload({ ok: true, readings: rows }));
   } catch (e) {
     console.error("[palmistry/list]", (e as Error).message);
     return NextResponse.json({ ok: false, error: "list_failed" }, { status: 500 });

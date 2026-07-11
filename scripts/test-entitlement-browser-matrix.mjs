@@ -34,6 +34,8 @@ const requestedTiers = new Set((process.env.HK_MATRIX_TIERS || "guest,free,trial
   .split(",").map((item) => item.trim()).filter(Boolean));
 const requestedViewports = new Set((process.env.HK_MATRIX_VIEWPORTS || "mobile,desktop")
   .split(",").map((item) => item.trim()).filter(Boolean));
+const targetLang = String(process.env.HK_MATRIX_LANG || "en").trim().toLowerCase();
+assert.ok(["th", "en", "zh", "cn", "vi", "ja", "ko", "ru", "es"].includes(targetLang), `unsupported matrix language ${targetLang}`);
 const paths = {
   chart: "/chart",
   today: "/today",
@@ -46,8 +48,11 @@ const paths = {
   fengshui: "/fengshui",
   luopan: "/luopan",
   palmistry: "/palmistry",
+  pricing: "/pricing",
+  account: "/account",
 };
 const visibleBadgeLimits = { today: 0, qimen: 2, datepick: 1, luopan: 3, chart: 5, network: 8, fengshui: 4 };
+const standalonePages = new Set(["pricing", "account"]);
 for (const page of requestedPages) assert.ok(paths[page], `unknown matrix page ${page}`);
 
 const now = Date.now();
@@ -100,19 +105,19 @@ try {
     for (const viewport of viewports) {
       const context = await browser.newContext({ viewport });
       if (!fixture.guest) await context.addCookies([{ name: "decode_auth", value: fixture.token, url: BASE, httpOnly: true, sameSite: "Lax" }]);
-      await context.addInitScript(({ birth }) => {
+      await context.addInitScript(({ birth, targetLang }) => {
         localStorage.setItem("hk_birth", JSON.stringify(birth));
-        localStorage.setItem("hk_locale", "en");
-        localStorage.setItem("hk_lang", "en");
+        localStorage.setItem("hk_locale", targetLang);
+        localStorage.setItem("hk_lang", targetLang);
         localStorage.setItem("hk_network_coach_v1", "1");
         localStorage.setItem("hk_fengshui_help_seen", "1");
-      }, { birth });
+      }, { birth, targetLang });
 
       for (const pageName of requestedPages) {
         const page = await context.newPage();
         const pageErrors = [];
         page.on("pageerror", (error) => pageErrors.push(error.message));
-        const response = await page.goto(BASE + paths[pageName], { waitUntil: "domcontentloaded", timeout: 30000 });
+        const response = await page.goto(`${BASE}${paths[pageName]}?lang=${targetLang}`, { waitUntil: "domcontentloaded", timeout: 30000 });
         assert.ok(response && response.status() < 500, `${fixture.plan}/${viewport.name}/${pageName} HTTP`);
         if (fixture.guest) {
           await page.waitForTimeout(1500);
@@ -125,7 +130,7 @@ try {
           }
           assert.equal(guestPath, paths[pageName], `guest/${viewport.name}/${pageName} public path`);
         }
-        let productReady = false;
+        let productReady = standalonePages.has(pageName);
         for (let attempt = 0; attempt < 20 && !productReady; attempt += 1) {
           productReady = await page.evaluate(() => window.HK_PRODUCT?.ready === true);
           if (!productReady) await page.waitForTimeout(500);
@@ -134,6 +139,7 @@ try {
         await page.waitForTimeout(pageName === "chart" ? 2500 : 1000);
         const state = await page.evaluate(() => ({
           plan: window.HK_PRODUCT?.plan || null,
+          locale: window.HK_PRODUCT?.locale || localStorage.getItem("hk_locale") || null,
           ready: !!window.HK_PRODUCT?.ready,
           locks: document.querySelectorAll("[data-locked='1']").length,
           visibleLockBadges: document.querySelectorAll(".hk-lock-preview-badge").length,
@@ -152,8 +158,12 @@ try {
           path: location.pathname,
         }));
         console.log(JSON.stringify({ accountState: fixture.state, plan: fixture.plan, viewport: viewport.name, page: pageName, locks: state.locks, visibleLockBadges: state.visibleLockBadges, overflow: state.overflow, path: state.path }));
-        assert.equal(state.ready, true, `${fixture.plan}/${viewport.name}/${pageName} product ready`);
-        assert.equal(state.plan, fixture.guest ? "guest" : fixture.plan, `${fixture.state}/${viewport.name}/${pageName} plan`);
+        if (!standalonePages.has(pageName)) {
+          assert.equal(state.ready, true, `${fixture.plan}/${viewport.name}/${pageName} product ready`);
+          assert.equal(state.plan, fixture.guest ? "guest" : fixture.plan, `${fixture.state}/${viewport.name}/${pageName} plan`);
+        }
+        const expectedPageLang = targetLang === "cn" && standalonePages.has(pageName) ? "zh" : targetLang;
+        assert.equal(state.locale, expectedPageLang, `${fixture.state}/${viewport.name}/${pageName} language`);
         assert.ok(state.overflow <= 2, `${fixture.plan}/${viewport.name}/${pageName} overflow=${state.overflow}`);
         assert.equal(pageErrors.length, 0, `${fixture.plan}/${viewport.name}/${pageName} page errors: ${pageErrors.join(" | ")}`);
         if (fixture.plan === "master") {
@@ -181,7 +191,7 @@ try {
       await context.close();
     }
   }
-  console.log(`browser matrix PASS · ${checks} checks · ${fixtures.length} account states · ${viewports.length} viewports · ${requestedPages.length} pages`);
+  console.log(`browser matrix PASS · ${checks} checks · ${fixtures.length} account states · ${viewports.length} viewports · ${requestedPages.length} pages · lang=${targetLang}`);
 } finally {
   if (browser) await browser.close().catch(() => {});
   await q(`DELETE FROM users WHERE id = ANY($1::uuid[])`, [fixtures.filter((fixture) => !fixture.guest).map((fixture) => fixture.id)]).catch(() => {});

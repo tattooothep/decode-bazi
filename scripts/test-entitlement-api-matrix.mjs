@@ -171,6 +171,22 @@ try {
       check(r.response.status === 403 && r.data.code === "network_pair_compare_trial_used", "trial pair compare once");
     }
 
+    if (fixture.state === "free") {
+      const balanceBeforeDenied = (await request(fixture, "/api/account/me")).data.hour_balance;
+      r = await request(fixture, "/api/qimen/sifu", {
+        method: "POST",
+        body: JSON.stringify({ message: "entitlement probe", payload: {} }),
+      });
+      check(r.response.status === 403 && r.data.code === "qimen_sifu_locked", "free qimen AI denied before work");
+      r = await request(fixture, "/api/network/sifu", {
+        method: "POST",
+        body: JSON.stringify({ mode: "pair", message: "entitlement probe", payload: {} }),
+      });
+      check(r.response.status === 403 && r.data.code === "network_pair_ai_locked", "free network AI denied before work");
+      const balanceAfterDenied = (await request(fixture, "/api/account/me")).data.hour_balance;
+      check(balanceAfterDenied === balanceBeforeDenied, "denied AI requests spend zero credits");
+    }
+
     r = await request(fixture, `/api/mobile/v1/today/hours?date=${date}&profileId=${fixture.profileId}`, {}, true);
     check(r.response.status === 200 && r.data.entitlement?.plan === fixture.plan, `${fixture.plan} mobile today bearer`);
     r = await request(fixture, `/api/mobile/v1/calendar?year=${current.year}&month=${current.month}&profileId=${fixture.profileId}`, {}, true);
