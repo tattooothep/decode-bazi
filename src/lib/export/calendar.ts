@@ -14,7 +14,7 @@ import { LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang";
 import { authCookie, callSifu } from "./shared";
 import type { PageHandler, ResolveOk, ResolveErr, GenerateResult } from "./types";
 
-export type CalendarCtx = { factBlock: string; monthLabel: string; yearPillar: string; monthPillar: string; cookie: string };
+export type CalendarCtx = { factBlock: string; monthLabel: string; yearPillar: string; monthPillar: string; mode: "tongshu" | "personal"; cookie: string };
 
 /* ── ปกหลายภาษา (9 ภาษา) ── */
 const COVER_I18N: Record<string, { kick: string; title: string; badge: string }> = {
@@ -43,10 +43,11 @@ type DaySnap = {
   stars_detail?: unknown; gods?: unknown;
 };
 
-function dayScore(d: DaySnap): number | null {
-  const v = asRecord(d.verdict);
-  if (v && typeof v.score === "number") return v.score;
+function dayScore(d: DaySnap, mode: "tongshu" | "personal"): number | null {
   const u = asRecord(d.universal_verdict);
+  if (mode === "tongshu" && u && typeof u.score === "number") return u.score;
+  const v = asRecord(d.verdict);
+  if (mode === "personal" && v && typeof v.score === "number") return v.score;
   if (u && typeof u.score === "number") return u.score;
   return null;
 }
@@ -60,17 +61,24 @@ function dateLabel(d: DaySnap, month: number, year: number): string {
   if (typeof d.date === "string" && d.date) return d.date;
   return `${year || "?"}-${String(month || 0).padStart(2, "0")}-${String(dayNum(d)).padStart(2, "0")}`;
 }
-function starsOf(d: DaySnap): { good: string[]; bad: string[] } {
+function starNames(value: unknown): string[] {
+  return asArray(value).map((item) => {
+    if (typeof item === "string") return item;
+    const row = asRecord(item);
+    return row ? String(row.key || row.han_trad || row.han || "") : "";
+  }).filter(Boolean);
+}
+function starsOf(d: DaySnap): { good: string[]; bad: string[]; unknown: string[] } {
   const sd = asRecord(d.stars_detail);
-  if (sd) return { good: asStrArray(sd.good), bad: asStrArray(sd.bad) };
+  if (sd) return { good: starNames(sd.good), bad: starNames(sd.bad), unknown: starNames(sd.unknown) };
   const g = asRecord(d.gods);
-  if (g) return { good: asStrArray(g.good), bad: asStrArray(g.bad) };
-  return { good: [], bad: [] };
+  if (g) return { good: starNames(g.good), bad: starNames(g.bad), unknown: starNames(g.unknown) };
+  return { good: [], bad: [], unknown: [] };
 }
 
 /** engine (ranking เท่านั้น ไม่คำนวณดวงใหม่) จัดอันดับวันมงคล/วันควรเลี่ยง top จาก verdict.score ที่คำนวณเสร็จแล้ว
  *  → คืน fact block (ข้อความล้วน ไม่มีตัวเลขคะแนนดิบ — ใช้ลำดับแทน ตาม NO_PERCENT) ให้ AI แค่เรียบเรียงภาษา */
-function factBlockFromCalendar(month: Record<string, unknown>, selectedDay: number | null): { factBlock: string; monthLabel: string; yearPillar: string; monthPillar: string } {
+function factBlockFromCalendar(month: Record<string, unknown>, selectedDay: number | null, mode: "tongshu" | "personal"): { factBlock: string; monthLabel: string; yearPillar: string; monthPillar: string } {
   const days = asArray(month.days) as DaySnap[];
   const y = typeof month.year === "number" ? month.year : Number(month.year) || 0;
   const m = typeof month.month === "number" ? month.month : Number(month.month) || 0;
@@ -82,12 +90,13 @@ function factBlockFromCalendar(month: Record<string, unknown>, selectedDay: numb
   const jieqiList = asArray(month.jieqi_list) as { name?: unknown; day?: unknown }[];
 
   const scored = days
-    .map((d) => ({ d, s: dayScore(d) }))
+    .map((d) => ({ d, s: dayScore(d, mode) }))
     .filter((x): x is { d: DaySnap; s: number } => x.s != null);
   const good = [...scored].sort((a, b) => b.s - a.s).slice(0, 5);
   const risky = [...scored].sort((a, b) => a.s - b.s).slice(0, 5);
 
   const L: string[] = [];
+  L.push(`โหมดคะแนนที่ผู้ใช้เลือก: ${mode === "tongshu" ? "ทั่วไป 黃曆 (universal)" : "ดวงส่วนบุคคล (personal)"}`);
   L.push(`เดือน/ปี: ${monthLabel} · เสาปี(年柱): ${yearPillar || "—"} · เสาเดือน(月柱): ${monthPillar || "—"}`);
   if (jieqiCurrent || jieqiNext) L.push(`節氣ในเดือน: ${jieqiCurrent || "—"} → ${jieqiNext || "—"}`);
   if (jieqiList.length) {
@@ -111,6 +120,7 @@ function factBlockFromCalendar(month: Record<string, unknown>, selectedDay: numb
     L.push(`宜(เหมาะทำ): ${asStrArray(sel.yi).join(" · ") || "—"}`);
     L.push(`忌(ห้ามทำ): ${asStrArray(sel.ji).join(" · ") || "—"}`);
     L.push(`神煞มงคล: ${st.good.join(" · ") || "—"} · 神煞อัปมงคล: ${st.bad.join(" · ") || "—"}`);
+    if (st.unknown.length) L.push(`神煞ที่ยังไม่จัดประเภท (neutral/unknown): ${st.unknown.join(" · ")}`);
   }
 
   return { factBlock: L.join("\n"), monthLabel, yearPillar, monthPillar };
@@ -151,13 +161,14 @@ export const calendarHandler: PageHandler<CalendarCtx> = {
 
     const selectedRaw = cal?.selected;
     const selectedDay = typeof selectedRaw === "number" && Number.isFinite(selectedRaw) ? selectedRaw : null;
+    const mode = cal?.mode === "tongshu" ? "tongshu" : "personal";
 
-    const { factBlock, monthLabel, yearPillar, monthPillar } = factBlockFromCalendar(month, selectedDay);
+    const { factBlock, monthLabel, yearPillar, monthPillar } = factBlockFromCalendar(month, selectedDay, mode);
 
     // dataHash ผูกกับเนื้อเดือน+วันที่เลือกเท่านั้น (route.ts คำนวณ cache key ร่วมกับคอลัมน์ page/lang อยู่แล้ว → ไม่ต้องผสมซ้ำ)
-    const dataHash = createHash("sha256").update(JSON.stringify({ month, selectedDay })).digest("hex");
+    const dataHash = createHash("sha256").update(JSON.stringify({ month, selectedDay, mode, goal: cal?.goal, intent: cal?.intent })).digest("hex");
     const cookie = await authCookie(session);
-    return { dataHash, ctx: { factBlock, monthLabel, yearPillar, monthPillar, cookie } };
+    return { dataHash, ctx: { factBlock, monthLabel, yearPillar, monthPillar, mode, cookie } };
   },
 
   async generate(ctx: CalendarCtx, lang: string): Promise<GenerateResult> {

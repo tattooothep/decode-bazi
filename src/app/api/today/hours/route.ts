@@ -1,16 +1,17 @@
 /**
  * POST /api/today/hours
  *
- * รับ: { date: 'YYYY-MM-DD', userChart?: { day:{stem,branch}, ... } }
+ * รับ: { date: 'YYYY-MM-DD', profileId?: string }
  * คืน: { hours: [{label, branch, range, element, quality, isNow}] }
  *
- * 12 ชั่วยาม + quality score เทียบ DM (ถ้ามี userChart)
+ * 12 ชั่วยาม + quality score เทียบ DM จาก profile ที่ตรวจ ownership แล้ว
  */
 import { NextResponse } from "next/server";
 import { buildLiuShi, type ElementEN } from "@/lib/bazi-liushi";
 import { entitlementDenied } from "@/lib/product-entitlement";
 import { withinDayWindow } from "@/lib/product-date-gate";
 import { currentRequestProductAccess, nextRequiredPlan } from "@/lib/product-request-access";
+import { loadCalendarProfileContext } from "@/lib/calendar-profile-context";
 
 const BRANCH_ELEMENT: Record<string, "wood"|"fire"|"earth"|"metal"|"water"> = {
   子:"water", 丑:"earth", 寅:"wood", 卯:"wood", 辰:"earth", 巳:"fire",
@@ -153,22 +154,41 @@ async function _calcYongshenFromBirth(birthDate?: string, birthTime?: string, bi
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const date: string = body.date || new Date().toISOString().slice(0, 10);
-  const userChart = body.userChart;
+  const product = await currentRequestProductAccess(req);
+  const requestedProfileId = String(body.profileId || "").replace(/^p_/, "").trim();
+  if (requestedProfileId && (!product.session?.userId || !product.session?.orgId)) {
+    return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  }
+  const profileContext = requestedProfileId && product.session?.userId && product.session?.orgId
+    ? await loadCalendarProfileContext({
+        userId: product.session.userId,
+        orgId: product.session.orgId,
+        profileId: requestedProfileId,
+      })
+    : null;
+  if (requestedProfileId && !profileContext) {
+    return NextResponse.json({ error: "profile not found" }, { status: 404 });
+  }
+  // Personal timing inputs must come from the owned server profile only.
+  const userChart = profileContext?.pillars || null;
   const dmStem: string | undefined = userChart?.day?.stem;
   const dmEl = dmStem ? STEM_ELEMENT[dmStem] : "";
   const userBranch: string | undefined = userChart?.day?.branch;
   /* 18 พ.ค. · รับ yongshen/jishen หรือคำนวณภายในจาก birth · อาเจ๊กฮ้งสอน */
-  let yongshen: string[] = Array.isArray(body.yongshen) ? body.yongshen : [];
-  let jishen:   string[] = Array.isArray(body.jishen)   ? body.jishen   : [];
-  let dominantJishen: string | null = typeof body.dominantJishen === 'string' ? body.dominantJishen : null;
-  if (!yongshen.length && body.birthDate) {
-    const r = await _calcYongshenFromBirth(body.birthDate, body.birthTime, body.birthLng, body.birthTimeKnown !== false);
+  let yongshen: string[] = [];
+  let jishen:   string[] = [];
+  let dominantJishen: string | null = null;
+  const trustedBirthDate = profileContext?.birthDate || undefined;
+  const trustedBirthTime = profileContext?.birthTime || undefined;
+  const trustedBirthLng = profileContext?.birthLng ?? undefined;
+  const trustedBirthTimeKnown = profileContext?.birthTimeKnown ?? false;
+  if (!yongshen.length && trustedBirthDate) {
+    const r = await _calcYongshenFromBirth(trustedBirthDate, trustedBirthTime, trustedBirthLng, trustedBirthTimeKnown);
     yongshen = r.yongshen; jishen = r.jishen; dominantJishen = r.dominantJishen;
   }
 
   const [yy, mm, dd] = date.split("-").map(Number);
   if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400 });
-  const product = await currentRequestProductAccess(req);
   const todayCaps = product.pages.today;
   if (!withinDayWindow(date, todayCaps.day_window)) {
     return NextResponse.json(
@@ -195,7 +215,7 @@ export async function POST(req: Request) {
   const localDateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const isToday = localDateStr === date;
   /* 18 พ.ค. · A · ใช้ TST · ใกล้ขอบเปลี่ยนชั่วยามแม่นกว่า · longitude จาก birthLng ถ้ามี */
-  const nowLng = typeof body.birthLng === 'number' ? body.birthLng : 100.5018;
+  const nowLng = typeof trustedBirthLng === 'number' ? trustedBirthLng : 100.5018;
   const nowBranch = isToday ? await currentHourBranchTST(now, nowLng) : "";
 
   const QUAL_TH: Record<string, string> = { best:"ดีมาก", good:"ดี", ok:"กลาง", bad:"ห้าม" };
@@ -415,6 +435,13 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     date,
+    profile_context: profileContext ? {
+      profileId: profileContext.profileId,
+      userId: profileContext.userId,
+      isSelf: profileContext.isSelf,
+      source: profileContext.source,
+      birthTimeKnown: profileContext.birthTimeKnown,
+    } : null,
     day_pillar: dayStem + dayBranch,
     day_branch: dayBranch,
     clash_branch: dayBranch ? BRANCH_CLASH[dayBranch] : null,

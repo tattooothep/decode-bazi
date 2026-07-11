@@ -27,6 +27,7 @@ export async function currentDateWindow(page: "today" | "calendar", req?: Reques
   return {
     plan,
     userId: session?.userId || null,
+    orgId: session?.orgId || null,
     max: page === "today" ? pages.today.day_window : pages.calendar.month_window,
     caps: page === "today" ? pages.today : pages.calendar,
   };

@@ -307,6 +307,18 @@
 
   /* directions · 19 พ.ค. Phase 13 · ranked card stack (no 3×3 compass · เจ้านายขอลบ 20 พ.ค.) */
   .dirs-wrap{display:flex;flex-direction:column;gap:12px;font-family:var(--thai);}
+  .cal-dir-controls{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:8px;align-items:end;margin:8px 0 12px;}
+  .cal-dir-field{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .cal-dir-field label{font-size:9px;color:var(--fg-faint);font-family:var(--mono);text-transform:uppercase;}
+  .cal-dir-field input{height:34px;border:1px solid var(--tile-bd);border-radius:6px;background:var(--tile);color:var(--fg);padding:0 9px;font:12px var(--mono);}
+  .cal-loc-btn{height:34px;border:1px solid var(--gold-line);border-radius:6px;background:var(--gold-soft);color:var(--gold);padding:0 11px;cursor:pointer;font-size:12px;white-space:nowrap;}
+  .cal-dir-place{grid-column:1/-1;font-size:10px;color:var(--fg-soft);min-height:15px;}
+  .cal-dir-layer{padding-top:4px;border-top:1px solid var(--tile-bd);}
+  .cal-dir-layer:first-of-type{border-top:0;}
+  .cal-energy-row{display:grid;grid-template-columns:52px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--tile-bd);font-size:11px;}
+  .cal-energy-row:last-child{border-bottom:0;}
+  .cal-energy-score{font-family:var(--mono);font-weight:700;color:var(--gold);}
+  @media(max-width:520px){.cal-dir-controls{grid-template-columns:1fr auto;}.cal-loc-btn{max-width:150px;overflow:hidden;text-overflow:ellipsis;}}
   .dirs-empty{text-align:center;padding:18px;color:var(--fg-soft);font-size:12px;font-family:var(--thai);}
   /* ranked cards */
   .dir-rank-section{display:flex;flex-direction:column;gap:8px;}
@@ -515,22 +527,10 @@
   const HOUR_LABEL = ['23-1','1-3','3-5','5-7','7-9','9-11','11-13','13-15','15-17','17-19','19-21','21-23'];
   const MONTH_TH = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
-  /* ─── ดวงผู้ใช้ · จาก hk_birth localStorage หรือ /api/profile ─── */
-  function getSelfDM(){
-    try {
-      const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
-      /* ถ้ามี pillars เก็บไว้ใน profile cache ใช้ได้ทันที; ถ้าไม่มีให้ /api/calendar resolve จาก birth params */
-    } catch(_){}
-    return null;
-  }
-  function calendarHasBirthParams(){
-    try {
-      const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
-      return !!(b && b.date);
-    } catch(_) {
-      return false;
-    }
-  }
+  /* Personal identity is selected here, but all birth data is loaded again
+   * and ownership-checked by /api/calendar. Browser storage is not a source. */
+  let CAL_PROFILE_ID = '';
+  let CAL_PROFILE_SNAPSHOT = null;
   function applySelfDay(day, requireBranch){
     if (!day || !day.stem) return null;
     if (requireBranch && !day.branch) return null;
@@ -539,8 +539,10 @@
   }
   function selfDayFromProfile(p){
     if (!p) return null;
-    const raw = p.bazi_pillars || {};
+    const raw = p.bazi_pillars || p.pillars || {};
     const bp = raw.pillars || raw;
+    CAL_PROFILE_ID = String(p.profileId || p.id || '').replace(/^p_/, '');
+    CAL_PROFILE_SNAPSHOT = p;
     if (bp.year && bp.year.branch) SELF_YEAR_BRANCH = bp.year.branch;
     return applySelfDay({
       stem: p.day_master || bp.day?.stem || '',
@@ -548,7 +550,7 @@
     }, false);
   }
   async function resolveSelfDM(){
-    /* viewAs เฉพาะตอนมี ?as= ตรงกัน → hk_birth → /api/profile · เก็บทั้ง stem + branch */
+    /* view-as and owner both resolve through ownership-checked profile APIs. */
     try {
       const asId = new URLSearchParams(location.search).get('as');
       if (!asId) sessionStorage.removeItem('hk_view_as');
@@ -557,11 +559,15 @@
         if (vr.ok) {
           const vj = await vr.json();
           const va = vj && vj.snapshot;
-          if (va && va.pillars && va.pillars.day && va.pillars.day.stem) {
+          const raw = va && va.pillars || {};
+          const vp = raw.pillars || raw;
+          if (va && vp.day && vp.day.stem) {
             sessionStorage.setItem('hk_view_as', JSON.stringify(va));
-            SELF_BRANCH = va.pillars.day.branch || '';
-            SELF_YEAR_BRANCH = (va.pillars.year && va.pillars.year.branch) || '';
-            return va.pillars.day.stem;
+            CAL_PROFILE_ID = String(va.profileId || va.id || asId).replace(/^p_/, '');
+            CAL_PROFILE_SNAPSHOT = va;
+            SELF_BRANCH = vp.day.branch || '';
+            SELF_YEAR_BRANCH = (vp.year && vp.year.branch) || '';
+            return vp.day.stem;
           }
         }
         sessionStorage.removeItem('hk_view_as');
@@ -594,41 +600,7 @@
   let SELF_YEAR_BRANCH = ''; /* 10 ก.ค. · กิ่งปีเกิด (นักษัตร) · ชิพชง/สมพงษ์โหมดอ่านง่าย · ว่าง=โชว์แบบสากล */
   /* cache · hour grid + directions ต่อวัน · lazy fetch ตอนคลิก */
   const DAY_DETAILS = {}; /* key = "YYYY-MM-DD" → { hours, directions } */
-
-  /* mock 31 days for May 2026 (kept for fallback only) */
-  const MAY_2026 = Array.from({length:31}, (_,i)=>{
-    const d = i+1;
-    // pillar generation - pseudo (real should use solar calendar)
-    const stems = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
-    const branches = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-    const offset = 19; // arbitrary anchor
-    const stem = stems[(d+offset)%10];
-    const branch = branches[(d+offset)%12];
-    // verdict score - deterministic mock based on stem-DM relation
-    const stemElem = STEM_ELEM[stem];
-    const branchElem = BRANCH_ELEM[branch];
-    const helpsDM = (stemElem==='fire' || stemElem==='earth') ? 1 : -1;
-    const helpsB = (branchElem==='fire' || branchElem==='wood') ? 1 : -1;
-    let score = 25*helpsDM + 25*helpsB + ((d*7) % 30 - 15);
-    score = Math.max(-95, Math.min(95, score));
-
-    // lunar date approx
-    const lunarDays = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
-    const lunar = lunarDays[(d+5)%30];
-
-    return {
-      day:d, stem, branch, stemElem, branchElem, score, lunar,
-      goals: {
-        wealth: score + (stemElem==='metal'?20:0) + (branchElem==='metal'||branchElem==='earth'?15:-5),
-        career: score + (stemElem==='fire'?15:0) + (branchElem==='wood'||branchElem==='fire'?10:0),
-        love:   score + (branchElem==='water'?10:-5) + ((d*3)%20-10),
-        family: score + (branchElem==='earth'?15:0),
-        health: score + (stemElem==='water'?-15:5),
-        travel: score + (branchElem==='wood'||branchElem==='fire'?10:-10)
-      },
-      isToday: d===7 // demo: today
-    };
-  });
+  const CAL_DIRECTION_PREF = { time:'', latitude:13.7563, longitude:100.5018, place:'Bangkok', locationExplicit:false };
 
   let state = {
     selected: 7,
@@ -640,37 +612,41 @@
 
   /* 19 พ.ค. spec #2 · 15 หมวด tongshu (mirror src/lib/tongshu-intents.ts) */
   const INTENTS_CAL = [
-    { id:'start_work',    group:'work',   icon:'🎯', th:'เริ่มงานใหม่', en:'Start work', zh:'就職', vi:'Nhậm chức', ja:'就職', ko:'취업', ru:'Начать работу', es:'Empezar' },
-    { id:'sign_contract', group:'work',   icon:'📝', th:'เซ็นสัญญา', en:'Sign contract', zh:'立券', vi:'Ký hợp đồng', ja:'契約', ko:'계약', ru:'Договор', es:'Contrato' },
-    { id:'open_business', group:'work',   icon:'🏪', th:'เปิดกิจการ', en:'Open business', zh:'開市', vi:'Khai trương', ja:'開業', ko:'개업', ru:'Открыть дело', es:'Abrir negocio' },
+    { id:'start_work',    group:'work',   icon:'🎯', th:'เริ่มงานใหม่', en:'Start work', zh:'就職', cn:'就职', vi:'Nhậm chức', ja:'就職', ko:'취업', ru:'Начать работу', es:'Empezar' },
+    { id:'sign_contract', group:'work',   icon:'📝', th:'เซ็นสัญญา', en:'Sign contract', zh:'立券', cn:'立券', vi:'Ký hợp đồng', ja:'契約', ko:'계약', ru:'Договор', es:'Contrato' },
+    { id:'open_business', group:'work',   icon:'🏪', th:'เปิดกิจการ', en:'Open business', zh:'開市', cn:'开市', vi:'Khai trương', ja:'開業', ko:'개업', ru:'Открыть дело', es:'Abrir negocio' },
     { id:'negotiate',     group:'work',   icon:'🤝', th:'เจรจาธุรกิจ', en:'Negotiate', zh:'交易', vi:'Đàm phán', ja:'交渉', ko:'협상', ru:'Переговоры', es:'Negociar' },
-    { id:'invest',        group:'wealth', icon:'💵', th:'รับทรัพย์/ลงทุน', en:'Wealth/Invest', zh:'納財', vi:'Đầu tư', ja:'投資', ko:'투자', ru:'Инвестиции', es:'Invertir' },
+    { id:'invest',        group:'wealth', icon:'💵', th:'รับทรัพย์/ลงทุน', en:'Wealth/Invest', zh:'納財', cn:'纳财', vi:'Đầu tư', ja:'投資', ko:'투자', ru:'Инвестиции', es:'Invertir' },
     { id:'loan',          group:'wealth', icon:'🏦', th:'กู้ยืม/ธุรกรรม', en:'Loan', zh:'立卷', vi:'Vay mượn', ja:'融資', ko:'대출', ru:'Заём', es:'Préstamo' },
     { id:'marriage',      group:'love',   icon:'💒', th:'แต่งงาน', en:'Marriage', zh:'嫁娶', vi:'Kết hôn', ja:'結婚', ko:'결혼', ru:'Брак', es:'Casarse' },
-    { id:'engagement',    group:'love',   icon:'💍', th:'หมั้น/สู่ขอ', en:'Engagement', zh:'納采', vi:'Đính hôn', ja:'婚約', ko:'약혼', ru:'Помолвка', es:'Compromiso' },
-    { id:'gathering',     group:'love',   icon:'🎉', th:'พบผู้ใหญ่/งานเลี้ยง', en:'Gathering', zh:'會親友', vi:'Gặp gỡ', ja:'会合', ko:'모임', ru:'Встреча', es:'Reunión' },
+    { id:'engagement',    group:'love',   icon:'💍', th:'หมั้น/สู่ขอ', en:'Engagement', zh:'納采', cn:'纳采', vi:'Đính hôn', ja:'婚約', ko:'약혼', ru:'Помолвка', es:'Compromiso' },
+    { id:'gathering',     group:'love',   icon:'🎉', th:'พบผู้ใหญ่/งานเลี้ยง', en:'Gathering', zh:'會親友', cn:'会亲友', vi:'Gặp gỡ', ja:'会合', ko:'모임', ru:'Встреча', es:'Reunión' },
     { id:'move_house',    group:'home',   icon:'🏠', th:'ขึ้นบ้าน/ย้ายบ้าน', en:'Move house', zh:'入宅', vi:'Dọn nhà', ja:'引越し', ko:'이사', ru:'Переезд', es:'Mudanza' },
-    { id:'construct',     group:'home',   icon:'🧱', th:'ก่อสร้าง/ลงเสา', en:'Construction', zh:'動土', vi:'Khởi công', ja:'着工', ko:'착공', ru:'Стройка', es:'Construir' },
+    { id:'construct',     group:'home',   icon:'🧱', th:'ก่อสร้าง/ลงเสา', en:'Construction', zh:'動土', cn:'动土', vi:'Khởi công', ja:'着工', ko:'착공', ru:'Стройка', es:'Construir' },
     { id:'renovate',      group:'home',   icon:'🔧', th:'ซ่อมแซม/ตกแต่ง', en:'Renovate', zh:'修造', vi:'Sửa chữa', ja:'改修', ko:'수리', ru:'Ремонт', es:'Renovar' },
     { id:'install_bed',   group:'home',   icon:'🛏️', th:'ตั้งเตียง', en:'Install bed', zh:'安床', vi:'Kê giường', ja:'安床', ko:'침대 설치', ru:'Установка кровати', es:'Instalar cama' },
     { id:'travel',        group:'travel', icon:'🚗', th:'เดินทาง/ออกรถ', en:'Travel', zh:'出行', vi:'Đi xa', ja:'外出', ko:'여행', ru:'Поездка', es:'Viajar' },
     { id:'pray_heal',     group:'travel', icon:'🙏', th:'ไหว้พระ/หาหมอ/เคลียร์', en:'Pray/Heal', zh:'祈福', vi:'Cầu phúc', ja:'祈願', ko:'기도', ru:'Молитва', es:'Orar' },
+    { id:'medical',       group:'travel', icon:'🩺', th:'รักษา/พบแพทย์/พักฟื้น', en:'Medical/Recover', zh:'療病', cn:'疗病', vi:'Điều trị/Phục hồi', ja:'治療・回復', ko:'치료·회복', ru:'Лечение/Восстановление', es:'Tratamiento/Recuperación' },
   ];
   const INTENT_GROUP_LABELS = {
-    work:   { th:'💼 งาน · อาชีพ', en:'💼 Work · Career', zh:'💼 事業' },
-    wealth: { th:'💰 ทรัพย์ · เงิน', en:'💰 Wealth', zh:'💰 財運' },
-    love:   { th:'❤️ ความรัก · ครอบครัว', en:'❤️ Love · Family', zh:'❤️ 婚戀' },
-    home:   { th:'🏠 บ้าน · ทรัพย์สิน', en:'🏠 Home · Property', zh:'🏠 居家' },
-    travel: { th:'🚗 เดินทาง · สุขภาพ', en:'🚗 Travel · Health', zh:'🚗 出行' },
+    work:   { th:'💼 งาน · อาชีพ', en:'💼 Work · Career', zh:'💼 事業', cn:'💼 事业', vi:'💼 Công việc', ja:'💼 仕事', ko:'💼 일', ru:'💼 Работа', es:'💼 Trabajo' },
+    wealth: { th:'💰 ทรัพย์ · เงิน', en:'💰 Wealth', zh:'💰 財運', cn:'💰 财运', vi:'💰 Tài lộc', ja:'💰 財運', ko:'💰 재물', ru:'💰 Богатство', es:'💰 Riqueza' },
+    love:   { th:'❤️ ความรัก · ครอบครัว', en:'❤️ Love · Family', zh:'❤️ 婚戀', cn:'❤️ 婚恋', vi:'❤️ Tình yêu', ja:'❤️ 恋愛', ko:'❤️ 사랑', ru:'❤️ Любовь', es:'❤️ Amor' },
+    home:   { th:'🏠 บ้าน · ทรัพย์สิน', en:'🏠 Home · Property', zh:'🏠 居家', cn:'🏠 居家', vi:'🏠 Nhà cửa', ja:'🏠 住居', ko:'🏠 주거', ru:'🏠 Дом', es:'🏠 Hogar' },
+    travel: { th:'🚗 เดินทาง · สุขภาพ', en:'🚗 Travel · Health', zh:'🚗 出行', cn:'🚗 出行', vi:'🚗 Đi xa · Sức khỏe', ja:'🚗 旅行・健康', ko:'🚗 여행·건강', ru:'🚗 Поездки · Здоровье', es:'🚗 Viajes · Salud' },
   };
 
-  function _curLang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
+  function _curLang(){
+    const raw = String(getRawLang() || 'th').toLowerCase();
+    if (raw === 'zh' && document.documentElement.getAttribute('data-zh-variant') === 'cn') return 'cn';
+    return ['th','en','zh','cn','vi','ja','ko','ru','es'].includes(raw) ? raw : 'en';
+  }
   function _calLang(raw){
     raw = String(raw || _curLang() || 'th').toLowerCase();
+    if (raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans') return 'cn';
     if (raw.indexOf('zh') === 0) return 'zh';
-    if (raw === 'th') return 'th';
-    /* vi/ja/ko/ru/es and any other unsupported locale → English fallback (never Thai) */
-    return raw === 'en' ? 'en' : 'en';
+    return ['th','en','vi','ja','ko','ru','es'].includes(raw) ? raw : 'en';
   }
   function _calHasThai(v){ return /[\u0E00-\u0E7F]/.test(String(v || '')); }
   function _calNoThai(v, lang, fallback){
@@ -682,22 +658,56 @@
     lang = _calLang(lang);
     const id = item && item.id;
     const row = INTENTS_CAL.find(i => i.id === id);
-    const val = row ? (row[raw] || row[lang] || row.en || row.zh || row.th || id) : (item && item.label) || id || '';
+    const val = row ? (row[raw] || row[lang] || (lang === 'cn' ? row.zh : '') || row.en || row.zh || row.th || id) : (item && item.label) || id || '';
     return _calNoThai(val, lang, id || '');
+  }
+  function _calIntentStatusForMode(d){
+    return state.overlay === 'tongshu' ? (d.universal_intent_status || {}) : (d.intentStatus || {});
+  }
+  function _calTopForMode(d){
+    return state.overlay === 'tongshu' ? (d.universal_top_intents || []) : (d.topIntents || []);
+  }
+  function _calWorstForMode(d){
+    return state.overlay === 'tongshu' ? (d.universal_worst_intents || []) : (d.worstIntents || []);
+  }
+  function _calIntentScoreForMode(d, id){
+    const scores = d.intent_scores || {};
+    const layer = state.overlay === 'tongshu' ? scores.universal : scores.personal;
+    return layer && layer[id] ? Number(layer[id].score) : null;
   }
   /* 神煞 star severity words per raw locale (star data only ships th/en/zh) */
   const _STAR_SEV = {
-    vi:{ virtue:'đức', major:'mạnh', medium:'vừa', minor:'nhẹ', good:'cát', bad:'hung' },
-    ja:{ virtue:'徳', major:'大', medium:'中', minor:'小', good:'吉', bad:'凶' },
-    ko:{ virtue:'덕', major:'강', medium:'중', minor:'약', good:'길', bad:'흉' },
-    ru:{ virtue:'добродетель', major:'сильный', medium:'средний', minor:'слабый', good:'благо', bad:'зло' },
-    es:{ virtue:'virtud', major:'fuerte', medium:'medio', minor:'leve', good:'favorable', bad:'adverso' },
+    en:{virtue:'virtue',major:'major',medium:'moderate',minor:'minor',fatal:'critical',conditional:'conditional'},
+    zh:{virtue:'德曜',major:'重大',medium:'中等',minor:'輕微',fatal:'嚴重',conditional:'有條件'},
+    cn:{virtue:'德曜',major:'重大',medium:'中等',minor:'轻微',fatal:'严重',conditional:'有条件'},
+    vi:{virtue:'đức tinh',major:'mạnh',medium:'vừa',minor:'nhẹ',fatal:'nghiêm trọng',conditional:'có điều kiện'},
+    ja:{virtue:'徳星',major:'重大',medium:'中程度',minor:'軽微',fatal:'重大注意',conditional:'条件付き'},
+    ko:{virtue:'덕성',major:'강함',medium:'중간',minor:'약함',fatal:'중대',conditional:'조건부'},
+    ru:{virtue:'добродетель',major:'сильное',medium:'среднее',minor:'слабое',fatal:'критическое',conditional:'условное'},
+    es:{virtue:'virtud',major:'fuerte',medium:'moderado',minor:'leve',fatal:'crítico',conditional:'condicional'},
+  };
+  const _STAR_SYSTEM = {
+    en:{huangdao:'Yellow Path',jianchu:'Twelve Officers',ri_jia:'daily spirits',personal:'personal'},
+    zh:{huangdao:'黃道',jianchu:'建除十二神',ri_jia:'日家神煞',personal:'命盤'},
+    cn:{huangdao:'黄道',jianchu:'建除十二神',ri_jia:'日家神煞',personal:'命盘'},
+    vi:{huangdao:'Hoàng Đạo',jianchu:'Thập Nhị Trực',ri_jia:'thần sát ngày',personal:'cá nhân'},
+    ja:{huangdao:'黄道',jianchu:'建除十二神',ri_jia:'日家神煞',personal:'個人命式'},
+    ko:{huangdao:'황도',jianchu:'건제십이신',ri_jia:'일가 신살',personal:'개인 명식'},
+    ru:{huangdao:'Жёлтый путь',jianchu:'Двенадцать управителей',ri_jia:'духи дня',personal:'личная карта'},
+    es:{huangdao:'Camino Amarillo',jianchu:'Doce Oficiales',ri_jia:'espíritus diarios',personal:'carta personal'},
+  };
+  const _STAR_NATURE = {
+    en:{good:'favorable influence',bad:'adverse influence'},zh:{good:'吉曜',bad:'凶曜'},cn:{good:'吉曜',bad:'凶曜'},
+    vi:{good:'khí cát',bad:'khí hung'},ja:{good:'吉の作用',bad:'凶の作用'},ko:{good:'길한 작용',bad:'흉한 작용'},
+    ru:{good:'благоприятное влияние',bad:'неблагоприятное влияние'},es:{good:'influencia favorable',bad:'influencia adversa'}
   };
   function _calStarName(s, lang){
     const raw = String(lang || _curLang() || 'th').toLowerCase();
     lang = _calLang(lang);
+    if (typeof s === 'string') return lang==='cn' ? _calToHans(s) : s;
     if (lang === 'th') return s.name_th || s.han_trad || s.han || s.key || '';
     if (lang === 'zh') return s.name_zh || s.han_trad || s.han || s.key || '';
+    if (lang === 'cn') return s.name_cn || s.han || s.han_trad || s.key || '';
     if (raw === 'en') return s.name_en || s.en || s.han_trad || s.han || s.key || '';
     /* vi/ja/ko/ru/es: prefer the Chinese 神煞 glyph (exempt · avoids echoing the EN name) */
     return s.han_trad || s.han || s.name_zh || s.key || s.name_en || '';
@@ -706,27 +716,33 @@
     const raw = String(lang || _curLang() || 'th').toLowerCase();
     lang = _calLang(lang);
     if (lang === 'th') return s.desc_th || '';
-    if (lang === 'zh') return s.desc_zh || s.system || '';
-    if (raw === 'en') return s.desc_en || [s.system, s.severity].filter(Boolean).join(' · ');
-    /* vi/ja/ko/ru/es: keep system code but translate severity so the line differs from EN */
+    if (lang === 'zh' && s.desc_zh) return s.desc_zh;
+    if (lang === 'cn' && s.desc_cn) return s.desc_cn;
+    if (raw === 'en' && s.desc_en) return s.desc_en;
     const localDesc = s['desc_' + raw];
     if (localDesc) return localDesc;
-    const sevMap = _STAR_SEV[raw] || {};
+    const sevMap = _STAR_SEV[lang] || _STAR_SEV.en;
+    const sysMap = _STAR_SYSTEM[lang] || _STAR_SYSTEM.en;
+    const natureMap = _STAR_NATURE[lang] || _STAR_NATURE.en;
     const sev = s.severity ? (sevMap[s.severity] || s.severity) : '';
-    return [s.system, sev].filter(Boolean).join(' · ');
+    const nature = s._nature === 'bad' ? natureMap.bad : s._nature === 'good' ? natureMap.good : Number(s.weight || 0) >= 0 ? natureMap.good : natureMap.bad;
+    return [sysMap[s.system] || s.system, nature, sev].filter(Boolean).join(' · ');
   }
 
   function renderIntentDropdown(){
     const menu = document.getElementById('intent-dd-menu');
     if (!menu) return;
     const lang = _curLang();
-    const labels = { th:{all:'ทั้งหมด · ทุกหมวด'}, en:{all:'All categories'}, zh:{all:'全部'} }[lang];
+    const labels = {
+      th:{all:'ทั้งหมด · ทุกหมวด'},en:{all:'All categories'},zh:{all:'全部類別'},cn:{all:'全部类别'},
+      vi:{all:'Tất cả danh mục'},ja:{all:'すべての分類'},ko:{all:'모든 분류'},ru:{all:'Все категории'},es:{all:'Todas las categorías'}
+    }[lang];
     let html = `<div class="opt all ${state.intent === null ? 'on' : ''}" data-intent=""><span class="ico">📋</span><span>${labels.all}</span></div>`;
     ['work','wealth','love','home','travel'].forEach(grp => {
       html += `<div class="grp">${INTENT_GROUP_LABELS[grp][lang]}</div>`;
       const allowed = new Set((MONTH_DATA.entitlement && MONTH_DATA.entitlement.allowed_intents) || INTENTS_CAL.map(x=>x.id));
       INTENTS_CAL.filter(i => i.group === grp).forEach(i => {
-        const label = i[lang] || i.th;
+        const label = _calIntentName(i, lang);
         const locked = !allowed.has(i.id);
         html += `<div class="opt ${state.intent === i.id ? 'on' : ''} ${locked ? 'cal-ent-locked' : ''}" data-intent="${i.id}" ${locked ? 'data-ent-locked="1"' : ''}><span class="ico">${i.icon}</span><span>${label}</span></div>`;
       });
@@ -740,18 +756,21 @@
     if (!btn || !lbl) return;
     const lang = _curLang();
     if (!state.intent) {
-      lbl.textContent = { th:'ทั้งหมด', en:'All', zh:'全部' }[lang];
+      lbl.textContent = {th:'ทั้งหมด',en:'All',zh:'全部',cn:'全部',vi:'Tất cả',ja:'すべて',ko:'전체',ru:'Все',es:'Todo'}[lang];
       btn.classList.remove('on');
       if (status) status.hidden = true;
     } else {
       const sel = INTENTS_CAL.find(i => i.id === state.intent);
       if (sel) {
-        lbl.textContent = `${sel.icon} ${sel[lang] || sel.th}`;
+        lbl.textContent = `${sel.icon} ${_calIntentName(sel, lang)}`;
         btn.classList.add('on');
         if (status) {
-          const days = (window._calDays || []).filter(d => d.intentStatus && d.intentStatus[state.intent] === 'good');
+          const days = (window._calDays || []).filter(d => _calIntentStatusForMode(d)[state.intent] === 'good');
           const count = days.length;
-          status.textContent = { th:`พบ ${count} วันเหมาะ`, en:`${count} good days`, zh:`${count}天適宜` }[lang];
+          status.textContent = {
+            th:`พบ ${count} วันเหมาะ`,en:`${count} good days`,zh:`找到 ${count} 個宜日`,cn:`找到 ${count} 个宜日`,
+            vi:`Có ${count} ngày phù hợp`,ja:`適した日 ${count}日`,ko:`적합한 날 ${count}일`,ru:`Подходящих дней: ${count}`,es:`${count} días favorables`
+          }[lang];
           status.hidden = false;
         }
       }
@@ -766,8 +785,8 @@
     const sel = INTENTS_CAL.find(i => i.id === state.intent);
     if (!sel) { box.hidden = true; return; }
     /* คัด good days · sort by score desc · top 3 */
-    const goodDays = (days||[]).filter(d => d.intentStatus && d.intentStatus[state.intent] === 'good' && d.verdict);
-    goodDays.sort((a,b) => (b.verdict?.score||0) - (a.verdict?.score||0));
+    const goodDays = (days||[]).filter(d => _calIntentStatusForMode(d)[state.intent] === 'good' && _calIntentScoreForMode(d, state.intent) != null);
+    goodDays.sort((a,b) => (_calIntentScoreForMode(b, state.intent)||0) - (_calIntentScoreForMode(a, state.intent)||0));
     const rankLimit = Math.max(1, Number(MONTH_DATA.entitlement?.ranked_days || 3));
     const top = goodDays.slice(0, rankLimit);
     const MEDALS = ['🥇','🥈','🥉'];
@@ -775,6 +794,12 @@
       th: { head: `🔍 ดู ${sel.icon} ${sel.th}`, found: 'พบ', days: 'วันเหมาะ', best:'ดีสุด', score:'คะแนน', empty:'ไม่พบวันเหมาะในเดือนนี้' },
       en: { head: `🔍 View ${sel.icon} ${sel.en}`, found: 'Found', days: 'good days', best:'best', score:'score', empty:'No good days this month' },
       zh: { head: `🔍 查 ${sel.icon} ${sel.zh}`, found: '找到', days: '宜日', best:'最佳', score:'分', empty:'本月無宜日' },
+      cn: { head: `🔍 查 ${sel.icon} ${sel.cn || sel.zh}`, found: '找到', days: '宜日', best:'最佳', score:'分', empty:'本月无宜日' },
+      vi: { head: `🔍 Xem ${sel.icon} ${sel.vi}`, found: 'Có', days: 'ngày phù hợp', best:'tốt nhất', score:'điểm', empty:'Tháng này không có ngày phù hợp' },
+      ja: { head: `🔍 ${sel.icon} ${sel.ja}`, found: '該当', days: '吉日', best:'最良', score:'点', empty:'今月は適した日がありません' },
+      ko: { head: `🔍 ${sel.icon} ${sel.ko}`, found: '총', days: '길일', best:'최적', score:'점', empty:'이번 달에 적합한 날이 없습니다' },
+      ru: { head: `🔍 ${sel.icon} ${sel.ru}`, found: 'Найдено', days: 'подходящих дней', best:'лучший', score:'балл', empty:'В этом месяце подходящих дней нет' },
+      es: { head: `🔍 ${sel.icon} ${sel.es}`, found: 'Hay', days: 'días favorables', best:'mejor', score:'puntos', empty:'No hay días favorables este mes' },
     }[lang] || {};
     if (!top.length) {
       box.innerHTML = `<div class="rc-head"><span>${LBL.head}</span><span>${LBL.found} 0 ${LBL.days}</span></div><div class="rc-empty">${LBL.empty}</div>`;
@@ -785,11 +810,13 @@
     const DOW_TH_SHORT = ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
     const itemsHtml = top.map((d, idx) => {
       const dt = new Date(MONTH_DATA.year, MONTH_DATA.month-1, d.day);
-      const dow = lang==='th' ? DOW_TH_SHORT[dt.getDay()] : (lang==='zh' ? ['日','一','二','三','四','五','六'][dt.getDay()] : dt.toLocaleDateString('en',{weekday:'short'}));
+      const dow = lang==='th' ? DOW_TH_SHORT[dt.getDay()] : ((lang==='zh'||lang==='cn') ? ['日','一','二','三','四','五','六'][dt.getDay()] : dt.toLocaleDateString(_bcp47(lang),{weekday:'short'}));
       const month = lang==='th' ? MONTH_TH_SHORT[MONTH_DATA.month] : '';
-      const dateLbl = lang==='th' ? `${d.day} ${month} ${dow}` : (lang==='zh' ? `${MONTH_DATA.month}月${d.day}日 ${dow}` : `${month} ${d.day} ${dow}`);
-      const score = d.verdict?.score || 50;
-      const reason = (d.verdict?.tags || []).slice(0, 2).join(' · ') || (d.verdict?.label || '');
+      const dateLbl = lang==='th' ? `${d.day} ${month} ${dow}` : ((lang==='zh'||lang==='cn') ? `${MONTH_DATA.month}月${d.day}日 ${dow}` : dt.toLocaleDateString(_bcp47(lang),{day:'numeric',month:'short',weekday:'short'}));
+      const score = _calIntentScoreForMode(d, state.intent) || 50;
+      const reason = state.overlay === 'tongshu'
+        ? `${d.day_officer || ''}日 · ${d.twelve_star || ''}`
+        : ((d.verdict?.tags || []).slice(0, 2).join(' · ') || (d.verdict?.label || ''));
       return `<div class="rc-item" data-day="${d.day}" role="button">
         <div class="rc-medal">${MEDALS[idx] || '✦'}</div>
         <div class="rc-body">
@@ -860,7 +887,7 @@
   function ezDirName(code){ const l=getRawLang(); if(l==='th') return EZ_DIR_TH[code]||code; const m=DIR_LABELS[code]; return m?(m[l]||m.en||code):code; }
   /* 10 ก.ค. · โหมดอ่านง่าย · โหลดคลังข้อความปฏิทินภาษาคนตามภาษา (fallback→en) · โหลดครั้งเดียวต่อภาษา */
   let DT_STATE = { loc:'', useLoc:'', ok:false, map:null };
-  function dtLocale(){ const l=getRawLang(); return ['th','en','zh','vi','ja','ko','ru','es'].indexOf(l)>=0?l:'en'; }
+  function dtLocale(){ const l=_curLang(); return l==='cn'?'zh':['th','en','zh','vi','ja','ko','ru','es'].includes(l)?l:'en'; }
   function ensureDaytext(){
     if (!(window.HK && HK.daytext)) { setTimeout(()=>{ if(window.HK && HK.daytext) renderCal(); }, 400); return false; }
     const loc = dtLocale();
@@ -894,7 +921,7 @@
     const days = MONTH_DATA.days || [];
     window._calDays = days; /* 19 พ.ค. spec #2 · expose สำหรับ intent dropdown counter */
     if (!days.length){
-      const _loadTxt = ({th:'กำลังโหลดปฏิทิน…',en:'Loading calendar…',zh:'載入日曆中…'})[_curLang()] || 'กำลังโหลดปฏิทิน…';
+      const _loadTxt = ({th:'กำลังโหลดปฏิทิน…',en:'Loading calendar…',zh:'載入日曆中…',cn:'正在加载日历…',vi:'Đang tải lịch…',ja:'暦を読み込み中…',ko:'달력을 불러오는 중…',ru:'Загрузка календаря…',es:'Cargando calendario…'})[_curLang()] || 'Loading calendar…';
       grid.innerHTML = `<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--fg-soft)">${_loadTxt}</div>`;
       return;
     }
@@ -941,12 +968,12 @@
       /* ฐาน 100 · bar fill จาก 0 ถึง 100 */
       const fillPct = score100;
       /* 19 พ.ค. spec #2 · intent highlight (filter mode) */
-      const intentTier = intentSel && d.intentStatus ? d.intentStatus[intentSel] : null;
+      const intentTier = intentSel ? _calIntentStatusForMode(d)[intentSel] : null;
       const intentClass = intentTier ? `intent-${intentTier}` : '';
       /* 19 พ.ค. spec #2 · top + worst icon ใน default mode */
-      const topIcons = (d.topIntents || []).slice(0, 2).map(t => `<span class="d-intent-icon" title="${_calIntentName(t, _curLang())}">${t.icon}</span>`).join('');
-      const _avoidTxt = ({th:'ห้าม:',en:'Avoid:',zh:'忌:'})[_curLang()] || 'ห้าม:';
-      const worstIcons = (d.worstIntents || []).slice(0, 1).map(t => `<span class="d-intent-icon worst" title="${_avoidTxt} ${_calIntentName(t, _curLang())}">✕${t.icon}</span>`).join('');
+      const topIcons = _calTopForMode(d).slice(0, 2).map(t => `<span class="d-intent-icon" title="${_calIntentName(t, _curLang())}">${t.icon}</span>`).join('');
+      const _avoidTxt = ({th:'ห้าม:',en:'Avoid:',zh:'忌:',cn:'忌:',vi:'Tránh:',ja:'忌:',ko:'피함:',ru:'Избегать:',es:'Evitar:'})[_curLang()] || 'Avoid:';
+      const worstIcons = _calWorstForMode(d).slice(0, 1).map(t => `<span class="d-intent-icon worst" title="${_avoidTxt} ${_calIntentName(t, _curLang())}">✕${t.icon}</span>`).join('');
       const intentsHtml = (topIcons || worstIcons) && !intentSel ? `<div class="d-intents">${topIcons}${worstIcons}</div>` : '';
       const isToday = d.date === todayStr;
       const isSelected = d.day === state.selected;
@@ -961,7 +988,7 @@
             goal: state.goal, nayinZh: nz
           });
           const chipCls = c.chipType==='chong' ? 'ch' : c.chipType==='he' ? 'he' : 'chu';
-          const ez = s => String(s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+          const ez = s => String(_curLang()==='cn'?_calToHans(s):s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
           html.push(`
         <div class="day-cell ez ${isToday?'is-today':''} ${isSelected?'selected':''} ${intentClass}" data-day="${d.day}">
           <div class="ez-top"><span class="ez-num">${d.day}</span><span class="ez-power">${ez(c.label)}</span>${c.chip?`<span class="ez-chip ${chipCls}">${ez(c.chip)}</span>`:''}</div>
@@ -981,11 +1008,12 @@
         if(role === 'yongshen') tags = '<span class="d-tag good">用神</span>';
         else if(role === 'xishen') tags = '<span class="d-tag special">喜神</span>';
         else if(role === 'jishen') tags = '<span class="d-tag bad">忌神</span>';
+        else if(role === 'mixed') tags = '<span class="d-tag special">吉忌並見</span>';
       } else {
         /* tongshu mode · use 12 day-officer 建除满平定执破危成收开闭 */
         const off = d.day_officer || '';
-        if (['開','成','危','滿'].includes(off)) tags = `<span class="d-tag good">${off}</span>`;
-        else if (['破','閉'].includes(off)) tags = `<span class="d-tag bad">${off}</span>`;
+        if (['開','开','成'].includes(off)) tags = `<span class="d-tag good">${off}</span>`;
+        else if (['破','閉','闭','危'].includes(off)) tags = `<span class="d-tag bad">${off}</span>`;
         else if (off) tags = `<span class="d-tag special">${off}</span>`;
       }
 
@@ -1036,7 +1064,8 @@
   function updateStats(days){
     let open=0, mid=0, avoid=0;
     days.forEach(d=>{
-      const s = d.verdict ? d.verdict.score : 50;
+      const verdict = state.overlay==='tongshu' ? d.universal_verdict : d.verdict;
+      const s = verdict ? verdict.score : 50;
       if (s>=65) open++;
       else if (s>=50) mid++;
       else avoid++;
@@ -1061,7 +1090,7 @@
   }
   /* BCP-47 tag for toLocaleDateString by raw locale */
   function _bcp47(raw){
-    var m = { th:'th', en:'en', zh:'zh-Hant', vi:'vi', ja:'ja', ko:'ko', ru:'ru', es:'es' };
+    var m = { th:'th', en:'en', zh:'zh-Hant', cn:'zh-Hans', vi:'vi', ja:'ja', ko:'ko', ru:'ru', es:'es' };
     return m[raw] || 'en';
   }
   /* 64 hexagram names · vi=Hán-Việt · ru/es=translated · ja/ko use the Chinese 卦名 (exempt CJK) */
@@ -1161,10 +1190,10 @@
     const pillarLbl = MONTH_DATA.month_pillar_label || MONTH_DATA.month_pillar || '—';
     if (mTC) mTC.textContent = MONTH_DATA.month_pillar || '—';
     if (mTH) {
-      const _hdrLang = getRawLang();
+      const _hdrLang = _curLang();
       let _hdr;
       if (_hdrLang==='th') _hdr = `${MONTH_TH[MONTH_DATA.month]||''} ${(MONTH_DATA.year||0)+543}`;
-      else if (_hdrLang==='zh') _hdr = `${MONTH_DATA.year||0}年${MONTH_DATA.month||''}月`;
+      else if (_hdrLang==='zh' || _hdrLang==='cn') _hdr = `${MONTH_DATA.year||0}年${MONTH_DATA.month||''}月`;
       else {
         try { _hdr = new Date(MONTH_DATA.year||1970, (MONTH_DATA.month||1)-1, 1).toLocaleDateString(_bcp47(_hdrLang),{month:'long',year:'numeric'}); }
         catch(e){ _hdr = new Date(MONTH_DATA.year||1970, (MONTH_DATA.month||1)-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'}); }
@@ -1211,15 +1240,15 @@
     const sLabel = scoreLabel(score);
 
     /* Verdict text · raw locale (vi/ja/ko/ru/es) so language-specific text is not clamped to en */
-    const lg = getRawLang();
+    const lg = _curLang();
     /* pick localized value by raw locale · EN fallback (never Thai) · works for string- and object-valued dicts */
-    const _pl = (o)=>{ if(o==null) return o; let v=o[lg]; if(v===undefined||v===null||v==='') v=(o.en!==undefined?o.en:o.th); return v; };
+    const _pl = (o)=>{ if(o==null) return o; let v=o[lg]; if((v===undefined||v===null||v==='')&&lg==='cn'&&o.zh!=null) v=_calHansDeep(o.zh); if(v===undefined||v===null||v==='') v=(o.en!==undefined?o.en:''); return v; };
     /* pick suffix-keyed value (short_th/short_en/... , full_.., lbl_..) by raw locale · EN fallback */
-    const _pf = (o,b)=>{ if(o==null) return ''; let v=o[b+'_'+lg]; if(v===undefined||v===null||v==='') v=(o[b+'_en']!==undefined?o[b+'_en']:o[b+'_th']); return v; };
+    const _pf = (o,b)=>{ if(o==null) return ''; let v=o[b+'_'+lg]; if((v===undefined||v===null||v==='')&&lg==='cn'&&o[b+'_zh']!=null) v=_calToHans(o[b+'_zh']); if(v===undefined||v===null||v==='') v=(o[b+'_en']!==undefined?o[b+'_en']:''); return v; };
     /* term-dict lang: HK_termPair only knows th/en/zh → map unsupported locales to en (never Thai) */
-    const _tpLang = (lg==='th'||lg==='zh')?lg:'en';
+    const _tpLang = (lg==='th'||lg==='zh'||lg==='cn')?(lg==='cn'?'zh':lg):'en';
     /* hexagram name · th/en/zh original · ja/ko use Chinese 卦名 (exempt) · vi/ru/es native */
-    const _hexName = (hex)=>{ if(!hex) return ''; if(lg==='th') return hex.th||hex.zh||''; if(lg==='en') return hex.en||hex.zh||''; if(lg==='zh') return hex.zh||''; if(lg==='ja'||lg==='ko') return hex.zh||hex.en||''; const t=HEX_TR[hex.num]; return (t&&t[lg])||hex.zh||hex.en||''; };
+    const _hexName = (hex)=>{ if(!hex) return ''; if(lg==='th') return hex.th||hex.zh||''; if(lg==='en') return hex.en||hex.zh||''; if(lg==='zh') return hex.zh||''; if(lg==='cn') return _calToHans(hex.zh||''); if(lg==='ja'||lg==='ko') return hex.zh||hex.en||''; const t=HEX_TR[hex.num]; return (t&&t[lg])||hex.zh||hex.en||''; };
     const gl = state.goal==='all' ? '' : (window._calGoalLabel ? window._calGoalLabel(state.goal, lg) : '');
     const VTPL = _pl({
       th: { use:'วัน <span class="vtc">用神</span> ตรง', flat:'วัน <span class="vtc">平順</span>', neut:'วัน <span class="vtc">中和</span>', caut:'วัน <span class="vtc">慎</span>', ji:'วัน <span class="vtc">忌</span>',
@@ -1308,7 +1337,18 @@
       },
     }) || {};
     let vText = '';
-    if(role === 'xishen' && score >= 10) vText = `${ROLE_TPL.xishen.head}${ROLE_TPL.xishen.sfx}`;
+    const MIXED_TPL = _pl({
+      th:'<span class="vtc">吉忌並見</span> มีทั้งแรงส่งและแรงต้าน — อ่านข้อดีและข้อควรระวังคู่กัน',
+      en:'<span class="vtc">吉忌並見</span> favorable and adverse factors coexist — read both sides together',
+      zh:'<span class="vtc">吉忌並見</span> 吉凶同見 — 宜與忌須合看',
+      vi:'<span class="vtc">吉忌並見</span> cát và hung cùng xuất hiện — cần đọc cả thuận lợi lẫn thận trọng',
+      ja:'<span class="vtc">吉忌並見</span> 吉と注意が併存 — 両面を合わせて判断',
+      ko:'<span class="vtc">吉忌並見</span> 길함과 주의가 함께 있음 — 두 측면을 같이 판단',
+      ru:'<span class="vtc">吉忌並見</span> благоприятные и неблагоприятные факторы сосуществуют — учитывайте обе стороны',
+      es:'<span class="vtc">吉忌並見</span> coexisten factores favorables y adversos — considere ambos lados'
+    });
+    if(role === 'mixed') vText = MIXED_TPL;
+    else if(role === 'xishen' && score >= 10) vText = `${ROLE_TPL.xishen.head}${ROLE_TPL.xishen.sfx}`;
     else if(role === 'jishen' && score < 65) vText = `${ROLE_TPL.jishen.head}${ROLE_TPL.jishen.sfx}`;
     else if(score>=20 && role === 'yongshen') vText = `${VTPL.use}${VTPL.useSfx}`;
     else if(score>=10) vText = `${VTPL.flat}${VTPL.flatSfx}`;
@@ -1319,7 +1359,14 @@
     /* yi/ji + stars จาก API จริง · ไม่มี hardcode */
     const yj = { yi: (d.yi||[]).map(x=>x), ji: (d.ji||[]).map(x=>x) };
     /* 17 พ.ค. · hourkey-style: ใช้ stars_detail (มีคะแนน + ชื่อไทย + อธิบาย) */
-    const sd = d.stars_detail || { good:[], bad:[], total:0, unknown:[] };
+    const hasStarWeights = !!d.stars_detail;
+    const _starFallback = (key, nature) => ({ key, han_trad:key, han:key, weight:null, system:'ri_jia', severity:'conditional', _nature:nature });
+    const sd = d.stars_detail || {
+      good:(d.gods?.good||[]).map(key=>_starFallback(key,'good')),
+      bad:(d.gods?.bad||[]).map(key=>_starFallback(key,'bad')),
+      total:0,
+      unknown:d.gods?.unknown||[]
+    };
     const stars = d.gods && (d.gods.good || d.gods.bad)
       ? { good: d.gods.good || [], bad: d.gods.bad || [] }
       : { good: [], bad: [] };
@@ -1327,6 +1374,35 @@
     /* hour cells · ใช้ข้อมูลจาก /api/today/hours ถ้ามี · ไม่งั้น fallback
      * 18 พ.ค. redesign · grid 4×3 cell ใหญ่ · หลัก 5 อากงอาม่า · NOW highlight */
     const det = DAY_DETAILS[d.date] || {};
+    const profileContext = MONTH_DATA.profile_context || null;
+    const confidenceKey = profileContext?.confidence || (profileContext ? 'day_master_only' : 'universal');
+    const CONF_TX = _pl({
+      th:{universal:'ทั่วไป · ไม่ใช้ดวงเกิด',full_birth_time:'ข้อมูลเกิดครบ · ความมั่นใจสูง',no_birth_time:'ไม่มีเวลาเกิด · ไม่คำนวณเสาเวลา',day_master_only:'ข้อมูลดวงจำกัด · ความมั่นใจปานกลาง'},
+      en:{universal:'Universal · no birth chart',full_birth_time:'Complete birth data · high confidence',no_birth_time:'No birth time · hour pillar omitted',day_master_only:'Limited chart data · medium confidence'},
+      zh:{universal:'通用 · 不使用生辰',full_birth_time:'生辰完整 · 高可信度',no_birth_time:'無出生時辰 · 不計時柱',day_master_only:'命盤資料有限 · 中等可信度'},
+      vi:{universal:'Phổ quát · không dùng ngày sinh',full_birth_time:'Đủ dữ liệu sinh · độ tin cậy cao',no_birth_time:'Không có giờ sinh · bỏ trụ giờ',day_master_only:'Dữ liệu lá số hạn chế · tin cậy vừa'},
+      ja:{universal:'共通 · 生年月日を不使用',full_birth_time:'出生情報完備 · 高信頼',no_birth_time:'出生時刻なし · 時柱を除外',day_master_only:'命式情報が限定的 · 中信頼'},
+      ko:{universal:'공통 · 출생정보 미사용',full_birth_time:'출생정보 완전 · 높은 신뢰도',no_birth_time:'출생시각 없음 · 시주 제외',day_master_only:'사주정보 제한 · 중간 신뢰도'},
+      ru:{universal:'Общий слой · без карты рождения',full_birth_time:'Полные данные рождения · высокая уверенность',no_birth_time:'Нет времени рождения · часовой столп исключён',day_master_only:'Ограниченные данные карты · средняя уверенность'},
+      es:{universal:'Capa universal · sin carta natal',full_birth_time:'Datos de nacimiento completos · confianza alta',no_birth_time:'Sin hora de nacimiento · se omite el pilar horario',day_master_only:'Datos de carta limitados · confianza media'}
+    }) || {};
+    const confidenceHtml = `<div style="margin:8px 0 12px;padding:7px 10px;border:1px solid var(--tile-bd);border-radius:6px;color:var(--fg-soft);font-size:10.5px;">◉ ${CONF_TX[confidenceKey]||CONF_TX.universal||''}</div>`;
+    const intentSummaryHtml = (() => {
+      if (!state.intent || !profileContext) return '';
+      const u = d.universal_intent_status?.[state.intent] || 'neutral';
+      const p = d.intentStatus?.[state.intent] || 'neutral';
+      const us = d.intent_scores?.universal?.[state.intent]?.score;
+      const ps = d.intent_scores?.personal?.[state.intent]?.score;
+      const STATUS_TX = _pl({
+        th:{good:'ดี',neutral:'กลาง',bad:'ควรเลี่ยง'},en:{good:'favorable',neutral:'neutral',bad:'avoid'},zh:{good:'宜',neutral:'平',bad:'忌'},
+        vi:{good:'tốt',neutral:'trung tính',bad:'nên tránh'},ja:{good:'吉',neutral:'中',bad:'忌'},ko:{good:'길',neutral:'보통',bad:'피함'},
+        ru:{good:'благоприятно',neutral:'нейтрально',bad:'избегать'},es:{good:'favorable',neutral:'neutral',bad:'evitar'}
+      }) || {};
+      const HEAD = _pl({th:'สรุปร่วม',en:'Combined reading',zh:'合併判讀',vi:'Kết luận kết hợp',ja:'総合判断',ko:'종합 판단',ru:'Совместное чтение',es:'Lectura combinada'});
+      const U = _pl({th:'ปฏิทินสากล',en:'Universal',zh:'通書',vi:'Phổ quát',ja:'共通暦',ko:'공통력',ru:'Общий слой',es:'Universal'});
+      const P = _pl({th:'ดวงส่วนตัว',en:'Personal chart',zh:'個人命盤',vi:'Lá số cá nhân',ja:'個人命式',ko:'개인 사주',ru:'Личная карта',es:'Carta personal'});
+      return `<div style="margin:0 0 12px;padding:9px 11px;border-left:3px solid var(--gold);background:var(--gold-soft);font-size:11px;line-height:1.55;"><b>${HEAD}</b><br>${U}: ${STATUS_TX[u]||u}${us!=null?` (${Math.round(us)})`:''} · ${P}: ${STATUS_TX[p]||p}${ps!=null?` (${Math.round(ps)})`:''}</div>`;
+    })();
     /* 12 ราศีไทย + emoji */
     const _BR_ZODIAC = {
       '子':{th:'หนู',en:'Rat',zh:'鼠',vi:'Tý',ja:'子',ko:'자',ru:'Крыса',es:'Rata',emo:'🐀'},'丑':{th:'วัว',en:'Ox',zh:'牛',vi:'Sửu',ja:'丑',ko:'축',ru:'Бык',es:'Buey',emo:'🐂'},
@@ -1369,17 +1445,12 @@
     if (det.hours && det.hours.length) {
       hours = det.hours.slice(0,12).map(h => _renderHourCell(h)).join('');
     } else {
-      const dmEl = STEM_ELEM[SELF_DM] || 'earth';
-      hours = BRANCH_HOUR.map((h,i) => {
-        const elem = BRANCH_ELEM[h];
-        let hScore = 0;
-        if (elem===dmEl) hScore += 1;
-        const PRODUCES = {wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
-        if (PRODUCES[elem]===dmEl) hScore += 2;
-        if (PRODUCES[dmEl]===elem) hScore -= 1;
-        const qFall = hScore>=2?'good':hScore<=-2?'bad':'ok';
-        return _renderHourCell({ branch:h, range:HOUR_LABEL[i], quality:qFall, isNow:false });
-      }).join('');
+      const hourEmpty = _pl({
+        th:det._loading?'กำลังคำนวณชั่วยาม…':'ไม่มีข้อมูลชั่วยาม',en:det._loading?'Calculating hours…':'Hour data unavailable',zh:det._loading?'正在計算時辰…':'暫無時辰資料',
+        vi:det._loading?'Đang tính giờ…':'Chưa có dữ liệu giờ',ja:det._loading?'時辰を計算中…':'時辰データなし',ko:det._loading?'시진 계산 중…':'시진 데이터 없음',
+        ru:det._loading?'Расчёт часов…':'Нет данных по часам',es:det._loading?'Calculando horas…':'Sin datos horarios'
+      });
+      hours = `<div class="dirs-empty" style="grid-column:1/-1;">${hourEmpty}</div>`;
     }
 
     const lang = getRawLang();
@@ -1412,7 +1483,7 @@
           goal: state.goal, nayinZh: nz
         });
         const L = HK.daytext._lib[DT_STATE.useLoc];
-        const ezE = s => String(s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+        const ezE = s => String(lg==='cn'?_calToHans(s):s==null?'':s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
         const nyLine = (nz && L && L.nayin[nz]) ? `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;">✨ ${ezE(L.nayin[nz].name)} — ${ezE(L.nayin[nz].line)}</div>` : '';
         ezPanel = `
         <div style="border:1px solid var(--gold-line);background:var(--gold-soft);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
@@ -1570,7 +1641,8 @@
             const bg = pi.highlight ? 'rgba(200,164,77,.08)' : 'var(--bg-2,var(--tile))';
             const bd = pi.highlight ? 'var(--gold)' : 'var(--tile-bd)';
             const hex = pi.p.hex;
-            const lbl = _pf(pi,'lbl');
+            const refLabel = pi.p.reference_time ? ` · ${_pl({th:'อ้างอิง',en:'reference',zh:'參考',vi:'tham chiếu',ja:'基準',ko:'기준',ru:'расчёт',es:'referencia'})} ${pi.p.reference_time}` : '';
+            const lbl = `${_pf(pi,'lbl')}${refLabel}`;
             const hexTitle = hex ? (lg==='th' ? `${hex.zh} · ${hex.th}` : lg==='zh' ? `${hex.zh}` : `${_hexName(hex) || hex.zh} · ${hex.zh}`) : '';
             return `<div style="padding:10px 6px;background:${bg};border:1px solid ${bd};border-radius:10px;text-align:center;display:flex;flex-direction:column;gap:6px;">
               <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;border-bottom:1px dashed var(--tile-bd);padding-bottom:6px;">${lbl}</div>
@@ -1596,6 +1668,9 @@
           <div class="sp-pi" style="border-color:var(--gold);background:var(--gold-soft);"><span class="yi" style="color:var(--gold);" data-i18n="cal.sp.day">DAY</span><span class="stem">${d.stem}</span><span class="branch">${d.branch}</span></div>
         </div>`}
       </div>
+
+      ${confidenceHtml}
+      ${intentSummaryHtml}
 
       ${(() => {
         /* 18 พ.ค. · 2 cards คู่ขนาน · ฐาน 100 (อาม่าอากง) · Option A
@@ -1804,17 +1879,17 @@
               <span style="padding:3px 9px;background:var(--gold-soft);color:var(--gold);border-radius:99px;font-weight:600;letter-spacing:.04em;font-size:10px;">${goalLbl}</span>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="display:grid;grid-template-columns:${profileContext&&MONTH_DATA.personal_available?'1fr 1fr':'1fr'};gap:8px;">
             ${renderCard(uV, universalScore, TX.uTitle, TX.uSub, `${officerName}日 · ${star12}`)}
-            ${renderCard(pV, personalScore,  TX.pTitle, TX.pSub, footerTxt)}
+            ${profileContext&&MONTH_DATA.personal_available?renderCard(pV, personalScore, TX.pTitle, TX.pSub, footerTxt):''}
           </div>
         </div>`;
       })()}
 
       ${(() => {
         /* 19 พ.ค. spec #2 Phase 2 · Quick Take · TL;DR 5 วินาทีรู้คำตอบ */
-        const top = d.topIntents || [];
-        const worst = d.worstIntents || [];
+        const top = _calTopForMode(d);
+        const worst = _calWorstForMode(d);
         const ps = Math.max(0, Math.min(100, Math.round(rawScore)));
         const QT_TXT = _pl({
           th: { head:'⚡ สรุปสั้น', best:'✅ วันนี้ทำได้ดีที่สุด:', avoid:'❌ ห้ามทำ:', none:'—' },
@@ -1841,7 +1916,7 @@
 
       ${(() => {
         /* 19 พ.ค. spec #2 Phase 2 · 15 หมวด Grid · จัดกลุ่ม */
-        const intStat = d.intentStatus || {};
+        const intStat = _calIntentStatusForMode(d);
         if (!Object.keys(intStat).length) return '';
         const INTENTS = window._calIntents || [
           { id:'start_work',group:'work',icon:'🎯',th:'เริ่มงาน',en:'Start',zh:'就職',vi:'Nhậm chức',ja:'就職',ko:'취업',ru:'Начать работу',es:'Empezar' },
@@ -1859,6 +1934,7 @@
           { id:'install_bed',group:'home',icon:'🛏️',th:'ตั้งเตียง',en:'Bed',zh:'安床',vi:'Kê giường',ja:'安床',ko:'침대 설치',ru:'Установка кровати',es:'Instalar cama' },
           { id:'travel',group:'travel',icon:'🚗',th:'เดินทาง',en:'Travel',zh:'出行',vi:'Đi xa',ja:'外出',ko:'여행',ru:'Поездка',es:'Viajar' },
           { id:'pray_heal',group:'travel',icon:'🙏',th:'ไหว้พระ',en:'Pray',zh:'祈福',vi:'Cầu phúc',ja:'祈願',ko:'기도',ru:'Молитва',es:'Orar' },
+          { id:'medical',group:'travel',icon:'🩺',th:'รักษา',en:'Medical',zh:'療病',vi:'Điều trị',ja:'治療',ko:'치료',ru:'Лечение',es:'Tratamiento' },
         ];
         const GROUPS = ['work','wealth','love','home','travel'];
         const GRP_LBL = {
@@ -1942,26 +2018,26 @@
       <div class="sp-section">
         <h4>
           <span data-i18n="cal.sp.stars">神煞 · ดาวประจำวัน</span>
-          <span class="tc" style="color:${sd.total>=0?'var(--good)':'var(--bad)'};font-family:var(--mono);font-size:13px;">${sd.total>=0?'+':''}${sd.total} ${_pl({th:'pts',en:'pts',zh:'pts',vi:'điểm',ja:'点',ko:'점',ru:'очк.',es:'puntos'})}</span>
+          <span class="tc" style="color:${hasStarWeights?(sd.total>=0?'var(--good)':'var(--bad)'):'var(--fg-faint)'};font-family:var(--mono);font-size:11px;">${hasStarWeights?`${sd.total>=0?'+':''}${sd.total} ${_pl({th:'pts',en:'pts',zh:'pts',vi:'điểm',ja:'点',ko:'점',ru:'очк.',es:'puntos'})}`:_pl({th:'แสดงประเภท',en:'classification',zh:'分類',vi:'phân loại',ja:'分類',ko:'분류',ru:'классификация',es:'clasificación'})}</span>
         </h4>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${sd.good.map(s => `<div style="display:grid;grid-template-columns:54px 1fr auto;gap:8px;align-items:start;padding:8px 10px;background:var(--wood-bg);border-left:3px solid var(--good);border-radius:6px;">
             <span style="font-family:var(--tc);font-size:14px;color:var(--good);font-weight:700;">${s.key}</span>
             <span style="font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.45;"><b>${_calStarName(s, lg)}</b><div style="font-size:10.5px;color:var(--fg-soft);margin-top:2px;">${_calStarDesc(s, lg)}</div></span>
-            <span style="font-family:var(--mono);font-size:11px;color:var(--good);font-weight:700;white-space:nowrap;">+${s.weight}</span>
+            ${hasStarWeights?`<span style="font-family:var(--mono);font-size:11px;color:var(--good);font-weight:700;white-space:nowrap;">+${s.weight}</span>`:'<span></span>'}
           </div>`).join('')}
           ${sd.bad.map(s => `<div style="display:grid;grid-template-columns:54px 1fr auto;gap:8px;align-items:start;padding:8px 10px;background:var(--fire-bg);border-left:3px solid var(--bad);border-radius:6px;">
             <span style="font-family:var(--tc);font-size:14px;color:var(--bad);font-weight:700;">${s.key}</span>
             <span style="font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.45;"><b>${_calStarName(s, lg)}</b><div style="font-size:10.5px;color:var(--fg-soft);margin-top:2px;">${_calStarDesc(s, lg)}</div></span>
-            <span style="font-family:var(--mono);font-size:11px;color:var(--bad);font-weight:700;white-space:nowrap;">${s.weight}</span>
+            ${hasStarWeights?`<span style="font-family:var(--mono);font-size:11px;color:var(--bad);font-weight:700;white-space:nowrap;">${s.weight}</span>`:'<span></span>'}
           </div>`).join('')}
-          ${(sd.unknown||[]).length ? `<div style="font-size:10px;color:var(--fg-faint);text-align:center;padding:6px;">${_pl({th:'ดาวที่ยังไม่แปล:',en:'Untranslated:',zh:'未翻譯:',vi:'Chưa dịch:',ja:'未翻訳:',ko:'미번역:',ru:'Без перевода:',es:'Sin traducir:'})} ${sd.unknown.join(' · ')}</div>` : ''}
+          ${(sd.unknown||[]).length ? `<div style="font-size:10px;color:var(--fg-faint);text-align:center;padding:6px;">${_pl({th:'ดาวที่ยังไม่จัดประเภท (กลาง):',en:'Unclassified stars (neutral):',zh:'未分類神煞（中性）：',cn:'未分类神煞（中性）：',vi:'Thần sát chưa phân loại (trung tính):',ja:'未分類の神煞（中立）：',ko:'미분류 신살(중립):',ru:'Неклассифицированные духи (нейтрально):',es:'Estrellas sin clasificar (neutrales):'})} ${sd.unknown.join(' · ')}</div>` : ''}
         </div>
       </div>
 
       <div class="sp-section">
         <h4><span data-i18n="cal.sp.dirs">八方 · 8 ทิศมงคล</span><span class="tc">方位</span></h4>
-        <div class="dirs-wrap">${renderDirs(d, det)}</div>
+        <div class="dirs-wrap">${renderDirectionPanel(d, det)}</div>
       </div>
 
       <a href="/today" class="deep-link">
@@ -1974,6 +2050,7 @@
       </a>
     `;
     if (window.applyI18N) window.applyI18N(lang);
+    _calApplyHansSoon();
     /* 17 พ.ค. · wire hex-deep popup buttons */
     sp.querySelectorAll('.hex-deep-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2001,6 +2078,28 @@
         modal.addEventListener('click', (ev) => { if (ev.target === modal) modal.remove(); });
         modal.querySelector('#hk-i-close').addEventListener('click', () => modal.remove());
       });
+    });
+    const dirTime = sp.querySelector('#cal-dir-time');
+    if (dirTime) dirTime.addEventListener('change', async function(){
+      if (!/^\d{2}:\d{2}$/.test(dirTime.value || '')) return;
+      CAL_DIRECTION_PREF.time = dirTime.value;
+      delete DAY_DETAILS[d.date];
+      await fetchDayDetails(d.date);
+      renderSide();
+    });
+    const locBtn = sp.querySelector('#cal-use-location');
+    if (locBtn) locBtn.addEventListener('click', function(){
+      if (!navigator.geolocation) return;
+      locBtn.disabled = true;
+      navigator.geolocation.getCurrentPosition(async function(pos){
+        CAL_DIRECTION_PREF.latitude = Number(pos.coords.latitude);
+        CAL_DIRECTION_PREF.longitude = Number(pos.coords.longitude);
+        CAL_DIRECTION_PREF.place = ({th:'ตำแหน่งปัจจุบัน',en:'Current location',zh:'目前位置',cn:'当前位置',vi:'Vị trí hiện tại',ja:'現在地',ko:'현재 위치',ru:'Текущее местоположение',es:'Ubicación actual'})[_curLang()];
+        CAL_DIRECTION_PREF.locationExplicit = true;
+        delete DAY_DETAILS[d.date];
+        await fetchDayDetails(d.date);
+        renderSide();
+      }, function(){ locBtn.disabled = false; }, {enableHighAccuracy:false,timeout:8000,maximumAge:300000});
     });
   }
 
@@ -2030,14 +2129,14 @@
     '阴贵': { ico:'🌙', th:'ขุนนางหยิน', en:'Yin Noble',  zh:'陰貴', vi:'Quý Nhân Âm', ja:'陰貴人', ko:'음귀인', ru:'Инь-покровитель', es:'Noble Yin' },
     '陰貴': { ico:'🌙', th:'ขุนนางหยิน', en:'Yin Noble',  zh:'陰貴', vi:'Quý Nhân Âm', ja:'陰貴人', ko:'음귀인', ru:'Инь-покровитель', es:'Noble Yin' },
   };
-  function _calDirLang(){ return getRawLang(); }
-  function _dirNm(code){ const m = DIR_LABELS[code]; if(!m) return code; const l = getRawLang(); return m[l] || m.en || code; }
+  function _calDirLang(){ return _curLang(); }
+  function _dirNm(code){ const m = DIR_LABELS[code]; if(!m) return code; const l = _curLang(); return m[l] || (l==='cn'?m.zh:'') || m.en || code; }
 
   /* render 8 directions · 3×3 grid · ใช้ /api/today/directions ถ้ามี */
   /* 19 พ.ค. Phase 13 · Option B · card stack + mini compass · reviewed */
   function renderDirs(d, det){
     const lang = _calDirLang();
-    const T = (k) => { try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('calendar.html',k,lang);if(ov!=null)return ov;}catch(_){} return (window.HK_I18N && window.HK_I18N[k] && (window.HK_I18N[k][lang] || window.HK_I18N[k].th)) || ''; };
+    const T = (k) => { try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('calendar.html',k,lang);if(ov!=null)return ov;}catch(_){} var row=window.HK_I18N&&window.HK_I18N[k];return row ? (row[lang] || (lang==='cn'&&row.zh?_calToHans(row.zh):'') || row.en || '') : ''; };
     if (!det.directions || !det.directions.length) {
       /* fallback · ไม่มี directions data · empty state */
       return `<div class="dirs-empty">${T('cal.dir.empty')}</div>`;
@@ -2053,7 +2152,7 @@
         const key = s.han || s.name || '';
         const meta = STAR_DIR_LABELS[key];
         const priority = STAR_PRIORITY[key] || 1;
-        return { key, meta, priority, label: meta ? (meta[lang] || meta.en || meta.th) : key, ico: meta?.ico || '✨' };
+        return { key, meta, priority, label: meta ? (meta[lang] || (lang==='cn'?_calToHans(meta.zh||''):'') || meta.en || key) : key, ico: meta?.ico || '✨' };
       });
       const starScore = stars.reduce((sum, s) => sum + s.priority, 0);
       const score = (qual==='best' ? 100 : qual==='good' ? 80 : qual==='avoid'||qual==='bad' ? -50 : 30) + starScore * 5;
@@ -2143,19 +2242,57 @@
     return bestHtml + secondaryHtml + avoidHtml + allLineHtml;
   }
 
+  function renderDirectionPanel(d, det){
+    const lang = _curLang();
+    const TX = {
+      th:{time:'เลือกเวลา',loc:'ตำแหน่งคำนวณ',use:'ใช้ตำแหน่งฉัน',daily:'ทิศประจำวัน',personal:'ทิศที่เข้ากับดวงคุณ',energy:'พลังทิศ ฉีเหมิน + จื่อไป๋',noPersonal:'ยังไม่มีดวงส่วนบุคคล',empty:'ยังไม่มีข้อมูลทิศ',at:'เวลา',need:'เลือกเวลาและตำแหน่งก่อน จึงจะแสดงพลังทิศตามเวลา'},
+      en:{time:'Select time',loc:'Calculation location',use:'Use my location',daily:'Daily directions',personal:'Directions for your chart',energy:'Qi Men + Zi Bai direction energy',noPersonal:'No personal chart',empty:'No direction data',at:'at',need:'Select a time and location to calculate time-based direction energy'},
+      zh:{time:'選擇時間',loc:'計算地點',use:'使用我的位置',daily:'當日方位',personal:'個人命盤方位',energy:'奇門 + 紫白方位能量',noPersonal:'無個人命盤',empty:'暫無方位資料',at:'時間',need:'先選擇時間與地點，才計算時空方位能量'},
+      cn:{time:'选择时间',loc:'计算地点',use:'使用我的位置',daily:'当日方位',personal:'个人命盘方位',energy:'奇门 + 紫白方位能量',noPersonal:'无个人命盘',empty:'暂无方位资料',at:'时间',need:'先选择时间与地点，才计算时空方位能量'},
+      vi:{time:'Chọn giờ',loc:'Vị trí tính',use:'Dùng vị trí của tôi',daily:'Phương vị trong ngày',personal:'Phương vị hợp lá số',energy:'Năng lượng phương vị Kỳ Môn + Tử Bạch',noPersonal:'Chưa có lá số cá nhân',empty:'Chưa có dữ liệu phương vị',at:'lúc',need:'Chọn giờ và vị trí để tính năng lượng phương vị theo thời gian'},
+      ja:{time:'時刻を選択',loc:'計算地点',use:'現在地を使う',daily:'当日の方位',personal:'命式に合う方位',energy:'奇門 + 紫白の方位エネルギー',noPersonal:'個人命式なし',empty:'方位データなし',at:'時刻',need:'時刻と地点を選ぶと、時空に基づく方位エネルギーを表示します'},
+      ko:{time:'시각 선택',loc:'계산 위치',use:'내 위치 사용',daily:'오늘의 방위',personal:'내 사주에 맞는 방위',energy:'기문 + 자백 방위 에너지',noPersonal:'개인 사주 없음',empty:'방위 데이터 없음',at:'시각',need:'시간과 위치를 선택하면 시공간 방위 에너지를 계산합니다'},
+      ru:{time:'Выберите время',loc:'Место расчёта',use:'Моё местоположение',daily:'Направления дня',personal:'Направления по личной карте',energy:'Энергия Цимэнь + Цзыбай',noPersonal:'Нет личной карты',empty:'Нет данных о направлениях',at:'время',need:'Выберите время и место для расчёта энергии направлений'},
+      es:{time:'Elegir hora',loc:'Lugar de cálculo',use:'Usar mi ubicación',daily:'Direcciones del día',personal:'Direcciones para tu carta',energy:'Energía Qi Men + Zi Bai',noPersonal:'Sin carta personal',empty:'Sin datos de dirección',at:'hora',need:'Elige hora y ubicación para calcular la energía direccional temporal'}
+    }[lang];
+    const labels = {
+      th:{best:'ดีมาก',good:'ดี',ok:'กลางบวก',caution:'ระวัง',avoid:'เลี่ยง'},en:{best:'Excellent',good:'Good',ok:'Mild positive',caution:'Caution',avoid:'Avoid'},
+      zh:{best:'極佳',good:'吉',ok:'平吉',caution:'謹慎',avoid:'忌'},cn:{best:'极佳',good:'吉',ok:'平吉',caution:'谨慎',avoid:'忌'},
+      vi:{best:'Rất tốt',good:'Tốt',ok:'Khá ổn',caution:'Thận trọng',avoid:'Tránh'},ja:{best:'大吉',good:'吉',ok:'やや吉',caution:'注意',avoid:'避ける'},
+      ko:{best:'매우 좋음',good:'좋음',ok:'약간 좋음',caution:'주의',avoid:'피함'},ru:{best:'Отлично',good:'Хорошо',ok:'Умеренно',caution:'Осторожно',avoid:'Избегать'},es:{best:'Excelente',good:'Bueno',ok:'Leve positivo',caution:'Precaución',avoid:'Evitar'}
+    }[lang];
+    const daily = det.dailyDirections || [];
+    const personal = det.personalDirections || [];
+    const energy = det.directionEnergy?.scores || [];
+    const energyRows = energy.slice(0,3).map(function(e){
+      const q = e.qimen && e.qimen.score != null ? `奇門 ${e.qimen.score}` : '奇門 —';
+      const z = e.zibai && e.zibai.score != null ? `紫白 ${e.zibai.score}` : '紫白 —';
+      return `<div class="cal-energy-row"><b>${_dirNm(e.direction)}</b><span>${labels[e.label]||e.label||''}<br><small>${q} · ${z}</small></span><span class="cal-energy-score">${Math.round(e.score||0)}</span></div>`;
+    }).join('');
+    const refTime = det.referenceTime || CAL_DIRECTION_PREF.time || '';
+    const hasSpaceTime = !!(CAL_DIRECTION_PREF.time && CAL_DIRECTION_PREF.locationExplicit);
+    return `<div class="cal-dir-controls">
+      <div class="cal-dir-field"><label for="cal-dir-time">${TX.time}</label><input id="cal-dir-time" type="time" value="${CAL_DIRECTION_PREF.time}" step="60"></div>
+      <button class="cal-loc-btn" id="cal-use-location" type="button" title="${TX.use}">⌖ ${TX.use}</button>
+      <div class="cal-dir-place">${TX.loc}: ${CAL_DIRECTION_PREF.place} · ${Number(CAL_DIRECTION_PREF.latitude).toFixed(3)}, ${Number(CAL_DIRECTION_PREF.longitude).toFixed(3)}</div>
+    </div>
+    <div class="cal-dir-layer"><div class="dir-rank-label">日 · ${TX.daily}</div>${renderDirs(d,{...det,directions:daily})}</div>
+    <div class="cal-dir-layer"><div class="dir-rank-label">命 · ${TX.personal}</div>${personal.length?renderDirs(d,{...det,directions:personal}):`<div class="dirs-empty">${TX.noPersonal}</div>`}</div>
+    <div class="cal-dir-layer"><div class="dir-rank-label">奇 · ${TX.energy}${hasSpaceTime?` · ${TX.at} ${refTime}`:''}</div>${hasSpaceTime?(energyRows||`<div class="dirs-empty">${TX.empty}</div>`):`<div class="dirs-empty">🔒 ${TX.need}</div>`}</div>`;
+  }
+
   /* lazy fetch details (hours + directions) ตอนคลิก */
   async function fetchDayDetails(date){
     if (DAY_DETAILS[date]) return DAY_DETAILS[date];
     DAY_DETAILS[date] = { _loading: true };
-    const userChartArg = SELF_DM ? { day: { stem: SELF_DM, branch: SELF_BRANCH } } : null;
-    /* 18 พ.ค. · ส่ง birth → backend calc yongshen → qualityFor ใช้ของช่วย·ของแสลงจริง */
-    let _birth = null;
-    try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
-    const _payload = (extra) => {
-      const p = userChartArg ? { date, userChart: userChartArg, ...(extra||{}) } : { date, ...(extra||{}) };
-      if (SELF_DM && _birth && _birth.date) { p.birthDate = _birth.date; p.birthTime = _birth.time || '12:00'; p.birthLng = _birth.lng || _birth.longitude || 100.5018; p.birthTimeKnown = _birth.birthTimeKnown !== false; }
-      return p;
-    };
+    const _payload = (extra) => ({
+      date,
+      profileId: CAL_PROFILE_ID || null,
+      ...(CAL_DIRECTION_PREF.time ? {time:CAL_DIRECTION_PREF.time} : {}),
+      latitude:CAL_DIRECTION_PREF.latitude,
+      longitude:CAL_DIRECTION_PREF.longitude,
+      ...(extra||{})
+    });
     try {
       const [hRes, dRes] = await Promise.all([
         fetch('/api/today/hours', {
@@ -2172,6 +2309,12 @@
       DAY_DETAILS[date] = {
         hours: hData?.hours || [],
         directions: dData?.directions || dData?.dirs || [],
+        dailyDirections: dData?.universal_directions || [],
+        personalDirections: dData?.personal_directions || [],
+        directionEnergy: dData?.direction_energy || null,
+        qimen: dData?.qimen || null,
+        referenceTime: dData?.reference_time || CAL_DIRECTION_PREF.time || '12:00',
+        timeSource: dData?.time_source || null,
       };
     } catch(e){
       console.warn('fetchDayDetails fail', e);
@@ -2209,21 +2352,16 @@
   }
   function render(){ updateMonthHeader(); renderCal(); renderSide(); applyCalendarEntitlementUi(); }
 
-  /* ─── โหลด /api/calendar · ส่ง birth ถ้ามี เพื่อใช้ wrapper-6 (ตำราใหม่) ─── */
+  /* Load by server-owned profile id; birth fields never come from localStorage. */
   async function loadMonth(year, month, opts){
     try {
-      let bUrl = '';
-      try {
-        const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
-        if (SELF_DM && b && b.date) {
-	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||b.longitude||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}&gender=${encodeURIComponent(b.gender||'M')}&dayBoundary=${encodeURIComponent(b.dayBoundary||'23:00')}`;
-        }
-      } catch(_){}
-      const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM || '')}${bUrl}`);
+      const profileUrl = CAL_PROFILE_ID ? `&profileId=${encodeURIComponent(CAL_PROFILE_ID)}` : '';
+      const r = await fetch(`/api/calendar?year=${year}&month=${month}${profileUrl}`, { credentials:'include', cache:'no-store' });
       if (!r.ok) throw new Error('http '+r.status);
       const d = await r.json();
+      if (CAL_PROFILE_ID && d.profile_context?.profileId !== CAL_PROFILE_ID) throw new Error('profile context mismatch');
       MONTH_DATA = d;
-      if (SELF_DM && d && d.dm) SELF_DM = d.dm;
+      SELF_DM = d.personal_available ? d.dm : null;
       /* select today ถ้าอยู่ในเดือนปัจจุบัน · ไม่งั้นเลือกวันแรก */
       const tn = new Date();
       if (tn.getFullYear()===year && tn.getMonth()+1===month) {
@@ -2241,7 +2379,7 @@
       }
     } catch(e){
       console.warn('loadMonth failed', e);
-      const _errTxt = ({th:'โหลดปฏิทินไม่สำเร็จ',en:'Failed to load calendar',zh:'日曆載入失敗'})[_curLang()] || 'โหลดปฏิทินไม่สำเร็จ';
+      const _errTxt = ({th:'โหลดปฏิทินไม่สำเร็จ',en:'Failed to load calendar',zh:'日曆載入失敗',cn:'日历加载失败',vi:'Không tải được lịch',ja:'暦を読み込めません',ko:'달력을 불러오지 못했습니다',ru:'Не удалось загрузить календарь',es:'No se pudo cargar el calendario'})[_curLang()] || 'Failed to load calendar';
       document.getElementById('cal-grid').innerHTML = `<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--bad)">${_errTxt}</div>`;
     }
   }
@@ -2342,57 +2480,82 @@
         if (btn.dataset.mode === 'personal') btn.disabled = true;
       });
     }
-    if (calendarHasBirthParams()) {
-      const detailsReady = resolveSelfDM().catch(()=>{});
-      await loadMonth(CUR_YEAR, CUR_MONTH, { detailsReady });
-    } else {
-      await loadMonth(CUR_YEAR, CUR_MONTH);
-    }
+    await loadMonth(CUR_YEAR, CUR_MONTH);
   })();
 
   /* ═══ 8 ก.ค. · Export PDF (A4 แนวนอน · land:true) · additive · ดึงจาก MONTH_DATA/state จริง · ไม่ re-fetch ═══ */
   function exportCalendarPdf(){
-    var lang = (function(){ var l = getRawLang(); return (l==='th'||l==='zh') ? l : 'en'; })();
+    var lang = _curLang();
     var L = function(o){ return (o && (o[lang]!=null ? o[lang] : o.en)) || ''; };
+    var PDF_TX = {
+      noData:{th:'ยังไม่มีข้อมูลเดือนนี้ — กรุณาโหลดเดือนก่อนดาวน์โหลด PDF',en:'No month data yet — load a month before downloading the PDF.',zh:'尚無本月資料 — 請先載入月份再下載 PDF。',cn:'尚无本月资料 — 请先加载月份再下载 PDF。',vi:'Chưa có dữ liệu tháng này — hãy tải tháng trước khi tải PDF.',ja:'今月のデータがありません。月を読み込んでからPDFを保存してください。',ko:'이번 달 데이터가 없습니다. 달을 불러온 뒤 PDF를 저장하세요.',ru:'Нет данных за месяц. Загрузите месяц перед сохранением PDF.',es:'No hay datos del mes. Carga el mes antes de guardar el PDF.'},
+      helper:{th:'ตัวช่วย PDF ยังโหลดไม่เสร็จ ลองใหม่อีกครั้ง',en:'PDF helper is not ready. Please try again.',zh:'PDF 元件尚未就緒，請稍後再試。',cn:'PDF 组件尚未就绪，请稍后再试。',vi:'Công cụ PDF chưa sẵn sàng. Vui lòng thử lại.',ja:'PDF機能の準備中です。もう一度お試しください。',ko:'PDF 도구가 아직 준비되지 않았습니다. 다시 시도하세요.',ru:'Модуль PDF ещё не готов. Повторите попытку.',es:'El módulo PDF aún no está listo. Inténtalo de nuevo.'},
+      yearPillar:{th:'干支ปี: ',en:'Year pillar: ',zh:'年柱：',cn:'年柱：',vi:'Trụ năm: ',ja:'年柱：',ko:'연주: ',ru:'Столп года: ',es:'Pilar anual: '},
+      monthPillar:{th:'เสาเดือน: ',en:'Month pillar: ',zh:'月柱：',cn:'月柱：',vi:'Trụ tháng: ',ja:'月柱：',ko:'월주: ',ru:'Столп месяца: ',es:'Pilar mensual: '},
+      solarTerms:{th:'節氣ในเดือน: ',en:'Solar terms: ',zh:'本月節氣：',cn:'本月节气：',vi:'Tiết khí trong tháng: ',ja:'今月の節気：',ko:'이달의 절기: ',ru:'Солнечные сезоны: ',es:'Términos solares: '},
+      modeUniversal:{th:'โหมด: ทั่วไป 黃曆 (ทุกคนเหมือนกัน)',en:'Mode: Universal 黃曆 (same for all)',zh:'模式：通用黃曆（人人相同）',cn:'模式：通用黄历（人人相同）',vi:'Chế độ: Hoàng lịch chung (giống nhau cho mọi người)',ja:'モード：共通黄暦（全員共通）',ko:'모드: 공통 황력(모두 동일)',ru:'Режим: общий Хуанли (одинаков для всех)',es:'Modo: Huangli universal (igual para todos)'},
+      modePersonal:{th:'โหมด: ดวงฉัน · 日主 ',en:'Mode: Personal · Day Master ',zh:'模式：個人 · 日主 ',cn:'模式：个人 · 日主 ',vi:'Chế độ: Cá nhân · Nhật chủ ',ja:'モード：個人 · 日主 ',ko:'모드: 개인 · 일주 ',ru:'Режим: личный · Господин дня ',es:'Modo: personal · Maestro del día '},
+      good:{th:'วันดี 65+',en:'Good 65+',zh:'吉 65+',cn:'吉 65+',vi:'Ngày tốt 65+',ja:'吉日 65+',ko:'길일 65+',ru:'Хорошо 65+',es:'Bueno 65+'},
+      neutral:{th:'ปานกลาง',en:'Neutral',zh:'中等',cn:'中等',vi:'Trung bình',ja:'中間',ko:'보통',ru:'Нейтрально',es:'Neutral'},
+      caution:{th:'ระวัง',en:'Caution',zh:'謹慎',cn:'谨慎',vi:'Thận trọng',ja:'注意',ko:'주의',ru:'Осторожно',es:'Precaución'},
+      solarTerm:{th:'วัน節氣',en:'Solar term',zh:'節氣',cn:'节气',vi:'Tiết khí',ja:'節気',ko:'절기',ru:'Солнечный сезон',es:'Término solar'},
+      gridTitle:{th:'🗓 ปฏิทินทั้งเดือน · 建除 + 干支 + 宜忌 + คะแนน',en:'🗓 Full-month calendar · officer + pillar + yi/ji + score',zh:'🗓 全月曆 · 建除 + 干支 + 宜忌 + 分數',cn:'🗓 全月历 · 建除 + 干支 + 宜忌 + 分数',vi:'🗓 Lịch cả tháng · Trực + Can Chi + Nên/Kỵ + điểm',ja:'🗓 月間暦 · 建除 + 干支 + 宜忌 + 点数',ko:'🗓 월간 달력 · 건제 + 간지 + 의기 + 점수',ru:'🗓 Календарь месяца · управитель + Гань-Чжи + 宜忌 + балл',es:'🗓 Calendario mensual · oficial + tallo-rama + yi/ji + puntuación'},
+      cellNote:{th:'แต่ละช่อง: วัน · จันทรคติ · 干支·建除 · คะแนน · 宜/忌 · 🌙=節氣',en:'Each cell: day · lunar · pillar/officer · score · yi/ji · 🌙=solar term',zh:'每格：日 · 農曆 · 干支·建除 · 分數 · 宜/忌 · 🌙=節氣',cn:'每格：日 · 农历 · 干支·建除 · 分数 · 宜/忌 · 🌙=节气',vi:'Mỗi ô: ngày · âm lịch · Can Chi/Trực · điểm · Nên/Kỵ · 🌙=tiết khí',ja:'各欄：日 · 旧暦 · 干支/建除 · 点数 · 宜忌 · 🌙=節気',ko:'각 칸: 날짜 · 음력 · 간지/건제 · 점수 · 의기 · 🌙=절기',ru:'В ячейке: день · лунная дата · Гань-Чжи/управитель · балл · 宜忌 · 🌙=сезон',es:'Cada celda: día · lunar · tallo-rama/oficial · puntuación · yi/ji · 🌙=término solar'},
+      termSection:{th:'🌗 節氣 ประจำเดือน',en:'🌗 Solar terms of the month',zh:'🌗 本月節氣',cn:'🌗 本月节气',vi:'🌗 Tiết khí trong tháng',ja:'🌗 今月の節気',ko:'🌗 이달의 절기',ru:'🌗 Солнечные сезоны месяца',es:'🌗 Términos solares del mes'},
+      term:{th:'節氣',en:'Solar term',zh:'節氣',cn:'节气',vi:'Tiết khí',ja:'節気',ko:'절기',ru:'Сезон',es:'Término solar'},
+      date:{th:'วันที่',en:'Date',zh:'日期',cn:'日期',vi:'Ngày',ja:'日付',ko:'날짜',ru:'Дата',es:'Fecha'},
+      currentTerm:{th:'節氣 ปัจจุบัน: ',en:'Current term: ',zh:'目前節氣：',cn:'目前节气：',vi:'Tiết khí hiện tại: ',ja:'現在の節気：',ko:'현재 절기: ',ru:'Текущий сезон: ',es:'Término actual: '},
+      pillarOfficer:{th:'干支 · 建除',en:'Pillar · Officer',zh:'干支·建除',cn:'干支·建除',vi:'Can Chi · Trực',ja:'干支 · 建除',ko:'간지 · 건제',ru:'Гань-Чжи · Управитель',es:'Tallo-rama · Oficial'},
+      road:{th:'黃黑道 (12 ดาว)',en:'Yellow/Black Path',zh:'黃黑道',cn:'黄黑道',vi:'Hoàng/Hắc Đạo',ja:'黄黒道',ko:'황흑도',ru:'Жёлтый/Чёрный путь',es:'Camino Amarillo/Negro'},
+      scores:{th:'คะแนน ทั่วไป / ดวงคุณ',en:'Score · Universal / Personal',zh:'分數 通用/個人',cn:'分数 通用/个人',vi:'Điểm · Chung/Cá nhân',ja:'点数 · 共通/個人',ko:'점수 · 공통/개인',ru:'Балл · Общий/Личный',es:'Puntuación · Universal/Personal'},
+      lunar:{th:'จันทรคติ',en:'Lunar',zh:'農曆',cn:'农历',vi:'Âm lịch',ja:'旧暦',ko:'음력',ru:'Лунная дата',es:'Lunar'},
+      auspicious:{th:'เหมาะทำ',en:'auspicious',zh:'宜',cn:'宜',vi:'nên làm',ja:'適する',ko:'적합',ru:'благоприятно',es:'favorable'},
+      avoid:{th:'ควรเลี่ยง',en:'avoid',zh:'忌',cn:'忌',vi:'nên tránh',ja:'避ける',ko:'피함',ru:'избегать',es:'evitar'},
+      goodStars:{th:'神煞 มงคล',en:'Auspicious stars',zh:'吉神',cn:'吉神',vi:'Cát thần',ja:'吉神',ko:'길신',ru:'Благоприятные духи',es:'Estrellas favorables'},
+      badStars:{th:'神煞 อัปมงคล',en:'Inauspicious stars',zh:'凶煞',cn:'凶煞',vi:'Hung sát',ja:'凶煞',ko:'흉살',ru:'Неблагоприятные духи',es:'Estrellas adversas'},
+      unknownStars:{th:'神煞 ยังไม่จัดประเภท (กลาง)',en:'Unclassified stars (neutral)',zh:'未分類神煞（中性）',cn:'未分类神煞（中性）',vi:'Thần sát chưa phân loại (trung tính)',ja:'未分類の神煞（中立）',ko:'미분류 신살(중립)',ru:'Неклассифицированные духи (нейтрально)',es:'Estrellas sin clasificar (neutrales)'},
+      selected:{th:'📋 รายละเอียดวันที่เลือก · ',en:'📋 Selected day · ',zh:'📋 所選日期 · ',cn:'📋 所选日期 · ',vi:'📋 Ngày đã chọn · ',ja:'📋 選択日 · ',ko:'📋 선택한 날 · ',ru:'📋 Выбранный день · ',es:'📋 Día seleccionado · '},
+      docTitle:{th:'ปฏิทินมงคล ',en:'Tongshu Calendar ',zh:'通勝黃曆 ',cn:'通胜黄历 ',vi:'Lịch Thông Thư ',ja:'通書暦 ',ko:'통서 달력 ',ru:'Календарь Туншу ',es:'Calendario Tongshu '},
+      headTitle:{th:'ปฏิทินมงคล 黃曆',en:'Tongshu Almanac',zh:'通勝黃曆',cn:'通胜黄历',vi:'Lịch Thông Thư',ja:'通書暦',ko:'통서 달력',ru:'Альманах Туншу',es:'Almanaque Tongshu'},
+      badge:{th:'✓ 建除 + 黃黑道 + 神煞 + 宜忌 ครบทุกวัน',en:'✓ Officer + Yellow/Black Path + stars + yi/ji every day',zh:'✓ 建除 + 黃黑道 + 神煞 + 宜忌 每日齊全',cn:'✓ 建除 + 黄黑道 + 神煞 + 宜忌 每日齐全',vi:'✓ Trực + Hoàng/Hắc Đạo + thần sát + Nên/Kỵ mỗi ngày',ja:'✓ 建除 + 黄黒道 + 神煞 + 宜忌を毎日掲載',ko:'✓ 건제 + 황흑도 + 신살 + 의기를 매일 제공',ru:'✓ Управитель + пути + духи + 宜忌 на каждый день',es:'✓ Oficial + caminos + estrellas + yi/ji cada día'}
+    };
+    var P = function(key){ var row=PDF_TX[key]||{}; return row[lang] || row.en || ''; };
     var md = MONTH_DATA || {};
     var days = md.days || [];
     if (!days.length){
-      alert(L({ th:'ยังไม่มีข้อมูลเดือนนี้ — กรุณาเลือก/โหลดเดือนก่อนดาวน์โหลด PDF',
-                en:'No month data yet — please pick/load a month before downloading the PDF.',
-                zh:'尚無本月資料 — 請先選擇/載入月份再下載 PDF。' }));
+      alert(P('noData'));
       return;
     }
     if (typeof window.HKPrint === 'undefined'){
-      alert(L({ th:'ตัวช่วย PDF ยังโหลดไม่เสร็จ ลองใหม่อีกครั้ง',
-                en:'PDF helper not ready yet, please try again.',
-                zh:'PDF 元件尚未就緒，請稍後再試。' }));
+      alert(P('helper'));
       return;
     }
     var esc = window.HKPrint.esc;
     var isTongshu = state.overlay === 'tongshu';
-    var tpLang = (lang==='th'||lang==='zh') ? lang : 'en';
+    var tpLang = (lang==='th'||lang==='zh'||lang==='cn') ? (lang==='cn'?'zh':lang) : 'en';
     var term1 = function(t){
       if(!t) return '';
       var p = window.HK_termPair ? window.HK_termPair(t, tpLang) : { han:t, th:'' };
-      return lang==='zh' ? (p.han||t) : (p.th || p.han || t);
+      if (lang==='th' || lang==='en' || lang==='zh') return p.th || p.han || t;
+      if (lang==='cn') return _calToHans(p.th || p.han || t);
+      return (typeof TONGSHU_TR !== 'undefined' && TONGSHU_TR[t] && TONGSHU_TR[t][lang]) || p.han || t;
     };
     var starName = function(s){ try { return _calStarName(s, lang); } catch(_){ return (s&&(s.name_th||s.han||s.key))||''; } };
 
     /* ── หัวเรื่อง/ปก ── */
-    var MONTH_EN = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
-    var monthName = L({ th: MONTH_TH[md.month] || ('เดือน '+md.month), en: MONTH_EN[md.month] || ('Month '+md.month), zh: (md.month||'')+'月' });
+    var monthName = (lang==='zh'||lang==='cn') ? (md.month||'')+'月' : new Intl.DateTimeFormat(_bcp47(lang),{month:'long'}).format(new Date(md.year,(md.month||1)-1,1));
     var yearShown = lang==='th' ? ((md.year||0)+543) : md.year;
     var monthYearTitle = monthName + ' ' + yearShown;
     var jqList = md.jieqi_list || [];
     var jqMeta = jqList.length
       ? jqList.map(function(j){ return esc(j.name)+' ('+esc((md.month||'?')+'/'+j.day)+')'; }).join(' · ')
       : esc((md.jieqi_current||'—')+' → '+(md.jieqi_next||'—'));
-    var metaHtml = L({th:'干支ปี: ',en:'Year pillar: ',zh:'年柱：'}) + esc(md.year_pillar||'—')
-      + ' · ' + L({th:'เสาเดือน: ',en:'Month pillar: ',zh:'月柱：'}) + esc(md.month_pillar||'—')
-      + '<br>' + L({th:'節氣ในเดือน: ',en:'Solar terms: ',zh:'本月節氣：'}) + jqMeta;
+    var metaHtml = P('yearPillar') + esc(md.year_pillar||'—')
+      + ' · ' + P('monthPillar') + esc(md.month_pillar||'—')
+      + '<br>' + P('solarTerms') + jqMeta;
     var overlayWho = isTongshu
-      ? L({th:'โหมด: ทั่วไป 黃曆 (ทุกคนเหมือนกัน)',en:'Mode: Universal 黃曆 (same for all)',zh:'模式：通用黃曆（人人相同）'})
-      : L({th:'โหมด: ดวงฉัน · 日主 ',en:'Mode: Personal · Day Master ',zh:'模式：個人 · 日主'}) + (SELF_DM||'');
+      ? P('modeUniversal')
+      : P('modePersonal') + (SELF_DM||'');
 
     /* ── สไตล์ตารางปฏิทินสี (self-contained · print colors) ── */
     var GRID_CSS = '<style>'
@@ -2418,7 +2581,7 @@
       + '</style>';
 
     /* ── ตารางปฏิทินทั้งเดือน (visual grid สี) ── */
-    var WD = { th:['อา','จ','อ','พ','พฤ','ศ','ส'], en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], zh:['日','一','二','三','四','五','六'] }[lang] || ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var WD = Array.from({length:7},function(_,i){ return new Intl.DateTimeFormat(_bcp47(lang),{weekday:'short'}).format(new Date(Date.UTC(2026,0,4+i))); });
     var jqByDay = {}; jqList.forEach(function(j){ jqByDay[j.day] = j.name; });
     var firstDay = new Date(md.year, (md.month||1)-1, 1).getDay();
     var cells = WD.map(function(w){ return '<div class="hkpc-h">'+esc(w)+'</div>'; });
@@ -2450,30 +2613,27 @@
     var pad = (Math.ceil(totalCells/7)*7) - totalCells;
     for (var k=0;k<pad;k++) cells.push('<div class="hkpc-d dim"></div>');
     var legend = '<div class="hkpc-legend">'
-      + '<span><i style="background:#5a8a48"></i>'+esc(L({th:'วันดี 65+',en:'Good 65+',zh:'吉 65+'}))+'</span>'
-      + '<span><i style="background:#9a7d3a"></i>'+esc(L({th:'ปานกลาง',en:'Neutral',zh:'中等'}))+'</span>'
-      + '<span><i style="background:#b03a2e"></i>'+esc(L({th:'ระวัง',en:'Caution',zh:'謹慎'}))+'</span>'
-      + '<span>🌙 '+esc(L({th:'วัน節氣',en:'Solar term',zh:'節氣'}))+'</span>'
+      + '<span><i style="background:#5a8a48"></i>'+esc(P('good'))+'</span>'
+      + '<span><i style="background:#9a7d3a"></i>'+esc(P('neutral'))+'</span>'
+      + '<span><i style="background:#b03a2e"></i>'+esc(P('caution'))+'</span>'
+      + '<span>🌙 '+esc(P('solarTerm'))+'</span>'
       + '</div>';
-    var gridNote = '<p style="font-size:10.5px;color:#5f5847;margin-top:4px">'+L({
-        th:'แต่ละช่อง: เลขวัน · จันทรคติ · 干支·建除 · คะแนนมงคล (มุมขวา) · 宜/忌 ย่อ · 🌙=節氣',
-        en:'Each cell: day · lunar · pillar·officer · score (top-right) · yi/ji · 🌙=solar term',
-        zh:'每格：日 · 農曆 · 干支·建除 · 分數(右上) · 宜/忌 · 🌙=節氣' })+'</p>';
+    var gridNote = '<p style="font-size:10.5px;color:#5f5847;margin-top:4px">'+P('cellNote')+'</p>';
     var gridSection = window.HKPrint.section(
-      L({ th:'🗓 ปฏิทินทั้งเดือน · 建除 + 干支 + 宜忌 + คะแนน', en:'🗓 Full-month calendar · officer + pillar + yi/ji + score', zh:'🗓 全月曆 · 建除 + 干支 + 宜忌 + 分數' }),
+      P('gridTitle'),
       GRID_CSS + legend + '<div class="hkpc-grid">' + cells.join('') + '</div>' + gridNote
     );
 
     /* ── รายการ 節氣 ของเดือน ── */
     var jqHtml;
     if (jqList.length){
-      jqHtml = '<table><thead><tr><th>'+esc(L({th:'節氣',en:'Solar term',zh:'節氣'}))+'</th><th>'+esc(L({th:'วันที่',en:'Date',zh:'日期'}))+'</th></tr></thead><tbody>'
+      jqHtml = '<table><thead><tr><th>'+esc(P('term'))+'</th><th>'+esc(P('date'))+'</th></tr></thead><tbody>'
         + jqList.map(function(j){ return '<tr><td><span class="zh">'+esc(j.name)+'</span></td><td>'+esc((md.month||'?')+'/'+j.day)+'</td></tr>'; }).join('')
         + '</tbody></table>';
     } else {
-      jqHtml = '<p style="font-size:12px">'+esc(L({th:'節氣 ปัจจุบัน: ',en:'Current term: ',zh:'目前節氣：'}))+esc(md.jieqi_current||'—')+' → '+esc(md.jieqi_next||'—')+'</p>';
+      jqHtml = '<p style="font-size:12px">'+esc(P('currentTerm'))+esc(md.jieqi_current||'—')+' → '+esc(md.jieqi_next||'—')+'</p>';
     }
-    var jqSection = window.HKPrint.section(L({ th:'🌗 節氣 ประจำเดือน', en:'🌗 Solar terms of the month', zh:'🌗 本月節氣' }), jqHtml);
+    var jqSection = window.HKPrint.section(P('termSection'), jqHtml);
 
     /* ── panel วันที่เลือก (神煞 / 宜忌 เต็ม) ── */
     var sel = days.find(function(x){ return x.day===state.selected; }) || days[0];
@@ -2483,43 +2643,45 @@
     var pScore = sel.verdict ? sel.verdict.score : '—';
     var yiFull = (sel.yi||[]).map(term1).filter(Boolean).join(' · ') || '—';
     var jiFull = (sel.ji||[]).map(term1).filter(Boolean).join(' · ') || '—';
-    var sd = sel.stars_detail || { good:[], bad:[] };
+    var sd = sel.stars_detail || sel.gods || { good:[], bad:[], unknown:[] };
     var goodStars = (sd.good||[]).map(starName).filter(Boolean).join(' · ') || '—';
     var badStars = (sd.bad||[]).map(starName).filter(Boolean).join(' · ') || '—';
+    var unknownStars = ((sd.unknown||sel.gods?.unknown||[]).map(function(s){ return typeof s==='string'?s:starName(s); }).filter(Boolean).join(' · ')) || '—';
     var goalsObj = isTongshu ? (sel.universal_goals||{}) : (sel.goals||{});
-    var GOAL_LBL = { wealth:{th:'เงิน',en:'Wealth',zh:'財'}, career:{th:'งาน',en:'Career',zh:'業'}, love:{th:'รัก',en:'Love',zh:'情'}, family:{th:'ครอบครัว',en:'Family',zh:'家'}, health:{th:'สุขภาพ',en:'Health',zh:'健'}, travel:{th:'เดินทาง',en:'Travel',zh:'出'} };
+    var GOAL_LBL = { wealth:{th:'เงิน',en:'Wealth',zh:'財',cn:'财',vi:'Tài lộc',ja:'金運',ko:'재물',ru:'Финансы',es:'Riqueza'}, career:{th:'งาน',en:'Career',zh:'業',cn:'业',vi:'Sự nghiệp',ja:'仕事',ko:'일',ru:'Карьера',es:'Carrera'}, love:{th:'รัก',en:'Love',zh:'情',cn:'情',vi:'Tình cảm',ja:'恋愛',ko:'사랑',ru:'Любовь',es:'Amor'}, family:{th:'ครอบครัว',en:'Family',zh:'家',cn:'家',vi:'Gia đình',ja:'家庭',ko:'가정',ru:'Семья',es:'Familia'}, health:{th:'สุขภาพ',en:'Health',zh:'健',cn:'健',vi:'Sức khỏe',ja:'健康',ko:'건강',ru:'Здоровье',es:'Salud'}, travel:{th:'เดินทาง',en:'Travel',zh:'出',cn:'出',vi:'Đi xa',ja:'外出',ko:'여행',ru:'Поездки',es:'Viajes'} };
     var goalChips = Object.keys(GOAL_LBL).map(function(g){
       var gv = goalsObj[g]; if (gv && typeof gv==='object') gv = gv.score;
       if (gv==null) return '';
       return '<span class="hkpc-chip"><b>'+esc(L(GOAL_LBL[g]))+'</b> '+esc(Math.round(gv))+'</span>';
     }).filter(Boolean).join('');
     var sumHtml = GRID_CSS + '<div class="hkp-sum">'
-      + '<div class="x"><span class="l">'+esc(L({th:'干支 · 建除',en:'Pillar · Officer',zh:'干支·建除'}))+'</span>'+esc((sel.stem||'')+(sel.branch||'')+' · '+off2)+'</div>'
-      + '<div class="x"><span class="l">'+esc(L({th:'黃黑道 (12 星)',en:'12-god (yellow/black road)',zh:'黃黑道'}))+'</span>'+esc(star12||'—')+'</div>'
-      + '<div class="x"><span class="l">'+esc(L({th:'คะแนน สากล / ดวงคุณ',en:'Score · Universal / Personal',zh:'分數 通用/個人'}))+'</span>'+esc(uScore+' / '+pScore)+'</div>'
-      + '<div class="x"><span class="l">'+esc(L({th:'จันทรคติ',en:'Lunar',zh:'農曆'}))+'</span>'+esc(sel.lunar||'—')+'</div>'
-      + '<div class="x"><span class="l">宜 '+esc(L({th:'(เหมาะทำ)',en:'(auspicious)',zh:'(宜)'}))+'</span>'+esc(yiFull)+'</div>'
-      + '<div class="x"><span class="l">忌 '+esc(L({th:'(ห้ามทำ)',en:'(avoid)',zh:'(忌)'}))+'</span>'+esc(jiFull)+'</div>'
-      + '<div class="x"><span class="l">'+esc(L({th:'神煞 มงคล',en:'Auspicious stars',zh:'吉神'}))+'</span>'+esc(goodStars)+'</div>'
-      + '<div class="x"><span class="l">'+esc(L({th:'神煞 อัปมงคล',en:'Inauspicious stars',zh:'凶煞'}))+'</span>'+esc(badStars)+'</div>'
+      + '<div class="x"><span class="l">'+esc(P('pillarOfficer'))+'</span>'+esc((sel.stem||'')+(sel.branch||'')+' · '+off2)+'</div>'
+      + '<div class="x"><span class="l">'+esc(P('road'))+'</span>'+esc(star12||'—')+'</div>'
+      + '<div class="x"><span class="l">'+esc(P('scores'))+'</span>'+esc(uScore+' / '+pScore)+'</div>'
+      + '<div class="x"><span class="l">'+esc(P('lunar'))+'</span>'+esc(sel.lunar||'—')+'</div>'
+      + '<div class="x"><span class="l">宜 ('+esc(P('auspicious'))+')</span>'+esc(yiFull)+'</div>'
+      + '<div class="x"><span class="l">忌 ('+esc(P('avoid'))+')</span>'+esc(jiFull)+'</div>'
+      + '<div class="x"><span class="l">'+esc(P('goodStars'))+'</span>'+esc(goodStars)+'</div>'
+      + '<div class="x"><span class="l">'+esc(P('badStars'))+'</span>'+esc(badStars)+'</div>'
+      + '<div class="x"><span class="l">'+esc(P('unknownStars'))+'</span>'+esc(unknownStars)+'</div>'
       + '</div>'
       + (goalChips ? '<div style="margin-top:8px">'+goalChips+'</div>' : '');
     var selDateStr = sel.date || ((md.month||'?')+'/'+sel.day+'/'+md.year);
     var panelSection = window.HKPrint.section(
-      L({ th:'📋 รายละเอียดวันที่เลือก · ', en:'📋 Selected day · ', zh:'📋 所選日期 · ' }) + esc(selDateStr) + ' (' + esc((sel.stem||'')+(sel.branch||'')) + ')',
+      P('selected') + esc(selDateStr) + ' (' + esc((sel.stem||'')+(sel.branch||'')) + ')',
       sumHtml
     );
 
     /* ── สร้าง PDF · A4 แนวนอน ── */
     window.HKPrint.open({
-      docTitle: L({ th:'ปฏิทินมงคล ', en:'Tongshu Calendar ', zh:'通勝黃曆 ' }) + monthYearTitle,
-      headTitle: L({ th:'ปฏิทินมงคล 黃曆', en:'Tongshu Almanac', zh:'通勝黃曆' }),
+      docTitle: P('docTitle') + monthYearTitle,
+      headTitle: P('headTitle'),
       cover: {
-        kick: L({ th:'ปฏิทินมงคล · 通勝黃曆', en:'Tongshu Almanac · 通勝黃曆', zh:'通勝黃曆' }),
+        kick: P('headTitle'),
         title: monthYearTitle,
         who: overlayWho,
         metaHtml: metaHtml,
-        badge: L({ th:'✓ 建除 + 黃黑道 + 神煞 + 宜忌 ครบทุกวัน', en:'✓ Officer + 12-god + stars + yi/ji, every day', zh:'✓ 建除 + 黃黑道 + 神煞 + 宜忌 每日齊全' }),
+        badge: P('badge'),
         qrLabel: 'hourkey.io/calendar'
       },
       pages: [
@@ -2548,10 +2710,28 @@
 </script>
 
 <script>
-/* hourkey · cal · 3-language i18n (TH/EN/ZH) */
+/* hourkey · Calendar locale registry · th/en/zh/cn/vi/ja/ko/ru/es */
+function _calToHans(value){
+  let source=String(value==null?'':value);
+  try { if(window.HK_ZHCN && typeof window.HK_ZHCN.t2s==='function') source=window.HK_ZHCN.t2s(source); } catch(_){}
+  const map={曆:'历',書:'书',選:'选',擇:'择',盤:'盘',網:'网',絡:'络',門:'门',師:'师',羅:'罗',個:'个',類:'类',別:'别',載:'载',總:'总',結:'结',時:'时',職:'职',開:'开',財:'财',運:'运',戀:'恋',醫:'医',療:'疗',體:'体',專:'专',業:'业',標:'标',頁:'页',這:'这',評:'评',謹:'谨',順:'顺',暫:'暂',無:'无',資:'资',與:'与',來:'来',見:'见',貴:'贵',簽:'签',談:'谈',禮:'礼',儀:'仪',滿:'满',閉:'闭',執:'执',龍:'龙',馬:'马',陰:'阴',陽:'阳',氣:'气',東:'东',歲:'岁',遠:'远',後:'后',倉:'仓',護:'护',聖:'圣',鳴:'鸣',對:'对',續:'续',廢:'废',虛:'虚',歸:'归',觸:'触',錯:'错',離:'离',賊:'贼',風:'风',擊:'击',窮:'穷',喪:'丧',敗:'败',獨:'独',滅:'灭',還:'还',國:'国',從:'从',攤:'摊',凶:'凶'};
+  return source.replace(/[曆書選擇盤網絡門師羅個類別載總結時職開財運戀醫療體專業標頁這評謹順暫無資與來見貴簽談禮儀滿閉執龍馬陰陽氣東歲遠後倉護聖鳴對續廢虛歸觸錯離賊風擊窮喪敗獨滅還國從攤]/g,function(ch){return map[ch]||ch;});
+}
+function _calHansDeep(value){
+  if(typeof value==='string') return _calToHans(value);
+  if(Array.isArray(value)) return value.map(_calHansDeep);
+  if(value && typeof value==='object'){
+    const out={}; Object.keys(value).forEach(function(k){ out[k]=_calHansDeep(value[k]); }); return out;
+  }
+  return value;
+}
+function _calApplyHansSoon(){
+  if(_curLang()!=='cn') return;
+  setTimeout(function(){ try{ if(window.HK_ZHCN&&typeof window.HK_ZHCN.apply==='function') window.HK_ZHCN.apply(); }catch(_){} },0);
+}
 window.HK_I18N = {
   'cal.page.title':  { th:'hourkey · ปฏิทินมงคล · 黃曆', en:'hourkey · Tongshu Calendar', zh:'hourkey · 通書' },
-  'cal.pdf.btn':     { th:'⬇ ดาวน์โหลด PDF (ทั้งเดือน)', en:'⬇ Download PDF (whole month)', zh:'⬇ 下載 PDF（整月）' },
+  'cal.pdf.btn':     { th:'⬇ ดาวน์โหลด PDF (ทั้งเดือน)', en:'⬇ Download PDF (whole month)', zh:'⬇ 下載 PDF（整月）', cn:'⬇ 下载 PDF（整月）', vi:'⬇ Tải PDF (cả tháng)', ja:'⬇ PDFを保存（月全体）', ko:'⬇ PDF 저장(한 달)', ru:'⬇ Скачать PDF (весь месяц)', es:'⬇ Descargar PDF (mes completo)' },
   'cal.pdf.ai':     { th:'📄 สร้างสรุป PDF (20 ยาม)', en:'📄 AI summary PDF (20 units)', zh:'📄 AI 總結 PDF（20 時）', cn:'📄 AI 总结 PDF（20 时）', vi:'📄 PDF tổng hợp AI (20 đơn vị)', ja:'📄 AIまとめPDF（20時）', ko:'📄 AI 요약 PDF (20단위)', ru:'📄 AI-сводка PDF (20 единиц)', es:'📄 PDF resumen con IA (20 unidades)' },
   'cal.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'cal.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
@@ -2643,8 +2823,8 @@ window.HK_I18N = {
 /* expose for renderers */
 window._calGoalLabel = function(g, lang){
   const map = {
-    wealth:{th:'การเงิน',en:'wealth',zh:'財運',vi:'tài chính',ja:'金運',ko:'재물',ru:'финансы',es:'finanzas'},
-    career:{th:'การงาน',en:'career',zh:'事業',vi:'sự nghiệp',ja:'仕事',ko:'경력',ru:'карьера',es:'carrera'},
+    wealth:{th:'การเงิน',en:'wealth',zh:'財運',cn:'财运',vi:'tài chính',ja:'金運',ko:'재물',ru:'финансы',es:'finanzas'},
+    career:{th:'การงาน',en:'career',zh:'事業',cn:'事业',vi:'sự nghiệp',ja:'仕事',ko:'경력',ru:'карьера',es:'carrera'},
     love:{th:'ความรัก',en:'love',zh:'感情',vi:'tình cảm',ja:'恋愛',ko:'애정',ru:'любовь',es:'amor'},
     family:{th:'ครอบครัว',en:'family',zh:'家庭',vi:'gia đình',ja:'家庭',ko:'가정',ru:'семья',es:'familia'},
     health:{th:'สุขภาพ',en:'health',zh:'健康',vi:'sức khỏe',ja:'健康',ko:'건강',ru:'здоровье',es:'salud'},
@@ -2655,11 +2835,11 @@ window._calGoalLabel = function(g, lang){
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
+  var effectiveLang=(lang==='zh'&&document.documentElement.getAttribute('data-zh-variant')==='cn')?'cn':lang;
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
-    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('calendar.html',key,lang);}catch(_){}
-    /* for locales without a static entry (vi/ja/ko/ru/es) fall back to EN, never leave Thai default in place */
-    var v=(ov!=null)?ov:(t[lang]!==undefined?t[lang]:t.en);
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('calendar.html',key,effectiveLang);}catch(_){}
+    var v=(ov!=null)?ov:(t[effectiveLang]!==undefined?t[effectiveLang]:(effectiveLang==='cn'&&t.zh!==undefined?_calToHans(t.zh):t.en));
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
       if (v !== undefined) {
         if (v.indexOf('<') >= 0) el.innerHTML = v;
@@ -2667,6 +2847,7 @@ function applyI18N(lang){
       }
     });
   });
+  if(effectiveLang==='cn') _calApplyHansSoon();
 }
 window.applyI18N = applyI18N;
 window.__hkOverlayApply=function(l){
@@ -2689,6 +2870,7 @@ window.__hkOverlayApply=function(l){
     applyI18N(lang);
     /* 10 ก.ค. · โหมดอ่านง่ายต้องวาดตารางใหม่ตามภาษา (ข้อความมาจากคลัง ไม่ใช่ data-i18n) */
     try{ if (typeof renderCal==='function' && typeof MONTH_DATA!=='undefined' && (MONTH_DATA.days||[]).length) renderCal(); }catch(_){}
+    try{ if (typeof renderSide==='function' && typeof MONTH_DATA!=='undefined' && (MONTH_DATA.days||[]).length) renderSide(); }catch(_){}
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
   try{
@@ -2696,10 +2878,16 @@ window.__hkOverlayApply=function(l){
     apply(s);
   }catch(e){ apply('th'); }
 })();
+document.addEventListener('hk:locale',function(){
+  try{
+    const lang=_curLang(); applyI18N(lang);
+    if((MONTH_DATA.days||[]).length){ renderCal(); renderSide(); }
+  }catch(_){}
+});
 </script>
 
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=23" defer></script>
+<script src="/js/hk-user-menu.js?v=24" defer></script>
 <script src="/js/hk-method-link.js?v=20260518a" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
@@ -2876,7 +3064,7 @@ window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof wind
     if (!days || !days.length) { try { alert(T(I.noResult)); } catch (e) {} return; }
     var md = (typeof MONTH_DATA !== "undefined") ? MONTH_DATA : window.MONTH_DATA;
     var sel = (typeof state !== "undefined") ? state.selected : (window.state ? window.state.selected : null);
-    var payload = { month: md, selected: sel };
+    var payload = { month: md, selected: sel, mode: state.overlay, goal: state.goal, intent: state.intent };
     fetch("/api/account/me", { cache: "no-store", credentials: "include" }).then(function (r) {
       if (r.status === 401) { location.href = "/signup"; return null; }
       return r.json().catch(function () { return {}; });

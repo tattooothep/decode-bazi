@@ -39,7 +39,7 @@ export type DailyPersonalVerdict = {
   yongshen: string[];
   jishen: string[];
   source: "daily-personal-verdict";
-  engine: "sifu-packet-aligned-v1" | "legacy-pair-base";
+  engine: "sifu-packet-aligned-v2" | "legacy-pair-base";
   targetDate: string;
   legacy: {
     score: number;
@@ -69,6 +69,8 @@ export type DailyPersonalVerdict = {
       reason?: string | null;
     } | null;
     modifiers: Array<{ code: string; points: number; note: string }>;
+    modifierTotal?: number;
+    appliedAdjustment?: number;
   };
 };
 
@@ -301,8 +303,7 @@ function buildLegacy(input: DailyPersonalVerdictInput, userChart: UserChart | nu
   if (!userChart?.day?.stem || !dayPillar) {
     return { score: 50, label: "中和", level: "ok", raw: 0, source: "unified-pair-base", tags: [], flags: [], yongshen, jishen };
   }
-  const allJishen = jishen.length ? jishen : (yongshen.length ? ELEMENTS.filter((e) => !yongshen.includes(e)) : []);
-  const r = computeUserDayScore(userChart as any, dayPillar, yongshen.length ? yongshen : undefined, allJishen.length ? allJishen : undefined);
+  const r = computeUserDayScore(userChart as any, dayPillar, yongshen.length ? yongshen : undefined, jishen.length ? jishen : undefined);
   const level = scoreLevel(r.score);
   return {
     score: r.score,
@@ -313,7 +314,7 @@ function buildLegacy(input: DailyPersonalVerdictInput, userChart: UserChart | nu
     tags: r.tags || [],
     flags: r.flags || [],
     yongshen,
-    jishen: allJishen,
+    jishen,
   };
 }
 
@@ -410,12 +411,12 @@ export async function computeDailyPersonalVerdict(input: DailyPersonalVerdictInp
       addModifier(modifiers, "weak_dm_bad_amplifier", -4, "日主極弱 เจอ病/忌 ต้องลดเพิ่ม");
     }
 
-    /* Golden 60 Sifu samples show the old pair-base engine swings too far.
-     * Runtime score therefore compresses the old score toward the Sifu center,
-     * while packet modifiers remain evidence-first and only severe structural
-     * clashes can nudge the number. Avoid summing all 病/忌 flags as penalties;
-     * Sifu weighs them as context, not as independent hard deductions. */
-    const score = softClamp(57.5 + (legacy.score - 57.5) * 0.20);
+    /* Hourkey calibration policy: pair-base is compressed toward the Sifu
+     * center, then packet evidence contributes a bounded adjustment. The
+     * coefficients are a product heuristic, not a classical numeric formula. */
+    const modifierTotal = modifiers.reduce((sum, item) => sum + item.points, 0);
+    const appliedAdjustment = clamp(modifierTotal * 0.25, -10, 10);
+    const score = softClamp(57.5 + (legacy.score - 57.5) * 0.20 + appliedAdjustment);
     const lv = scoreLevel(score);
     return {
       score,
@@ -427,7 +428,7 @@ export async function computeDailyPersonalVerdict(input: DailyPersonalVerdictInp
       yongshen: useful.yong.length ? useful.yong : legacyFull.yongshen,
       jishen: useful.ji.length ? useful.ji : legacyFull.jishen,
       source: "daily-personal-verdict",
-      engine: "sifu-packet-aligned-v1",
+      engine: "sifu-packet-aligned-v2",
       targetDate: date,
       legacy,
       evidence: {
@@ -451,6 +452,8 @@ export async function computeDailyPersonalVerdict(input: DailyPersonalVerdictInp
           reason: packet.chengBaiNow.reason || null,
         } : null,
         modifiers,
+        modifierTotal,
+        appliedAdjustment,
       },
     };
   } catch {

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { GET as calendarGet } from "@/app/api/calendar/route";
 import { getMobileSession } from "@/lib/mobile-auth";
 import {
-  buildMobileTimingPayload,
   loadMobileTimingProfile,
   mobileProfileSummary,
 } from "@/lib/mobile-timing-context";
@@ -54,26 +53,15 @@ async function handle(req: Request) {
   }
 
   const profile = await loadMobileTimingProfile(session, profileId);
-  if (!profile) {
+  if (profileId && !profile) {
     return NextResponse.json({ ok: false, error: "profile not found" }, { status: 404 });
-  }
-
-  const payload = buildMobileTimingPayload(profile, `${year}-${String(month).padStart(2, "0")}-01`);
-  if (!payload.userChart.day) {
-    return NextResponse.json({ ok: false, error: "profile has no day pillar" }, { status: 422 });
   }
 
   const url = new URL(req.url);
   url.search = "";
   url.searchParams.set("year", String(year));
   url.searchParams.set("month", String(month));
-  url.searchParams.set("dm", payload.userChart.day.stem);
-  if (payload.birthDate) url.searchParams.set("birthDate", payload.birthDate);
-  url.searchParams.set("birthTime", payload.birthTime);
-  url.searchParams.set("birthLng", String(payload.birthLng));
-  url.searchParams.set("birthTimeKnown", String(payload.birthTimeKnown));
-  url.searchParams.set("gender", payload.gender);
-  url.searchParams.set("dayBoundary", payload.dayBoundary);
+  if (profile) url.searchParams.set("profileId", profile.id);
 
   const resp = await calendarGet(new Request(url.toString(), {
     headers: req.headers,
@@ -84,7 +72,7 @@ async function handle(req: Request) {
   return NextResponse.json(
     {
       ok: resp.ok,
-      profile: mobileProfileSummary(profile),
+      profile: profile ? mobileProfileSummary(profile) : null,
       source: "/api/calendar",
       ...data,
     },
