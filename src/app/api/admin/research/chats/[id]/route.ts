@@ -7,7 +7,7 @@
 // ทุก query JOIN users จริง → แถวผีของ user ที่ถูกลบไม่โผล่ (คำสั่งเจ้านาย 10 ก.ค.)
 // ตอบ: { ok, id, source, user_email, user_name, feature, messages:[{ role:"user"|"ai", content, created_at }] }
 import { NextResponse } from "next/server";
-import { requireAdmin, requirePermission } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q } from "@/lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -60,8 +60,7 @@ async function loadResearchThread(
 export async function GET(req: Request, ctx: Ctx) {
   let admin;
   try {
-    admin = await requireAdmin();
-    await requirePermission("admin.users.read"); /* แชท user = ข้อมูลอ่อนไหว (ลายเซน C·A1) */
+    admin = await requirePermission("admin.research.read");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }
@@ -111,8 +110,9 @@ export async function GET(req: Request, ctx: Ctx) {
         messages.push({ role: "user", content: r.question, created_at: r.created_at });
         messages.push({ role: "ai", content: r.answer, created_at: r.created_at });
       }
-    } else if (UUID_RE.test(id)) {
-      // fusion + id เป็น uuid = งานอ่านดวง fusion5_jobs (1 job = ถาม 1 ตอบ 1)
+    } else {
+      // Try the job table first. Comparing as text keeps list/detail symmetric even
+      // when old rows or drivers expose the identifier in a non-canonical UUID form.
       const rows = await q<{
         question: string | null; reply: string | null; error: string | null; status: string;
         created_at: string; last_at: string; email: string | null; name: string | null;
@@ -123,7 +123,7 @@ export async function GET(req: Request, ctx: Ctx) {
                 su.email, su.name
            FROM fusion5_jobs f
            JOIN scoped_users su ON su.id::text = f.user_id
-          WHERE f.id = $2::uuid
+          WHERE f.id::text = $2
           LIMIT 1`,
         [scopeOrgId, id]
       );
@@ -135,11 +135,11 @@ export async function GET(req: Request, ctx: Ctx) {
         messages.push({ role: "user", content: r.question || "(ไม่มีคำถาม)", created_at: r.created_at });
         const aiContent = r.reply ?? (r.error ? `[error] ${r.error}` : `[status: ${r.status}]`);
         messages.push({ role: "ai", content: aiContent, created_at: r.last_at });
+      } else {
+        // A Fusion continuous-chat key is not present in fusion5_jobs.
+        ({ messages, user_email, user_name, feature } =
+          await loadResearchThread(scopeOrgId, id, `m.feature = 'sifu_fusion'`));
       }
-    } else {
-      // fusion + id ไม่ใช่ uuid = conversation_key ของแชทต่อเนื่อง fusion (r385)
-      ({ messages, user_email, user_name, feature } =
-        await loadResearchThread(scopeOrgId, id, `m.feature = 'sifu_fusion'`));
     }
 
     if (!messages.length) {

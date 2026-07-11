@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin, requirePermission, adminHas } from "@/lib/admin-guard";
+import { requirePermission, adminHas } from "@/lib/admin-guard";
 import { writeAdminAudit } from "@/lib/admin-audit";
 import { q, q1 } from "@/lib/db";
 import { isProductTier } from "@/lib/admin-permissions";
@@ -267,11 +267,22 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let admin;
-  try { admin = await requireAdmin(); } catch (e) { return guard(e); }
   const body = await req.json().catch(() => ({} as Record<string, unknown>));
   const id = String(body.id || "");
   const action = String(body.action || "");
+  const permission =
+    action === "adjust_credit" ? "admin.users.credit.adjust" :
+    action === "set_tier" ? "admin.users.tier.set" :
+    action === "set_active" ? (body.active === true || body.active === "true" || body.active === 1 ? "admin.users.restore" : "admin.users.suspend") :
+    action === "extend_sub" || action === "extend_trial" ? "admin.users.sub.extend" :
+    action === "add_note" ? "admin.users.notes.write" :
+    null;
+  if (!permission) {
+    try { await requirePermission("admin.dashboard.read"); } catch (e) { return guard(e); }
+    return NextResponse.json({ ok: false, error: "unknown action" }, { status: 400 });
+  }
+  let admin;
+  try { admin = await requirePermission(permission); } catch (e) { return guard(e); }
   if (!id) return NextResponse.json({ ok: false, error: "id required" }, { status: 400 });
 
   const exist = await q1<{ id: string; hour_balance: number; tier: string; is_active: boolean; sub_expires_at: string | null }>(

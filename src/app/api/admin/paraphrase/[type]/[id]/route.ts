@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { TYPES, expandFields } from "@/lib/paraphrase-types";
 import { q, q1 } from "@/lib/db";
 
@@ -8,7 +8,7 @@ type Ctx = { params: Promise<{ type: string; id: string }> };
 export async function GET(_req: Request, ctx: Ctx) {
   let admin;
   try {
-    admin = await requireAdmin();
+    admin = await requirePermission("admin.paraphrase.read");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }
@@ -36,7 +36,7 @@ export async function GET(_req: Request, ctx: Ctx) {
 export async function PUT(req: Request, ctx: Ctx) {
   let admin;
   try {
-    admin = await requireAdmin();
+    admin = await requirePermission("admin.paraphrase.write");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

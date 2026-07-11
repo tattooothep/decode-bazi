@@ -16,7 +16,8 @@
     "audit:public-ai": "tsx scripts/audit-public-ai-identifiers.mts",
     "start": "next start",
     "test:admin-p0": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p0.mjs",
-    "test:admin-p1": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p1.mjs"
+    "test:admin-p1": "node --experimental-strip-types --import ./scripts/register-loader.mjs scripts/test-admin-p1.mjs",
+    "test:admin-integration": "node scripts/test-admin-integration-contract.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

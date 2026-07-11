@@ -114,6 +114,7 @@
     account:  { th:'บัญชีของฉัน', en:'My Account', zh:'我的帳戶', cn:'我的账户', vi:'Tài khoản', ja:'アカウント', ru:'Аккаунт', ko:'내 계정', es:'Mi cuenta' },
     news:     { th:'ข่าวสาร · โปรโมชั่น', en:'News · Offers', zh:'消息 · 優惠', cn:'新闻 · 优惠', vi:'Tin tức · Ưu đãi', ja:'ニュース · 特典', ru:'Новости · Акции', ko:'소식 · 혜택', es:'Noticias · Ofertas' },
     support:  { th:'แจ้งปัญหาการใช้งาน', en:'Report an issue', zh:'回報使用問題', cn:'反馈使用问题', vi:'Báo lỗi sử dụng', ja:'問題を報告', ru:'Сообщить о проблеме', ko:'문제 신고', es:'Reportar problema' },
+    admin:    { th:'หลังบ้าน', en:'Admin', zh:'後台', cn:'后台', vi:'Quản trị', ja:'管理画面', ru:'Админ-панель', ko:'관리자', es:'Panel admin' },
     language: { th:'ภาษา', en:'Language', zh:'語言', cn:'语言', vi:'Ngôn ngữ', ja:'言語', ru:'Язык', ko:'언어', es:'Idioma' },
     theme:    { th:'ธีม', en:'Theme', zh:'主題', cn:'主题', vi:'Giao diện', ja:'テーマ', ru:'Тема', ko:'테마', es:'Tema' },
     settings: { th:'ตั้งค่า', en:'Settings', zh:'設定', cn:'设置', vi:'Cài đặt', ja:'設定', ru:'Настройки', ko:'설정', es:'Ajustes' },
@@ -344,6 +345,7 @@
       '.hk-um-i-account': t('account'),
       '.hk-um-i-news': t('news'),
       '.hk-um-i-support': t('support'),
+      '.hk-um-i-admin': t('admin'),
       '.hk-um-i-lang': t('language'),
       '.hk-um-i-theme': t('theme'),
       '.hk-um-i-settings': t('settings'),
@@ -414,6 +416,7 @@
           <a class="hk-um-item" href="/account.html"><span class="hk-um-ico">⚙️</span><span class="hk-um-i-account">${t('account')}</span></a>
           <a class="hk-um-item" href="/news"><span class="hk-um-ico">📰</span><span class="hk-um-i-news">${t('news')}</span></a>
           <a class="hk-um-item" href="/support" id="hk-um-support-link"><span class="hk-um-ico">🛟</span><span class="hk-um-i-support">${t('support')}</span></a>
+          <a class="hk-um-item" href="/admin?src=menu" id="hk-um-admin-link" style="display:none"><span class="hk-um-ico">🔧</span><span class="hk-um-i-admin">${t('admin')}</span></a>
         </div>
         <div class="hk-um-sec">
           <div class="hk-um-lang-block">
@@ -454,6 +457,21 @@
     var supportLink = wrap.querySelector('#hk-um-support-link');
     if (supportLink) {
       supportLink.href = '/support?from=' + encodeURIComponent(location.pathname + location.search);
+    }
+    /* r502 · รายการ "หลังบ้าน" ใต้แจ้งปัญหา — เฉพาะแอดมินจริง (เช็ค /api/admin/whoami · cache ต่อ session ร่วมคีย์เดิมของปุ่มลอยเก่า) */
+    var adminLink = wrap.querySelector('#hk-um-admin-link');
+    if (adminLink) {
+      var showA = function(){ adminLink.style.display=''; };
+      var ck = null; try { ck = sessionStorage.getItem('hk_admin_chip'); } catch(_){}
+      if (ck === '1') showA();
+      else if (ck !== '0') {
+        fetch('/api/admin/whoami', { credentials:'include', cache:'no-store' })
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d){ var ok = !!(d && d.ok); try { sessionStorage.setItem('hk_admin_chip', ok?'1':'0'); } catch(_){} if (ok) showA(); })
+          .catch(function(){});
+      }
+    }
+    if (supportLink) { /* คงโครงวงเล็บเดิม */
     }
 
     /* 📜 fetch tier + 時 balance · cached 30s · 16 พ.ค. */

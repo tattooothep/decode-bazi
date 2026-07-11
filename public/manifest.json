@@ -11,6 +11,21 @@
   "theme_color": "#0f0e0c",
   "lang": "th",
   "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "หลังบ้าน (Admin)",
+      "short_name": "หลังบ้าน",
+      "description": "เปิดหน้าหลังบ้านสำหรับแอดมิน (คนทั่วไปถูกพากลับหน้า /today)",
+      "url": "/admin?src=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

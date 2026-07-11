@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -7,7 +7,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function PUT(req: Request, ctx: Ctx) {
   let admin;
   try {
-    admin = await requireAdmin();
+    admin = await requirePermission("admin.engine.write");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }
@@ -119,7 +119,7 @@ export async function PUT(req: Request, ctx: Ctx) {
 export async function POST(req: Request, ctx: Ctx) {
   let admin;
   try {
-    admin = await requireAdmin();
+    admin = await requirePermission("admin.engine.write");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q } from "@/lib/db";
 
 /**
@@ -9,7 +9,7 @@ import { q } from "@/lib/db";
  */
 export async function GET(req: Request) {
   try {
-    await requireAdmin();
+    await requirePermission("admin.engine.read");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

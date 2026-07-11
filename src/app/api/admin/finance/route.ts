@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
 
 /**
@@ -16,7 +16,7 @@ function guard(e: unknown) {
 }
 
 export async function GET(req: NextRequest) {
-  try { await requireAdmin(); } catch (e) { return guard(e); }
+  try { await requirePermission("admin.finance.read"); } catch (e) { return guard(e); }
   const url = new URL(req.url);
   const view = url.searchParams.get("view") || "dashboard";
 

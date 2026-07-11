@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import {
   cleanLocaleTextMap,
   cleanText,
@@ -7,6 +7,8 @@ import {
   type NewsRow,
 } from "@/lib/community-content";
 import { q, q1 } from "@/lib/db";
+import { writeAdminAudit } from "@/lib/admin-audit";
+import { clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -47,7 +49,7 @@ async function loadPayload() {
 }
 
 export async function GET() {
-  try { await requireAdmin(); } catch (e) { return guard(e); }
+  try { await requirePermission("admin.community.read"); } catch (e) { return guard(e); }
   try {
     return NextResponse.json({ ok: true, ...(await loadPayload()) }, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
@@ -58,7 +60,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   let admin;
-  try { admin = await requireAdmin(); } catch (e) { return guard(e); }
+  try { admin = await requirePermission("admin.community.write"); } catch (e) { return guard(e); }
   await ensureCommunityTables();
   const body = await req.json().catch(() => ({} as Record<string, unknown>));
   const action = String(body.action || "");
@@ -114,6 +116,7 @@ export async function POST(req: NextRequest) {
             admin.email,
           ]
         );
+        await writeAdminAudit({ actor: admin, action: "admin.community.news.update", targetType: "news_item", targetId: row?.id || id, payload: { kind: vals.kind, active: vals.active }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
         return NextResponse.json({ ok: true, id: row?.id, ...(await loadPayload()) });
       }
       const row = await q1<{ id: string }>(
@@ -137,6 +140,7 @@ export async function POST(req: NextRequest) {
           admin.email,
         ]
       );
+      await writeAdminAudit({ actor: admin, action: "admin.community.news.create", targetType: "news_item", targetId: row?.id || null, payload: { kind: vals.kind, active: vals.active }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
       return NextResponse.json({ ok: true, id: row?.id, ...(await loadPayload()) });
     }
 
@@ -144,6 +148,7 @@ export async function POST(req: NextRequest) {
       const id = cleanText(body.id, 30);
       if (!id) return NextResponse.json({ ok: false, error: "id_required" }, { status: 400 });
       await q1(`DELETE FROM news_items WHERE id=$1`, [id]);
+      await writeAdminAudit({ actor: admin, action: "admin.community.news.delete", targetType: "news_item", targetId: id, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
       return NextResponse.json({ ok: true, ...(await loadPayload()) });
     }
 
@@ -158,6 +163,7 @@ export async function POST(req: NextRequest) {
           WHERE id=$1`,
         [id, status, cleanText(body.adminNote ?? body.admin_note, 1600)]
       );
+      await writeAdminAudit({ actor: admin, action: "admin.community.report.update", targetType: "support_report", targetId: id, payload: { status }, ip: clientIp(req), userAgent: req.headers.get("user-agent") });
       return NextResponse.json({ ok: true, ...(await loadPayload()) });
     }
 

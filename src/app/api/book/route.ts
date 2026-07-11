@@ -26,10 +26,7 @@ import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type Fusion
 import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
 import { notifyFusionDone } from "@/lib/push-sender";
 import { buildScienceChartSvg } from "@/lib/book/chart-svg";
-import {
-  BOOK_SCIENCE_YAM as _BOOK_SCI,
-  BOOK_SYNTHESIS_YAM as _BOOK_SYN,
-} from "@/lib/product-entitlement";
+import { BOOK_SCIENCE_YAM, BOOK_SYNTHESIS_YAM, computeBookYam } from "@/lib/book-pricing";
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
@@ -39,14 +36,7 @@ const CHILD_TIMEOUT_MS = Number(process.env.SIFU_BOOK_CHILD_TIMEOUT_MS || 360_00
 const FEATURE = "natal_book";
 const SERVER_STARTED_AT = new Date();
 
-// ยาม/เล่ม · SoT ร่วม product-entitlement (UI book.html ต้องตรง)
-export const BOOK_SCIENCE_YAM = _BOOK_SCI;
-export const BOOK_SYNTHESIS_YAM = _BOOK_SYN;
 function bookPanelYam(_s: ScienceId): number { return BOOK_SCIENCE_YAM; }
-export function computeBookYam(sciences: ScienceId[], includeSynthesis: boolean): number {
-  const valid = sciences.filter((s) => DISCIPLINES[s]?.available);
-  return valid.length * BOOK_SCIENCE_YAM + (includeSynthesis && valid.length >= 2 ? BOOK_SYNTHESIS_YAM : 0);
-}
 
 // มาตรฐานทุก user (format contract): บทต้องมีหัวข้อ "## 1." … "## 10." ครบ+เรียงลำดับ
 const BOOK_FORMAT_RETRY_NOTE = "\n\n⚠️ สำคัญมาก (รอบแก้รูปแบบ): รอบก่อนหน้าเขียนหัวข้อไม่ครบ 10 มิติ · รอบนี้ต้องเขียนให้ครบทั้ง 10 หัวข้อ ขึ้นต้นแต่ละหัวข้อด้วย \"## 1.\" \"## 2.\" … \"## 10.\" เรียงตามลำดับ ห้ามข้าม ห้ามสลับ ห้ามยุบรวมเป็นย่อหน้าเดียว";

@@ -45,7 +45,7 @@ const FEATURE = "sifu_fusion5";
  * ไม่ส่งยอดยามเข้า prompt AI (gate อยู่ฝั่ง server เท่านั้น)
  */
 const ESCROW_YAM_PER_PANEL = Math.max(1, Math.floor(Number(process.env.FUSION_ESCROW_YAM_PER_SCI || 5)));
-export function fusionEscrowYam(scienceCount: number, chartCount: number): number {
+function fusionEscrowYam(scienceCount: number, chartCount: number): number {
   const nSci = Math.max(1, Math.floor(scienceCount) || 1);
   const nCharts = Math.max(1, Math.floor(chartCount) || 1);
   const panels = nSci * nCharts;

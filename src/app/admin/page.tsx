@@ -19,10 +19,11 @@ import {
   WalletCards,
 } from "lucide-react";
 import { q, q1 } from "@/lib/db";
-import { requireAdmin, type AdminSession } from "@/lib/admin-guard";
+import { requirePermission, type AdminSession } from "@/lib/admin-guard";
 import { adminDict, normalizeAdminLocale } from "@/lib/admin-i18n";
 import { loadUserStats, type UserStats, type RecentUser, type SignupDailyPoint } from "@/lib/admin-user-stats";
 import { SIFU_PROMPT_FILES } from "@/lib/sifu-prompt-files";
+import { listPackagesPublic } from "@/lib/payment/packages";
 
 export const metadata = { title: "หลังบ้าน · Admin" };
 export const dynamic = "force-dynamic";
@@ -63,12 +64,14 @@ const MODULES: { href: string; Icon: Icon; title: string; desc: string; tone: st
   { href: "/admin/members", Icon: Users, title: "สมาชิก · User 360", desc: "ค้นหา เติม/หักยาม ระงับ tier free/premium/master · หน้ารายคน", tone: "from-cyan-500/10" },
   { href: "/admin/orders", Icon: CircleDollarSign, title: "ออเดอร์", desc: "refund + clawback ยาม + reverse affiliate", tone: "from-rose-500/10" },
   { href: "/admin/support", Icon: Users, title: "ซัพพอร์ต", desc: "ticket inbox + user reports", tone: "from-sky-500/10" },
+  { href: "/admin/community", Icon: MessageSquareText, title: "ข่าวสาร / แจ้งปัญหา", desc: "ประกาศ 9 ภาษา และรายงานที่ผู้ใช้ส่งจากหน้าเว็บ", tone: "from-cyan-500/10" },
   { href: "/admin/packages", Icon: Package, title: "แพ็คเกจ", desc: "คูปอง/โปร · checkout SoT = packages.ts", tone: "from-amber-500/10" },
   { href: "/admin/finance", Icon: CircleDollarSign, title: "การเงิน", desc: "รายได้ · margin · AI · affiliate reserve", tone: "from-emerald-500/10" },
   { href: "/admin/ai-cost", Icon: Settings, title: "ต้นทุน AI", desc: "usage + kill switches", tone: "from-orange-500/10" },
   { href: "/admin/iam", Icon: Settings, title: "แอดมิน & สิทธิ์", desc: "RBAC หลายบทบาท · invite · break-glass ADMIN_EMAILS", tone: "from-violet-500/10" },
   { href: "/admin/affiliate", Icon: Handshake, title: "Affiliate", desc: "pilot allowlist, referral ledger, approval, payout และ reversal audit", tone: "from-teal-500/10" },
   { href: "/admin/settings", Icon: Settings, title: "ตั้งค่าเว็บ", desc: "อัตราเครดิต feature flag ประกาศ และ maintenance", tone: "from-slate-500/10" },
+  { href: "/admin/notify", Icon: Activity, title: "การแจ้งเตือน", desc: "push ถึงมือถือแอดมิน — สมัครใหม่ · ชำระเงิน · งานพังผิดปกติ", tone: "from-indigo-500/10" },
 ];
 
 const CONTENT: { href: string; Icon: Icon; title: string; desc: string }[] = [
@@ -244,7 +247,7 @@ async function loadDashboard(): Promise<Dashboard> {
       calls: num(ai.calls),
     },
     catalog: {
-      packages: num(catalog.packages),
+      packages: listPackagesPublic().length,
       coupons: num(catalog.coupons),
       engineConfigs: num(catalog.engine_configs),
       formulas: num(catalog.formulas),
@@ -270,7 +273,7 @@ async function loadDashboard(): Promise<Dashboard> {
 
 async function getAdmin(): Promise<AdminSession | null> {
   try {
-    return await requireAdmin();
+    return await requirePermission("admin.dashboard.read");
   } catch (err) {
     if (err instanceof Response && (err.status === 401 || err.status === 403)) return null;
     throw err;
