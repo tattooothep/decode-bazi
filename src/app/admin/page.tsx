@@ -69,6 +69,7 @@ const MODULES: { href: string; Icon: Icon; title: string; desc: string; tone: st
   { href: "/admin/iam", Icon: Settings, title: "แอดมิน & สิทธิ์", desc: "RBAC หลายบทบาท · invite · break-glass ADMIN_EMAILS", tone: "from-violet-500/10" },
   { href: "/admin/affiliate", Icon: Handshake, title: "Affiliate", desc: "pilot allowlist, referral ledger, approval, payout และ reversal audit", tone: "from-teal-500/10" },
   { href: "/admin/settings", Icon: Settings, title: "ตั้งค่าเว็บ", desc: "อัตราเครดิต feature flag ประกาศ และ maintenance", tone: "from-slate-500/10" },
+  { href: "/admin/notify", Icon: Activity, title: "การแจ้งเตือน", desc: "push ถึงมือถือแอดมิน — สมัครใหม่ · ชำระเงิน · งานพังผิดปกติ", tone: "from-indigo-500/10" },
 ];
 
 const CONTENT: { href: string; Icon: Icon; title: string; desc: string }[] = [

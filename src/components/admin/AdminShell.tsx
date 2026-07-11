@@ -15,6 +15,7 @@ const NAV = [
   { href: "/admin/iam", key: "nav.iam" },
   { href: "/admin/affiliate", key: "nav.affiliate" },
   { href: "/admin/research", key: "nav.chatmon" },
+  { href: "/admin/notify", key: "nav.notify" },
   { href: "/admin/settings", key: "nav.settings" },
 ];
 

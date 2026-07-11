@@ -1,0 +1,19 @@
+[Unit]
+Description=Hourkey admin push notify watcher (สมัครใหม่/ชำระเงิน/งานพัง)
+After=network-online.target docker.service hourkey-decode.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/releases/current
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/hourkey/hourkey.env
+ExecStart=/usr/bin/node /root/releases/current/scripts/workers/admin-notify-watcher.mjs
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target
