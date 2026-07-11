@@ -131,7 +131,7 @@ async function checkSignups() {
     `SELECT id::text AS ref, email, created_at
        FROM users
       WHERE created_at > now() - interval '${LOOKBACK}' AND deleted_at IS NULL
-        AND email NOT LIKE '%@example.invalid'   -- user ทดสอบของ test harness (สร้าง/ลบวนตลอด) — ไม่แจ้ง
+        AND email NOT LIKE '%@example.%'   -- user ทดสอบของ test harness (สร้าง/ลบวนตลอด) — ไม่แจ้ง
       ORDER BY created_at ASC LIMIT 50`
   );
   for (const u of rows.rows) {
