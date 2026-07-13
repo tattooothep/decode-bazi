@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { q1 } from "@/lib/db";
+import { publicAiPayload } from "@/lib/public-ai-response";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { isSifuAnswerLang } from "@/lib/sifu-answer-lang";
+import {
+  inspectMobileSifuImage,
+  MAX_INLINE_IMAGE_BYTES,
+  mobileSifuStreamPolicy,
+} from "../image-policy";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -44,7 +53,11 @@ function safeSigPart(value: unknown): string {
   return String(value || "").replace(/[^\w:-]+/g, "_").slice(0, 96);
 }
 
-async function loadCurrentProfileSig(orgId: string | null | undefined, profileId: string): Promise<string | null> {
+async function loadCurrentProfileSig(
+  orgId: string | null | undefined,
+  userId: string,
+  profileId: string
+): Promise<string | null> {
   if (!orgId) return null;
   const row = await q1<{
     id: string;
@@ -58,8 +71,8 @@ async function loadCurrentProfileSig(orgId: string | null | undefined, profileId
     `SELECT id, day_master, day_boundary, birth_lng::text AS birth_lng, gender, birth_time_known,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
        FROM profiles
-      WHERE id=$1 AND org_id=$2 AND COALESCE(is_archived, false)=false`,
-    [profileId, orgId]
+      WHERE id=$1 AND org_id=$2 AND created_by_user_id=$3 AND COALESCE(is_archived, false)=false`,
+    [profileId, orgId, userId]
   );
   if (!row) return null;
   return [
@@ -79,7 +92,37 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "not logged in" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const limited = await rateLimit(`mobile-sifu-chat:${clientIp(req)}:${session.userId}`, 12, 60_000);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { ok: false, error: "ถามซินแสถี่เกินไป · กรุณารอสักครู่แล้วลองใหม่" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(limited.retryAfterMs / 1000)) } }
+    );
+  }
+
+  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const image = inspectMobileSifuImage(body);
+  if (image.invalid) {
+    return NextResponse.json({ ok: false, error: "image_attachment_invalid" }, { status: 400 });
+  }
+  if (image.tooLarge) {
+    return NextResponse.json(
+      { ok: false, error: "image_attachment_too_large", max_bytes: MAX_INLINE_IMAGE_BYTES },
+      { status: 413 }
+    );
+  }
+  if (image.present) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "image_attachments_not_supported",
+        image_supported: false,
+        reason: "Mobile Sifu ยังไม่มี vision contract ที่ตรวจสิทธิ์และอายุไฟล์ครบ จึงไม่รับรูปแบบเงียบ ๆ",
+      },
+      { status: 422 }
+    );
+  }
+
   const message = cleanString(body.message, MAX_MESSAGE_LENGTH) || "";
   if (!message) {
     return NextResponse.json({ ok: false, error: "no message" }, { status: 400 });
@@ -88,7 +131,7 @@ export async function POST(req: Request) {
   if (!profileId) {
     return NextResponse.json({ ok: false, error: "profile_required" }, { status: 400 });
   }
-  const currentProfileSig = await loadCurrentProfileSig(session.orgId, profileId);
+  const currentProfileSig = await loadCurrentProfileSig(session.orgId, session.userId, profileId);
   if (!currentProfileSig) {
     return NextResponse.json({ ok: false, error: "profile_context_unlocked" }, { status: 404 });
   }
@@ -109,14 +152,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "mobile session token missing" }, { status: 401 });
   }
 
-  const origin = new URL(req.url).origin;
+  const wantsStream = new URL(req.url).searchParams.get("stream") === "1";
+  const origin = internalAppOrigin(req);
   const payload = {
     history,
-    lang: ["th", "en", "zh"].includes(body.lang) ? body.lang : "th",
+    lang: isSifuAnswerLang(body.lang) ? body.lang : "th",
     message,
-    model: cleanString(body.model, 40),
     profileId,
-    stream: false,
+    ...mobileSifuStreamPolicy(wantsStream),
     threadId: cleanString(body.threadId, 80),
     threadProfileId: historyBound ? profileId : undefined,
     threadProfileSig: historyBound ? currentProfileSig : threadProfileSig,
@@ -128,12 +171,24 @@ export async function POST(req: Request) {
     body: JSON.stringify(payload),
     cache: "no-store",
     headers: {
-      Accept: "application/json",
+      Accept: wantsStream ? "text/event-stream" : "application/json",
       "Content-Type": "application/json",
       Cookie: cookie,
     },
     method: "POST",
   });
+
+  if (wantsStream) {
+    const headers = new Headers({
+      "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
+      "Content-Type": sifuResp.headers.get("content-type") || "text/event-stream; charset=utf-8",
+      "X-Accel-Buffering": "no",
+      "X-Content-Type-Options": "nosniff",
+    });
+    const retryAfter = sifuResp.headers.get("retry-after");
+    if (retryAfter) headers.set("Retry-After", retryAfter);
+    return new Response(sifuResp.body, { headers, status: sifuResp.status });
+  }
 
   const text = await sifuResp.text();
   let data: Record<string, unknown>;
@@ -144,11 +199,11 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    {
+    publicAiPayload({
       ok: sifuResp.ok,
       ...data,
       source: "/api/sifu",
-    },
+    }),
     {
       headers: { "Cache-Control": "no-store, max-age=0" },
       status: sifuResp.status,

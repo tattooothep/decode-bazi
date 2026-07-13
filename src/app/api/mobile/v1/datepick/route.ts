@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
+import { q } from "@/lib/db";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { cleanDatepickDate, parseDatepickPeople } from "./input";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -16,18 +20,6 @@ const ACTIVE_MODULES = [
   "he_luo",
   "hex64",
 ];
-
-function cleanDate(value: unknown): string | null {
-  const text = typeof value === "string" ? value.trim() : "";
-  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
-}
-
-function cleanProfileId(value: unknown): string | null {
-  const text = typeof value === "string" ? value.trim().replace(/^hk_/, "") : "";
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i.test(text)
-    ? text
-    : null;
-}
 
 function cleanLimit(value: unknown): number {
   const num = Number(value);
@@ -48,17 +40,25 @@ function cookieHeaderForAuspicious(req: Request): string {
 
 export async function POST(req: Request) {
   const session = await getMobileSession(req);
-  if (!session) {
+  if (!session?.orgId) {
     return NextResponse.json({ ok: false, error: "not logged in" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => ({}));
-  const activityType = String((body as { activityType?: unknown }).activityType || "").trim();
-  const dateFrom = cleanDate((body as { dateFrom?: unknown }).dateFrom);
-  const dateTo = cleanDate((body as { dateTo?: unknown }).dateTo);
-  const profileId = cleanProfileId((body as { profileId?: unknown }).profileId);
-  const activityProfileKey = cleanActivityProfileKey((body as { activityProfileKey?: unknown }).activityProfileKey);
-  const limit = cleanLimit((body as { limit?: unknown }).limit);
+  const limited = await rateLimit(`mobile-datepick:${clientIp(req)}:${session.userId}`, 30, 60_000);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { ok: false, error: "ค้นฤกษ์ถี่เกินไป · กรุณารอสักครู่แล้วลองใหม่" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(limited.retryAfterMs / 1000)) } }
+    );
+  }
+
+  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const activityType = String(body.activityType || "").trim();
+  const dateFrom = cleanDatepickDate(body.dateFrom);
+  const dateTo = cleanDatepickDate(body.dateTo);
+  const activityProfileKey = cleanActivityProfileKey(body.activityProfileKey);
+  const limit = cleanLimit(body.limit);
+  const people = parseDatepickPeople(body);
 
   if (!ACTIVITY_TYPES.has(activityType)) {
     return NextResponse.json({ ok: false, error: "activityType ไม่ถูกต้อง" }, { status: 400 });
@@ -66,8 +66,30 @@ export async function POST(req: Request) {
   if (!dateFrom || !dateTo) {
     return NextResponse.json({ ok: false, error: "dateFrom/dateTo ต้องเป็น YYYY-MM-DD" }, { status: 400 });
   }
+  if (dateFrom > dateTo) {
+    return NextResponse.json({ ok: false, error: "dateFrom ต้องไม่เกิน dateTo" }, { status: 400 });
+  }
+  if (people.error) {
+    return NextResponse.json({ ok: false, error: people.error }, { status: 400 });
+  }
 
-  const origin = new URL(req.url).origin;
+  if (people.ids.length) {
+    const owned = await q<{ id: string }>(
+      `SELECT id
+         FROM profiles
+        WHERE id = ANY($1::uuid[])
+          AND org_id=$2
+          AND created_by_user_id=$3
+          AND COALESCE(is_archived, false)=false`,
+      [people.ids, session.orgId, session.userId]
+    );
+    const ownedIds = new Set(owned.map((row) => row.id));
+    if (people.ids.some((id) => !ownedIds.has(id))) {
+      return NextResponse.json({ ok: false, error: "people_profile_not_owned" }, { status: 403 });
+    }
+  }
+
+  const origin = internalAppOrigin(req);
   const cookie = cookieHeaderForAuspicious(req);
   const payload = {
     activityType,
@@ -80,7 +102,7 @@ export async function POST(req: Request) {
       limit,
       scanLimit: 240,
     },
-    peopleIds: profileId ? [`hk_${profileId}`] : [],
+    peopleIds: people.ids.map((id) => `hk_${id}`),
   };
 
   const auspiciousResp = await fetch(`${origin}/api/auspicious`, {
@@ -107,6 +129,7 @@ export async function POST(req: Request) {
       ok: auspiciousResp.ok,
       source: "/api/auspicious",
       ...data,
+      people_ids: people.ids,
     },
     {
       headers: { "Cache-Control": "no-store, max-age=0" },
