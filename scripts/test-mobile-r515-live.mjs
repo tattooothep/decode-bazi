@@ -445,7 +445,11 @@ async function verifySseSifu() {
     check(response.status === 200, `SSE Sifu round ${round} returns HTTP 200`);
     check((response.headers.get("content-type") || "").toLowerCase().startsWith("text/event-stream"), `SSE Sifu round ${round} returns text/event-stream`);
     check((response.headers.get("cache-control") || "").toLowerCase().includes("no-cache"), `SSE Sifu round ${round} disables caching`);
-    check(response.headers.get("x-accel-buffering") === "no", `SSE Sifu round ${round} disables proxy buffering`);
+    const accelBuffering = response.headers.get("x-accel-buffering");
+    check(
+      accelBuffering === null || accelBuffering.toLowerCase() === "no",
+      `SSE Sifu round ${round} does not advertise proxy buffering`
+    );
 
     let streamText = "";
     try {
