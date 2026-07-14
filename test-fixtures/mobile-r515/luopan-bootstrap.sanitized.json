@@ -1,261 +1,283 @@
 {
-  "contract_version": "mobile-luopan/v1",
+  "contract_version": "mobile-luopan-v1",
   "entitlement": {
-    "house_limit": 3,
+    "access_state": {
+      "in_trial": false,
+      "legacy_free": false,
+      "sub_active": true,
+      "sub_expires_at": "2027-07-13T17:00:00.000Z",
+      "trial_ends_at": null
+    },
+    "caps": {
+      "mode": "full",
+      "pins": "full",
+      "sifu": true,
+      "vision": true,
+      "vision_limit": 10,
+      "vision_period": "day"
+    },
+    "caps_hash": "sha256:5a8400a1c2a03f5f118dcdc742eac9ff54f1b98f18dc029b94ef51d2a2c55438",
+    "contract_version": "entitlements-v3-20260711",
+    "feature": "luopan",
+    "house_limit": 999,
     "mode": "full",
     "multi_profile": true,
     "pins": "full",
-    "plan": "premium",
+    "plan": "master",
+    "revision": "sha256:4d99199532b67a64de57a19905ae3becff60188a2fa8f36296c775e37e7c7430",
     "sifu": true,
     "vision": true,
-    "vision_limit": 5
+    "vision_limit": 10
   },
-  "formula_version": "r515",
+  "formula_version": "luopan-core-v1-xuankong-chart-v1",
   "houses": [],
   "north_reference_default": "magnetic",
   "ok": true,
   "profiles": [],
+  "request_context": {
+    "entitlement_revision": "sha256:4d99199532b67a64de57a19905ae3becff60188a2fa8f36296c775e37e7c7430"
+  },
   "ring_reference": {
     "mountains_24": [
       {
-        "centerDeg": 0,
-        "code": "mountain-01",
-        "dir8": "N",
-        "elementZh": "水",
-        "name": "子",
-        "trigram": "坎",
-        "yinYang": "yang",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 15,
-        "code": "mountain-02",
-        "dir8": "N",
-        "elementZh": "水",
-        "name": "癸",
-        "trigram": "坎",
-        "yinYang": "yin",
-        "yuan": "human"
-      },
-      {
-        "centerDeg": 30,
-        "code": "mountain-03",
-        "dir8": "NE",
-        "elementZh": "土",
-        "name": "丑",
-        "trigram": "艮",
-        "yinYang": "yang",
-        "yuan": "heaven"
-      },
-      {
-        "centerDeg": 45,
-        "code": "mountain-04",
-        "dir8": "NE",
-        "elementZh": "土",
-        "name": "艮",
-        "trigram": "艮",
-        "yinYang": "yin",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 60,
-        "code": "mountain-05",
-        "dir8": "NE",
-        "elementZh": "木",
-        "name": "寅",
-        "trigram": "艮",
-        "yinYang": "yang",
-        "yuan": "human"
-      },
-      {
-        "centerDeg": 75,
-        "code": "mountain-06",
-        "dir8": "E",
-        "elementZh": "木",
-        "name": "甲",
-        "trigram": "震",
-        "yinYang": "yin",
-        "yuan": "heaven"
-      },
-      {
-        "centerDeg": 90,
-        "code": "mountain-07",
-        "dir8": "E",
-        "elementZh": "木",
-        "name": "卯",
-        "trigram": "震",
-        "yinYang": "yang",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 105,
-        "code": "mountain-08",
-        "dir8": "E",
-        "elementZh": "木",
-        "name": "乙",
-        "trigram": "震",
-        "yinYang": "yin",
-        "yuan": "human"
-      },
-      {
-        "centerDeg": 120,
-        "code": "mountain-09",
-        "dir8": "SE",
-        "elementZh": "土",
-        "name": "辰",
-        "trigram": "巽",
-        "yinYang": "yang",
-        "yuan": "heaven"
-      },
-      {
-        "centerDeg": 135,
-        "code": "mountain-10",
-        "dir8": "SE",
-        "elementZh": "木",
-        "name": "巽",
-        "trigram": "巽",
-        "yinYang": "yin",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 150,
-        "code": "mountain-11",
-        "dir8": "SE",
-        "elementZh": "火",
-        "name": "巳",
-        "trigram": "巽",
-        "yinYang": "yang",
-        "yuan": "human"
-      },
-      {
-        "centerDeg": 165,
-        "code": "mountain-12",
-        "dir8": "S",
-        "elementZh": "火",
-        "name": "丙",
-        "trigram": "離",
-        "yinYang": "yin",
-        "yuan": "heaven"
-      },
-      {
-        "centerDeg": 180,
-        "code": "mountain-13",
-        "dir8": "S",
-        "elementZh": "火",
-        "name": "午",
-        "trigram": "離",
-        "yinYang": "yang",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 195,
-        "code": "mountain-14",
-        "dir8": "S",
-        "elementZh": "火",
-        "name": "丁",
-        "trigram": "離",
-        "yinYang": "yin",
-        "yuan": "human"
-      },
-      {
-        "centerDeg": 210,
-        "code": "mountain-15",
-        "dir8": "SW",
-        "elementZh": "土",
-        "name": "未",
-        "trigram": "坤",
-        "yinYang": "yang",
-        "yuan": "heaven"
-      },
-      {
-        "centerDeg": 225,
-        "code": "mountain-16",
-        "dir8": "SW",
-        "elementZh": "土",
-        "name": "坤",
-        "trigram": "坤",
-        "yinYang": "yin",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 240,
-        "code": "mountain-17",
-        "dir8": "SW",
-        "elementZh": "金",
-        "name": "申",
-        "trigram": "坤",
-        "yinYang": "yang",
-        "yuan": "human"
-      },
-      {
-        "centerDeg": 255,
-        "code": "mountain-18",
-        "dir8": "W",
-        "elementZh": "金",
-        "name": "庚",
-        "trigram": "兌",
-        "yinYang": "yin",
-        "yuan": "heaven"
-      },
-      {
-        "centerDeg": 270,
-        "code": "mountain-19",
-        "dir8": "W",
-        "elementZh": "金",
-        "name": "酉",
-        "trigram": "兌",
-        "yinYang": "yang",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 285,
-        "code": "mountain-20",
-        "dir8": "W",
-        "elementZh": "金",
-        "name": "辛",
-        "trigram": "兌",
-        "yinYang": "yin",
-        "yuan": "human"
-      },
-      {
-        "centerDeg": 300,
-        "code": "mountain-21",
-        "dir8": "NW",
-        "elementZh": "土",
-        "name": "戌",
-        "trigram": "乾",
-        "yinYang": "yang",
-        "yuan": "heaven"
-      },
-      {
-        "centerDeg": 315,
-        "code": "mountain-22",
-        "dir8": "NW",
-        "elementZh": "金",
-        "name": "乾",
-        "trigram": "乾",
-        "yinYang": "yin",
-        "yuan": "earth"
-      },
-      {
-        "centerDeg": 330,
-        "code": "mountain-23",
-        "dir8": "NW",
-        "elementZh": "水",
-        "name": "亥",
-        "trigram": "乾",
-        "yinYang": "yang",
-        "yuan": "human"
-      },
-      {
         "centerDeg": 345,
-        "code": "mountain-24",
+        "code": "N1",
         "dir8": "N",
         "elementZh": "水",
         "name": "壬",
         "trigram": "坎",
-        "yinYang": "yin",
-        "yuan": "heaven"
+        "yinYang": "陽",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 0,
+        "code": "N2",
+        "dir8": "N",
+        "elementZh": "水",
+        "name": "子",
+        "trigram": "坎",
+        "yinYang": "陰",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 15,
+        "code": "N3",
+        "dir8": "N",
+        "elementZh": "水",
+        "name": "癸",
+        "trigram": "坎",
+        "yinYang": "陰",
+        "yuan": "人元"
+      },
+      {
+        "centerDeg": 30,
+        "code": "NE1",
+        "dir8": "NE",
+        "elementZh": "土",
+        "name": "丑",
+        "trigram": "艮",
+        "yinYang": "陰",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 45,
+        "code": "NE2",
+        "dir8": "NE",
+        "elementZh": "土",
+        "name": "艮",
+        "trigram": "艮",
+        "yinYang": "陽",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 60,
+        "code": "NE3",
+        "dir8": "NE",
+        "elementZh": "木",
+        "name": "寅",
+        "trigram": "艮",
+        "yinYang": "陽",
+        "yuan": "人元"
+      },
+      {
+        "centerDeg": 75,
+        "code": "E1",
+        "dir8": "E",
+        "elementZh": "木",
+        "name": "甲",
+        "trigram": "震",
+        "yinYang": "陽",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 90,
+        "code": "E2",
+        "dir8": "E",
+        "elementZh": "木",
+        "name": "卯",
+        "trigram": "震",
+        "yinYang": "陰",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 105,
+        "code": "E3",
+        "dir8": "E",
+        "elementZh": "木",
+        "name": "乙",
+        "trigram": "震",
+        "yinYang": "陰",
+        "yuan": "人元"
+      },
+      {
+        "centerDeg": 120,
+        "code": "SE1",
+        "dir8": "SE",
+        "elementZh": "土",
+        "name": "辰",
+        "trigram": "巽",
+        "yinYang": "陰",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 135,
+        "code": "SE2",
+        "dir8": "SE",
+        "elementZh": "木",
+        "name": "巽",
+        "trigram": "巽",
+        "yinYang": "陽",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 150,
+        "code": "SE3",
+        "dir8": "SE",
+        "elementZh": "火",
+        "name": "巳",
+        "trigram": "巽",
+        "yinYang": "陽",
+        "yuan": "人元"
+      },
+      {
+        "centerDeg": 165,
+        "code": "S1",
+        "dir8": "S",
+        "elementZh": "火",
+        "name": "丙",
+        "trigram": "離",
+        "yinYang": "陽",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 180,
+        "code": "S2",
+        "dir8": "S",
+        "elementZh": "火",
+        "name": "午",
+        "trigram": "離",
+        "yinYang": "陰",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 195,
+        "code": "S3",
+        "dir8": "S",
+        "elementZh": "火",
+        "name": "丁",
+        "trigram": "離",
+        "yinYang": "陰",
+        "yuan": "人元"
+      },
+      {
+        "centerDeg": 210,
+        "code": "SW1",
+        "dir8": "SW",
+        "elementZh": "土",
+        "name": "未",
+        "trigram": "坤",
+        "yinYang": "陰",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 225,
+        "code": "SW2",
+        "dir8": "SW",
+        "elementZh": "土",
+        "name": "坤",
+        "trigram": "坤",
+        "yinYang": "陽",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 240,
+        "code": "SW3",
+        "dir8": "SW",
+        "elementZh": "金",
+        "name": "申",
+        "trigram": "坤",
+        "yinYang": "陽",
+        "yuan": "人元"
+      },
+      {
+        "centerDeg": 255,
+        "code": "W1",
+        "dir8": "W",
+        "elementZh": "金",
+        "name": "庚",
+        "trigram": "兌",
+        "yinYang": "陽",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 270,
+        "code": "W2",
+        "dir8": "W",
+        "elementZh": "金",
+        "name": "酉",
+        "trigram": "兌",
+        "yinYang": "陰",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 285,
+        "code": "W3",
+        "dir8": "W",
+        "elementZh": "金",
+        "name": "辛",
+        "trigram": "兌",
+        "yinYang": "陰",
+        "yuan": "人元"
+      },
+      {
+        "centerDeg": 300,
+        "code": "NW1",
+        "dir8": "NW",
+        "elementZh": "土",
+        "name": "戌",
+        "trigram": "乾",
+        "yinYang": "陰",
+        "yuan": "地元"
+      },
+      {
+        "centerDeg": 315,
+        "code": "NW2",
+        "dir8": "NW",
+        "elementZh": "金",
+        "name": "乾",
+        "trigram": "乾",
+        "yinYang": "陽",
+        "yuan": "天元"
+      },
+      {
+        "centerDeg": 330,
+        "code": "NW3",
+        "dir8": "NW",
+        "elementZh": "水",
+        "name": "亥",
+        "trigram": "乾",
+        "yinYang": "陽",
+        "yuan": "人元"
       }
     ]
   }

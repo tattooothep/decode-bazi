@@ -6,17 +6,23 @@
   "count": 2,
   "date": "2026-07-14",
   "entitlement": {
-    "bulk_ai": true,
+    "bulk_ai": false,
+    "group_people": 10,
+    "groups": 4,
     "pair_ai": "full",
+    "pair_compare": "full",
     "plan": "premium",
-    "team_ai": true,
-    "team_analysis": true,
-    "visualization_profiles": 12
+    "saved_profiles": 10,
+    "team_ai": false,
+    "team_analysis": false,
+    "team_people": 0,
+    "visualization_profiles": 10
   },
+  "locked_people": [],
   "meta": {
     "locked_profiles": 0,
     "scored_profiles": 2,
-    "total_profiles": 2
+    "total_profiles": 3
   },
   "ok": true,
   "people": [
@@ -45,6 +51,6 @@
       ]
     }
   ],
-  "source": "mobile-r515-synthetic-contract",
+  "source": "api/network/score",
   "version": "r515"
 }

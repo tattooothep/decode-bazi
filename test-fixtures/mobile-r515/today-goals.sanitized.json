@@ -6,7 +6,7 @@
     "detailed_hours": 12,
     "directions": 8,
     "goals": "all",
-    "multi_profile": true,
+    "multi_profile": false,
     "plan": "premium"
   },
   "goals": {
@@ -28,5 +28,5 @@
   "locked_goals": [],
   "ok": true,
   "profile": null,
-  "source": "mobile-calendar-projection"
+  "source": "/api/calendar"
 }

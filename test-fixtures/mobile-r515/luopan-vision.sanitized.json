@@ -1,8 +1,6 @@
 {
   "cost_yam": 1,
   "credit_yam": 99,
-  "max": 5,
   "ok": true,
-  "reply": "Synthetic fixture response.",
-  "used": 1
+  "reply": "Synthetic fixture response."
 }

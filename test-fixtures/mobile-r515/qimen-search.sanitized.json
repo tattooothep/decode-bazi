@@ -1,45 +1,72 @@
 {
-  "entitlement": {
-    "access_state": {
-      "in_trial": false,
-      "legacy_free": false,
-      "sub_active": true,
-      "sub_expires_at": null,
-      "trial_ends_at": null
-    },
-    "caps": {
-      "detail": "pro",
-      "search": true,
-      "sifu": true
-    },
-    "caps_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-    "contract_version": "mobile-entitlement/v1",
-    "feature": "qimen",
-    "plan": "premium",
-    "revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  "activity": "wealth",
+  "dateFrom": "2026-07-14",
+  "dateTo": "2026-07-16",
+  "filters": {
+    "peopleBranches": [],
+    "useBazi": false,
+    "useFly9": true,
+    "useHeluo": true,
+    "useJianchu": true,
+    "useShen12": true,
+    "useTaisui": true,
+    "useTongshu": true,
+    "useXiu28": true
   },
+  "mode": "activity",
   "ok": true,
   "request_context": {
-    "date": "2026-07-14",
-    "entitlement_revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "date_from": "2026-07-14",
+    "date_to": "2026-07-16",
     "location_source": "mobile_explicit",
-    "school": "chaibu",
-    "system_type": "hour",
-    "time": "09:00"
+    "mode": "activity",
+    "school": "chaibu"
   },
-  "results": [
+  "school": "chaibu",
+  "stats": {
+    "bazi_cut": 0,
+    "fly9_cut": 0,
+    "heluo_cut": 0,
+    "jianchu_cut": 0,
+    "shen12_cut": 0,
+    "taisui_cut": 0,
+    "tongshu_cut": 0,
+    "xiu28_cut": 0,
+    "yongshen_cut": 0
+  },
+  "today_failed_dates": 0,
+  "today_loaded_dates": 3,
+  "top": [
     {
       "date": "2026-07-14",
+      "datetime": "2026-07-14T09:00:00+07:00",
+      "deity": "九天",
       "direction": "E",
+      "door": "生門",
+      "earth_stem": "戊",
+      "heaven_stem": "丙",
+      "ju_number": 5,
+      "ju_pole": "陽遁",
+      "matches": [
+        "生門"
+      ],
       "palace_id": 4,
       "score": 82,
-      "slots": [
-        {
-          "end": "11:00",
-          "start": "09:00"
-        }
+      "star": "天任",
+      "time": "09:00",
+      "tongshu": {
+        "day_officer": "建",
+        "ji": [],
+        "yi": [
+          "กิจกรรมตัวอย่างที่เหมาะสม"
+        ]
+      },
+      "yongshen_intent": "wealth",
+      "yongshen_targets": [
+        "water"
       ]
     }
   ],
-  "source": "mobile-r515-synthetic-contract"
+  "total_matched": 1,
+  "total_scanned": 36
 }

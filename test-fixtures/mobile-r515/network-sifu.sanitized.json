@@ -3,6 +3,6 @@
   "mode": "pair",
   "ok": true,
   "reply": "Synthetic fixture response.",
-  "source": "mobile-r515-synthetic-contract",
+  "source": "/api/network/sifu",
   "spent": 1
 }

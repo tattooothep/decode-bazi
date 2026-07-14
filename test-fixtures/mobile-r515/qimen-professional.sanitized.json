@@ -350,37 +350,40 @@
       "in_trial": false,
       "legacy_free": false,
       "sub_active": true,
-      "sub_expires_at": null,
+      "sub_expires_at": "2027-07-13T17:00:00.000Z",
       "trial_ends_at": null
     },
     "caps": {
+      "compare_locations": true,
       "detail": "technical",
-      "search": true,
-      "sifu": true
+      "hours_per_day": 12,
+      "search_days": 30,
+      "search_results": 30,
+      "sifu": true,
+      "time_window_days": 365
     },
-    "caps_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-    "contract_version": "mobile-entitlement/v1",
+    "caps_hash": "sha256:6fa683af8ac618060af9607d2b679c4537804eaacbce2b8c3d434bc8c7c57783",
+    "contract_version": "entitlements-v3-20260711",
     "feature": "qimen",
-    "plan": "premium",
-    "revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    "plan": "master",
+    "revision": "sha256:a9b3daf4677ab7aa86d763b708f5e7b250b17ae467ab378b234c415ae17ab319"
   },
   "ok": true,
   "product": {
-    "plan": "premium",
+    "plan": "master",
     "qimen": {
       "compare_locations": true,
       "detail": "technical",
       "hours_per_day": 12,
-      "pro": true,
       "search_days": 30,
-      "search_results": 12,
+      "search_results": 30,
       "sifu": true,
-      "time_window_days": 30
+      "time_window_days": 365
     }
   },
   "request_context": {
     "date": "2026-07-14",
-    "entitlement_revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "entitlement_revision": "sha256:a9b3daf4677ab7aa86d763b708f5e7b250b17ae467ab378b234c415ae17ab319",
     "location_source": "mobile_explicit",
     "school": "chaibu",
     "system_type": "hour",

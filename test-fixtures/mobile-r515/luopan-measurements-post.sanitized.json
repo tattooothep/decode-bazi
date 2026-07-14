@@ -1,18 +1,50 @@
 {
   "gate": {
     "boundaryDistanceDeg": 7.5,
+    "facingMountain": {
+      "centerDeg": 150,
+      "code": "SE3",
+      "dir8": "SE",
+      "element": "fire",
+      "elementZh": "火",
+      "endDeg": 157.5,
+      "index": 11,
+      "name": "巳",
+      "startDeg": 142.5,
+      "trigram": "巽",
+      "type": "支",
+      "yinYang": "陽",
+      "yuan": "人元"
+    },
     "headingDeg": 150,
     "nearBoundary": false,
     "pass": true,
     "reasons": [],
+    "sittingMountain": {
+      "centerDeg": 330,
+      "code": "NW3",
+      "dir8": "NW",
+      "element": "water",
+      "elementZh": "水",
+      "endDeg": 337.5,
+      "index": 23,
+      "name": "亥",
+      "startDeg": 322.5,
+      "trigram": "乾",
+      "type": "支",
+      "yinYang": "陽",
+      "yuan": "人元"
+    },
     "uncertaintyDeg": 1
   },
   "measurement": {
-    "heading_deg": 150,
+    "created_at": "2026-07-14T02:00:00.000Z",
+    "facing_mountain": "巳",
+    "heading_deg": "150.000",
     "id": "fixture-measurement-01",
-    "method": "sensor",
-    "north_reference": "magnetic",
-    "quality_status": "pass"
+    "quality_reasons": [],
+    "quality_status": "pass",
+    "sitting_mountain": "亥"
   },
   "ok": true
 }

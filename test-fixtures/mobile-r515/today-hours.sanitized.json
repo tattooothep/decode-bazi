@@ -11,6 +11,12 @@
   "date": "2026-07-14",
   "day_branch": "子",
   "day_pillar": "甲子",
+  "entitlement": {
+    "detailed_hours": 12,
+    "plan": "premium",
+    "technical": false,
+    "total_hours": 12
+  },
   "golden_window": {
     "end": "11:00",
     "start": "09:00"
@@ -178,9 +184,10 @@
   "jishen": [
     "metal"
   ],
+  "liushi": null,
   "ok": true,
   "profile": null,
-  "source": "mobile-r515-synthetic-contract",
+  "source": "/api/today/hours",
   "user_branch": null,
   "yongshen": [
     "water"

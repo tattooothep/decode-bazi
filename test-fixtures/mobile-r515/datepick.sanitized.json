@@ -122,8 +122,8 @@
     "activityType": "開市",
     "durationMs": 12,
     "entitlement": {
-      "max_range_days": 30,
-      "max_results": 12,
+      "max_range_days": 90,
+      "max_results": 50,
       "modules_allowed": [
         "qi_men"
       ],

@@ -4,21 +4,25 @@
     "mode": "core",
     "plan": "free"
   },
-  "fenjin120": null,
-  "hex64": null,
   "mountain": {
-    "code": "mountain-11",
+    "centerDeg": 150,
+    "code": "SE3",
     "dir8": "SE",
     "element": "fire",
+    "elementZh": "火",
+    "endDeg": 157.5,
+    "index": 11,
     "name": "巳",
+    "startDeg": 142.5,
     "trigram": "巽",
-    "yuan": "human"
+    "type": "支",
+    "yinYang": "陽",
+    "yuan": "人元"
   },
   "ok": true,
   "sections": {
     "fenjin120": "locked",
     "hex64": "locked",
     "yao384": "locked"
-  },
-  "yao384": null
+  }
 }

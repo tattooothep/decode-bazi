@@ -309,11 +309,11 @@
   "request_context": {
     "date": "2026-07-14",
     "local_time": "09:00",
-    "location_source": "synthetic-contract",
+    "location_source": "mobile_explicit",
     "school": "chaibu",
     "timezone": "Asia/Bangkok"
   },
-  "source": "mobile-r515-synthetic-contract",
+  "source": "/api/today/directions",
   "summary": {
     "avoid": [
       "W"

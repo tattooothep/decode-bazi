@@ -1,5 +1,7 @@
 {
-  "credit_yam": 99,
+  "cached": false,
+  "key": "fixture1",
+  "ms": 12,
   "ok": true,
   "reply": "Synthetic fixture response."
 }

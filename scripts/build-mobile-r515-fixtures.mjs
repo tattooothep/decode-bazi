@@ -25,6 +25,7 @@ This directory contains deterministic synthetic response contracts for the mobil
 - They are generated from code and never captured from production.
 - Personal identity, contact, account, credential, private conversation, image, and exact-location values are absent.
 - Scientific labels, entitlement states, response status, and display-safe synthetic values are retained for contract testing.
+- Entitlement variants use coherent free-post-trial, premium-active, and master-active scenarios; their hashes are deterministic synthetic projections, never production hashes.
 - Run \`node scripts/test-mobile-r515-fixtures.mjs\` from the repository root before adoption.
 - Jarvis must update the mobile fixture allowlist separately; this backend handoff does not modify the mobile worktree.
 `;
@@ -42,10 +43,16 @@ function ensureOutputDirectory(outputDir) {
   const stat = lstatSync(outputDir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error("fixture_output_not_directory");
   const approved = approvedNames();
+  const approvedTemporary = new Set([...approved].map((name) => `.${name}.tmp`));
   for (const name of readdirSync(outputDir)) {
-    if (!approved.has(name)) throw new Error(`fixture_output_unknown ${name}`);
     const child = lstatSync(path.join(outputDir, name));
-    if (!child.isFile() || child.isSymbolicLink()) throw new Error(`fixture_output_unsafe ${name}`);
+    if (approvedTemporary.has(name)) {
+      if (!child.isFile() || child.isSymbolicLink()) throw new Error("fixture_output_temp_unsafe");
+      rmSync(path.join(outputDir, name), { force: true });
+      continue;
+    }
+    if (!approved.has(name)) throw new Error("fixture_output_unknown");
+    if (!child.isFile() || child.isSymbolicLink()) throw new Error("fixture_output_unsafe");
   }
 }
 
@@ -82,6 +89,7 @@ export function buildMobileR515Fixtures(outputDir) {
       retainedClasses: [...spec.retainedClasses],
       sha256: sha256(bytes),
       status: spec.status,
+      syntheticPlan: spec.syntheticPlan,
       variant: spec.variant,
     });
   }

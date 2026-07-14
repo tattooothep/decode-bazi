@@ -5,7 +5,7 @@
     "detailed_hours": 12,
     "directions": 8,
     "goals": "all",
-    "multi_profile": true,
+    "multi_profile": false,
     "plan": "premium"
   },
   "hex": {
@@ -23,7 +23,12 @@
     "year": "丙午"
   },
   "profile": null,
-  "source": "mobile-r515-synthetic-contract",
+  "request_context": {
+    "date": "2026-07-14",
+    "location_source": "mobile_explicit",
+    "timezone": "Asia/Bangkok"
+  },
+  "source": "api/today",
   "tongshu": {
     "day_officer": "建",
     "gods": [

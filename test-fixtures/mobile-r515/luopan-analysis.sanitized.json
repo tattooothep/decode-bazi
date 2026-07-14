@@ -1,87 +1,368 @@
 {
   "core": {
+    "facing": {
+      "centerDeg": 150,
+      "code": "SE3",
+      "dir8": "SE",
+      "element": "fire",
+      "elementZh": "火",
+      "endDeg": 157.5,
+      "index": 11,
+      "name": "巳",
+      "startDeg": 142.5,
+      "trigram": "巽",
+      "type": "支",
+      "yinYang": "陽",
+      "yuan": "人元"
+    },
     "north_reference": "magnetic",
     "period": 9,
+    "pin_warnings": [],
     "professional": {
       "najia_basha": {
         "facingMountain": {
-          "code": "mountain-11"
+          "centerDeg": 150,
+          "code": "SE3",
+          "dir8": "SE",
+          "element": "fire",
+          "elementZh": "火",
+          "endDeg": 157.5,
+          "index": 11,
+          "name": "巳",
+          "startDeg": 142.5,
+          "trigram": "巽",
+          "type": "支",
+          "yinYang": "陽",
+          "yuan": "人元"
+        },
+        "huangQuanMountain": null,
+        "longShaMountain": {
+          "centerDeg": 180,
+          "code": "S2",
+          "dir8": "S",
+          "element": "fire",
+          "elementZh": "火",
+          "endDeg": 187.5,
+          "index": 13,
+          "name": "午",
+          "startDeg": 172.5,
+          "trigram": "離",
+          "type": "支",
+          "yinYang": "陰",
+          "yuan": "天元"
+        },
+        "sittingMountain": {
+          "centerDeg": 330,
+          "code": "NW3",
+          "dir8": "NW",
+          "element": "water",
+          "elementZh": "水",
+          "endDeg": 337.5,
+          "index": 23,
+          "name": "亥",
+          "startDeg": 322.5,
+          "trigram": "乾",
+          "type": "支",
+          "yinYang": "陽",
+          "yuan": "人元"
         }
       },
       "water_method": {
         "hits": [],
         "pass": true,
-        "score": 80,
-        "status": "ready",
+        "raw": {
+          "facingDeg": 150
+        },
+        "score": 50,
+        "status": "missing",
         "tags": [
-          "fixture"
+          "WATER_METHOD_NO_WATER"
         ],
-        "warnings": []
+        "warnings": [
+          "ยังไม่มีจุดน้ำจริง จึงไม่ตัดสิน水法 · 無水不論水法"
+        ]
       }
     },
-    "school": "xuan-kong",
+    "school": "full_24",
+    "sitting": {
+      "centerDeg": 330,
+      "code": "NW3",
+      "dir8": "NW",
+      "element": "water",
+      "elementZh": "水",
+      "endDeg": 337.5,
+      "index": 23,
+      "name": "亥",
+      "startDeg": 322.5,
+      "trigram": "乾",
+      "type": "支",
+      "yinYang": "陽",
+      "yuan": "人元"
+    },
     "three_plates": {
       "degree": 150,
       "earth": {
-        "mountain": "巳"
+        "centerDeg": 150,
+        "code": "SE3",
+        "dir8": "SE",
+        "element": "fire",
+        "elementZh": "火",
+        "endDeg": 157.5,
+        "index": 11,
+        "name": "巳",
+        "startDeg": 142.5,
+        "trigram": "巽",
+        "type": "支",
+        "yinYang": "陽",
+        "yuan": "人元"
       },
       "heaven": {
-        "mountain": "丙"
+        "centerDeg": 150,
+        "code": "SE3",
+        "dir8": "SE",
+        "element": "fire",
+        "elementZh": "火",
+        "endDeg": 157.5,
+        "index": 11,
+        "name": "巳",
+        "startDeg": 142.5,
+        "trigram": "巽",
+        "type": "支",
+        "yinYang": "陽",
+        "yuan": "人元"
       },
       "human": {
-        "mountain": "巽"
+        "centerDeg": 165,
+        "code": "S1",
+        "dir8": "S",
+        "element": "fire",
+        "elementZh": "火",
+        "endDeg": 172.5,
+        "index": 12,
+        "name": "丙",
+        "startDeg": 157.5,
+        "trigram": "離",
+        "type": "干",
+        "yinYang": "陽",
+        "yuan": "地元"
+      }
+    },
+    "tigua": {
+      "facing": {
+        "centerDeg": 150,
+        "deltaFromCenter": 0,
+        "inputDeg": 150,
+        "mode": "下卦",
+        "mountain": {
+          "centerDeg": 150,
+          "code": "SE3",
+          "dir8": "SE",
+          "element": "fire",
+          "elementZh": "火",
+          "endDeg": 157.5,
+          "index": 11,
+          "name": "巳",
+          "startDeg": 142.5,
+          "trigram": "巽",
+          "type": "支",
+          "yinYang": "陽",
+          "yuan": "人元"
+        },
+        "nearBoundary": false,
+        "reasonTh": "องศาอยู่กลางซาน 9° ใช้ผัง下卦ตามปกติ",
+        "reasonZh": "正中九度，用下卦",
+        "school": "full_24",
+        "trigger": "center"
+      },
+      "sitting": {
+        "centerDeg": 330,
+        "deltaFromCenter": 0,
+        "inputDeg": 330,
+        "mode": "下卦",
+        "mountain": {
+          "centerDeg": 330,
+          "code": "NW3",
+          "dir8": "NW",
+          "element": "water",
+          "elementZh": "水",
+          "endDeg": 337.5,
+          "index": 23,
+          "name": "亥",
+          "startDeg": 322.5,
+          "trigram": "乾",
+          "type": "支",
+          "yinYang": "陽",
+          "yuan": "人元"
+        },
+        "nearBoundary": false,
+        "reasonTh": "องศาอยู่กลางซาน 9° ใช้ผัง下卦ตามปกติ",
+        "reasonZh": "正中九度，用下卦",
+        "school": "full_24",
+        "trigger": "center"
       }
     },
     "xuan_kong": {
       "base": [
-        1,
-        2,
-        3,
-        4,
         5,
         6,
         7,
         8,
-        9
+        9,
+        1,
+        2,
+        3,
+        4
       ],
       "mountain": [
-        9,
-        1,
-        2,
-        3,
-        4,
         5,
-        6,
-        7,
-        8
-      ],
-      "version": "r515",
-      "water": [
-        2,
+        4,
         3,
+        2,
+        1,
+        9,
+        8,
+        7,
+        6
+      ],
+      "mountain_flight": {
+        "centerStar": 1,
+        "decision": {
+          "centerDeg": 330,
+          "deltaFromCenter": 0,
+          "inputDeg": 330,
+          "mode": "下卦",
+          "mountain": {
+            "centerDeg": 330,
+            "code": "NW3",
+            "dir8": "NW",
+            "element": "water",
+            "elementZh": "水",
+            "endDeg": 337.5,
+            "index": 23,
+            "name": "亥",
+            "startDeg": 322.5,
+            "trigram": "乾",
+            "type": "支",
+            "yinYang": "陽",
+            "yuan": "人元"
+          },
+          "nearBoundary": false,
+          "reasonTh": "องศาอยู่กลางซาน 9° ใช้ผัง下卦ตามปกติ",
+          "reasonZh": "正中九度，用下卦",
+          "school": "full_24",
+          "trigger": "center"
+        },
+        "direction": "reverse",
+        "noteTh": "ใช้下卦: ดาวเดิม 1 อ้างอิง 癸 陰 → 逆飛",
+        "noteZh": "下卦 逆飛",
+        "referenceMountain": {
+          "centerDeg": 15,
+          "code": "N3",
+          "dir8": "N",
+          "element": "water",
+          "elementZh": "水",
+          "endDeg": 22.5,
+          "index": 2,
+          "name": "癸",
+          "startDeg": 7.5,
+          "trigram": "坎",
+          "type": "干",
+          "yinYang": "陰",
+          "yuan": "人元"
+        },
+        "seedStar": 1
+      },
+      "version": "xuan-kong-chart-v1",
+      "water": [
         4,
         5,
         6,
         7,
         8,
         9,
-        1
-      ]
+        1,
+        2,
+        3
+      ],
+      "water_flight": {
+        "centerStar": 8,
+        "decision": {
+          "centerDeg": 150,
+          "deltaFromCenter": 0,
+          "inputDeg": 150,
+          "mode": "下卦",
+          "mountain": {
+            "centerDeg": 150,
+            "code": "SE3",
+            "dir8": "SE",
+            "element": "fire",
+            "elementZh": "火",
+            "endDeg": 157.5,
+            "index": 11,
+            "name": "巳",
+            "startDeg": 142.5,
+            "trigram": "巽",
+            "type": "支",
+            "yinYang": "陽",
+            "yuan": "人元"
+          },
+          "nearBoundary": false,
+          "reasonTh": "องศาอยู่กลางซาน 9° ใช้ผัง下卦ตามปกติ",
+          "reasonZh": "正中九度，用下卦",
+          "school": "full_24",
+          "trigger": "center"
+        },
+        "direction": "forward",
+        "noteTh": "ใช้下卦: ดาวเดิม 8 อ้างอิง 寅 陽 → 順飛",
+        "noteZh": "下卦 順飛",
+        "referenceMountain": {
+          "centerDeg": 60,
+          "code": "NE3",
+          "dir8": "NE",
+          "element": "wood",
+          "elementZh": "木",
+          "endDeg": 67.5,
+          "index": 5,
+          "name": "寅",
+          "startDeg": 52.5,
+          "trigram": "艮",
+          "type": "支",
+          "yinYang": "陽",
+          "yuan": "人元"
+        },
+        "seedStar": 8
+      }
     }
   },
   "entitlement": {
     "locked_sections": [],
     "mode": "full",
-    "plan": "premium"
+    "pins": "full",
+    "plan": "master"
   },
-  "excluded_unverified_layers": [],
-  "formula_version": "r515",
+  "excluded_unverified_layers": [
+    "pseudo_time_star",
+    "simplified_kua",
+    "sequential_hex64",
+    "low_confidence_star_pairs"
+  ],
+  "formula_version": "luopan-core-v1-xuankong-chart-v1-three-plates-v1",
   "measurement": {
     "boundaryDistanceDeg": 7.5,
     "facingMountain": {
       "centerDeg": 150,
-      "code": "mountain-11",
-      "name": "巳"
+      "code": "SE3",
+      "dir8": "SE",
+      "element": "fire",
+      "elementZh": "火",
+      "endDeg": 157.5,
+      "index": 11,
+      "name": "巳",
+      "startDeg": 142.5,
+      "trigram": "巽",
+      "type": "支",
+      "yinYang": "陽",
+      "yuan": "人元"
     },
     "headingDeg": 150,
     "nearBoundary": false,
@@ -89,8 +370,18 @@
     "reasons": [],
     "sittingMountain": {
       "centerDeg": 330,
-      "code": "mountain-23",
-      "name": "亥"
+      "code": "NW3",
+      "dir8": "NW",
+      "element": "water",
+      "elementZh": "水",
+      "endDeg": 337.5,
+      "index": 23,
+      "name": "亥",
+      "startDeg": 322.5,
+      "trigram": "乾",
+      "type": "支",
+      "yinYang": "陽",
+      "yuan": "人元"
     },
     "uncertaintyDeg": 1
   },

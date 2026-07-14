@@ -2,31 +2,60 @@
   "degree": 150,
   "entitlement": {
     "mode": "full",
-    "plan": "premium"
+    "plan": "master"
   },
   "fenjin120": {
-    "ganzhi": "甲子",
-    "index": 58,
+    "deg_end": 151.5,
+    "deg_start": 148.5,
+    "ganzhi": "己巳",
+    "index": 57,
+    "interp_en": "Synthetic scientific interpretation.",
     "interp_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "interp_zh": "合成科學解讀",
     "mountain": "巳",
-    "score": 78,
-    "usable": true
+    "nayin": "大林木",
+    "score": 1,
+    "status": {
+      "en": "tortoise-shell void / fire-pit",
+      "py": "guī-jiǎ kōng-wáng",
+      "th": "กุยกะคงบ๊วง",
+      "zh": "龜甲空亡"
+    },
+    "usable": false
   },
   "hex64": {
-    "baseHouseScore": 78,
+    "baseHouseScore": 3,
     "homeAdvice": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-    "id": 1,
-    "name": "乾",
-    "thaiName": "เฉียน",
-    "tone": "good"
+    "homeAdvice_en": "Synthetic scientific guidance.",
+    "homeAdvice_zh": "合成科學建議",
+    "homeUse": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "homeUse_en": "Synthetic scientific use.",
+    "homeUse_zh": "合成科學用途",
+    "id": 9,
+    "name": "風天小畜",
+    "thaiName": "สะสมเล็ก",
+    "thaiName_en": "Small Accumulation",
+    "thaiName_zh": "風天小畜",
+    "tone": "neutral",
+    "xkdg": {
+      "guaQi": 2,
+      "guaYun": 8
+    }
   },
   "mountain": {
-    "code": "mountain-11",
+    "centerDeg": 150,
+    "code": "SE3",
     "dir8": "SE",
     "element": "fire",
+    "elementZh": "火",
+    "endDeg": 157.5,
+    "index": 11,
     "name": "巳",
+    "startDeg": 142.5,
     "trigram": "巽",
-    "yuan": "human"
+    "type": "支",
+    "yinYang": "陽",
+    "yuan": "人元"
   },
   "ok": true,
   "sections": {
@@ -35,13 +64,22 @@
     "yao384": "open"
   },
   "yao384": {
-    "gua": "乾",
-    "hex_num": 1,
+    "general": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "general_en": "Synthetic scientific interpretation.",
+    "general_zh": "合成科學解讀",
+    "gua": "小畜",
+    "hex_num": 9,
     "home": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-    "id": 6,
-    "jixiong": "吉",
-    "pos": "初",
-    "score": 76,
-    "th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+    "home_en": "Synthetic scientific home guidance.",
+    "home_zh": "合成科學家居建議",
+    "id": 55,
+    "jixiong": "平",
+    "line_type": "yang",
+    "pos": "九五",
+    "score": 3,
+    "th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "th_en": "Synthetic scientific line text.",
+    "th_zh": "合成科學爻辭",
+    "yao_ci": "有孚攣如，富以其鄰。"
   }
 }
