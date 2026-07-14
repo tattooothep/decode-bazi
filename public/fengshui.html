@@ -5675,7 +5675,8 @@ window.__hkOverlayApply=function(l){
     var panel = root.querySelector('#hk-um-panel');
     if (panel) {
       panel.style.zIndex = '2147483000';
-      panel.style.pointerEvents = 'auto';
+      /* ห้าม set panel pointer-events ตรงนี้ — ปล่อยให้ CSS .hk-um-panel.on คุมเอง (เปิด=auto ปิด=none)
+         ถ้า hardcode 'auto' panel ที่ปิดอยู่จะดักคลิกทับคอลัมน์เนื้อหาขวา (regression ccaac42) */
     }
     moved = true;
     return true;
