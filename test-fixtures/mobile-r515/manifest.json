@@ -1,0 +1,762 @@
+{
+  "fixtureCount": 30,
+  "fixtures": [
+    {
+      "aliases": [],
+      "bytes": 1690,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/today",
+      "family": "today",
+      "filename": "today.sanitized.json",
+      "key": "today",
+      "method": "GET|POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "90031d8b6d8261a42929aac291787b77035fcfa37f10acc148e9af6c1f7f7b05",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 5181,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/today/hours",
+      "family": "hours",
+      "filename": "today-hours.sanitized.json",
+      "key": "todayHours",
+      "method": "GET|POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "e25fe78486694158072da83ad6a2dc15db552a818ed594e5b47692e32671b641",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 7714,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/today/directions",
+      "family": "directions",
+      "filename": "today-directions.sanitized.json",
+      "key": "todayDirections",
+      "method": "GET|POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "b6f0620859de45e7a2d84d8a788e64b280f798abb4c915929e8af0b0f833cba4",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 590,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/today/goals",
+      "family": "goals",
+      "filename": "today-goals.sanitized.json",
+      "key": "todayGoals",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "cd356657da9323de5f771111568f82397409ec2d87204b2e9b953d48eede9c54",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [
+        "/api/mobile/v1/chart/[id]"
+      ],
+      "bytes": 887,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/chart",
+      "family": "chart",
+      "filename": "chart.sanitized.json",
+      "key": "chart",
+      "method": "GET|POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "f80e858155e0faf31b4cb015d9da8f316f6f95f337c27a6c3727015ff49fa5c1",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 1930,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/calendar",
+      "family": "calendar",
+      "filename": "calendar.sanitized.json",
+      "key": "calendar",
+      "method": "GET|POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "68dfef98bf16742786b76173806e88df07dc617c015f51a850c12c1f31fa7229",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 902,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/network",
+      "family": "network",
+      "filename": "network.sanitized.json",
+      "key": "network",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "6d8433fd46cb438ad6f50f304564570f981eac1a2e65d9d330c5e3bfcbe298c0",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 160,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/network/sifu",
+      "family": "network",
+      "filename": "network-sifu.sanitized.json",
+      "key": "networkSifu",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "ec5f0667f88bbe7ca669ac4897cb251a063c7e61c300c7a12f85e3e6778288f2",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 85,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/network/bulk",
+      "family": "network",
+      "filename": "network-bulk.sanitized.json",
+      "key": "networkBulk",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "7d93426fe1b76c304f1a1d04488aae07e106e69cfe6d52c7474783b2d2f5a46c",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 12448,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/qimen",
+      "family": "qimen",
+      "filename": "qimen-basic.sanitized.json",
+      "key": "qimenBasic",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "e2f83d9e2add06783ce9ba8fb96579b5b4fc27dfd8d054512bf358e4ff8ecdd9",
+      "status": 200,
+      "variant": "basic"
+    },
+    {
+      "aliases": [],
+      "bytes": 13373,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/qimen",
+      "family": "qimen",
+      "filename": "qimen-professional.sanitized.json",
+      "key": "qimenProfessional",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "4ef4573e4e40e45ad24cdf7f915914429fc216c4f361b92e617d57725e676d4d",
+      "status": 200,
+      "variant": "professional"
+    },
+    {
+      "aliases": [],
+      "bytes": 1109,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/qimen/search",
+      "family": "qimen",
+      "filename": "qimen-search.sanitized.json",
+      "key": "qimenSearch",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "0df10df55e1e4bb60102d20d5d97b44048850aa211616ed402472d71781033e1",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 142,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/qimen/sifu",
+      "family": "qimen",
+      "filename": "qimen-sifu.sanitized.json",
+      "key": "qimenSifu",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "42c23163ac0797a5fa24ed60e9431722ef2884cd3e9be6b97d4db9fb30d44ca8",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 3052,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/datepick",
+      "family": "datepick",
+      "filename": "datepick.sanitized.json",
+      "key": "datepick",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "5b7568d996d894d55073b0d1a4950d9c66e645ccd37c41ebdaf5ee188ac65d22",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 509,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/datepick/save",
+      "family": "datepick",
+      "filename": "datepick-save.sanitized.json",
+      "key": "datepickSave",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "e811ff63ad9c54f8e4f3ef40903975af3c3f19cfeca2a9d170cce0207975885d",
+      "status": 201,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 574,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/datepick/saved",
+      "family": "datepick",
+      "filename": "datepick-saved.sanitized.json",
+      "key": "datepickSaved",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "193ed7ae5813579a240d5489ffa7b03ed0052ce093ec6a745c97aee60249dd82",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 69,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/datepick/saved/[id]",
+      "family": "datepick",
+      "filename": "datepick-delete.sanitized.json",
+      "key": "datepickDelete",
+      "method": "DELETE",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "775b58fd8e0b466f8dc9f4804bf2304915414ab15495275128c8e493f8f796dc",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 397,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/rings",
+      "family": "luopan",
+      "filename": "luopan-rings.sanitized.json",
+      "key": "luopanRings",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "170fd76c83385c5f395cf8970ac094ee7cf00e8414eaeef1f49e96f19052933b",
+      "status": 200,
+      "variant": "locked"
+    },
+    {
+      "aliases": [],
+      "bytes": 5765,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/bootstrap",
+      "family": "luopan",
+      "filename": "luopan-bootstrap.sanitized.json",
+      "key": "luopanBootstrap",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "a52a44d11d2308a96d4745a40d33a7922ddae0f0a802c03f9e0e8de19a35cfa3",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 1159,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/rings",
+      "family": "luopan",
+      "filename": "luopan-rings-w4.sanitized.json",
+      "key": "luopanRingsW4",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "2d3e893625e47e08ea0c5b0232e3d12f330af1ee33c6f5752bb2c60141fc3def",
+      "status": 200,
+      "variant": "w4-open"
+    },
+    {
+      "aliases": [],
+      "bytes": 1642,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/analysis",
+      "family": "luopan",
+      "filename": "luopan-analysis.sanitized.json",
+      "key": "luopanAnalysis",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "08fa3daaec01fb43810f61667baa93c52bea9e20fb922580fbbb5905b861d90a",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 7001,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/snapshot",
+      "family": "luopan",
+      "filename": "luopan-snapshot.sanitized.json",
+      "key": "luopanSnapshot",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "a7039fa2f49f0d50a5b9121cb0fbb6322f0346817e12f329e9eece69d29db209",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 467,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/measurements",
+      "family": "luopan",
+      "filename": "luopan-measurements-get.sanitized.json",
+      "key": "luopanMeasurementsGet",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "b3798b31bcbb2adf99059a510cc6dfa822995a3ee8b039e0184d3397e424f035",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 349,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/measurements",
+      "family": "luopan",
+      "filename": "luopan-measurements-post.sanitized.json",
+      "key": "luopanMeasurementsPost",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "36f992899824cf791024d63b3f92060e6598eef0ea23f8562e1b80435440ec30",
+      "status": 201,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 79,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/sifu",
+      "family": "luopan",
+      "filename": "luopan-sifu.sanitized.json",
+      "key": "luopanSifu",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "5e9d9a6a8c7470e533c457abe4769dc99345b305eaf5a59e1c7f7c634dad0219",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 121,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/luopan/vision",
+      "family": "luopan",
+      "filename": "luopan-vision.sanitized.json",
+      "key": "luopanVision",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "35cfdcbc76156a8d278c4df4da7512771b1838dd5bbadff6ef3d5f354ac5aa91",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 173,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/sifu/chat",
+      "family": "sifu",
+      "filename": "sifu-chat.sanitized.json",
+      "key": "sifuChat",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "2302b9854a81251150fcd61844bd6ccac2ad1a673b6ff495954d971945eb6f77",
+      "status": 200,
+      "variant": "json"
+    },
+    {
+      "aliases": [],
+      "bytes": 508,
+      "cacheControl": "no-cache",
+      "contentType": "text/event-stream",
+      "endpoint": "/api/mobile/v1/sifu/chat?stream=1",
+      "family": "sifu",
+      "filename": "sifu-chat-stream.sanitized.json",
+      "key": "sifuChatStream",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "d604312c34ea550005b225dc7da2e617d9c69dd017ec6b66731221fd8be913d1",
+      "status": 200,
+      "variant": "sse-projection"
+    },
+    {
+      "aliases": [],
+      "bytes": 367,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/sifu/history",
+      "family": "sifu",
+      "filename": "sifu-history.sanitized.json",
+      "key": "sifuHistory",
+      "method": "GET",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "9f375bedc926ed79e74996a510e1a1d40f5023ec8cb62ecdfdd3039e181b6a9c",
+      "status": 200,
+      "variant": "default"
+    },
+    {
+      "aliases": [],
+      "bytes": 175,
+      "cacheControl": "no-store",
+      "contentType": "application/json",
+      "endpoint": "/api/mobile/v1/sifu/group",
+      "family": "sifu",
+      "filename": "sifu-group.sanitized.json",
+      "key": "sifuGroup",
+      "method": "POST",
+      "removedClasses": [
+        "authentication",
+        "identity",
+        "private-free-text",
+        "exact-location"
+      ],
+      "retainedClasses": [
+        "contract-envelope",
+        "structured-science",
+        "entitlement-state"
+      ],
+      "sha256": "3f34dade04bcefc059b1158a30943201468ddde91e77bc42bcebf84759815023",
+      "status": 200,
+      "variant": "default"
+    }
+  ],
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "rawStoredInGit": false,
+  "schema": "hourkey-mobile-r515-fixtures/v1",
+  "sourceClass": "deterministic-synthetic-contract",
+  "sourceRelease": "r515"
+}

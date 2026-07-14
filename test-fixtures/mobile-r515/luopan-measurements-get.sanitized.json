@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "rows": [
+    {
+      "client_measurement_id": "fixture-client-measurement-01",
+      "created_at": "2026-07-14T02:00:00.000Z",
+      "facing_mountain": "巳",
+      "formula_version": "r515",
+      "heading_deg": 150,
+      "house_id": null,
+      "id": "fixture-measurement-01",
+      "method": "sensor",
+      "north_reference": "magnetic",
+      "quality_reasons": [],
+      "quality_status": "pass",
+      "sitting_mountain": "亥"
+    }
+  ]
+}

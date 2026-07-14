@@ -1,0 +1,99 @@
+{
+  "core": {
+    "north_reference": "magnetic",
+    "period": 9,
+    "professional": {
+      "najia_basha": {
+        "facingMountain": {
+          "code": "mountain-11"
+        }
+      },
+      "water_method": {
+        "hits": [],
+        "pass": true,
+        "score": 80,
+        "status": "ready",
+        "tags": [
+          "fixture"
+        ],
+        "warnings": []
+      }
+    },
+    "school": "xuan-kong",
+    "three_plates": {
+      "degree": 150,
+      "earth": {
+        "mountain": "巳"
+      },
+      "heaven": {
+        "mountain": "丙"
+      },
+      "human": {
+        "mountain": "巽"
+      }
+    },
+    "xuan_kong": {
+      "base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "mountain": [
+        9,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "version": "r515",
+      "water": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        1
+      ]
+    }
+  },
+  "entitlement": {
+    "locked_sections": [],
+    "mode": "full",
+    "plan": "premium"
+  },
+  "excluded_unverified_layers": [],
+  "formula_version": "r515",
+  "measurement": {
+    "boundaryDistanceDeg": 7.5,
+    "facingMountain": {
+      "centerDeg": 150,
+      "code": "mountain-11",
+      "name": "巳"
+    },
+    "headingDeg": 150,
+    "nearBoundary": false,
+    "pass": true,
+    "reasons": [],
+    "sittingMountain": {
+      "centerDeg": 330,
+      "code": "mountain-23",
+      "name": "亥"
+    },
+    "uncertaintyDeg": 1
+  },
+  "ok": true,
+  "verdict_scope": "verified_core_only"
+}

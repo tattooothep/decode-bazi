@@ -1,0 +1,18 @@
+{
+  "gate": {
+    "boundaryDistanceDeg": 7.5,
+    "headingDeg": 150,
+    "nearBoundary": false,
+    "pass": true,
+    "reasons": [],
+    "uncertaintyDeg": 1
+  },
+  "measurement": {
+    "heading_deg": 150,
+    "id": "fixture-measurement-01",
+    "method": "sensor",
+    "north_reference": "magnetic",
+    "quality_status": "pass"
+  },
+  "ok": true
+}

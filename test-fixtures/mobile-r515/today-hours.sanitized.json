@@ -1,0 +1,188 @@
+{
+  "avoid_window": {
+    "end": "15:00",
+    "start": "13:00"
+  },
+  "calm_window": {
+    "end": "19:00",
+    "start": "17:00"
+  },
+  "clash_branch": "午",
+  "date": "2026-07-14",
+  "day_branch": "子",
+  "day_pillar": "甲子",
+  "golden_window": {
+    "end": "11:00",
+    "start": "09:00"
+  },
+  "hours": [
+    {
+      "branch": "子",
+      "clash_reasons": [],
+      "element": "water",
+      "isNow": false,
+      "label": "00:00–01:59",
+      "locked": false,
+      "name_th": "ยาม子",
+      "quality": "good",
+      "range": "00:00-02:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "甲"
+    },
+    {
+      "branch": "丑",
+      "clash_reasons": [],
+      "element": "earth",
+      "isNow": false,
+      "label": "02:00–03:59",
+      "locked": false,
+      "name_th": "ยาม丑",
+      "quality": "ok",
+      "range": "02:00-04:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "乙"
+    },
+    {
+      "branch": "寅",
+      "clash_reasons": [],
+      "element": "wood",
+      "isNow": false,
+      "label": "04:00–05:59",
+      "locked": false,
+      "name_th": "ยาม寅",
+      "quality": "best",
+      "range": "04:00-06:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "丙"
+    },
+    {
+      "branch": "卯",
+      "clash_reasons": [],
+      "element": "wood",
+      "isNow": false,
+      "label": "06:00–07:59",
+      "locked": false,
+      "name_th": "ยาม卯",
+      "quality": "good",
+      "range": "06:00-08:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "丁"
+    },
+    {
+      "branch": "辰",
+      "clash_reasons": [],
+      "element": "earth",
+      "isNow": true,
+      "label": "08:00–09:59",
+      "locked": false,
+      "name_th": "ยาม辰",
+      "quality": "best",
+      "range": "08:00-10:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "戊"
+    },
+    {
+      "branch": "巳",
+      "clash_reasons": [],
+      "element": "fire",
+      "isNow": false,
+      "label": "10:00–11:59",
+      "locked": false,
+      "name_th": "ยาม巳",
+      "quality": "good",
+      "range": "10:00-12:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "己"
+    },
+    {
+      "branch": "午",
+      "clash_reasons": [
+        "fixture-clash"
+      ],
+      "element": "fire",
+      "isNow": false,
+      "label": "12:00–13:59",
+      "locked": false,
+      "name_th": "ยาม午",
+      "quality": "bad",
+      "range": "12:00-14:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "庚"
+    },
+    {
+      "branch": "未",
+      "clash_reasons": [],
+      "element": "earth",
+      "isNow": false,
+      "label": "14:00–15:59",
+      "locked": false,
+      "name_th": "ยาม未",
+      "quality": "ok",
+      "range": "14:00-16:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "辛"
+    },
+    {
+      "branch": "申",
+      "clash_reasons": [],
+      "element": "metal",
+      "isNow": false,
+      "label": "16:00–17:59",
+      "locked": false,
+      "name_th": "ยาม申",
+      "quality": "good",
+      "range": "16:00-18:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "壬"
+    },
+    {
+      "branch": "酉",
+      "clash_reasons": [],
+      "element": "metal",
+      "isNow": false,
+      "label": "18:00–19:59",
+      "locked": false,
+      "name_th": "ยาม酉",
+      "quality": "best",
+      "range": "18:00-20:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "癸"
+    },
+    {
+      "branch": "戌",
+      "clash_reasons": [],
+      "element": "earth",
+      "isNow": false,
+      "label": "20:00–21:59",
+      "locked": false,
+      "name_th": "ยาม戌",
+      "quality": "ok",
+      "range": "20:00-22:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "甲"
+    },
+    {
+      "branch": "亥",
+      "clash_reasons": [],
+      "element": "water",
+      "isNow": false,
+      "label": "22:00–23:59",
+      "locked": false,
+      "name_th": "ยาม亥",
+      "quality": "good",
+      "range": "22:00-00:00",
+      "reason_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "stem": "乙"
+    }
+  ],
+  "jishen": [
+    "metal"
+  ],
+  "ok": true,
+  "profile": null,
+  "source": "mobile-r515-synthetic-contract",
+  "user_branch": null,
+  "yongshen": [
+    "water"
+  ]
+}

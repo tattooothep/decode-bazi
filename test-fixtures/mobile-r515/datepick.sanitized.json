@@ -1,0 +1,136 @@
+{
+  "allCut": false,
+  "candidates": [
+    {
+      "calendar": {
+        "gregorianDate": "2026-07-20",
+        "shichen": 5,
+        "shichenBranch": "巳"
+      },
+      "datetime": {
+        "end": "2026-07-20T11:00:00+07:00",
+        "start": "2026-07-20T09:00:00+07:00",
+        "timezone": "Asia/Bangkok"
+      },
+      "display": {
+        "badges": [
+          {
+            "color": "gold",
+            "emoji": "◎",
+            "label": "fixture"
+          }
+        ],
+        "guardrails": [
+          "ข้อมูลสังเคราะห์"
+        ],
+        "summary": "Synthetic auspicious candidate."
+      },
+      "donggong": {
+        "jianchu": "建",
+        "level": "good",
+        "missing": false,
+        "th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+      },
+      "huangdao": {
+        "deity_th": "เทพตัวอย่าง",
+        "deity_zh": "青龍",
+        "good": true,
+        "path_th": "วิถีตัวอย่าง",
+        "path_zh": "黃道"
+      },
+      "id": "fixture-candidate-01",
+      "modules": {
+        "qi_men": {
+          "raw": {
+            "deity": "九天",
+            "direction": "E",
+            "door": "生門",
+            "ju_number": 5,
+            "palace_id": 4,
+            "star": "天任"
+          }
+        },
+        "twelve_officers": {
+          "raw": {
+            "officer": "建"
+          }
+        }
+      },
+      "pillars": {
+        "day": {
+          "branch": "子",
+          "stem": "甲"
+        },
+        "hour": {
+          "branch": "巳",
+          "stem": "己"
+        },
+        "month": {
+          "branch": "未",
+          "stem": "乙"
+        },
+        "year": {
+          "branch": "午",
+          "stem": "丙"
+        }
+      },
+      "richong": {
+        "clash_branch_zh": "午",
+        "zodiac_th": "ม้า",
+        "zodiac_zh": "馬"
+      },
+      "scoring": {
+        "action": "use",
+        "activeModules": [
+          "qi_men",
+          "twelve_officers"
+        ],
+        "finalScore": 82,
+        "moduleScores": {
+          "qi_men": 84,
+          "twelve_officers": 80
+        },
+        "reasonsDown": [],
+        "reasonsUp": [
+          {
+            "code": "fixture-up",
+            "delta": 4,
+            "thai": "เหตุผลสังเคราะห์"
+          }
+        ],
+        "tier": "A",
+        "warnings": []
+      }
+    }
+  ],
+  "cutSlots": [],
+  "funnelStats": {
+    "baseTotal": 12,
+    "finalCount": 1,
+    "perModule": {
+      "qi_men": {
+        "failed": 2,
+        "passed": 10
+      }
+    },
+    "personCut": 0,
+    "personHard": false,
+    "total": 12,
+    "vetoCut": 0
+  },
+  "meta": {
+    "activityType": "開市",
+    "durationMs": 12,
+    "entitlement": {
+      "max_range_days": 30,
+      "max_results": 12,
+      "modules_allowed": [
+        "qi_men"
+      ],
+      "modules_stripped": [],
+      "plan": "premium"
+    }
+  },
+  "ok": true,
+  "source": "mobile-r515-synthetic-contract"
+}

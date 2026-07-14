@@ -1,0 +1,87 @@
+{
+  "date": "2026-07-14",
+  "entitlement": {
+    "day_window": 30,
+    "detailed_hours": 12,
+    "directions": 8,
+    "goals": "all",
+    "multi_profile": true,
+    "plan": "premium"
+  },
+  "hex": {
+    "changing_line": 1,
+    "en": "Creative",
+    "num": 1,
+    "symbol": "䷀",
+    "th": "สร้างสรรค์",
+    "zh": "乾"
+  },
+  "ok": true,
+  "pillars": {
+    "day": "甲子",
+    "month": "乙未",
+    "year": "丙午"
+  },
+  "profile": null,
+  "source": "mobile-r515-synthetic-contract",
+  "tongshu": {
+    "day_officer": "建",
+    "gods": [
+      "fixture-good-god"
+    ],
+    "ji": [
+      "กิจกรรมตัวอย่างที่ควรเลี่ยง"
+    ],
+    "lunar": "六月初一",
+    "nine_star": "六白",
+    "twelve_star": "建",
+    "twentyeight_star": "角",
+    "yi": [
+      "กิจกรรมตัวอย่างที่เหมาะสม"
+    ]
+  },
+  "userSummary": {
+    "confidence": 0.8,
+    "dm_element": "wood",
+    "dm_label_th": "ไม้หยาง",
+    "dm_stem": "甲",
+    "jishen": [
+      {
+        "el": "metal",
+        "th": "ทอง"
+      }
+    ],
+    "primary": [
+      {
+        "el": "wood",
+        "is_dominant": true,
+        "th": "ไม้"
+      }
+    ],
+    "strategy": "fixture",
+    "structure": "balanced",
+    "xishen": [
+      {
+        "el": "water",
+        "th": "น้ำ"
+      }
+    ]
+  },
+  "verdict": {
+    "flags": [],
+    "jishen": [
+      "metal"
+    ],
+    "label": "吉",
+    "level": "favorable",
+    "score": 72,
+    "source": "calendar-engine",
+    "tags": [
+      "fixture"
+    ],
+    "targetDate": "2026-07-14",
+    "yongshen": [
+      "water"
+    ]
+  }
+}

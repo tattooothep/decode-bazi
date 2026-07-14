@@ -1,0 +1,45 @@
+{
+  "entitlement": {
+    "access_state": {
+      "in_trial": false,
+      "legacy_free": false,
+      "sub_active": true,
+      "sub_expires_at": null,
+      "trial_ends_at": null
+    },
+    "caps": {
+      "detail": "pro",
+      "search": true,
+      "sifu": true
+    },
+    "caps_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "contract_version": "mobile-entitlement/v1",
+    "feature": "qimen",
+    "plan": "premium",
+    "revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "ok": true,
+  "request_context": {
+    "date": "2026-07-14",
+    "entitlement_revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "location_source": "mobile_explicit",
+    "school": "chaibu",
+    "system_type": "hour",
+    "time": "09:00"
+  },
+  "results": [
+    {
+      "date": "2026-07-14",
+      "direction": "E",
+      "palace_id": 4,
+      "score": 82,
+      "slots": [
+        {
+          "end": "11:00",
+          "start": "09:00"
+        }
+      ]
+    }
+  ],
+  "source": "mobile-r515-synthetic-contract"
+}

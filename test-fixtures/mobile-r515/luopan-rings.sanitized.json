@@ -1,0 +1,24 @@
+{
+  "degree": 150,
+  "entitlement": {
+    "mode": "core",
+    "plan": "free"
+  },
+  "fenjin120": null,
+  "hex64": null,
+  "mountain": {
+    "code": "mountain-11",
+    "dir8": "SE",
+    "element": "fire",
+    "name": "巳",
+    "trigram": "巽",
+    "yuan": "human"
+  },
+  "ok": true,
+  "sections": {
+    "fenjin120": "locked",
+    "hex64": "locked",
+    "yao384": "locked"
+  },
+  "yao384": null
+}

@@ -1,0 +1,47 @@
+{
+  "degree": 150,
+  "entitlement": {
+    "mode": "full",
+    "plan": "premium"
+  },
+  "fenjin120": {
+    "ganzhi": "甲子",
+    "index": 58,
+    "interp_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "mountain": "巳",
+    "score": 78,
+    "usable": true
+  },
+  "hex64": {
+    "baseHouseScore": 78,
+    "homeAdvice": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "id": 1,
+    "name": "乾",
+    "thaiName": "เฉียน",
+    "tone": "good"
+  },
+  "mountain": {
+    "code": "mountain-11",
+    "dir8": "SE",
+    "element": "fire",
+    "name": "巳",
+    "trigram": "巽",
+    "yuan": "human"
+  },
+  "ok": true,
+  "sections": {
+    "fenjin120": "open",
+    "hex64": "open",
+    "yao384": "open"
+  },
+  "yao384": {
+    "gua": "乾",
+    "hex_num": 1,
+    "home": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "id": 6,
+    "jixiong": "吉",
+    "pos": "初",
+    "score": 76,
+    "th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+  }
+}

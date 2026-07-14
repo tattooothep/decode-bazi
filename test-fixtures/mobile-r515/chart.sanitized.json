@@ -1,0 +1,55 @@
+{
+  "analysis": {
+    "element_counts": {
+      "earth": 2,
+      "fire": 1,
+      "metal": 1,
+      "water": 2,
+      "wood": 2
+    },
+    "geJu": {
+      "structure": "fixture-balanced"
+    },
+    "ten_gods_map": {
+      "day": "比肩",
+      "hour": "正財",
+      "month": "正印",
+      "year": "食神"
+    },
+    "tiao_hou": {
+      "status": "ready"
+    },
+    "useful_god": [
+      "water"
+    ]
+  },
+  "dayMaster": "甲",
+  "ok": true,
+  "pillars": {
+    "day": {
+      "branch": "子",
+      "stem": "甲"
+    },
+    "hour": {
+      "branch": "巳",
+      "stem": "己"
+    },
+    "month": {
+      "branch": "未",
+      "stem": "乙"
+    },
+    "year": {
+      "branch": "午",
+      "stem": "丙"
+    }
+  },
+  "profile": null,
+  "source": "mobile-r515-synthetic-contract",
+  "strength": {
+    "level": "balanced",
+    "percent": 58
+  },
+  "yongshen": [
+    "water"
+  ]
+}

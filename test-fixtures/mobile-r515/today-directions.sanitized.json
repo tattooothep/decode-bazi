@@ -1,0 +1,326 @@
+{
+  "date": "2026-07-14",
+  "direction_energy": {
+    "avoid": [
+      {
+        "direction": "W",
+        "label": "avoid",
+        "locked": false,
+        "qimen": {
+          "score": 66,
+          "signal": "fixture-qimen-7"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 32,
+        "zibai": {
+          "score": 64,
+          "signal": "fixture-zibai-7"
+        }
+      }
+    ],
+    "best": [
+      {
+        "direction": "E",
+        "label": "best",
+        "locked": false,
+        "qimen": {
+          "score": 62,
+          "signal": "fixture-qimen-3"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 88,
+        "zibai": {
+          "score": 60,
+          "signal": "fixture-zibai-3"
+        }
+      }
+    ],
+    "school": "chaibu",
+    "school_label": "拆補",
+    "scores": [
+      {
+        "direction": "N",
+        "label": "good",
+        "locked": false,
+        "qimen": {
+          "score": 60,
+          "signal": "fixture-qimen-1"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 60,
+        "zibai": {
+          "score": 58,
+          "signal": "fixture-zibai-1"
+        }
+      },
+      {
+        "direction": "NE",
+        "label": "good",
+        "locked": false,
+        "qimen": {
+          "score": 61,
+          "signal": "fixture-qimen-2"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 61,
+        "zibai": {
+          "score": 59,
+          "signal": "fixture-zibai-2"
+        }
+      },
+      {
+        "direction": "E",
+        "label": "best",
+        "locked": false,
+        "qimen": {
+          "score": 62,
+          "signal": "fixture-qimen-3"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 88,
+        "zibai": {
+          "score": 60,
+          "signal": "fixture-zibai-3"
+        }
+      },
+      {
+        "direction": "SE",
+        "label": "good",
+        "locked": false,
+        "qimen": {
+          "score": 63,
+          "signal": "fixture-qimen-4"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 63,
+        "zibai": {
+          "score": 61,
+          "signal": "fixture-zibai-4"
+        }
+      },
+      {
+        "direction": "S",
+        "label": "good",
+        "locked": false,
+        "qimen": {
+          "score": 64,
+          "signal": "fixture-qimen-5"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 64,
+        "zibai": {
+          "score": 62,
+          "signal": "fixture-zibai-5"
+        }
+      },
+      {
+        "direction": "SW",
+        "label": "good",
+        "locked": false,
+        "qimen": {
+          "score": 65,
+          "signal": "fixture-qimen-6"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 65,
+        "zibai": {
+          "score": 63,
+          "signal": "fixture-zibai-6"
+        }
+      },
+      {
+        "direction": "W",
+        "label": "avoid",
+        "locked": false,
+        "qimen": {
+          "score": 66,
+          "signal": "fixture-qimen-7"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 32,
+        "zibai": {
+          "score": 64,
+          "signal": "fixture-zibai-7"
+        }
+      },
+      {
+        "direction": "NW",
+        "label": "good",
+        "locked": false,
+        "qimen": {
+          "score": 67,
+          "signal": "fixture-qimen-8"
+        },
+        "reasons": [
+          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        ],
+        "score": 67,
+        "zibai": {
+          "score": 65,
+          "signal": "fixture-zibai-8"
+        }
+      }
+    ],
+    "source": {
+      "degraded": false,
+      "qimen": "r515",
+      "zibai": "r515"
+    }
+  },
+  "directions": [
+    {
+      "direction": "N",
+      "direction_th": "เหนือ",
+      "direction_zh": "北",
+      "element": "water",
+      "quality": "good",
+      "stars": [
+        {
+          "good": true,
+          "han": "天輔",
+          "name": "ดาวตัวอย่าง 1"
+        }
+      ]
+    },
+    {
+      "direction": "NE",
+      "direction_th": "ตะวันออกเฉียงเหนือ",
+      "direction_zh": "東北",
+      "element": "earth",
+      "quality": "ok",
+      "stars": [
+        {
+          "good": true,
+          "han": "天英",
+          "name": "ดาวตัวอย่าง 2"
+        }
+      ]
+    },
+    {
+      "direction": "E",
+      "direction_th": "ตะวันออก",
+      "direction_zh": "東",
+      "element": "wood",
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "天芮",
+          "name": "ดาวตัวอย่าง 3"
+        }
+      ]
+    },
+    {
+      "direction": "SE",
+      "direction_th": "ตะวันออกเฉียงใต้",
+      "direction_zh": "東南",
+      "element": "wood",
+      "quality": "ok",
+      "stars": [
+        {
+          "good": true,
+          "han": "天沖",
+          "name": "ดาวตัวอย่าง 4"
+        }
+      ]
+    },
+    {
+      "direction": "S",
+      "direction_th": "ใต้",
+      "direction_zh": "南",
+      "element": "fire",
+      "quality": "good",
+      "stars": [
+        {
+          "good": true,
+          "han": "天禽",
+          "name": "ดาวตัวอย่าง 5"
+        }
+      ]
+    },
+    {
+      "direction": "SW",
+      "direction_th": "ตะวันตกเฉียงใต้",
+      "direction_zh": "西南",
+      "element": "earth",
+      "quality": "ok",
+      "stars": [
+        {
+          "good": true,
+          "han": "天柱",
+          "name": "ดาวตัวอย่าง 6"
+        }
+      ]
+    },
+    {
+      "direction": "W",
+      "direction_th": "ตะวันตก",
+      "direction_zh": "西",
+      "element": "metal",
+      "quality": "avoid",
+      "stars": [
+        {
+          "good": false,
+          "han": "天任",
+          "name": "ดาวตัวอย่าง 7"
+        }
+      ]
+    },
+    {
+      "direction": "NW",
+      "direction_th": "ตะวันตกเฉียงเหนือ",
+      "direction_zh": "西北",
+      "element": "metal",
+      "quality": "ok",
+      "stars": [
+        {
+          "good": true,
+          "han": "天蓬",
+          "name": "ดาวตัวอย่าง 8"
+        }
+      ]
+    }
+  ],
+  "entitlement": {
+    "detailed_directions": 8,
+    "plan": "premium",
+    "total_directions": 8
+  },
+  "ok": true,
+  "profile": null,
+  "request_context": {
+    "date": "2026-07-14",
+    "local_time": "09:00",
+    "location_source": "synthetic-contract",
+    "school": "chaibu",
+    "timezone": "Asia/Bangkok"
+  },
+  "source": "mobile-r515-synthetic-contract",
+  "summary": {
+    "avoid": [
+      "W"
+    ],
+    "good": [
+      "E",
+      "SE"
+    ]
+  }
+}

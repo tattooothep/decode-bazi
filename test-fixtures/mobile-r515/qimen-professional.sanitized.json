@@ -1,0 +1,389 @@
+{
+  "data": {
+    "calculation": {
+      "input_timezone": "Asia/Bangkok",
+      "readiness": {
+        "status": "ready"
+      }
+    },
+    "chart": {
+      "chief_star_code": "天心",
+      "dun_type": "陽遁",
+      "ju_number": 5,
+      "pillar_zh": "甲子",
+      "system_type": "hour",
+      "void_hour_zh": [
+        "戌",
+        "亥"
+      ],
+      "zhi_shi_door_code": "開門"
+    },
+    "palaces": [
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-1",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-1",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 1",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 1",
+        "deity_zh": "九地",
+        "direction": "SE",
+        "display_level": "neutral",
+        "display_score": 52,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 1",
+        "door_quality": "neutral",
+        "door_zh": "杜門",
+        "earth_stem_zh": "戊",
+        "grid_col": 0,
+        "grid_row": 0,
+        "heaven_stem_zh": "辛",
+        "is_traveling_horse": false,
+        "is_void_any": false,
+        "palace_id": 1,
+        "star_name_th": "ดาวตัวอย่าง 1",
+        "star_zh": "天輔",
+        "trigram_zh": "巽"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-2",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-2",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 2",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 2",
+        "deity_zh": "九天",
+        "direction": "S",
+        "display_level": "neutral",
+        "display_score": 56,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 2",
+        "door_quality": "neutral",
+        "door_zh": "景門",
+        "earth_stem_zh": "己",
+        "grid_col": 1,
+        "grid_row": 0,
+        "heaven_stem_zh": "壬",
+        "is_traveling_horse": false,
+        "is_void_any": true,
+        "palace_id": 2,
+        "star_name_th": "ดาวตัวอย่าง 2",
+        "star_zh": "天英",
+        "trigram_zh": "離"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-3",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-3",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 3",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 3",
+        "deity_zh": "玄武",
+        "direction": "SW",
+        "display_level": "neutral",
+        "display_score": 60,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 3",
+        "door_quality": "neutral",
+        "door_zh": "死門",
+        "earth_stem_zh": "庚",
+        "grid_col": 2,
+        "grid_row": 0,
+        "heaven_stem_zh": "癸",
+        "is_traveling_horse": false,
+        "is_void_any": false,
+        "palace_id": 3,
+        "star_name_th": "ดาวตัวอย่าง 3",
+        "star_zh": "天芮",
+        "trigram_zh": "坤"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-4",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-4",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 4",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 4",
+        "deity_zh": "六合",
+        "direction": "E",
+        "display_level": "neutral",
+        "display_score": 64,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 4",
+        "door_quality": "neutral",
+        "door_zh": "傷門",
+        "earth_stem_zh": "辛",
+        "grid_col": 0,
+        "grid_row": 1,
+        "heaven_stem_zh": "丁",
+        "is_traveling_horse": false,
+        "is_void_any": false,
+        "palace_id": 4,
+        "star_name_th": "ดาวตัวอย่าง 4",
+        "star_zh": "天沖",
+        "trigram_zh": "震"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-5",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-5",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 5",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 5",
+        "deity_zh": "值符",
+        "direction": "C",
+        "display_level": "neutral",
+        "display_score": 68,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 5",
+        "door_quality": "neutral",
+        "door_zh": "中門",
+        "earth_stem_zh": "壬",
+        "grid_col": 1,
+        "grid_row": 1,
+        "heaven_stem_zh": "丙",
+        "is_traveling_horse": false,
+        "is_void_any": false,
+        "palace_id": 5,
+        "star_name_th": "ดาวตัวอย่าง 5",
+        "star_zh": "天禽",
+        "trigram_zh": "中"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-6",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-6",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 6",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 6",
+        "deity_zh": "白虎",
+        "direction": "W",
+        "display_level": "neutral",
+        "display_score": 72,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 6",
+        "door_quality": "neutral",
+        "door_zh": "驚門",
+        "earth_stem_zh": "癸",
+        "grid_col": 2,
+        "grid_row": 1,
+        "heaven_stem_zh": "乙",
+        "is_traveling_horse": false,
+        "is_void_any": false,
+        "palace_id": 6,
+        "star_name_th": "ดาวตัวอย่าง 6",
+        "star_zh": "天柱",
+        "trigram_zh": "兌"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-7",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-7",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 7",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 7",
+        "deity_zh": "太陰",
+        "direction": "NE",
+        "display_level": "good",
+        "display_score": 76,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 7",
+        "door_quality": "good",
+        "door_zh": "生門",
+        "earth_stem_zh": "丁",
+        "grid_col": 0,
+        "grid_row": 2,
+        "heaven_stem_zh": "戊",
+        "is_traveling_horse": true,
+        "is_void_any": false,
+        "palace_id": 7,
+        "star_name_th": "ดาวตัวอย่าง 7",
+        "star_zh": "天任",
+        "trigram_zh": "艮"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-8",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-8",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 8",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 8",
+        "deity_zh": "螣蛇",
+        "direction": "N",
+        "display_level": "good",
+        "display_score": 80,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 8",
+        "door_quality": "good",
+        "door_zh": "休門",
+        "earth_stem_zh": "丙",
+        "grid_col": 1,
+        "grid_row": 2,
+        "heaven_stem_zh": "己",
+        "is_traveling_horse": false,
+        "is_void_any": false,
+        "palace_id": 8,
+        "star_name_th": "ดาวตัวอย่าง 8",
+        "star_zh": "天蓬",
+        "trigram_zh": "坎"
+      },
+      {
+        "advanced_qimen_layers": [
+          {
+            "code": "fixture-layer-9",
+            "status": "ready"
+          }
+        ],
+        "beginner_reading": {
+          "code": "fixture-reading-9",
+          "has_engine_score": true,
+          "is_actionable": true,
+          "label_th": "วังตัวอย่าง 9",
+          "no_score_mutation": true,
+          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+          "verdict_allowed": true
+        },
+        "deity_name_th": "เทพตัวอย่าง 9",
+        "deity_zh": "值使",
+        "direction": "NW",
+        "display_level": "good",
+        "display_score": 84,
+        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
+        "door_name_th": "ประตูตัวอย่าง 9",
+        "door_quality": "good",
+        "door_zh": "開門",
+        "earth_stem_zh": "乙",
+        "grid_col": 2,
+        "grid_row": 2,
+        "heaven_stem_zh": "庚",
+        "is_traveling_horse": false,
+        "is_void_any": false,
+        "palace_id": 9,
+        "star_name_th": "ดาวตัวอย่าง 9",
+        "star_zh": "天心",
+        "trigram_zh": "乾"
+      }
+    ]
+  },
+  "entitlement": {
+    "access_state": {
+      "in_trial": false,
+      "legacy_free": false,
+      "sub_active": true,
+      "sub_expires_at": null,
+      "trial_ends_at": null
+    },
+    "caps": {
+      "detail": "technical",
+      "search": true,
+      "sifu": true
+    },
+    "caps_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "contract_version": "mobile-entitlement/v1",
+    "feature": "qimen",
+    "plan": "premium",
+    "revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "ok": true,
+  "product": {
+    "plan": "premium",
+    "qimen": {
+      "compare_locations": true,
+      "detail": "technical",
+      "hours_per_day": 12,
+      "pro": true,
+      "search_days": 30,
+      "search_results": 12,
+      "sifu": true,
+      "time_window_days": 30
+    }
+  },
+  "request_context": {
+    "date": "2026-07-14",
+    "entitlement_revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "location_source": "mobile_explicit",
+    "school": "chaibu",
+    "system_type": "hour",
+    "time": "09:00"
+  }
+}

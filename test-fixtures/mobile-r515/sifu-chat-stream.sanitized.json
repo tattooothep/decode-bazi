@@ -1,0 +1,31 @@
+{
+  "cacheControl": "no-cache",
+  "contentType": "text/event-stream",
+  "events": [
+    {
+      "data": {
+        "source": "mobile-r515-synthetic-contract"
+      },
+      "event": "meta"
+    },
+    {
+      "data": {
+        "text": "Synthetic "
+      },
+      "event": "first"
+    },
+    {
+      "data": {
+        "text": "fixture response."
+      },
+      "event": "chunk"
+    },
+    {
+      "data": {
+        "reply": "Synthetic fixture response."
+      },
+      "event": "done"
+    }
+  ],
+  "ok": true
+}

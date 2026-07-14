@@ -1,0 +1,93 @@
+{
+  "days": [
+    {
+      "branch": "子",
+      "date": "2026-07-14",
+      "day": 14,
+      "day_officer": "建",
+      "goals": {
+        "career": 68,
+        "family": 70,
+        "health": 76,
+        "love": 64,
+        "travel": 66,
+        "wealth": 72
+      },
+      "gods": {
+        "bad": [
+          "fixture-bad-god"
+        ],
+        "good": [
+          "fixture-good-god"
+        ],
+        "unknown": []
+      },
+      "intentStatus": {
+        "career": "good",
+        "family": "good",
+        "health": "good",
+        "love": "neutral",
+        "travel": "neutral",
+        "wealth": "good"
+      },
+      "ji": [
+        "กิจกรรมตัวอย่างที่ควรเลี่ยง"
+      ],
+      "lunar": "六月初一",
+      "nine_star": 6,
+      "pillar": "甲子",
+      "stem": "甲",
+      "topIntents": [
+        {
+          "icon": "◎",
+          "id": "wealth",
+          "tier": "good"
+        }
+      ],
+      "twelve_star": "建",
+      "twenty_eight_star": "角",
+      "verdict": {
+        "label": "吉",
+        "level": "favorable",
+        "score": 72,
+        "tags": [
+          "fixture"
+        ]
+      },
+      "worstIntents": [
+        {
+          "icon": "△",
+          "id": "love",
+          "tier": "neutral"
+        }
+      ],
+      "yi": [
+        "กิจกรรมตัวอย่างที่เหมาะสม"
+      ]
+    }
+  ],
+  "dm": null,
+  "entitlement": {
+    "goals": "all",
+    "plan": "premium"
+  },
+  "friendly_elements": [
+    "water",
+    "wood"
+  ],
+  "month": 7,
+  "month_pillar": "乙未",
+  "month_pillar_label": "เดือน乙未",
+  "ok": true,
+  "personal_available": false,
+  "primary_yongshen": [
+    "water"
+  ],
+  "profile": null,
+  "score_policy": "r515",
+  "score_source": "calendar-engine",
+  "source": "mobile-r515-synthetic-contract",
+  "total_days": 1,
+  "year": 2026,
+  "year_pillar": "丙午"
+}

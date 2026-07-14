@@ -1,0 +1,50 @@
+{
+  "active_profile": {
+    "day_master": "甲",
+    "name": "Fixture Center"
+  },
+  "count": 2,
+  "date": "2026-07-14",
+  "entitlement": {
+    "bulk_ai": true,
+    "pair_ai": "full",
+    "plan": "premium",
+    "team_ai": true,
+    "team_analysis": true,
+    "visualization_profiles": 12
+  },
+  "meta": {
+    "locked_profiles": 0,
+    "scored_profiles": 2,
+    "total_profiles": 2
+  },
+  "ok": true,
+  "people": [
+    {
+      "day_master": "丙",
+      "guidance": null,
+      "name": "Fixture Person A",
+      "scores": {
+        "day": 74,
+        "overall": 70
+      },
+      "tags": [
+        "support"
+      ]
+    },
+    {
+      "day_master": "辛",
+      "guidance": null,
+      "name": "Fixture Person B",
+      "scores": {
+        "day": 48,
+        "overall": 55
+      },
+      "tags": [
+        "caution"
+      ]
+    }
+  ],
+  "source": "mobile-r515-synthetic-contract",
+  "version": "r515"
+}

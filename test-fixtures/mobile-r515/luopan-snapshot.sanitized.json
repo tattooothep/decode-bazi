@@ -1,0 +1,329 @@
+{
+  "datetime": {
+    "day_pillar": "甲子",
+    "gregorian": "2026-07-14T09:00:00+07:00",
+    "hour_pillar": "己巳",
+    "month_pillar": "乙未",
+    "shichen": "巳",
+    "solar_term": "小暑",
+    "year_pillar": "丙午"
+  },
+  "entitlement": {
+    "layers": "professional",
+    "multi_profile": true,
+    "plan": "premium"
+  },
+  "layers": {
+    "flying_stars": {
+      "annual_center": 6,
+      "feng_shui_year": 2026,
+      "palaces": {
+        "1": {
+          "annual": 7,
+          "mountain": 3,
+          "water": 5
+        },
+        "2": {
+          "annual": 8,
+          "mountain": 4,
+          "water": 6
+        },
+        "3": {
+          "annual": 9,
+          "mountain": 5,
+          "water": 7
+        },
+        "4": {
+          "annual": 1,
+          "mountain": 6,
+          "water": 8
+        },
+        "5": {
+          "annual": 2,
+          "mountain": 7,
+          "water": 9
+        },
+        "6": {
+          "annual": 3,
+          "mountain": 8,
+          "water": 1
+        },
+        "7": {
+          "annual": 4,
+          "mountain": 9,
+          "water": 2
+        },
+        "8": {
+          "annual": 5,
+          "mountain": 1,
+          "water": 3
+        },
+        "9": {
+          "annual": 6,
+          "mountain": 2,
+          "water": 4
+        }
+      },
+      "period": 9
+    },
+    "qi_men": {
+      "dun_type": "陽遁",
+      "ju_number": 5
+    },
+    "twenty_four": [
+      {
+        "centerDeg": 0,
+        "code": "mountain-01",
+        "dir8": "N",
+        "elementZh": "水",
+        "name": "子",
+        "trigram": "坎",
+        "yinYang": "yang",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 15,
+        "code": "mountain-02",
+        "dir8": "N",
+        "elementZh": "水",
+        "name": "癸",
+        "trigram": "坎",
+        "yinYang": "yin",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 30,
+        "code": "mountain-03",
+        "dir8": "NE",
+        "elementZh": "土",
+        "name": "丑",
+        "trigram": "艮",
+        "yinYang": "yang",
+        "yuan": "heaven"
+      },
+      {
+        "centerDeg": 45,
+        "code": "mountain-04",
+        "dir8": "NE",
+        "elementZh": "土",
+        "name": "艮",
+        "trigram": "艮",
+        "yinYang": "yin",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 60,
+        "code": "mountain-05",
+        "dir8": "NE",
+        "elementZh": "木",
+        "name": "寅",
+        "trigram": "艮",
+        "yinYang": "yang",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 75,
+        "code": "mountain-06",
+        "dir8": "E",
+        "elementZh": "木",
+        "name": "甲",
+        "trigram": "震",
+        "yinYang": "yin",
+        "yuan": "heaven"
+      },
+      {
+        "centerDeg": 90,
+        "code": "mountain-07",
+        "dir8": "E",
+        "elementZh": "木",
+        "name": "卯",
+        "trigram": "震",
+        "yinYang": "yang",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 105,
+        "code": "mountain-08",
+        "dir8": "E",
+        "elementZh": "木",
+        "name": "乙",
+        "trigram": "震",
+        "yinYang": "yin",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 120,
+        "code": "mountain-09",
+        "dir8": "SE",
+        "elementZh": "土",
+        "name": "辰",
+        "trigram": "巽",
+        "yinYang": "yang",
+        "yuan": "heaven"
+      },
+      {
+        "centerDeg": 135,
+        "code": "mountain-10",
+        "dir8": "SE",
+        "elementZh": "木",
+        "name": "巽",
+        "trigram": "巽",
+        "yinYang": "yin",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 150,
+        "code": "mountain-11",
+        "dir8": "SE",
+        "elementZh": "火",
+        "name": "巳",
+        "trigram": "巽",
+        "yinYang": "yang",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 165,
+        "code": "mountain-12",
+        "dir8": "S",
+        "elementZh": "火",
+        "name": "丙",
+        "trigram": "離",
+        "yinYang": "yin",
+        "yuan": "heaven"
+      },
+      {
+        "centerDeg": 180,
+        "code": "mountain-13",
+        "dir8": "S",
+        "elementZh": "火",
+        "name": "午",
+        "trigram": "離",
+        "yinYang": "yang",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 195,
+        "code": "mountain-14",
+        "dir8": "S",
+        "elementZh": "火",
+        "name": "丁",
+        "trigram": "離",
+        "yinYang": "yin",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 210,
+        "code": "mountain-15",
+        "dir8": "SW",
+        "elementZh": "土",
+        "name": "未",
+        "trigram": "坤",
+        "yinYang": "yang",
+        "yuan": "heaven"
+      },
+      {
+        "centerDeg": 225,
+        "code": "mountain-16",
+        "dir8": "SW",
+        "elementZh": "土",
+        "name": "坤",
+        "trigram": "坤",
+        "yinYang": "yin",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 240,
+        "code": "mountain-17",
+        "dir8": "SW",
+        "elementZh": "金",
+        "name": "申",
+        "trigram": "坤",
+        "yinYang": "yang",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 255,
+        "code": "mountain-18",
+        "dir8": "W",
+        "elementZh": "金",
+        "name": "庚",
+        "trigram": "兌",
+        "yinYang": "yin",
+        "yuan": "heaven"
+      },
+      {
+        "centerDeg": 270,
+        "code": "mountain-19",
+        "dir8": "W",
+        "elementZh": "金",
+        "name": "酉",
+        "trigram": "兌",
+        "yinYang": "yang",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 285,
+        "code": "mountain-20",
+        "dir8": "W",
+        "elementZh": "金",
+        "name": "辛",
+        "trigram": "兌",
+        "yinYang": "yin",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 300,
+        "code": "mountain-21",
+        "dir8": "NW",
+        "elementZh": "土",
+        "name": "戌",
+        "trigram": "乾",
+        "yinYang": "yang",
+        "yuan": "heaven"
+      },
+      {
+        "centerDeg": 315,
+        "code": "mountain-22",
+        "dir8": "NW",
+        "elementZh": "金",
+        "name": "乾",
+        "trigram": "乾",
+        "yinYang": "yin",
+        "yuan": "earth"
+      },
+      {
+        "centerDeg": 330,
+        "code": "mountain-23",
+        "dir8": "NW",
+        "elementZh": "水",
+        "name": "亥",
+        "trigram": "乾",
+        "yinYang": "yang",
+        "yuan": "human"
+      },
+      {
+        "centerDeg": 345,
+        "code": "mountain-24",
+        "dir8": "N",
+        "elementZh": "水",
+        "name": "壬",
+        "trigram": "坎",
+        "yinYang": "yin",
+        "yuan": "heaven"
+      }
+    ]
+  },
+  "ok": true,
+  "recommendations": [
+    {
+      "code": "fixture-recommendation",
+      "severity": "info"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "fixture-warning",
+      "severity": "low"
+    }
+  ]
+}

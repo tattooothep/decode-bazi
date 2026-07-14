@@ -1,0 +1,32 @@
+{
+  "complete": true,
+  "date": "2026-07-14",
+  "entitlement": {
+    "day_window": 30,
+    "detailed_hours": 12,
+    "directions": 8,
+    "goals": "all",
+    "multi_profile": true,
+    "plan": "premium"
+  },
+  "goals": {
+    "career": 68,
+    "family": 70,
+    "health": 76,
+    "love": 64,
+    "travel": 66,
+    "wealth": 72
+  },
+  "intent_status": {
+    "career": "good",
+    "family": "good",
+    "health": "good",
+    "love": "neutral",
+    "travel": "neutral",
+    "wealth": "good"
+  },
+  "locked_goals": [],
+  "ok": true,
+  "profile": null,
+  "source": "mobile-calendar-projection"
+}
