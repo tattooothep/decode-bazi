@@ -1,372 +1,2187 @@
 {
   "data": {
     "calculation": {
+      "corrected_datetime": "2026-07-14T01:54:29.349+07:00",
+      "correction_minutes": -425.5108471812678,
+      "input_datetime": "2026-07-14T09:00:00.000+07:00",
       "input_timezone": "Asia/Bangkok",
-      "readiness": {
-        "status": "ready"
-      }
+      "ju_method": "chai_bu",
+      "pillars": {
+        "dayPillarCode": 26,
+        "dayPillarZh": "己丑",
+        "hourPillarCode": 2,
+        "hourPillarZh": "乙丑",
+        "monthPillarCode": 32,
+        "monthPillarZh": "乙未",
+        "yearPillarCode": 43,
+        "yearPillarZh": "丙午"
+      },
+      "solar_term_code": "XIAO_SHU",
+      "solar_term_start": "2026-07-07T09:56:57.000+07:00",
+      "solar_term_zh": "小暑",
+      "time_mode": "true_solar_time",
+      "yuan_cycle": "lower"
     },
     "chart": {
-      "chief_star_code": "天心",
-      "dun_type": "陽遁",
+      "calculation_scope_en": "Hour chart 時家奇門",
+      "calculation_scope_th": "ผังฉีเหมินยาม 時家奇門",
+      "calculation_scope_zh": "時家奇門",
+      "chart_type": "hour",
+      "chart_variant": "standard",
+      "chief_deity_code": "ZHI_FU",
+      "chief_star_code": "TIAN_QIN",
+      "clash": {
+        "day": {
+          "branch": "未",
+          "driver": "己丑"
+        },
+        "hour": {
+          "branch": "未",
+          "driver": "乙丑"
+        }
+      },
+      "deity_variant": "xuan_wu_all_year",
+      "dun_gan_code": "WU",
+      "dun_gan_zh": "戊",
+      "dun_type": "yin",
       "ju_number": 5,
-      "pillar_zh": "甲子",
+      "nobleman": {
+        "day": {
+          "branches": [
+            "子",
+            "申"
+          ],
+          "driver": "己丑"
+        },
+        "hour": {
+          "branches": [
+            "子",
+            "申"
+          ],
+          "driver": "乙丑"
+        }
+      },
+      "pillar_code": 2,
+      "pillar_pinyin": null,
+      "pillar_zh": "乙丑",
+      "pillars": {
+        "day": {
+          "branch": "丑",
+          "code": 26,
+          "stem": "己",
+          "void_zh": [
+            "午",
+            "未"
+          ],
+          "xun_zh": "甲申",
+          "zh": "己丑"
+        },
+        "hour": {
+          "branch": "丑",
+          "code": 2,
+          "stem": "乙",
+          "void_zh": [
+            "戌",
+            "亥"
+          ],
+          "xun_zh": "甲子",
+          "zh": "乙丑"
+        },
+        "month": {
+          "branch": "未",
+          "code": 32,
+          "stem": "乙",
+          "void_zh": [
+            "辰",
+            "巳"
+          ],
+          "xun_zh": "甲午",
+          "zh": "乙未"
+        },
+        "year": {
+          "branch": "午",
+          "code": 43,
+          "stem": "丙",
+          "void_zh": [
+            "寅",
+            "卯"
+          ],
+          "xun_zh": "甲辰",
+          "zh": "丙午"
+        }
+      },
+      "plate_method": "zhuanpan",
+      "qimen_system_scope_request": {
+        "calculation_scope_en": "Hour chart 時家奇門",
+        "calculation_scope_th": "ผังฉีเหมินยาม 時家奇門",
+        "calculation_scope_zh": "時家奇門",
+        "caveat_en": "For questions about this hour and hour selection only — not a day/month/year overview.",
+        "caveat_th": "ใช้กับคำถามช่วงเวลานี้และการเลือกยาม ไม่ใช่ภาพรวมทั้งวัน/เดือน/ปี",
+        "caveat_zh": "僅用於此時辰之問與擇時，非全日／月／年之總覽。",
+        "engine_system_type": "hour",
+        "fulfilled": true,
+        "requested_calculation_scope_en": "Hour chart 時家奇門",
+        "requested_calculation_scope_th": "ผังฉีเหมินยาม 時家奇門",
+        "requested_calculation_scope_zh": "時家奇門",
+        "requested_system_type": "hour",
+        "status_en": "The request matches the chart the engine actually computed",
+        "status_th": "คำขอตรงกับผังที่ engine คำนวณจริง",
+        "status_zh": "所請與 engine 實際排出之盤相符",
+        "version": "qimen-system-scope-request-v1"
+      },
+      "requested_system_type": "hour",
+      "sky_horse": {
+        "day": {
+          "branch": "亥",
+          "driver": "己丑"
+        },
+        "hour": {
+          "branch": "亥",
+          "driver": "乙丑"
+        }
+      },
+      "source_note_en": "This chart is computed from the school, time and coordinates provided. Use it for immediate questions and hour selection.",
+      "source_note_th": "ผังนี้มาจากระบบคำนวณฉีเหมินตามสำนัก เวลา และพิกัดที่ส่งมา ใช้กับคำถามเฉพาะหน้าและการเลือกยาม",
+      "source_note_zh": "此盤依所選門派、時間與座標排出，用於眼前之問與擇時。",
       "system_type": "hour",
+      "temporal_context_policy": {
+        "caveat_en": "For questions about this hour and hour selection only — not a day/month/year overview.",
+        "caveat_th": "บริบทเวลาใช้ช่วยอ่านผังเท่านั้น ไม่ใช่คะแนนและไม่ใช่คำตัดสินเดี่ยว",
+        "caveat_zh": "僅用於此時辰之問與擇時，非全日／月／年之總覽。",
+        "context_only": true,
+        "no_score_mutation": true,
+        "policy_name": "qimen-time-context-display-only",
+        "score_affects": false,
+        "score_effect": "none",
+        "severity": "context",
+        "source_key": "temporal_context_policy",
+        "source_path": "temporal_context_policy",
+        "verdict_allowed": false
+      },
+      "traveling_horse": "HAI",
+      "traveling_horse_zh": "亥",
+      "twenty_eight": {
+        "animal_zh": "白虎",
+        "group_zh": "西方白虎",
+        "number": 20,
+        "palace_zh": "西",
+        "zh": "觜"
+      },
+      "void_all_zh": [
+        "亥",
+        "卯",
+        "寅",
+        "戌",
+        "申",
+        "酉"
+      ],
+      "void_day_zh": [
+        "午",
+        "未"
+      ],
       "void_hour_zh": [
         "戌",
         "亥"
       ],
-      "zhi_shi_door_code": "開門"
+      "void_month_zh": [
+        "辰",
+        "巳"
+      ],
+      "void_year_zh": [
+        "寅",
+        "卯"
+      ],
+      "voids": {
+        "day": [
+          "午",
+          "未"
+        ],
+        "hour": [
+          "戌",
+          "亥"
+        ],
+        "month": [
+          "辰",
+          "巳"
+        ],
+        "year": [
+          "寅",
+          "卯"
+        ]
+      },
+      "zhi_fu_palace_id": 6,
+      "zhi_shi_door_code": "SI_MEN",
+      "zhi_shi_palace_id": 4
     },
     "palaces": [
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-1",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "TARGET_PALACE",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "qimen_engine",
+            "formula_evidence": [
+              {
+                "code": "TARGET_PALACE",
+                "confidence": "high",
+                "detail_th": "用神 selector บอกว่าวังนี้ควรถูกอ่านตามโจทย์ ไม่ใช่คะแนนฤกษ์สุดท้าย",
+                "evidence": {
+                  "intent_code": "overview",
+                  "palace_id": 4,
+                  "reasons": [
+                    {
+                      "code": "day",
+                      "kind": "stem_role",
+                      "label_th": "ตัวผู้ถาม",
+                      "label_zh": "日干"
+                    }
+                  ]
+                },
+                "kind": "advanced_layer",
+                "label_th": "วังเป้าหมาย",
+                "label_zh": "目標宮/用神",
+                "source_key": "qimen_engine",
+                "summary_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง"
+              }
+            ],
+            "formula_evidence_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง",
+            "label_th": "วังเป้าหมาย",
+            "label_zh": "目標宮/用神",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "目",
+            "source_confidence": "high",
+            "source_detail_th": "用神 selector บอกว่าวังนี้ควรถูกอ่านตามโจทย์ ไม่ใช่คะแนนฤกษ์สุดท้าย",
+            "source_key": "qimen_engine",
+            "source_path": "qimen-yongshen-selector.target_palaces",
+            "source_summary_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง",
+            "status_th": "อ่านประกอบ",
+            "target_intent_th": "ภาพรวมผัง",
+            "target_intent_zh": "總覽",
+            "target_reasons": [
+              {
+                "code": "day",
+                "kind": "stem_role",
+                "label_th": "ตัวผู้ถาม",
+                "label_zh": "日干"
+              }
+            ],
+            "tone": "warn",
+            "verdict_allowed": false,
+            "warning_flags": [
+              "ยามห้าไม่พบ 五不遇時 五不遇時"
+            ]
+          },
+          {
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "DING_OVER_JI",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "ไฟเข้าดินพันเกี่ยว",
+                "label_zh": "火入勾陳",
+                "note_th": "เรื่องพันกัน คำพูดหรือข่าวลือทำให้ยุ่ง",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "WU_BU_YU_TIME",
+                    "DING_OVER_JI"
+                  ],
+                  "palace_id": 4
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-1",
+          "caution_count": 3,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [],
+          "code": "avoid",
+          "engine_score": 0,
+          "hard_count": 3,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 1",
+          "is_yongshen_target": true,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "死門",
+              "kind": "door",
+              "label_th": "ประตูตาย เป็นสัญญาณหนัก",
+              "label_zh": "死門",
+              "tone": "bad"
+            },
+            {
+              "code": "天任",
+              "kind": "star",
+              "label_th": "ดาวเทียนเหริน ช่วยหนุน",
+              "label_zh": "天任",
+              "tone": "good"
+            },
+            {
+              "code": "白虎",
+              "kind": "deity",
+              "label_th": "พยัคฆ์ขาว เป็นสัญญาณหนัก",
+              "label_zh": "白虎",
+              "tone": "bad"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "WU_BU_YU_TIME",
+              "kind": "source_trace",
+              "label_th": "ยามห้าไม่พบ 五不遇時",
+              "label_zh": "五不遇時",
+              "tone": "bad"
+            },
+            {
+              "code": "丁加己",
+              "kind": "stem_response",
+              "label_th": "ไฟเข้าดินพันเกี่ยว",
+              "label_zh": "火入勾陳",
+              "tone": "warn"
+            },
+            {
+              "code": "YONGSHEN",
+              "kind": "yongshen",
+              "label_th": "วังนี้ตรงเรื่องที่ถาม: ภาพรวมผัง",
+              "label_zh": "總覽",
+              "tone": "warn"
+            },
+            {
+              "code": "YONGSHEN_WARNING",
+              "kind": "yongshen_warning",
+              "label_th": "ยามห้าไม่พบ 五不遇時 五不遇時",
+              "label_zh": "用神警示",
+              "tone": "warn"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 2,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": "อ่านประกอบ"
         },
-        "deity_name_th": "เทพตัวอย่าง 1",
-        "deity_zh": "九地",
+        "deity_code": "BAI_HU",
+        "deity_name_th": "พยัคฆ์ขาว",
+        "deity_zh": "白虎",
         "direction": "SE",
-        "display_level": "neutral",
-        "display_score": 52,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 1",
-        "door_quality": "neutral",
-        "door_zh": "杜門",
-        "earth_stem_zh": "戊",
-        "grid_col": 0,
-        "grid_row": 0,
-        "heaven_stem_zh": "辛",
+        "display_color": "#991b1b",
+        "display_level": "L6",
+        "display_score": 0,
+        "door_action_advice_th": "งานศพ ล่าสัตว์ ปิดกิจการ (เลี่ยงงานมงคล)",
+        "door_code": "SI_MEN",
+        "door_name_th": "ประตูตาย",
+        "door_quality": "severe",
+        "door_zh": "死門",
+        "earth_stem_zh": "己",
+        "grid_col": 1,
+        "grid_row": 1,
+        "heaven_stem_zh": "丁",
         "is_traveling_horse": false,
         "is_void_any": false,
-        "palace_id": 1,
-        "star_name_th": "ดาวตัวอย่าง 1",
-        "star_zh": "天輔",
+        "palace_base_score": 0,
+        "palace_id": 4,
+        "raw_score": -67,
+        "score": 0,
+        "star_code": "TIAN_REN",
+        "star_name_th": "ดาวเทียนเหริน",
+        "star_zh": "天任",
+        "tier_code": "L6",
         "trigram_zh": "巽"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-2",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "GENG_OVER_GUI",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "โครงใหญ่",
+                "label_zh": "大格",
+                "note_th": "ติดด่านใหญ่ เรื่องส่งต่อหรือเดินทางสะดุด",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "WU_BU_YU_TIME",
+                    "GENG_OVER_GUI"
+                  ],
+                  "palace_id": 9
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-2",
+          "caution_count": 1,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [
+            "วังนี้ไม่ใช่ 用神 หลักของคำถาม ให้ใช้เป็นข้อมูลประกอบ"
+          ],
+          "code": "avoid",
+          "engine_score": 0,
+          "hard_count": 2,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 2",
+          "is_yongshen_target": false,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "驚門",
+              "kind": "door",
+              "label_th": "ประตูตกใจ ช่วยหนุน",
+              "label_zh": "驚門",
+              "tone": "good"
+            },
+            {
+              "code": "六合",
+              "kind": "deity",
+              "label_th": "ลิ่วเหอ ช่วยหนุน",
+              "label_zh": "六合",
+              "tone": "good"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "WU_BU_YU_TIME",
+              "kind": "source_trace",
+              "label_th": "ยามห้าไม่พบ 五不遇時",
+              "label_zh": "五不遇時",
+              "tone": "bad"
+            },
+            {
+              "code": "庚加癸",
+              "kind": "stem_response",
+              "label_th": "โครงใหญ่",
+              "label_zh": "大格",
+              "tone": "bad"
+            },
+            {
+              "code": "ENGINE_SCORE",
+              "kind": "score",
+              "label_th": "คะแนนรวมจาก engine 0",
+              "label_zh": "分",
+              "tone": "warn"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 2,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": null
         },
-        "deity_name_th": "เทพตัวอย่าง 2",
-        "deity_zh": "九天",
+        "deity_code": "LIU_HE",
+        "deity_name_th": "ลิ่วเหอ",
+        "deity_zh": "六合",
         "direction": "S",
-        "display_level": "neutral",
-        "display_score": 56,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 2",
-        "door_quality": "neutral",
-        "door_zh": "景門",
-        "earth_stem_zh": "己",
-        "grid_col": 1,
-        "grid_row": 0,
-        "heaven_stem_zh": "壬",
+        "display_color": "#991b1b",
+        "display_level": "L6",
+        "display_score": 0,
+        "door_action_advice_th": "โต้วาที ฟ้องร้อง ตอบโต้ข้อกล่าวหา",
+        "door_code": "JING_FEAR_MEN",
+        "door_name_th": "ประตูตกใจ",
+        "door_quality": "inauspicious",
+        "door_zh": "驚門",
+        "earth_stem_zh": "癸",
+        "grid_col": 2,
+        "grid_row": 1,
+        "heaven_stem_zh": "庚",
         "is_traveling_horse": false,
-        "is_void_any": true,
-        "palace_id": 2,
-        "star_name_th": "ดาวตัวอย่าง 2",
-        "star_zh": "天英",
+        "is_void_any": false,
+        "palace_base_score": 0,
+        "palace_id": 9,
+        "raw_score": -33,
+        "score": 0,
+        "star_code": "TIAN_CHONG",
+        "star_name_th": "ดาวเทียนชง",
+        "star_zh": "天沖",
+        "tier_code": "L6",
         "trigram_zh": "離"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-3",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "TARGET_PALACE",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "qimen_engine",
+            "formula_evidence": [
+              {
+                "code": "TARGET_PALACE",
+                "confidence": "high",
+                "detail_th": "用神 selector บอกว่าวังนี้ควรถูกอ่านตามโจทย์ ไม่ใช่คะแนนฤกษ์สุดท้าย",
+                "evidence": {
+                  "intent_code": "overview",
+                  "palace_id": 2,
+                  "reasons": [
+                    {
+                      "code": "day",
+                      "kind": "stem_role",
+                      "label_th": "ตัวผู้ถาม",
+                      "label_zh": "日干"
+                    }
+                  ]
+                },
+                "kind": "advanced_layer",
+                "label_th": "วังเป้าหมาย",
+                "label_zh": "目標宮/用神",
+                "source_key": "qimen_engine",
+                "summary_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง"
+              }
+            ],
+            "formula_evidence_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง",
+            "label_th": "วังเป้าหมาย",
+            "label_zh": "目標宮/用神",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "目",
+            "source_confidence": "high",
+            "source_detail_th": "用神 selector บอกว่าวังนี้ควรถูกอ่านตามโจทย์ ไม่ใช่คะแนนฤกษ์สุดท้าย",
+            "source_key": "qimen_engine",
+            "source_path": "qimen-yongshen-selector.target_palaces",
+            "source_summary_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง",
+            "status_th": "ใช้ได้แต่ต้องระวัง",
+            "target_intent_th": "ภาพรวมผัง",
+            "target_intent_zh": "總覽",
+            "target_reasons": [
+              {
+                "code": "day",
+                "kind": "stem_role",
+                "label_th": "ตัวผู้ถาม",
+                "label_zh": "日干"
+              }
+            ],
+            "tone": "warn",
+            "verdict_allowed": false,
+            "warning_flags": [
+              "หกอี้โดนทัณฑ์ 六儀擊刑",
+              "หกอี๋ต้องอาญา 六儀擊刑 六儀擊刑",
+              "ยามห้าไม่พบ 五不遇時 五不遇時"
+            ]
+          },
+          {
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "LIU_YI_JI_XING_HEAVEN",
+                "confidence": "high",
+                "kind": "qimen_trace",
+                "label_th": "หกอี้โดนทัณฑ์",
+                "label_zh": "六儀擊刑",
+                "note_th": "เป็นสัญญาณกดแรงของวังนี้ ไม่ควรใช้ตัดสินลำพัง แต่ต้องลดความมั่นใจของผลดี",
+                "source_key": "qimen_source_trace"
+              },
+              {
+                "code": "LIU_YI_JI_XING",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "หกอี๋ต้องอาญา 六儀擊刑",
+                "label_zh": "六儀擊刑",
+                "note_th": "六儀ตกวัง刑 เป็นชั้นร้ายแรงของวังนั้น ต้องลดน้ำหนักหรือ cap ตามกิจกรรม",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "LIU_YI_JI_XING_HEAVEN",
+                "confidence": null,
+                "kind": "p0_badge",
+                "label_th": "หกอี้โดนทัณฑ์ 六儀擊刑",
+                "label_zh": "LIU_YI_JI_XING_HEAVEN",
+                "note_th": "",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "JI_OVER_XIN",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "วิญญาณเร่เข้าคลัง",
+                "label_zh": "遊魂入墓",
+                "note_th": "แรงตกและหมดทางออกง่าย",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "LIU_YI_JI_XING_HEAVEN",
+                    "LIU_YI_JI_XING",
+                    "WU_BU_YU_TIME",
+                    "LIU_YI_JI_XING_HEAVEN",
+                    "JI_OVER_XIN"
+                  ],
+                  "palace_id": 2
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 5 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 5 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 5 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-3",
+          "caution_count": 6,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [],
+          "code": "avoid",
+          "engine_score": 70,
+          "hard_count": 4,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 3",
+          "is_yongshen_target": true,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "開門",
+              "kind": "door",
+              "label_th": "ประตูเปิด ช่วยหนุน",
+              "label_zh": "開門",
+              "tone": "good"
+            },
+            {
+              "code": "天輔",
+              "kind": "star",
+              "label_th": "ดาวเทียนฝู่ ช่วยหนุน",
+              "label_zh": "天輔",
+              "tone": "good"
+            },
+            {
+              "code": "太陰",
+              "kind": "deity",
+              "label_th": "ไท่อิน ช่วยหนุน",
+              "label_zh": "太陰",
+              "tone": "good"
+            },
+            {
+              "code": "KONG_WANG",
+              "kind": "void",
+              "label_th": "วังนี้ติดว่าง ผลอาจไม่เต็มแรง",
+              "label_zh": "空亡",
+              "tone": "warn"
+            },
+            {
+              "code": "六儀擊刑",
+              "kind": "flag",
+              "label_th": "ก้านเกิดแรงลงโทษ ต้องระวังกฎและความผิดพลาด",
+              "label_zh": "六儀擊刑",
+              "tone": "warn"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "LIU_YI_JI_XING_HEAVEN",
+              "kind": "source_trace",
+              "label_th": "หกอี้โดนทัณฑ์",
+              "label_zh": "六儀擊刑",
+              "tone": "bad"
+            },
+            {
+              "code": "LIU_YI_JI_XING",
+              "kind": "source_trace",
+              "label_th": "หกอี๋ต้องอาญา 六儀擊刑",
+              "label_zh": "六儀擊刑",
+              "tone": "bad"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 4,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": "ใช้ได้แต่ต้องระวัง"
         },
-        "deity_name_th": "เทพตัวอย่าง 3",
-        "deity_zh": "玄武",
+        "deity_code": "TAI_YIN",
+        "deity_name_th": "ไท่อิน",
+        "deity_zh": "太陰",
         "direction": "SW",
-        "display_level": "neutral",
-        "display_score": 60,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 3",
-        "door_quality": "neutral",
-        "door_zh": "死門",
-        "earth_stem_zh": "庚",
-        "grid_col": 2,
-        "grid_row": 0,
-        "heaven_stem_zh": "癸",
+        "display_color": "#38bdf8",
+        "display_level": "L2",
+        "display_score": 70,
+        "door_action_advice_th": "ติดต่อราชการ เริ่มกิจการ เจรจาเปิดดีล",
+        "door_code": "KAI_MEN",
+        "door_name_th": "ประตูเปิด",
+        "door_quality": "great_auspicious",
+        "door_zh": "開門",
+        "earth_stem_zh": "辛",
+        "grid_col": 3,
+        "grid_row": 1,
+        "heaven_stem_zh": "己",
         "is_traveling_horse": false,
-        "is_void_any": false,
-        "palace_id": 3,
-        "star_name_th": "ดาวตัวอย่าง 3",
-        "star_zh": "天芮",
+        "is_void_any": true,
+        "palace_base_score": 70,
+        "palace_id": 2,
+        "raw_score": 72,
+        "score": 70,
+        "star_code": "TIAN_FU",
+        "star_name_th": "ดาวเทียนฝู่",
+        "star_zh": "天輔",
+        "tier_code": "L2",
         "trigram_zh": "坤"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-4",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "REN_OVER_GENG",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "ดาวขาวจับงู",
+                "label_zh": "太白擒蛇",
+                "note_th": "มีโอกาสได้ความเป็นธรรมผ่านกฎหรือคนกลาง",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "WU_BU_YU_TIME",
+                    "REN_OVER_GENG"
+                  ],
+                  "palace_id": 3
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-4",
+          "caution_count": 2,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [
+            "วังนี้ไม่ใช่ 用神 หลักของคำถาม ให้ใช้เป็นข้อมูลประกอบ"
+          ],
+          "code": "avoid",
+          "engine_score": 0,
+          "hard_count": 2,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 4",
+          "is_yongshen_target": false,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "景門",
+              "kind": "door",
+              "label_th": "ประตูทิวทัศน์ ช่วยหนุน",
+              "label_zh": "景門",
+              "tone": "good"
+            },
+            {
+              "code": "天蓬",
+              "kind": "star",
+              "label_th": "ดาวเทียนเผิง เป็นสัญญาณหนัก",
+              "label_zh": "天蓬",
+              "tone": "bad"
+            },
+            {
+              "code": "玄武",
+              "kind": "deity",
+              "label_th": "เสวียนอู่ ช่วยหนุน",
+              "label_zh": "玄武",
+              "tone": "good"
+            },
+            {
+              "code": "KONG_WANG",
+              "kind": "void",
+              "label_th": "วังนี้ติดว่าง ผลอาจไม่เต็มแรง",
+              "label_zh": "空亡",
+              "tone": "warn"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "WU_BU_YU_TIME",
+              "kind": "source_trace",
+              "label_th": "ยามห้าไม่พบ 五不遇時",
+              "label_zh": "五不遇時",
+              "tone": "bad"
+            },
+            {
+              "code": "ENGINE_SCORE",
+              "kind": "score",
+              "label_th": "คะแนนรวมจาก engine 0",
+              "label_zh": "分",
+              "tone": "warn"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 2,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": null
         },
-        "deity_name_th": "เทพตัวอย่าง 4",
-        "deity_zh": "六合",
+        "deity_code": "XUAN_WU",
+        "deity_name_th": "เสวียนอู่",
+        "deity_zh": "玄武",
         "direction": "E",
-        "display_level": "neutral",
-        "display_score": 64,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 4",
-        "door_quality": "neutral",
-        "door_zh": "傷門",
-        "earth_stem_zh": "辛",
-        "grid_col": 0,
-        "grid_row": 1,
-        "heaven_stem_zh": "丁",
+        "display_color": "#991b1b",
+        "display_level": "L6",
+        "display_score": 0,
+        "door_action_advice_th": "สอบ ออกข่าว ฟ้องคดี โชว์ผลงาน",
+        "door_code": "JING_VIEW_MEN",
+        "door_name_th": "ประตูทิวทัศน์",
+        "door_quality": "auspicious",
+        "door_zh": "景門",
+        "earth_stem_zh": "庚",
+        "grid_col": 1,
+        "grid_row": 2,
+        "heaven_stem_zh": "壬",
         "is_traveling_horse": false,
-        "is_void_any": false,
-        "palace_id": 4,
-        "star_name_th": "ดาวตัวอย่าง 4",
-        "star_zh": "天沖",
+        "is_void_any": true,
+        "palace_base_score": 0,
+        "palace_id": 3,
+        "raw_score": -18,
+        "score": 0,
+        "star_code": "TIAN_PENG",
+        "star_name_th": "ดาวเทียนเผิง",
+        "star_zh": "天蓬",
+        "tier_code": "L6",
         "trigram_zh": "震"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-5",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "FU_YIN",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "พลังซ้ำที่เดิม 伏吟",
+                "label_zh": "伏吟",
+                "note_th": "ดาว/ประตู/ก้านซ้ำที่เดิม แปลว่านิ่ง ช้า วนซ้ำ ไม่ควรอ่านเป็นแรงบุกเร็ว",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "STAR_AT_HOME",
+                "confidence": null,
+                "kind": "compound_formation",
+                "label_th": "ดาวอยู่บ้าน",
+                "label_zh": "STAR_AT_HOME",
+                "note_th": "ดาว 天禽 อยู่ที่บ้านเดิม (วัง 5)",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "FU_YIN",
+                    "WU_BU_YU_TIME",
+                    "STAR_AT_HOME"
+                  ],
+                  "palace_id": 5
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 3 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 3 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 3 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-5",
+          "caveat_th": "วังกลางไม่ใช่ทิศสำหรับเดินทางหรือหันทิศใช้จริง และไม่ใช่ฤกษ์สุดท้าย",
+          "check_next": [
+            "ถ้าต้องเลือกทิศใช้งาน ให้แตะวังทิศรอบนอก"
+          ],
+          "code": "center",
+          "engine_score": 14,
           "has_engine_score": true,
-          "is_actionable": true,
-          "label_th": "วังตัวอย่าง 5",
+          "is_actionable": false,
+          "is_yongshen_target": false,
+          "label_th": "ดูภาพรวม",
+          "label_zh": "看中宮",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "kind": "palace",
+              "label_th": "วังกลางใช้ดูภาพรวม",
+              "label_zh": "中宮",
+              "tone": "context"
+            }
+          ],
+          "summary_th": "วังกลางใช้ดูภาพรวมของผัง ไม่เสนอเป็นทิศใช้งาน",
+          "tone": "context",
+          "version": "qimen-beginner-reading-20260605"
         },
-        "deity_name_th": "เทพตัวอย่าง 5",
+        "deity_code": "ZHI_FU",
+        "deity_name_th": "จื้อฝู (เทพหัวหน้า)",
         "deity_zh": "值符",
         "direction": "C",
-        "display_level": "neutral",
-        "display_score": 68,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 5",
-        "door_quality": "neutral",
-        "door_zh": "中門",
-        "earth_stem_zh": "壬",
-        "grid_col": 1,
-        "grid_row": 1,
-        "heaven_stem_zh": "丙",
+        "display_color": "#ef4444",
+        "display_level": "L5",
+        "display_score": 14,
+        "door_action_advice_th": "หลบซ่อน เก็บความลับ ทำงานลับ",
+        "door_code": "DU_MEN",
+        "door_name_th": "ประตูปิดกั้น",
+        "door_quality": "contextual",
+        "door_zh": "杜門",
+        "earth_stem_zh": "戊",
+        "grid_col": 2,
+        "grid_row": 2,
+        "heaven_stem_zh": null,
         "is_traveling_horse": false,
         "is_void_any": false,
+        "palace_base_score": 14,
         "palace_id": 5,
-        "star_name_th": "ดาวตัวอย่าง 5",
+        "raw_score": 14,
+        "score": 14,
+        "star_code": "TIAN_QIN",
+        "star_name_th": "ดาวเทียนฉิน",
         "star_zh": "天禽",
+        "tier_code": "L5",
         "trigram_zh": "中"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-6",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "GUI_OVER_BING",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "ร่มคลุมขัดครู",
+                "label_zh": "華蓋悖師",
+                "note_th": "ข้อมูลซ่อนอาจพาเรื่องยุ่ง",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "WU_BU_YU_TIME",
+                    "GUI_OVER_BING"
+                  ],
+                  "palace_id": 7
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-6",
+          "caution_count": 3,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [
+            "วังนี้ไม่ใช่ 用神 หลักของคำถาม ให้ใช้เป็นข้อมูลประกอบ"
+          ],
+          "code": "avoid",
+          "engine_score": 3,
+          "hard_count": 1,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 6",
+          "is_yongshen_target": false,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "休門",
+              "kind": "door",
+              "label_th": "ประตูพักผ่อน ช่วยหนุน",
+              "label_zh": "休門",
+              "tone": "good"
+            },
+            {
+              "code": "天英",
+              "kind": "star",
+              "label_th": "ดาวเทียนอิง ช่วยหนุน",
+              "label_zh": "天英",
+              "tone": "good"
+            },
+            {
+              "code": "螣蛇",
+              "kind": "deity",
+              "label_th": "เถิงเสอ ช่วยหนุน",
+              "label_zh": "螣蛇",
+              "tone": "good"
+            },
+            {
+              "code": "KONG_WANG",
+              "kind": "void",
+              "label_th": "วังนี้ติดว่าง ผลอาจไม่เต็มแรง",
+              "label_zh": "空亡",
+              "tone": "warn"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "WU_BU_YU_TIME",
+              "kind": "source_trace",
+              "label_th": "ยามห้าไม่พบ 五不遇時",
+              "label_zh": "五不遇時",
+              "tone": "bad"
+            },
+            {
+              "code": "癸加丙",
+              "kind": "stem_response",
+              "label_th": "ร่มคลุมขัดครู",
+              "label_zh": "華蓋悖師",
+              "tone": "warn"
+            },
+            {
+              "code": "ENGINE_SCORE",
+              "kind": "score",
+              "label_th": "คะแนนรวมจาก engine 3",
+              "label_zh": "分",
+              "tone": "warn"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 3,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": null
         },
-        "deity_name_th": "เทพตัวอย่าง 6",
-        "deity_zh": "白虎",
+        "deity_code": "TENG_SHE",
+        "deity_name_th": "เถิงเสอ",
+        "deity_zh": "螣蛇",
         "direction": "W",
-        "display_level": "neutral",
-        "display_score": 72,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 6",
-        "door_quality": "neutral",
-        "door_zh": "驚門",
-        "earth_stem_zh": "癸",
-        "grid_col": 2,
-        "grid_row": 1,
-        "heaven_stem_zh": "乙",
+        "display_color": "#991b1b",
+        "display_level": "L6",
+        "display_score": 3,
+        "door_action_advice_th": "พักฟื้น เซ็นสัญญาเงียบ ๆ พบคู่ครอง",
+        "door_code": "XIU_MEN",
+        "door_name_th": "ประตูพักผ่อน",
+        "door_quality": "great_auspicious",
+        "door_zh": "休門",
+        "earth_stem_zh": "丙",
+        "grid_col": 3,
+        "grid_row": 2,
+        "heaven_stem_zh": "癸",
         "is_traveling_horse": false,
-        "is_void_any": false,
-        "palace_id": 6,
-        "star_name_th": "ดาวตัวอย่าง 6",
-        "star_zh": "天柱",
+        "is_void_any": true,
+        "palace_base_score": 3,
+        "palace_id": 7,
+        "raw_score": 3,
+        "score": 3,
+        "star_code": "TIAN_YING",
+        "star_name_th": "ดาวเทียนอิง",
+        "star_zh": "天英",
+        "tier_code": "L6",
         "trigram_zh": "兌"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-7",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "MEN_PO",
+                "confidence": "high",
+                "kind": "qimen_trace",
+                "label_th": "ประตูข่มวัง",
+                "label_zh": "門迫",
+                "note_th": "ประตูมีกำลังกดวังเดิม ใช้เป็นสัญญาณลดแรงของเรื่องดี และเพิ่มความติดขัดของเรื่องร้าย",
+                "source_key": "qimen_source_trace"
+              },
+              {
+                "code": "RU_MU_EARTH_STEM",
+                "confidence": "medium",
+                "kind": "qimen_trace",
+                "label_th": "ก้านเข้าคลัง",
+                "label_zh": "入墓",
+                "note_th": "พลังถูกเก็บลงคลัง ผลไม่ออกเต็ม ต้องอ่านร่วมกับความแรงของประตู ดาว และจังหวะ冲庫",
+                "source_key": "qimen_source_trace"
+              },
+              {
+                "code": "MEN_PO",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ประตูข่มวัง 門迫",
+                "label_zh": "門迫",
+                "note_th": "ประตูข่มธาตุวัง พลังประตูถูกบีบหรือใช้ยาก ต้องอ่านร่วมกับกิจกรรม",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "RU_MU",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ก้านเข้าคลัง/เข้าหลุม 入墓",
+                "label_zh": "入墓",
+                "note_th": "ก้านในวังเข้า墓/庫 แรงออกผลลดลง ห้ามสรุปดีแรงถ้าไม่มีตัวแก้",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "MEN_PO",
+                "confidence": null,
+                "kind": "p0_badge",
+                "label_th": "ประตูข่มวัง 門迫",
+                "label_zh": "MEN_PO",
+                "note_th": "",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "RU_MU_EARTH_STEM",
+                "confidence": null,
+                "kind": "p0_badge",
+                "label_th": "ก้านเข้าคลัง 入墓",
+                "label_zh": "RU_MU_EARTH_STEM",
+                "note_th": "",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "YI_OVER_DING",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "ฉีและอี๋ช่วยกัน",
+                "label_zh": "奇儀相佐",
+                "note_th": "ดีมากกับเอกสาร สอบ งานเขียน และการยื่นเรื่อง",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "MEN_PO",
+                    "RU_MU_EARTH_STEM",
+                    "MEN_PO",
+                    "RU_MU",
+                    "WU_BU_YU_TIME",
+                    "MEN_PO",
+                    "RU_MU_EARTH_STEM",
+                    "YI_OVER_DING"
+                  ],
+                  "palace_id": 8
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 8 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 8 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 8 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-7",
+          "caution_count": 8,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [
+            "วังนี้ไม่ใช่ 用神 หลักของคำถาม ให้ใช้เป็นข้อมูลประกอบ"
+          ],
+          "code": "avoid",
+          "engine_score": 2,
+          "hard_count": 1,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 7",
+          "is_yongshen_target": false,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "天心",
+              "kind": "star",
+              "label_th": "ดาวเทียนซิน ช่วยหนุน",
+              "label_zh": "天心",
+              "tone": "good"
+            },
+            {
+              "code": "九地",
+              "kind": "deity",
+              "label_th": "เก้าพื้นดิน ช่วยหนุน",
+              "label_zh": "九地",
+              "tone": "good"
+            },
+            {
+              "code": "KONG_WANG",
+              "kind": "void",
+              "label_th": "วังนี้ติดว่าง ผลอาจไม่เต็มแรง",
+              "label_zh": "空亡",
+              "tone": "warn"
+            },
+            {
+              "code": "門迫",
+              "kind": "flag",
+              "label_th": "ประตูถูกบีบ ต้องระวังแรงขัด",
+              "label_zh": "門迫",
+              "tone": "warn"
+            },
+            {
+              "code": "入墓",
+              "kind": "flag",
+              "label_th": "พลังเข้าคลังหรือถูกเก็บไว้ ผลออกช้า",
+              "label_zh": "入墓",
+              "tone": "warn"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "MEN_PO",
+              "kind": "source_trace",
+              "label_th": "ประตูข่มวัง",
+              "label_zh": "門迫",
+              "tone": "warn"
+            },
+            {
+              "code": "RU_MU_EARTH_STEM",
+              "kind": "source_trace",
+              "label_th": "ก้านเข้าคลัง",
+              "label_zh": "入墓",
+              "tone": "warn"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 3,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": null
         },
-        "deity_name_th": "เทพตัวอย่าง 7",
-        "deity_zh": "太陰",
+        "deity_code": "JIU_DI",
+        "deity_name_th": "เก้าพื้นดิน",
+        "deity_zh": "九地",
         "direction": "NE",
-        "display_level": "good",
-        "display_score": 76,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 7",
-        "door_quality": "good",
-        "door_zh": "生門",
+        "display_color": "#991b1b",
+        "display_level": "L6",
+        "display_score": 2,
+        "door_action_advice_th": "หลบซ่อน เก็บความลับ ทำงานลับ",
+        "door_code": "DU_MEN",
+        "door_name_th": "ประตูปิดกั้น",
+        "door_quality": "contextual",
+        "door_zh": "杜門",
         "earth_stem_zh": "丁",
-        "grid_col": 0,
-        "grid_row": 2,
-        "heaven_stem_zh": "戊",
-        "is_traveling_horse": true,
-        "is_void_any": false,
-        "palace_id": 7,
-        "star_name_th": "ดาวตัวอย่าง 7",
-        "star_zh": "天任",
+        "grid_col": 1,
+        "grid_row": 3,
+        "heaven_stem_zh": "乙",
+        "is_traveling_horse": false,
+        "is_void_any": true,
+        "palace_base_score": 2,
+        "palace_id": 8,
+        "raw_score": 2,
+        "score": 2,
+        "star_code": "TIAN_XIN",
+        "star_name_th": "ดาวเทียนซิน",
+        "star_zh": "天心",
+        "tier_code": "L6",
         "trigram_zh": "艮"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-8",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "SAN_SHENG_COMPONENT",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "qimen_source_trace",
+            "formula_evidence": [
+              {
+                "code": "SAN_SHENG_COMPONENT",
+                "confidence": "medium",
+                "detail_th": "三勝ในชุดนี้ใช้เป็นชั้นอ่านประกอบจากตำรากลศึก ต้องอ่านร่วมกับประตู ดาว เทพ ก้าน และ用神 ไม่ใช่คะแนนดีอัตโนมัติ",
+                "evidence": {
+                  "matched_components": [
+                    {
+                      "label_th": "เทพจิ่วเทียน",
+                      "label_zh": "九天"
+                    }
+                  ],
+                  "palace_id": 1
+                },
+                "kind": "advanced_layer",
+                "label_th": "องค์ประกอบสามชัย",
+                "label_zh": "三勝要素",
+                "source_key": "qimen_source_trace",
+                "summary_th": "วังนี้ตรงองค์ประกอบสามชัย เทพจิ่วเทียน 九天"
+              }
+            ],
+            "formula_evidence_th": "วังนี้ตรงองค์ประกอบสามชัย เทพจิ่วเทียน 九天",
+            "label_th": "องค์ประกอบสามชัย",
+            "label_zh": "三勝要素",
+            "layer_type": "advanced_qimen_layer",
+            "matched_components": [
+              {
+                "label_th": "เทพจิ่วเทียน",
+                "label_zh": "九天"
+              }
+            ],
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "勝",
+            "source_confidence": "medium",
+            "source_detail_th": "三勝ในชุดนี้ใช้เป็นชั้นอ่านประกอบจากตำรากลศึก ต้องอ่านร่วมกับประตู ดาว เทพ ก้าน และ用神 ไม่ใช่คะแนนดีอัตโนมัติ",
+            "source_key": "qimen_source_trace",
+            "source_path": "qimen_source_trace.sansheng",
+            "source_summary_th": "วังนี้ตรงองค์ประกอบสามชัย เทพจิ่วเทียน 九天",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
+          },
+          {
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "BING_OVER_REN",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "ไฟเข้าตาข่ายฟ้า",
+                "label_zh": "火入天羅",
+                "note_th": "ฝ่ายรุกหรือฝ่ายแขกเสียเปรียบง่าย",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "WU_BU_YU_TIME",
+                    "BING_OVER_REN"
+                  ],
+                  "palace_id": 1
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 2 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-8",
+          "caution_count": 2,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [
+            "วังนี้ไม่ใช่ 用神 หลักของคำถาม ให้ใช้เป็นข้อมูลประกอบ"
+          ],
+          "code": "avoid",
+          "engine_score": 0,
+          "hard_count": 1,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 8",
+          "is_yongshen_target": false,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "傷門",
+              "kind": "door",
+              "label_th": "ประตูบาดเจ็บ ช่วยหนุน",
+              "label_zh": "傷門",
+              "tone": "good"
+            },
+            {
+              "code": "天柱",
+              "kind": "star",
+              "label_th": "ดาวเทียนจู้ ช่วยหนุน",
+              "label_zh": "天柱",
+              "tone": "good"
+            },
+            {
+              "code": "九天",
+              "kind": "deity",
+              "label_th": "เก้าสวรรค์ ช่วยหนุน",
+              "label_zh": "九天",
+              "tone": "good"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "WU_BU_YU_TIME",
+              "kind": "source_trace",
+              "label_th": "ยามห้าไม่พบ 五不遇時",
+              "label_zh": "五不遇時",
+              "tone": "bad"
+            },
+            {
+              "code": "丙加壬",
+              "kind": "stem_response",
+              "label_th": "ไฟเข้าตาข่ายฟ้า",
+              "label_zh": "火入天羅",
+              "tone": "warn"
+            },
+            {
+              "code": "ENGINE_SCORE",
+              "kind": "score",
+              "label_th": "คะแนนรวมจาก engine 0",
+              "label_zh": "分",
+              "tone": "warn"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 3,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": null
         },
-        "deity_name_th": "เทพตัวอย่าง 8",
-        "deity_zh": "螣蛇",
+        "deity_code": "JIU_TIAN",
+        "deity_name_th": "เก้าสวรรค์",
+        "deity_zh": "九天",
         "direction": "N",
-        "display_level": "good",
-        "display_score": 80,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 8",
-        "door_quality": "good",
-        "door_zh": "休門",
-        "earth_stem_zh": "丙",
-        "grid_col": 1,
-        "grid_row": 2,
-        "heaven_stem_zh": "己",
+        "display_color": "#991b1b",
+        "display_level": "L6",
+        "display_score": 0,
+        "door_action_advice_th": "ออกล่า แข่งขัน ทวงหนี้ (ระวังบาดเจ็บ)",
+        "door_code": "SHANG_MEN",
+        "door_name_th": "ประตูบาดเจ็บ",
+        "door_quality": "inauspicious",
+        "door_zh": "傷門",
+        "earth_stem_zh": "壬",
+        "grid_col": 2,
+        "grid_row": 3,
+        "heaven_stem_zh": "丙",
         "is_traveling_horse": false,
         "is_void_any": false,
-        "palace_id": 8,
-        "star_name_th": "ดาวตัวอย่าง 8",
-        "star_zh": "天蓬",
+        "palace_base_score": 0,
+        "palace_id": 1,
+        "raw_score": -20,
+        "score": 0,
+        "star_code": "TIAN_ZHU",
+        "star_name_th": "ดาวเทียนจู้",
+        "star_zh": "天柱",
+        "tier_code": "L6",
         "trigram_zh": "坎"
       },
       {
         "advanced_qimen_layers": [
           {
-            "code": "fixture-layer-9",
-            "status": "ready"
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "SAN_SHENG_COMPONENT",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "qimen_source_trace",
+            "formula_evidence": [
+              {
+                "code": "SAN_SHENG_COMPONENT",
+                "confidence": "medium",
+                "detail_th": "三勝ในชุดนี้ใช้เป็นชั้นอ่านประกอบจากตำรากลศึก ต้องอ่านร่วมกับประตู ดาว เทพ ก้าน และ用神 ไม่ใช่คะแนนดีอัตโนมัติ",
+                "evidence": {
+                  "matched_components": [
+                    {
+                      "label_th": "ดาวนำ",
+                      "label_zh": "值符"
+                    },
+                    {
+                      "label_th": "ประตูเกิด",
+                      "label_zh": "生門"
+                    }
+                  ],
+                  "palace_id": 6
+                },
+                "kind": "advanced_layer",
+                "label_th": "องค์ประกอบสามชัย",
+                "label_zh": "三勝要素",
+                "source_key": "qimen_source_trace",
+                "summary_th": "วังนี้ตรงองค์ประกอบสามชัย ดาวนำ 值符 · ประตูเกิด 生門"
+              }
+            ],
+            "formula_evidence_th": "วังนี้ตรงองค์ประกอบสามชัย ดาวนำ 值符 · ประตูเกิด 生門",
+            "label_th": "องค์ประกอบสามชัย",
+            "label_zh": "三勝要素",
+            "layer_type": "advanced_qimen_layer",
+            "matched_components": [
+              {
+                "label_th": "ดาวนำ",
+                "label_zh": "值符"
+              },
+              {
+                "label_th": "ประตูเกิด",
+                "label_zh": "生門"
+              }
+            ],
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "勝",
+            "source_confidence": "medium",
+            "source_detail_th": "三勝ในชุดนี้ใช้เป็นชั้นอ่านประกอบจากตำรากลศึก ต้องอ่านร่วมกับประตู ดาว เทพ ก้าน และ用神 ไม่ใช่คะแนนดีอัตโนมัติ",
+            "source_key": "qimen_source_trace",
+            "source_path": "qimen_source_trace.sansheng",
+            "source_summary_th": "วังนี้ตรงองค์ประกอบสามชัย ดาวนำ 值符 · ประตูเกิด 生門",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
+          },
+          {
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "TIAN_YI_ZHI_FU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "qimen_source_trace",
+            "formula_evidence": [
+              {
+                "code": "TIAN_YI_ZHI_FU",
+                "confidence": "medium",
+                "detail_th": "ไม่ใช่太乙 ของ金函玉鏡日家 เพราะเป็นอีกระบบหนึ่ง หน้านี้จึงไม่เอามาปนกับ時家奇門",
+                "evidence": {
+                  "palace_id": 6,
+                  "zhi_fu_palace_id": 6
+                },
+                "kind": "advanced_layer",
+                "label_th": "เทียนอี่ที่ผูกกับดาวนำ",
+                "label_zh": "天乙/值符",
+                "source_key": "qimen_source_trace",
+                "summary_th": "วังนี้เป็นตำแหน่ง值符 จึงแสดง 天乙 ในความหมายเทพ/ดาวนำของผังยาม"
+              }
+            ],
+            "formula_evidence_th": "วังนี้เป็นตำแหน่ง值符 จึงแสดง 天乙 ในความหมายเทพ/ดาวนำของผังยาม",
+            "label_th": "เทียนอี่ที่ผูกกับดาวนำ",
+            "label_zh": "天乙/值符",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "乙",
+            "source_confidence": "medium",
+            "source_detail_th": "ไม่ใช่太乙 ของ金函玉鏡日家 เพราะเป็นอีกระบบหนึ่ง หน้านี้จึงไม่เอามาปนกับ時家奇門",
+            "source_key": "qimen_source_trace",
+            "source_path": "qimen_source_trace.tianyi_zhifu",
+            "source_summary_th": "วังนี้เป็นตำแหน่ง值符 จึงแสดง 天乙 ในความหมายเทพ/ดาวนำของผังยาม",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
+          },
+          {
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "TARGET_PALACE",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "qimen_engine",
+            "formula_evidence": [
+              {
+                "code": "TARGET_PALACE",
+                "confidence": "high",
+                "detail_th": "用神 selector บอกว่าวังนี้ควรถูกอ่านตามโจทย์ ไม่ใช่คะแนนฤกษ์สุดท้าย",
+                "evidence": {
+                  "intent_code": "overview",
+                  "palace_id": 6,
+                  "reasons": [
+                    {
+                      "code": "zhi_fu",
+                      "kind": "chart_palace",
+                      "label_th": "ผู้คุมกระดาน/ผู้ใหญ่",
+                      "label_zh": "值符"
+                    }
+                  ]
+                },
+                "kind": "advanced_layer",
+                "label_th": "วังเป้าหมาย",
+                "label_zh": "目標宮/用神",
+                "source_key": "qimen_engine",
+                "summary_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง"
+              }
+            ],
+            "formula_evidence_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง",
+            "label_th": "วังเป้าหมาย",
+            "label_zh": "目標宮/用神",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "目",
+            "source_confidence": "high",
+            "source_detail_th": "用神 selector บอกว่าวังนี้ควรถูกอ่านตามโจทย์ ไม่ใช่คะแนนฤกษ์สุดท้าย",
+            "source_key": "qimen_engine",
+            "source_path": "qimen-yongshen-selector.target_palaces",
+            "source_summary_th": "วังนี้เป็นวังเป้าหมายของคำถาม ภาพรวมผัง",
+            "status_th": "ใช้ได้แต่ต้องระวัง",
+            "target_intent_th": "ภาพรวมผัง",
+            "target_intent_zh": "總覽",
+            "target_reasons": [
+              {
+                "code": "zhi_fu",
+                "kind": "chart_palace",
+                "label_th": "ผู้คุมกระดาน/ผู้ใหญ่",
+                "label_zh": "值符"
+              }
+            ],
+            "tone": "warn",
+            "verdict_allowed": false,
+            "warning_flags": [
+              "ก้านเข้าคลัง 入墓",
+              "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓",
+              "ยามห้าไม่พบ 五不遇時 五不遇時"
+            ]
+          },
+          {
+            "active": true,
+            "caveat_th": "ชั้นสูตรนี้ใช้ช่วยอ่านผังเท่านั้น ไม่เพิ่มหรือลดคะแนน และไม่ใช่คำฟันธงเดี่ยว",
+            "code": "PALACE_GEJU",
+            "context_only": true,
+            "evidence_kind": "advanced_layer",
+            "evidence_source_key": "source_formations",
+            "formation_items": [
+              {
+                "code": "RU_MU_EARTH_STEM",
+                "confidence": "medium",
+                "kind": "qimen_trace",
+                "label_th": "ก้านเข้าคลัง",
+                "label_zh": "入墓",
+                "note_th": "พลังถูกเก็บลงคลัง ผลไม่ออกเต็ม ต้องอ่านร่วมกับความแรงของประตู ดาว และจังหวะ冲庫",
+                "source_key": "qimen_source_trace"
+              },
+              {
+                "code": "RU_MU",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ก้านเข้าคลัง/เข้าหลุม 入墓",
+                "label_zh": "入墓",
+                "note_th": "ก้านในวังเข้า墓/庫 แรงออกผลลดลง ห้ามสรุปดีแรงถ้าไม่มีตัวแก้",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "WU_BU_YU_TIME",
+                "confidence": null,
+                "kind": "classical_flag",
+                "label_th": "ยามห้าไม่พบ 五不遇時",
+                "label_zh": "五不遇時",
+                "note_th": "เป็น flag ระดับยาม กระทบทุกวังของผังนี้ ห้ามยกเป็นฤกษ์ดีล้วน",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "RU_MU_EARTH_STEM",
+                "confidence": null,
+                "kind": "p0_badge",
+                "label_th": "ก้านเข้าคลัง 入墓",
+                "label_zh": "RU_MU_EARTH_STEM",
+                "note_th": "",
+                "source_key": "qimen_engine"
+              },
+              {
+                "code": "XIN_OVER_YI",
+                "confidence": "high",
+                "kind": "stem_response",
+                "label_th": "เสือขาวกำเริบ",
+                "label_zh": "白虎猖狂",
+                "note_th": "แรงปะทะรุนแรง คนหรือคู่กรณีแข็งใส่",
+                "source_key": "qimen_engine"
+              }
+            ],
+            "formula_evidence": [
+              {
+                "code": "PALACE_GEJU",
+                "confidence": "high",
+                "detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+                "evidence": {
+                  "formation_codes": [
+                    "RU_MU_EARTH_STEM",
+                    "RU_MU",
+                    "WU_BU_YU_TIME",
+                    "RU_MU_EARTH_STEM",
+                    "XIN_OVER_YI"
+                  ],
+                  "palace_id": 6
+                },
+                "kind": "advanced_layer",
+                "label_th": "เก๋อจวี๋รายวัง",
+                "label_zh": "宮內格局",
+                "source_key": "source_formations",
+                "summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 5 รายการ"
+              }
+            ],
+            "formula_evidence_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 5 รายการ",
+            "label_th": "เก๋อจวี๋รายวัง",
+            "label_zh": "宮內格局/奇門格局",
+            "layer_type": "advanced_qimen_layer",
+            "no_score_mutation": true,
+            "score_affects": false,
+            "score_effect": "none",
+            "severity": "context",
+            "short_zh": "格",
+            "source_confidence": "high",
+            "source_detail_th": "รายการนี้รวมเฉพาะชื่อสูตรที่เกิดจริงในวังนี้จาก engine พร้อมหลักฐาน ไม่สร้างชื่อสูตรเองที่หน้าเว็บ",
+            "source_key": "palace_packet",
+            "source_path": "palace.advanced_qimen_layers.formations",
+            "source_summary_th": "วังนี้มีชื่อสูตร/สัญญาณที่ engine ตรวจพบ 5 รายการ",
+            "status_th": "พบชั้นนี้ในข้อมูลวัง",
+            "tone": "context",
+            "verdict_allowed": false
           }
         ],
         "beginner_reading": {
-          "code": "fixture-reading-9",
+          "caution_count": 8,
+          "caveat_th": "นี่คือป้ายอ่านเบื้องต้นของวังนี้ในผังนี้ ไม่ใช่ฤกษ์สุดท้าย ต้องอ่านร่วมกับ 用神 ประตู ดาว เทพ ก้าน และ flags",
+          "check_next": [],
+          "code": "avoid",
+          "engine_score": 29,
+          "hard_count": 3,
           "has_engine_score": true,
           "is_actionable": true,
-          "label_th": "วังตัวอย่าง 9",
+          "is_yongshen_target": true,
+          "label_th": "เลี่ยง",
+          "label_zh": "避用",
           "no_score_mutation": true,
-          "summary_th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
-          "verdict_allowed": true
+          "reasons": [
+            {
+              "code": "生門",
+              "kind": "door",
+              "label_th": "ประตูชีวิต ช่วยหนุน",
+              "label_zh": "生門",
+              "tone": "good"
+            },
+            {
+              "code": "天芮",
+              "kind": "star",
+              "label_th": "ดาวเทียนรุ่ย เป็นสัญญาณหนัก",
+              "label_zh": "天芮",
+              "tone": "bad"
+            },
+            {
+              "code": "值符",
+              "kind": "deity",
+              "label_th": "จื้อฝู (เทพหัวหน้า) ช่วยหนุน",
+              "label_zh": "值符",
+              "tone": "good"
+            },
+            {
+              "code": "KONG_WANG",
+              "kind": "void",
+              "label_th": "วังนี้ติดว่าง ผลอาจไม่เต็มแรง",
+              "label_zh": "空亡",
+              "tone": "warn"
+            },
+            {
+              "code": "YI_MA",
+              "kind": "horse",
+              "label_th": "มีม้าเดินทาง เหมาะกับเรื่องที่ต้องการให้เคลื่อน",
+              "label_zh": "驛馬",
+              "tone": "good"
+            },
+            {
+              "code": "入墓",
+              "kind": "flag",
+              "label_th": "พลังเข้าคลังหรือถูกเก็บไว้ ผลออกช้า",
+              "label_zh": "入墓",
+              "tone": "warn"
+            },
+            {
+              "code": "五不遇時",
+              "kind": "flag",
+              "label_th": "ยามห้าไม่พบ ไม่เหมาะเร่งเรื่องสำคัญ",
+              "label_zh": "五不遇時",
+              "tone": "warn"
+            },
+            {
+              "code": "RU_MU_EARTH_STEM",
+              "kind": "source_trace",
+              "label_th": "ก้านเข้าคลัง",
+              "label_zh": "入墓",
+              "tone": "warn"
+            }
+          ],
+          "score_policy_th": "ป้ายนี้ไม่แก้คะแนนจริง และไม่ใช่คะแนนฤกษ์สุดท้าย",
+          "summary_th": "ไม่ควรใช้วังนี้เป็นตัวหลักถ้ายังมีตัวเลือกอื่น",
+          "support_count": 4,
+          "tone": "bad",
+          "version": "qimen-beginner-reading-20260605",
+          "yongshen_status_th": "ใช้ได้แต่ต้องระวัง"
         },
-        "deity_name_th": "เทพตัวอย่าง 9",
-        "deity_zh": "值使",
+        "deity_code": "ZHI_FU",
+        "deity_name_th": "จื้อฝู (เทพหัวหน้า)",
+        "deity_zh": "值符",
         "direction": "NW",
-        "display_level": "good",
-        "display_score": 84,
-        "door_action_advice_th": "ใช้ตรวจรูปแบบข้อมูลเท่านั้น",
-        "door_name_th": "ประตูตัวอย่าง 9",
-        "door_quality": "good",
-        "door_zh": "開門",
+        "display_color": "#ef4444",
+        "display_level": "L5",
+        "display_score": 29,
+        "door_action_advice_th": "หาทรัพย์ ซื้อขาย ลงทุน เริ่มสร้าง",
+        "door_code": "SHENG_MEN",
+        "door_name_th": "ประตูชีวิต",
+        "door_quality": "great_auspicious",
+        "door_zh": "生門",
         "earth_stem_zh": "乙",
-        "grid_col": 2,
-        "grid_row": 2,
-        "heaven_stem_zh": "庚",
-        "is_traveling_horse": false,
-        "is_void_any": false,
-        "palace_id": 9,
-        "star_name_th": "ดาวตัวอย่าง 9",
-        "star_zh": "天心",
+        "grid_col": 3,
+        "grid_row": 3,
+        "heaven_stem_zh": "辛",
+        "is_traveling_horse": true,
+        "is_void_any": true,
+        "palace_base_score": 29,
+        "palace_id": 6,
+        "raw_score": 29,
+        "score": 29,
+        "star_code": "TIAN_RUI",
+        "star_name_th": "ดาวเทียนรุ่ย",
+        "star_zh": "天芮",
+        "tier_code": "L5",
         "trigram_zh": "乾"
       }
     ]
   },
-  "entitlement": {
-    "access_state": {
-      "in_trial": false,
-      "legacy_free": false,
-      "sub_active": true,
-      "sub_expires_at": "2027-07-13T17:00:00.000Z",
-      "trial_ends_at": null
-    },
-    "caps": {
-      "compare_locations": true,
-      "detail": "technical",
-      "hours_per_day": 12,
-      "search_days": 30,
-      "search_results": 30,
-      "sifu": true,
-      "time_window_days": 365
-    },
-    "caps_hash": "sha256:6fa683af8ac618060af9607d2b679c4537804eaacbce2b8c3d434bc8c7c57783",
-    "contract_version": "entitlements-v3-20260711",
-    "feature": "qimen",
-    "plan": "master",
-    "revision": "sha256:a9b3daf4677ab7aa86d763b708f5e7b250b17ae467ab378b234c415ae17ab319"
+  "input": {
+    "date": "2026-07-14",
+    "lat": 0,
+    "lng": 0,
+    "school": "chaibu",
+    "system_type": "hour",
+    "time": "09:00"
   },
   "ok": true,
   "product": {
@@ -383,10 +2198,12 @@
   },
   "request_context": {
     "date": "2026-07-14",
-    "entitlement_revision": "sha256:a9b3daf4677ab7aa86d763b708f5e7b250b17ae467ab378b234c415ae17ab319",
+    "latitude": 0,
     "location_source": "mobile_explicit",
+    "longitude": 0,
     "school": "chaibu",
     "system_type": "hour",
     "time": "09:00"
-  }
+  },
+  "source": "qimen-api"
 }

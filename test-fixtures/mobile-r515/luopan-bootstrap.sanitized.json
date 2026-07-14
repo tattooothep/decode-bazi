@@ -1,30 +1,11 @@
 {
   "contract_version": "mobile-luopan-v1",
   "entitlement": {
-    "access_state": {
-      "in_trial": false,
-      "legacy_free": false,
-      "sub_active": true,
-      "sub_expires_at": "2027-07-13T17:00:00.000Z",
-      "trial_ends_at": null
-    },
-    "caps": {
-      "mode": "full",
-      "pins": "full",
-      "sifu": true,
-      "vision": true,
-      "vision_limit": 10,
-      "vision_period": "day"
-    },
-    "caps_hash": "sha256:5a8400a1c2a03f5f118dcdc742eac9ff54f1b98f18dc029b94ef51d2a2c55438",
-    "contract_version": "entitlements-v3-20260711",
-    "feature": "luopan",
     "house_limit": 999,
     "mode": "full",
     "multi_profile": true,
     "pins": "full",
     "plan": "master",
-    "revision": "sha256:4d99199532b67a64de57a19905ae3becff60188a2fa8f36296c775e37e7c7430",
     "sifu": true,
     "vision": true,
     "vision_limit": 10
@@ -34,9 +15,6 @@
   "north_reference_default": "magnetic",
   "ok": true,
   "profiles": [],
-  "request_context": {
-    "entitlement_revision": "sha256:4d99199532b67a64de57a19905ae3becff60188a2fa8f36296c775e37e7c7430"
-  },
   "ring_reference": {
     "mountains_24": [
       {

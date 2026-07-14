@@ -1,9 +1,7 @@
 {
   "balance_after": 99,
-  "count": 2,
-  "mode": "group",
   "ok": true,
   "reply": "Synthetic fixture response.",
-  "source": "mobile-r515-synthetic-contract",
+  "source": "/api/sifu/group",
   "spent": 1
 }

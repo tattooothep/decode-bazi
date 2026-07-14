@@ -13,12 +13,16 @@
     "useTongshu": true,
     "useXiu28": true
   },
+  "lat": 0,
+  "lng": 0,
   "mode": "activity",
   "ok": true,
   "request_context": {
     "date_from": "2026-07-14",
     "date_to": "2026-07-16",
+    "latitude": 0,
     "location_source": "mobile_explicit",
+    "longitude": 0,
     "mode": "activity",
     "school": "chaibu"
   },
@@ -27,46 +31,1077 @@
     "bazi_cut": 0,
     "fly9_cut": 0,
     "heluo_cut": 0,
-    "jianchu_cut": 0,
+    "jianchu_cut": 12,
     "shen12_cut": 0,
     "taisui_cut": 0,
     "tongshu_cut": 0,
     "xiu28_cut": 0,
     "yongshen_cut": 0
   },
-  "today_failed_dates": 0,
-  "today_loaded_dates": 3,
+  "today_failed_dates": 2,
+  "today_loaded_dates": 1,
   "top": [
     {
-      "date": "2026-07-14",
-      "datetime": "2026-07-14T09:00:00+07:00",
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T06:00:00",
       "deity": "九天",
-      "direction": "E",
+      "direction": "N",
       "door": "生門",
-      "earth_stem": "戊",
+      "earth_stem": "壬",
+      "heaven_stem": "癸",
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+10 生門",
+        "+7 九天"
+      ],
+      "palace_id": 1,
+      "score": 17,
+      "star": "天英",
+      "time": "06:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "N",
+          "direction_label_th": "ทิศเหนือ",
+          "direction_label_zh": "北",
+          "palace_id": 1,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坎",
+          "warning_flags": [
+            "ประตูข่มวัง 門迫",
+            "ดาวสะท้อนกลับ 反吟",
+            "ประตูข่มวัง 門迫 門迫",
+            "พลังสะท้อนกลับ 反吟 反吟"
+          ]
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ดาวสะท้อนกลับ 反吟",
+            "พลังสะท้อนกลับ 反吟 反吟",
+            "ยามห้าไม่พบ 五不遇時 五不遇時"
+          ]
+        },
+        {
+          "direction": "NE",
+          "direction_label_th": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_label_zh": "東北",
+          "palace_id": 8,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "艮",
+          "warning_flags": [
+            "ประตูข่มวัง 門迫",
+            "ก้านเข้าคลัง 入墓",
+            "ดาวสะท้อนกลับ 反吟",
+            "ประตูข่มวัง 門迫 門迫"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-16",
+      "datetime": "2026-07-16T00:00:00",
+      "deity": "螣蛇",
+      "direction": "NE",
+      "door": "生門",
+      "earth_stem": "丁",
+      "heaven_stem": "丁",
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+10 生門",
+        "+5 三奇DING",
+        "+4 地三奇DING",
+        "+3 馬星",
+        "-5 空亡"
+      ],
+      "palace_id": 8,
+      "score": 17,
+      "star": "天任",
+      "time": "00:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "NE",
+          "direction_label_th": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_label_zh": "東北",
+          "palace_id": 8,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "艮",
+          "warning_flags": [
+            "ก้านเข้าคลัง 入墓",
+            "ดาวกลับบ้านเดิม 伏吟",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓"
+          ]
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ดาวกลับบ้านเดิม 伏吟",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        },
+        {
+          "direction": "E",
+          "direction_label_th": "ทิศตะวันออก",
+          "direction_label_zh": "東",
+          "palace_id": 3,
+          "reasons": [
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            },
+            {
+              "code": "zhi_fu",
+              "kind": "chart_palace",
+              "label_th": "แรงใหญ่/ผู้คุมเกม",
+              "label_zh": "值符",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 3
+            }
+          ],
+          "selector_score": 7,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "震",
+          "warning_flags": [
+            "ดาวกลับบ้านเดิม 伏吟",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T00:00:00",
+      "deity": "九天",
+      "direction": "NE",
+      "door": "開門",
+      "earth_stem": "丁",
       "heaven_stem": "丙",
       "ju_number": 5,
-      "ju_pole": "陽遁",
+      "ju_pole": "yin",
       "matches": [
-        "生門"
+        "+7 開門",
+        "+7 九天",
+        "+4 地三奇DING",
+        "+3 馬星",
+        "-5 空亡"
       ],
-      "palace_id": 4,
-      "score": 82,
-      "star": "天任",
-      "time": "09:00",
-      "tongshu": {
-        "day_officer": "建",
-        "ji": [],
-        "yi": [
-          "กิจกรรมตัวอย่างที่เหมาะสม"
-        ]
-      },
-      "yongshen_intent": "wealth",
+      "palace_id": 8,
+      "score": 16,
+      "star": "天柱",
+      "time": "00:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
       "yongshen_targets": [
-        "water"
+        {
+          "direction": "SE",
+          "direction_label_th": "ทิศตะวันออกเฉียงใต้",
+          "direction_label_zh": "東南",
+          "palace_id": 4,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            },
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            }
+          ],
+          "selector_score": 13,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "巽",
+          "warning_flags": [
+            "หกอี้โดนทัณฑ์ 六儀擊刑",
+            "ก้านเข้าคลัง 入墓",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓",
+            "หกอี๋ต้องอาญา 六儀擊刑 六儀擊刑"
+          ]
+        },
+        {
+          "direction": "N",
+          "direction_label_th": "ทิศเหนือ",
+          "direction_label_zh": "北",
+          "palace_id": 1,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            },
+            {
+              "code": "zhi_fu",
+              "kind": "chart_palace",
+              "label_th": "แรงใหญ่/ผู้คุมเกม",
+              "label_zh": "值符",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 3
+            }
+          ],
+          "selector_score": 11,
+          "status_th": "ตรง用神หลัก",
+          "status_zh": "用神位",
+          "trigram_zh": "坎",
+          "warning_flags": []
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ประตูข่มวัง 門迫",
+            "ประตูข่มวัง 門迫 門迫"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-16",
+      "datetime": "2026-07-16T18:00:00",
+      "deity": "六合",
+      "direction": "NE",
+      "door": "生門",
+      "earth_stem": "丁",
+      "heaven_stem": "乙",
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+10 生門",
+        "+6 天心",
+        "+4 地三奇DING",
+        "-5 空亡"
+      ],
+      "palace_id": 8,
+      "score": 15,
+      "star": "天心",
+      "time": "18:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            },
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            }
+          ],
+          "selector_score": 12,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "หกอี้โดนทัณฑ์ 六儀擊刑",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "หกอี๋ต้องอาญา 六儀擊刑 六儀擊刑",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        },
+        {
+          "direction": "NW",
+          "direction_label_th": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_label_zh": "西北",
+          "palace_id": 6,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            },
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            }
+          ],
+          "selector_score": 12,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "乾",
+          "warning_flags": [
+            "ก้านเข้าคลัง 入墓",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        },
+        {
+          "direction": "NE",
+          "direction_label_th": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_label_zh": "東北",
+          "palace_id": 8,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "艮",
+          "warning_flags": [
+            "ก้านเข้าคลัง 入墓",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T02:00:00",
+      "deity": "值符",
+      "direction": "C",
+      "door": "杜門",
+      "earth_stem": "戊",
+      "heaven_stem": null,
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+8 天禽",
+        "+6 值符"
+      ],
+      "palace_id": 5,
+      "score": 14,
+      "star": "天禽",
+      "time": "02:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "S",
+          "direction_label_th": "ทิศใต้",
+          "direction_label_zh": "南",
+          "palace_id": 9,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            },
+            {
+              "code": "zhi_fu",
+              "kind": "chart_palace",
+              "label_th": "แรงใหญ่/ผู้คุมเกม",
+              "label_zh": "值符",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 3
+            }
+          ],
+          "selector_score": 11,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "離",
+          "warning_flags": [
+            "หกอี้โดนทัณฑ์ 六儀擊刑",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "หกอี๋ต้องอาญา 六儀擊刑 六儀擊刑",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        },
+        {
+          "direction": "NE",
+          "direction_label_th": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_label_zh": "東北",
+          "palace_id": 8,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "艮",
+          "warning_flags": [
+            "หกอี้โดนทัณฑ์ 六儀擊刑",
+            "ก้านเข้าคลัง 入墓",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓"
+          ]
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ประตูกลับบ้านเดิม 伏吟",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T04:00:00",
+      "deity": "值符",
+      "direction": "C",
+      "door": "杜門",
+      "earth_stem": "戊",
+      "heaven_stem": null,
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+8 天禽",
+        "+6 值符"
+      ],
+      "palace_id": 5,
+      "score": 14,
+      "star": "天禽",
+      "time": "04:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "NE",
+          "direction_label_th": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_label_zh": "東北",
+          "palace_id": 8,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "艮",
+          "warning_flags": [
+            "ก้านเข้าคลัง 入墓",
+            "ดาวกลับบ้านเดิม 伏吟",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓"
+          ]
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ดาวกลับบ้านเดิม 伏吟",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        },
+        {
+          "direction": "SE",
+          "direction_label_th": "ทิศตะวันออกเฉียงใต้",
+          "direction_label_zh": "東南",
+          "palace_id": 4,
+          "reasons": [
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            },
+            {
+              "code": "zhi_fu",
+              "kind": "chart_palace",
+              "label_th": "แรงใหญ่/ผู้คุมเกม",
+              "label_zh": "值符",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 3
+            }
+          ],
+          "selector_score": 7,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "巽",
+          "warning_flags": [
+            "ดาวกลับบ้านเดิม 伏吟",
+            "ประตูกลับบ้านเดิม 伏吟",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T08:00:00",
+      "deity": "值符",
+      "direction": "C",
+      "door": "杜門",
+      "earth_stem": "戊",
+      "heaven_stem": null,
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+8 天禽",
+        "+6 值符"
+      ],
+      "palace_id": 5,
+      "score": 14,
+      "star": "天禽",
+      "time": "08:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            },
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            }
+          ],
+          "selector_score": 12,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ประตูข่มวัง 門迫",
+            "ประตูข่มวัง 門迫 門迫",
+            "ยามห้าไม่พบ 五不遇時 五不遇時"
+          ]
+        },
+        {
+          "direction": "SE",
+          "direction_label_th": "ทิศตะวันออกเฉียงใต้",
+          "direction_label_zh": "東南",
+          "palace_id": 4,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "巽",
+          "warning_flags": [
+            "หกอี้โดนทัณฑ์ 六儀擊刑",
+            "ก้านเข้าคลัง 入墓",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓",
+            "หกอี๋ต้องอาญา 六儀擊刑 六儀擊刑"
+          ]
+        },
+        {
+          "direction": "N",
+          "direction_label_th": "ทิศเหนือ",
+          "direction_label_zh": "北",
+          "palace_id": 1,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "อ่านประกอบ",
+          "status_zh": "參看",
+          "trigram_zh": "坎",
+          "warning_flags": [
+            "ยามห้าไม่พบ 五不遇時 五不遇時"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T10:00:00",
+      "deity": "值符",
+      "direction": "C",
+      "door": "杜門",
+      "earth_stem": "戊",
+      "heaven_stem": null,
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+8 天禽",
+        "+6 值符"
+      ],
+      "palace_id": 5,
+      "score": 14,
+      "star": "天禽",
+      "time": "10:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "W",
+          "direction_label_th": "ทิศตะวันตก",
+          "direction_label_zh": "西",
+          "palace_id": 7,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ตรง用神หลัก",
+          "status_zh": "用神位",
+          "trigram_zh": "兌",
+          "warning_flags": []
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ก้านเข้าคลัง 入墓",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓"
+          ]
+        },
+        {
+          "direction": "SE",
+          "direction_label_th": "ทิศตะวันออกเฉียงใต้",
+          "direction_label_zh": "東南",
+          "palace_id": 4,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "巽",
+          "warning_flags": [
+            "ประตูข่มวัง 門迫",
+            "ก้านเข้าคลัง 入墓",
+            "ประตูข่มวัง 門迫 門迫",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T12:00:00",
+      "deity": "值符",
+      "direction": "C",
+      "door": "杜門",
+      "earth_stem": "戊",
+      "heaven_stem": null,
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+8 天禽",
+        "+6 值符"
+      ],
+      "palace_id": 5,
+      "score": 14,
+      "star": "天禽",
+      "time": "12:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "E",
+          "direction_label_th": "ทิศตะวันออก",
+          "direction_label_zh": "東",
+          "palace_id": 3,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            },
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            }
+          ],
+          "selector_score": 13,
+          "status_th": "ตรง用神หลัก",
+          "status_zh": "用神位",
+          "trigram_zh": "震",
+          "warning_flags": []
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            },
+            {
+              "code": "zhi_fu",
+              "kind": "chart_palace",
+              "label_th": "แรงใหญ่/ผู้คุมเกม",
+              "label_zh": "值符",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 3
+            }
+          ],
+          "selector_score": 11,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "หกอี้โดนทัณฑ์ 六儀擊刑",
+            "หกอี๋ต้องอาญา 六儀擊刑 六儀擊刑"
+          ]
+        },
+        {
+          "direction": "NW",
+          "direction_label_th": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_label_zh": "西北",
+          "palace_id": 6,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "乾",
+          "warning_flags": [
+            "ก้านเข้าคลัง 入墓",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓"
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "datetime": "2026-07-15T14:00:00",
+      "deity": "值符",
+      "direction": "C",
+      "door": "杜門",
+      "earth_stem": "戊",
+      "heaven_stem": null,
+      "ju_number": 5,
+      "ju_pole": "yin",
+      "matches": [
+        "+8 天禽",
+        "+6 值符"
+      ],
+      "palace_id": 5,
+      "score": 14,
+      "star": "天禽",
+      "time": "14:00",
+      "tongshu": null,
+      "yongshen_intent": "เงิน/กำไร",
+      "yongshen_targets": [
+        {
+          "direction": "NW",
+          "direction_label_th": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_label_zh": "西北",
+          "palace_id": 6,
+          "reasons": [
+            {
+              "code": "SHENG_MEN",
+              "kind": "door",
+              "label_th": "ประตูเกิด",
+              "label_zh": "生門",
+              "source_id": "tongzong-rv1-wealth-door-985-1000",
+              "weight": 9
+            }
+          ],
+          "selector_score": 9,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "乾",
+          "warning_flags": [
+            "ก้านเข้าคลัง 入墓",
+            "ดาวกลับบ้านเดิม 伏吟",
+            "ก้านเข้าคลัง/เข้าหลุม 入墓 入墓",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        },
+        {
+          "direction": "SW",
+          "direction_label_th": "ทิศตะวันตกเฉียงใต้",
+          "direction_label_zh": "西南",
+          "palace_id": 2,
+          "reasons": [
+            {
+              "code": "WU",
+              "kind": "stem",
+              "label_th": "เงินทุน/สภาพคล่อง",
+              "label_zh": "戊",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 8
+            }
+          ],
+          "selector_score": 8,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "坤",
+          "warning_flags": [
+            "ดาวกลับบ้านเดิม 伏吟",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        },
+        {
+          "direction": "E",
+          "direction_label_th": "ทิศตะวันออก",
+          "direction_label_zh": "東",
+          "palace_id": 3,
+          "reasons": [
+            {
+              "code": "day",
+              "kind": "stem_role",
+              "label_th": "ตัวผู้ถาม",
+              "label_zh": "日干",
+              "source_id": "qmdj-ref-yongshen-selector-445-475",
+              "weight": 4
+            }
+          ],
+          "selector_score": 4,
+          "status_th": "ใช้ได้แต่ต้องระวัง",
+          "status_zh": "慎用",
+          "trigram_zh": "震",
+          "warning_flags": [
+            "ดาวกลับบ้านเดิม 伏吟",
+            "พลังซ้ำที่เดิม 伏吟 伏吟"
+          ]
+        }
       ]
     }
   ],
-  "total_matched": 1,
+  "total_matched": 24,
   "total_scanned": 36
 }

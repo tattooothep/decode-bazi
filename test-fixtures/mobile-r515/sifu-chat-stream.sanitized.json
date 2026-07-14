@@ -1,28 +1,38 @@
 {
-  "cacheControl": "no-cache",
-  "contentType": "text/event-stream",
+  "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+  "contentType": "text/event-stream; charset=utf-8",
   "events": [
     {
       "data": {
-        "source": "mobile-r515-synthetic-contract"
+        "cached": false,
+        "key": "fixture1",
+        "startedAt": 1783990800000,
+        "timing": {
+          "contextCache": "miss",
+          "ctxMs": 4,
+          "promptChars": 128,
+          "promptMs": 3
+        }
       },
       "event": "meta"
     },
     {
       "data": {
-        "text": "Synthetic "
+        "ms": 12
       },
       "event": "first"
     },
     {
       "data": {
-        "text": "fixture response."
+        "text": "Synthetic fixture response."
       },
       "event": "chunk"
     },
     {
       "data": {
-        "reply": "Synthetic fixture response."
+        "cached": false,
+        "chars": 27,
+        "ms": 24
       },
       "event": "done"
     }

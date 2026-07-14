@@ -9,80 +9,230 @@
     "plan": "premium"
   },
   "hex": {
-    "changing_line": 1,
-    "en": "Creative",
-    "num": 1,
-    "symbol": "䷀",
-    "th": "สร้างสรรค์",
-    "zh": "乾"
+    "changing_line": 2,
+    "en": "Retreat",
+    "lower_th": "เฉียน",
+    "lower_zh": "乾",
+    "num": 33,
+    "symbol": "䷠",
+    "th": "ตุ้น · หลีก",
+    "upper_th": "เกิ้น",
+    "upper_zh": "艮",
+    "zh": "遯"
   },
   "ok": true,
   "pillars": {
-    "day": "甲子",
+    "day": "己丑",
     "month": "乙未",
     "year": "丙午"
   },
-  "profile": null,
+  "profile": {
+    "id": null,
+    "is_self": true,
+    "name": "Fixture Center",
+    "nickname": null
+  },
   "request_context": {
     "date": "2026-07-14",
-    "location_source": "mobile_explicit",
-    "timezone": "Asia/Bangkok"
+    "profile_id": null
   },
   "source": "api/today",
   "tongshu": {
-    "day_officer": "建",
+    "day_officer": "破",
     "gods": [
-      "fixture-good-god"
+      "天德合",
+      "月德合",
+      "四相",
+      "月破",
+      "大耗",
+      "月刑",
+      "四击",
+      "九空",
+      "复日",
+      "朱雀"
     ],
     "ji": [
-      "กิจกรรมตัวอย่างที่ควรเลี่ยง"
+      "诸事不宜"
     ],
-    "lunar": "六月初一",
-    "nine_star": "六白",
-    "twelve_star": "建",
-    "twentyeight_star": "角",
+    "lunar": "农历丙午年六月初一",
+    "nine_star": "二",
+    "twelve_star": "朱雀",
+    "twentyeight_star": "觜",
     "yi": [
-      "กิจกรรมตัวอย่างที่เหมาะสม"
+      "破屋",
+      "坏垣",
+      "馀事勿取"
     ]
   },
   "userSummary": {
-    "confidence": 0.8,
+    "bridges_th": [],
+    "confidence": "moderate",
     "dm_element": "wood",
-    "dm_label_th": "ไม้หยาง",
+    "dm_label_th": "ไม้ 甲",
     "dm_stem": "甲",
-    "jishen": [
-      {
-        "el": "metal",
-        "th": "ทอง"
-      }
-    ],
+    "dominant_jishen": null,
+    "jishen": [],
     "primary": [
       {
-        "el": "wood",
-        "is_dominant": true,
-        "th": "ไม้"
+        "el": "earth",
+        "th": "ดิน"
       }
     ],
-    "strategy": "fixture",
-    "structure": "balanced",
-    "xishen": [
-      {
-        "el": "water",
-        "th": "น้ำ"
-      }
-    ]
+    "strategy": "neutral",
+    "structure": "化土格",
+    "xishen": []
   },
   "verdict": {
-    "flags": [],
+    "engine": "sifu-packet-aligned-v2",
+    "evidence": {
+      "annualPillar": {
+        "branch": "午",
+        "stem": "丙"
+      },
+      "appliedAdjustment": -10,
+      "bingYao": {
+        "diseaseElements": [
+          "fire",
+          "metal"
+        ],
+        "medicineElements": [
+          "water",
+          "wood"
+        ],
+        "primaryId": "BY-05",
+        "status": "ok"
+      },
+      "chengBaiNow": {
+        "reason": "วัยจร 七殺 = 忌運 (ขัดโครงดวง) · DTS-2d 日主休囚→รับเต็ม",
+        "verdict": "破(หนัก)"
+      },
+      "currentLuck": {
+        "ageEnd": 16.8,
+        "ageStart": 6.81,
+        "branch": "申",
+        "element": "fire",
+        "stem": "丙"
+      },
+      "dayPillar": "己丑",
+      "modifierTotal": -78,
+      "modifiers": [
+        {
+          "code": "annual_disease",
+          "note": "ปีจรแตะตัว病 fire",
+          "points": -8
+        },
+        {
+          "code": "annual_ji",
+          "note": "ปีจรแตะ忌神 fire",
+          "points": -5
+        },
+        {
+          "code": "luck_disease",
+          "note": "วัยจรแตะตัว病 fire",
+          "points": -6
+        },
+        {
+          "code": "luck_ji",
+          "note": "วัยจรแตะ忌神 fire",
+          "points": -4
+        },
+        {
+          "code": "annual_clash_day",
+          "note": "annual 午 ชงเสาday 子",
+          "points": -11
+        },
+        {
+          "code": "annual_self_punish_year",
+          "note": "annual 午 自刑 กับเสาyear",
+          "points": -3
+        },
+        {
+          "code": "day_clash_month",
+          "note": "day 丑 ชงเสาmonth 未",
+          "points": -5
+        },
+        {
+          "code": "day_harm_year",
+          "note": "day 丑 害 เสาyear 午",
+          "points": -2
+        },
+        {
+          "code": "luck_interaction_0",
+          "note": "luck_interaction 半合 แตะ用神",
+          "points": 3
+        },
+        {
+          "code": "luck_interaction_1",
+          "note": "luck_interaction 六合 แตะ忌神",
+          "points": -7
+        },
+        {
+          "code": "luck_interaction_2",
+          "note": "luck_interaction 六破 แตะ忌神",
+          "points": -4
+        },
+        {
+          "code": "annual_interaction_0",
+          "note": "annual_interaction 六沖 แตะ忌神",
+          "points": -8
+        },
+        {
+          "code": "cheng_bai_break_heavy",
+          "note": "行運成敗破หนัก",
+          "points": -14
+        },
+        {
+          "code": "weak_dm_bad_amplifier",
+          "note": "日主極弱 เจอ病/忌 ต้องลดเพิ่ม",
+          "points": -4
+        }
+      ],
+      "usefulGods": {
+        "conditionalUse": [],
+        "ji": [
+          "fire",
+          "metal"
+        ],
+        "xi": [
+          "wood"
+        ],
+        "yong": [
+          "water"
+        ]
+      }
+    },
+    "flags": [
+      "合化用神",
+      "三會_neutral",
+      "san_hui_partial",
+      "貪合忘剋",
+      "yongshen_branch_support",
+      "sifu_packet_aligned"
+    ],
     "jishen": [
+      "fire",
       "metal"
     ],
-    "label": "吉",
-    "level": "favorable",
-    "score": 72,
-    "source": "calendar-engine",
+    "label": "中和",
+    "legacy": {
+      "label": "大吉",
+      "level": "best",
+      "raw": 70,
+      "score": 85,
+      "source": "unified-pair-base"
+    },
+    "level": "ok",
+    "raw": 3,
+    "score": 53,
+    "source": "daily-personal-verdict",
     "tags": [
-      "fixture"
+      "合",
+      "合化用神",
+      "六合",
+      "半三會",
+      "貪合忘剋",
+      "用神",
+      "用神·根"
     ],
     "targetDate": "2026-07-14",
     "yongshen": [

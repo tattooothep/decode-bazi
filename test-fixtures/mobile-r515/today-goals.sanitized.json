@@ -10,23 +10,38 @@
     "plan": "premium"
   },
   "goals": {
-    "career": 68,
-    "family": 70,
-    "health": 76,
-    "love": 64,
-    "travel": 66,
-    "wealth": 72
+    "career": 35,
+    "family": 35,
+    "health": 59,
+    "love": 35,
+    "travel": 35,
+    "wealth": 35
   },
   "intent_status": {
-    "career": "good",
-    "family": "good",
-    "health": "good",
-    "love": "neutral",
-    "travel": "neutral",
-    "wealth": "good"
+    "construct": "neutral",
+    "engagement": "neutral",
+    "gathering": "neutral",
+    "install_bed": "neutral",
+    "invest": "neutral",
+    "loan": "neutral",
+    "marriage": "neutral",
+    "medical": "neutral",
+    "move_house": "neutral",
+    "negotiate": "neutral",
+    "open_business": "neutral",
+    "pray_heal": "good",
+    "renovate": "neutral",
+    "sign_contract": "neutral",
+    "start_work": "neutral",
+    "travel": "neutral"
   },
   "locked_goals": [],
   "ok": true,
-  "profile": null,
+  "profile": {
+    "id": null,
+    "is_self": true,
+    "name": "Fixture Center",
+    "nickname": null
+  },
   "source": "/api/calendar"
 }

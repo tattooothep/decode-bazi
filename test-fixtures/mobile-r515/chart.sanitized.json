@@ -1,29 +1,383 @@
 {
   "analysis": {
+    "current_luck_idx": 0,
     "element_counts": {
-      "earth": 2,
-      "fire": 1,
-      "metal": 1,
-      "water": 2,
-      "wood": 2
+      "earth": 3.5,
+      "fire": 4.5,
+      "metal": 0.5,
+      "water": 1.5,
+      "wood": 2.5
     },
-    "geJu": {
-      "structure": "fixture-balanced"
+    "ge_ju": {
+      "basis": "DM 甲 + 己 (hour) → earth",
+      "confidence": "high",
+      "raw_structure": "化土格",
+      "structure": "化土格"
     },
+    "luck_pillars": [
+      {
+        "age_end": 16.8,
+        "age_end_detail": "16 ปี 9 เดือน 22 วัน",
+        "age_start": 6.81,
+        "age_start_detail": "6 ปี 9 เดือน 22 วัน",
+        "branch": "申",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "fire",
+        "end_date": "1923-05-11",
+        "original_index": 0,
+        "qi_phase": "絕",
+        "start_date": "1913-05-11",
+        "stem": "丙",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1923,
+        "year_start": 1912
+      },
+      {
+        "age_end": 26.8,
+        "age_end_detail": "26 ปี 9 เดือน 22 วัน",
+        "age_start": 16.81,
+        "age_start_detail": "16 ปี 9 เดือน 22 วัน",
+        "branch": "酉",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "fire",
+        "end_date": "1933-05-11",
+        "original_index": 1,
+        "qi_phase": "胎",
+        "start_date": "1923-05-11",
+        "stem": "丁",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1933,
+        "year_start": 1922
+      },
+      {
+        "age_end": 36.8,
+        "age_end_detail": "36 ปี 9 เดือน 22 วัน",
+        "age_start": 26.81,
+        "age_start_detail": "26 ปี 9 เดือน 22 วัน",
+        "branch": "戌",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "earth",
+        "end_date": "1943-05-11",
+        "original_index": 2,
+        "qi_phase": "養",
+        "start_date": "1933-05-11",
+        "stem": "戊",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1943,
+        "year_start": 1932
+      },
+      {
+        "age_end": 46.8,
+        "age_end_detail": "46 ปี 9 เดือน 22 วัน",
+        "age_start": 36.81,
+        "age_start_detail": "36 ปี 9 เดือน 22 วัน",
+        "branch": "亥",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "earth",
+        "end_date": "1953-05-11",
+        "original_index": 3,
+        "qi_phase": "長生",
+        "start_date": "1943-05-11",
+        "stem": "己",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1953,
+        "year_start": 1942
+      },
+      {
+        "age_end": 56.8,
+        "age_end_detail": "56 ปี 9 เดือน 22 วัน",
+        "age_start": 46.81,
+        "age_start_detail": "46 ปี 9 เดือน 22 วัน",
+        "branch": "子",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "metal",
+        "end_date": "1963-05-11",
+        "original_index": 4,
+        "qi_phase": "沐浴",
+        "start_date": "1953-05-11",
+        "stem": "庚",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1963,
+        "year_start": 1952
+      },
+      {
+        "age_end": 66.8,
+        "age_end_detail": "66 ปี 9 เดือน 22 วัน",
+        "age_start": 56.81,
+        "age_start_detail": "56 ปี 9 เดือน 22 วัน",
+        "branch": "丑",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "metal",
+        "end_date": "1973-05-11",
+        "original_index": 5,
+        "qi_phase": "冠帶",
+        "start_date": "1963-05-11",
+        "stem": "辛",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1973,
+        "year_start": 1962
+      },
+      {
+        "age_end": 76.8,
+        "age_end_detail": "76 ปี 9 เดือน 22 วัน",
+        "age_start": 66.81,
+        "age_start_detail": "66 ปี 9 เดือน 22 วัน",
+        "branch": "寅",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "water",
+        "end_date": "1983-05-11",
+        "original_index": 6,
+        "qi_phase": "臨官",
+        "start_date": "1973-05-11",
+        "stem": "壬",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1983,
+        "year_start": 1972
+      },
+      {
+        "age_end": 86.8,
+        "age_end_detail": "86 ปี 9 เดือน 22 วัน",
+        "age_start": 76.81,
+        "age_start_detail": "76 ปี 9 เดือน 22 วัน",
+        "branch": "卯",
+        "direction": "forward",
+        "direction_th": "เดินหน้า順",
+        "element": "water",
+        "end_date": "1993-05-11",
+        "original_index": 7,
+        "qi_phase": "帝旺",
+        "start_date": "1983-05-11",
+        "stem": "癸",
+        "timing_method": "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+        "year_end": 1993,
+        "year_start": 1982
+      }
+    ],
     "ten_gods_map": {
-      "day": "比肩",
-      "hour": "正財",
-      "month": "正印",
-      "year": "食神"
+      "day": {
+        "stem": "甲",
+        "ten_god": "日主"
+      },
+      "hour": {
+        "stem": "己",
+        "ten_god": "正財"
+      },
+      "month": {
+        "stem": "乙",
+        "ten_god": "劫財"
+      },
+      "year": {
+        "stem": "丙",
+        "ten_god": "食神"
+      }
     },
     "tiao_hou": {
-      "status": "ready"
+      "activeList": [
+        "壬",
+        "癸",
+        "子",
+        "亥"
+      ],
+      "bridge": "metal",
+      "bridgeName": {
+        "en": "Metal",
+        "th": "ทอง",
+        "zh": "金"
+      },
+      "climate": "scorched",
+      "climateName": {
+        "en": "Scorched (Hot Chart)",
+        "th": "ร้อน (ดวงไหม้)",
+        "zh": "燥熱格"
+      },
+      "counts": {
+        "earth": 2,
+        "fire": 3,
+        "metal": 0,
+        "water": 1,
+        "wood": 2
+      },
+      "monthBranch": "未",
+      "regulator": "water",
+      "regulatorName": {
+        "en": "Water",
+        "th": "น้ำ",
+        "zh": "水"
+      },
+      "severity": 5,
+      "tier": "SS",
+      "tierDesc": {
+        "en": "Severe · strong impact",
+        "th": "รุนแรง · กระทบมาก",
+        "zh": "嚴重"
+      }
     },
-    "useful_god": [
-      "water"
-    ]
+    "useful_god": {
+      "dayMaster": "甲",
+      "dmElement": "wood",
+      "ranks": [
+        {
+          "element": "wood",
+          "elementName": {
+            "en": "Wood",
+            "th": "ไม้",
+            "zh": "木"
+          },
+          "polarity": "yang",
+          "priority": {
+            "en": "Primary · most needed",
+            "th": "อันดับหนึ่ง · ขาดไม่ได้",
+            "zh": "首要"
+          },
+          "rank": 1,
+          "stem": "甲",
+          "tenGod": "比肩",
+          "tenGodName": {
+            "en": "Friend",
+            "th": "เพื่อน",
+            "zh": "比肩"
+          }
+        },
+        {
+          "element": "wood",
+          "elementName": {
+            "en": "Wood",
+            "th": "ไม้",
+            "zh": "木"
+          },
+          "polarity": "yin",
+          "priority": {
+            "en": "Secondary · strong support",
+            "th": "อันดับสอง · เสริมแกร่ง",
+            "zh": "次要"
+          },
+          "rank": 2,
+          "stem": "乙",
+          "tenGod": "劫財",
+          "tenGodName": {
+            "en": "Rob Wealth",
+            "th": "ขัดทรัพย์",
+            "zh": "劫財"
+          }
+        },
+        {
+          "element": "metal",
+          "elementName": {
+            "en": "Metal",
+            "th": "ทอง",
+            "zh": "金"
+          },
+          "polarity": "yang",
+          "priority": {
+            "en": "Tertiary · useful boost",
+            "th": "อันดับสาม · เสริมพลัง",
+            "zh": "第三"
+          },
+          "rank": 3,
+          "stem": "庚",
+          "tenGod": "七殺",
+          "tenGodName": {
+            "en": "Seven Killings",
+            "th": "ผู้คุมเข้ม",
+            "zh": "七殺"
+          }
+        },
+        {
+          "element": "water",
+          "elementName": {
+            "en": "Water",
+            "th": "น้ำ",
+            "zh": "水"
+          },
+          "polarity": "yang",
+          "priority": {
+            "en": "Supportive · mild",
+            "th": "สนับสนุน · เบา",
+            "zh": "輔助"
+          },
+          "rank": 4,
+          "stem": "壬",
+          "tenGod": "偏印",
+          "tenGodName": {
+            "en": "Indirect Resource",
+            "th": "ครูสายลับ",
+            "zh": "偏印"
+          }
+        },
+        {
+          "element": "water",
+          "elementName": {
+            "en": "Water",
+            "th": "น้ำ",
+            "zh": "水"
+          },
+          "polarity": "yin",
+          "priority": {
+            "en": "Optional · niche",
+            "th": "เลือกได้ · เฉพาะกรณี",
+            "zh": "備用"
+          },
+          "rank": 5,
+          "stem": "癸",
+          "tenGod": "正印",
+          "tenGodName": {
+            "en": "Direct Resource",
+            "th": "ครูสายตรง",
+            "zh": "正印"
+          }
+        }
+      ],
+      "summary": {
+        "friendlyElements": [
+          "wood",
+          "metal",
+          "water"
+        ],
+        "primary": "甲",
+        "primaryElement": "wood"
+      }
+    }
   },
   "dayMaster": "甲",
+  "day_master": "甲",
+  "entitlement": {
+    "ai_summary_pdf": true,
+    "detail": "full",
+    "locked_sections": [
+      "technical_chart"
+    ],
+    "luck_cycles": "all",
+    "luck_total": 8,
+    "luck_visible": 8,
+    "plan": "premium",
+    "technical_detail": false
+  },
+  "geJu": {
+    "basis": "DM 甲 + 己 (hour) → earth",
+    "confidence": "high",
+    "raw_structure": "化土格",
+    "structure": "化土格"
+  },
+  "ge_ju": {
+    "basis": "DM 甲 + 己 (hour) → earth",
+    "confidence": "high",
+    "raw_structure": "化土格",
+    "structure": "化土格"
+  },
+  "input": {
+    "birthTimeKnown": true,
+    "date": null,
+    "gender": null,
+    "longitude": null,
+    "time": null
+  },
   "ok": true,
   "pillars": {
     "day": {
@@ -43,13 +397,34 @@
       "stem": "丙"
     }
   },
-  "profile": null,
-  "source": "mobile-r515-synthetic-contract",
+  "profile": {
+    "id": null,
+    "is_self": true,
+    "name": "Fixture Center",
+    "nickname": null
+  },
+  "request_context": {
+    "profile_id": null,
+    "profile_source": "account_self",
+    "requested_profile_id": null
+  },
+  "source": "/api/chart",
   "strength": {
-    "level": "balanced",
-    "percent": 58
+    "level": "very_weak",
+    "percent": 32
   },
   "yongshen": [
-    "water"
+    {
+      "element": "water",
+      "stem": "壬"
+    },
+    {
+      "element": "water",
+      "stem": "癸"
+    },
+    {
+      "element": "wood",
+      "stem": "甲"
+    }
   ]
 }

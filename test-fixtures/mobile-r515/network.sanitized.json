@@ -1,7 +1,10 @@
 {
   "active_profile": {
     "day_master": "甲",
-    "name": "Fixture Center"
+    "id": null,
+    "label": "เจ้าของบัญชี",
+    "name": "Fixture Center",
+    "nickname": null
   },
   "count": 2,
   "date": "2026-07-14",
@@ -27,30 +30,148 @@
   "ok": true,
   "people": [
     {
+      "birth_datetime": null,
       "day_master": "丙",
-      "guidance": null,
+      "day_master_strength": null,
+      "directional": {
+        "atob": 25,
+        "btoa": 9
+      },
+      "guidance": {
+        "cautions": [],
+        "confidence": 0.77,
+        "context": [
+          "อีกฝ่ายมีธาตุที่ช่วยพยุงโจทย์หลักของเรา ใช้ร่วมงานหรือขอแรงได้เมื่อเป้าหมายชัด",
+          "มีแรงปะทะจริง เหมาะใช้กับงานที่ต้องผลักดัน แต่ไม่ควรปล่อยให้คลุมเครือ",
+          "มีแรงดึงดูดหรือแรงประสาน ใช้ให้ดีด้วยการกำหนดบทบาทและจังหวะคุยให้ชัด"
+        ],
+        "disclaimer": "คะแนนนี้อ่านปฏิกิริยาดวงสองคน ไม่ใช่คำตัดสินคนดีหรือไม่ดี ผลจริงขึ้นกับเจตนา เวลา และการสื่อสาร",
+        "intent": {
+          "friend": {
+            "en": "Keep healthy distance",
+            "th": "คบได้แบบมีระยะ",
+            "zh": "淡交可"
+          },
+          "love": {
+            "en": "Go slowly",
+            "th": "ดูจังหวะ อย่าเร่ง",
+            "zh": "視時機"
+          },
+          "work": {
+            "en": "OK with clear roles",
+            "th": "ทำได้ถ้าแบ่งบทบาทชัด",
+            "zh": "明分工則可"
+          }
+        },
+        "primary": "พอเดินร่วมกันได้ แต่ต้องเลือกเรื่องและเวลาที่เหมาะ"
+      },
+      "id": null,
+      "label": "Fixture Group A",
       "name": "Fixture Person A",
+      "network_group": "fixture_group",
+      "network_group_label": "Fixture Group A",
+      "nickname": null,
+      "reading": {
+        "en": "Workable",
+        "th": "พอเดินร่วมกัน",
+        "zh": "可行"
+      },
+      "relationship_type": "fixture_relation_a",
       "scores": {
-        "day": 74,
-        "overall": 70
+        "day": 17,
+        "luck": 25,
+        "month": 22,
+        "overall": 20,
+        "week": 20,
+        "year": 18
       },
       "tags": [
-        "support"
+        "用神",
+        "合勢喜神",
+        "喜神",
+        "跨柱天干合",
+        "跨柱害",
+        "三會",
+        "六合勢喜神",
+        "半三會",
+        "我生",
+        "沖動用神"
       ]
     },
     {
+      "birth_datetime": null,
       "day_master": "辛",
-      "guidance": null,
+      "day_master_strength": null,
+      "directional": {
+        "atob": -23,
+        "btoa": 42
+      },
+      "guidance": {
+        "cautions": [
+          "มีแรงปะทะหลายชั้น ควรคุยเรื่องเงิน งาน และความคาดหวังให้ชัด",
+          "คะแนนสองทิศไม่เท่ากัน ต้องดูว่าฝ่ายไหนเสียพลังมากกว่า"
+        ],
+        "confidence": 0.77,
+        "context": [
+          "มีธาตุที่กระตุ้นจุดอ่อนไหวของเรา ต้องตั้งขอบเขตและอย่าตัดสินใจตอนอารมณ์ขึ้น",
+          "มีแรงปะทะจริง เหมาะใช้กับงานที่ต้องผลักดัน แต่ไม่ควรปล่อยให้คลุมเครือ",
+          "มีแรงดึงดูดหรือแรงประสาน ใช้ให้ดีด้วยการกำหนดบทบาทและจังหวะคุยให้ชัด",
+          "ทิศทางสองฝั่งไม่เท่ากัน ฝ่ายหนึ่งอาจรู้สึกได้ประโยชน์มากกว่าอีกฝ่าย"
+        ],
+        "disclaimer": "คะแนนนี้อ่านปฏิกิริยาดวงสองคน ไม่ใช่คำตัดสินคนดีหรือไม่ดี ผลจริงขึ้นกับเจตนา เวลา และการสื่อสาร",
+        "intent": {
+          "friend": {
+            "en": "Keep healthy distance",
+            "th": "คบได้แบบมีระยะ",
+            "zh": "淡交可"
+          },
+          "love": {
+            "en": "Go slowly",
+            "th": "ดูจังหวะ อย่าเร่ง",
+            "zh": "視時機"
+          },
+          "work": {
+            "en": "OK with clear roles",
+            "th": "ทำได้ถ้าแบ่งบทบาทชัด",
+            "zh": "明分工則可"
+          }
+        },
+        "primary": "ควรระวังจังหวะและคำพูด ความใกล้มากเกินไปทำให้เสียดสีง่าย"
+      },
+      "id": null,
+      "label": "Fixture Group B",
       "name": "Fixture Person B",
+      "network_group": "fixture_group",
+      "network_group_label": "Fixture Group B",
+      "nickname": null,
+      "reading": {
+        "en": "Needs care",
+        "th": "ต้องวางจังหวะ",
+        "zh": "慎"
+      },
+      "relationship_type": "fixture_relation_b",
       "scores": {
-        "day": 48,
-        "overall": 55
+        "day": -20,
+        "luck": -23,
+        "month": -17,
+        "overall": -19,
+        "week": -19,
+        "year": -17
       },
       "tags": [
-        "caution"
+        "忌神",
+        "六合勢忌神",
+        "跨柱六合",
+        "六合",
+        "破",
+        "三合",
+        "克我",
+        "半三會",
+        "天干合",
+        "沖去忌神"
       ]
     }
   ],
   "source": "api/network/score",
-  "version": "r515"
+  "version": "pair-reaction-v2"
 }

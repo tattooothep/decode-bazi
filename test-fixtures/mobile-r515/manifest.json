@@ -3,8 +3,8 @@
   "fixtures": [
     {
       "aliases": [],
-      "bytes": 1797,
-      "cacheControl": "no-store",
+      "bytes": 5389,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/today",
       "family": "today",
@@ -22,15 +22,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "efd64f3efff434f114924b376101e2557e09315ba5a0519c8b1ce16e795d4fc6",
+      "sha256": "280067d853da96f00611529524ce827be9ed9e8865b519c3c0e12ecbd3e96604",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 5304,
-      "cacheControl": "no-store",
+      "bytes": 7458,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/today/hours",
       "family": "hours",
@@ -48,15 +48,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "97ecef1e1499c64256c110c84b13dfd92fdd6d475311ff530414b33695b01e1b",
+      "sha256": "fcbcb3f8cea14011a1d43cf8dd776a21bf67de5118cc1dce7893c4c2fdac31f3",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 7702,
-      "cacheControl": "no-store",
+      "bytes": 123075,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/today/directions",
       "family": "directions",
@@ -74,15 +74,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "761df0534b8d14e89e192dd9f3be89a77639842fd2c56bb6f727f2b0e1156706",
+      "sha256": "50429fd2d70f947f4a19d16e702a40d6d63d095d1e38fe86a8b2c6b17cc6064c",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 578,
-      "cacheControl": "no-store",
+      "bytes": 974,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/today/goals",
       "family": "goals",
@@ -100,7 +100,7 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "77bac1c01afe7deb2c26a63adaac19eeb6ad329725facbb47fb26bb995c83d7d",
+      "sha256": "fb2a157462918059f43ab057cc0610beaddc53d500ee9edf62ce9a89f8f28231",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "default"
@@ -112,8 +112,8 @@
           "method": "GET"
         }
       ],
-      "bytes": 887,
-      "cacheControl": "no-store",
+      "bytes": 11796,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/chart",
       "family": "chart",
@@ -131,15 +131,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "f80e858155e0faf31b4cb015d9da8f316f6f95f337c27a6c3727015ff49fa5c1",
+      "sha256": "be5b99a0f20f01606f3eb246c14b09141323c58b15c7c8c37459002c42fde2ef",
       "status": 200,
-      "syntheticPlan": "plan-neutral",
+      "syntheticPlan": "premium",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 1930,
-      "cacheControl": "no-store",
+      "bytes": 525049,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/calendar",
       "family": "calendar",
@@ -157,15 +157,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "68dfef98bf16742786b76173806e88df07dc617c015f51a850c12c1f31fa7229",
+      "sha256": "4c079a0e0761277f57c04e55caba4565d46132a7c030c649de14f59089dfaed7",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 1032,
-      "cacheControl": "no-store",
+      "bytes": 6834,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/network",
       "family": "network",
@@ -183,7 +183,7 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "c99b27683a05338c41d5455c4692ec35ca41f4ec62b7c1b9919a5c5322e41436",
+      "sha256": "7eb6355bb936e68b74dd2355e5e491a712632631420a1ae1a6cb20d93479ab70",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "default"
@@ -191,7 +191,7 @@
     {
       "aliases": [],
       "bytes": 147,
-      "cacheControl": "no-store",
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/network/sifu",
       "family": "network",
@@ -216,8 +216,8 @@
     },
     {
       "aliases": [],
-      "bytes": 103,
-      "cacheControl": "no-store",
+      "bytes": 102,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/network/bulk",
       "family": "network",
@@ -235,15 +235,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "4d939c02f3650878198be2f675d6ae3bb96c8f27e58b94ab4809a532e732578e",
+      "sha256": "9b44a54bcf280f1be22309bb5c7e92a964dddbb7d4f6dd18cf4dceb30198ec84",
       "status": 200,
       "syntheticPlan": "master",
       "variant": "master"
     },
     {
       "aliases": [],
-      "bytes": 7429,
-      "cacheControl": "no-store",
+      "bytes": 13838,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/qimen",
       "family": "qimen",
@@ -261,15 +261,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "732c2f45a5c39a6b5bfc0fe2601d992947b3434bab01a808ada2856b51c124c4",
+      "sha256": "2008f1d555d0c40a8ea691d64c29c84caf9c583a2459cb59ba3bb3618a5607e9",
       "status": 200,
       "syntheticPlan": "free-post-trial",
       "variant": "free-basic"
     },
     {
       "aliases": [],
-      "bytes": 13500,
-      "cacheControl": "no-store",
+      "bytes": 105272,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/qimen",
       "family": "qimen",
@@ -287,15 +287,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "19c65e7bef880e9737e8f45569838eb913a92ad7a46f5cde06c6864ebd55ad2a",
+      "sha256": "66d40275100e76ebc5099ecc4095de87b1582b2bba233ce2942be925f0cee3ed",
       "status": 200,
       "syntheticPlan": "master",
       "variant": "master-technical"
     },
     {
       "aliases": [],
-      "bytes": 1535,
-      "cacheControl": "no-store",
+      "bytes": 37327,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/qimen/search",
       "family": "qimen",
@@ -313,7 +313,7 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "73baffa17051123ce84007950f1eeb2a49bcdebd2b74ecfe49fcd7b1c72eaab2",
+      "sha256": "841f99b60c00fc32fb56544c6aa4c8363ea8f730d2d540d987fceb8d4c459d08",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "premium"
@@ -321,7 +321,7 @@
     {
       "aliases": [],
       "bytes": 96,
-      "cacheControl": "no-store",
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/qimen/sifu",
       "family": "qimen",
@@ -346,8 +346,8 @@
     },
     {
       "aliases": [],
-      "bytes": 3052,
-      "cacheControl": "no-store",
+      "bytes": 19467,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/datepick",
       "family": "datepick",
@@ -365,15 +365,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "191030aae75c4379dbe0b59414a1012d21b694613fc94025f6105b883c2c0761",
+      "sha256": "7e1b44dfca917c1a9fe60452f931fc8436a1d4a4b4154f6344ba7cbc3a0dce63",
       "status": 200,
       "syntheticPlan": "premium",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 509,
-      "cacheControl": "no-store",
+      "bytes": 669,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/datepick/save",
       "family": "datepick",
@@ -391,15 +391,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "e811ff63ad9c54f8e4f3ef40903975af3c3f19cfeca2a9d170cce0207975885d",
+      "sha256": "407ff106798c4bcf611eac263b234eec381980fe1dd3fce2d0c4df64d298f22a",
       "status": 201,
       "syntheticPlan": "plan-neutral",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 574,
-      "cacheControl": "no-store",
+      "bytes": 750,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/datepick/saved",
       "family": "datepick",
@@ -417,15 +417,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "193ed7ae5813579a240d5489ffa7b03ed0052ce093ec6a745c97aee60249dd82",
+      "sha256": "4fc79e570d3551fb3613eeca76a38db9281d1282ddb8aeaf617d2aaebc9f687c",
       "status": 200,
       "syntheticPlan": "plan-neutral",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 69,
-      "cacheControl": "no-store",
+      "bytes": 84,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/datepick/saved/[id]",
       "family": "datepick",
@@ -443,7 +443,7 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "775b58fd8e0b466f8dc9f4804bf2304915414ab15495275128c8e493f8f796dc",
+      "sha256": "b6eabfda4a8040a8253fe0aa6533017a8d42fb4193f61f6568eddbbddfce7833",
       "status": 200,
       "syntheticPlan": "plan-neutral",
       "variant": "default"
@@ -476,8 +476,8 @@
     },
     {
       "aliases": [],
-      "bytes": 6335,
-      "cacheControl": "no-store",
+      "bytes": 5595,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/luopan/bootstrap",
       "family": "luopan",
@@ -495,7 +495,7 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "7f22110562c4cca263a0e1e7170450df34e1b92ff395d79c274e19c66ba1c9a7",
+      "sha256": "873c7d34361286a16d3043c875d4ce2ad636f81c9e6571229f32bfef9e943186",
       "status": 200,
       "syntheticPlan": "master",
       "variant": "master"
@@ -529,7 +529,7 @@
     {
       "aliases": [],
       "bytes": 9642,
-      "cacheControl": "no-store",
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/luopan/analysis",
       "family": "luopan",
@@ -554,8 +554,8 @@
     },
     {
       "aliases": [],
-      "bytes": 7137,
-      "cacheControl": "no-store",
+      "bytes": 8960,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/luopan/snapshot",
       "family": "luopan",
@@ -573,15 +573,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "d404c75223310a99d795de9a7ec83879d34aac9f007ce75b33ae7e3621d80c12",
+      "sha256": "58d0e6afb1964f62b6f4a62100f08244fae9cfe59c79b67c5e13b89a2e265912",
       "status": 200,
       "syntheticPlan": "master",
       "variant": "master"
     },
     {
       "aliases": [],
-      "bytes": 727,
-      "cacheControl": "no-store",
+      "bytes": 741,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/luopan/measurements",
       "family": "luopan",
@@ -599,15 +599,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "bcc9ed7f074206fef23703038ef17e526cd84153e87352d877e6a42a341bf40d",
+      "sha256": "f312aa2a702093b6d3768cb6b8a4a400ac6a3f71a449e37363ef680b944f5b4a",
       "status": 200,
       "syntheticPlan": "free-post-trial",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 1086,
-      "cacheControl": "no-store",
+      "bytes": 1100,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/luopan/measurements",
       "family": "luopan",
@@ -625,7 +625,7 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "784a7c7ba6385bf9da6c58b230532af6927df2184a0941cac9e2ddf533ca41e4",
+      "sha256": "0edcf045643986f07f02091591331ce342ff11d1fb1194b6e2e04335c082c6f0",
       "status": 201,
       "syntheticPlan": "free-post-trial",
       "variant": "default"
@@ -633,7 +633,7 @@
     {
       "aliases": [],
       "bytes": 111,
-      "cacheControl": "no-store",
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/luopan/sifu",
       "family": "luopan",
@@ -659,7 +659,7 @@
     {
       "aliases": [],
       "bytes": 96,
-      "cacheControl": "no-store",
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/luopan/vision",
       "family": "luopan",
@@ -684,8 +684,8 @@
     },
     {
       "aliases": [],
-      "bytes": 173,
-      "cacheControl": "no-store",
+      "bytes": 136,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/sifu/chat",
       "family": "sifu",
@@ -703,16 +703,16 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "2302b9854a81251150fcd61844bd6ccac2ad1a673b6ff495954d971945eb6f77",
+      "sha256": "2441aaef9d822fbc649eea48118bc85556db0bf08d603e533e4d0436c8c351e5",
       "status": 200,
       "syntheticPlan": "plan-neutral",
       "variant": "json"
     },
     {
       "aliases": [],
-      "bytes": 508,
-      "cacheControl": "no-cache",
-      "contentType": "text/event-stream",
+      "bytes": 752,
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+      "contentType": "text/event-stream; charset=utf-8",
       "endpoint": "/api/mobile/v1/sifu/chat?stream=1",
       "family": "sifu",
       "filename": "sifu-chat-stream.sanitized.json",
@@ -729,15 +729,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "d604312c34ea550005b225dc7da2e617d9c69dd017ec6b66731221fd8be913d1",
+      "sha256": "a3cb7240b9d72150bbb6974a1393982095b52530da01ef70920e1d4d891c7d86",
       "status": 200,
       "syntheticPlan": "plan-neutral",
       "variant": "sse-projection"
     },
     {
       "aliases": [],
-      "bytes": 367,
-      "cacheControl": "no-store",
+      "bytes": 401,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/sifu/history",
       "family": "sifu",
@@ -755,15 +755,15 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "9f375bedc926ed79e74996a510e1a1d40f5023ec8cb62ecdfdd3039e181b6a9c",
+      "sha256": "8d524347bdadf825684e06c1542b116e20b3ee80b7fcf7c3f517b5744ddccb4d",
       "status": 200,
       "syntheticPlan": "plan-neutral",
       "variant": "default"
     },
     {
       "aliases": [],
-      "bytes": 175,
-      "cacheControl": "no-store",
+      "bytes": 127,
+      "cacheControl": "no-store, max-age=0",
       "contentType": "application/json",
       "endpoint": "/api/mobile/v1/sifu/group",
       "family": "sifu",
@@ -781,7 +781,7 @@
         "structured-science",
         "entitlement-state"
       ],
-      "sha256": "3f34dade04bcefc059b1158a30943201468ddde91e77bc42bcebf84759815023",
+      "sha256": "c0a32dec4d4ad364644b9862272af70ed764692970cb7e1608022202473a6478",
       "status": 200,
       "syntheticPlan": "plan-neutral",
       "variant": "default"
@@ -791,5 +791,12 @@
   "rawStoredInGit": false,
   "schema": "hourkey-mobile-r515-fixtures/v1",
   "sourceClass": "deterministic-synthetic-contract",
-  "sourceRelease": "r515"
+  "sourceProvenance": {
+    "capturedAt": "2026-07-13T14:27:59.994Z",
+    "declaredSourceCodeCommit": "f1c849bd74dcfa6998e44553f2591f3789ac3429",
+    "declaredSourceHead": "cb1fb9e9815d25eccb9f29048f24d0a46a22c310",
+    "receiptKeysSha256": "6c25c9b74050cf5e6d258b403bbeb741f758d2ea66a8e9a9252be84b80d1e845",
+    "receiptSha256": "75f618f992db61aae2204ab441ed348b3275f9f80921c27a68d97864f9a97572",
+    "releaseId": "decode-app-r515-mobile-api"
+  }
 }

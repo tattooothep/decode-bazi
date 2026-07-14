@@ -1,302 +1,2100 @@
 {
   "date": "2026-07-14",
+  "dayBranch": "丑",
+  "dayBranchEl": "earth",
   "direction_energy": {
     "avoid": [
       {
-        "direction": "W",
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "E",
+        "direction_en": "East",
+        "direction_th": "ตะวันออก",
+        "direction_th_long": "ทิศตะวันออก",
+        "direction_zh": "東",
         "label": "avoid",
+        "label_en": "Avoid",
+        "label_th": "เลี่ยง",
+        "label_zh": "忌",
         "locked": false,
         "qimen": {
-          "score": 66,
-          "signal": "fixture-qimen-7"
+          "day": {
+            "deity": "白虎",
+            "deity_en": "White Tiger",
+            "deity_score": -8,
+            "deity_th": "เทพไป๋หู่",
+            "direction": "E",
+            "direction_en": "East",
+            "direction_th": "ตะวันออก",
+            "direction_th_long": "ทิศตะวันออก",
+            "direction_zh": "東",
+            "door": "死門",
+            "door_en": "Death Gate",
+            "door_score": -10,
+            "door_th": "ประตูตาย",
+            "earth_stem": "庚",
+            "heaven_stem": "丁",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 3,
+            "quality": "avoid",
+            "reasons": [
+              "死門 -10",
+              "天任 +5",
+              "白虎 -8",
+              "天三奇丁 +3",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Death Gate -10",
+              "Tian Ren star +5",
+              "White Tiger -8",
+              "Heaven Three Nobles 丁 +3",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -15,
+            "star": "天任",
+            "star_en": "Tian Ren star",
+            "star_score": 5,
+            "star_th": "ดาวเทียนเหริน"
+          },
+          "hour": {
+            "deity": "玄武",
+            "deity_en": "Black Tortoise",
+            "deity_score": -6,
+            "deity_th": "เทพเสวียนอู่",
+            "direction": "E",
+            "direction_en": "East",
+            "direction_th": "ตะวันออก",
+            "direction_th_long": "ทิศตะวันออก",
+            "direction_zh": "東",
+            "door": "景門",
+            "door_en": "Scenery Gate",
+            "door_score": 4,
+            "door_th": "ประตูภาพลักษณ์",
+            "earth_stem": "庚",
+            "heaven_stem": "壬",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 3,
+            "quality": "avoid",
+            "reasons": [
+              "景門 +4",
+              "天蓬 -7",
+              "玄武 -6",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Scenery Gate +4",
+              "Tian Peng star -7",
+              "Black Tortoise -6",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -14,
+            "star": "天蓬",
+            "star_en": "Tian Peng star",
+            "star_score": -7,
+            "star_th": "ดาวเทียนเผิง"
+          },
+          "score": 33,
+          "signal": "---"
         },
         "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+          "ประตูภาพลักษณ์ 景門"
         ],
-        "score": 32,
+        "reasons_en": [
+          "Scenery Gate 景門"
+        ],
+        "reasons_zh": [
+          "景門"
+        ],
+        "score": 38,
         "zibai": {
-          "score": 64,
-          "signal": "fixture-zibai-7"
+          "day": null,
+          "hour": null,
+          "score": 50,
+          "signal": "0"
+        }
+      },
+      {
+        "caps": [
+          "มี 二黑 2",
+          "ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "caps_en": [
+          "Two Black 2 present",
+          "Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "caps_zh": [
+          "二黑2臨方",
+          "奇門顯忌且凶飛星加壓"
+        ],
+        "direction": "SE",
+        "direction_en": "Southeast",
+        "direction_th": "ตอ.เฉียงใต้",
+        "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+        "direction_zh": "東南",
+        "label": "caution",
+        "label_en": "Caution",
+        "label_th": "ระวัง",
+        "label_zh": "謹慎",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "六合",
+            "deity_en": "Six Harmony",
+            "deity_score": 7,
+            "deity_th": "เทพลิ่วเหอ",
+            "direction": "SE",
+            "direction_en": "Southeast",
+            "direction_th": "ตอ.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+            "direction_zh": "東南",
+            "door": "驚門",
+            "door_en": "Fear Gate",
+            "door_score": -7,
+            "door_th": "ประตูตื่นตกใจ",
+            "earth_stem": "己",
+            "heaven_stem": "庚",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 4,
+            "quality": "avoid",
+            "reasons": [
+              "驚門 -7",
+              "天沖 +1",
+              "六合 +7",
+              "刑格 -4"
+            ],
+            "reasons_en": [
+              "Fear Gate -7",
+              "Tian Chong star +1",
+              "Six Harmony +7",
+              "刑格 (inauspicious combo) -4"
+            ],
+            "score": -3,
+            "star": "天沖",
+            "star_en": "Tian Chong star",
+            "star_score": 1,
+            "star_th": "ดาวเทียนชง"
+          },
+          "hour": {
+            "deity": "白虎",
+            "deity_en": "White Tiger",
+            "deity_score": -8,
+            "deity_th": "เทพไป๋หู่",
+            "direction": "SE",
+            "direction_en": "Southeast",
+            "direction_th": "ตอ.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+            "direction_zh": "東南",
+            "door": "死門",
+            "door_en": "Death Gate",
+            "door_score": -10,
+            "door_th": "ประตูตาย",
+            "earth_stem": "己",
+            "heaven_stem": "丁",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 4,
+            "quality": "avoid",
+            "reasons": [
+              "死門 -10",
+              "天任 +5",
+              "白虎 -8",
+              "天三奇丁 +3"
+            ],
+            "reasons_en": [
+              "Death Gate -10",
+              "Tian Ren star +5",
+              "White Tiger -8",
+              "Heaven Three Nobles 丁 +3"
+            ],
+            "score": -10,
+            "star": "天任",
+            "star_en": "Tian Ren star",
+            "star_score": 5,
+            "star_th": "ดาวเทียนเหริน"
+          },
+          "score": 41,
+          "signal": "--"
+        },
+        "reasons": [
+          "ประตูตาย 死門",
+          "2 สองดำ",
+          "จำกัดคะแนน: มี 二黑 2 · ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "reasons_en": [
+          "Death Gate 死門",
+          "2 Two Black",
+          "Score capped: Two Black 2 present · Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "reasons_zh": [
+          "死門",
+          "2 二黑",
+          "封頂：二黑2臨方 · 奇門顯忌且凶飛星加壓"
+        ],
+        "score": 40,
+        "zibai": {
+          "day": null,
+          "hour": {
+            "direction": "SE",
+            "direction_en": "Southeast",
+            "direction_th": "ตอ.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+            "direction_zh": "東南",
+            "en": "Two Black",
+            "quality": "bad",
+            "star": 2,
+            "th": "สองดำ",
+            "zh": "二黑"
+          },
+          "score": 37,
+          "signal": "---"
+        }
+      },
+      {
+        "caps": [
+          "มี 五黃 5",
+          "ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "caps_en": [
+          "Five Yellow 5 present",
+          "Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "caps_zh": [
+          "五黃5臨方",
+          "奇門顯忌且凶飛星加壓"
+        ],
+        "direction": "N",
+        "direction_en": "North",
+        "direction_th": "เหนือ",
+        "direction_th_long": "ทิศเหนือ",
+        "direction_zh": "北",
+        "label": "caution",
+        "label_en": "Caution",
+        "label_th": "ระวัง",
+        "label_zh": "謹慎",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "九地",
+            "deity_en": "Nine Earth",
+            "deity_score": 4,
+            "deity_th": "เทพจิ่วตี้",
+            "direction": "N",
+            "direction_en": "North",
+            "direction_th": "เหนือ",
+            "direction_th_long": "ทิศเหนือ",
+            "direction_zh": "北",
+            "door": "杜門",
+            "door_en": "Closed Gate",
+            "door_score": -1,
+            "door_th": "ประตูปิด",
+            "earth_stem": "壬",
+            "heaven_stem": "乙",
+            "label": "ดี",
+            "label_en": "Good",
+            "label_zh": "吉",
+            "palace_id": 1,
+            "quality": "good",
+            "reasons": [
+              "杜門 -1",
+              "天心 +8",
+              "九地 +4",
+              "天三奇乙 +3"
+            ],
+            "reasons_en": [
+              "Closed Gate -1",
+              "Tian Xin star +8",
+              "Nine Earth +4",
+              "Heaven Three Nobles 乙 +3"
+            ],
+            "score": 14,
+            "star": "天心",
+            "star_en": "Tian Xin star",
+            "star_score": 8,
+            "star_th": "ดาวเทียนซิน"
+          },
+          "hour": {
+            "deity": "九天",
+            "deity_en": "Nine Heavens",
+            "deity_score": 5,
+            "deity_th": "เทพจิ่วเทียน",
+            "direction": "N",
+            "direction_en": "North",
+            "direction_th": "เหนือ",
+            "direction_th_long": "ทิศเหนือ",
+            "direction_zh": "北",
+            "door": "傷門",
+            "door_en": "Injury Gate",
+            "door_score": -7,
+            "door_th": "ประตูบาดเจ็บ",
+            "earth_stem": "壬",
+            "heaven_stem": "丙",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 1,
+            "quality": "avoid",
+            "reasons": [
+              "傷門 -7",
+              "天柱 -4",
+              "九天 +5",
+              "天三奇丙 +3"
+            ],
+            "reasons_en": [
+              "Injury Gate -7",
+              "Tian Zhu star -4",
+              "Nine Heavens +5",
+              "Heaven Three Nobles 丙 +3"
+            ],
+            "score": -3,
+            "star": "天柱",
+            "star_en": "Tian Zhu star",
+            "star_score": -4,
+            "star_th": "ดาวเทียนจู้"
+          },
+          "score": 55,
+          "signal": "++"
+        },
+        "reasons": [
+          "ประตูบาดเจ็บ 傷門",
+          "5 ห้าเหลือง",
+          "จำกัดคะแนน: มี 五黃 5 · ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "reasons_en": [
+          "Injury Gate 傷門",
+          "5 Five Yellow",
+          "Score capped: Five Yellow 5 present · Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "reasons_zh": [
+          "傷門",
+          "5 五黃",
+          "封頂：五黃5臨方 · 奇門顯忌且凶飛星加壓"
+        ],
+        "score": 49,
+        "zibai": {
+          "day": null,
+          "hour": {
+            "direction": "N",
+            "direction_en": "North",
+            "direction_th": "เหนือ",
+            "direction_th_long": "ทิศเหนือ",
+            "direction_zh": "北",
+            "en": "Five Yellow",
+            "quality": "bad",
+            "star": 5,
+            "th": "ห้าเหลือง",
+            "zh": "五黃"
+          },
+          "score": 34,
+          "signal": "---"
+        }
+      },
+      {
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "NE",
+        "direction_en": "Northeast",
+        "direction_th": "ตอ.เฉียงเหนือ",
+        "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+        "direction_zh": "東北",
+        "label": "caution",
+        "label_en": "Caution",
+        "label_th": "ระวัง",
+        "label_zh": "謹慎",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "玄武",
+            "deity_en": "Black Tortoise",
+            "deity_score": -6,
+            "deity_th": "เทพเสวียนอู่",
+            "direction": "NE",
+            "direction_en": "Northeast",
+            "direction_th": "ตอ.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+            "direction_zh": "東北",
+            "door": "景門",
+            "door_en": "Scenery Gate",
+            "door_score": 4,
+            "door_th": "ประตูภาพลักษณ์",
+            "earth_stem": "丁",
+            "heaven_stem": "壬",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 8,
+            "quality": "avoid",
+            "reasons": [
+              "景門 +4",
+              "天蓬 -7",
+              "玄武 -6",
+              "地三奇丁 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Scenery Gate +4",
+              "Tian Peng star -7",
+              "Black Tortoise -6",
+              "Earth Three Nobles 丁 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -12,
+            "star": "天蓬",
+            "star_en": "Tian Peng star",
+            "star_score": -7,
+            "star_th": "ดาวเทียนเผิง"
+          },
+          "hour": {
+            "deity": "九地",
+            "deity_en": "Nine Earth",
+            "deity_score": 4,
+            "deity_th": "เทพจิ่วตี้",
+            "direction": "NE",
+            "direction_en": "Northeast",
+            "direction_th": "ตอ.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+            "direction_zh": "東北",
+            "door": "杜門",
+            "door_en": "Closed Gate",
+            "door_score": -1,
+            "door_th": "ประตูปิด",
+            "earth_stem": "丁",
+            "heaven_stem": "乙",
+            "label": "ดี",
+            "label_en": "Good",
+            "label_zh": "吉",
+            "palace_id": 8,
+            "quality": "good",
+            "reasons": [
+              "杜門 -1",
+              "天心 +8",
+              "九地 +4",
+              "天三奇乙 +3",
+              "地三奇丁 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Closed Gate -1",
+              "Tian Xin star +8",
+              "Nine Earth +4",
+              "Heaven Three Nobles 乙 +3",
+              "Earth Three Nobles 丁 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": 11,
+            "star": "天心",
+            "star_en": "Tian Xin star",
+            "star_score": 8,
+            "star_th": "ดาวเทียนซิน"
+          },
+          "score": 52,
+          "signal": "0"
+        },
+        "reasons": [
+          "ประตูปิด 杜門"
+        ],
+        "reasons_en": [
+          "Closed Gate 杜門"
+        ],
+        "reasons_zh": [
+          "杜門"
+        ],
+        "score": 51,
+        "zibai": {
+          "day": null,
+          "hour": null,
+          "score": 50,
+          "signal": "0"
         }
       }
     ],
     "best": [
       {
-        "direction": "E",
-        "label": "best",
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "NW",
+        "direction_en": "Northwest",
+        "direction_th": "ตต.เฉียงเหนือ",
+        "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+        "direction_zh": "西北",
+        "label": "ok",
+        "label_en": "Mild positive",
+        "label_th": "กลางบวก",
+        "label_zh": "平吉",
         "locked": false,
         "qimen": {
-          "score": 62,
-          "signal": "fixture-qimen-3"
+          "day": {
+            "deity": "九天",
+            "deity_en": "Nine Heavens",
+            "deity_score": 5,
+            "deity_th": "เทพจิ่วเทียน",
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "door": "傷門",
+            "door_en": "Injury Gate",
+            "door_score": -7,
+            "door_th": "ประตูบาดเจ็บ",
+            "earth_stem": "乙",
+            "heaven_stem": "丙",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 6,
+            "quality": "avoid",
+            "reasons": [
+              "傷門 -7",
+              "天柱 -4",
+              "九天 +5",
+              "天三奇丙 +3",
+              "地三奇乙 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Injury Gate -7",
+              "Tian Zhu star -4",
+              "Nine Heavens +5",
+              "Heaven Three Nobles 丙 +3",
+              "Earth Three Nobles 乙 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -6,
+            "star": "天柱",
+            "star_en": "Tian Zhu star",
+            "star_score": -4,
+            "star_th": "ดาวเทียนจู้"
+          },
+          "hour": {
+            "deity": "值符",
+            "deity_en": "Chief (Zhi Fu)",
+            "deity_score": 8,
+            "deity_th": "เทพจื๋อฟู",
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "door": "生門",
+            "door_en": "Life Gate",
+            "door_score": 10,
+            "door_th": "ประตูเกิด",
+            "earth_stem": "乙",
+            "heaven_stem": "辛",
+            "label": "ดี",
+            "label_en": "Good",
+            "label_zh": "吉",
+            "palace_id": 6,
+            "quality": "good",
+            "reasons": [
+              "生門 +10",
+              "天芮 -8",
+              "值符 +8",
+              "地三奇乙 +2",
+              "驛馬 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Life Gate +10",
+              "Tian Rui star -8",
+              "Chief (Zhi Fu) +8",
+              "Earth Three Nobles 乙 +2",
+              "Post Horse 驛馬 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": 9,
+            "star": "天芮",
+            "star_en": "Tian Rui star",
+            "star_score": -8,
+            "star_th": "ดาวเทียนรุ่ย"
+          },
+          "score": 54,
+          "signal": "++"
         },
         "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+          "ประตูเกิด 生門",
+          "9 เก้าม่วง"
         ],
-        "score": 88,
+        "reasons_en": [
+          "Life Gate 生門",
+          "9 Nine Purple"
+        ],
+        "reasons_zh": [
+          "生門",
+          "9 九紫"
+        ],
+        "score": 59,
         "zibai": {
-          "score": 60,
-          "signal": "fixture-zibai-3"
+          "day": {
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "en": "One White",
+            "quality": "good",
+            "star": 1,
+            "th": "หนึ่งขาว",
+            "zh": "一白"
+          },
+          "hour": {
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "en": "Nine Purple",
+            "quality": "good",
+            "star": 9,
+            "th": "เก้าม่วง",
+            "zh": "九紫"
+          },
+          "score": 69,
+          "signal": "++++"
+        }
+      },
+      {
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "S",
+        "direction_en": "South",
+        "direction_th": "ใต้",
+        "direction_th_long": "ทิศใต้",
+        "direction_zh": "南",
+        "label": "ok",
+        "label_en": "Mild positive",
+        "label_th": "กลางบวก",
+        "label_zh": "平吉",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "太陰",
+            "deity_en": "Great Yin",
+            "deity_score": 7,
+            "deity_th": "เทพไท่อิน",
+            "direction": "S",
+            "direction_en": "South",
+            "direction_th": "ใต้",
+            "direction_th_long": "ทิศใต้",
+            "direction_zh": "南",
+            "door": "開門",
+            "door_en": "Open Gate",
+            "door_score": 10,
+            "door_th": "ประตูเปิด",
+            "earth_stem": "癸",
+            "heaven_stem": "己",
+            "label": "ดีมาก",
+            "label_en": "Excellent",
+            "label_zh": "極佳",
+            "palace_id": 9,
+            "quality": "best",
+            "reasons": [
+              "開門 +10",
+              "天輔 +7",
+              "太陰 +7"
+            ],
+            "reasons_en": [
+              "Open Gate +10",
+              "Tian Fu star +7",
+              "Great Yin +7"
+            ],
+            "score": 24,
+            "star": "天輔",
+            "star_en": "Tian Fu star",
+            "star_score": 7,
+            "star_th": "ดาวเทียนฝู่"
+          },
+          "hour": {
+            "deity": "六合",
+            "deity_en": "Six Harmony",
+            "deity_score": 7,
+            "deity_th": "เทพลิ่วเหอ",
+            "direction": "S",
+            "direction_en": "South",
+            "direction_th": "ใต้",
+            "direction_th_long": "ทิศใต้",
+            "direction_zh": "南",
+            "door": "驚門",
+            "door_en": "Fear Gate",
+            "door_score": -7,
+            "door_th": "ประตูตื่นตกใจ",
+            "earth_stem": "癸",
+            "heaven_stem": "庚",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 9,
+            "quality": "avoid",
+            "reasons": [
+              "驚門 -7",
+              "天沖 +1",
+              "六合 +7",
+              "大格 -4"
+            ],
+            "reasons_en": [
+              "Fear Gate -7",
+              "Tian Chong star +1",
+              "Six Harmony +7",
+              "大格 (inauspicious combo) -4"
+            ],
+            "score": -3,
+            "star": "天沖",
+            "star_en": "Tian Chong star",
+            "star_score": 1,
+            "star_th": "ดาวเทียนชง"
+          },
+          "score": 59,
+          "signal": "++"
+        },
+        "reasons": [
+          "ประตูตื่นตกใจ 驚門"
+        ],
+        "reasons_en": [
+          "Fear Gate 驚門"
+        ],
+        "reasons_zh": [
+          "驚門"
+        ],
+        "score": 56,
+        "zibai": {
+          "day": null,
+          "hour": null,
+          "score": 50,
+          "signal": "0"
+        }
+      },
+      {
+        "caps": [
+          "มี 五黃 5",
+          "ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "caps_en": [
+          "Five Yellow 5 present",
+          "Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "caps_zh": [
+          "五黃5臨方",
+          "奇門顯忌且凶飛星加壓"
+        ],
+        "direction": "SW",
+        "direction_en": "Southwest",
+        "direction_th": "ตต.เฉียงใต้",
+        "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+        "direction_zh": "西南",
+        "label": "ok",
+        "label_en": "Mild positive",
+        "label_th": "กลางบวก",
+        "label_zh": "平吉",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "螣蛇",
+            "deity_en": "Coiling Snake",
+            "deity_score": -5,
+            "deity_th": "เทพเถิงเสอ",
+            "direction": "SW",
+            "direction_en": "Southwest",
+            "direction_th": "ตต.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+            "direction_zh": "西南",
+            "door": "休門",
+            "door_en": "Rest Gate",
+            "door_score": 9,
+            "door_th": "ประตูพัก",
+            "earth_stem": "辛",
+            "heaven_stem": "癸",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 2,
+            "quality": "avoid",
+            "reasons": [
+              "休門 +9",
+              "天英 -3",
+              "螣蛇 -5",
+              "驛馬 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Rest Gate +9",
+              "Tian Ying star -3",
+              "Coiling Snake -5",
+              "Post Horse 驛馬 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -2,
+            "star": "天英",
+            "star_en": "Tian Ying star",
+            "star_score": -3,
+            "star_th": "ดาวเทียนอิง"
+          },
+          "hour": {
+            "deity": "太陰",
+            "deity_en": "Great Yin",
+            "deity_score": 7,
+            "deity_th": "เทพไท่อิน",
+            "direction": "SW",
+            "direction_en": "Southwest",
+            "direction_th": "ตต.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+            "direction_zh": "西南",
+            "door": "開門",
+            "door_en": "Open Gate",
+            "door_score": 10,
+            "door_th": "ประตูเปิด",
+            "earth_stem": "辛",
+            "heaven_stem": "己",
+            "label": "ดีมาก",
+            "label_en": "Excellent",
+            "label_zh": "極佳",
+            "palace_id": 2,
+            "quality": "best",
+            "reasons": [
+              "開門 +10",
+              "天輔 +7",
+              "太陰 +7",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Open Gate +10",
+              "Tian Fu star +7",
+              "Great Yin +7",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": 19,
+            "star": "天輔",
+            "star_en": "Tian Fu star",
+            "star_score": 7,
+            "star_th": "ดาวเทียนฝู่"
+          },
+          "score": 63,
+          "signal": "+++"
+        },
+        "reasons": [
+          "ประตูเปิด 開門",
+          "จำกัดคะแนน: มี 五黃 5 · ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "reasons_en": [
+          "Open Gate 開門",
+          "Score capped: Five Yellow 5 present · Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "reasons_zh": [
+          "開門",
+          "封頂：五黃5臨方 · 奇門顯忌且凶飛星加壓"
+        ],
+        "score": 55,
+        "zibai": {
+          "day": {
+            "direction": "SW",
+            "direction_en": "Southwest",
+            "direction_th": "ตต.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+            "direction_zh": "西南",
+            "en": "Five Yellow",
+            "quality": "bad",
+            "star": 5,
+            "th": "ห้าเหลือง",
+            "zh": "五黃"
+          },
+          "hour": null,
+          "score": 37,
+          "signal": "---"
         }
       }
     ],
+    "date": "2026-07-14",
+    "personal_overlay": {
+      "available": true,
+      "included_in_energy_score": false,
+      "note_en": "Personal chart provided, but kept separate from the direction score",
+      "note_th": "มีดวงส่วนตัวแล้ว แต่แยกจากคะแนนพลังทิศ",
+      "note_zh": "已有個人命盤，但與方位能量分數分開計算"
+    },
     "school": "chaibu",
-    "school_label": "拆補",
+    "school_label": "拆補 Chaibu",
+    "school_use_en": "For immediate situations",
+    "school_use_th": "ดูสถานการณ์เฉพาะหน้า",
+    "school_use_zh": "看眼前情況",
     "scores": [
       {
-        "direction": "N",
-        "label": "good",
-        "locked": false,
-        "qimen": {
-          "score": 60,
-          "signal": "fixture-qimen-1"
-        },
-        "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
-        ],
-        "score": 60,
-        "zibai": {
-          "score": 58,
-          "signal": "fixture-zibai-1"
-        }
-      },
-      {
-        "direction": "NE",
-        "label": "good",
-        "locked": false,
-        "qimen": {
-          "score": 61,
-          "signal": "fixture-qimen-2"
-        },
-        "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
-        ],
-        "score": 61,
-        "zibai": {
-          "score": 59,
-          "signal": "fixture-zibai-2"
-        }
-      },
-      {
-        "direction": "E",
-        "label": "best",
-        "locked": false,
-        "qimen": {
-          "score": 62,
-          "signal": "fixture-qimen-3"
-        },
-        "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
-        ],
-        "score": 88,
-        "zibai": {
-          "score": 60,
-          "signal": "fixture-zibai-3"
-        }
-      },
-      {
-        "direction": "SE",
-        "label": "good",
-        "locked": false,
-        "qimen": {
-          "score": 63,
-          "signal": "fixture-qimen-4"
-        },
-        "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
-        ],
-        "score": 63,
-        "zibai": {
-          "score": 61,
-          "signal": "fixture-zibai-4"
-        }
-      },
-      {
-        "direction": "S",
-        "label": "good",
-        "locked": false,
-        "qimen": {
-          "score": 64,
-          "signal": "fixture-qimen-5"
-        },
-        "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
-        ],
-        "score": 64,
-        "zibai": {
-          "score": 62,
-          "signal": "fixture-zibai-5"
-        }
-      },
-      {
-        "direction": "SW",
-        "label": "good",
-        "locked": false,
-        "qimen": {
-          "score": 65,
-          "signal": "fixture-qimen-6"
-        },
-        "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
-        ],
-        "score": 65,
-        "zibai": {
-          "score": 63,
-          "signal": "fixture-zibai-6"
-        }
-      },
-      {
-        "direction": "W",
-        "label": "avoid",
-        "locked": false,
-        "qimen": {
-          "score": 66,
-          "signal": "fixture-qimen-7"
-        },
-        "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
-        ],
-        "score": 32,
-        "zibai": {
-          "score": 64,
-          "signal": "fixture-zibai-7"
-        }
-      },
-      {
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
         "direction": "NW",
-        "label": "good",
+        "direction_en": "Northwest",
+        "direction_th": "ตต.เฉียงเหนือ",
+        "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+        "direction_zh": "西北",
+        "label": "ok",
+        "label_en": "Mild positive",
+        "label_th": "กลางบวก",
+        "label_zh": "平吉",
         "locked": false,
         "qimen": {
-          "score": 67,
-          "signal": "fixture-qimen-8"
+          "day": {
+            "deity": "九天",
+            "deity_en": "Nine Heavens",
+            "deity_score": 5,
+            "deity_th": "เทพจิ่วเทียน",
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "door": "傷門",
+            "door_en": "Injury Gate",
+            "door_score": -7,
+            "door_th": "ประตูบาดเจ็บ",
+            "earth_stem": "乙",
+            "heaven_stem": "丙",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 6,
+            "quality": "avoid",
+            "reasons": [
+              "傷門 -7",
+              "天柱 -4",
+              "九天 +5",
+              "天三奇丙 +3",
+              "地三奇乙 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Injury Gate -7",
+              "Tian Zhu star -4",
+              "Nine Heavens +5",
+              "Heaven Three Nobles 丙 +3",
+              "Earth Three Nobles 乙 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -6,
+            "star": "天柱",
+            "star_en": "Tian Zhu star",
+            "star_score": -4,
+            "star_th": "ดาวเทียนจู้"
+          },
+          "hour": {
+            "deity": "值符",
+            "deity_en": "Chief (Zhi Fu)",
+            "deity_score": 8,
+            "deity_th": "เทพจื๋อฟู",
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "door": "生門",
+            "door_en": "Life Gate",
+            "door_score": 10,
+            "door_th": "ประตูเกิด",
+            "earth_stem": "乙",
+            "heaven_stem": "辛",
+            "label": "ดี",
+            "label_en": "Good",
+            "label_zh": "吉",
+            "palace_id": 6,
+            "quality": "good",
+            "reasons": [
+              "生門 +10",
+              "天芮 -8",
+              "值符 +8",
+              "地三奇乙 +2",
+              "驛馬 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Life Gate +10",
+              "Tian Rui star -8",
+              "Chief (Zhi Fu) +8",
+              "Earth Three Nobles 乙 +2",
+              "Post Horse 驛馬 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": 9,
+            "star": "天芮",
+            "star_en": "Tian Rui star",
+            "star_score": -8,
+            "star_th": "ดาวเทียนรุ่ย"
+          },
+          "score": 54,
+          "signal": "++"
         },
         "reasons": [
-          "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+          "ประตูเกิด 生門",
+          "9 เก้าม่วง"
         ],
-        "score": 67,
+        "reasons_en": [
+          "Life Gate 生門",
+          "9 Nine Purple"
+        ],
+        "reasons_zh": [
+          "生門",
+          "9 九紫"
+        ],
+        "score": 59,
         "zibai": {
-          "score": 65,
-          "signal": "fixture-zibai-8"
+          "day": {
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "en": "One White",
+            "quality": "good",
+            "star": 1,
+            "th": "หนึ่งขาว",
+            "zh": "一白"
+          },
+          "hour": {
+            "direction": "NW",
+            "direction_en": "Northwest",
+            "direction_th": "ตต.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+            "direction_zh": "西北",
+            "en": "Nine Purple",
+            "quality": "good",
+            "star": 9,
+            "th": "เก้าม่วง",
+            "zh": "九紫"
+          },
+          "score": 69,
+          "signal": "++++"
+        }
+      },
+      {
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "S",
+        "direction_en": "South",
+        "direction_th": "ใต้",
+        "direction_th_long": "ทิศใต้",
+        "direction_zh": "南",
+        "label": "ok",
+        "label_en": "Mild positive",
+        "label_th": "กลางบวก",
+        "label_zh": "平吉",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "太陰",
+            "deity_en": "Great Yin",
+            "deity_score": 7,
+            "deity_th": "เทพไท่อิน",
+            "direction": "S",
+            "direction_en": "South",
+            "direction_th": "ใต้",
+            "direction_th_long": "ทิศใต้",
+            "direction_zh": "南",
+            "door": "開門",
+            "door_en": "Open Gate",
+            "door_score": 10,
+            "door_th": "ประตูเปิด",
+            "earth_stem": "癸",
+            "heaven_stem": "己",
+            "label": "ดีมาก",
+            "label_en": "Excellent",
+            "label_zh": "極佳",
+            "palace_id": 9,
+            "quality": "best",
+            "reasons": [
+              "開門 +10",
+              "天輔 +7",
+              "太陰 +7"
+            ],
+            "reasons_en": [
+              "Open Gate +10",
+              "Tian Fu star +7",
+              "Great Yin +7"
+            ],
+            "score": 24,
+            "star": "天輔",
+            "star_en": "Tian Fu star",
+            "star_score": 7,
+            "star_th": "ดาวเทียนฝู่"
+          },
+          "hour": {
+            "deity": "六合",
+            "deity_en": "Six Harmony",
+            "deity_score": 7,
+            "deity_th": "เทพลิ่วเหอ",
+            "direction": "S",
+            "direction_en": "South",
+            "direction_th": "ใต้",
+            "direction_th_long": "ทิศใต้",
+            "direction_zh": "南",
+            "door": "驚門",
+            "door_en": "Fear Gate",
+            "door_score": -7,
+            "door_th": "ประตูตื่นตกใจ",
+            "earth_stem": "癸",
+            "heaven_stem": "庚",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 9,
+            "quality": "avoid",
+            "reasons": [
+              "驚門 -7",
+              "天沖 +1",
+              "六合 +7",
+              "大格 -4"
+            ],
+            "reasons_en": [
+              "Fear Gate -7",
+              "Tian Chong star +1",
+              "Six Harmony +7",
+              "大格 (inauspicious combo) -4"
+            ],
+            "score": -3,
+            "star": "天沖",
+            "star_en": "Tian Chong star",
+            "star_score": 1,
+            "star_th": "ดาวเทียนชง"
+          },
+          "score": 59,
+          "signal": "++"
+        },
+        "reasons": [
+          "ประตูตื่นตกใจ 驚門"
+        ],
+        "reasons_en": [
+          "Fear Gate 驚門"
+        ],
+        "reasons_zh": [
+          "驚門"
+        ],
+        "score": 56,
+        "zibai": {
+          "day": null,
+          "hour": null,
+          "score": 50,
+          "signal": "0"
+        }
+      },
+      {
+        "caps": [
+          "มี 五黃 5",
+          "ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "caps_en": [
+          "Five Yellow 5 present",
+          "Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "caps_zh": [
+          "五黃5臨方",
+          "奇門顯忌且凶飛星加壓"
+        ],
+        "direction": "SW",
+        "direction_en": "Southwest",
+        "direction_th": "ตต.เฉียงใต้",
+        "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+        "direction_zh": "西南",
+        "label": "ok",
+        "label_en": "Mild positive",
+        "label_th": "กลางบวก",
+        "label_zh": "平吉",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "螣蛇",
+            "deity_en": "Coiling Snake",
+            "deity_score": -5,
+            "deity_th": "เทพเถิงเสอ",
+            "direction": "SW",
+            "direction_en": "Southwest",
+            "direction_th": "ตต.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+            "direction_zh": "西南",
+            "door": "休門",
+            "door_en": "Rest Gate",
+            "door_score": 9,
+            "door_th": "ประตูพัก",
+            "earth_stem": "辛",
+            "heaven_stem": "癸",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 2,
+            "quality": "avoid",
+            "reasons": [
+              "休門 +9",
+              "天英 -3",
+              "螣蛇 -5",
+              "驛馬 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Rest Gate +9",
+              "Tian Ying star -3",
+              "Coiling Snake -5",
+              "Post Horse 驛馬 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -2,
+            "star": "天英",
+            "star_en": "Tian Ying star",
+            "star_score": -3,
+            "star_th": "ดาวเทียนอิง"
+          },
+          "hour": {
+            "deity": "太陰",
+            "deity_en": "Great Yin",
+            "deity_score": 7,
+            "deity_th": "เทพไท่อิน",
+            "direction": "SW",
+            "direction_en": "Southwest",
+            "direction_th": "ตต.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+            "direction_zh": "西南",
+            "door": "開門",
+            "door_en": "Open Gate",
+            "door_score": 10,
+            "door_th": "ประตูเปิด",
+            "earth_stem": "辛",
+            "heaven_stem": "己",
+            "label": "ดีมาก",
+            "label_en": "Excellent",
+            "label_zh": "極佳",
+            "palace_id": 2,
+            "quality": "best",
+            "reasons": [
+              "開門 +10",
+              "天輔 +7",
+              "太陰 +7",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Open Gate +10",
+              "Tian Fu star +7",
+              "Great Yin +7",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": 19,
+            "star": "天輔",
+            "star_en": "Tian Fu star",
+            "star_score": 7,
+            "star_th": "ดาวเทียนฝู่"
+          },
+          "score": 63,
+          "signal": "+++"
+        },
+        "reasons": [
+          "ประตูเปิด 開門",
+          "จำกัดคะแนน: มี 五黃 5 · ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "reasons_en": [
+          "Open Gate 開門",
+          "Score capped: Five Yellow 5 present · Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "reasons_zh": [
+          "開門",
+          "封頂：五黃5臨方 · 奇門顯忌且凶飛星加壓"
+        ],
+        "score": 55,
+        "zibai": {
+          "day": {
+            "direction": "SW",
+            "direction_en": "Southwest",
+            "direction_th": "ตต.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+            "direction_zh": "西南",
+            "en": "Five Yellow",
+            "quality": "bad",
+            "star": 5,
+            "th": "ห้าเหลือง",
+            "zh": "五黃"
+          },
+          "hour": null,
+          "score": 37,
+          "signal": "---"
+        }
+      },
+      {
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "W",
+        "direction_en": "West",
+        "direction_th": "ตะวันตก",
+        "direction_th_long": "ทิศตะวันตก",
+        "direction_zh": "西",
+        "label": "caution",
+        "label_en": "Caution",
+        "label_th": "ระวัง",
+        "label_zh": "謹慎",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "值符",
+            "deity_en": "Chief (Zhi Fu)",
+            "deity_score": 8,
+            "deity_th": "เทพจื๋อฟู",
+            "direction": "W",
+            "direction_en": "West",
+            "direction_th": "ตะวันตก",
+            "direction_th_long": "ทิศตะวันตก",
+            "direction_zh": "西",
+            "door": "生門",
+            "door_en": "Life Gate",
+            "door_score": 10,
+            "door_th": "ประตูเกิด",
+            "earth_stem": "丙",
+            "heaven_stem": "辛",
+            "label": "ดี",
+            "label_en": "Good",
+            "label_zh": "吉",
+            "palace_id": 7,
+            "quality": "good",
+            "reasons": [
+              "生門 +10",
+              "天芮 -8",
+              "值符 +8",
+              "地三奇丙 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Life Gate +10",
+              "Tian Rui star -8",
+              "Chief (Zhi Fu) +8",
+              "Earth Three Nobles 丙 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": 7,
+            "star": "天芮",
+            "star_en": "Tian Rui star",
+            "star_score": -8,
+            "star_th": "ดาวเทียนรุ่ย"
+          },
+          "hour": {
+            "deity": "螣蛇",
+            "deity_en": "Coiling Snake",
+            "deity_score": -5,
+            "deity_th": "เทพเถิงเสอ",
+            "direction": "W",
+            "direction_en": "West",
+            "direction_th": "ตะวันตก",
+            "direction_th_long": "ทิศตะวันตก",
+            "direction_zh": "西",
+            "door": "休門",
+            "door_en": "Rest Gate",
+            "door_score": 9,
+            "door_th": "ประตูพัก",
+            "earth_stem": "丙",
+            "heaven_stem": "癸",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 7,
+            "quality": "avoid",
+            "reasons": [
+              "休門 +9",
+              "天英 -3",
+              "螣蛇 -5",
+              "地三奇丙 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Rest Gate +9",
+              "Tian Ying star -3",
+              "Coiling Snake -5",
+              "Earth Three Nobles 丙 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -2,
+            "star": "天英",
+            "star_en": "Tian Ying star",
+            "star_score": -3,
+            "star_th": "ดาวเทียนอิง"
+          },
+          "score": 52,
+          "signal": "0"
+        },
+        "reasons": [
+          "ประตูพัก 休門"
+        ],
+        "reasons_en": [
+          "Rest Gate 休門"
+        ],
+        "reasons_zh": [
+          "休門"
+        ],
+        "score": 54,
+        "zibai": {
+          "day": {
+            "direction": "W",
+            "direction_en": "West",
+            "direction_th": "ตะวันตก",
+            "direction_th_long": "ทิศตะวันตก",
+            "direction_zh": "西",
+            "en": "Nine Purple",
+            "quality": "good",
+            "star": 9,
+            "th": "เก้าม่วง",
+            "zh": "九紫"
+          },
+          "hour": null,
+          "score": 60,
+          "signal": "+++"
+        }
+      },
+      {
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "NE",
+        "direction_en": "Northeast",
+        "direction_th": "ตอ.เฉียงเหนือ",
+        "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+        "direction_zh": "東北",
+        "label": "caution",
+        "label_en": "Caution",
+        "label_th": "ระวัง",
+        "label_zh": "謹慎",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "玄武",
+            "deity_en": "Black Tortoise",
+            "deity_score": -6,
+            "deity_th": "เทพเสวียนอู่",
+            "direction": "NE",
+            "direction_en": "Northeast",
+            "direction_th": "ตอ.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+            "direction_zh": "東北",
+            "door": "景門",
+            "door_en": "Scenery Gate",
+            "door_score": 4,
+            "door_th": "ประตูภาพลักษณ์",
+            "earth_stem": "丁",
+            "heaven_stem": "壬",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 8,
+            "quality": "avoid",
+            "reasons": [
+              "景門 +4",
+              "天蓬 -7",
+              "玄武 -6",
+              "地三奇丁 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Scenery Gate +4",
+              "Tian Peng star -7",
+              "Black Tortoise -6",
+              "Earth Three Nobles 丁 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -12,
+            "star": "天蓬",
+            "star_en": "Tian Peng star",
+            "star_score": -7,
+            "star_th": "ดาวเทียนเผิง"
+          },
+          "hour": {
+            "deity": "九地",
+            "deity_en": "Nine Earth",
+            "deity_score": 4,
+            "deity_th": "เทพจิ่วตี้",
+            "direction": "NE",
+            "direction_en": "Northeast",
+            "direction_th": "ตอ.เฉียงเหนือ",
+            "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+            "direction_zh": "東北",
+            "door": "杜門",
+            "door_en": "Closed Gate",
+            "door_score": -1,
+            "door_th": "ประตูปิด",
+            "earth_stem": "丁",
+            "heaven_stem": "乙",
+            "label": "ดี",
+            "label_en": "Good",
+            "label_zh": "吉",
+            "palace_id": 8,
+            "quality": "good",
+            "reasons": [
+              "杜門 -1",
+              "天心 +8",
+              "九地 +4",
+              "天三奇乙 +3",
+              "地三奇丁 +2",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Closed Gate -1",
+              "Tian Xin star +8",
+              "Nine Earth +4",
+              "Heaven Three Nobles 乙 +3",
+              "Earth Three Nobles 丁 +2",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": 11,
+            "star": "天心",
+            "star_en": "Tian Xin star",
+            "star_score": 8,
+            "star_th": "ดาวเทียนซิน"
+          },
+          "score": 52,
+          "signal": "0"
+        },
+        "reasons": [
+          "ประตูปิด 杜門"
+        ],
+        "reasons_en": [
+          "Closed Gate 杜門"
+        ],
+        "reasons_zh": [
+          "杜門"
+        ],
+        "score": 51,
+        "zibai": {
+          "day": null,
+          "hour": null,
+          "score": 50,
+          "signal": "0"
+        }
+      },
+      {
+        "caps": [
+          "มี 五黃 5",
+          "ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "caps_en": [
+          "Five Yellow 5 present",
+          "Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "caps_zh": [
+          "五黃5臨方",
+          "奇門顯忌且凶飛星加壓"
+        ],
+        "direction": "N",
+        "direction_en": "North",
+        "direction_th": "เหนือ",
+        "direction_th_long": "ทิศเหนือ",
+        "direction_zh": "北",
+        "label": "caution",
+        "label_en": "Caution",
+        "label_th": "ระวัง",
+        "label_zh": "謹慎",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "九地",
+            "deity_en": "Nine Earth",
+            "deity_score": 4,
+            "deity_th": "เทพจิ่วตี้",
+            "direction": "N",
+            "direction_en": "North",
+            "direction_th": "เหนือ",
+            "direction_th_long": "ทิศเหนือ",
+            "direction_zh": "北",
+            "door": "杜門",
+            "door_en": "Closed Gate",
+            "door_score": -1,
+            "door_th": "ประตูปิด",
+            "earth_stem": "壬",
+            "heaven_stem": "乙",
+            "label": "ดี",
+            "label_en": "Good",
+            "label_zh": "吉",
+            "palace_id": 1,
+            "quality": "good",
+            "reasons": [
+              "杜門 -1",
+              "天心 +8",
+              "九地 +4",
+              "天三奇乙 +3"
+            ],
+            "reasons_en": [
+              "Closed Gate -1",
+              "Tian Xin star +8",
+              "Nine Earth +4",
+              "Heaven Three Nobles 乙 +3"
+            ],
+            "score": 14,
+            "star": "天心",
+            "star_en": "Tian Xin star",
+            "star_score": 8,
+            "star_th": "ดาวเทียนซิน"
+          },
+          "hour": {
+            "deity": "九天",
+            "deity_en": "Nine Heavens",
+            "deity_score": 5,
+            "deity_th": "เทพจิ่วเทียน",
+            "direction": "N",
+            "direction_en": "North",
+            "direction_th": "เหนือ",
+            "direction_th_long": "ทิศเหนือ",
+            "direction_zh": "北",
+            "door": "傷門",
+            "door_en": "Injury Gate",
+            "door_score": -7,
+            "door_th": "ประตูบาดเจ็บ",
+            "earth_stem": "壬",
+            "heaven_stem": "丙",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 1,
+            "quality": "avoid",
+            "reasons": [
+              "傷門 -7",
+              "天柱 -4",
+              "九天 +5",
+              "天三奇丙 +3"
+            ],
+            "reasons_en": [
+              "Injury Gate -7",
+              "Tian Zhu star -4",
+              "Nine Heavens +5",
+              "Heaven Three Nobles 丙 +3"
+            ],
+            "score": -3,
+            "star": "天柱",
+            "star_en": "Tian Zhu star",
+            "star_score": -4,
+            "star_th": "ดาวเทียนจู้"
+          },
+          "score": 55,
+          "signal": "++"
+        },
+        "reasons": [
+          "ประตูบาดเจ็บ 傷門",
+          "5 ห้าเหลือง",
+          "จำกัดคะแนน: มี 五黃 5 · ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "reasons_en": [
+          "Injury Gate 傷門",
+          "5 Five Yellow",
+          "Score capped: Five Yellow 5 present · Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "reasons_zh": [
+          "傷門",
+          "5 五黃",
+          "封頂：五黃5臨方 · 奇門顯忌且凶飛星加壓"
+        ],
+        "score": 49,
+        "zibai": {
+          "day": null,
+          "hour": {
+            "direction": "N",
+            "direction_en": "North",
+            "direction_th": "เหนือ",
+            "direction_th_long": "ทิศเหนือ",
+            "direction_zh": "北",
+            "en": "Five Yellow",
+            "quality": "bad",
+            "star": 5,
+            "th": "ห้าเหลือง",
+            "zh": "五黃"
+          },
+          "score": 34,
+          "signal": "---"
+        }
+      },
+      {
+        "caps": [
+          "มี 二黑 2",
+          "ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "caps_en": [
+          "Two Black 2 present",
+          "Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "caps_zh": [
+          "二黑2臨方",
+          "奇門顯忌且凶飛星加壓"
+        ],
+        "direction": "SE",
+        "direction_en": "Southeast",
+        "direction_th": "ตอ.เฉียงใต้",
+        "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+        "direction_zh": "東南",
+        "label": "caution",
+        "label_en": "Caution",
+        "label_th": "ระวัง",
+        "label_zh": "謹慎",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "六合",
+            "deity_en": "Six Harmony",
+            "deity_score": 7,
+            "deity_th": "เทพลิ่วเหอ",
+            "direction": "SE",
+            "direction_en": "Southeast",
+            "direction_th": "ตอ.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+            "direction_zh": "東南",
+            "door": "驚門",
+            "door_en": "Fear Gate",
+            "door_score": -7,
+            "door_th": "ประตูตื่นตกใจ",
+            "earth_stem": "己",
+            "heaven_stem": "庚",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 4,
+            "quality": "avoid",
+            "reasons": [
+              "驚門 -7",
+              "天沖 +1",
+              "六合 +7",
+              "刑格 -4"
+            ],
+            "reasons_en": [
+              "Fear Gate -7",
+              "Tian Chong star +1",
+              "Six Harmony +7",
+              "刑格 (inauspicious combo) -4"
+            ],
+            "score": -3,
+            "star": "天沖",
+            "star_en": "Tian Chong star",
+            "star_score": 1,
+            "star_th": "ดาวเทียนชง"
+          },
+          "hour": {
+            "deity": "白虎",
+            "deity_en": "White Tiger",
+            "deity_score": -8,
+            "deity_th": "เทพไป๋หู่",
+            "direction": "SE",
+            "direction_en": "Southeast",
+            "direction_th": "ตอ.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+            "direction_zh": "東南",
+            "door": "死門",
+            "door_en": "Death Gate",
+            "door_score": -10,
+            "door_th": "ประตูตาย",
+            "earth_stem": "己",
+            "heaven_stem": "丁",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 4,
+            "quality": "avoid",
+            "reasons": [
+              "死門 -10",
+              "天任 +5",
+              "白虎 -8",
+              "天三奇丁 +3"
+            ],
+            "reasons_en": [
+              "Death Gate -10",
+              "Tian Ren star +5",
+              "White Tiger -8",
+              "Heaven Three Nobles 丁 +3"
+            ],
+            "score": -10,
+            "star": "天任",
+            "star_en": "Tian Ren star",
+            "star_score": 5,
+            "star_th": "ดาวเทียนเหริน"
+          },
+          "score": 41,
+          "signal": "--"
+        },
+        "reasons": [
+          "ประตูตาย 死門",
+          "2 สองดำ",
+          "จำกัดคะแนน: มี 二黑 2 · ฉีเหมินติดเลี่ยงและมีดาวจรกด"
+        ],
+        "reasons_en": [
+          "Death Gate 死門",
+          "2 Two Black",
+          "Score capped: Two Black 2 present · Qi Men marks avoid and an afflicted flying star adds pressure"
+        ],
+        "reasons_zh": [
+          "死門",
+          "2 二黑",
+          "封頂：二黑2臨方 · 奇門顯忌且凶飛星加壓"
+        ],
+        "score": 40,
+        "zibai": {
+          "day": null,
+          "hour": {
+            "direction": "SE",
+            "direction_en": "Southeast",
+            "direction_th": "ตอ.เฉียงใต้",
+            "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+            "direction_zh": "東南",
+            "en": "Two Black",
+            "quality": "bad",
+            "star": 2,
+            "th": "สองดำ",
+            "zh": "二黑"
+          },
+          "score": 37,
+          "signal": "---"
+        }
+      },
+      {
+        "caps": [],
+        "caps_en": [],
+        "caps_zh": [],
+        "direction": "E",
+        "direction_en": "East",
+        "direction_th": "ตะวันออก",
+        "direction_th_long": "ทิศตะวันออก",
+        "direction_zh": "東",
+        "label": "avoid",
+        "label_en": "Avoid",
+        "label_th": "เลี่ยง",
+        "label_zh": "忌",
+        "locked": false,
+        "qimen": {
+          "day": {
+            "deity": "白虎",
+            "deity_en": "White Tiger",
+            "deity_score": -8,
+            "deity_th": "เทพไป๋หู่",
+            "direction": "E",
+            "direction_en": "East",
+            "direction_th": "ตะวันออก",
+            "direction_th_long": "ทิศตะวันออก",
+            "direction_zh": "東",
+            "door": "死門",
+            "door_en": "Death Gate",
+            "door_score": -10,
+            "door_th": "ประตูตาย",
+            "earth_stem": "庚",
+            "heaven_stem": "丁",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 3,
+            "quality": "avoid",
+            "reasons": [
+              "死門 -10",
+              "天任 +5",
+              "白虎 -8",
+              "天三奇丁 +3",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Death Gate -10",
+              "Tian Ren star +5",
+              "White Tiger -8",
+              "Heaven Three Nobles 丁 +3",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -15,
+            "star": "天任",
+            "star_en": "Tian Ren star",
+            "star_score": 5,
+            "star_th": "ดาวเทียนเหริน"
+          },
+          "hour": {
+            "deity": "玄武",
+            "deity_en": "Black Tortoise",
+            "deity_score": -6,
+            "deity_th": "เทพเสวียนอู่",
+            "direction": "E",
+            "direction_en": "East",
+            "direction_th": "ตะวันออก",
+            "direction_th_long": "ทิศตะวันออก",
+            "direction_zh": "東",
+            "door": "景門",
+            "door_en": "Scenery Gate",
+            "door_score": 4,
+            "door_th": "ประตูภาพลักษณ์",
+            "earth_stem": "庚",
+            "heaven_stem": "壬",
+            "label": "เลี่ยง",
+            "label_en": "Avoid",
+            "label_zh": "忌",
+            "palace_id": 3,
+            "quality": "avoid",
+            "reasons": [
+              "景門 +4",
+              "天蓬 -7",
+              "玄武 -6",
+              "空亡 -5"
+            ],
+            "reasons_en": [
+              "Scenery Gate +4",
+              "Tian Peng star -7",
+              "Black Tortoise -6",
+              "Void (Kong Wang) 空亡 -5"
+            ],
+            "score": -14,
+            "star": "天蓬",
+            "star_en": "Tian Peng star",
+            "star_score": -7,
+            "star_th": "ดาวเทียนเผิง"
+          },
+          "score": 33,
+          "signal": "---"
+        },
+        "reasons": [
+          "ประตูภาพลักษณ์ 景門"
+        ],
+        "reasons_en": [
+          "Scenery Gate 景門"
+        ],
+        "reasons_zh": [
+          "景門"
+        ],
+        "score": 38,
+        "zibai": {
+          "day": null,
+          "hour": null,
+          "score": 50,
+          "signal": "0"
         }
       }
     ],
+    "scoring_note": "พลังทิศ = ฉีเหมิน 70% + ดาวจรจื่อไป๋ 30% · ไม่รวมดวงคน",
+    "scoring_note_en": "Direction power = Qi Men 70% + Zi Bai flying stars 30% · personal chart not included",
+    "scoring_note_zh": "方位能量 = 奇門70% + 紫白飛星30% · 不含個人命盤",
     "source": {
       "degraded": false,
-      "qimen": "r515",
-      "zibai": "r515"
-    }
+      "note_en": "Full Qi Men data used for both day and hour charts",
+      "note_th": "ใช้ฉีเหมินจริงครบทั้งรายวันและรายยาม",
+      "note_zh": "日盤與時盤均採用完整奇門資料",
+      "qimen": "qimen-api",
+      "zibai": "local-luxing"
+    },
+    "updated_time": "09:00"
   },
   "directions": [
     {
       "direction": "N",
+      "direction_en": "North",
       "direction_th": "เหนือ",
+      "direction_th_long": "ทิศเหนือ",
       "direction_zh": "北",
       "element": "water",
-      "quality": "good",
+      "locked": false,
+      "quality": "best",
       "stars": [
         {
           "good": true,
-          "han": "天輔",
-          "name": "ดาวตัวอย่าง 1"
+          "han": "阳贵",
+          "name": "阳贵"
         }
       ]
     },
     {
       "direction": "NE",
-      "direction_th": "ตะวันออกเฉียงเหนือ",
+      "direction_en": "Northeast",
+      "direction_th": "ตอ.เฉียงเหนือ",
+      "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
       "direction_zh": "東北",
       "element": "earth",
-      "quality": "ok",
+      "locked": false,
+      "quality": "best",
       "stars": [
         {
           "good": true,
-          "han": "天英",
-          "name": "ดาวตัวอย่าง 2"
+          "han": "喜神",
+          "name": "喜神"
         }
       ]
     },
     {
       "direction": "E",
+      "direction_en": "East",
       "direction_th": "ตะวันออก",
+      "direction_th_long": "ทิศตะวันออก",
       "direction_zh": "東",
       "element": "wood",
+      "locked": false,
+      "quality": "good",
+      "stars": []
+    },
+    {
+      "direction": "SE",
+      "direction_en": "Southeast",
+      "direction_th": "ตอ.เฉียงใต้",
+      "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+      "direction_zh": "東南",
+      "element": "wood",
+      "locked": false,
       "quality": "best",
       "stars": [
         {
           "good": true,
-          "han": "天芮",
-          "name": "ดาวตัวอย่าง 3"
-        }
-      ]
-    },
-    {
-      "direction": "SE",
-      "direction_th": "ตะวันออกเฉียงใต้",
-      "direction_zh": "東南",
-      "element": "wood",
-      "quality": "ok",
-      "stars": [
-        {
-          "good": true,
-          "han": "天沖",
-          "name": "ดาวตัวอย่าง 4"
+          "han": "福神",
+          "name": "福神"
         }
       ]
     },
     {
       "direction": "S",
+      "direction_en": "South",
       "direction_th": "ใต้",
+      "direction_th_long": "ทิศใต้",
       "direction_zh": "南",
       "element": "fire",
-      "quality": "good",
+      "locked": false,
+      "quality": "best",
       "stars": [
         {
           "good": true,
-          "han": "天禽",
-          "name": "ดาวตัวอย่าง 5"
+          "han": "财神",
+          "name": "财神"
         }
       ]
     },
     {
       "direction": "SW",
-      "direction_th": "ตะวันตกเฉียงใต้",
+      "direction_en": "Southwest",
+      "direction_th": "ตต.เฉียงใต้",
+      "direction_th_long": "ทิศตะวันตกเฉียงใต้",
       "direction_zh": "西南",
       "element": "earth",
-      "quality": "ok",
+      "locked": false,
+      "quality": "best",
       "stars": [
         {
           "good": true,
-          "han": "天柱",
-          "name": "ดาวตัวอย่าง 6"
+          "han": "阴贵",
+          "name": "阴贵"
         }
       ]
     },
     {
       "direction": "W",
+      "direction_en": "West",
       "direction_th": "ตะวันตก",
+      "direction_th_long": "ทิศตะวันตก",
       "direction_zh": "西",
       "element": "metal",
+      "locked": false,
       "quality": "avoid",
-      "stars": [
-        {
-          "good": false,
-          "han": "天任",
-          "name": "ดาวตัวอย่าง 7"
-        }
-      ]
+      "stars": []
     },
     {
       "direction": "NW",
-      "direction_th": "ตะวันตกเฉียงเหนือ",
+      "direction_en": "Northwest",
+      "direction_th": "ตต.เฉียงเหนือ",
+      "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
       "direction_zh": "西北",
       "element": "metal",
-      "quality": "ok",
-      "stars": [
-        {
-          "good": true,
-          "han": "天蓬",
-          "name": "ดาวตัวอย่าง 8"
-        }
-      ]
+      "locked": false,
+      "quality": "avoid",
+      "stars": []
     }
   ],
   "entitlement": {
@@ -304,23 +2102,1774 @@
     "plan": "premium",
     "total_directions": 8
   },
+  "flying_focus": {
+    "day": {
+      "avoid": [
+        {
+          "direction": "SW",
+          "direction_en": "Southwest",
+          "direction_th": "ตต.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+          "direction_zh": "西南",
+          "en": "Five Yellow",
+          "quality": "bad",
+          "star": 5,
+          "th": "ห้าเหลือง",
+          "zh": "五黃"
+        },
+        {
+          "direction": "C",
+          "direction_en": "Center",
+          "direction_th": "กลาง",
+          "direction_th_long": "กลาง",
+          "direction_zh": "中",
+          "en": "Two Black",
+          "quality": "bad",
+          "star": 2,
+          "th": "สองดำ",
+          "zh": "二黑"
+        }
+      ],
+      "center": 2,
+      "day_pillar": "己丑",
+      "direction": "逆",
+      "dun": "yin",
+      "good": [
+        {
+          "direction": "W",
+          "direction_en": "West",
+          "direction_th": "ตะวันตก",
+          "direction_th_long": "ทิศตะวันตก",
+          "direction_zh": "西",
+          "en": "Nine Purple",
+          "quality": "good",
+          "star": 9,
+          "th": "เก้าม่วง",
+          "zh": "九紫"
+        },
+        {
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "en": "One White",
+          "quality": "good",
+          "star": 1,
+          "th": "หนึ่งขาว",
+          "zh": "一白"
+        }
+      ],
+      "hour_branch": null,
+      "stars": [
+        {
+          "direction": "SW",
+          "direction_en": "Southwest",
+          "direction_th": "ตต.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+          "direction_zh": "西南",
+          "en": "Five Yellow",
+          "quality": "bad",
+          "star": 5,
+          "th": "ห้าเหลือง",
+          "zh": "五黃"
+        },
+        {
+          "direction": "C",
+          "direction_en": "Center",
+          "direction_th": "กลาง",
+          "direction_th_long": "กลาง",
+          "direction_zh": "中",
+          "en": "Two Black",
+          "quality": "bad",
+          "star": 2,
+          "th": "สองดำ",
+          "zh": "二黑"
+        },
+        {
+          "direction": "W",
+          "direction_en": "West",
+          "direction_th": "ตะวันตก",
+          "direction_th_long": "ทิศตะวันตก",
+          "direction_zh": "西",
+          "en": "Nine Purple",
+          "quality": "good",
+          "star": 9,
+          "th": "เก้าม่วง",
+          "zh": "九紫"
+        },
+        {
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "en": "One White",
+          "quality": "good",
+          "star": 1,
+          "th": "หนึ่งขาว",
+          "zh": "一白"
+        }
+      ]
+    },
+    "hour": {
+      "avoid": [
+        {
+          "direction": "N",
+          "direction_en": "North",
+          "direction_th": "เหนือ",
+          "direction_th_long": "ทิศเหนือ",
+          "direction_zh": "北",
+          "en": "Five Yellow",
+          "quality": "bad",
+          "star": 5,
+          "th": "ห้าเหลือง",
+          "zh": "五黃"
+        },
+        {
+          "direction": "SE",
+          "direction_en": "Southeast",
+          "direction_th": "ตอ.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+          "direction_zh": "東南",
+          "en": "Two Black",
+          "quality": "bad",
+          "star": 2,
+          "th": "สองดำ",
+          "zh": "二黑"
+        }
+      ],
+      "center": 1,
+      "day_pillar": null,
+      "direction": "逆",
+      "dun": "yin",
+      "good": [
+        {
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "en": "Nine Purple",
+          "quality": "good",
+          "star": 9,
+          "th": "เก้าม่วง",
+          "zh": "九紫"
+        },
+        {
+          "direction": "C",
+          "direction_en": "Center",
+          "direction_th": "กลาง",
+          "direction_th_long": "กลาง",
+          "direction_zh": "中",
+          "en": "One White",
+          "quality": "good",
+          "star": 1,
+          "th": "หนึ่งขาว",
+          "zh": "一白"
+        }
+      ],
+      "hour_branch": "巳",
+      "stars": [
+        {
+          "direction": "N",
+          "direction_en": "North",
+          "direction_th": "เหนือ",
+          "direction_th_long": "ทิศเหนือ",
+          "direction_zh": "北",
+          "en": "Five Yellow",
+          "quality": "bad",
+          "star": 5,
+          "th": "ห้าเหลือง",
+          "zh": "五黃"
+        },
+        {
+          "direction": "SE",
+          "direction_en": "Southeast",
+          "direction_th": "ตอ.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+          "direction_zh": "東南",
+          "en": "Two Black",
+          "quality": "bad",
+          "star": 2,
+          "th": "สองดำ",
+          "zh": "二黑"
+        },
+        {
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "en": "Nine Purple",
+          "quality": "good",
+          "star": 9,
+          "th": "เก้าม่วง",
+          "zh": "九紫"
+        },
+        {
+          "direction": "C",
+          "direction_en": "Center",
+          "direction_th": "กลาง",
+          "direction_th_long": "กลาง",
+          "direction_zh": "中",
+          "en": "One White",
+          "quality": "good",
+          "star": 1,
+          "th": "หนึ่งขาว",
+          "zh": "一白"
+        }
+      ]
+    },
+    "note": "ดาวจร玄空飛星 3 ชั้น · 月盤(未月·節氣เดือนที่6, 順飛) · 日盤(夏至→处暑, 陰遁逆飛(default 造命/沈氏可順)) · 時盤(陰遁逆飛) · เปลี่ยนชั้นที่ 節氣 (tyme4ts) · default day_school='zaoming' (ครึ่งร้อน逆飛)"
+  },
   "ok": true,
-  "profile": null,
+  "personal_directions": [
+    {
+      "direction": "N",
+      "direction_en": "North",
+      "direction_th": "เหนือ",
+      "direction_th_long": "ทิศเหนือ",
+      "direction_zh": "北",
+      "element": "water",
+      "locked": false,
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "阳贵",
+          "name": "阳贵"
+        }
+      ]
+    },
+    {
+      "direction": "NE",
+      "direction_en": "Northeast",
+      "direction_th": "ตอ.เฉียงเหนือ",
+      "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+      "direction_zh": "東北",
+      "element": "earth",
+      "locked": false,
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "喜神",
+          "name": "喜神"
+        }
+      ]
+    },
+    {
+      "direction": "E",
+      "direction_en": "East",
+      "direction_th": "ตะวันออก",
+      "direction_th_long": "ทิศตะวันออก",
+      "direction_zh": "東",
+      "element": "wood",
+      "locked": false,
+      "quality": "good",
+      "stars": []
+    },
+    {
+      "direction": "SE",
+      "direction_en": "Southeast",
+      "direction_th": "ตอ.เฉียงใต้",
+      "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+      "direction_zh": "東南",
+      "element": "wood",
+      "locked": false,
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "福神",
+          "name": "福神"
+        }
+      ]
+    },
+    {
+      "direction": "S",
+      "direction_en": "South",
+      "direction_th": "ใต้",
+      "direction_th_long": "ทิศใต้",
+      "direction_zh": "南",
+      "element": "fire",
+      "locked": false,
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "财神",
+          "name": "财神"
+        }
+      ]
+    },
+    {
+      "direction": "SW",
+      "direction_en": "Southwest",
+      "direction_th": "ตต.เฉียงใต้",
+      "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+      "direction_zh": "西南",
+      "element": "earth",
+      "locked": false,
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "阴贵",
+          "name": "阴贵"
+        }
+      ]
+    },
+    {
+      "direction": "W",
+      "direction_en": "West",
+      "direction_th": "ตะวันตก",
+      "direction_th_long": "ทิศตะวันตก",
+      "direction_zh": "西",
+      "element": "metal",
+      "locked": false,
+      "quality": "avoid",
+      "stars": []
+    },
+    {
+      "direction": "NW",
+      "direction_en": "Northwest",
+      "direction_th": "ตต.เฉียงเหนือ",
+      "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+      "direction_zh": "西北",
+      "element": "metal",
+      "locked": false,
+      "quality": "avoid",
+      "stars": []
+    }
+  ],
+  "profile": {
+    "id": null,
+    "is_self": true,
+    "name": "Fixture Center",
+    "nickname": null
+  },
+  "profile_context": {
+    "birthTimeKnown": true,
+    "isSelf": true,
+    "profileId": null,
+    "source": "profile-db",
+    "userId": null
+  },
+  "qimen": {
+    "day": {
+      "avoid": [
+        {
+          "deity": "白虎",
+          "deity_en": "White Tiger",
+          "deity_score": -8,
+          "deity_th": "เทพไป๋หู่",
+          "direction": "E",
+          "direction_en": "East",
+          "direction_th": "ตะวันออก",
+          "direction_th_long": "ทิศตะวันออก",
+          "direction_zh": "東",
+          "door": "死門",
+          "door_en": "Death Gate",
+          "door_score": -10,
+          "door_th": "ประตูตาย",
+          "earth_stem": "庚",
+          "heaven_stem": "丁",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 3,
+          "quality": "avoid",
+          "reasons": [
+            "死門 -10",
+            "天任 +5",
+            "白虎 -8",
+            "天三奇丁 +3",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Death Gate -10",
+            "Tian Ren star +5",
+            "White Tiger -8",
+            "Heaven Three Nobles 丁 +3",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -15,
+          "star": "天任",
+          "star_en": "Tian Ren star",
+          "star_score": 5,
+          "star_th": "ดาวเทียนเหริน"
+        },
+        {
+          "deity": "玄武",
+          "deity_en": "Black Tortoise",
+          "deity_score": -6,
+          "deity_th": "เทพเสวียนอู่",
+          "direction": "NE",
+          "direction_en": "Northeast",
+          "direction_th": "ตอ.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_zh": "東北",
+          "door": "景門",
+          "door_en": "Scenery Gate",
+          "door_score": 4,
+          "door_th": "ประตูภาพลักษณ์",
+          "earth_stem": "丁",
+          "heaven_stem": "壬",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 8,
+          "quality": "avoid",
+          "reasons": [
+            "景門 +4",
+            "天蓬 -7",
+            "玄武 -6",
+            "地三奇丁 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Scenery Gate +4",
+            "Tian Peng star -7",
+            "Black Tortoise -6",
+            "Earth Three Nobles 丁 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -12,
+          "star": "天蓬",
+          "star_en": "Tian Peng star",
+          "star_score": -7,
+          "star_th": "ดาวเทียนเผิง"
+        },
+        {
+          "deity": "九天",
+          "deity_en": "Nine Heavens",
+          "deity_score": 5,
+          "deity_th": "เทพจิ่วเทียน",
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "door": "傷門",
+          "door_en": "Injury Gate",
+          "door_score": -7,
+          "door_th": "ประตูบาดเจ็บ",
+          "earth_stem": "乙",
+          "heaven_stem": "丙",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 6,
+          "quality": "avoid",
+          "reasons": [
+            "傷門 -7",
+            "天柱 -4",
+            "九天 +5",
+            "天三奇丙 +3",
+            "地三奇乙 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Injury Gate -7",
+            "Tian Zhu star -4",
+            "Nine Heavens +5",
+            "Heaven Three Nobles 丙 +3",
+            "Earth Three Nobles 乙 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -6,
+          "star": "天柱",
+          "star_en": "Tian Zhu star",
+          "star_score": -4,
+          "star_th": "ดาวเทียนจู้"
+        },
+        {
+          "deity": "六合",
+          "deity_en": "Six Harmony",
+          "deity_score": 7,
+          "deity_th": "เทพลิ่วเหอ",
+          "direction": "SE",
+          "direction_en": "Southeast",
+          "direction_th": "ตอ.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+          "direction_zh": "東南",
+          "door": "驚門",
+          "door_en": "Fear Gate",
+          "door_score": -7,
+          "door_th": "ประตูตื่นตกใจ",
+          "earth_stem": "己",
+          "heaven_stem": "庚",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 4,
+          "quality": "avoid",
+          "reasons": [
+            "驚門 -7",
+            "天沖 +1",
+            "六合 +7",
+            "刑格 -4"
+          ],
+          "reasons_en": [
+            "Fear Gate -7",
+            "Tian Chong star +1",
+            "Six Harmony +7",
+            "刑格 (inauspicious combo) -4"
+          ],
+          "score": -3,
+          "star": "天沖",
+          "star_en": "Tian Chong star",
+          "star_score": 1,
+          "star_th": "ดาวเทียนชง"
+        }
+      ],
+      "chart": {
+        "dun_type": "yin",
+        "ju_number": 5,
+        "pillar": "丙寅"
+      },
+      "directions": [
+        {
+          "deity": "太陰",
+          "deity_en": "Great Yin",
+          "deity_score": 7,
+          "deity_th": "เทพไท่อิน",
+          "direction": "S",
+          "direction_en": "South",
+          "direction_th": "ใต้",
+          "direction_th_long": "ทิศใต้",
+          "direction_zh": "南",
+          "door": "開門",
+          "door_en": "Open Gate",
+          "door_score": 10,
+          "door_th": "ประตูเปิด",
+          "earth_stem": "癸",
+          "heaven_stem": "己",
+          "label": "ดีมาก",
+          "label_en": "Excellent",
+          "label_zh": "極佳",
+          "locked": false,
+          "palace_id": 9,
+          "quality": "best",
+          "reasons": [
+            "開門 +10",
+            "天輔 +7",
+            "太陰 +7"
+          ],
+          "reasons_en": [
+            "Open Gate +10",
+            "Tian Fu star +7",
+            "Great Yin +7"
+          ],
+          "score": 24,
+          "star": "天輔",
+          "star_en": "Tian Fu star",
+          "star_score": 7,
+          "star_th": "ดาวเทียนฝู่"
+        },
+        {
+          "deity": "九地",
+          "deity_en": "Nine Earth",
+          "deity_score": 4,
+          "deity_th": "เทพจิ่วตี้",
+          "direction": "N",
+          "direction_en": "North",
+          "direction_th": "เหนือ",
+          "direction_th_long": "ทิศเหนือ",
+          "direction_zh": "北",
+          "door": "杜門",
+          "door_en": "Closed Gate",
+          "door_score": -1,
+          "door_th": "ประตูปิด",
+          "earth_stem": "壬",
+          "heaven_stem": "乙",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 1,
+          "quality": "good",
+          "reasons": [
+            "杜門 -1",
+            "天心 +8",
+            "九地 +4",
+            "天三奇乙 +3"
+          ],
+          "reasons_en": [
+            "Closed Gate -1",
+            "Tian Xin star +8",
+            "Nine Earth +4",
+            "Heaven Three Nobles 乙 +3"
+          ],
+          "score": 14,
+          "star": "天心",
+          "star_en": "Tian Xin star",
+          "star_score": 8,
+          "star_th": "ดาวเทียนซิน"
+        },
+        {
+          "deity": "值符",
+          "deity_en": "Chief (Zhi Fu)",
+          "deity_score": 8,
+          "deity_th": "เทพจื๋อฟู",
+          "direction": "W",
+          "direction_en": "West",
+          "direction_th": "ตะวันตก",
+          "direction_th_long": "ทิศตะวันตก",
+          "direction_zh": "西",
+          "door": "生門",
+          "door_en": "Life Gate",
+          "door_score": 10,
+          "door_th": "ประตูเกิด",
+          "earth_stem": "丙",
+          "heaven_stem": "辛",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 7,
+          "quality": "good",
+          "reasons": [
+            "生門 +10",
+            "天芮 -8",
+            "值符 +8",
+            "地三奇丙 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Life Gate +10",
+            "Tian Rui star -8",
+            "Chief (Zhi Fu) +8",
+            "Earth Three Nobles 丙 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 7,
+          "star": "天芮",
+          "star_en": "Tian Rui star",
+          "star_score": -8,
+          "star_th": "ดาวเทียนรุ่ย"
+        },
+        {
+          "deity": "螣蛇",
+          "deity_en": "Coiling Snake",
+          "deity_score": -5,
+          "deity_th": "เทพเถิงเสอ",
+          "direction": "SW",
+          "direction_en": "Southwest",
+          "direction_th": "ตต.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+          "direction_zh": "西南",
+          "door": "休門",
+          "door_en": "Rest Gate",
+          "door_score": 9,
+          "door_th": "ประตูพัก",
+          "earth_stem": "辛",
+          "heaven_stem": "癸",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 2,
+          "quality": "avoid",
+          "reasons": [
+            "休門 +9",
+            "天英 -3",
+            "螣蛇 -5",
+            "驛馬 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Rest Gate +9",
+            "Tian Ying star -3",
+            "Coiling Snake -5",
+            "Post Horse 驛馬 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -2,
+          "star": "天英",
+          "star_en": "Tian Ying star",
+          "star_score": -3,
+          "star_th": "ดาวเทียนอิง"
+        },
+        {
+          "deity": "六合",
+          "deity_en": "Six Harmony",
+          "deity_score": 7,
+          "deity_th": "เทพลิ่วเหอ",
+          "direction": "SE",
+          "direction_en": "Southeast",
+          "direction_th": "ตอ.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+          "direction_zh": "東南",
+          "door": "驚門",
+          "door_en": "Fear Gate",
+          "door_score": -7,
+          "door_th": "ประตูตื่นตกใจ",
+          "earth_stem": "己",
+          "heaven_stem": "庚",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 4,
+          "quality": "avoid",
+          "reasons": [
+            "驚門 -7",
+            "天沖 +1",
+            "六合 +7",
+            "刑格 -4"
+          ],
+          "reasons_en": [
+            "Fear Gate -7",
+            "Tian Chong star +1",
+            "Six Harmony +7",
+            "刑格 (inauspicious combo) -4"
+          ],
+          "score": -3,
+          "star": "天沖",
+          "star_en": "Tian Chong star",
+          "star_score": 1,
+          "star_th": "ดาวเทียนชง"
+        },
+        {
+          "deity": "九天",
+          "deity_en": "Nine Heavens",
+          "deity_score": 5,
+          "deity_th": "เทพจิ่วเทียน",
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "door": "傷門",
+          "door_en": "Injury Gate",
+          "door_score": -7,
+          "door_th": "ประตูบาดเจ็บ",
+          "earth_stem": "乙",
+          "heaven_stem": "丙",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 6,
+          "quality": "avoid",
+          "reasons": [
+            "傷門 -7",
+            "天柱 -4",
+            "九天 +5",
+            "天三奇丙 +3",
+            "地三奇乙 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Injury Gate -7",
+            "Tian Zhu star -4",
+            "Nine Heavens +5",
+            "Heaven Three Nobles 丙 +3",
+            "Earth Three Nobles 乙 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -6,
+          "star": "天柱",
+          "star_en": "Tian Zhu star",
+          "star_score": -4,
+          "star_th": "ดาวเทียนจู้"
+        },
+        {
+          "deity": "玄武",
+          "deity_en": "Black Tortoise",
+          "deity_score": -6,
+          "deity_th": "เทพเสวียนอู่",
+          "direction": "NE",
+          "direction_en": "Northeast",
+          "direction_th": "ตอ.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_zh": "東北",
+          "door": "景門",
+          "door_en": "Scenery Gate",
+          "door_score": 4,
+          "door_th": "ประตูภาพลักษณ์",
+          "earth_stem": "丁",
+          "heaven_stem": "壬",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 8,
+          "quality": "avoid",
+          "reasons": [
+            "景門 +4",
+            "天蓬 -7",
+            "玄武 -6",
+            "地三奇丁 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Scenery Gate +4",
+            "Tian Peng star -7",
+            "Black Tortoise -6",
+            "Earth Three Nobles 丁 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -12,
+          "star": "天蓬",
+          "star_en": "Tian Peng star",
+          "star_score": -7,
+          "star_th": "ดาวเทียนเผิง"
+        },
+        {
+          "deity": "白虎",
+          "deity_en": "White Tiger",
+          "deity_score": -8,
+          "deity_th": "เทพไป๋หู่",
+          "direction": "E",
+          "direction_en": "East",
+          "direction_th": "ตะวันออก",
+          "direction_th_long": "ทิศตะวันออก",
+          "direction_zh": "東",
+          "door": "死門",
+          "door_en": "Death Gate",
+          "door_score": -10,
+          "door_th": "ประตูตาย",
+          "earth_stem": "庚",
+          "heaven_stem": "丁",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 3,
+          "quality": "avoid",
+          "reasons": [
+            "死門 -10",
+            "天任 +5",
+            "白虎 -8",
+            "天三奇丁 +3",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Death Gate -10",
+            "Tian Ren star +5",
+            "White Tiger -8",
+            "Heaven Three Nobles 丁 +3",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -15,
+          "star": "天任",
+          "star_en": "Tian Ren star",
+          "star_score": 5,
+          "star_th": "ดาวเทียนเหริน"
+        }
+      ],
+      "good": [
+        {
+          "deity": "太陰",
+          "deity_en": "Great Yin",
+          "deity_score": 7,
+          "deity_th": "เทพไท่อิน",
+          "direction": "S",
+          "direction_en": "South",
+          "direction_th": "ใต้",
+          "direction_th_long": "ทิศใต้",
+          "direction_zh": "南",
+          "door": "開門",
+          "door_en": "Open Gate",
+          "door_score": 10,
+          "door_th": "ประตูเปิด",
+          "earth_stem": "癸",
+          "heaven_stem": "己",
+          "label": "ดีมาก",
+          "label_en": "Excellent",
+          "label_zh": "極佳",
+          "locked": false,
+          "palace_id": 9,
+          "quality": "best",
+          "reasons": [
+            "開門 +10",
+            "天輔 +7",
+            "太陰 +7"
+          ],
+          "reasons_en": [
+            "Open Gate +10",
+            "Tian Fu star +7",
+            "Great Yin +7"
+          ],
+          "score": 24,
+          "star": "天輔",
+          "star_en": "Tian Fu star",
+          "star_score": 7,
+          "star_th": "ดาวเทียนฝู่"
+        },
+        {
+          "deity": "九地",
+          "deity_en": "Nine Earth",
+          "deity_score": 4,
+          "deity_th": "เทพจิ่วตี้",
+          "direction": "N",
+          "direction_en": "North",
+          "direction_th": "เหนือ",
+          "direction_th_long": "ทิศเหนือ",
+          "direction_zh": "北",
+          "door": "杜門",
+          "door_en": "Closed Gate",
+          "door_score": -1,
+          "door_th": "ประตูปิด",
+          "earth_stem": "壬",
+          "heaven_stem": "乙",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 1,
+          "quality": "good",
+          "reasons": [
+            "杜門 -1",
+            "天心 +8",
+            "九地 +4",
+            "天三奇乙 +3"
+          ],
+          "reasons_en": [
+            "Closed Gate -1",
+            "Tian Xin star +8",
+            "Nine Earth +4",
+            "Heaven Three Nobles 乙 +3"
+          ],
+          "score": 14,
+          "star": "天心",
+          "star_en": "Tian Xin star",
+          "star_score": 8,
+          "star_th": "ดาวเทียนซิน"
+        },
+        {
+          "deity": "值符",
+          "deity_en": "Chief (Zhi Fu)",
+          "deity_score": 8,
+          "deity_th": "เทพจื๋อฟู",
+          "direction": "W",
+          "direction_en": "West",
+          "direction_th": "ตะวันตก",
+          "direction_th_long": "ทิศตะวันตก",
+          "direction_zh": "西",
+          "door": "生門",
+          "door_en": "Life Gate",
+          "door_score": 10,
+          "door_th": "ประตูเกิด",
+          "earth_stem": "丙",
+          "heaven_stem": "辛",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 7,
+          "quality": "good",
+          "reasons": [
+            "生門 +10",
+            "天芮 -8",
+            "值符 +8",
+            "地三奇丙 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Life Gate +10",
+            "Tian Rui star -8",
+            "Chief (Zhi Fu) +8",
+            "Earth Three Nobles 丙 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 7,
+          "star": "天芮",
+          "star_en": "Tian Rui star",
+          "star_score": -8,
+          "star_th": "ดาวเทียนรุ่ย"
+        }
+      ],
+      "time": "12:00"
+    },
+    "hour": {
+      "avoid": [
+        {
+          "deity": "玄武",
+          "deity_en": "Black Tortoise",
+          "deity_score": -6,
+          "deity_th": "เทพเสวียนอู่",
+          "direction": "E",
+          "direction_en": "East",
+          "direction_th": "ตะวันออก",
+          "direction_th_long": "ทิศตะวันออก",
+          "direction_zh": "東",
+          "door": "景門",
+          "door_en": "Scenery Gate",
+          "door_score": 4,
+          "door_th": "ประตูภาพลักษณ์",
+          "earth_stem": "庚",
+          "heaven_stem": "壬",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 3,
+          "quality": "avoid",
+          "reasons": [
+            "景門 +4",
+            "天蓬 -7",
+            "玄武 -6",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Scenery Gate +4",
+            "Tian Peng star -7",
+            "Black Tortoise -6",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -14,
+          "star": "天蓬",
+          "star_en": "Tian Peng star",
+          "star_score": -7,
+          "star_th": "ดาวเทียนเผิง"
+        },
+        {
+          "deity": "白虎",
+          "deity_en": "White Tiger",
+          "deity_score": -8,
+          "deity_th": "เทพไป๋หู่",
+          "direction": "SE",
+          "direction_en": "Southeast",
+          "direction_th": "ตอ.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+          "direction_zh": "東南",
+          "door": "死門",
+          "door_en": "Death Gate",
+          "door_score": -10,
+          "door_th": "ประตูตาย",
+          "earth_stem": "己",
+          "heaven_stem": "丁",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 4,
+          "quality": "avoid",
+          "reasons": [
+            "死門 -10",
+            "天任 +5",
+            "白虎 -8",
+            "天三奇丁 +3"
+          ],
+          "reasons_en": [
+            "Death Gate -10",
+            "Tian Ren star +5",
+            "White Tiger -8",
+            "Heaven Three Nobles 丁 +3"
+          ],
+          "score": -10,
+          "star": "天任",
+          "star_en": "Tian Ren star",
+          "star_score": 5,
+          "star_th": "ดาวเทียนเหริน"
+        },
+        {
+          "deity": "九天",
+          "deity_en": "Nine Heavens",
+          "deity_score": 5,
+          "deity_th": "เทพจิ่วเทียน",
+          "direction": "N",
+          "direction_en": "North",
+          "direction_th": "เหนือ",
+          "direction_th_long": "ทิศเหนือ",
+          "direction_zh": "北",
+          "door": "傷門",
+          "door_en": "Injury Gate",
+          "door_score": -7,
+          "door_th": "ประตูบาดเจ็บ",
+          "earth_stem": "壬",
+          "heaven_stem": "丙",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 1,
+          "quality": "avoid",
+          "reasons": [
+            "傷門 -7",
+            "天柱 -4",
+            "九天 +5",
+            "天三奇丙 +3"
+          ],
+          "reasons_en": [
+            "Injury Gate -7",
+            "Tian Zhu star -4",
+            "Nine Heavens +5",
+            "Heaven Three Nobles 丙 +3"
+          ],
+          "score": -3,
+          "star": "天柱",
+          "star_en": "Tian Zhu star",
+          "star_score": -4,
+          "star_th": "ดาวเทียนจู้"
+        },
+        {
+          "deity": "六合",
+          "deity_en": "Six Harmony",
+          "deity_score": 7,
+          "deity_th": "เทพลิ่วเหอ",
+          "direction": "S",
+          "direction_en": "South",
+          "direction_th": "ใต้",
+          "direction_th_long": "ทิศใต้",
+          "direction_zh": "南",
+          "door": "驚門",
+          "door_en": "Fear Gate",
+          "door_score": -7,
+          "door_th": "ประตูตื่นตกใจ",
+          "earth_stem": "癸",
+          "heaven_stem": "庚",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 9,
+          "quality": "avoid",
+          "reasons": [
+            "驚門 -7",
+            "天沖 +1",
+            "六合 +7",
+            "大格 -4"
+          ],
+          "reasons_en": [
+            "Fear Gate -7",
+            "Tian Chong star +1",
+            "Six Harmony +7",
+            "大格 (inauspicious combo) -4"
+          ],
+          "score": -3,
+          "star": "天沖",
+          "star_en": "Tian Chong star",
+          "star_score": 1,
+          "star_th": "ดาวเทียนชง"
+        }
+      ],
+      "chart": {
+        "dun_type": "yin",
+        "ju_number": 5,
+        "pillar": "乙丑"
+      },
+      "directions": [
+        {
+          "deity": "太陰",
+          "deity_en": "Great Yin",
+          "deity_score": 7,
+          "deity_th": "เทพไท่อิน",
+          "direction": "SW",
+          "direction_en": "Southwest",
+          "direction_th": "ตต.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+          "direction_zh": "西南",
+          "door": "開門",
+          "door_en": "Open Gate",
+          "door_score": 10,
+          "door_th": "ประตูเปิด",
+          "earth_stem": "辛",
+          "heaven_stem": "己",
+          "label": "ดีมาก",
+          "label_en": "Excellent",
+          "label_zh": "極佳",
+          "locked": false,
+          "palace_id": 2,
+          "quality": "best",
+          "reasons": [
+            "開門 +10",
+            "天輔 +7",
+            "太陰 +7",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Open Gate +10",
+            "Tian Fu star +7",
+            "Great Yin +7",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 19,
+          "star": "天輔",
+          "star_en": "Tian Fu star",
+          "star_score": 7,
+          "star_th": "ดาวเทียนฝู่"
+        },
+        {
+          "deity": "九地",
+          "deity_en": "Nine Earth",
+          "deity_score": 4,
+          "deity_th": "เทพจิ่วตี้",
+          "direction": "NE",
+          "direction_en": "Northeast",
+          "direction_th": "ตอ.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_zh": "東北",
+          "door": "杜門",
+          "door_en": "Closed Gate",
+          "door_score": -1,
+          "door_th": "ประตูปิด",
+          "earth_stem": "丁",
+          "heaven_stem": "乙",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 8,
+          "quality": "good",
+          "reasons": [
+            "杜門 -1",
+            "天心 +8",
+            "九地 +4",
+            "天三奇乙 +3",
+            "地三奇丁 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Closed Gate -1",
+            "Tian Xin star +8",
+            "Nine Earth +4",
+            "Heaven Three Nobles 乙 +3",
+            "Earth Three Nobles 丁 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 11,
+          "star": "天心",
+          "star_en": "Tian Xin star",
+          "star_score": 8,
+          "star_th": "ดาวเทียนซิน"
+        },
+        {
+          "deity": "值符",
+          "deity_en": "Chief (Zhi Fu)",
+          "deity_score": 8,
+          "deity_th": "เทพจื๋อฟู",
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "door": "生門",
+          "door_en": "Life Gate",
+          "door_score": 10,
+          "door_th": "ประตูเกิด",
+          "earth_stem": "乙",
+          "heaven_stem": "辛",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 6,
+          "quality": "good",
+          "reasons": [
+            "生門 +10",
+            "天芮 -8",
+            "值符 +8",
+            "地三奇乙 +2",
+            "驛馬 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Life Gate +10",
+            "Tian Rui star -8",
+            "Chief (Zhi Fu) +8",
+            "Earth Three Nobles 乙 +2",
+            "Post Horse 驛馬 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 9,
+          "star": "天芮",
+          "star_en": "Tian Rui star",
+          "star_score": -8,
+          "star_th": "ดาวเทียนรุ่ย"
+        },
+        {
+          "deity": "螣蛇",
+          "deity_en": "Coiling Snake",
+          "deity_score": -5,
+          "deity_th": "เทพเถิงเสอ",
+          "direction": "W",
+          "direction_en": "West",
+          "direction_th": "ตะวันตก",
+          "direction_th_long": "ทิศตะวันตก",
+          "direction_zh": "西",
+          "door": "休門",
+          "door_en": "Rest Gate",
+          "door_score": 9,
+          "door_th": "ประตูพัก",
+          "earth_stem": "丙",
+          "heaven_stem": "癸",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 7,
+          "quality": "avoid",
+          "reasons": [
+            "休門 +9",
+            "天英 -3",
+            "螣蛇 -5",
+            "地三奇丙 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Rest Gate +9",
+            "Tian Ying star -3",
+            "Coiling Snake -5",
+            "Earth Three Nobles 丙 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -2,
+          "star": "天英",
+          "star_en": "Tian Ying star",
+          "star_score": -3,
+          "star_th": "ดาวเทียนอิง"
+        },
+        {
+          "deity": "六合",
+          "deity_en": "Six Harmony",
+          "deity_score": 7,
+          "deity_th": "เทพลิ่วเหอ",
+          "direction": "S",
+          "direction_en": "South",
+          "direction_th": "ใต้",
+          "direction_th_long": "ทิศใต้",
+          "direction_zh": "南",
+          "door": "驚門",
+          "door_en": "Fear Gate",
+          "door_score": -7,
+          "door_th": "ประตูตื่นตกใจ",
+          "earth_stem": "癸",
+          "heaven_stem": "庚",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 9,
+          "quality": "avoid",
+          "reasons": [
+            "驚門 -7",
+            "天沖 +1",
+            "六合 +7",
+            "大格 -4"
+          ],
+          "reasons_en": [
+            "Fear Gate -7",
+            "Tian Chong star +1",
+            "Six Harmony +7",
+            "大格 (inauspicious combo) -4"
+          ],
+          "score": -3,
+          "star": "天沖",
+          "star_en": "Tian Chong star",
+          "star_score": 1,
+          "star_th": "ดาวเทียนชง"
+        },
+        {
+          "deity": "九天",
+          "deity_en": "Nine Heavens",
+          "deity_score": 5,
+          "deity_th": "เทพจิ่วเทียน",
+          "direction": "N",
+          "direction_en": "North",
+          "direction_th": "เหนือ",
+          "direction_th_long": "ทิศเหนือ",
+          "direction_zh": "北",
+          "door": "傷門",
+          "door_en": "Injury Gate",
+          "door_score": -7,
+          "door_th": "ประตูบาดเจ็บ",
+          "earth_stem": "壬",
+          "heaven_stem": "丙",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 1,
+          "quality": "avoid",
+          "reasons": [
+            "傷門 -7",
+            "天柱 -4",
+            "九天 +5",
+            "天三奇丙 +3"
+          ],
+          "reasons_en": [
+            "Injury Gate -7",
+            "Tian Zhu star -4",
+            "Nine Heavens +5",
+            "Heaven Three Nobles 丙 +3"
+          ],
+          "score": -3,
+          "star": "天柱",
+          "star_en": "Tian Zhu star",
+          "star_score": -4,
+          "star_th": "ดาวเทียนจู้"
+        },
+        {
+          "deity": "白虎",
+          "deity_en": "White Tiger",
+          "deity_score": -8,
+          "deity_th": "เทพไป๋หู่",
+          "direction": "SE",
+          "direction_en": "Southeast",
+          "direction_th": "ตอ.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+          "direction_zh": "東南",
+          "door": "死門",
+          "door_en": "Death Gate",
+          "door_score": -10,
+          "door_th": "ประตูตาย",
+          "earth_stem": "己",
+          "heaven_stem": "丁",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 4,
+          "quality": "avoid",
+          "reasons": [
+            "死門 -10",
+            "天任 +5",
+            "白虎 -8",
+            "天三奇丁 +3"
+          ],
+          "reasons_en": [
+            "Death Gate -10",
+            "Tian Ren star +5",
+            "White Tiger -8",
+            "Heaven Three Nobles 丁 +3"
+          ],
+          "score": -10,
+          "star": "天任",
+          "star_en": "Tian Ren star",
+          "star_score": 5,
+          "star_th": "ดาวเทียนเหริน"
+        },
+        {
+          "deity": "玄武",
+          "deity_en": "Black Tortoise",
+          "deity_score": -6,
+          "deity_th": "เทพเสวียนอู่",
+          "direction": "E",
+          "direction_en": "East",
+          "direction_th": "ตะวันออก",
+          "direction_th_long": "ทิศตะวันออก",
+          "direction_zh": "東",
+          "door": "景門",
+          "door_en": "Scenery Gate",
+          "door_score": 4,
+          "door_th": "ประตูภาพลักษณ์",
+          "earth_stem": "庚",
+          "heaven_stem": "壬",
+          "label": "เลี่ยง",
+          "label_en": "Avoid",
+          "label_zh": "忌",
+          "locked": false,
+          "palace_id": 3,
+          "quality": "avoid",
+          "reasons": [
+            "景門 +4",
+            "天蓬 -7",
+            "玄武 -6",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Scenery Gate +4",
+            "Tian Peng star -7",
+            "Black Tortoise -6",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": -14,
+          "star": "天蓬",
+          "star_en": "Tian Peng star",
+          "star_score": -7,
+          "star_th": "ดาวเทียนเผิง"
+        }
+      ],
+      "good": [
+        {
+          "deity": "太陰",
+          "deity_en": "Great Yin",
+          "deity_score": 7,
+          "deity_th": "เทพไท่อิน",
+          "direction": "SW",
+          "direction_en": "Southwest",
+          "direction_th": "ตต.เฉียงใต้",
+          "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+          "direction_zh": "西南",
+          "door": "開門",
+          "door_en": "Open Gate",
+          "door_score": 10,
+          "door_th": "ประตูเปิด",
+          "earth_stem": "辛",
+          "heaven_stem": "己",
+          "label": "ดีมาก",
+          "label_en": "Excellent",
+          "label_zh": "極佳",
+          "locked": false,
+          "palace_id": 2,
+          "quality": "best",
+          "reasons": [
+            "開門 +10",
+            "天輔 +7",
+            "太陰 +7",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Open Gate +10",
+            "Tian Fu star +7",
+            "Great Yin +7",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 19,
+          "star": "天輔",
+          "star_en": "Tian Fu star",
+          "star_score": 7,
+          "star_th": "ดาวเทียนฝู่"
+        },
+        {
+          "deity": "九地",
+          "deity_en": "Nine Earth",
+          "deity_score": 4,
+          "deity_th": "เทพจิ่วตี้",
+          "direction": "NE",
+          "direction_en": "Northeast",
+          "direction_th": "ตอ.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+          "direction_zh": "東北",
+          "door": "杜門",
+          "door_en": "Closed Gate",
+          "door_score": -1,
+          "door_th": "ประตูปิด",
+          "earth_stem": "丁",
+          "heaven_stem": "乙",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 8,
+          "quality": "good",
+          "reasons": [
+            "杜門 -1",
+            "天心 +8",
+            "九地 +4",
+            "天三奇乙 +3",
+            "地三奇丁 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Closed Gate -1",
+            "Tian Xin star +8",
+            "Nine Earth +4",
+            "Heaven Three Nobles 乙 +3",
+            "Earth Three Nobles 丁 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 11,
+          "star": "天心",
+          "star_en": "Tian Xin star",
+          "star_score": 8,
+          "star_th": "ดาวเทียนซิน"
+        },
+        {
+          "deity": "值符",
+          "deity_en": "Chief (Zhi Fu)",
+          "deity_score": 8,
+          "deity_th": "เทพจื๋อฟู",
+          "direction": "NW",
+          "direction_en": "Northwest",
+          "direction_th": "ตต.เฉียงเหนือ",
+          "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+          "direction_zh": "西北",
+          "door": "生門",
+          "door_en": "Life Gate",
+          "door_score": 10,
+          "door_th": "ประตูเกิด",
+          "earth_stem": "乙",
+          "heaven_stem": "辛",
+          "label": "ดี",
+          "label_en": "Good",
+          "label_zh": "吉",
+          "locked": false,
+          "palace_id": 6,
+          "quality": "good",
+          "reasons": [
+            "生門 +10",
+            "天芮 -8",
+            "值符 +8",
+            "地三奇乙 +2",
+            "驛馬 +2",
+            "空亡 -5"
+          ],
+          "reasons_en": [
+            "Life Gate +10",
+            "Tian Rui star -8",
+            "Chief (Zhi Fu) +8",
+            "Earth Three Nobles 乙 +2",
+            "Post Horse 驛馬 +2",
+            "Void (Kong Wang) 空亡 -5"
+          ],
+          "score": 9,
+          "star": "天芮",
+          "star_en": "Tian Rui star",
+          "star_score": -8,
+          "star_th": "ดาวเทียนรุ่ย"
+        }
+      ],
+      "time": "09:00"
+    },
+    "school": "chaibu",
+    "source": "qimen-api"
+  },
+  "reference_time": "09:00",
   "request_context": {
     "date": "2026-07-14",
+    "latitude": 0,
     "local_time": "09:00",
     "location_source": "mobile_explicit",
+    "longitude": 0,
     "school": "chaibu",
     "timezone": "Asia/Bangkok"
   },
   "source": "/api/today/directions",
   "summary": {
     "avoid": [
-      "W"
+      "W",
+      "NW"
     ],
     "good": [
+      "N",
+      "NE",
       "E",
-      "SE"
+      "SE",
+      "S",
+      "SW"
     ]
-  }
+  },
+  "time_source": "selected",
+  "universal_directions": [
+    {
+      "direction": "N",
+      "direction_en": "North",
+      "direction_th": "เหนือ",
+      "direction_th_long": "ทิศเหนือ",
+      "direction_zh": "北",
+      "element": "water",
+      "locked": false,
+      "quality": "good",
+      "stars": [
+        {
+          "good": true,
+          "han": "阳贵",
+          "name": "阳贵"
+        }
+      ]
+    },
+    {
+      "direction": "NE",
+      "direction_en": "Northeast",
+      "direction_th": "ตอ.เฉียงเหนือ",
+      "direction_th_long": "ทิศตะวันออกเฉียงเหนือ",
+      "direction_zh": "東北",
+      "element": "earth",
+      "locked": false,
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "喜神",
+          "name": "喜神"
+        }
+      ]
+    },
+    {
+      "direction": "E",
+      "direction_en": "East",
+      "direction_th": "ตะวันออก",
+      "direction_th_long": "ทิศตะวันออก",
+      "direction_zh": "東",
+      "element": "wood",
+      "locked": false,
+      "quality": "ok",
+      "stars": []
+    },
+    {
+      "direction": "SE",
+      "direction_en": "Southeast",
+      "direction_th": "ตอ.เฉียงใต้",
+      "direction_th_long": "ทิศตะวันออกเฉียงใต้",
+      "direction_zh": "東南",
+      "element": "wood",
+      "locked": false,
+      "quality": "good",
+      "stars": [
+        {
+          "good": true,
+          "han": "福神",
+          "name": "福神"
+        }
+      ]
+    },
+    {
+      "direction": "S",
+      "direction_en": "South",
+      "direction_th": "ใต้",
+      "direction_th_long": "ทิศใต้",
+      "direction_zh": "南",
+      "element": "fire",
+      "locked": false,
+      "quality": "good",
+      "stars": [
+        {
+          "good": true,
+          "han": "财神",
+          "name": "财神"
+        }
+      ]
+    },
+    {
+      "direction": "SW",
+      "direction_en": "Southwest",
+      "direction_th": "ตต.เฉียงใต้",
+      "direction_th_long": "ทิศตะวันตกเฉียงใต้",
+      "direction_zh": "西南",
+      "element": "earth",
+      "locked": false,
+      "quality": "best",
+      "stars": [
+        {
+          "good": true,
+          "han": "阴贵",
+          "name": "阴贵"
+        }
+      ]
+    },
+    {
+      "direction": "W",
+      "direction_en": "West",
+      "direction_th": "ตะวันตก",
+      "direction_th_long": "ทิศตะวันตก",
+      "direction_zh": "西",
+      "element": "metal",
+      "locked": false,
+      "quality": "ok",
+      "stars": []
+    },
+    {
+      "direction": "NW",
+      "direction_en": "Northwest",
+      "direction_th": "ตต.เฉียงเหนือ",
+      "direction_th_long": "ทิศตะวันตกเฉียงเหนือ",
+      "direction_zh": "西北",
+      "element": "metal",
+      "locked": false,
+      "quality": "ok",
+      "stars": []
+    }
+  ],
+  "yongshen": "earth"
 }

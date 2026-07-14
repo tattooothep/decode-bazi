@@ -20,7 +20,16 @@ import { buildMobileR515Fixtures } from "./build-mobile-r515-fixtures.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const COMMITTED_ROOT = path.join(ROOT, "test-fixtures/mobile-r515");
+const SOURCE_DATA_ROOT = path.join(ROOT, "scripts/data");
 const PRIVACY_ONLY = process.argv.includes("--privacy-only");
+const SOURCE_DATA_SHA256 = Object.freeze({
+  "mobile-r515-calendar-days-01-10.json": "33c6a905e1ea9850f5145679bef496b147f0b299704d7d66315aabcd93ac5de7",
+  "mobile-r515-calendar-days-11-20.json": "f1681fe8606f4f2a46502fadb10ef6c640ab26facf5234f50014e4b2790a07a8",
+  "mobile-r515-calendar-days-21-31.json": "e25d980dac0d33b32af3df77c0b83e8ee8205cd5e3c6c4c0bb70e6192b13ceee",
+  "mobile-r515-calendar-meta.json": "7bd2e7f8842bc87f1fb5f70bbe49c5762701cc9c51e46e9f3ab7391c130030c9",
+  "mobile-r515-qimen-network-wire.json": "8286396fd98e5e4d66e0d4252b205ca93e3984257c646c2a50c3eeb675eca390",
+  "mobile-r515-today-wire.json": "61735b176de37944a937c5aba410dab2cad4372464b6c372472a75b49394be30",
+});
 const EXPECTED_FILENAMES = [
   "today.sanitized.json",
   "today-hours.sanitized.json",
@@ -146,21 +155,30 @@ function verifyFixtureDirectory(root) {
   const allBytes = EXPECTED_ENTRIES
     .map((filename) => readFileSync(path.join(root, filename), "utf8"))
     .join("\n");
-  const emailPattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
-  const uuidPattern = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i;
-  assert.ok(!emailPattern.test(allBytes), "fixture_directory_no_email");
-  assert.ok(!uuidPattern.test(allBytes), "fixture_directory_no_uuid");
+  const normalizedBytes = allBytes.normalize("NFKC").replace(/\p{Cf}/gu, "");
+  const emailPattern = /[\p{L}\p{M}\p{N}._%+-]+@[\p{L}\p{M}\p{N}.-]+\.[\p{L}\p{M}]{2,}/iu;
+  const credentialPattern = /(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|(?:AKIA|ASIA)[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,})/i;
+  const phonePattern = /^\s*(?:\+\d(?:[\s().-]*\d){7,14}|0\d(?:[\s().-]*\d){8,10})\s*$/mu;
+  const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi;
+  assert.ok(!emailPattern.test(normalizedBytes), "fixture_directory_no_email");
+  assert.ok(!credentialPattern.test(normalizedBytes), "fixture_directory_no_credential_shape");
+  assert.ok(!phonePattern.test(normalizedBytes), "fixture_directory_no_phone_shape");
+  assert.deepEqual(
+    [...normalizedBytes.matchAll(uuidPattern)].map((match) => match[0]).sort(),
+    [
+      "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000002",
+      "00000000-0000-4000-8000-000000000002",
+    ],
+    "fixture_directory_only_exact_synthetic_record_uuids",
+  );
 }
 
 function runPrivacyAcceptance(root) {
   verifyFixtureDirectory(root);
   check("committed fixtures are canonical, private, exact, and generator-bound", true);
-}
-
-if (PRIVACY_ONLY) {
-  runPrivacyAcceptance(COMMITTED_ROOT);
-  console.log(`MOBILE_R515_FIXTURE_PRIVACY_OK checks=${passed}`);
-  process.exit(0);
 }
 
 equal("catalog has the exact 30 basenames", FIXTURE_SPECS.map((spec) => spec.filename), EXPECTED_FILENAMES);
@@ -226,7 +244,7 @@ equal(
     ["todayHours", "GET|POST", "/api/mobile/v1/today/hours", [], "default", "premium"],
     ["todayDirections", "GET|POST", "/api/mobile/v1/today/directions", [], "default", "premium"],
     ["todayGoals", "GET", "/api/mobile/v1/today/goals", [], "default", "premium"],
-    ["chart", "GET|POST", "/api/mobile/v1/chart", [{ endpoint: "/api/mobile/v1/chart/[id]", method: "GET" }], "default", "plan-neutral"],
+    ["chart", "GET|POST", "/api/mobile/v1/chart", [{ endpoint: "/api/mobile/v1/chart/[id]", method: "GET" }], "default", "premium"],
     ["calendar", "GET|POST", "/api/mobile/v1/calendar", [], "default", "premium"],
     ["network", "GET", "/api/mobile/v1/network", [], "default", "premium"],
     ["networkSifu", "POST", "/api/mobile/v1/network/sifu", [], "default", "premium"],
@@ -258,8 +276,8 @@ equal(
 const byKey = Object.fromEntries(FIXTURE_SPECS.map((spec) => [spec.key, spec]));
 equal("saved-date creation status is 201", byKey.datepickSave.status, 201);
 equal("Luopan measurement creation status is 201", byKey.luopanMeasurementsPost.status, 201);
-equal("Sifu stream content type is SSE", byKey.sifuChatStream.contentType, "text/event-stream");
-equal("Sifu stream cache policy is no-cache", byKey.sifuChatStream.cacheControl, "no-cache");
+equal("Sifu stream content type preserves deployed charset", byKey.sifuChatStream.contentType, "text/event-stream; charset=utf-8");
+equal("Sifu stream cache policy matches the mobile relay", byKey.sifuChatStream.cacheControl, "no-cache, no-store, max-age=0, must-revalidate");
 
 equal("canonical JSON sorts keys and ends in LF", canonicalJson({ z: 1, a: { y: 2, b: 3 } }), '{\n  "a": {\n    "b": 3,\n    "y": 2\n  },\n  "z": 1\n}\n');
 equal(
@@ -273,10 +291,70 @@ passed += 2;
 console.log("PASS canonical JSON rejects unsafe values");
 
 const emailCanary = ["fixture.person", "invalid.test"].join(String.fromCharCode(64));
+const unicodeEmailCanary = ["ทดสอบ", "ตัวอย่าง.ไทย"].join(String.fromCharCode(64));
+const zeroWidthEmailCanary = `fixture.person\u200b${String.fromCharCode(64)}invalid.test`;
+const fullWidthEmailCanary = "ｆｉｘｔｕｒｅ＠ｉｎｖａｌｉｄ．ｔｅｓｔ";
 const opaqueId = ["11111111", "1111", "4111", "8111", "111111111111"].join("-");
+const uuidV7Canary = ["018f0f73", "6f50", "7cc8", "9e5e", "4aa3ac58aa11"].join("-");
+const canaryPersonName = ["Canary", "Person"].join(" ");
+const githubTokenCanary = ["gh", "p_", "0123456789", "abcdefghijklmnopqrstuvwxyz"].join("");
+const privateKeyCanary = ["-----BEGIN", "PRIVATE", "KEY-----"].join(" ");
+const awsAccessKeyCanary = ["ASIA", "IOSFODNN7EXAMPLE"].join("");
+const googleApiKeyCanary = ["AI", "zaSyD", "EXAMPLE0123456789012345678901234567"].join("");
+const phoneCanary = `+${["66", "81", "234", "5678"].join(" ")}`;
+const jwtCanary = [["ey", "Jheader12"].join(""), "payload12", "signature12"].join(".");
+const bearerCanary = ["Bear", "er ", "abcdefghijklmnop"].join("");
+const slackTokenCanary = ["xox", "b-", "1234567890", "abcdefghijklmnopqrstuv"].join("");
+const gitlabTokenCanary = ["gl", "pat-", "abcdefghijklmnopqrstuvwx"].join("");
+const npmTokenCanary = ["npm", "_", "abcdefghijklmnopqrstuvwxyz123456"].join("");
+const sendgridTokenCanary = [["S", "G"].join(""), "abcdefghijklmnopqrstuv", "abcdefghijklmnopqrstuvwxyz123456"].join(".");
+const domainLiteralEmailCanary = ["fixture.user", "[192.0.2.1]"].join(String.fromCharCode(64));
+const ideographicDotEmailCanary = `${["fixture", "example"].join(String.fromCharCode(64))}${String.fromCharCode(0x3002)}com`;
+const halfwidthDotEmailCanary = `${["fixture", "example"].join(String.fromCharCode(64))}${String.fromCharCode(0xff61)}com`;
 check("privacy rejects email values", !scanFixturePrivacy("canary", { contact: emailCanary }).ok);
+check("privacy rejects Unicode email values", !scanFixturePrivacy("canary", { contact: unicodeEmailCanary }).ok);
+check("privacy scans email-shaped object keys", !scanFixturePrivacy("canary", { [emailCanary]: "value" }).ok);
+check("privacy scans Unicode email-shaped object keys", !scanFixturePrivacy("canary", { [unicodeEmailCanary]: "value" }).ok);
+check("privacy rejects zero-width-obfuscated email values", !scanFixturePrivacy("canary", { contact: zeroWidthEmailCanary }).ok);
+check("privacy rejects NFKC full-width email values", !scanFixturePrivacy("canary", { contact: fullWidthEmailCanary }).ok);
 check("privacy rejects opaque profile identifiers", !scanFixturePrivacy("canary", { profile_id: opaqueId }).ok);
 check("privacy rejects authorization material", !scanFixturePrivacy("canary", { authorization: "private-value" }).ok);
+check("privacy rejects GitHub token shapes", !scanFixturePrivacy("canary", { opaque: githubTokenCanary }).ok);
+check("privacy rejects private-key headers", !scanFixturePrivacy("canary", { opaque: privateKeyCanary }).ok);
+check("privacy rejects compact profile identifiers", !scanFixturePrivacy("canary", { profileid: "prof_7d3c91b6a0ef" }).ok);
+check("privacy rejects full personal names", !scanFixturePrivacy("canary", { fullName: canaryPersonName }).ok);
+check("privacy rejects arbitrary memo fields", !scanFixturePrivacy("canary", { memo: "private financial question" }).ok);
+check("privacy rejects saved-date free text", !scanFixturePrivacy("canary", { saved_date: { summary: "private appointment" } }).ok);
+check("privacy rejects numeric house identifiers", !scanFixturePrivacy("canary", { house_id: 42 }).ok);
+check("privacy rejects profile birth-place names", !scanFixturePrivacy("canary", { profile: { birth_location_name: "private place" } }).ok);
+check("privacy rejects house owner names", !scanFixturePrivacy("canary", { house: { owner_name: canaryPersonName } }).ok);
+check("privacy rejects generic profile identifiers", !scanFixturePrivacy("canary", { profile: { identifier: "private-profile" } }).ok);
+check("privacy rejects non-ASCII confusable credential keys", !scanFixturePrivacy("canary", { ["t\u043eken"]: "private-value" }).ok);
+check("privacy rejects non-ASCII confusable identity keys", !scanFixturePrivacy("canary", { ["pr\u03bffile_id"]: "private-profile" }).ok);
+check("privacy rejects AWS temporary access-key shapes", !scanFixturePrivacy("canary", { accessKey: awsAccessKeyCanary }).ok);
+check("privacy rejects Google API-key shapes", !scanFixturePrivacy("canary", { opaque: googleApiKeyCanary }).ok);
+check("privacy rejects prefixed GitHub token shapes", !scanFixturePrivacy("canary", { opaque: `prefix_${githubTokenCanary}` }).ok);
+check("privacy rejects suffixed GitHub token shapes", !scanFixturePrivacy("canary", { opaque: `${githubTokenCanary}_suffix` }).ok);
+check("privacy rejects prefixed AWS token shapes", !scanFixturePrivacy("canary", { opaque: `prefix_${awsAccessKeyCanary}` }).ok);
+check("privacy rejects prefixed Google API-key shapes", !scanFixturePrivacy("canary", { opaque: `prefix_${googleApiKeyCanary}` }).ok);
+check("privacy rejects prefixed JWT shapes", !scanFixturePrivacy("canary", { opaque: `prefix_${jwtCanary}` }).ok);
+check("privacy rejects prefixed bearer credentials", !scanFixturePrivacy("canary", { opaque: `prefix_${bearerCanary}` }).ok);
+check("privacy rejects Slack token shapes", !scanFixturePrivacy("canary", { opaque: slackTokenCanary }).ok);
+check("privacy rejects GitLab token shapes", !scanFixturePrivacy("canary", { opaque: gitlabTokenCanary }).ok);
+check("privacy rejects npm token shapes", !scanFixturePrivacy("canary", { opaque: npmTokenCanary }).ok);
+check("privacy rejects SendGrid token shapes", !scanFixturePrivacy("canary", { opaque: sendgridTokenCanary }).ok);
+check("privacy rejects international phone-number shapes", !scanFixturePrivacy("canary", { contact: phoneCanary }).ok);
+check("privacy rejects domain-literal email syntax", !scanFixturePrivacy("canary", { opaque: domainLiteralEmailCanary }).ok);
+check("privacy rejects ideographic-dot email syntax", !scanFixturePrivacy("canary", { opaque: ideographicDotEmailCanary }).ok);
+check("privacy rejects halfwidth-dot email syntax", !scanFixturePrivacy("canary", { opaque: halfwidthDotEmailCanary }).ok);
+check("privacy rejects display-name aliases", !scanFixturePrivacy("canary", { displayName: canaryPersonName }).ok);
+check("privacy rejects first-name aliases", !scanFixturePrivacy("canary", { firstName: "Canary" }).ok);
+check("privacy rejects last-name aliases", !scanFixturePrivacy("canary", { lastName: "Person" }).ok);
+check("privacy rejects date-of-birth aliases", !scanFixturePrivacy("canary", { dob: "1990-01-02" }).ok);
+check("privacy rejects member identifiers", !scanFixturePrivacy("canary", { memberId: "prod-member-837281" }).ok);
+check("privacy rejects avatar URL aliases", !scanFixturePrivacy("canary", { avatarUrl: "https://private.invalid/photo.jpg" }).ok);
+check("privacy rejects exact location aliases", !scanFixturePrivacy("canary", { location: "13.7563,100.5018" }).ok);
+check("privacy rejects exact position aliases", !scanFixturePrivacy("canary", { position: [13.7563, 100.5018] }).ok);
 for (const key of [
   "accessToken", "refreshToken", "sessionToken", "authToken", "apiKey", "clientSecret",
   "profileId", "userId", "orgId", "accountId", "deviceId", "emailAddress", "phoneNumber",
@@ -290,25 +368,28 @@ check("privacy rejects identifiers nested under people", !scanFixturePrivacy("ca
 check("privacy rejects identifiers nested under profiles", !scanFixturePrivacy("canary", { profiles: [{ id: "private-value" }] }).ok);
 check(
   "privacy rejects UUIDv7 values",
-  !scanFixturePrivacy("canary", { opaque: "018f0f73-6f50-7cc8-9e5e-4aa3ac58aa11" }).ok,
+  !scanFixturePrivacy("canary", { opaque: uuidV7Canary }).ok,
 );
+check("privacy rejects prefixed UUID values", !scanFixturePrivacy("canary", { opaque: `profile_${uuidV7Canary}` }).ok);
+check("privacy rejects suffixed UUID values", !scanFixturePrivacy("canary", { opaque: `${uuidV7Canary}_suffix` }).ok);
+check("privacy rejects letter-prefixed UUID values", !scanFixturePrivacy("canary", { opaque: `x${uuidV7Canary}` }).ok);
 check(
   "privacy rejects exact coordinates",
   !scanFixturePrivacy("canary", { coordinates: [13.7563, 100.5018] }).ok,
 );
 check(
   "privacy rejects real-looking house names",
-  !scanFixturePrivacy("canary", { houses: [{ name: "Somchai Residence" }] }).ok,
+  !scanFixturePrivacy("canary", { houses: [{ name: ["Canary", "Residence"].join(" ") }] }).ok,
 );
 check(
   "privacy rejects synthetic-prefix real names",
-  !scanFixturePrivacy("canary", { activeProfile: { name: "Fixture Somchai Real" } }).ok,
+  !scanFixturePrivacy("canary", { activeProfile: { name: ["Fixture", "Canary", "Person"].join(" ") } }).ok,
 );
 for (const key of ["content", "response", "text", "transcript"]) {
   check(`privacy rejects arbitrary ${key}`, !scanFixturePrivacy("canary", { [key]: "private conversation" }).ok);
 }
 check("privacy rejects arbitrary reply text", !scanFixturePrivacy("canary", { reply: "private reply" }).ok);
-check("privacy permits the fixed synthetic reply", scanFixturePrivacy("canary", { reply: SYNTHETIC_REPLY }).ok);
+check("privacy permits the fixed synthetic reply only at an approved path", scanFixturePrivacy("sifuChat", { reply: SYNTHETIC_REPLY }).ok);
 check(
   "privacy rejects arbitrary Sifu stream text",
   !scanFixturePrivacy("sifuChatStream", { events: [{ event: "chunk", data: { text: "private stream text" } }] }).ok,
@@ -321,8 +402,286 @@ check(
   "privacy permits scientific names",
   scanFixturePrivacy("canary", { star_name_th: "ดาวตัวอย่าง", mountain: { name: "子" } }).ok,
 );
+const syntheticSavedUuid = "00000000-0000-4000-8000-000000000001";
+check("privacy permits the saved-date UUID only at its exact DELETE path", scanFixturePrivacy("datepickDelete", { id: syntheticSavedUuid }).ok);
+check("privacy rejects relocation of the fixed saved-date UUID", !scanFixturePrivacy("datepickDelete", { nested: { id: syntheticSavedUuid } }).ok);
+check("privacy rejects a different UUID at the approved path", !scanFixturePrivacy("datepickDelete", { id: "00000000-0000-4000-8000-000000000003" }).ok);
+check("privacy permits zero synthetic Qimen coordinates at exact paths", scanFixturePrivacy("qimenBasic", { input: { lat: 0, lng: 0 }, request_context: { latitude: 0, longitude: 0 } }).ok);
+check("privacy permits the deployed Qimen search zero-coordinate projections", scanFixturePrivacy("qimenSearch", { lat: 0, lng: 0, request_context: { latitude: 0, longitude: 0 } }).ok);
+check("privacy rejects nonzero exact coordinates at approved paths", !scanFixturePrivacy("qimenBasic", { input: { lat: 13.7, lng: 100.5 } }).ok);
+check("privacy rejects nonzero Qimen search root coordinates", !scanFixturePrivacy("qimenSearch", { lat: 13.7, lng: 100.5 }).ok);
+check("privacy permits an empty datepick people_ids projection", scanFixturePrivacy("datepick", { people_ids: [] }).ok);
+check("privacy rejects populated datepick people_ids", !scanFixturePrivacy("datepick", { people_ids: [syntheticSavedUuid] }).ok);
+
+const sourceData = Object.fromEntries(Object.keys(SOURCE_DATA_SHA256).map((filename) => {
+  const bytes = readFileSync(path.join(SOURCE_DATA_ROOT, filename));
+  equal(`sanitized generator source hash ${filename}`, sha256(bytes), SOURCE_DATA_SHA256[filename]);
+  return [filename, JSON.parse(bytes.toString("utf8"))];
+}));
+const sourceCalendarDays = [
+  ...sourceData["mobile-r515-calendar-days-01-10.json"],
+  ...sourceData["mobile-r515-calendar-days-11-20.json"],
+  ...sourceData["mobile-r515-calendar-days-21-31.json"],
+];
+const sourceToday = sourceData["mobile-r515-today-wire.json"];
+const sourceQimenNetwork = sourceData["mobile-r515-qimen-network-wire.json"];
+for (const [key, value] of [
+  ["today", sourceToday.today],
+  ["todayHours", sourceToday.today_hours],
+  ["todayDirections", sourceToday.today_directions],
+  ["todayGoals", sourceToday.today_goals],
+  ["calendar", { ...sourceData["mobile-r515-calendar-meta.json"], days: sourceCalendarDays }],
+  ["network", sourceQimenNetwork.network],
+  ["networkBulk", sourceQimenNetwork.network_bulk],
+  ["qimenBasic", sourceQimenNetwork.qimen.basic],
+  ["qimenProfessional", sourceQimenNetwork.qimen.professional],
+  ["qimenSearch", sourceQimenNetwork.qimen.search],
+]) {
+  check(`sanitized generator source privacy ${key}`, scanFixturePrivacy(key, value).ok);
+}
+
+if (PRIVACY_ONLY) {
+  runPrivacyAcceptance(COMMITTED_ROOT);
+  console.log(`MOBILE_R515_FIXTURE_PRIVACY_OK checks=${passed}`);
+  process.exit(0);
+}
 
 const negativeValues = buildFixtureSet();
+const expectedHourRanges = [
+  "23:00-01:00", "01:00-03:00", "03:00-05:00", "05:00-07:00",
+  "07:00-09:00", "09:00-11:00", "11:00-13:00", "13:00-15:00",
+  "15:00-17:00", "17:00-19:00", "19:00-21:00", "21:00-23:00",
+];
+equal("Today hours use the deployed twelve shichen ranges", negativeValues.todayHours.hours.map((hour) => hour.range), expectedHourRanges);
+check(
+  "Today hour labels are deployed quality labels rather than clock ranges",
+  negativeValues.todayHours.hours.every((hour) => ["ดีมาก", "ดี", "กลาง", "ห้าม"].includes(hour.label)),
+);
+equal("Today Hours preserves the deployed wrapper bug as an explicit null profile context", negativeValues.todayHours.profile_context, null);
+equal("Today Hours cannot claim personalized useful gods when the deployed wrapper omits profileId", [negativeValues.todayHours.yongshen, negativeValues.todayHours.jishen, negativeValues.todayHours.user_branch], [[], [], null]);
+equal(
+  "Today Hours uses the exact generic July 14 quality sequence from the deployed route",
+  negativeValues.todayHours.hours.map((hour) => hour.quality),
+  ["good", "ok", "ok", "ok", "ok", "ok", "ok", "bad", "ok", "ok", "ok", "ok"],
+);
+equal(
+  "Today Hours uses the deployed generic July 14 windows",
+  [negativeValues.todayHours.golden_window, negativeValues.todayHours.avoid_window, negativeValues.todayHours.calm_window],
+  [
+    { start: "23:00", end: "01:00" },
+    { start: "13:00", end: "15:00" },
+    { start: "01:00", end: "13:00" },
+  ],
+);
+equal(
+  "Today Hours does not freeze a capture-time current-hour marker into a deterministic fixture",
+  negativeValues.todayHours.hours.filter((hour) => hour.isNow).length,
+  0,
+);
+check(
+  "Today direction layer signals use the deployed bounded signal alphabet",
+  negativeValues.todayDirections.direction_energy.scores.every((row) => /^[+-]{2,5}$|^0$/.test(row.qimen.signal) && /^[+-]{2,5}$|^0$/.test(row.zibai.signal)),
+);
+equal("Today directions expose the deployed Chaibu label", negativeValues.todayDirections.direction_energy.school_label, "拆補 Chaibu");
+equal("Today directions expose the deployed Qi Men source", negativeValues.todayDirections.direction_energy.source.qimen, "qimen-api");
+equal("Today directions expose the deployed Zi Bai source", negativeValues.todayDirections.direction_energy.source.zibai, "local-luxing");
+check("paid Today directions explicitly expose locked false", negativeValues.todayDirections.directions.every((row) => row.locked === false));
+
+equal("Chart uses the deployed analysis ge_ju key", Object.hasOwn(negativeValues.chart.analysis, "ge_ju"), true);
+check("Chart never emits the impossible analysis geJu alias", !Object.hasOwn(negativeValues.chart.analysis, "geJu"));
+equal("Chart uses the deployed route source", negativeValues.chart.source, "/api/chart");
+check("Chart includes its deployed product entitlement", negativeValues.chart.entitlement && typeof negativeValues.chart.entitlement.plan === "string");
+check("Chart includes its deployed request context", negativeValues.chart.request_context && typeof negativeValues.chart.request_context === "object");
+check("Chart ten-gods values preserve stem and ten_god objects", Object.values(negativeValues.chart.analysis.ten_gods_map).every((item) => typeof item.stem === "string" && typeof item.ten_god === "string"));
+equal("Chart strength is the exact immutable-engine result for the synthetic pillars", negativeValues.chart.strength, { level: "very_weak", percent: 32 });
+equal("Chart structure is coherent across every deployed projection", [negativeValues.chart.geJu, negativeValues.chart.ge_ju, negativeValues.chart.analysis.ge_ju], [
+  { basis: "DM 甲 + 己 (hour) → earth", confidence: "high", raw_structure: "化土格", structure: "化土格" },
+  { basis: "DM 甲 + 己 (hour) → earth", confidence: "high", raw_structure: "化土格", structure: "化土格" },
+  { basis: "DM 甲 + 己 (hour) → earth", confidence: "high", raw_structure: "化土格", structure: "化土格" },
+]);
+equal("Chart element counts come from the same immutable synthetic pillars", negativeValues.chart.analysis.element_counts, { earth: 3.5, fire: 4.5, metal: 0.5, water: 1.5, wood: 2.5 });
+equal("Chart yongshen matches the deployed post-scrub HTTP projection", negativeValues.chart.yongshen, [
+  { element: "water", stem: "壬" },
+  { element: "water", stem: "癸" },
+  { element: "wood", stem: "甲" },
+]);
+equal("Premium Chart exposes all eight immutable-engine luck cycles", [negativeValues.chart.analysis.luck_pillars.length, negativeValues.chart.entitlement.luck_total, negativeValues.chart.entitlement.luck_visible], [8, 8, 8]);
+check("Chart luck cycles use the deployed age_start key", negativeValues.chart.analysis.luck_pillars.every((item, index) => Number.isFinite(item.age_start) && item.original_index === index && !Object.hasOwn(item, "start_age")));
+equal("Chart first luck cycle is the exact immutable-engine projection", negativeValues.chart.analysis.luck_pillars[0], {
+  age_end: 16.8,
+  age_end_detail: "16 ปี 9 เดือน 22 วัน",
+  age_start: 6.81,
+  age_start_detail: "6 ปี 9 เดือน 22 วัน",
+  branch: "申",
+  direction: "forward",
+  direction_th: "เดินหน้า順",
+  element: "fire",
+  end_date: "1923-05-11",
+  original_index: 0,
+  qi_phase: "絕",
+  start_date: "1913-05-11",
+  stem: "丙",
+  timing_method: "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+  year_end: 1923,
+  year_start: 1912,
+});
+for (const key of ["luck_decade_drilldown", "lp_natal_interactions", "liu_nian_timeline"]) check(`Bounded Chart fixture omits ${key} instead of claiming a false empty engine result`, !Object.hasOwn(negativeValues.chart.analysis, key));
+
+equal("Calendar uses the deployed route source", negativeValues.calendar.source, "/api/calendar");
+equal(
+  "Calendar preserves the mobile wrapper top-level profile summary",
+  negativeValues.calendar.profile,
+  { id: null, is_self: true, name: "Fixture Center", nickname: null },
+);
+equal("Calendar uses the deployed score policy", negativeValues.calendar.score_policy, "wrapper7-strict-primary");
+check("Calendar uses a deployed score source", ["profile-db", "profile-db+wrapper-7", "profile-db+wrapper-6-fallback", "profile-db+wrapper-4", "universal-only"].includes(negativeValues.calendar.score_source));
+equal("Calendar premium entitlement exposes all intents", negativeValues.calendar.entitlement.intents, "all");
+check("Calendar entitlement includes allowed intents", Array.isArray(negativeValues.calendar.entitlement.allowed_intents) && negativeValues.calendar.entitlement.allowed_intents.length === 16);
+check("Calendar entitlement includes locked intents", Array.isArray(negativeValues.calendar.entitlement.locked_intents));
+equal("Calendar covers the full July month", [negativeValues.calendar.days.length, negativeValues.calendar.total_days], [31, 31]);
+const july14 = negativeValues.calendar.days.find((day) => day.date === "2026-07-14");
+equal("Calendar July 14 science matches deployed tyme4ts and Tongshu", [july14.pillar, july14.day_officer, july14.twelve_star, july14.twenty_eight_star, july14.nine_star], ["己丑", "破", "朱雀", "觜", 2]);
+equal("Today science uses the same deployed July 14 pillars", negativeValues.today.pillars, { day: "己丑", month: "乙未", year: "丙午" });
+equal(
+  "Today July 14 hexagram is the exact deployed stem-branch projection",
+  negativeValues.today.hex,
+  {
+    num: 33,
+    zh: "遯",
+    th: "ตุ้น · หลีก",
+    en: "Retreat",
+    symbol: "䷠",
+    upper_zh: "艮",
+    upper_th: "เกิ้น",
+    lower_zh: "乾",
+    lower_th: "เฉียน",
+    changing_line: 2,
+  },
+);
+equal("Calendar July 14 ten-god is computed against the fixture DM", july14.ten_god, "正財");
+equal("Calendar July 14 universal hard-block is the exact deployed result", july14.universal_verdict, { score: 7, level: "avoid", hardBlocked: true });
+equal(
+  "Calendar July 14 universal intent status is neutral except the destruction-safe prayer/healing intent",
+  july14.universal_intent_status,
+  Object.fromEntries([
+    "start_work", "sign_contract", "open_business", "negotiate", "invest", "loan",
+    "marriage", "engagement", "gathering", "move_house", "construct", "renovate",
+    "install_bed", "travel", "pray_heal", "medical",
+  ].map((id) => [id, id === "pray_heal" ? "good" : "neutral"])),
+);
+equal(
+  "Calendar July 14 universal intent score leaves use the deployed six-field envelope",
+  Object.values(july14.intent_scores.universal).every((leaf) => (
+    Object.keys(leaf).sort().join(",") === "level,personalScore,policy,score,status,universalScore"
+  )),
+  true,
+);
+equal("Calendar July 14 破-day universal score never exceeds its hard cap", july14.universal_verdict.score <= 30, true);
+equal(
+  "Calendar hard-block caps every non-health personal goal",
+  ["wealth", "career", "love", "family", "travel"].every((goal) => july14.goals[goal] <= 35),
+  true,
+);
+equal(
+  "Calendar premium days retain a four-pillar hexagram object on every pillar",
+  negativeValues.calendar.days.every((day) => ["year", "month", "day", "hour"].every((key) => {
+    const hex = day.pillars_full?.[key]?.hex;
+    return hex && Number.isInteger(hex.num) && typeof hex.zh === "string" && typeof hex.th === "string" && typeof hex.en === "string" && typeof hex.symbol === "string";
+  })),
+  true,
+);
+equal("Today preserves the full daily-verdict envelope", Object.keys(negativeValues.today.verdict).sort(), ["engine", "evidence", "flags", "jishen", "label", "legacy", "level", "raw", "score", "source", "tags", "targetDate", "yongshen"]);
+
+equal("Network uses the deployed scoring version", negativeValues.network.version, "pair-reaction-v2");
+check(
+  "Network people retain every deployed pair-reaction-v2 score frame",
+  negativeValues.network.people.every((person) => ["day", "week", "month", "year", "luck", "overall"].every((key) => Number.isFinite(person.scores?.[key]))),
+);
+check(
+  "Network people retain deployed reading, guidance, and directional projections",
+  negativeValues.network.people.every((person) => person.reading && person.guidance && Number.isFinite(person.directional?.atob) && Number.isFinite(person.directional?.btoa)),
+);
+equal("Successful Network Bulk always settles at least the reserved hour", negativeValues.networkBulk.spent >= 1, true);
+equal("Datepick uses the deployed route source", negativeValues.datepick.source, "/api/auspicious");
+check("Datepick includes the mobile wrapper people_ids field", Array.isArray(negativeValues.datepick.people_ids));
+equal("Datepick strips the upstream Bangkok coordinates while retaining their deployed provenance", negativeValues.datepick.meta.eventLocation, { source: "default_bkk" });
+check("Datepick premium entitlement exposes the complete deployed module allowlist", Array.isArray(negativeValues.datepick.meta.entitlement.modules_allowed) && negativeValues.datepick.meta.entitlement.modules_allowed.length === 20);
+const expectedDatepickRequestedModules = [
+  "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits", "nine_stars",
+  "tai_sui", "qi_men", "he_luo", "hex64",
+];
+const expectedDatepickScoringModules = expectedDatepickRequestedModules.filter((key) => key !== "qi_men");
+equal(
+  "Datepick preserves the deployed scoring module projection (Qi Men is a guard, not a weighted score)",
+  negativeValues.datepick.candidates[0].scoring.activeModules,
+  expectedDatepickScoringModules,
+);
+equal(
+  "Datepick candidate retains every hydrated universal module emitted by the deployed engine",
+  Object.keys(negativeValues.datepick.candidates[0].modules).sort(),
+  expectedDatepickRequestedModules.filter((key) => key !== "hex64").sort(),
+);
+check(
+  "Datepick universal modules retain the deployed ModuleResult envelope",
+  Object.entries(negativeValues.datepick.candidates[0].modules).every(([key, module]) => (
+    module.module === key
+    && module.status === "ready"
+    && Number.isFinite(module.score?.normalized)
+    && Array.isArray(module.tags)
+    && Array.isArray(module.reasons?.up)
+    && Array.isArray(module.reasons?.down)
+    && Array.isArray(module.reasons?.warning)
+    && module.raw && typeof module.raw === "object"
+  )),
+);
+
+const expectedQimenPalaces = [
+  [4, "SE", "巽", 1, 1], [9, "S", "離", 1, 2], [2, "SW", "坤", 1, 3],
+  [3, "E", "震", 2, 1], [5, "C", "中", 2, 2], [7, "W", "兌", 2, 3],
+  [8, "NE", "艮", 3, 1], [1, "N", "坎", 3, 2], [6, "NW", "乾", 3, 3],
+];
+for (const key of ["qimenBasic", "qimenProfessional"]) {
+  equal(
+    `${key} binds canonical palace IDs to the deployed Lo-Shu grid`,
+    negativeValues[key].data.palaces.map((palace) => [palace.palace_id, palace.direction, palace.trigram_zh, palace.grid_row, palace.grid_col]),
+    expectedQimenPalaces,
+  );
+  equal(`${key} uses the deployed dun enum`, negativeValues[key].data.chart.dun_type, "yin");
+  equal(`${key} uses the deployed chief-star code`, negativeValues[key].data.chart.chief_star_code, "TIAN_QIN");
+  equal(`${key} uses the deployed value-door code`, negativeValues[key].data.chart.zhi_shi_door_code, "SI_MEN");
+  equal(`${key} exposes the deployed source`, negativeValues[key].source, "qimen-api");
+  check(`${key} exposes deployed upstream input provenance`, negativeValues[key].input && negativeValues[key].input.school === "chaibu");
+  check(`${key} does not claim undeployed entitlement revision`, !Object.hasOwn(negativeValues[key], "entitlement") && !Object.hasOwn(negativeValues[key].request_context, "entitlement_revision"));
+  equal(
+    `${key} retains the exact deployed engine display score sequence`,
+    negativeValues[key].data.palaces.map((palace) => palace.display_score),
+    [0, 0, 70, 0, 14, 3, 2, 0, 29],
+  );
+  equal(
+    `${key} retains the exact deployed engine display level sequence`,
+    negativeValues[key].data.palaces.map((palace) => palace.display_level),
+    ["L6", "L6", "L2", "L6", "L5", "L6", "L6", "L6", "L5"],
+  );
+  equal(
+    `${key} retains the exact deployed engine door-quality sequence`,
+    negativeValues[key].data.palaces.map((palace) => palace.door_quality),
+    ["severe", "inauspicious", "great_auspicious", "auspicious", "contextual", "great_auspicious", "contextual", "inauspicious", "great_auspicious"],
+  );
+}
+check(
+  "Qimen professional layers are active for deployed consumers",
+  negativeValues.qimenProfessional.data.palaces.every((palace) => palace.advanced_qimen_layers.every((layer) => layer.active === true)),
+);
+equal("Qimen search datetime matches the deployed timezone-free wire", negativeValues.qimenSearch.top[0].datetime, "2026-07-15T06:00:00");
+equal(
+  "Qimen search cannot return a 破 row while the deployed Jianchu hard filter is enabled",
+  negativeValues.qimenSearch.top.some((row) => row.tongshu?.day_officer === "破") && negativeValues.qimenSearch.filters.useJianchu,
+  false,
+);
+
+equal("Luopan bootstrap uses only the deployed entitlement keys", Object.keys(negativeValues.luopanBootstrap.entitlement).sort(), ["house_limit", "mode", "multi_profile", "pins", "plan", "sifu", "vision", "vision_limit"]);
+check("Luopan bootstrap does not claim undeployed request context", !Object.hasOwn(negativeValues.luopanBootstrap, "request_context"));
+
 for (const rootValue of [null, "fixture", 1, []]) {
   equal("contract rejects a non-object root", validateFixture("today", rootValue), {
     error: "fixture_contract today /",
@@ -355,9 +714,55 @@ const privatePayload = structuredClone(negativeValues.today);
 privatePayload.authorization = privateValue;
 const privateFailure = validateFixture("today", privatePayload);
 check("contract privacy error is pointer-only", !JSON.stringify(privateFailure).includes(privateValue));
+equal("contract privacy errors use a constant redacted pointer", privateFailure, {
+  error: "fixture_contract today /privacy",
+  ok: false,
+});
+const keyLeakPayload = structuredClone(negativeValues.today);
+keyLeakPayload.authToken__REAL_SECRET_123456789 = "value";
+check("contract privacy errors never echo hostile property keys", !JSON.stringify(validateFixture("today", keyLeakPayload)).includes("REAL_SECRET"));
+const extraShapePayload = structuredClone(negativeValues.today);
+extraShapePayload.unreviewed = "synthetic-looking-but-unknown";
+equal("contract rejects additional fixture properties", validateFixture("today", extraShapePayload), {
+  error: "fixture_contract today /shape",
+  ok: false,
+});
+for (const [key, mutate] of [
+  ["today", (value) => { value.verdict.score = 999999; }],
+  ["qimenBasic", (value) => { value.data.chart.ju_number = 999999; }],
+  ["datepick", (value) => { value.candidates[0].scoring.finalScore = 999999; }],
+  ["calendar", (value) => { value.year = 999999; }],
+  ["qimenProfessional", (value) => { value.data.palaces[0].advanced_qimen_layers[0].active = false; }],
+  ["sifuGroup", (value) => { value.balance_after = -999999; }],
+]) {
+  const mutation = structuredClone(negativeValues[key]);
+  mutate(mutation);
+  equal(`contract rejects scalar semantic drift in ${key}`, validateFixture(key, mutation), {
+    error: `fixture_contract ${key} /shape`,
+    ok: false,
+  });
+}
+for (const mutate of [
+  (value) => { value.events[1].data.delta = "private medical question"; },
+  (value) => { value.events[0].data.payload = { body: "private financial question" }; },
+  (value) => { value.events[0].data.source = canaryPersonName; },
+]) {
+  const mutation = structuredClone(negativeValues.sifuChatStream);
+  mutate(mutation);
+  check("Sifu SSE contract rejects every unreviewed nested property", !validateFixture("sifuChatStream", mutation).ok);
+}
 const mismatchedSet = structuredClone(negativeValues);
 mismatchedSet.todayGoals.goals.wealth += 1;
-check("cross-fixture mismatch is rejected", !validateFixtureSet(mismatchedSet).ok);
+equal("cross-fixture goal mismatch is rejected at the set boundary", validateFixtureSet(mismatchedSet), {
+  error: "fixture_contract set /goals",
+  ok: false,
+});
+const mismatchedIntentSet = structuredClone(negativeValues);
+mismatchedIntentSet.todayGoals.intent_status.start_work = "good";
+equal("Today Goals intent status must match the selected Calendar day", validateFixtureSet(mismatchedIntentSet), {
+  error: "fixture_contract set /intent-status",
+  ok: false,
+});
 
 function deletePointer(root, pointer) {
   const segments = pointer.split("/").slice(1).map((segment) => segment.replaceAll("~1", "/").replaceAll("~0", "~"));
@@ -395,25 +800,20 @@ for (const [key, pointer, mutate] of [
 }
 check("set validator returns a failure instead of throwing", validateFixtureSet({}).ok === false);
 const reorderedStream = structuredClone(negativeValues.sifuChatStream);
-[reorderedStream.events[1].data.text, reorderedStream.events[2].data.text] = [
-  reorderedStream.events[2].data.text,
-  reorderedStream.events[1].data.text,
-];
-equal("stream contract rejects reordered synthetic fragments", validateFixture("sifuChatStream", reorderedStream), {
-  error: "fixture_contract sifuChatStream /events",
-  ok: false,
-});
+[reorderedStream.events[1], reorderedStream.events[2]] = [reorderedStream.events[2], reorderedStream.events[1]];
+check("stream contract rejects reordered events", !validateFixture("sifuChatStream", reorderedStream).ok);
 for (const mutate of [
   (value) => { [value.events[1].event, value.events[2].event] = [value.events[2].event, value.events[1].event]; },
   (value) => { value.events.splice(2, 1); },
   (value) => { value.events.push(structuredClone(value.events[2])); },
   (value) => { value.events[3].event = "chunk"; },
+  (value) => { value.events[1].data.text = "private reply"; },
   (value) => { value.events[3].data.reply = "private reply"; },
 ]) {
   const mutation = structuredClone(negativeValues.sifuChatStream);
   mutate(mutation);
   const result = validateFixture("sifuChatStream", mutation);
-  check("stream contract rejects malformed event sequence", !result.ok && /^fixture_contract sifuChatStream \/events(?:\/|$)/.test(result.error));
+  check("stream contract rejects malformed event sequence", !result.ok);
 }
 
 const expectedMountains = [
@@ -451,11 +851,7 @@ equal(
 );
 equal("Luopan bootstrap contract version", negativeValues.luopanBootstrap.contract_version, "mobile-luopan-v1");
 equal("Luopan bootstrap formula version", negativeValues.luopanBootstrap.formula_version, "luopan-core-v1-xuankong-chart-v1");
-equal(
-  "Luopan bootstrap binds request context to entitlement revision",
-  negativeValues.luopanBootstrap.request_context.entitlement_revision,
-  negativeValues.luopanBootstrap.entitlement.revision,
-);
+check("Luopan bootstrap excludes the frozen entitlement request context", !Object.hasOwn(negativeValues.luopanBootstrap, "request_context"));
 equal(
   "Luopan measurement POST exposes only returned database fields",
   Object.keys(negativeValues.luopanMeasurementsPost.measurement).sort(),
@@ -469,10 +865,10 @@ equal(
   negativeValues.luopanAnalysis.excluded_unverified_layers,
   ["pseudo_time_star", "simplified_kua", "sequential_hex64", "low_confidence_star_pairs"],
 );
-equal("Qimen basic uses a coherent free plan", negativeValues.qimenBasic.entitlement.plan, "free");
-equal("Qimen basic entitlement detail", negativeValues.qimenBasic.entitlement.caps.detail, "basic");
-equal("Qimen professional uses a coherent master plan", negativeValues.qimenProfessional.entitlement.plan, "master");
-equal("Qimen professional entitlement detail", negativeValues.qimenProfessional.entitlement.caps.detail, "technical");
+equal("Qimen basic uses a coherent deployed free product", negativeValues.qimenBasic.product.plan, "free");
+equal("Qimen basic deployed product detail", negativeValues.qimenBasic.product.qimen.detail, "basic");
+equal("Qimen professional uses a coherent deployed master product", negativeValues.qimenProfessional.product.plan, "master");
+equal("Qimen professional deployed product detail", negativeValues.qimenProfessional.product.qimen.detail, "technical");
 equal("Today fixture uses a coherent premium plan", negativeValues.today.entitlement.plan, "premium");
 equal("Premium Today fixture does not claim multi-profile", negativeValues.today.entitlement.multi_profile, false);
 equal("Network base fixture uses a coherent premium plan", negativeValues.network.entitlement.plan, "premium");
@@ -540,6 +936,14 @@ try {
   equal("manifest schema is versioned", manifest.schema, "hourkey-mobile-r515-fixtures/v1");
   equal("manifest source is synthetic", manifest.sourceClass, "deterministic-synthetic-contract");
   equal("manifest has 30 entries", manifest.fixtures.length, 30);
+  equal("manifest binds the immutable deployed r515 source", manifest.sourceProvenance, {
+    capturedAt: "2026-07-13T14:27:59.994Z",
+    declaredSourceCodeCommit: "f1c849bd74dcfa6998e44553f2591f3789ac3429",
+    declaredSourceHead: "cb1fb9e9815d25eccb9f29048f24d0a46a22c310",
+    receiptKeysSha256: "6c25c9b74050cf5e6d258b403bbeb741f758d2ea66a8e9a9252be84b80d1e845",
+    receiptSha256: "75f618f992db61aae2204ab441ed348b3275f9f80921c27a68d97864f9a97572",
+    releaseId: "decode-app-r515-mobile-api",
+  });
   check("manifest has no raw source hash", !canonicalJson(manifest).includes("rawSha"));
   for (const entry of manifest.fixtures) {
     const bytes = readFileSync(path.join(first, entry.filename));

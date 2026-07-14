@@ -1,6 +1,6 @@
 {
   "datetime": {
-    "day_pillar": "甲子",
+    "day_pillar": "己丑",
     "gregorian": "2026-07-14T02:00:00.000Z",
     "hour_pillar": "己巳",
     "month_pillar": "乙未",
@@ -19,6 +19,7 @@
     "facing_direction": "SE",
     "facing_mountain": "巳",
     "family_members": [],
+    "id": null,
     "lat": null,
     "lng": null,
     "name": "Fixture House",
@@ -31,8 +32,29 @@
       "sitting_mountain": "亥",
       "water_star": 5
     },
-    "ba_zhai": [],
-    "day_stars": null,
+    "ba_zhai": null,
+    "day_stars": {
+      "center": 2,
+      "day_pillar": "己丑",
+      "day_school": "zaoming",
+      "direction": "逆",
+      "dun": "yin",
+      "ganzhi_seq": 26,
+      "jieqi_period": 3,
+      "jieqi_period_name": "夏至→處暑",
+      "palaces": {
+        "C": 2,
+        "E": 4,
+        "N": 6,
+        "NE": 8,
+        "NW": 1,
+        "S": 7,
+        "SE": 3,
+        "SW": 5,
+        "W": 9
+      },
+      "school_flag": "fixture"
+    },
     "flying_stars": {
       "annual_center": 1,
       "annual_center_source": "json_centre_star",
@@ -149,12 +171,58 @@
       },
       "period": 9
     },
-    "hour_stars": null,
-    "luxing_note": null,
-    "month_stars": null,
+    "hour_stars": {
+      "center": 1,
+      "day_branch": "丑",
+      "direction": "逆",
+      "dun": "yin",
+      "hour_branch": "巳",
+      "hour_index": 5,
+      "note": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "palaces": {
+        "C": 1,
+        "E": 3,
+        "N": 5,
+        "NE": 7,
+        "NW": 9,
+        "S": 6,
+        "SE": 2,
+        "SW": 4,
+        "W": 8
+      }
+    },
+    "luxing_note": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+    "month_stars": {
+      "center": 3,
+      "direction": "順",
+      "jieqi_month": 6,
+      "month_branch": "未",
+      "note": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา",
+      "palaces": {
+        "C": 3,
+        "E": 1,
+        "N": 8,
+        "NE": 6,
+        "NW": 4,
+        "S": 7,
+        "SE": 2,
+        "SW": 9,
+        "W": 5
+      },
+      "year_branch": "午"
+    },
     "qi_men": {
-      "dun_type": "陽遁",
-      "ju_number": 5
+      "note": "simplified fallback",
+      "palace_gates": {
+        "E": "驚",
+        "N": "景",
+        "NE": "死",
+        "NW": "杜",
+        "S": "休",
+        "SE": "開",
+        "SW": "生",
+        "W": "傷"
+      }
     },
     "sixty_four": {
       "facing_hex": 27
@@ -190,15 +258,30 @@
       ],
       "sitting": "亥"
     },
-    "year_stars": null
+    "year_stars": {
+      "center": 1,
+      "direction": "順",
+      "palaces": {
+        "C": 1,
+        "E": 8,
+        "N": 6,
+        "NE": 4,
+        "NW": 2,
+        "S": 5,
+        "SE": 9,
+        "SW": 7,
+        "W": 3
+      },
+      "year_branch": "午"
+    }
   },
   "ok": true,
   "recommendations": [],
   "today": {
     "five_element": "土",
-    "twelve_officers": null,
-    "twelve_spirits": null,
-    "twenty_eight": null
+    "twelve_officers": "破",
+    "twelve_spirits": "朱雀",
+    "twenty_eight": "觜"
   },
   "warnings": [
     {

@@ -23,12 +23,23 @@ const README = `# Mobile r515 sanitized fixtures
 This directory contains deterministic synthetic response contracts for the mobile r515 surfaces.
 
 - They are generated from code and never captured from production.
+- Wire shapes are reviewed against immutable deployed release \`decode-app-r515-mobile-api\`; see \`manifest.json.sourceProvenance\`.
 - Personal identity, contact, account, credential, private conversation, image, and exact-location values are absent.
 - Scientific labels, entitlement states, response status, and display-safe synthetic values are retained for contract testing.
-- Entitlement variants use coherent free-post-trial, premium-active, and master-active scenarios; their hashes are deterministic synthetic projections, never production hashes.
+- Record UUIDs are fixed RFC-4122 synthetic values used only for saved-date DELETE and Luopan measurement round-trips; they are not profile IDs.
+- Entitlement variants reflect only the deployed r515 release. The frozen entitlement-foundation overlay is intentionally excluded.
 - Run \`node scripts/test-mobile-r515-fixtures.mjs\` from the repository root before adoption.
 - Jarvis must update the mobile fixture allowlist separately; this backend handoff does not modify the mobile worktree.
 `;
+
+const SOURCE_PROVENANCE = Object.freeze({
+  capturedAt: "2026-07-13T14:27:59.994Z",
+  declaredSourceCodeCommit: "f1c849bd74dcfa6998e44553f2591f3789ac3429",
+  declaredSourceHead: "cb1fb9e9815d25eccb9f29048f24d0a46a22c310",
+  receiptKeysSha256: "6c25c9b74050cf5e6d258b403bbeb741f758d2ea66a8e9a9252be84b80d1e845",
+  receiptSha256: "75f618f992db61aae2204ab441ed348b3275f9f80921c27a68d97864f9a97572",
+  releaseId: "decode-app-r515-mobile-api",
+});
 
 function approvedNames() {
   return new Set([
@@ -101,7 +112,7 @@ export function buildMobileR515Fixtures(outputDir) {
     rawStoredInGit: false,
     schema: "hourkey-mobile-r515-fixtures/v1",
     sourceClass: "deterministic-synthetic-contract",
-    sourceRelease: "r515",
+    sourceProvenance: { ...SOURCE_PROVENANCE },
   };
   const manifestBytes = canonicalJson(manifest);
   writeAtomic(resolved, "manifest.json", manifestBytes);

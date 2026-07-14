@@ -3,67 +3,453 @@
   "candidates": [
     {
       "calendar": {
-        "gregorianDate": "2026-07-20",
+        "gregorianDate": "2026-07-21",
         "shichen": 5,
         "shichenBranch": "巳"
       },
       "datetime": {
-        "end": "2026-07-20T11:00:00+07:00",
-        "start": "2026-07-20T09:00:00+07:00",
+        "end": "2026-07-21T11:00:00+07:00",
+        "start": "2026-07-21T09:00:00+07:00",
         "timezone": "Asia/Bangkok"
       },
       "display": {
         "badges": [
           {
-            "color": "gold",
-            "emoji": "◎",
-            "label": "fixture"
+            "color": "#ba7517",
+            "emoji": "🟡",
+            "label": "ฤกษ์ปานกลาง"
           }
         ],
-        "guardrails": [
-          "ข้อมูลสังเคราะห์"
-        ],
-        "summary": "Synthetic auspicious candidate."
+        "guardrails": [],
+        "summary": "🟡 ฤกษ์ปานกลาง · คะแนน 62"
       },
       "donggong": {
-        "jianchu": "建",
+        "base": "—",
+        "en": "Good · Remove",
+        "fromException": true,
+        "jcMeaning": {
+          "en": "Clearing-out day — good for new starts, healing, ending old things.",
+          "th": "วันปัดกวาดของเก่า — เหมาะเริ่มสิ่งใหม่ รักษาโรค เลิก/ทิ้งของเดิม แต่ระวังเรื่องที่ต้องความมั่นคง",
+          "zh": "除舊布新，宜療病出舊。"
+        },
+        "ji": [],
+        "jiPairs": [],
+        "jianchu": "除",
+        "jianchuEn": "Remove",
+        "jianchuTh": "วันกำจัดสิ่งเก่า",
         "level": "good",
         "missing": false,
-        "th": "ข้อมูลสังเคราะห์สำหรับตรวจสัญญา"
+        "monthIdx": 6,
+        "note": "",
+        "noteTh": "",
+        "shensha": [],
+        "shenshaPairs": [],
+        "th": "ดี · วันกำจัดสิ่งเก่า",
+        "verdict": "吉",
+        "verdictEn": "Good",
+        "verdictTh": "ดี",
+        "yi": [
+          "伐木",
+          "拴架"
+        ],
+        "yiPairs": [
+          {
+            "th": "เตรียมไม้-วัสดุสร้างบ้าน",
+            "zh": "伐木"
+          },
+          {
+            "th": "ขึ้นโครงสร้างบ้าน",
+            "zh": "拴架"
+          }
+        ],
+        "zh": "吉 · 除日"
       },
       "huangdao": {
-        "deity_th": "เทพตัวอย่าง",
-        "deity_zh": "青龍",
+        "deity_en": "Heavenly Virtue",
+        "deity_th": "เทียนเต๋อ (คุณธรรมฟ้า)",
+        "deity_zh": "天德",
         "good": true,
-        "path_th": "วิถีตัวอย่าง",
+        "path_th": "ยามทอง",
         "path_zh": "黃道"
       },
       "id": "fixture-candidate-01",
       "modules": {
-        "qi_men": {
+        "he_luo": {
+          "confidence": 0.8,
+          "module": "he_luo",
+          "pass": true,
           "raw": {
-            "deity": "九天",
-            "direction": "E",
-            "door": "生門",
-            "ju_number": 5,
-            "palace_id": 4,
-            "star": "天任"
-          }
+            "day_element": "fire",
+            "pattern": "二旺一殺",
+            "pattern_th": "二旺一殺",
+            "period": 9
+          },
+          "reasons": {
+            "down": [],
+            "up": [
+              {
+                "code": "P9_FAV",
+                "delta": 10,
+                "en": "🌟 Period 9 favors Fire (He Luo)",
+                "thai": "🌟 ยุค9 fire ดี (河洛)",
+                "zh": "🌟 九運火吉 (河洛)"
+              },
+              {
+                "code": "HL_PAT",
+                "delta": -3,
+                "en": "📊 二旺一殺 pattern (He Luo)",
+                "thai": "📊 二旺一殺",
+                "zh": "📊 二旺一殺 (河洛)"
+              }
+            ],
+            "warning": []
+          },
+          "score": {
+            "normalized": 72,
+            "raw": 72,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": [
+            "period9_fav",
+            "heluo_二旺一殺"
+          ]
+        },
+        "nine_stars": {
+          "confidence": 0.75,
+          "module": "nine_stars",
+          "pass": true,
+          "raw": {
+            "star": 4
+          },
+          "reasons": {
+            "down": [],
+            "up": [
+              {
+                "code": "STAR_GOOD",
+                "delta": 15,
+                "en": "🌟 4 White Star (Flying Stars)",
+                "thai": "🌟 4白 (飛星)",
+                "zh": "🌟 4白 (飛星)"
+              }
+            ],
+            "warning": []
+          },
+          "score": {
+            "normalized": 65,
+            "raw": 65,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": [
+            "flystar_4"
+          ]
+        },
+        "qi_men": {
+          "confidence": 0.9,
+          "module": "qi_men",
+          "pass": true,
+          "raw": {
+            "bad_door": false,
+            "computed_from": "2026-07-21T10:00:00+07:00",
+            "deity": "六合",
+            "direction": "NW",
+            "door": "開門",
+            "engine_hour_pillar": "癸巳",
+            "fallback": false,
+            "headline": {
+              "deity": "六合",
+              "direction": "NW",
+              "door": "開門",
+              "palace_id": 6,
+              "palace_zh": "乾六宮",
+              "role": "zhi_shi",
+              "star": "天英"
+            },
+            "ju_number": 8,
+            "palace_id": 6,
+            "palace_zh": "乾六宮",
+            "palaces": [
+              {
+                "deity": "太陰",
+                "deity_code": "TAI_YIN",
+                "direction": "N",
+                "door": "休門",
+                "door_code": "XIU_MEN",
+                "palace_id": 1,
+                "palace_zh": "坎一宮",
+                "star": "天芮",
+                "star_code": "TIAN_RUI"
+              },
+              {
+                "deity": "玄武",
+                "deity_code": "XUAN_WU",
+                "direction": "SW",
+                "door": "死門",
+                "door_code": "SI_MEN",
+                "palace_id": 2,
+                "palace_zh": "坤二宮",
+                "star": "天沖",
+                "star_code": "TIAN_CHONG"
+              },
+              {
+                "deity": "值符",
+                "deity_code": "ZHI_FU",
+                "direction": "E",
+                "door": "傷門",
+                "door_code": "SHANG_MEN",
+                "palace_id": 3,
+                "palace_zh": "震三宮",
+                "star": "天心",
+                "star_code": "TIAN_XIN"
+              },
+              {
+                "deity": "九天",
+                "deity_code": "JIU_TIAN",
+                "direction": "SE",
+                "door": "杜門",
+                "door_code": "DU_MEN",
+                "palace_id": 4,
+                "palace_zh": "巽四宮",
+                "star": "天蓬",
+                "star_code": "TIAN_PENG"
+              },
+              {
+                "deity": "值符",
+                "deity_code": "ZHI_FU",
+                "direction": "C",
+                "door": "杜門",
+                "door_code": "DU_MEN",
+                "palace_id": 5,
+                "palace_zh": "中五宮",
+                "star": "天禽",
+                "star_code": "TIAN_QIN"
+              },
+              {
+                "deity": "六合",
+                "deity_code": "LIU_HE",
+                "direction": "NW",
+                "door": "開門",
+                "door_code": "KAI_MEN",
+                "palace_id": 6,
+                "palace_zh": "乾六宮",
+                "star": "天英",
+                "star_code": "TIAN_YING"
+              },
+              {
+                "deity": "白虎",
+                "deity_code": "BAI_HU",
+                "direction": "W",
+                "door": "驚門",
+                "door_code": "JING_FEAR_MEN",
+                "palace_id": 7,
+                "palace_zh": "兌七宮",
+                "star": "天輔",
+                "star_code": "TIAN_FU"
+              },
+              {
+                "deity": "螣蛇",
+                "deity_code": "TENG_SHE",
+                "direction": "NE",
+                "door": "生門",
+                "door_code": "SHENG_MEN",
+                "palace_id": 8,
+                "palace_zh": "艮八宮",
+                "star": "天柱",
+                "star_code": "TIAN_ZHU"
+              },
+              {
+                "deity": "九地",
+                "deity_code": "JIU_DI",
+                "direction": "S",
+                "door": "景門",
+                "door_code": "JING_VIEW_MEN",
+                "palace_id": 9,
+                "palace_zh": "離九宮",
+                "star": "天任",
+                "star_code": "TIAN_REN"
+              }
+            ],
+            "star": "天英"
+          },
+          "reasons": {
+            "down": [
+              {
+                "code": "QM_STAR",
+                "delta": 5,
+                "en": "⭐ 天英 star (Qi Men)",
+                "thai": "⭐ 天英 (奇門星)",
+                "zh": "⭐ 天英 (奇門星)"
+              }
+            ],
+            "up": [
+              {
+                "code": "QM_DOOR",
+                "delta": 30,
+                "en": "🚪 Open Gate 開門 (Qi Men)",
+                "thai": "🚪 開門 (奇門)",
+                "zh": "🚪 開門 (奇門)"
+              }
+            ],
+            "warning": []
+          },
+          "score": {
+            "normalized": 68,
+            "raw": 68,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": [
+            "door_開門",
+            "star_天英",
+            "deity_六合"
+          ]
+        },
+        "tai_sui": {
+          "confidence": 0.9,
+          "module": "tai_sui",
+          "pass": true,
+          "raw": {
+            "year_branch": "午"
+          },
+          "reasons": {
+            "down": [],
+            "up": [
+              {
+                "code": "TS_SAFE",
+                "delta": 0,
+                "en": "✓ Clear of Tai Sui (太歲)",
+                "thai": "✓ 太歲ปลอดภัย",
+                "zh": "✓ 太歲無犯"
+              }
+            ],
+            "warning": []
+          },
+          "score": {
+            "normalized": 75,
+            "raw": 75,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": [
+            "taisui_safe"
+          ]
         },
         "twelve_officers": {
+          "confidence": 0.85,
+          "module": "twelve_officers",
+          "pass": true,
           "raw": {
-            "officer": "建"
-          }
+            "officer": "除"
+          },
+          "reasons": {
+            "down": [],
+            "up": [
+              {
+                "code": "OFFICER_GOOD",
+                "delta": 15,
+                "en": "✓ 除 Day (Twelve Day Officers)",
+                "thai": "✓ 除日 (12建除)",
+                "zh": "✓ 除日 (十二建除)"
+              }
+            ],
+            "warning": []
+          },
+          "score": {
+            "normalized": 65,
+            "raw": 65,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": [
+            "officer_除"
+          ]
+        },
+        "twelve_spirits": {
+          "confidence": 0.8,
+          "module": "twelve_spirits",
+          "pass": true,
+          "raw": {
+            "spirit": "司命"
+          },
+          "reasons": {
+            "down": [],
+            "up": [
+              {
+                "code": "SPIRIT_GOOD",
+                "delta": 20,
+                "en": "✨ 司命 (Twelve Day Spirits)",
+                "thai": "✨ 司命 (12神煞)",
+                "zh": "✨ 司命 (十二神煞)"
+              }
+            ],
+            "warning": []
+          },
+          "score": {
+            "normalized": 70,
+            "raw": 70,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": [
+            "spirit_司命"
+          ]
+        },
+        "twenty_eight": {
+          "confidence": 0.8,
+          "module": "twenty_eight",
+          "pass": true,
+          "raw": {
+            "star": "翼"
+          },
+          "reasons": {
+            "down": [],
+            "up": [],
+            "warning": []
+          },
+          "score": {
+            "normalized": 55,
+            "raw": 55,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": [
+            "xiu_翼"
+          ]
+        },
+        "ze_ri": {
+          "confidence": 0.85,
+          "module": "ze_ri",
+          "pass": true,
+          "raw": {
+            "dayBranch": "申",
+            "hourBranch": "巳",
+            "monthBranch": "未",
+            "yearBranch": "午"
+          },
+          "reasons": {
+            "down": [],
+            "up": [],
+            "warning": []
+          },
+          "score": {
+            "normalized": 50,
+            "raw": 50,
+            "weight": 1
+          },
+          "status": "ready",
+          "tags": []
         }
       },
+      "people": [],
       "pillars": {
         "day": {
-          "branch": "子",
-          "stem": "甲"
+          "branch": "申",
+          "stem": "丙"
         },
         "hour": {
           "branch": "巳",
-          "stem": "己"
+          "stem": "癸"
         },
         "month": {
           "branch": "未",
@@ -75,32 +461,116 @@
         }
       },
       "richong": {
-        "clash_branch_zh": "午",
-        "zodiac_th": "ม้า",
-        "zodiac_zh": "馬"
+        "ages": [
+          5,
+          17,
+          29,
+          41,
+          53,
+          65,
+          77,
+          89
+        ],
+        "birth_years": [
+          2022,
+          2010,
+          1998,
+          1986,
+          1974,
+          1962,
+          1950,
+          1938
+        ],
+        "clash_branch_zh": "寅",
+        "zodiac_en": "Tiger",
+        "zodiac_th": "เสือ",
+        "zodiac_zh": "虎"
       },
       "scoring": {
-        "action": "use",
+        "action": "neutral",
         "activeModules": [
-          "qi_men",
-          "twelve_officers"
+          "ze_ri",
+          "twelve_officers",
+          "twenty_eight",
+          "twelve_spirits",
+          "nine_stars",
+          "tai_sui",
+          "he_luo",
+          "hex64"
         ],
-        "finalScore": 82,
+        "caps": [],
+        "finalScore": 62,
         "moduleScores": {
-          "qi_men": 84,
-          "twelve_officers": 80
+          "he_luo": 72,
+          "nine_stars": 65,
+          "tai_sui": 75,
+          "twelve_officers": 65,
+          "twelve_spirits": 70,
+          "twenty_eight": 55,
+          "ze_ri": 50
         },
         "reasonsDown": [],
         "reasonsUp": [
           {
-            "code": "fixture-up",
-            "delta": 4,
-            "thai": "เหตุผลสังเคราะห์"
+            "code": "DONGGONG_VERDICT_UP",
+            "delta": 1,
+            "en": "Dong Gong supports the day overall · Good · Remove (除日)",
+            "severity": "info",
+            "source": "ze_ri",
+            "thai": "ตงกงหนุนภาพรวม · ดี วันกำจัดสิ่งเก่า",
+            "zh": "董公整體看好 · 吉 · 除日"
+          },
+          {
+            "code": "SPIRIT_GOOD",
+            "delta": 20,
+            "en": "✨ 司命 (Twelve Day Spirits)",
+            "thai": "✨ 司命 (12神煞)",
+            "zh": "✨ 司命 (十二神煞)"
+          },
+          {
+            "code": "OFFICER_GOOD",
+            "delta": 15,
+            "en": "✓ 除 Day (Twelve Day Officers)",
+            "thai": "✓ 除日 (12建除)",
+            "zh": "✓ 除日 (十二建除)"
+          },
+          {
+            "code": "STAR_GOOD",
+            "delta": 15,
+            "en": "🌟 4 White Star (Flying Stars)",
+            "thai": "🌟 4白 (飛星)",
+            "zh": "🌟 4白 (飛星)"
+          },
+          {
+            "code": "P9_FAV",
+            "delta": 10,
+            "en": "🌟 Period 9 favors Fire (He Luo)",
+            "thai": "🌟 ยุค9 fire ดี (河洛)",
+            "zh": "🌟 九運火吉 (河洛)"
+          },
+          {
+            "code": "HL_PAT",
+            "delta": -3,
+            "en": "📊 二旺一殺 pattern (He Luo)",
+            "thai": "📊 二旺一殺",
+            "zh": "📊 二旺一殺 (河洛)"
+          },
+          {
+            "code": "TS_SAFE",
+            "delta": 0,
+            "en": "✓ Clear of Tai Sui (太歲)",
+            "thai": "✓ 太歲ปลอดภัย",
+            "zh": "✓ 太歲無犯"
           }
         ],
-        "tier": "A",
+        "tier": "neutral",
+        "vetoes": [],
         "warnings": []
-      }
+      },
+      "zodiacClash": [
+        "子 ",
+        "寅 "
+      ]
     }
   ],
   "cutSlots": [],
@@ -108,9 +578,37 @@
     "baseTotal": 12,
     "finalCount": 1,
     "perModule": {
+      "he_luo": {
+        "failed": 0,
+        "passed": 12
+      },
+      "nine_stars": {
+        "failed": 0,
+        "passed": 12
+      },
       "qi_men": {
-        "failed": 2,
-        "passed": 10
+        "failed": 0,
+        "passed": 12
+      },
+      "tai_sui": {
+        "failed": 0,
+        "passed": 12
+      },
+      "twelve_officers": {
+        "failed": 0,
+        "passed": 12
+      },
+      "twelve_spirits": {
+        "failed": 0,
+        "passed": 12
+      },
+      "twenty_eight": {
+        "failed": 0,
+        "passed": 12
+      },
+      "ze_ri": {
+        "failed": 0,
+        "passed": 12
       }
     },
     "personCut": 0,
@@ -119,18 +617,73 @@
     "vetoCut": 0
   },
   "meta": {
+    "activityProfile": null,
     "activityType": "開市",
+    "cache": "miss",
+    "cacheHits": 0,
+    "cacheMisses": 0,
+    "donggongScoringPolicy": "v1_overlay",
     "durationMs": 12,
     "entitlement": {
       "max_range_days": 90,
       "max_results": 50,
       "modules_allowed": [
-        "qi_men"
+        "ba_zi",
+        "ze_ri",
+        "dong_gong",
+        "tai_sui",
+        "qi_men",
+        "tian_xing",
+        "moon_void",
+        "moon_sign",
+        "retro_window",
+        "eclipse_zone",
+        "rahu_kalam",
+        "panchanga",
+        "yong_shen",
+        "tara_bala",
+        "twelve_officers",
+        "twenty_eight",
+        "twelve_spirits",
+        "nine_stars",
+        "he_luo",
+        "hex64"
       ],
       "modules_stripped": [],
       "plan": "premium"
-    }
+    },
+    "eventLocation": {
+      "source": "default_bkk"
+    },
+    "hardModules": [
+      "ze_ri",
+      "tai_sui"
+    ],
+    "mergedHardModules": [
+      "ze_ri",
+      "tai_sui"
+    ],
+    "qimenScoringPolicy": {
+      "baseScoreExcludesQiMen": true,
+      "caveatTh": "คะแนนหลักตัดจากศาสตร์อื่นก่อน แล้วฉีเหมินค่อยปรับแบบมีเหตุผลเฉพาะกิจกรรมและมีเพดานกันฟันธงเกินข้อมูล",
+      "chartScopeTh": "ใช้เฉพาะผังยาม 時家 ที่ระบบอนุญาตให้ตัดสินได้; ผังวัน/เดือน/ปีใช้เป็นบริบท ไม่เอามาคิดคะแนนฤกษ์ยาม",
+      "enabled": true,
+      "evidenceTh": "ใช้เฉพาะประตู ดาว เทพ ก้าน และสัญญาณจากผังจริงที่อนุญาตให้ให้คะแนน; ป้ายแสดงผลหรือข้อมูลอ่านประกอบไม่เอามาคิดคะแนน",
+      "mode": "guard_only",
+      "noGenericAveraging": true,
+      "targetDirection": null,
+      "useTh": "ไม่มีภารกิจย่อยเฉพาะ: ฉีเหมินใช้เป็นตัวจำกัดเมื่อผังไม่รับ ไม่ใช่คะแนนบวกกลาง",
+      "version": "datepick-qimen-policy-20260606"
+    },
+    "relaxDoors": false,
+    "skyModules": [],
+    "skyScoringPolicy": "off",
+    "sqlHardModules": [
+      "ze_ri",
+      "tai_sui"
+    ]
   },
   "ok": true,
-  "source": "mobile-r515-synthetic-contract"
+  "people_ids": [],
+  "source": "/api/auspicious"
 }
