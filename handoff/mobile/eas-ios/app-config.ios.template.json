@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "owner": "OWNER_INPUT_EXPO_OWNER",
+    "extra": {
+      "eas": {
+        "projectId": "OWNER_INPUT_EAS_PROJECT_ID"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "OWNER_INPUT_IOS_BUNDLE_IDENTIFIER",
+      "appleTeamId": "OWNER_INPUT_APPLE_TEAM_ID",
+      "buildNumber": "OWNER_INPUT_IOS_BUILD_NUMBER",
+      "supportsTablet": true
+    }
+  }
+}

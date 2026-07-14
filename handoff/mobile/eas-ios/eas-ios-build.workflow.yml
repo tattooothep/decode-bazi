@@ -1,0 +1,86 @@
+name: Hourkey iOS EAS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eas-ios-${{ github.ref }}-${{ inputs.profile }}
+  cancel-in-progress: false
+
+jobs:
+  build-ios:
+    name: Build iOS (${{ inputs.profile }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      BUILD_PROFILE: ${{ inputs.profile }}
+    steps:
+      - name: Check out the approved commit
+        uses: actions/checkout@v5
+
+      - name: Refuse a dirty checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
+            git status --short
+            exit 1
+          fi
+
+      - name: Use Node 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify identity, project, and resolved EAS configuration
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${EXPO_TOKEN:?Set the EXPO_TOKEN repository secret}"
+          : "${BUILD_PROFILE:?Select preview or production}"
+          : "${RUNNER_TEMP:?GitHub runner did not provide RUNNER_TEMP}"
+          case "$BUILD_PROFILE" in
+            preview|production) ;;
+            *) printf 'Unsupported EAS build profile: %s\n' "$BUILD_PROFILE" >&2; exit 64 ;;
+          esac
+          npx --yes eas-cli@21.0.0 whoami
+          npx --yes eas-cli@21.0.0 project:info
+          npx --yes eas-cli@21.0.0 config --platform ios --profile "$BUILD_PROFILE" --non-interactive --json > "$RUNNER_TEMP/eas-config-ios.json"
+
+      - name: Build without changing remote credentials
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${EXPO_TOKEN:?Set the EXPO_TOKEN repository secret}"
+          : "${BUILD_PROFILE:?Select preview or production}"
+          : "${RUNNER_TEMP:?GitHub runner did not provide RUNNER_TEMP}"
+          npx --yes eas-cli@21.0.0 build --platform ios --non-interactive --freeze-credentials --wait --json --profile "$BUILD_PROFILE" > "$RUNNER_TEMP/eas-build-ios.json"
+
+      - name: Preserve the EAS build receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eas-ios-${{ inputs.profile }}-receipt
+          path: ${{ runner.temp }}/eas-build-ios.json
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": "21.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "credentialsSource": "remote",
+      "environment": "preview",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "credentialsSource": "remote",
+      "environment": "production",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      }
+    }
+  }
+}
