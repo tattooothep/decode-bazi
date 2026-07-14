@@ -405,6 +405,24 @@ body.fs-map-expanded .map-card.map-expanded .map-instr{max-height:96px;overflow:
 .wall-angle-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
 .wall-angle-btn:disabled{opacity:.32;cursor:not-allowed;}
 .wall-angle-readout{font-family:var(--thai);font-size:12px;color:var(--gold-bright);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* (14 ก.ค.) ค้นหาสถานที่บนแผนที่ · Places Autocomplete */
+.map-search-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--line);background:var(--bg-2);}
+.map-search-ic{color:var(--gold);font-size:15px;line-height:1;flex-shrink:0;}
+.map-search-row input{flex:1;min-width:0;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--th),sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.map-search-row input:focus{border-color:var(--gold);}
+.map-search-row input::placeholder{color:var(--fg-faint);}
+/* PAC dropdown ให้เข้าธีม (แพทเทิร์นเดียวกับ input.html) */
+.pac-container{background:rgba(15,17,21,.97);border:1px solid rgba(200,164,77,.3);border-radius:10px;margin-top:6px;box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--th),'Noto Serif Thai',serif;backdrop-filter:blur(20px);overflow:hidden;z-index:2100;}
+.pac-item{padding:10px 14px;border-top:1px solid rgba(200,164,77,.1);color:#f6f1e6;font-size:13px;cursor:pointer;}
+.pac-item:hover,.pac-item.pac-item-selected{background:rgba(200,164,77,.12);}
+.pac-item:first-child{border-top:none;}
+.pac-icon{filter:brightness(0) invert(72%) sepia(54%) saturate(440%) hue-rotate(7deg);opacity:.8;}
+.pac-item-query{color:#c8a44d;font-weight:600;}
+.pac-matched{color:#c8a44d;}
+[data-theme="light"] .pac-container{background:rgba(255,250,238,.97);border-color:rgba(138,109,42,.3);}
+[data-theme="light"] .pac-item{color:#1a1612;border-top-color:rgba(138,109,42,.12);}
+[data-theme="light"] .pac-item:hover{background:rgba(138,109,42,.1);}
+[data-theme="light"] .pac-item-query,[data-theme="light"] .pac-matched{color:#8a6d2a;}
 #gmap{flex:1;width:100%;min-height:380px;background:#1a1a1a;}
 #gmap,#gmap *{cursor:default!important;}
 body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important;}
@@ -876,6 +894,11 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <output class="wall-angle-readout" id="wallFineAngleOut" data-i18n="auto.f.160">ลากจากจุดเริ่มไปปลายผนัง</output>
           <button class="wall-angle-btn" id="btnWallAnglePlus" disabled>+0.1°</button>
         </div>
+      </div>
+      <div class="map-search-row">
+        <span class="map-search-ic" aria-hidden="true">⌕</span>
+        <input type="text" id="fsPlaceSearch" placeholder="ค้นหาสถานที่ · หมู่บ้าน คอนโด ถนน" data-i18n-ph="fs.search.ph" autocomplete="off" aria-label="ค้นหาสถานที่บนแผนที่"/>
+        <button class="map-btn" id="btnPlaceClear" aria-label="ล้างคำค้น" title="ล้างคำค้น">✕</button>
       </div>
       <div id="gmap"></div>
       <div class="map-result-bar">
@@ -3247,7 +3270,39 @@ window.initMap = function(){
   // Wall drag mode setup
   setupWallDragMode();
   updateMapCursor();
+  initPlaceSearch();
 };
+
+/* (14 ก.ค.) ค้นหาสถานที่ · Places Autocomplete ผูกกับแผนที่ */
+function initPlaceSearch(){
+  const inp = document.getElementById('fsPlaceSearch');
+  const btnClear = document.getElementById('btnPlaceClear');
+  if (!inp || !window.google || !google.maps || !google.maps.places) {
+    if (inp) inp.closest('.map-search-row').style.display = 'none';
+    return;
+  }
+  const ac = new google.maps.places.Autocomplete(inp, {
+    fields: ['name','geometry','formatted_address'],
+  });
+  ac.bindTo('bounds', map);
+  ac.addListener('place_changed', () => {
+    const p = ac.getPlace();
+    if (!p || !p.geometry || !p.geometry.location) return;
+    if (p.geometry.viewport) {
+      map.fitBounds(p.geometry.viewport);
+      if ((map.getZoom() || 0) > 19) map.setZoom(19);
+    } else {
+      map.setCenter(p.geometry.location);
+      map.setZoom(18);
+    }
+    /* แจ้งในแถบสถานะเดิม (แพทเทิร์นเดียวกับ GPS) */
+    const verdict = document.getElementById('mrVerdict');
+    if (verdict) verdict.textContent = _fstx('fs.search.found','เลื่อนแผนที่ไปที่ตำแหน่งแล้ว · ซูมแล้วลากผนัง A→B ต่อได้เลย');
+  });
+  if (btnClear) btnClear.addEventListener('click', () => { inp.value=''; inp.focus(); });
+  // กัน Enter ใน input ไป submit อะไรที่อื่น
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+}
 
 function getActiveMapFocusLatLng(){
   if(wallB) return wallB.getPosition();
@@ -5033,7 +5088,7 @@ document.getElementById('btnGeolocate').addEventListener('click', ()=>{
 // ═══════════════════════════════════════════════════════════════
 function loadGoogleMaps(){
   const script = document.createElement('script');
-  script.src = '/api/maps-script?callback=initMap&libraries=geometry';
+  script.src = '/api/maps-script?callback=initMap&libraries=geometry,places';
   script.async = true;
   script.defer = true;
   script.onerror = ()=>{
@@ -5385,7 +5440,11 @@ Object.assign(window.HK_I18N, {
   'hk.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
   'hk.nav.goal':    { th:'เป้าหมาย',   en:'Goals',    zh:'志向' },
   'hk.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
-  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'}
+  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
+  /* (14 ก.ค.) ค้นหาสถานที่บนแผนที่ */
+  'fs.search.ph':   { th:'ค้นหาสถานที่ · หมู่บ้าน คอนโด ถนน', en:'Search a place · village, condo, street', zh:'搜尋地點 · 社區 大樓 街道' },
+  'fs.search.clear':{ th:'ล้างคำค้น', en:'Clear search', zh:'清除搜尋' },
+  'fs.search.found':{ th:'เลื่อนแผนที่ไปที่ตำแหน่งแล้ว · ซูมแล้วลากผนัง A→B ต่อได้เลย', en:'Map moved to the location · zoom in and drag wall A→B to continue', zh:'地圖已移至該位置 · 放大後即可拖曳 A→B 牆線' }
 });
 function _fsLangState(raw, write){
   try{
