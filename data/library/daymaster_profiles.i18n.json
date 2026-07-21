@@ -1,0 +1,482 @@
+{
+ "甲_強": {
+  "en": {
+   "label": "Yang Wood · Strong",
+   "core": "You are the \"great tree — the pine, the oak\" — deeply rooted and reaching for the sky. 甲 is wood that stands upright, steady, with a clear sense of direction. In its strong state (firm roots, full vitality), your essence is that of a natural-born leader — someone who stands tall, holds to principle, and does not bend easily under pressure. You see far ahead, set long-term goals, and move toward them steadily, like a tree that grows ring by ring, year by year, never in a hurry.",
+   "real_life": "In everyday life, you are the person others lean on. You carry responsibility well, your word is your bond, and you are often the one entrusted to lead the team or handle what matters most. You are upright, loyal to what you believe in, and you shelter those under your canopy the way a great tree gives shade. You love building things that last — systematic, well-structured — and you have little patience for aimless chaos.",
+   "shadow": "Your clearest shadow is a hardness that refuses to bend — once you believe in something, you may stand your ground so completely that no room is left for anyone else's alternatives. You hold high standards and carry great responsibility, but left unchecked, your principles can harden into walls. People around you may feel there is only one way: yours. The danger is not a lack of strength, but strength so rigid it snaps rather than adjusting its rhythm to survive.",
+   "needs": "Strong wood needs **Fire (食傷 · expression/output)** to release its pent-up power, transforming raw strength into tangible achievement. It also needs **Metal (官煞 · discipline/structure/challenge)** to prune its branches into shape. Wood never touched by the axe grows wild and worthless, but wood that has been shaped becomes the pillar of a house. You grow best when you have a challenging goal and a clear framework to work within."
+  },
+  "zh": {
+   "label": "陽木 · 身強",
+   "core": "您是「參天大樹、青松、橡樹」——根基深厚、直上雲霄。甲是挺拔而立的木，穩固而方向明確。身強之時（根深力足），您天生就是領導者——立身正直、堅守原則、不輕易向壓力低頭。您目光長遠，立定長期目標，如大樹般一年一年穩步成長，不急不躁地朝目標邁進。",
+   "real_life": "現實生活中，您是他人可以依靠的人，責任感極強，一言九鼎，常被委以帶領團隊或掌管要務的重任。您為人正直，堅守信念，並如大樹庇蔭般守護身邊的人。您喜歡建立可長久、有制度、結構分明的事物，不喜歡混亂無序的局面。",
+   "shadow": "您最明顯的陰影，是剛硬而不肯彎——一旦認定了什麼，您可能堅持到底，不留餘地讓別人提出其他選項。您標準高、責任重，但若不留意，原則會變成高牆，身邊的人可能覺得只能照您的方式做。危險之處不在於缺乏力量，而在於力量剛硬到寧折不彎，不懂調整節奏以求存。",
+   "needs": "身強之木需要 **火（食傷 · 表現／成果）** 來宣洩積壓的能量，把堅實的力量化為看得見的成果；也需要 **金（官煞 · 紀律／規範／挑戰）** 來修枝剪葉、塑造成材。未經斧鑿的木材雜亂無用，經過修整的木材卻能成為棟樑。當您擁有具挑戰性的目標與清晰的規範，便能成長得最好。"
+  }
+ },
+ "甲_中和": {
+  "en": {
+   "label": "Yang Wood · Balanced",
+   "core": "You are a tree growing in balance — not so soft it topples, not so rigid it snaps. 甲 in its balanced state is someone with innate leadership who also knows when to yield to the rhythm of things. You hold clear principles of your own, but you are not stubborn about them — you adjust willingly when the reasoning is sound. Your character is flexible yet never spineless: you stand firm on what matters and let go of what does not.",
+   "real_life": "In everyday life, you carry yourself well in almost any situation — leading when leadership is called for, following when following serves best. People see you as trustworthy, mature, and sound in judgment. You are often the rare person who has both vision and the ability to execute — never lost in daydreams, never so earthbound you fail to look ahead. This point of balance lets you advance steadily without forcing anything.",
+   "shadow": "The shadow to watch is the moment of \"stand firm or give way\" — you have an inner core, but at times your energy swings and decisions come too slowly. When your 運 (luck cycle) pushes you toward strength, you may grow stubborn and overly sure of your own way; when it pushes you toward weakness, you may hesitate and back down too easily. If you fail to read your own rhythm in time, you lose opportunities both from digging in too hard and from yielding too much.",
+   "needs": "Because you already sit at the point of balance, what you need is a **\"balance keeper\"** — not an all-out booster or reducer. In periods when you lean toward weakness, you need Water and Wood (印比) for support; in periods when you lean toward strength, you need Fire and Metal (食傷官煞) to release and prune. Reading your chart means watching the 運 above all — seeing which way that period tilts you, then reinforcing the opposite side to bring you back to center."
+  },
+  "zh": {
+   "label": "陽木 · 中和",
+   "core": "您是一棵均衡成長中的大樹——不軟弱到傾倒，也不剛硬到折斷。甲處於中和之時，是內有領導之才、又懂得順勢而為的人。您有清楚的原則，卻不至於固執，遇到夠充分的理由便願意調整。您的本質柔韌而有主軸——在重要之事上堅守，在不必要之事上放下。",
+   "real_life": "現實生活中，您在各種場合都能拿捏得宜——該領導時能領導，該跟隨時能跟隨。人們認為您可靠、成熟、決策合理。您往往既有遠見又能實際執行，不好高騖遠，也不困於眼前而失了遠望。這份平衡讓您能穩步前進而不必勉強。",
+   "shadow": "需要留意的陰影，是「該堅持還是該退讓」的節奏——您有內在主軸，但有些時期能量搖擺，導致決策過慢。當運推向強勢時，您可能更固執、更自信於自己的路；當運推向弱勢時，您可能猶豫、太輕易退讓。若讀不準自己的節奏，無論過剛還是過柔，您都會錯失機會。",
+   "needs": "因為已處於平衡點，您需要的是 **「維持平衡之物」**，而非一味走極端的補強或削弱——當能量偏弱時，需要水木（印比）來扶持；當偏強時，需要火金（食傷官煞）來宣洩與修剪。解讀您的命局須以運為主，看當下偏向何方，再補其反面使其回歸中和。"
+  }
+ },
+ "甲_弱": {
+  "en": {
+   "label": "Yang Wood · Weak",
+   "core": "You are a sapling, a tree whose roots have not yet sunk deep — full of the will to grow tall and stand straight, but without the strength yet to withstand strong winds alone. 甲 in its weak state still carries the heart of a leader and the longing to do great things, but lacks the base of power to push them through single-handedly. Your essence is that of someone who \"dreams big but needs backing\" — rich in ideals, yet reliant on the right people and opportunities to make them real.",
+   "real_life": "In everyday life, you are thoughtful, far-sighted, and generous — genuinely eager to help others. Yet you often feel the weight is too much when heavy responsibility falls on you alone. You do your best work with a good team, with mentors or elders behind you, and in an environment that supports you. You may look strong on the outside (being yang wood, after all), but inside you need support and encouragement far more than you let on.",
+   "shadow": "Your shadow is forcing yourself to be the great tree before your roots have taken hold — shouldering burdens beyond your strength, insisting on standing alone when you still need help, and burning out halfway. You may hate looking weak, so you try to carry everything yourself — yet with a chart like this, the more you go it alone, the faster your energy drains. The turning point is allowing yourself to build a foundation first, rather than rushing to prove yourself to everyone.",
+   "needs": "Weak wood needs **Water (印 · knowledge/support/backing from elders)** to water its roots until they grow strong, and it needs **fellow Wood (比劫 · friends/team/allies)** standing alongside it — a forest to break the wind together. A lone tree falls easily, but a whole forest withstands the storm. You must stop trying to be the lone hero; build your network and your foundation of knowledge until they are solid. Once your roots run deep enough, the leadership already within you will shine through on its own."
+  },
+  "zh": {
+   "label": "陽木 · 身弱",
+   "core": "您是幼苗，或根尚未扎深的樹——有向上生長、挺立的志向，但力量還不足以獨自抵擋強風。身弱之甲仍懷著領導者的心與成大事的渴望，卻缺乏獨力推動成功的根基。因此您的本質是「志向遠大、卻需要助力」的人——理想美好，但需要貴人與機緣來成就。",
+   "real_life": "現實生活中，您想法好、有遠見、樂於助人，但獨自承擔重任時常感到力不從心。有好的團隊、有前輩長輩扶持、環境合宜時，您能表現出色。您外表可能顯得堅強（因為是陽木），內心卻比表現出來的更需要依靠與鼓勵。",
+   "shadow": "您的陰影，是在根還未穩之前就勉強自己當大樹——扛下超出負荷的重擔、明明需要幫助卻硬撐，最後半途力竭。您可能不願顯得軟弱，於是凡事自己扛；然而這樣的命局，越是單打獨鬥，越是耗損。轉機在於先築好根基，而不是急著向所有人證明自己。",
+   "needs": "身弱之木需要 **水（印 · 學識／依靠／長輩扶持）** 來灌溉，讓根先長得強壯；也需要 **同類之木（比劫 · 朋友／團隊／盟友）** 並肩而立，成林擋風。獨木易倒，成林卻能抵禦風暴。您必須放下獨自當英雄的執念，先把人脈與學識的根基打穩；當根扎得夠深，您與生俱來的領導力自會展現。"
+  }
+ },
+ "乙_強": {
+  "en": {
+   "label": "Yin Wood · Strong",
+   "core": "You are the \"climbing vine, the flower, the creeper, the grass\" — graceful yet tenacious, brimming with life. Unlike 甲, which stands stiff and upright, 乙 is wood that flourishes through flexibility — winding its way upward anywhere, adapting brilliantly, surviving where great trees cannot. In its strong state (full vitality), your essence is \"soft outside, steel within\" — gentle and accommodating on the surface, with fierce determination and a powerful survival instinct hidden underneath.",
+   "real_life": "In everyday life, you are charming and a natural with people — pleasant to listen to, with a true art for persuasion that never needs force. You reach your goals through gentleness and flexibility — never a head-on collision, always the indirect path that works better. You adapt quickly to new environments, survive difficult situations gracefully, and carry an elegance in both bearing and expression. You are someone who is \"gentle, yet never defeated.\"",
+   "shadow": "Your shadow is softness with an edge — you read people well, adapt effortlessly, and wield charm so seamlessly that at times you may catch yourself using sweetness or accommodation to get what you want before others even notice. You may cling too tightly to certain people or opportunities until your own position blurs. The danger point is when no one can quite tell where the real you stands.",
+   "needs": "Strong yin wood needs **Fire (食傷 · expression/beauty/output)** to transform its vitality into work that truly shines — a flower needs sunlight to bloom. It also needs **Metal (官煞 · structure/order)** to give the vine's climbing a direction, rather than sprawling every which way. With sunlight to shine on you and a trellis to hold onto, you become the flowering vine that is both beautiful and fruitful."
+  },
+  "zh": {
+   "label": "陰木 · 身強",
+   "core": "您是「藤蔓、花卉、蘿蔦、青草」——柔美卻堅韌、充滿生命力的木。不同於挺直剛硬的甲，乙是以柔韌滋長的木——能攀緣尋路而上，適應力極強，能在大樹無法生存之處存活。身強之時（力量充足），您的本質是「外柔內剛」的人——看似溫和圓融，內裡卻藏著極高的意志力與生存能力。",
+   "real_life": "現實生活中，您魅力出眾、善於交際、談吐動人，擁有不動聲色便能說服人的藝術。您以柔軟與彈性達成目標——不正面衝撞，而是找到更有效的迂迴之路。您適應新環境快，在艱難處境中求生能力強，舉止與表達往往優雅得體，是「溫柔卻從不言敗」的人。",
+   "shadow": "您的陰影是柔中帶刃——您善於讀人、善於應變，魅力運用得渾然天成，以致有時不自覺地用討喜或圓融去取得想要的東西，而對方毫無察覺。您也可能過度攀附某些人或機會，導致立場模糊。危險之處在於，別人抓不準您的真心究竟在哪裡。",
+   "needs": "身強之陰木需要 **火（食傷 · 表現／美感／成果）** 把生命力化為綻放光彩的成果——花朵要有陽光才會盛開；也需要 **金（官煞 · 規範／秩序）** 為攀緣定下方向，而非四處亂蔓。有陽光照耀、有支架可攀，您便能成為既美麗又結果的花木。"
+  }
+ },
+ "乙_中和": {
+  "en": {
+   "label": "Yin Wood · Balanced",
+   "core": "You are a vine growing in balance — carrying all the flexibility and charm of 乙, yet with an inner core steady enough not to drift with every current. 乙 in its balanced state is someone \"gentle but grounded\" — highly adaptable without losing themselves, knowing when to bend and when to stand firm. Your character is well-rounded: you get along with people without flattery, and you hold reasonably clear goals of your own.",
+   "real_life": "In everyday life, you seem to \"fit\" wherever you are — working well with all kinds of people, loved without trying, and often advancing through relationships and networks more than through solo effort. You have a real art for aligning interests, leaving every side satisfied, and moving forward smoothly with a gentleness paired with sharp situational awareness.",
+   "shadow": "The shadow to watch is bending with the wind past the point of grace — in strong phases, you may grow so confident in your charm that you start using people without meaning to; in weak phases, you may lean on others so much that you lose your core. Flexibility is your gift, but without an anchor it becomes a slipperiness people find hard to trust. You must know what can bend — and what must never be surrendered.",
+   "needs": "Because you sit at the point of balance, what you need is a **balance keeper attuned to your chart's rhythm** — in phases leaning weak, you need Water and Wood (印比) to nourish your roots; in phases leaning strong, you need Fire and Metal (食傷官煞) to release and give structure. Reading your chart means watching which way the 運 tilts you in each period, then reinforcing the opposite side. You are at your most graceful when you preserve this quality of being \"soft, yet with a core.\""
+  },
+  "zh": {
+   "label": "陰木 · 中和",
+   "core": "您是均衡生長的藤蔓——擁有乙的柔韌與魅力，也有足夠穩固的內在主軸，不會隨波逐流。中和之乙是「溫柔而有立場」的人——善於應變卻不失自我，知道何時該柔順、何時該堅持。您的本質圓融合度，與人相處不必逢迎，也有相當明確的自我目標。",
+   "real_life": "現實生活中，您走到哪裡都能「恰到好處」——能與各式各樣的人合作，不費力便討人喜愛，且往往靠關係與人脈得益，多於孤軍奮戰。您擅長協調各方利益、讓各方滿意，憑著柔軟身段與精準的局勢判讀，一路順暢前行。",
+   "shadow": "需要小心的陰影，是隨風傾斜過了頭——能量偏強時，您可能太自信於自身魅力，不覺間利用了別人；偏弱時，您可能過度依賴他人而失了主軸。柔韌是您的天賦，但若沒有依循的原則，它會變成讓人難以信任的圓滑。您必須分清楚：什麼可以調整，什麼絕不退讓。",
+   "needs": "因處於平衡點，您需要的是 **順應命局節奏的平衡之物**——偏弱時需要水木（印比）來固根；偏強時需要火金（食傷官煞）來宣洩與立框。解讀您的命局須看當下的運偏向何方，再補其反面。當您能守住這份「柔中有骨」，便是您最美的姿態。"
+  }
+ },
+ "乙_弱": {
+  "en": {
+   "label": "Yin Wood · Weak",
+   "core": "You are a small flower, a tender vine just sprouting — delicate, sensitive, and in need of something to lean on as you grow. 乙 in its weak state is someone deeply attuned emotionally — quick to sense the mood and atmosphere around you, and so adaptive to your surroundings that at times you lose track of your own self. Your essence is soft, gentle, and fragile in a beautiful way — like a flower that is lovely but needs tender, careful nurturing.",
+   "real_life": "In everyday life, you are endearing and approachable — the kind of person others instinctively want to protect. You have deep empathy, you listen well, and you often become the emotional confidant for those around you. You thrive in warm, supportive environments but wilt quickly under pressure or fierce competition. You draw your life's nourishment from relationships, love, and acceptance.",
+   "shadow": "Your shadow is leaning on others until you lose your own voice — you sense the atmosphere keenly and want everything to stay smooth, but left unguarded, you give in too easily, cling to relationships that are not good for you, or let other people's emotions steer your life. Your sensitivity is part of your charm, but the moment you need others to constantly affirm your worth, you begin to wither from within.",
+   "needs": "Weak yin wood needs **Water (印 · nourishment/knowledge/emotional refuge)** to keep it watered and growing, and it needs **fellow Wood (比劫 · friends/community/allies)** to form a sheltering thicket to hold onto against the cold wind. A small flower in a garden with companion trees and enough water will bloom in full. Seek out warm, safe surroundings and sincere people — and your gentleness will become a quietly powerful charm, not a weakness."
+  },
+  "zh": {
+   "label": "陰木 · 身弱",
+   "core": "您是初綻的小花或初生的嫩藤——纖細、敏感，需要依靠才能成長。身弱之乙，情感極其細膩，對周遭氛圍與情緒感知敏銳，順應環境的程度高到有時忘了自己是誰。您的本質溫柔、體貼，帶著一種美麗的脆弱——如同嬌美卻需要細心呵護的花朵。",
+   "real_life": "現實生活中，您可親可愛、平易近人，讓身邊的人想保護您。您同理心強、善於傾聽，常是他人的心靈依靠。在溫暖、有人支持的環境中您能表現出色，但在高壓或競爭激烈之處會很快枯萎。您以感情、愛與被接納作為滋養生命的力量。",
+   "shadow": "您的陰影，是依附到失去自己的聲音——您善於感知氛圍、希望一切和諧，但若不留意，便會輕易順從他人、緊抓著不健康的關係，或任由他人的情緒主宰自己的生活。您的敏感是魅力，但當您必須時時等待別人來肯定自己的價值時，您便會從內裡開始枯萎。",
+   "needs": "身弱之陰木需要 **水（印 · 滋養／學識／心靈依靠）** 來灌溉滋潤、助您成長；也需要 **同類之木（比劫 · 朋友／群體／盟友）** 成為可依附的花叢，為您擋住寒風。園中有樹相伴、水源充足的小花，自能燦爛盛開。您要尋找溫暖安全的環境與真誠的人，那麼您的溫柔將化為強大的魅力，而非弱點。"
+  }
+ },
+ "丙_強": {
+  "en": {
+   "label": "Yang Fire · Strong",
+   "core": "You are the \"Sun\" — a great light, open and shining on everything without discrimination. 丙 is fire that is blazing, magnificent, and full of life force. In its strong state (full vitality), your essence is a radiant aura — you walk into a room and heads turn. You are warm, open, direct, and you radiate positive energy to everyone around you. There is nothing hidden in you, like sunlight that reveals everything clearly.",
+   "real_life": "In everyday life, you are magnetic and generous — giving without expecting return, and serving as the energy center of any group. You express yourself boldly, speak plainly, hold nothing back, and often inspire others to find their own courage. Your leadership is a warm one (unlike 甲, who leads by principle) — you lead by giving people energy and hope. Those near you feel warmed and encouraged.",
+   "shadow": "Your shadow is light so intense it stings others' eyes — you never mean to overpower anyone, but your energy is so large it can crowd out the space of those around you. You speak bluntly, run hot, bore easily, and want everything to move at your tempo. Sometimes confidence hardens into a sense that \"I see it more clearly than anyone\" — until others grow weary of chasing your light. The danger is fire meant to light the way instead scorching your relationships without you noticing.",
+   "needs": "Strong fire needs **Metal and Water (財官 · wealth/duty/purpose)** as fuel to channel its immense power with direction — sunlight falling on farmland (財) yields a harvest, but poured onto a desert it is wasted. You need goals worthy of your energy, and you need **Water (官煞)** as the discipline that keeps the fire from spreading and consuming everything. Given clear direction, your power can truly build something great."
+  },
+  "zh": {
+   "label": "陽火 · 身強",
+   "core": "您是「太陽」——宏大、坦蕩、無私普照的光。丙是熾熱、堂皇、充滿生命力的火。身強之時（力量充足），您的本質是自帶光環的人——走進任何房間，眾人都會回頭注目。您溫暖、坦率、直來直往，散發著感染身邊人的正能量。您的本質無所隱藏，如陽光把一切照得清清楚楚。",
+   "real_life": "現實生活中，您魅力四射、胸襟寬闊、施予不求回報，是群體的能量中心。您敢於表現、直言不諱、不藏心事，常是激勵他人勇敢跟進的榜樣。您的領導帶著溫度（不同於以原則領導的甲）——您以給予能量與希望來領導，人們靠近您便感到溫暖、有力量。",
+   "shadow": "您的陰影是光太強、刺得別人睜不開眼——您無意壓過誰，但您的能量太大，不覺間便佔滿了身邊人的空間。說話直、性子急、容易生膩，希望一切都照您的節奏走。有時自信變成「我看得比較清楚」的心態，讓別人追光追得疲憊。危險之處在於，本該引路的火，卻在不知不覺中燒掉了關係。",
+   "needs": "身強之火需要 **金＋水（財官 · 財富／職責／目標）** 作為燃料，讓龐大的能量有方向地施展——陽光灑在田野（財）能結出莊稼，灑在沙漠便是虛耗。您需要配得上您能量的目標，也需要 **水（官煞）** 作為紀律，約束火勢不至燎原。方向明確之時，您的能量足以成就真正的大事。"
+  }
+ },
+ "丙_中和": {
+  "en": {
+   "label": "Yang Fire · Balanced",
+   "core": "You are the mid-morning sun shining at just the right strength — warm without scorching, bright without blinding. 丙 in its balanced state is someone with all the fire's energy and charisma, yet in full command of it — knowing the right moment and measure, open but never overwhelming. Your essence is warm and approachable, confident in just the right dose — neither arrogant nor timid — someone who gives warmth to everyone around without making anyone feel eclipsed.",
+   "real_life": "In everyday life, you are loved and trusted — a leader who never overpowers, positive without being shallow. You create a good atmosphere for your team and family, and you are often the one who makes hard things feel possible through sheer brightness of attitude. You advance well because people genuinely enjoy working with you — and you know how to give others room to shine, too.",
+   "shadow": "The shadow to watch is sunlight that flickers between glaring and dim — when your energy surges, you may grow impatient, crave the spotlight, and speak faster than others can absorb; when it dips, you may turn gloomy, lose heart, and hold back from shining fully. Your charm lives in the middle — but if you let your energy swing with your moods, the people around you will struggle to read your rhythm.",
+   "needs": "Because you sit at the point of balance, you need a **balance keeper attuned to your chart's rhythm** — in phases leaning weak, you need Wood and Fire (印比) to feed the flame; in phases leaning strong, you need Metal and Water (財官) as purpose and discipline. Reading your chart means watching the 運 to see whether that period's sun burns bright or pale, then reinforcing the opposite side. You will shine longest when you hold onto this \"just-right warmth.\""
+  },
+  "zh": {
+   "label": "陽火 · 中和",
+   "core": "您是上午的太陽，光照恰到好處——溫暖而不灼人，明亮而不刺眼。中和之丙擁有火的能量與魅力，卻駕馭得宜，懂得分寸，坦蕩而不過度。您的本質溫暖、平易近人，自信恰如其分，不傲慢也不怯懦，能給身邊人溫暖，又不讓任何人覺得被掩蓋了光芒。",
+   "real_life": "現實生活中，您是受人喜愛與信任的人——有領導力而不壓人，有正能量而不浮誇。您為團隊與家庭營造好氣氛，常以開朗的態度把難事變得可能。您能步步高升，因為人們喜歡與您共事，而您也懂得留空間讓別人發光。",
+   "shadow": "需要留意的陰影，是忽明忽暗的日照——能量上揚時，您可能性急、想出風頭、話快得別人跟不上；能量下沉時，您可能黯淡、失去動力、不敢盡情發光。您在中間狀態時最有魅力，但若任由能量隨情緒擺盪，身邊的人會摸不準您的節奏。",
+   "needs": "因處於平衡點，您需要 **順應命局節奏的平衡之物**——偏弱時需要木火（印比）添柴加薪；偏強時需要金水（財官）作為目標與紀律。解讀您的命局須看當下的運是烈日還是薄日，再補其反面。守住這份「溫度剛好」，您便能照耀得最長久。"
+  }
+ },
+ "丙_弱": {
+  "en": {
+   "label": "Yang Fire · Weak",
+   "core": "You are the early-morning sun, or sunlight veiled by clouds — a heart that longs to shine and give warmth, but without the strength yet to blaze at full power. 丙 in its weak state is someone with real fire inside — dreams of being remembered, of inspiring others — but lacking the fuel and the confidence to set it alight. Your essence is warm and sincere, yet at times your light is dimmed by hesitation or by surroundings that press down on you.",
+   "real_life": "In everyday life, you are kind and optimistic, wanting the people around you to be happy. Yet you often feel your energy falling short — tiring easily, or holding back your light for fear of not being good enough. You glow beautifully in supportive surroundings where people believe in you, but you dim quickly under criticism or in a cold atmosphere. You need recognition and encouragement far more than you admit.",
+   "shadow": "Your shadow is a fire that needs to be seen — your heart longs to shine, but your spirit rises and falls too easily with praise, criticism, and the mood around you. You may flare up in bursts then burn out, or retreat the instant you feel your light is not enough. What cuts deepest is this: you want to be the real thing, yet sometimes you wait for someone else's permission before daring to shine.",
+   "needs": "Weak fire needs **Wood (印 · knowledge/support/inspiration)** as fuel to keep the flame burning steadily, and it needs **fellow Fire (比劫 · friends/a circle that understands you)** to build a shared bonfire whose warmth never goes out. A small flame in the cold wind dies easily, but a fire with fuel and other flames joined together blazes on. Feed yourself with knowledge and find the people who believe in you — and the fire within will grow, little by little, until it truly shines."
+  },
+  "zh": {
+   "label": "陽火 · 身弱",
+   "core": "您是清晨初升的太陽，或被雲遮住的日光——心中渴望發光發熱、給人溫暖，力量卻還不足以全然綻放。身弱之丙，內裡有火，夢想被人記得、夢想激勵他人，卻缺乏點燃烈焰的燃料與自信。您的本質溫暖而真誠，但有時您的光被猶豫或壓抑的環境所遮蔽。",
+   "real_life": "現實生活中，您心地善良、樂觀向陽，希望身邊的人快樂，卻常覺得力不從心、容易疲累，或因怕自己不夠好而不敢盡情發光。在支持您、相信您的環境裡，您能亮眼綻放；遇到批評或冷淡的氛圍，光便黯淡下來。您需要的認可與鼓勵，比您肯承認的還多。",
+   "shadow": "您的陰影是需要有人看見的火——您有想發光的心，但意志的起伏太容易隨著讚美、批評與周遭氛圍波動。您可能一陣衝勁之後又熄火，或在覺得自己的光不夠時立刻退縮。最扎心的一點是：您想成為真正的自己，有時卻要等別人允許，才敢綻放光芒。",
+   "needs": "身弱之火需要 **木（印 · 學識／依靠／啟發）** 作為燃料，讓火持續燃燒；也需要 **同類之火（比劫 · 朋友／懂您的圈子）** 一起圍成火堆，讓溫暖不滅。寒風中的小火苗容易熄滅，但有柴薪、有眾火相聚的營火能熊熊燃燒。充實學識、找到相信您的人，心中之火便會漸漸旺盛，真正照亮四方。"
+  }
+ },
+ "丁_強": {
+  "en": {
+   "label": "Yin Fire · Strong",
+   "core": "You are the \"candle flame, the star, the hearth fire\" — a light that is soft, profound, and warming at close range. Unlike 丙, the open blaze of daylight, 丁 is fire that shines into darkness with purpose. In its strong state (full vitality), your essence is depth of mind and spirit — intelligent, quick-witted, seeing through what others cannot, with an inner intensity hidden beneath a calm exterior. Your fire is not dazzling, but it is powerful and enduring.",
+   "real_life": "In everyday life, you are deep and meticulous, with real mastery in your specialized field. You shine warmly and sincerely for the close few, rather than scattering your light to everyone. You are often the incisive advisor, the expert people trust, with an air of intriguing mystery about you. You excel at work demanding concentration, precision, and deep understanding.",
+   "shadow": "Your shadow is an inner fire hotter than anyone can see — outwardly calm, composed, seemingly in control, while inside you think deeply, overthink, and press emotions down until they periodically boil over. You may burn yourself with perfectionism, worry, or the need to control every detail. At times your intelligence cuts too sharp, turning into words that wound people needlessly.",
+   "needs": "Strong yin fire needs **Metal and Water (財官 · purpose/duty/what is worthy)** to give your depth a direction where it creates real value — a candle lit to illuminate important work is worth far more than one left burning idly. It also needs **Water (官煞)** as a disciplined frame that keeps the inner fire from consuming you. Given a worthy purpose, your sharpness and depth become a creative force that is very hard to match."
+  },
+  "zh": {
+   "label": "陰火 · 身強",
+   "core": "您是「燭火、星光、爐中之火」——柔和、深邃、給人貼身溫暖的光。不同於坦蕩如日的丙，丁是在黑暗中有目標地照亮的火。身強之時（力量充足），您的本質是思想與心靈都有深度的人——聰慧、機敏、能看透別人看不見的東西，平靜的外表下藏著內在的熾熱。您的火不耀眼，卻有力而持久。",
+   "real_life": "現實生活中，您深邃、心思縝密，具有高度的專業造詣。您傾向溫暖而真誠地照亮親近的少數人，而非四處散射。您常是眼光犀利的顧問、備受信賴的專家，帶著神祕而耐人尋味的魅力。需要專注、精細與深度理解的工作，您做得極為出色。",
+   "shadow": "您的陰影是心中之火比別人看到的更熾熱——外表可能沉靜、穩重、看似一切在掌控中，內裡卻想得深、想得多，情緒壓抑到不時沸騰。您可能因完美主義、焦慮或想掌控細節而燃燒自己。有時您的聰慧太過鋒利，化成不必要地刺傷人的話語。",
+   "needs": "身強之陰火需要 **金＋水（財官 · 目標／職責／值得之事）** 作為方向，讓您的深度用於創造價值——為要事而點的燭火，遠比空燒的燭火有意義；也需要 **水（官煞）** 作為紀律的框架，約束內火不致焚身。有了值得的目標，您的犀利與深邃將成為難逢敵手的創造力。"
+  }
+ },
+ "丁_中和": {
+  "en": {
+   "label": "Yin Fire · Balanced",
+   "core": "You are a candle flame burning still and steady — never flickering wildly, never easily snuffed out, giving just the right light in the dark. 丁 in its balanced state is someone with all the depth and quick wit of yin fire, yet in good command of the inner emotional world — neither bottling things up until they explode, nor burning out easily. Your essence is composed, deep, and warm in a way people can trust — intelligence used with kindness, and an inner fire steady enough to light the way for yourself and those close to you.",
+   "real_life": "In everyday life, you are \"quiet but deep\" — never loud or famous, but those who truly know you see your worth. You are the calm expert, the trusted advisor, the steady presence behind others' success. You advance through expertise and credibility accumulated over the long haul, rather than by chasing fleeting attention.",
+   "shadow": "The shadow to watch is an inner fire that sways in silence — in strong phases, you may brood, bottle things up, or spiral in thought until you burn yourself; in weak phases, you may quietly lose your fire and dim your light without telling anyone. You appear far calmer than you truly are — others may never know how much energy you are spending inside. The crucial thing: do not let your silence become swallowing your own feelings.",
+   "needs": "Because you sit at the point of balance, you need a **balance keeper attuned to your chart's rhythm** — in phases leaning weak, you need Wood and Fire (印比) to feed the flame; in phases leaning strong, you need Metal and Water (財官) as purpose and discipline. Reading your chart means watching the 運 to see whether that period's fire runs high or low, then reinforcing the opposite side. You will shine deepest and longest when you keep your inner flame still and steady."
+  },
+  "zh": {
+   "label": "陰火 · 中和",
+   "core": "您是靜靜燃燒、火光穩定的燭火——不搖曳、不易滅，在黑暗中照得恰到好處。中和之丁擁有陰火的深邃與機敏，又能好好安放內在情緒，不積壓到爆發，也不輕易燃盡。您的本質沉穩、深邃、溫暖而可信，聰慧中帶著慈悲，內在之火穩定得足以照亮自己與親近的人。",
+   "real_life": "現實生活中，您是「安靜而深邃」的人——不張揚，但真正認識您的人都看得見您的價值。您是沉穩的專家、可信賴的顧問、默默支撐成功的幕後之人。您靠長期累積的專業與信譽步步向前，而非製造一時的聲勢。",
+   "shadow": "需要盯緊的陰影，是靜靜搖擺的內火——能量偏強時，您可能鑽牛角尖、壓抑、思緒打轉而燃燒自己；偏弱時，您可能悄悄燃盡、調暗自己的光而不告訴任何人。您看起來比實際平靜得多，別人未必知道您內裡耗了多少能量。關鍵是：別讓沉默變成吞嚥自己的感受。",
+   "needs": "因處於平衡點，您需要 **順應命局節奏的平衡之物**——偏弱時需要木火（印比）添柴；偏強時需要金水（財官）作為目標與紀律。解讀您的命局須看當下的運是火旺還是火微，再補其反面。守住內在火焰的安穩，您便能照得深、也照得久。"
+  }
+ },
+ "丁_弱": {
+  "en": {
+   "label": "Yin Fire · Weak",
+   "core": "You are a small candle flame in the wind — a light gentle and profound, yet fragile and easily blown out. 丁 in its weak state is someone of deep emotional sensitivity, perceiving the subtleties others overlook, with an inner world that is rich but delicate. Your essence is soft, warm, and utterly sincere with those you trust — but you need a safe space, and shelter from the harsh winds of the outside world.",
+   "real_life": "In everyday life, you are deeply empathetic, understanding people at their core, often becoming the small light that warms those close to you in dark hours. You carry creativity and a fine artistic or emotional sensibility — but you can only shine in gentle, safe surroundings. In cold or high-pressure places, your light dims and you retreat.",
+   "shadow": "Your shadow is a small light exquisitely sensitive to wind — you perceive deeply, feel keenly, and need safety more than you ever say aloud. A harsh word or a cold atmosphere can extinguish you from within remarkably fast. You tend to depend on whoever helps light your flame — but if you must wait for that person forever, your light will never be your own. The turning point is building your own inner fuel, rather than always waiting for another hand to light you.",
+   "needs": "Weak yin fire needs **Wood (印 · knowledge/support/inspiration)** as fuel to keep the flame alive, and it needs **fellow Fire (比劫 · friends/a community that understands)** — candles gathered together so the light cannot be blown out. A single candle dies easily, but many candles lit from one another illuminate the whole room. Find your emotional refuge, the knowledge that sparks you, and warm-hearted people — and your small light will become the warmest, most beautiful light of all."
+  },
+  "zh": {
+   "label": "陰火 · 身弱",
+   "core": "您是風中的一豆燭火——光柔和而深邃，卻纖弱易滅。身弱之丁，情感敏銳而深刻，能察覺他人忽略的細微之處，內心世界豐富卻脆弱。您的本質溫柔、溫暖，對信任的人真誠以待，但需要安全的空間，需要有人為您擋住外界的強風。",
+   "real_life": "現實生活中，您同理心強、懂人懂得深，常是黑暗中給親近之人送暖的一點微光。您具有創造力，在藝術或心靈層面有著細膩的觸覺，但只有在溫柔安全的環境中才能發光；在高壓或冷漠之處，您的光會黯淡下來，您也會選擇退避。",
+   "shadow": "您的陰影是對風敏感的微光——您感知深、心思細，需要的安全感比說出口的多。遇到重話或冷淡的氣氛，您可能很快從內裡熄滅。您傾向依賴那位替您點火的人，但若總要等著那個人，您的光便永遠不屬於自己。轉機在於自己蓄好火種，而不是永遠等別人來點燃。",
+   "needs": "身弱之陰火需要 **木（印 · 學識／依靠／啟發）** 作為薪柴延續火光；也需要 **同類之火（比劫 · 朋友／懂您的群體）** 聚成一片燭光，讓風吹不熄。一支蠟燭易滅，眾燭相傳卻能照亮整室。找到心靈的依靠、點亮靈感的學識與溫暖的人們，您那小小的光，將成為最溫暖、最動人的光。"
+  }
+ },
+ "戊_強": {
+  "en": {
+   "label": "Yang Earth · Strong",
+   "core": "You are the \"mountain, the city wall, the great dam\" — earth that is heavy, unshakable, and vast. Unlike 己, the soft soil of the fields, 戊 is earth that stands towering and unmoved. In its strong state (full vitality), your essence is solidity itself — dependable, a pillar for others to lean on. Your endurance is immense, your heart as broad as the land, and your emotional steadiness makes everyone around you feel safe — like a mountain that has stood in that same place for a thousand years.",
+   "real_life": "In everyday life, you are the pillar of your family and your team — the one everyone turns to when trouble comes. You are honest, true to your word, deeply responsible, and remarkably resilient through hardship. You are not flashy, but you are solid; you speak little, but you deliver. People trust you because you never abandon anyone and never change your heart lightly. You keep secrets well, and you are the refuge that is always there.",
+   "shadow": "Your shadow is the mountain that will not move — you are so steadfast that at times it becomes stubbornness: slow to adapt, clinging to old ways even as the world changes around you. You may store everything behind a calm face until no one can reach you — and the weight inside you only grows. The danger is that the stability meant to be your foundation becomes instead a wall, shutting out new opportunities and sealing off your own feelings.",
+   "needs": "Strong earth needs **Wood (官煞 · challenge/discipline/change)** to plough the packed soil back to life, and **Water and Metal (財食 · wealth/output)** to put that stability to productive use. A mountain with a river running through it and trees covering its slopes is far more abundant than a bare, motionless rock. Open yourself to challenge and change — and your steadiness becomes the foundation on which great things are built."
+  },
+  "zh": {
+   "label": "陽土 · 身強",
+   "core": "您是「高山、城牆、巨壩」——厚重、穩固、宏大的土。不同於柔軟如田園之土的己，戊是巍然屹立、不為所動的土。身強之時（力量充足），您的本質是沉穩可靠、供人依靠的中流砥柱。您耐力極強，心胸如大地般寬廣，情緒安穩得讓身邊人感到安心——如同一座矗立千年的高山。",
+   "real_life": "現實生活中，您是家庭與團隊的支柱——遇到問題時，所有人都會轉向您。您誠實守信、責任感重、極能吃苦耐勞。您不花俏但穩固，話不多但做得實在。人們信任您，因為您從不輕易棄人於不顧、不輕易變心。您能守密，永遠是那個一直都在的依靠。",
+   "shadow": "您的陰影是難以撼動的高山——您穩固到有時變成固執、應變緩慢，世界變了仍守著舊法。您可能把一切都收在平靜的面容之後，讓人走不進來，自己卻越積越沉重。危險之處在於：本該作為根基的穩固，反而成了牆——擋住新的機會，也擋住自己的感受。",
+   "needs": "身強之土需要 **木（官煞 · 挑戰／紀律／變化）** 來翻土鬆田，讓板結的土重獲生機；也需要 **水＋金（財食 · 財富／成果）** 讓這份穩固發揮效用。有江河流過、林木覆蓋的山，遠比寸草不生的禿岩豐饒。敞開心胸迎接挑戰與變化，您的穩固將成為建立偉業的基石。"
+  }
+ },
+ "戊_中和": {
+  "en": {
+   "label": "Yang Earth · Balanced",
+   "core": "You are a solid hill still open to cultivation — carrying the steadfastness of 戊, yet never so rigid that change becomes impossible. 戊 in its balanced state is someone dependable as a pillar, yet flexible enough to adapt as circumstances demand. Your essence is stable and trustworthy, patient, yet open-minded toward new things and differing views — a person both grounded and in step with the world.",
+   "real_life": "In everyday life, you are the one people entrust with what matters most, because you are steady without being rigid. You listen to others and adjust plans when needed, while still holding firm to your core principles. You advance with stability and balance, capable in both the leading and supporting roles — and you are often the one who keeps a team or family both secure and growing at the same time.",
+   "shadow": "The shadow to watch is the swing between \"being the pillar\" and \"letting yourself be shaken\" — in strong phases, you may turn stubborn, closed off, unwilling to change; in weak phases, you may doubt whether you can truly stand as the pillar at all. You must hold the balance between steadfastness and flexibility — too hard and you stagnate; too soft and you lose your footing.",
+   "needs": "Because you sit at the point of balance, you need a **balance keeper attuned to your chart's rhythm** — in phases leaning weak, you need Fire and Earth (印比) to reinforce your strength; in phases leaning strong, you need Wood, Water, and Metal (官財食) to plough and put you to use. Reading your chart means watching the 運 to see whether that period's soil is packed hard or loose, then reinforcing the opposite side. You become the most fertile foundation when you preserve this quality of \"steadfast, yet open.\""
+  },
+  "zh": {
+   "label": "陽土 · 中和",
+   "core": "您是穩固而仍可耕作的丘陵——有戊的厚重，卻不僵硬到無法改變。中和之戊是可以依靠的支柱，也保有隨局勢調整的彈性。您的本質穩重可信、有耐力，同時敞開心胸接納新事物與不同意見，是既厚實又與時俱進的人。",
+   "real_life": "現實生活中，人們放心把要事託付給您，因為您既穩固又不僵化。您聽得進別人的話，必要時能調整計畫，同時守住重要的原則。您平穩均衡地前進，領導或輔佐皆能勝任，往往是讓團隊或家庭既安穩又共同成長的那個人。",
+   "shadow": "需要留意的陰影，是在「作為支柱」與「容許動搖」之間搖擺——能量偏強時，您可能固執、封閉、不願改變；偏弱時，您可能不確定自己是否真能撐起大局。您必須在厚重與彈性之間持衡：太剛則滯，太柔則失了根基。",
+   "needs": "因處於平衡點，您需要 **順應命局節奏的平衡之物**——偏弱時需要火土（印比）來增力；偏強時需要木水金（官財食）來翻土與活用。解讀您的命局須看當下的運是土板結還是土鬆軟，再補其反面。守住這份「穩固而開放」，您便是最豐饒的沃土根基。"
+  }
+ },
+ "戊_弱": {
+  "en": {
+   "label": "Yang Earth · Weak",
+   "core": "You are a mound of earth still taking shape, or a mountain worn by erosion — a heart that longs to be the pillar others lean on, but without the strength yet to bear the full weight. 戊 in its weak state is someone who inwardly craves stability and longs to be a refuge for others, yet still needs support first. Your essence looks solid on the outside (being yang earth, after all), but inside you feel unsteady, wishing for a stronger foundation beneath you.",
+   "real_life": "In everyday life, you genuinely want to take responsibility and care for others, with good intentions and real patience — yet you often feel the load is too heavy, or your strength too little, when you must be the sole pillar. You do well with a team, with elders backing you, and with solid ground under your feet. You may force a show of strength so no one sees your fragility, but deep down you long for support and acceptance.",
+   "shadow": "Your shadow is forcing yourself to be the mountain before the base has set — you want so much to be someone others can lean on that you take on burdens beyond your capacity and store the stress in silence. When it grows too heavy, you collapse like a landslide — sudden, not gradual. What cuts deepest is your fear of looking weak — yet the more you hide your exhaustion, the more you drain the very strength needed to build your true foundation.",
+   "needs": "Weak yang earth needs **Fire (印 · knowledge/support/backing from elders)** to bake the soil firm and set it solid, and **fellow Earth (比劫 · friends/team/allies)** to pile on and raise the mountain higher. A small mound is easily washed away, but a mountain buttressed by rock upon rock stands firm. Stop forcing yourself to carry it all alone — accumulate knowledge and build a solid network — and the steadfast pillar within you will, in time, truly take form."
+  },
+  "zh": {
+   "label": "陽土 · 身弱",
+   "core": "您是尚未成形的土丘，或遭侵蝕的山——心中渴望成為他人的依靠，力量卻還撐不起全部的重量。身弱之戊，內心嚮往安穩、想成為靠山，自己卻仍需要先被支持。您的本質外表厚重（因為是陽土），內裡卻感到不安，渴望比現在更堅實的根基。",
+   "real_life": "現實生活中，您想承擔、想照顧別人，心意良善也有耐性，但獨自撐起大局時常覺得負荷不了、力量不夠。有團隊、有長輩扶持、有穩固的後盾時，您能做得很好。您可能勉強裝出堅強，不讓人看見脆弱，內心深處卻渴望依靠與被認可。",
+   "shadow": "您的陰影是地基未穩就勉強當高山——您想成為別人靠得住的人，於是常扛下超載的重擔、把壓力靜靜往肚裡吞；一旦超過臨界，便如山崩般垮下，而非慢慢疲累。最扎心的是：您怕顯得不夠堅強，但越是掩住疲憊，越是耗掉築起真正根基的力量。",
+   "needs": "身弱之陽土需要 **火（印 · 學識／依靠／長輩扶持）** 來烘烤，使土乾實成形、逐漸穩固；也需要 **同類之土（比劫 · 朋友／團隊／盟友）** 層層堆疊，讓山越壘越高。小土堆易被水沖散，有巖石相互支撐的山卻穩如磐石。放下獨自硬扛的執念，累積學識、築牢人脈，那份堅實可靠的靠山之力，自會一步步真正成形。"
+  }
+ },
+ "己_強": {
+  "en": {
+   "label": "Yin Earth · Strong",
+   "core": "You are \"the fertile soil of farmland and gardens\" — earth that is soft, moist, and full of life-nourishing power. Unlike 戊, the hard mountain rock, 己 is the soil that embraces seeds and makes everything grow. In a strong state (full strength, thick fertile soil), your essence is someone who \"nourishes and supports\" with real power — generous, open-hearted, able to care for many people without running dry. You are ground steady enough to be the refuge of an entire group, yet gentle enough to help everyone grow.",
+   "real_life": "In real life you are warm, gifted at caring for people, and the center that holds a group together. You are patient, meticulous, and skilled at managing details and people. You are often the organizer, the coordinator who connects all sides, or the person behind the scenes who keeps everything running smoothly. You give without asking for much in return, and you carry a warm charm that makes people want to come close and trust you.",
+   "shadow": "Your shadow is care that turns into control — your nurturing heart runs deep, but left unchecked you may hold others so tightly they can no longer move on their own, carry too many of other people's problems, worry on everyone's behalf, and quietly accumulate stress. Your good intentions may be seen as interference. The key is learning to tell the difference between caring for someone and carrying their life for them.",
+   "needs": "Strong Yin Earth needs **Wood (官煞 · challenge/structure/goals)** to plow the dense soil open and give it direction, and **Water plus Metal (財食 · wealth/output)** to put that richness to use and bring it to fruit. A fertile field with no one to plow and sow yields only weeds, but a well-tended field produces an abundant harvest. You need challenging goals and channels for your abilities — then your nourishing power can create tremendous value."
+  },
+  "zh": {
+   "label": "陰土 · 身強",
+   "core": "您是「田園之土、肥沃的園圃之壤」——柔軟、濕潤、蘊含滋養生命的力量。不同於戊土的巍峨山石，己土是懷抱種子、令萬物生長的土壤。當處於身強之勢（力量充盈、土厚而肥沃）時，您的本質是一位充滿力量的「滋養者與扶持者」——心胸寬廣、仁厚慈愛，能照顧許多人而不覺耗竭。您是一片厚實的大地，穩重得足以成為整個群體的依靠，又溫柔得足以讓每個人都能成長。",
+   "real_life": "在現實生活中，您溫暖體貼、善於照顧人，是凝聚眾人、讓群體得以和諧共處的核心。您有耐心、細緻周到，擅長打理細節與人事。您常是活動的總管、八方協調的樞紐，或是讓一切順暢運轉的幕後功臣。您付出而少有所求，散發著溫暖的魅力，讓人願意親近、樂於信任。",
+   "shadow": "您的陰影，是照顧演變成掌控——您天生具有極強的養育之心，但若不留意，會呵護到讓別人失去自主的空間，過度背負他人的難題，事事替人擔憂，並默默積累壓力。您的好意可能被視為干涉。關鍵在於分辨清楚：什麼是照顧，什麼是替別人扛起他的人生。",
+   "needs": "身強的陰土需要 **木（官煞 · 挑戰／規範／目標）** 來耕犁板結的土壤，使其疏鬆而有方向；也需要 **水與金（財食 · 財富／成果）** 來運用這份肥沃，令其開花結果。肥沃卻無人耕耘的田地只會雜草叢生，而經營得當的良田則能帶來豐收。您需要具挑戰性的目標與施展才能的管道，如此您的滋養之力方能創造豐盛的價值。"
+  }
+ },
+ "己_中和": {
+  "en": {
+   "label": "Yin Earth · Balanced",
+   "core": "You are a field in perfect balance — moist enough to cultivate, neither parched nor waterlogged. 己 in a balanced state is someone with Yin Earth's gentleness and gift for caring, yet with an inner core steady enough not to be easily swept along. Your nature is soft but never without a stance: you can look after others without forgetting to look after yourself, knowing when to give and when to decline. You are soil that nourishes both others and yourself in just the right measure.",
+   "real_life": "In real life, wherever you are, the atmosphere improves — you coordinate well, get along with people easily, and are a support that pressures no one. You advance through good relationships and accumulated trustworthiness. You know how to set boundaries and never carry everything until you break, and you tend to be both kind and wise in how you manage things, so that you and those around you grow together.",
+   "shadow": "The shadow to watch is giving until you lose yourself — in strong phases you may over-care, overstep, or bottle things up from carrying too much for others; in weak phases you may waver and need more outside affirmation of your worth. You must keep the balance between being a safe haven for others and not letting them use your heart as a place to dump everything.",
+   "needs": "Because you sit at the point of balance, you need **balancing forces that follow your chart's rhythm** — in phases leaning weak, Fire and Earth (印比) to reinforce your strength; in phases leaning strong, Wood, Water, and Metal (官財食) to plow the soil and put it to use. Reading your chart means checking the luck cycles (運) to see whether the soil is rich or thin in that period, then supplementing the opposite side. You are the most sustainably nourishing ground when you preserve this quality of being \"soft but with a core.\""
+  },
+  "zh": {
+   "label": "陰土 · 中和",
+   "core": "您是一片平衡得恰到好處的田地——濕潤足以耕種，不乾旱亦不泥濘。中和之己土，兼具陰土的溫柔與善於照顧人的天賦，內在卻有足夠穩固的軸心，不會輕易被人牽著走。您的本質柔和而不失立場，照顧他人的同時不忘照顧自己，懂得付出，也懂得拒絕，是一片能恰如其分地滋養他人與自己的土壤。",
+   "real_life": "在現實生活中，您走到哪裡，哪裡的氣氛就會變好——擅長協調、容易與人相處，是不給人壓力的依靠。您憑藉良好的人際關係與日積月累的信譽穩步前進。您懂得設立界線，不會扛起一切直到崩潰，往往是既仁厚又精於安排之人，讓自己與身邊的人得以一同成長。",
+   "shadow": "需要警惕的陰影，是付出到失去自我——能量偏強時，您可能照顧過度、干涉他人，或因背負太多而壓抑；能量偏弱時，您可能搖擺不定，更需要他人肯定自己的價值。您必須在「成為他人的安全港灣」與「不讓別人把您的心當作情緒垃圾場」之間保持平衡。",
+   "needs": "因為處於平衡點，您需要 **依命局節奏調衡之物** ——偏弱之時，需要火與土（印比）來扶助元氣；偏強之時，需要木、水、金（官財食）來耕犁與善用。解讀您的命局，須觀察大運中該階段是土厚還是土薄，再補其相反之面。當您守住這份「柔中有骨」的特質，便是最能長久滋養萬物的沃土。"
+  }
+ },
+ "己_弱": {
+  "en": {
+   "label": "Yin Earth · Weak",
+   "core": "You are \"the soil of farmland and gardens\" — soft, moist, and ready for planting. Unlike 戊, the hard mountain rock, 己 is soil that embraces seeds and nurtures things to grow. Your essence is therefore someone who \"stands behind other people's success\" rather than playing the hero yourself. You care, support, and quietly improve the world around you without announcing it. When 己 is in a weak state (thin soil, low strength), this trait stands out even more — you \"flow along with circumstances\" easily, adapting to people and surroundings remarkably well, so much so that at times your own identity blurs into whatever is around you.",
+   "real_life": "You get along with everyone; people feel at ease talking with you because you are never aggressive or pressuring, you listen well, and you are often the glue that holds a group together. You think a great deal, notice the details, weigh many angles before deciding, and tend to consider others' feelings so much that you put yourself last. At work you excel at coordination, tending details, and bringing messy systems back into order — but you are not one to pound the table and give orders. You lead by steadying, not by commanding.",
+   "shadow": "Your shadow is soil that absorbs everything until it loses its shape — you are kind and take on other people's feelings easily, but without a clear center you yield too readily, hesitate, and let others set the direction of your life. You may grow exhausted from carrying emotions that were never yours. The truth you must face is this: your gentleness only has value when you have boundaries firm enough to protect yourself.",
+   "needs": "Weak Earth needs **Fire (印 · warmth/learning/emotional anchor)** to warm the cold, damp soil until it is dry enough to cultivate — Fire brings confidence, knowledge, and elders or teachers who back you — and **fellow Earth (比劫 · friends/allies/team)** to thicken the soil and give you the strength to stand on your own. With these two, you transform from \"soil washed away by the current\" into \"fertile ground that nourishes both yourself and everyone around you.\""
+  },
+  "zh": {
+   "label": "陰土 · 身弱",
+   "core": "您是「田園之土、園圃之壤」——柔軟、濕潤、隨時可供耕種。不同於戊土的巍峨山石，己土是懷抱種子、滋養萬物生長的土壤。因此您的本質，是「站在他人成功背後」的人，而非自己當主角。您照顧、扶持，默默改善身邊的環境而不張揚。當己土處於身弱之勢（土薄力微）時，這種特質更加明顯——您極善於「順勢而流」，能靈活地隨人、隨環境調整自己，以至於有時您自己的本色也漸漸融入了周遭之中。",
+   "real_life": "您容易與人相處，誰跟您交談都感到自在，因為您不具攻擊性、不給人壓力、善於傾聽，往往是讓群體得以凝聚的黏合劑。您思慮周密、細緻入微，決定之前會多方考量，也常把他人的感受放在前面，把自己放在最後。在工作上，您擅長協調、照料細節，能把混亂的系統重新理得井井有條。但您不是拍桌下令之人——您以扶持來領導，而非以支配。",
+   "shadow": "您的陰影，是承受一切而變形的土壤——您心地善良、容易感受他人的情緒，但當內在缺乏清晰的軸心時，您會輕易讓步、猶豫不決，任由他人決定您人生的方向。您可能因背負不屬於自己的情緒而疲憊。必須誠實面對自己的一點是：溫柔唯有在您擁有足以保護自己的界線時，才真正有價值。",
+   "needs": "身弱之土需要 **火（印 · 溫暖／學習／心靈依靠）** 來烘暖濕冷的土壤，使其乾爽得以耕種。火，就是給予您自信的力量、知識，以及扶持您的長輩與師長。同時需要 **同類之土（比劫 · 朋友／盟友／團隊）** 來增厚土層，讓您有力量自己站穩。得此二者，您便能從「被水沖走的浮土」蛻變為「既能滋養自己、也能滋養身邊之人的沃土」。"
+  }
+ },
+ "庚_強": {
+  "en": {
+   "label": "Yang Metal · Strong",
+   "core": "You are \"the sword, the axe, forged steel, raw metal\" — Metal that is strong, razor-sharp, and powerful. Unlike 辛, the finely wrought ornament, 庚 is the metal used to cut, to fight, to conquer. In a strong state (full strength), your essence is decisive, courageous, and thoroughly a fighter — quick to decide, quick to act, and unafraid of confrontation. You carry a blunt, straightforward sense of justice, despise evasiveness, and stand ready to defend what is right with courage.",
+   "real_life": "In real life you are strong, dependable in a crisis, and the one who dares to do what others fear. Your leadership is that of a warrior — charging in front, deciding firmly, never abandoning your own. You speak plainly, act on your word, keep your promises, and hold fierce loyalty to the people and ideals you believe in. You are suited to work that demands decisiveness, courage, and judgment under pressure.",
+   "shadow": "Your shadow is a blade that cuts before it asks — you are decisive, bold, and direct, but without control of your timing, your words and decisions can sever relationships needlessly. You may insist on winning, dig in stubbornly, and charge head-on into matters that called for finesse. The danger is that courage without reflection becomes recklessness that wounds both you and the people around you.",
+   "needs": "Strong Metal needs **Fire (官煞 · forging/discipline/challenge)** to smelt raw iron into a sword fit for use, and **Water (食傷 · release/output)** to whet the edge and wash away the roughness. Iron that never passes through the forge is just a hard, shapeless lump, but iron tempered by fire and water becomes the trusted blade of a general. You need challenges that forge you and outlets for your power — then your strength becomes an instrument for building great things."
+  },
+  "zh": {
+   "label": "陽金 · 身強",
+   "core": "您是「刀劍、斧鉞、鋼鐵、生鐵之金」——剛強、鋒利、充滿力量的金。不同於辛金的精緻珠玉，庚金是用來斬、用來戰、用來征服的金屬。當處於身強之勢（力量充盈）時，您的本質是果決、勇敢、鬥志高昂之人——決斷迅速、行動俐落，不畏正面交鋒。您有一種直來直往的正義感，厭惡拐彎抹角，並隨時準備以勇氣捍衛正確之事。",
+   "real_life": "在現實生活中，您堅強剛毅，是危急關頭可以倚靠的人，敢做別人不敢做之事。您具有戰將型的領導力——身先士卒、決斷果敢、不棄同袍。您言出必行、說到做到，對所信之人與理念忠誠至深。您適合需要果斷、膽識，以及在高壓之下做決策的工作。",
+   "shadow": "您的陰影，是先斬後問的劍鋒——您果決、勇敢、直率，但若不掌握好分寸與時機，您的言語與決斷會在不必要之處斬斷人際情分。您可能好勝、固執，明明該用謀略之處卻硬碰硬。危險之處在於：缺乏深思的勇氣，會淪為讓您與身邊之人都受傷的莽撞。",
+   "needs": "身強之金需要 **火（官煞 · 鍛造／紀律／挑戰）** 來熔煉生鐵，使其成為堪用的寶劍；也需要 **水（食傷 · 宣洩／成果）** 來磨礪劍鋒、洗去粗糲。未經爐火鍛造的鐵，只是一塊無形的頑鐵；而歷經火煉水淬的鐵，將成為大將軍的隨身寶劍。您需要能淬鍊自己的挑戰與宣洩力量的管道，如此您的剛強方能成為成就大業的利器。"
+  }
+ },
+ "庚_中和": {
+  "en": {
+   "label": "Yang Metal · Balanced",
+   "core": "You are a sword forged and sharpened to just the right degree — keen but not cutting the hand, hard but not brittle. 庚 in a balanced state is someone with Yang Metal's decisiveness and courage, yet in full command of it: knowing the moment, deciding firmly when necessary and compromising when wise. Your nature is strong but mature, direct but never wounding — a fighter who knows when to draw the sword and when to sheathe it.",
+   "real_life": "In real life you are both strong and likable — bold in decisions, dependable, yet a good listener who works well with others. You carry a sense of justice and courage that people respect, and enough maturity not to use force carelessly. You advance on genuine ability and credibility, and you are often trusted with the difficult matters that require both decisiveness and care.",
+   "shadow": "The shadow to watch is an edge that swings with the rhythm — in strong phases you may grow more aggressive, hot-tempered, and eager to win; in weak phases you may hesitate, shy away from a firm verdict, or retreat at the very moment a decision is needed. You must balance decisiveness with reading the situation, for a good sword does not cut everything — it cuts only where it should.",
+   "needs": "Because you sit at the point of balance, you need **balancing forces that follow your chart's rhythm** — in phases leaning weak, Earth and Metal (印比) to reinforce your strength; in phases leaning strong, Fire and Water (官煞食傷) to forge and to release. Reading your chart means checking the luck cycles (運) to see whether the iron is hard or soft in that period, then supplementing the opposite side. You are the most valuable blade when you preserve this quality of being \"sharp yet mature.\""
+  },
+  "zh": {
+   "label": "陽金 · 中和",
+   "core": "您是一把鍛造與打磨得恰到好處的劍——鋒利而不傷手，剛硬而不脆裂。中和之庚金，擁有陽金的果決與勇氣，卻能善加駕馭：懂得審時度勢，該果斷時果斷，該妥協時妥協。您的本質剛強而有涵養，直率卻不傷人，是一位深知何時該拔劍、何時該收劍的戰士。",
+   "real_life": "在現實生活中，您既剛強又值得深交——敢於決斷、可以依靠，同時也善於傾聽、與人合作無間。您的正義感與膽識令人敬重，且有足夠的成熟度不濫用力量。您憑真才實學與信譽穩步前進，常被託付需要既果斷又周全的棘手難題。",
+   "shadow": "需要警惕的陰影，是隨勢擺盪的劍鋒——能量偏強時，您可能變得更具攻擊性、急躁、求勝心切；能量偏弱時，您可能猶豫不決、不敢下定論，或在該拍板之處退縮。您必須在果斷與審勢之間保持平衡，因為好劍不是見什麼都斬，而是只斬當斬之處。",
+   "needs": "因為處於平衡點，您需要 **依命局節奏調衡之物** ——偏弱之時，需要土與金（印比）來扶助元氣；偏強之時，需要火與水（官煞食傷）來熔煉與宣洩。解讀您的命局，須觀察大運中該階段是鐵剛還是鐵軟，再補其相反之面。當您守住這份「鋒利而有涵養」的特質，便是最具價值的寶劍。"
+  }
+ },
+ "庚_弱": {
+  "en": {
+   "label": "Yang Metal · Weak",
+   "core": "You are raw iron not yet through the forge, a sword not yet sharpened — with a fighter's heart and a longing to be strong and decisive, but not yet the strength to break through on your own. 庚 in a weak state is someone who carries courage and a warrior's spirit within, yet lacks the tempering and the base of power that would make the edge real. You look hard on the outside, but inside you still need training, support, and time for your true strength to crystallize.",
+   "real_life": "In real life you long to be decisive and brave; you have a sense of justice and good intentions, yet often feel you lack the confidence to commit fully — or you act, but without enough force to break through. You do best with a mentor who tempers you, a team behind you, and time to train and accumulate experience. You may force a tough exterior to cover your uncertainty, but deep down you want guidance and solid ground to stand on.",
+   "shadow": "Your shadow is striking while the blade is still dull — you have a fighter's heart, but sometimes you rush into the clash before your strength is ready, hurting yourself and losing confidence. You may act hard to mask your doubt, or dig in stubbornly at moments when you should step back and sharpen first. The turning point is to stop proving your toughness through collision, and instead build the skill, the base, and the timing that make your edge real.",
+   "needs": "Weak Metal needs **Earth (印 · knowledge/cultivation/support)** as the mineral bed that forms iron strong from within, and **fellow Metal (比劫 · friends/team/mentors)** as comrades-in-arms. A single piece of unforged iron snaps easily, but iron that has been tempered and stands among allies becomes an army. Accumulate knowledge, train with patience, and find those who can guide you — then the fighter within you will steadily grow truly sharp and powerful."
+  },
+  "zh": {
+   "label": "陽金 · 身弱",
+   "core": "您是尚未經過熔煉的生鐵，或未曾開鋒的劍——懷著戰士的心與追求剛毅果決的渴望，力量卻還不足以獨自披荊斬棘。身弱之庚金，內在藏有勇氣與武者之魂，卻缺少足以真正淬出鋒芒的鍛造與根基。您外表看似剛硬，內在卻仍需要磨練、支持，以及讓真正的堅強沉澱成形的時間。",
+   "real_life": "在現實生活中，您渴望果決與勇敢，有正義感、有良善的初衷，卻常覺得信心不足以全力出手，或出手了力道卻不足以突破。當有前輩淬鍊您、有團隊支持您、有時間磨練累積經驗時，您能表現出色。您可能會強裝強硬來掩飾不安，但內心深處渴望有人指點，以及一個穩固的根基。",
+   "shadow": "您的陰影，是劍未開鋒便出鞘——您有戰士之心，卻有時在力量未備之際便急於衝撞，結果傷了自己、也折損了信心。您可能以強硬掩飾內心的不確定，或在該退下磨劍之處固執硬撐。轉捩點在於：停止用碰撞證明自己的強悍，轉而累積實力、根基與時機，讓劍鋒真正鋒利起來。",
+   "needs": "身弱之金需要 **土（印 · 知識／培育／依靠）** 作為孕育之礦，先讓鐵從內在堅實起來；也需要 **同類之金（比劫 · 朋友／團隊／前輩）** 成為並肩作戰的軍隊。未經淬煉的孤鐵易折，而歷經蘊養、擁有同袍之鐵，將匯聚成一支大軍。您需要積累學識、耐心磨練、尋訪指點之人，內在的戰士之魂便會日益鋒利，真正強大起來。"
+  }
+ },
+ "辛_強": {
+  "en": {
+   "label": "Yin Metal · Strong",
+   "core": "You are \"the gem, the gold, the ornament, the surgeon's scalpel\" — Metal that is refined, exquisite, and of the highest value. Unlike 庚, the raw iron, 辛 is metal already polished: beautiful, sharp in a delicate way, and radiant. In a strong state (full strength), your essence is someone of refined taste, attentive to detail, and proud of your own worth. You are sharp and intelligent in a way that needs no show of force — like a diamond that never has to shout to be known as precious.",
+   "real_life": "In real life you are a person of class, refinement, and an elegant kind of charm. You care about image, quality, and perfection, and you often excel in work demanding precision, meticulousness, or taste — art, design, delicate craftsmanship, or work requiring analytical sharpness. You are confident in your own worth, hold yourself to high standards, and attract good things through your refinement.",
+   "shadow": "Your shadow is refinement that turns into a cutting edge — you hold high standards, know your worth, and see the details others miss, but left unchecked this becomes fussiness, harsh criticism, and fault-finding aimed at both yourself and everyone around you. You are more sensitive to criticism than you let on. The danger is that the dignity meant to make you shine becomes instead a wall no one can get past.",
+   "needs": "Strong Yin Metal needs **Water (食傷 · expression/output/releasing your gifts)** to wash the gem until it gleams and reveals its worth, and **Fire and Wood (官財 · goals/a stage/worthy value)** as the golden setting in which the jewel is mounted with meaning. A diamond in a drawer goes unseen, but a diamond on a crown cannot help but shine. You need a stage and channels to show what you can do — then your refinement becomes value the world can see."
+  },
+  "zh": {
+   "label": "陰金 · 身強",
+   "core": "您是「珠玉、黃金、首飾、手術之刀」——精細、雅緻、價值不凡之金。不同於庚金的粗獷生鐵，辛金是歷經雕琢的金屬：華美、鋒利得精巧，且熠熠生輝。當處於身強之勢（力量充盈）時，您的本質是品味高雅、注重細節、以自身價值為榮之人。您的鋒利與聰慧無需展示力量——如同鑽石，無需高聲宣告，人皆知其貴重。",
+   "real_life": "在現實生活中，您氣質出眾、精緻優雅，散發著高貴的魅力。您注重形象、品質與完美，往往擅長需要細膩、精準或品味的工作——如藝術、設計、精工細活，或需要犀利分析力的領域。您對自身價值充滿自信，堅守高標準，並以這份精緻吸引美好的事物向您匯聚。",
+   "shadow": "您的陰影，是精緻化作傷人的利刃——您標準高、深知自身價值、能看見別人忽略的細節，但若不留意，會變得挑剔、批評尖銳，對自己與身邊之人吹毛求疵。您對批評的敏感遠勝於表面所現。危險之處在於：本應讓您閃耀的自尊，反而築成他人無法靠近的高牆。",
+   "needs": "身強的陰金需要 **水（食傷 · 表達／作品／盡展才華）** 來洗滌珠玉，使其光華畢露、彰顯價值；也需要 **火與木（官財 · 目標／舞台／相稱的價值）** 作為金座，讓寶石鑲嵌得有意義。藏於抽屜的鑽石無人識其價值，鑲於王冠之上方能光芒四射。您需要舞台與施展才華的管道，如此您的精緻方能成為世人看得見的價值。"
+  }
+ },
+ "辛_中和": {
+  "en": {
+   "label": "Yin Metal · Balanced",
+   "core": "You are a gem cut to perfect proportion — radiant without being gaudy, refined without being fussy. 辛 in a balanced state is someone with Yin Metal's taste and precision, yet not chained to perfectionism's pressure; you know your own worth without arrogance. Your nature is beautiful and distinguished yet approachable and warm — an analytical sharpness wielded with kindness, and a confidence measured just right, never overflowing.",
+   "real_life": "In real life you are charming and credible — good taste, meticulous quality work, yet smooth to collaborate with. You advance through refinement and the trust you have accumulated, and you tend to be recognized for your expertise and taste. You know how to keep your standards without putting too much pressure on those around you, and you attract good things through the quality of who you are.",
+   "shadow": "The shadow to watch is swinging between pride and fragility — in strong phases you may grow demanding, over-critical, and stand too much on your dignity; in weak phases you may take others' words to heart, wounding yourself, and doubt your own worth. Keep your refinement from hardening into pressure, for a fine gem does not need to prove its value at every moment.",
+   "needs": "Because you sit at the point of balance, you need **balancing forces that follow your chart's rhythm** — in phases leaning weak, Earth and Metal (印比) to reinforce your strength; in phases leaning strong, Water, Fire, and Wood (食傷官財) as release and stage. Reading your chart means checking the luck cycles (運) to see whether the gem is strong or fragile in that period, then supplementing the opposite side. You shine most beautifully when you preserve this quality of being \"precious yet within reach.\""
+  },
+  "zh": {
+   "label": "陰金 · 中和",
+   "core": "您是一顆切割得恰到好處的寶石——光彩而不炫目，精緻而不挑剔。中和之辛金，擁有陰金的品味與細膩，卻不執著於完美到令人窒息，深知自身價值而不傲慢。您的本質高雅出眾，卻平易近人、溫暖可親；擁有犀利的分析力，卻以仁厚之心運用；自信恰如其分，不多不溢。",
+   "real_life": "在現實生活中，您魅力與信譽兼具——品味出眾、工作細緻精良，又能與人合作無間。您憑藉精湛與日積月累的信譽穩步前進，專業與品味常受肯定。您懂得堅守標準而不過度苛求身邊之人，並以自身的品質吸引美好的事物。",
+   "shadow": "需要警惕的陰影，是在自傲與脆弱之間搖擺——能量偏強時，您可能變得挑剔、批評過度、身段放不下；能量偏弱時，您可能把別人的話收進心裡折磨自己，懷疑自身的價值。您必須守護這份精緻，而不讓它變成壓力，因為真正的美玉，無需時時刻刻證明自己的價值。",
+   "needs": "因為處於平衡點，您需要 **依命局節奏調衡之物** ——偏弱之時，需要土與金（印比）來扶助元氣；偏強之時，需要水、火、木（食傷官財）來宣洩並提供舞台。解讀您的命局，須觀察大運中該階段是玉堅還是玉脆，再補其相反之面。當您守住這份「珍貴而可親」的特質，便能綻放最美的光芒。"
+  }
+ },
+ "辛_弱": {
+  "en": {
+   "label": "Yin Metal · Weak",
+   "core": "You are an uncut gem, or a delicate ornament that fears every scratch — holding real value and beauty within, yet still fragile and in need of protection and care. 辛 in a weak state is someone deeply sensitive, of refined taste and feeling, quick to perceive both beauty and coarseness, yet vulnerable to criticism and to harsh surroundings. Your nature is beautiful in a fragile way; you need gentle space and acceptance in order to shine.",
+   "real_life": "In real life you carry great aesthetic and emotional sensitivity, a deep understanding of beauty and feeling, and often a gift for art, design, or fine detailed work. You shine in surroundings that are warm and appreciate your worth, but you dim and withdraw where things are coarse or harshly critical. You need acceptance and love as the power that sustains you.",
+   "shadow": "Your shadow is a gem so afraid of scratches it dares not catch the light — you are refined, sensitive, and precious in yourself, yet a small remark can leave a deep mark within. You may wait so long for others' approval that you never dare believe in your own worth, or step back from stages you deserve to stand on for fear of not being good enough. The piercing truth is that the fear of imperfection may mean no one ever gets to see your true brilliance.",
+   "needs": "Weak Yin Metal needs **Earth (印 · knowledge/cultivation/emotional anchor)** as the mineral bed that forms and crystallizes the gem into strength, and **fellow Metal (比劫 · friends/a circle that appreciates one another)** as a matched set of jewels that enhance each other. A single stone with no setting to hold it bruises easily, but in a well-designed set it becomes magnificent and precious. Accumulate knowledge, find your emotional anchor, and stay among those who truly see your worth — then your refinement becomes a charm that shines with confidence."
+  },
+  "zh": {
+   "label": "陰金 · 身弱",
+   "core": "您是一顆尚未雕琢的原石，或一件畏懼刮痕的纖巧首飾——自身蘊藏價值與美，卻仍脆弱，需要呵護與守護。身弱之辛金，是細膩敏感、品味與感受皆精緻之人：對美與粗糙的感知極為敏銳，卻經不起苛刻的批評與粗礪的環境。您的本質是一種纖細易碎的美，需要溫柔的空間與被接納的肯定，方能綻放光芒。",
+   "real_life": "在現實生活中，您在審美與心靈上都極為細膩，對美與情感有深刻的領悟，往往在藝術、設計或精緻工藝上具有天賦。在溫暖且懂得欣賞您價值的環境裡，您光彩照人；而在粗礪嚴苛、批評激烈之處，您會黯淡退縮。被接納與被愛，是滋養您的力量泉源。",
+   "shadow": "您的陰影，是畏懼刮痕而不敢發光的寶石——您細膩、敏感、自有價值，但一句細小的話語，都可能在心中留下深深的刻痕。您可能一直等待他人的認可，而不敢相信自己的價值，或因害怕不夠好而從本該站上的舞台退下。最刺痛的一點是：對不完美的恐懼，可能讓世人永遠無緣得見您真正的光芒。",
+   "needs": "身弱的陰金需要 **土（印 · 知識／培育／心靈依靠）** 作為孕育成形的礦床，讓寶石堅實、結晶成器；也需要 **同類之金（比劫 · 朋友／互相欣賞的圈子）** 組成相得益彰的整套珍飾。孤零零的一顆寶石沒有底座易受損傷，而在精心設計的套組之中則華美尊貴。您需要積累學識、尋得心靈的依靠、與真正珍視您的人相伴，您的精緻便會化為自信綻放的光采。"
+  }
+ },
+ "壬_強": {
+  "en": {
+   "label": "Yang Water · Strong",
+   "core": "You are \"the ocean, the great river, the floodwaters\" — water vast, powerful, and able to flow anywhere. Unlike 癸, the fine dew and rain, 壬 is water of immense power and far-reaching scope. In a strong state (full strength), your essence is broad-minded, far-sighted, and driven — intelligent, highly adaptable, never content to stand still. You think freely, dare to venture and to risk, and carry the charm of someone deep and hard to predict — like a sea calm on the surface but immensely powerful in its depths.",
+   "real_life": "In real life you are quick-minded, intelligent, masterful at seeing the big picture, and able to adapt to any situation. You have a gift for connecting the threads of a story, spotting opportunities others cannot see, and daring to act on the new. You love freedom, hate being confined, and are often the one leading change or pioneering something new. You carry the force of a current that moves everything forward.",
+   "shadow": "Your shadow is great water overflowing its banks — you think broadly, cleverly, and can flow in any direction, but without banks you scatter: thinking more than advancing, changing course too often, and slipping loose from responsibility. You may use your wit as a shortcut or a maneuver without realizing it. The danger is that freedom without a frame becomes turbulence that knocks both you and others off balance.",
+   "needs": "Strong Water needs **Earth (官煞 · structure/discipline/boundaries)** as riverbanks and dams that give the flow direction — a river with banks nourishes a city, but a flood without banks destroys — and **Wood (食傷 · output/creation)** as the channel that turns your power to good use. With clear structure and creative outlets, your immense power becomes a current that can truly drive great things."
+  },
+  "zh": {
+   "label": "陽水 · 身強",
+   "core": "您是「汪洋、大江、奔流之水」——浩瀚、磅礴、無處不達之水。不同於癸水那細膩的雨露，壬水是力量磅礴、疆界遼闊之水。當處於身強之勢（力量充盈）時，您的本質是思想開闊、目光高遠、驅動力強大之人——聰慧、應變自如、從不甘於停滯。您思想自由，敢闖敢拚，散發著深沉而難以捉摸的魅力，如同大海，表面平靜，深處卻蘊藏著磅礴之力。",
+   "real_life": "在現實生活中，您頭腦敏捷、聰慧過人、洞悉大局，能適應任何局面。您善於串連事理、看見他人看不見的機會，並敢於嘗試新事物。您熱愛自由、厭惡束縛，往往是引領變革或開疆闢土之人。您的能量如奔流的江水，推動一切滾滾向前。",
+   "shadow": "您的陰影，是漫過堤岸的大水——您思路寬廣、聰穎、四通八達，但若沒有河岸約束，您會思緒紛飛、想得多做得少、頻頻改變方向，也容易從責任中脫身。您可能在不知不覺間，把機智用成了捷徑或權謀。危險之處在於：沒有框架的自由，會化作讓自己與他人都失去重心的洪流。",
+   "needs": "身強之水需要 **土（官煞 · 框架／紀律／界限）** 作為河岸與堤壩，讓水流有其方向——有堤岸的大江能潤養城池，無堤的洪水則氾濫成災。同時需要 **木（食傷 · 作品／創造）** 作為宣洩力量、化力為益的渠道。當框架清晰、創造有道，您磅礴的能量便能成為真正推動宏圖偉業的洪流。"
+  }
+ },
+ "壬_中和": {
+  "en": {
+   "label": "Yang Water · Balanced",
+   "core": "You are a river flowing within its banks — carrying 壬's power and breadth, but with clear direction, never overflowing without bounds. 壬 in a balanced state is someone with Yang Water's intelligence, breadth of vision, and adaptability, yet with enough footing and stability not to drift endlessly. Your nature is flexible but principled, freedom-loving but responsible, far-sighted but genuinely hands-on — a current both powerful and purposeful.",
+   "real_life": "In real life you are both intelligent and dependable — sharp at seeing the big picture, quick to adapt, yet steady and responsible. You advance through your gift for connecting things and spotting opportunity, combined with a credibility that makes people willing to work alongside you. You are often the one who can lead change with a steady hand — never rash, never stuck in place.",
+   "shadow": "The shadow to watch is a flow that loses its banks — in strong phases you may scatter, overthink, change your mind quickly, and run down too many paths at once; in weak phases you may go still, hesitate, or let opportunities drift past. Keep the balance between flexibility and footing, for water with a channel travels far, but water without edges spreads until its force is spent.",
+   "needs": "Because you sit at the point of balance, you need **balancing forces that follow your chart's rhythm** — in phases leaning weak, Metal and Water (印比) to reinforce your strength; in phases leaning strong, Earth and Wood (官煞食傷) to bank the flow and give it release. Reading your chart means checking the luck cycles (運) to see whether that period brings flood or drought, then supplementing the opposite side. You are the current that nourishes best when you preserve this quality of \"flowing, but with banks.\""
+  },
+  "zh": {
+   "label": "陽水 · 中和",
+   "core": "您是一條在堤岸之間奔流的大江——擁有壬水的磅礴與遼闊，卻有清晰的方向，不氾濫、不失序。中和之壬水，兼具陽水的聰慧、視野與應變力，內在卻有足夠的立場與定力，不會漫無目的地漂流。您的本質靈活而有原則，熱愛自由卻勇於負責，高瞻遠矚且付諸實行，是一股既有力量又有方向的水流。",
+   "real_life": "在現實生活中，您既聰慧又可靠——洞悉大局、應變自如，同時穩重負責。您憑藉串連事理、洞察機會的能力，加上讓人放心與您共事的信譽穩步前進。您往往能沉穩地引領變革，既不冒進，也不原地踏步。",
+   "shadow": "需要警惕的陰影，是失去堤岸的水流——能量偏強時，您可能思緒紛飛、想得太多、變心太快、多線出擊；能量偏弱時，您可能停滯、猶豫，任機會白白流走。您必須在靈活與立場之間保持平衡，因為有河道的水能流向遠方，無邊際的水只會散逸殆盡。",
+   "needs": "因為處於平衡點，您需要 **依命局節奏調衡之物** ——偏弱之時，需要金與水（印比）來扶助元氣；偏強之時，需要土與木（官煞食傷）來築堤與宣洩。解讀您的命局，須觀察大運中該階段是水漲還是水枯，再補其相反之面。當您守住這份「奔流而有堤」的特質，便是最能潤澤四方的水流。"
+  }
+ },
+ "壬_弱": {
+  "en": {
+   "label": "Yang Water · Weak",
+   "core": "You are a small stream or a well running low — with a heart that longs to flow as far and wide as the sea, but not yet enough water for full power. 壬 in a weak state is someone whose inner world is broad, freedom-loving, and far-sighted, yet who lacks the force and foundation to push those visions into reality. You are clever and full of good ideas, but at times the energy is not there to act, or it scatters in so many directions that it arrives nowhere. You need replenishment for the current to gain its force.",
+   "real_life": "In real life you think well, see the world broadly, and have quick wits, but you often feel you lack the power to make your ideas real, or grow weary when you must push alone. You do best when there are sources that refill you — knowledge, a team, and a supportive environment. You may look easygoing and unbothered on the outside, but inside you need anchoring and replenishment so the current within you can flow strong and far.",
+   "shadow": "Your shadow is shallow water longing to flow far — you have broad ideas and want to go in many directions, but not yet the force to push any one of them to the end. You may start much and finish little, shift course to follow others, or lean too heavily on outside sources of power. The piercing truth is that your big dreams are not wrong — but you must first gather enough water, or your breadth becomes drift.",
+   "needs": "Weak Water needs **Metal (印 · knowledge/support/a nourishing source)** as the headspring that keeps the flow running so it never dries up, and **fellow Water (比劫 · friends/team/allies)** to merge into one great, powerful river. A small stream dries easily, but many streams joined together become a river that never runs dry. Accumulate knowledge, secure steady sources of strength, and band together with those headed the same way — then your far-reaching vision will have the force to flow all the way to its goal."
+  },
+  "zh": {
+   "label": "陽水 · 身弱",
+   "core": "您是一條小溪，或一口將要乾涸的井——心懷如大海般奔流遠方、遼闊無邊的渴望，水量卻還不足以蓄滿力量。身弱之壬水，內在思想開闊、熱愛自由、目光高遠，卻缺少將構想化為現實的力量與根基。您的本質聰慧、點子絕佳，但有時力有未逮，或水流四散而終無所至，需要蓄積補給，水勢方能有力。",
+   "real_life": "在現實生活中，您想法出色、視野開闊、機敏過人，卻常感到力量不足以讓構想成真，或在獨自推動時心力交瘁。當擁有補給能量的泉源——學識、團隊與支持的環境——時，您能表現出色。您外表看似從容不迫，內心卻渴望依靠與補給，好讓體內的水流得更有力、更長遠。",
+   "shadow": "您的陰影，是想流向遠方的淺水——您想法遼闊、想走的路很多，力量卻還不足以把任何一條路走到底。您可能起頭多、收尾難，隨他人而轉向，或過度依賴外在的能量來源。最刺痛的一點是：您的遠大夢想並沒有錯，只是必須先蓄足水量作為根基，否則遼闊會淪為漂泊。",
+   "needs": "身弱之水需要 **金（印 · 知識／依靠／滋養之源）** 作為源頭活水，讓水流綿延不絕、不致乾涸；也需要 **同類之水（比劫 · 朋友／團隊／盟友）** 匯聚成一條有力的大江。小溪易乾，眾流匯聚則成永不枯竭的大河。您需要積累學識、尋找穩固的補給之源，並與志同道合之人結伴同行，您那遼闊高遠的思想，便有力量流抵真正的目標。"
+  }
+ },
+ "癸_強": {
+  "en": {
+   "label": "Yin Water · Strong",
+   "core": "You are \"the dew, the rain, the mist, the underground spring\" — water fine, gentle, quietly seeping into everything. Unlike 壬, the mighty ocean, 癸 is water that nourishes life softly and profoundly. In a strong state (full strength), your essence is someone of deep mind and spirit — keen intuition, seamless adaptation, and a subtle, delicate understanding of things. You are powerful in a way that needs no display, like water that seeps slowly until it has changed everything before anyone notices.",
+   "real_life": "In real life you are deeply intelligent, gifted at understanding people, and possessed of remarkably accurate instincts. You blend seamlessly into any environment, and you tend to read situations and people's feelings right through. You are creative, rich in imagination, and carry an enigmatic charm that draws people in. You work superbly behind the scenes, gradually seeping in and gaining influence without ever having to fight for the spotlight.",
+   "shadow": "Your shadow is deep water whose bottom no one can see — you perceive much, think deeply, and quietly absorb everything, but left unchecked you sink into your own moods, imaginings, and suspicions. You may hold your feelings so close that no one can reach you, or turn your understanding of people to needlessly convoluted ends. The danger is that the depth meant to nourish becomes instead a gloom that gnaws at you from within.",
+   "needs": "Strong Yin Water needs **Earth (官煞 · structure/direction/goals)** as the vessel that gives your diffusing water shape and destination, and **Wood (食傷 · output/creation)** as the channel through which your depth grows into something tangible. Dew that falls on dry ground simply evaporates, but water that feeds the trees becomes a forest. You need clear goals and creative outlets — then your depth becomes a nourishing power of real beauty."
+  },
+  "zh": {
+   "label": "陰水 · 身強",
+   "core": "您是「晨露、細雨、薄霧、地底湧泉」——細膩、溫柔、悄無聲息地滲入每個角落之水。不同於壬水那磅礴的汪洋，癸水是以柔潤深邃之姿滋養生命之水。當處於身強之勢（力量充盈）時，您的本質是思想與心靈皆深邃之人——直覺精準、應變無痕，對萬事萬物有著細膩入微的領悟。您的力量無需外顯，如同水一般，緩緩滲透，在無人察覺之際改變一切。",
+   "real_life": "在現實生活中，您聰慧深沉、善解人意，直覺精準敏銳。您能不著痕跡地融入任何環境，往往能看透局勢與人心。您富有創造力、想像力出眾，散發著神秘而耐人尋味的魅力。您極擅長幕後工作，如水滲物，於無聲處發揮影響力，無需與人爭搶一席之地。",
+   "shadow": "您的陰影，是深不見底的水——您感知豐富、思慮深沉，默默吸納著周遭的一切，但若不留意，會沉溺於自己的情緒、想像與猜疑之中。您可能把感受埋藏得無人能夠靠近，或把洞悉人心的能力用得過於迂迴複雜。危險之處在於：本應滋養萬物的深邃，反而化作由內侵蝕的陰鬱。",
+   "needs": "身強的陰水需要 **土（官煞 · 框架／方向／目標）** 作為承載的容器，讓四散滲流之水有形有向；也需要 **木（食傷 · 作品／創造）** 作為渠道，讓深邃萌發為觸手可及的成果。落於乾地的露水轉瞬蒸散，而潤澤林木之水終將成就森林。您需要清晰的目標與創造的管道，如此您的深邃方能化為美好的滋養之力。"
+  }
+ },
+ "癸_中和": {
+  "en": {
+   "label": "Yin Water · Balanced",
+   "core": "You are a spring that flows steadily — with 癸's delicacy and depth, yet stable enough not to drown in your own emotions. 癸 in a balanced state is someone with Yin Water's intuition and deep understanding, but in command of the inner world: never brooding into gloom, never adapting until the self is lost. Your nature is gentle, deep, and understanding of people, yet with a stance and an inner steadiness — water that nourishes others while keeping itself whole.",
+   "real_life": "In real life you are someone who \"understands deeply without drowning\" — a keen reader of people, with sound instincts, and a trusted counselor or behind-the-scenes presence. You advance through your understanding of people, your creativity, and the credibility you have accumulated. You adapt without losing your footing, and you are often the one who unties difficult situations with gentleness and a deep-running intelligence.",
+   "shadow": "The shadow to watch is depth that swings into gloom — in strong phases you may overthink, sink into your moods, and grow more suspicious; in weak phases you may lean on others emotionally and sway with the atmosphere around you. Keep the balance between intuition and steadiness, for your sensitivity only becomes power when you refuse to let yourself dissolve into feeling.",
+   "needs": "Because you sit at the point of balance, you need **balancing forces that follow your chart's rhythm** — in phases leaning weak, Metal and Water (印比) to reinforce your strength; in phases leaning strong, Earth and Wood (官煞食傷) as vessel and channel. Reading your chart means checking the luck cycles (運) to see whether the water runs high or low in that period, then supplementing the opposite side. You nourish most deeply and most enduringly when you preserve this quality of being \"deep yet steady.\""
+  },
+  "zh": {
+   "label": "陰水 · 中和",
+   "core": "您是一泓涓涓不息的清泉——擁有癸水的細膩與深邃，卻有足夠的定力，不沉溺於自己的情緒。中和之癸水，兼具陰水的直覺與深刻的領悟力，卻能安然掌馭內心世界：不多思至陰鬱，也不遷就至失去自我。您的本質溫潤、深邃、善解人意，卻有立場與內心的安定，是一泓既能滋養他人、又能守護自己的水。",
+   "real_life": "在現實生活中，您是「懂得深，卻不沉溺」之人——善於讀人、直覺敏銳，是值得信賴的軍師或幕後智囊。您憑藉對人心的理解、創造力，以及日積月累的信譽穩步前進。您懂得順勢調整而不失重心，往往能以柔韌與深邃的智慧，讓僵局悄然化解。",
+   "shadow": "需要警惕的陰影，是深邃搖擺成陰鬱——能量偏強時，您可能想得更多、沉溺情緒、疑心加重；能量偏弱時，您可能在心靈上依賴他人，隨周遭氛圍而動搖。您必須在直覺與安定之間保持平衡，因為您的細膩唯有在不任由自己沒入情緒之時，方能成為力量。",
+   "needs": "因為處於平衡點，您需要 **依命局節奏調衡之物** ——偏弱之時，需要金與水（印比）來扶助元氣；偏強之時，需要土與木（官煞食傷）作為容器與渠道。解讀您的命局，須觀察大運中該階段是水盈還是水缺，再補其相反之面。當您守住這份「深邃而安定」的特質，便能滋養得最深、最長久。"
+  }
+ },
+ "癸_弱": {
+  "en": {
+   "label": "Yin Water · Weak",
+   "core": "You are a dewdrop on a leaf at dawn — delicate, exquisite, beautiful, and quick to evaporate. 癸 in a weak state is the most profoundly sensitive of all: perceiving subtleties and the emotions around you with remarkable speed, holding an imagination and inner world that are rich yet fragile. Your nature is soft and gentle, absorbing everything around you — sometimes until you can no longer tell which feelings are yours and which belong to others. You need a safe space so that you do not simply evaporate away.",
+   "real_life": "In real life you have immense empathy, a deep understanding of people, sharp intuition, and often a gift for art, imagination, or healing the heart. You absorb the energy and emotions around you quickly, which lets you shine in warm, safe places but leaves you dimmed and drained where it is chaotic or pressuring. You need love, acceptance, and quiet, peaceful space as the powers that sustain your life.",
+   "shadow": "Your shadow is a droplet that absorbs everything until its strength is gone — you feel deeply, take on others' emotions quickly, and easily gather up small details to dwell on. You may grow anxious, wary, or low-spirited easily, or lean on others emotionally until your own voice fades. To say it plainly: without a foundation and boundaries of your own, your gentleness becomes a dissolving away into the currents around you.",
+   "needs": "Weak Yin Water needs **Metal (印 · knowledge/support/a source of emotional nourishment)** as the underground spring that refills you so you never run dry, and **fellow Water (比劫 · friends/a community that understands)** to merge into a stream that does not evaporate alone. A single drop on hot ground vanishes fast, but a stream with a source, flowing joined with others, nourishes without end. Find steady emotional anchors, accumulate knowledge, and stay among those who understand you and are sincere — then your deep sensitivity becomes a beautiful gift, not a burden that wears you down."
+  },
+  "zh": {
+   "label": "陰水 · 身弱",
+   "core": "您是清晨葉尖上的一滴露珠——纖細、柔嫩、美好，卻容易蒸發消散。身弱之癸水，是情感最為細膩深邃之人：對細微的事物與周遭的情緒感知極快，擁有豐盈的想像力與內心世界，卻也脆弱易碎。您的本質溫潤柔和，吸納著身邊的一切，以致有時分不清哪些是自己的感受、哪些是別人的。您需要一方安全的天地，才不至於悄然蒸散。",
+   "real_life": "在現實生活中，您有著極高的同理心，對人有深刻的理解，直覺精準，往往在藝術、想像或療癒心靈方面具有天賦。您對周遭的能量與情緒吸收極快，因此在溫暖安全之處光彩流轉，而在喧囂高壓之處則黯淡疲憊。愛、接納與寧靜的空間，是滋養您生命的力量。",
+   "shadow": "您的陰影，是吸納一切直至耗竭的露珠——您感受深刻、極易承接他人的情緒，也容易把細枝末節收進心裡反覆思量。您可能容易憂慮、多疑、低落，或在心靈上依賴他人，直到自己的聲音越來越微弱。必須直言的一點是：若您沒有自己的根基與界線，溫柔終將化作隨波消融的自己。",
+   "needs": "身弱的陰水需要 **金（印 · 知識／依靠／心靈滋養之源）** 作為地底的源頭活水，涓涓補給、永不乾涸；也需要 **同類之水（比劫 · 朋友／彼此理解的同伴）** 匯聚成不再孤單蒸散的溪流。烈日下的孤露轉瞬即逝，而有源頭、有匯流的溪水則滋養無盡。您需要尋得穩固的心靈依靠、積累學識，並與真誠理解您的人相伴，您那深邃的細膩便會化為美好的天賦，而非消磨自己的重擔。"
+  }
+ }
+}

@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import nextEnv from "@next/env";
+const {loadEnvConfig}=nextEnv;loadEnvConfig(process.cwd(),false,console);
+const {decryptAuthDelivery,encryptAuthDelivery}=await import("../src/lib/auth-delivery-outbox.ts");
+const payload={channel:"email" as const,destination:"owner@example.test",link:"https://hourkey.io/reset-password/secret-token",name:"Owner"};
+const encrypted=encryptAuthDelivery(payload);
+assert(!encrypted.includes(payload.destination)&&!encrypted.includes("secret-token"));
+assert.deepEqual(decryptAuthDelivery(encrypted),payload);
+const route=fs.readFileSync("src/app/api/auth/forgot-password/route.ts","utf8");
+const worker=fs.readFileSync("scripts/workers/auth-delivery-worker.mts","utf8");
+const migration=fs.readFileSync("scripts/migrate-auth-delivery-outbox.sql","utf8");
+assert(route.includes("enqueuePasswordResetDelivery")&&!route.includes("sendResetEmail(")&&!route.includes("sendSms("));
+assert(route.includes("durable enqueue failed")&&route.indexOf("durable enqueue failed")<route.lastIndexOf("await uniformDelay()"));
+assert(worker.includes("FOR UPDATE SKIP LOCKED")&&worker.includes("attempts>=5")&&worker.includes("auth_delivery_sent"));
+assert(worker.includes("payload_ciphertext=CASE WHEN $2='failed' THEN ''")&&!worker.includes("error.message.slice"));
+assert(migration.includes("payload_ciphertext")&&migration.includes("REVOKE ALL"));
+console.log("auth delivery outbox checks passed: 8/8");

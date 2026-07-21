@@ -6,12 +6,14 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { readFileSync, statSync } from "fs";
 import { join } from "path";
 import { loadPromptMd } from "@/lib/prompt-md";
 import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 import { getSession } from "@/lib/auth";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 /* 25 พ.ค. · persona ย้ายไป prompts/qimen-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}}=dynamic · fallback กันพัง */
 const QIMEN_TPL_FALLBACK = `คุณคือซินแสฉีเหมินตุ้นเจี่ย · ตำรา 煙波釣叟賦·奇門遁甲統宗\n{{BODY}}\nตอบสั้นกระชับ · อ่านจากผังจริงก่อน แล้วใช้ตำราแปลความหมาย · ใช้ดวงผู้ใช้/ผลค้นหาเป็นตัวประกอบ · เลี่ยงคำว่าโชค/ฟลุค:`;
@@ -1579,7 +1581,7 @@ ${qimenAnswerStyleRule(lang)}
 
 async function runClaudeCli(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const args = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "user"];
+    const args = ["-p", "--output-format", "text", ...CLAUDE_TEXT_ONLY_ARGS];
     const c = spawn("sudo", ["-u", CHILD_USER, "-H", "claude", ...args], { cwd: "/var/www/checklist-app", env: process.env });
     let out = "", err = "";
     const timer = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} reject(new Error("timeout")); }, TIMEOUT_MS);
@@ -1596,10 +1598,41 @@ async function runClaudeCli(prompt: string): Promise<string> {
 }
 
 export async function POST(req: Request) {
+  let reserved = false;
   /* 1 มิ.ย. · AI ฉีเหมินต้องสมัคร/login ก่อน (เจ้านายสั่ง · defense-in-depth เสริม spendHours) */
   const session = await getSession();
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   try {
+    /* product: trial/free ปิด AI ซินแสฉีเหมิน · premium+ เปิด · fail-closed */
+    {
+      const { getProductAccess, entitlementDenied } = await import("@/lib/product-entitlement");
+      let access = null as Awaited<ReturnType<typeof getProductAccess>>;
+      try {
+        access = await getProductAccess(session.userId);
+      } catch (e) {
+        console.error("[qimen/sifu] getProductAccess", e instanceof Error ? e.message : e);
+        return NextResponse.json(
+          entitlementDenied("qimen_sifu_locked", {
+            message: "ตรวจสิทธิ์ไม่สำเร็จ · ลองใหม่หรืออัปเกรด /pricing",
+            plan: "free",
+          }),
+          { status: 403 }
+        );
+      }
+      if (!access || access.qimen_sifu !== true) {
+        return NextResponse.json(
+          entitlementDenied("qimen_sifu_locked", {
+            message:
+              access?.plan === "trial"
+                ? "ช่วงทดลอง · AI ซินแสฉีเหมินยังไม่เปิด · อ่านผังยามพื้นฐานได้ · อัปเกรด /pricing"
+                : "แพ็กเกจนี้ใช้ AI ซินแสฉีเหมินไม่ได้ · อัปเกรด /pricing",
+            plan: access?.plan || "free",
+          }),
+          { status: 403 }
+        );
+      }
+    }
+
     const reqT0 = Date.now();
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
@@ -1616,22 +1649,28 @@ export async function POST(req: Request) {
     }
 
     /* 📜 เครดิต: เช็คยามก่อนเรียก Claude · หักตามจำนวนตัวอักษรคำตอบหลังได้คำตอบ (char-based ÷30) · 29 มิ.ย. */
-    const { reserveHour, drainHoursByChars } = await import("@/lib/spend-hours");
+    const { reserveHour, settleReservedHourByChars, refundReservedHour } = await import("@/lib/spend-hours");
     const rsv = await reserveHour("sifu_qimen");
     if (!rsv.ok) {
       return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
     }
+    reserved = true;
 
     const built = buildPrompt({ message, history, lang, topic, payload });
     _inflight++;
     let reply: string;
     try {
       reply = await runClaudeCli(built.prompt);
+    } catch (error) {
+      await refundReservedHour("sifu_qimen").catch(() => {});
+      reserved = false;
+      throw error;
     } finally {
       _inflight--;
     }
     /* หักยามตามจำนวนตัวอักษรคำตอบ */
-    const spend = await drainHoursByChars(reply.length, "sifu_qimen");
+    const spend = await settleReservedHourByChars(reply.length, "sifu_qimen");
+    reserved = false;
     const spent = spend.spent;
     const balanceAfter = spend.balance_after;
     logResearchAiMessageSafe({
@@ -1670,7 +1709,7 @@ export async function POST(req: Request) {
       balanceAfter,
       durationMs: Date.now() - reqT0,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       reply,
       model: "claude-max-cli",
       balance_after: balanceAfter,
@@ -1678,8 +1717,12 @@ export async function POST(req: Request) {
       qimen_source_version: built.knowledgeVersion,
       qimen_source_trace: built.sourceTrace,
       qimen_source_trace_items: built.sourceTraceItems,
-    });
+    }));
   } catch (e: any) {
+    if (reserved) {
+      const { refundReservedHour } = await import("@/lib/spend-hours");
+      await refundReservedHour("sifu_qimen").catch(() => {});
+    }
     console.error("[qimen/sifu]", e instanceof Error ? e.message : String(e));
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }

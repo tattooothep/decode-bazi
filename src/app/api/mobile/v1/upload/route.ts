@@ -113,7 +113,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "missing org" }, { status: 400 });
   }
 
-  const rl = rateLimit(`mobile-upload:${clientIp(req)}:${session.userId}`, 20, 60_000);
+  const rl = await rateLimit(`mobile-upload:${clientIp(req)}:${session.userId}`, 20, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { ok: false, error: "อัปโหลดถี่เกินไป · กรุณารอสักครู่แล้วลองใหม่" },
@@ -154,8 +154,9 @@ export async function POST(req: Request) {
          FROM profiles
         WHERE id=$1
           AND org_id=$2
+          AND created_by_user_id=$3
           AND COALESCE(is_archived, false)=false`,
-      [profileId, session.orgId]
+      [profileId, session.orgId, session.userId]
     );
     if (!owned) return NextResponse.json({ ok: false, error: "ไม่พบดวงที่เลือก" }, { status: 404 });
   }

@@ -4,12 +4,34 @@ import { writeAdminAudit } from "@/lib/admin-audit";
 import { q, q1 } from "@/lib/db";
 import { refundPaidOrder } from "@/lib/payment/credit";
 import { clientIp } from "@/lib/rate-limit";
+import { enqueueNotification } from "@/lib/notification-outbox";
 
 export const runtime = "nodejs";
 
 function guard(e: unknown) {
   if (e instanceof Response) return e;
   return NextResponse.json({ ok: false, error: (e as Error).message || "error" }, { status: 500 });
+}
+
+function decorateOrder<T extends Record<string, any>>(order: T) {
+  const status = String(order.status || "pending");
+  const subscriptionPackage = /^(premium|master)_/.test(String(order.package_code || ""));
+  let link_state = "unpaid";
+  if (status === "paid") {
+    link_state = order.credit_linked && (!subscriptionPackage || order.subscription_id)
+      ? "complete"
+      : "broken";
+  } else if (status === "refunded") {
+    link_state = "refunded";
+  } else if (status === "failed") {
+    link_state = "failed";
+  }
+  return {
+    ...order,
+    payment_state: status === "paid" ? "paid" : status === "refunded" ? "refunded" : status === "failed" ? "failed" : "unpaid",
+    subscription_package: subscriptionPackage,
+    link_state,
+  };
 }
 
 /**
@@ -21,8 +43,15 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
   if (id) {
-    const order = await q1(
-      `SELECT o.*, u.email, u.name
+    const order = await q1<Record<string, any>>(
+      `SELECT o.*, u.email, u.name, u.tier AS user_tier, u.sub_expires_at,
+              EXISTS(
+                SELECT 1 FROM hour_transactions ht
+                 WHERE ht.user_id=o.user_id AND ht.ref_payment_id='order_'||o.id::text
+              ) AS credit_linked,
+              (SELECT s.id FROM subscriptions s WHERE s.payment_id=o.pay_ref ORDER BY s.created_at DESC LIMIT 1) AS subscription_id,
+              (SELECT s.status FROM subscriptions s WHERE s.payment_id=o.pay_ref ORDER BY s.created_at DESC LIMIT 1) AS subscription_status,
+              (SELECT COUNT(*)::int FROM affiliate_rewards ar WHERE ar.order_id=o.id) AS affiliate_reward_count
          FROM orders o JOIN users u ON u.id=o.user_id WHERE o.id=$1`, [id]);
     if (!order) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     const txns = await q(
@@ -32,7 +61,7 @@ export async function GET(req: NextRequest) {
         ORDER BY created_at DESC LIMIT 20`,
       [`order_${id}`, `order_${id}_refund`, order.user_id, id]
     ).catch(() => []);
-    return NextResponse.json({ ok: true, order, txns });
+    return NextResponse.json({ ok: true, order: decorateOrder(order), txns });
   }
   const status = (url.searchParams.get("status") || "").trim();
   const search = (url.searchParams.get("search") || "").trim();
@@ -44,13 +73,21 @@ export async function GET(req: NextRequest) {
     where.push(`(LOWER(u.email) LIKE $${args.length} OR LOWER(COALESCE(o.pay_ref,'')) LIKE $${args.length} OR LOWER(COALESCE(o.package_code,'')) LIKE $${args.length})`);
   }
   const ws = where.length ? `WHERE ${where.join(" AND ")}` : "";
-  const rows = await q(
+  const rows = await q<Record<string, any>>(
     `SELECT o.id, o.created_at, o.paid_at, o.package_code, o.amount_thb, o.yam_granted,
-            o.status, o.pay_method, o.pay_ref, o.coupon_code, u.email, u.id AS user_id
+            o.status, o.pay_method, o.pay_ref, o.coupon_code, u.email, u.id AS user_id,
+            u.tier AS user_tier, u.sub_expires_at,
+            EXISTS(
+              SELECT 1 FROM hour_transactions ht
+               WHERE ht.user_id=o.user_id AND ht.ref_payment_id='order_'||o.id::text
+            ) AS credit_linked,
+            (SELECT s.id FROM subscriptions s WHERE s.payment_id=o.pay_ref ORDER BY s.created_at DESC LIMIT 1) AS subscription_id,
+            (SELECT s.status FROM subscriptions s WHERE s.payment_id=o.pay_ref ORDER BY s.created_at DESC LIMIT 1) AS subscription_status,
+            (SELECT COUNT(*)::int FROM affiliate_rewards ar WHERE ar.order_id=o.id) AS affiliate_reward_count
        FROM orders o JOIN users u ON u.id=o.user_id
        ${ws}
        ORDER BY o.created_at DESC LIMIT 200`, args);
-  return NextResponse.json({ ok: true, rows });
+  return NextResponse.json({ ok: true, rows: rows.map(decorateOrder) });
 }
 
 export async function POST(req: NextRequest) {
@@ -70,6 +107,13 @@ export async function POST(req: NextRequest) {
     }
     const result = await refundPaidOrder(orderId, reason, admin.userId);
     if (!result.ok) {
+      await enqueueNotification({
+        eventType: "refund_failed", severity: "critical", audienceKind: "admin",
+        audienceRoles: ["finance", "superadmin"], requiredPermission: "admin.orders.refund",
+        dedupeKey: `refund-failed:${orderId}:${String(result.error || "error")}`,
+        targetUrl: `/admin/orders?id=${encodeURIComponent(orderId)}`,
+        payload: { order_id: orderId, failure: String(result.error || "refund_failed") },
+      }).catch((e) => console.warn("[notify] refund failed", e instanceof Error ? e.message : String(e)));
       return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
     }
     await writeAdminAudit({

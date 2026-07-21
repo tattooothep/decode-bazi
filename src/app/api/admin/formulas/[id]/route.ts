@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -16,7 +16,7 @@ const EDITABLE = new Set([
 ]);
 
 export async function GET(_req: Request, ctx: Ctx) {
-  try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
+  try { await requirePermission("admin.formulas.read"); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
   const { id } = await ctx.params;
   const row = await q1(`SELECT * FROM ref_formulas WHERE id=$1`, [id]);
   if (!row) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -25,7 +25,7 @@ export async function GET(_req: Request, ctx: Ctx) {
 
 export async function PUT(req: Request, ctx: Ctx) {
   let admin;
-  try { admin = await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
+  try { admin = await requirePermission("admin.formulas.write"); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
   const { id } = await ctx.params;
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown> & { source?: string };
   const source = body.source || "manual";
@@ -66,7 +66,7 @@ export async function PUT(req: Request, ctx: Ctx) {
 /** POST ?action=verify | dispute */
 export async function POST(req: Request, ctx: Ctx) {
   let admin;
-  try { admin = await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
+  try { admin = await requirePermission("admin.formulas.write"); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
   const { id } = await ctx.params;
   const url = new URL(req.url);
   const action = url.searchParams.get("action");

@@ -11,7 +11,7 @@ import { getVapidPublicKey } from "@/lib/push-sender";
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not_logged_in" }, { status: 401 });
-  const r = rateLimit("push-vapid:" + clientIp(req), 30, 60_000);
+  const r = await rateLimit("push-vapid:" + clientIp(req), 30, 60_000);
   if (!r.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   const key = getVapidPublicKey();
   if (!key) return NextResponse.json({ error: "push_not_configured" }, { status: 503 });

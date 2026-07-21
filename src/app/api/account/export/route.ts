@@ -19,12 +19,12 @@ const clip = (s: unknown) => {
   return t.length > CLIP ? t.slice(0, CLIP) + ` …[ตัดที่ ${CLIP} ตัวอักษร]` : t;
 };
 
-export async function GET() {
-  const acc = await getAccountUser();
+export async function GET(req:Request) {
+  const acc = await getAccountUser(req);
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const { u } = acc;
 
-  const rl = rateLimit(`acct-export:${u.id}`, 6, 3600_000);
+  const rl = await rateLimit(`acct-export:${u.id}`, 6, 3600_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "ขอ export บ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   }

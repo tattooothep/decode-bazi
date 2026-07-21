@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -8,7 +9,7 @@ type Ctx = { params: Promise<{ id: string }> };
 
 function cleanProfileId(value: unknown): string | null {
   const text = typeof value === "string" ? value.trim().replace(/^hk_/, "") : "";
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i.test(text)
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
     ? text
     : null;
 }
@@ -60,7 +61,7 @@ async function proxyProfile(req: Request, ctx: Ctx, method: "GET" | "PUT" | "DEL
   }
 
   const body = method === "PUT" ? cleanBody((await req.json().catch(() => ({}))) as Record<string, unknown>) : undefined;
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
   const profileResp = await fetch(`${origin}/api/profile/${encodeURIComponent(id)}`, {
     body: body ? JSON.stringify(body) : undefined,
     cache: "no-store",

@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+const route=fs.readFileSync("src/app/api/mobile/v1/export/summary/route.ts","utf8");
+const handler=fs.readFileSync("src/lib/export/chart.ts","utf8");
+const branch=route.slice(route.indexOf('if(page==="chart")'),route.indexOf("const upstream"));
+assert(branch.includes("inputs={profileId:"));
+assert(!branch.includes("root.chart")&&!branch.includes("root.birth"));
+assert(handler.includes("loadBirthFromProfile(pid, userId, orgId)"));
+assert(handler.includes('if (!chartBody) return { error: "invalid_inputs", status: 400 }'));
+console.log("mobile Chart export boundary checks passed: 4/4");

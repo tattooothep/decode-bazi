@@ -21,7 +21,7 @@ type UploadAnalyzeRow = {
 
 function cleanUuid(value: unknown): string | null {
   const text = typeof value === "string" ? value.trim() : "";
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i.test(text)
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
     ? text
     : null;
 }
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "missing org" }, { status: 400 });
   }
 
-  const rl = rateLimit(`mobile-upload-analyze:${clientIp(req)}:${session.userId}`, 60, 60_000);
+  const rl = await rateLimit(`mobile-upload-analyze:${clientIp(req)}:${session.userId}`, 60, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { ok: false, error: "อ่านไฟล์ถี่เกินไป · กรุณารอสักครู่แล้วลองใหม่" },

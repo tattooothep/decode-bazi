@@ -14,13 +14,13 @@
  * คืน: SSE (event meta/first/chunk/done/error) เมื่อ Accept: text/event-stream หรือ stream===true
  *      มิฉะนั้น JSON { reply, model }
  *
- * 💰 POC group/pair mode · cap 2 + org guard + login กัน abuse แทน cost
- *    (ไม่เรียก spendHours)
+ * 💰 Pair entitlement and shared Network pair billing are enforced server-side.
  *
  * 🌊 SSE pattern ยกจาก POST /api/sifu เป๊ะ · ห้ามใส่ AbortController / idle-timeout / reader.cancel
  *    (มีบทเรียนว่าทำ stream พัง)
  */
 import { NextResponse } from "next/server";
+import { publicAiPayload } from "@/lib/public-ai-response";
 import { spawn, execFileSync } from "child_process";
 import { readFileSync, statSync, writeFileSync, rmSync, chownSync, chmodSync } from "fs";
 import { join } from "path";
@@ -40,6 +40,15 @@ import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
 import { loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
+import { CLAUDE_TEXT_ONLY_ARGS, GROK_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
+import {
+  networkBillingOperationId,
+  networkBillingRequestFingerprint,
+  refundNetworkAiOperation,
+  reserveNetworkAiOperation,
+  settleNetworkAiOperation,
+} from "@/lib/network-pair-billing";
 
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
@@ -76,6 +85,10 @@ function resolveSifuModel(raw: unknown): SifuModel {
   const s = String(raw || "").trim().toLowerCase();
   if (s === "grok" || s === "grok-cli") return "grok-cli";
   return s === "codex" || s === "codex-cli" ? "codex-cli" : "claude-max-cli";
+}
+
+function providerSecurityDisabled(model: SifuModel): boolean {
+  return model === "codex-cli";
 }
 
 function promptSafe(raw: unknown, fallback = "—"): string {
@@ -514,7 +527,7 @@ function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; 
 /* ── Claude CLI · copy จาก /api/sifu (spawn sudo -u jarvis -H claude · cwd checklist-app) ── */
 async function runClaudeCli(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const claudeArgs = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "user"];
+    const claudeArgs = ["-p", "--output-format", "text", ...CLAUDE_TEXT_ONLY_ARGS];
     const c = spawn("sudo", ["-u", CHILD_USER, "-H", "claude", ...claudeArgs], {
       cwd: "/var/www/checklist-app",
       env: process.env,
@@ -537,7 +550,7 @@ async function runClaudeCli(prompt: string): Promise<string> {
 function spawnClaudeStreaming(prompt: string) {
   const claudeArgs = [
     "-p", "--output-format", "stream-json", "--include-partial-messages", "--verbose",
-    "--dangerously-skip-permissions", "--setting-sources", "user",
+    ...CLAUDE_TEXT_ONLY_ARGS,
   ];
   const c = spawn("sudo", ["-u", CHILD_USER, "-H", "claude", ...claudeArgs], {
     cwd: "/var/www/checklist-app",
@@ -597,7 +610,7 @@ function writeGrokPromptFile(prompt: string): string {
   return path;
 }
 function grokCliArgs(promptFile: string, format: "plain" | "streaming-json"): string[] {
-  const args = ["--prompt-file", promptFile, "--output-format", format];
+  const args = ["--prompt-file", promptFile, ...GROK_TEXT_ONLY_ARGS, "--output-format", format];
   if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
   return args;
 }
@@ -880,14 +893,25 @@ function startSifuHeartbeat(
 
 export async function POST(req: Request) {
   const reqT0 = Date.now();
+  let reservation: { operationId: string; userId: string } | null = null;
+  const refundReservation = async () => {
+    if (!reservation) return;
+    await refundNetworkAiOperation({ ...reservation, feature: "sifu_network_pair", reason: "sifu_group_failed" }).catch(() => {});
+  };
+  const settleReservation = async (chars: number, reply: string) => {
+    if (!reservation) throw new Error("billing_reservation_missing");
+    return settleNetworkAiOperation({ ...reservation, chars, feature: "sifu_network_pair", replay: { reply } });
+  };
   try {
-    const url = new URL(req.url);
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
     const rawHistory: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
     const lang: string = isSifuAnswerLang(body.lang) ? body.lang : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
-    const sifuModel = resolveSifuModel(body.model || url.searchParams.get("model"));
+    const sifuModel = resolveSifuModel(process.env.SIFU_GROUP_MODEL || process.env.SIFU_DEFAULT_MODEL);
+    if (providerSecurityDisabled(sifuModel)) {
+      return NextResponse.json({ error: "analysis_unavailable" }, { status: 503 });
+    }
     const threadId = cleanSifuThreadId(body.threadId);
     const clientGroupBindingHash = cleanAuditToken(body.groupBindingHash);
     const clientHistoryGroupBindingHash = cleanAuditToken(body.historyGroupBindingHash);
@@ -919,25 +943,78 @@ export async function POST(req: Request) {
     }
     if (sifuModel === "codex-cli" && profileIds.length > CODEX_GROUP_MAX) {
       console.log(`[sifu/group guard] model=codex-cli count=${profileIds.length} max=${CODEX_GROUP_MAX}`);
-      return NextResponse.json({ error: "codex_context_limit_group_size", max: CODEX_GROUP_MAX, count: profileIds.length }, { status: 400 });
+      return NextResponse.json({ error: "analysis_context_limit", max: CODEX_GROUP_MAX, count: profileIds.length }, { status: 400 });
     }
     if (sifuModel === "grok-cli" && profileIds.length > GROK_GROUP_MAX) {
       console.log(`[sifu/group guard] model=grok-cli count=${profileIds.length} max=${GROK_GROUP_MAX}`);
-      return NextResponse.json({ error: "grok_context_limit_group_size", max: GROK_GROUP_MAX, count: profileIds.length }, { status: 400 });
+      return NextResponse.json({ error: "analysis_context_limit", max: GROK_GROUP_MAX, count: profileIds.length }, { status: 400 });
     }
     console.log(`[sifu/group model] model=${sifuModel} stream=${body.stream === true ? "1" : "0"} count=${profileIds.length}`);
 
-    /* 🔐 org guard · ดึงทุก profile ใน org เดียวกันเท่านั้น (กัน IDOR · สำคัญสุด) */
+    /* 🔐 owner + org guard · shared org must never expose another user's charts. */
     const rows = await q<ProfileRow>(
       `SELECT id, name, nickname, relationship_type,
               (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self,
               to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
               birth_lng, gender, birth_time_known, day_boundary
        FROM profiles
-       WHERE id = ANY($1) AND org_id=$2 AND is_archived=false`,
-      [profileIds, orgId]
+       WHERE id = ANY($1) AND org_id=$2 AND created_by_user_id=$3 AND is_archived=false`,
+      [profileIds, orgId, session.userId]
     );
-    if (rows.length === 0) return NextResponse.json({ error: "ไม่พบ profile ในบัญชีนี้" }, { status: 404 });
+    if (rows.length !== profileIds.length) {
+      return NextResponse.json({ error: "ไม่พบ profile ในบัญชีนี้" }, { status: 404 });
+    }
+
+    const productAccess = await getProductAccess(session.userId);
+    const pairAi = productAccess?.pages.network.pair_ai || "locked";
+    if (pairAi === "locked") {
+      return NextResponse.json(
+        entitlementDenied("network_pair_ai_locked", { plan: productAccess?.plan || "free" }),
+        { status: 403 }
+      );
+    }
+    const wantsStream = (req.headers.get("accept") || "").includes("text/event-stream") || body.stream === true;
+    const operationId = networkBillingOperationId(req, session.userId, "sifu_network_pair");
+    const requestFingerprint = networkBillingRequestFingerprint("sifu_group", {
+      groupBindingHash: clientGroupBindingHash,
+      groupLabel,
+      history: rawHistory,
+      historyGroupBindingHash: clientHistoryGroupBindingHash,
+      historyProfileIds: clientHistoryProfileIds,
+      lang,
+      message,
+      profileIds,
+      threadId,
+    });
+    const reserveResult = await reserveNetworkAiOperation({
+      feature: "sifu_network_pair",
+      operationId,
+      requestFingerprint,
+      trial: pairAi === "once",
+      userId: session.userId,
+    });
+    if (!reserveResult.ok) {
+      if (reserveResult.error === "network_pair_ai_trial_used") {
+        return NextResponse.json(
+          entitlementDenied(reserveResult.error, { plan: productAccess?.plan, max: 1 }),
+          { status: 403 }
+        );
+      }
+      return NextResponse.json({ error: reserveResult.error }, { status: reserveResult.status });
+    }
+    reservation = { operationId, userId: session.userId };
+    if (reserveResult.replay?.reply) {
+      if (wantsStream) {
+        const replay = reserveResult.replay.reply;
+        const payload = [
+          `event: meta\ndata: ${JSON.stringify(publicAiPayload({ cached: true, replayed: true, lang }))}\n\n`,
+          `event: chunk\ndata: ${JSON.stringify(publicAiPayload({ text: replay }))}\n\n`,
+          `event: done\ndata: ${JSON.stringify(publicAiPayload({ cached: true, replayed: true, chars: replay.length, spent: reserveResult.spent, balance_after: reserveResult.balance_after }))}\n\n`,
+        ].join("");
+        return new Response(payload, { headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" } });
+      }
+      return NextResponse.json(publicAiPayload({ reply: reserveResult.replay.reply, cached: true, replayed: true, spent: reserveResult.spent, balance_after: reserveResult.balance_after }));
+    }
 
     /* เรียงตามลำดับ profileIds ที่ส่งมา (DB ANY ไม่การันตี order) */
     const byId = new Map(rows.map(r => [r.id, r]));
@@ -1028,8 +1105,6 @@ export async function POST(req: Request) {
 
     /* 🌊 SSE เมื่อ Accept: text/event-stream หรือ stream===true · ยก pattern จาก POST /api/sifu เป๊ะ
      * ห้ามใส่ AbortController / idle-timeout / reader.cancel (บทเรียน stream พัง) */
-    const wantsStream =
-      (req.headers.get("accept") || "").includes("text/event-stream") || body.stream === true;
     if (wantsStream) {
       const encoder = new TextEncoder();
       let activeChild: ReturnType<typeof spawnSifuStreaming> | null = null;
@@ -1052,7 +1127,7 @@ export async function POST(req: Request) {
           const send = (event: string, data: unknown) => {
             if (closed) return;
             try {
-              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
             } catch {
               closed = true;
             }
@@ -1070,6 +1145,7 @@ export async function POST(req: Request) {
           let cliErr = "";
           const killTimer = setTimeout(() => {
             try { child.kill("SIGKILL"); } catch {}
+            void refundReservation();
             send("error", { error: "timeout" });
             safeClose();
           }, TIMEOUT_MS);
@@ -1107,13 +1183,23 @@ export async function POST(req: Request) {
             cliErr += text;
             console.warn("[sifu/group sse stderr]", text.slice(0, 200));
           });
-          child.on("close", (code) => {
+          child.on("close", async (code) => {
             activeChild = null;
             clearTimeout(killTimer);
             // flush idBuf ที่ค้าง (AI ตอบสั้น < 120 ตัว ไม่มี \n) · กันคำตอบหาย → done กลายเป็น error
             if (!idStripped && idBuf) { idStripped = true; const r = stripIdLine(idBuf); if (r) emit(r); }
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
+              let settlement;
+              try {
+                settlement = await settleReservation(full.length, full);
+                if (!settlement.ok) throw new Error(`billing_${settlement.status}`);
+              } catch {
+                await refundReservation();
+                send("error", { error: "billing_failed", ms });
+                safeClose();
+                return;
+              }
               console.log(`[sifu/group done] model=${sifuModel} ms=${ms} chars=${full.length}`);
               logResearchAiMessageSafe({
                 session,
@@ -1127,6 +1213,8 @@ export async function POST(req: Request) {
                 requestPayload: auditPayload,
                 responseMeta: { stream: true, chars: full.length, ...auditPayload },
                 model: sifuModel,
+                spent: settlement.spent,
+                balanceAfter: settlement.balance_after,
                 durationMs: Date.now() - reqT0,
                 cached: false,
                 profileSnapshot,
@@ -1141,8 +1229,16 @@ export async function POST(req: Request) {
                 profileBindingStatus,
                 auditQuality: "group_packet_hash_v1",
               });
-              send("done", { ms, model: sifuModel, cached: false, chars: full.length });
+              send("done", {
+                ms,
+                model: sifuModel,
+                cached: false,
+                chars: full.length,
+                spent: settlement.spent,
+                balance_after: settlement.balance_after,
+              });
             } else {
+              await refundReservation();
               console.warn(`[sifu/group error] model=${sifuModel} code=${code} ms=${ms} err=${cliErrorMessage(sifuModel, cliErr)}`);
               send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}`, ms });
             }
@@ -1152,6 +1248,7 @@ export async function POST(req: Request) {
         cancel() {
           try { activeChild?.kill("SIGKILL"); } catch {}
           activeChild = null;
+          void refundReservation();
         },
       });
       return new Response(stream, {
@@ -1166,6 +1263,8 @@ export async function POST(req: Request) {
 
     /* JSON mode */
     const reply = stripIdLine(await runSifuCli(prompt, sifuModel));  // strip ⟦ID⟧ บรรทัดแรก (กันหลุดจอ group)
+    const settlement = await settleReservation(reply.length, reply);
+    if (!settlement.ok) throw new Error(`billing_${settlement.status}`);
     logResearchAiMessageSafe({
       session,
       req,
@@ -1178,6 +1277,8 @@ export async function POST(req: Request) {
       requestPayload: auditPayload,
       responseMeta: { stream: false, chars: reply.length, ...auditPayload },
       model: sifuModel,
+      spent: settlement.spent,
+      balanceAfter: settlement.balance_after,
       durationMs: Date.now() - reqT0,
       cached: false,
       profileSnapshot,
@@ -1192,8 +1293,14 @@ export async function POST(req: Request) {
       profileBindingStatus,
       auditQuality: "group_packet_hash_v1",
     });
-    return NextResponse.json({ reply, model: sifuModel });
+    return NextResponse.json(publicAiPayload({
+      reply,
+      model: sifuModel,
+      spent: settlement.spent,
+      balance_after: settlement.balance_after,
+    }));
   } catch (e: unknown) {
+    await refundReservation();
     const err = e as Error;
     console.error("[sifu/group] error:", err);
     return NextResponse.json({ error: "internal_error" }, { status: 500 });

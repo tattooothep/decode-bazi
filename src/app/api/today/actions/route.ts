@@ -7,6 +7,9 @@
  * 4 หมวด: wealth · career · love · health (ทำตาม today.html รับ)
  */
 import { NextResponse } from "next/server";
+import { entitlementDenied } from "@/lib/product-entitlement";
+import { withinDayWindow } from "@/lib/product-date-gate";
+import { currentRequestProductAccess, nextRequiredPlan } from "@/lib/product-request-access";
 
 const STEM_ELEMENT: Record<string, "wood"|"fire"|"earth"|"metal"|"water"> = {
   甲:"wood",乙:"wood",丙:"fire",丁:"fire",戊:"earth",己:"earth",
@@ -255,6 +258,14 @@ export async function POST(req: Request) {
 
   const [yy, mm, dd] = date.split("-").map(Number);
   if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400 });
+  const product = await currentRequestProductAccess(req);
+  const todayCaps = product.pages.today;
+  if (!withinDayWindow(date, todayCaps.day_window)) {
+    return NextResponse.json(
+      entitlementDenied("today_date_window", { plan: product.plan, max_days: todayCaps.day_window }),
+      { status: 403 }
+    );
+  }
 
   /* day stem ของวันนั้น */
   const tyme = await import("tyme4ts");
@@ -288,5 +299,29 @@ export async function POST(req: Request) {
     narrative_zh: dm ? (NARRATIVE_BY_GOAL_ZH[g.goal]?.[tg] || NARRATIVE_FALLBACK.zh(tg)) : NARRATIVE_GUEST.zh,
   }));
 
-  return NextResponse.json({ date, dayStem, tenGod: tg, actions });
+  const requiredPlan = nextRequiredPlan(product.plan);
+  const entitledActions = actions.map((action, index) => {
+    if (todayCaps.goals !== "one" || index === 0) return { ...action, locked: false };
+    return {
+      goal: action.goal,
+      icon: action.icon,
+      title: action.title,
+      title_en: action.title_en,
+      title_zh: action.title_zh,
+      locked: true,
+      required_plan: requiredPlan,
+    };
+  });
+
+  return NextResponse.json({
+    date,
+    dayStem,
+    tenGod: tg,
+    actions: entitledActions,
+    entitlement: {
+      plan: product.plan,
+      goals: todayCaps.goals,
+      technical: todayCaps.goals === "technical",
+    },
+  });
 }

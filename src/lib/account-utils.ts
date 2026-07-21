@@ -5,6 +5,7 @@
 import { createHash } from "node:crypto";
 import { getSession, type Session } from "@/lib/auth";
 import { q1 } from "@/lib/db";
+import { getMobileSession } from "@/lib/mobile-auth";
 
 export type AccountUser = {
   id: string;
@@ -28,8 +29,8 @@ export type AccountUser = {
 };
 
 /** session + user row ที่ยังไม่ถูกลบ (soft-delete แล้ว = 401 ทุก endpoint บัญชี) */
-export async function getAccountUser(): Promise<{ s: Session; u: AccountUser } | null> {
-  const s = await getSession();
+export async function getAccountUser(req?:Request): Promise<{ s: Session; u: AccountUser } | null> {
+  const s = req ? await getMobileSession(req) : await getSession();
   if (!s) return null;
   const u = await q1<AccountUser>(
     `SELECT id, email, name, password_hash, google_user_id, line_user_id,

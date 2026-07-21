@@ -1,6 +1,7 @@
-import { findMountain24, normalizeDeg } from "./mountains";
+import { normalizeDeg } from "./mountains";
 import type { Dir8, Mountain24 } from "./mountains";
 import { buildBashaContext } from "./najia-basha";
+import { mountainForPlate } from "./three-plates";
 
 export type WaterFlowRole = "incoming" | "outgoing" | "static" | "unknown";
 export type WaterMethodInput = {
@@ -43,7 +44,7 @@ const WATER_MOUTH局: Record<string, { ju: "水局" | "火局" | "金局" | "木
 
 export function waterMouthJu(mouthDeg: number | undefined) {
   if (!Number.isFinite(Number(mouthDeg))) return null;
-  const m = findMountain24(Number(mouthDeg));
+  const m = mountainForPlate(Number(mouthDeg),"heaven");
   return WATER_MOUTH局[m.name] ? { mountain: m, ...WATER_MOUTH局[m.name] } : { mountain: m, ju: null, sanhe: null, thai: "ยังไม่เข้าปากน้ำ四大局หลัก" };
 }
 
@@ -83,7 +84,7 @@ export function evaluateWaterMethod(input: WaterMethodInput): WaterMethodResult 
 
   for (const f of features) {
     const bearing = Number(f.bearingDeg ?? f.mouthDeg ?? f.sourceDeg);
-    const m = Number.isFinite(bearing) ? findMountain24(bearing) : null;
+    const m = Number.isFinite(bearing) ? mountainForPlate(bearing,"heaven") : null;
     if (!m) {
       partial = true;
       warnings.push("มีจุดน้ำแต่ยังไม่มีองศา · 水位缺度數");

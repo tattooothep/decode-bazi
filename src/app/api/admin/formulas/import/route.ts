@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
 
 const EDITABLE = new Set([
@@ -12,7 +12,7 @@ const JSONB_COLS = new Set(["inputs","outputs","related_configs"]);
 
 export async function POST(req: Request) {
   let admin;
-  try { admin = await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
+  try { admin = await requirePermission("admin.formulas.write"); } catch (e) { return e instanceof Response ? e : NextResponse.json({error:'auth'},{status:401}); }
   const body = (await req.json().catch(() => ({}))) as { rows?: Array<Record<string, unknown>>; source?: string };
   if (!Array.isArray(body.rows)) return NextResponse.json({ error: "expect { rows: [...] }" }, { status: 400 });
   const source = body.source || "import-json";

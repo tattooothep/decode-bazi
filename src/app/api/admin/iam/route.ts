@@ -4,6 +4,7 @@ import { requirePermission, envAdminEmails, ensureAdminRbacSeeded } from "@/lib/
 import { writeAdminAudit } from "@/lib/admin-audit";
 import { q, q1 } from "@/lib/db";
 import { clientIp } from "@/lib/rate-limit";
+import { enqueueNotification } from "@/lib/notification-outbox";
 
 export const runtime = "nodejs";
 
@@ -118,9 +119,9 @@ export async function POST(req: NextRequest) {
         WHERE user_id=$1 AND role_id=$2 AND revoked_at IS NULL`,
       [user.id, role.id, admin.userId]
     ).catch(() => null);
-    await q1(
+    const grant = await q1<{ id: string }>(
       `INSERT INTO admin_user_roles(user_id, role_id, granted_by, note)
-       VALUES ($1,$2,$3,$4)`,
+       VALUES ($1,$2,$3,$4) RETURNING id`,
       [user.id, role.id, admin.userId, String(body.note || "").slice(0, 300) || null]
     );
     await writeAdminAudit({
@@ -132,6 +133,12 @@ export async function POST(req: NextRequest) {
       ip,
       userAgent: ua,
     });
+    await enqueueNotification({
+      eventType: "admin_role_changed", severity: roleKey === "superadmin" ? "critical" : "warning",
+      audienceKind: "admin", audienceRoles: ["superadmin"], requiredPermission: "admin.iam.roles.grant",
+      dedupeKey: `admin-role-grant:${grant?.id || `${user.id}:${roleKey}`}`,
+      targetUrl: "/admin/iam", payload: { change: "grant", target_user_id: user.id, role_key: roleKey },
+    }).catch((e) => console.warn("[notify] admin role grant", e instanceof Error ? e.message : String(e)));
     return NextResponse.json({ ok: true, user_id: user.id, role_key: roleKey });
   }
 
@@ -139,18 +146,22 @@ export async function POST(req: NextRequest) {
     const grantId = String(body.grant_id || "");
     const userId = String(body.user_id || "");
     const roleKey = String(body.role_key || "");
+    let revokedIds: string[] = [];
     if (grantId) {
-      await q1(
-        `UPDATE admin_user_roles SET revoked_at=now(), revoked_by=$2 WHERE id=$1 AND revoked_at IS NULL`,
+      const revoked = await q<{ id: string }>(
+        `UPDATE admin_user_roles SET revoked_at=now(), revoked_by=$2 WHERE id=$1 AND revoked_at IS NULL RETURNING id`,
         [grantId, admin.userId]
       );
+      revokedIds = revoked.map((row) => row.id);
     } else if (userId && roleKey) {
-      await q1(
+      const revoked = await q<{ id: string }>(
         `UPDATE admin_user_roles ur SET revoked_at=now(), revoked_by=$3
            FROM admin_roles r
-          WHERE ur.role_id=r.id AND ur.user_id=$1 AND r.key=$2 AND ur.revoked_at IS NULL`,
+          WHERE ur.role_id=r.id AND ur.user_id=$1 AND r.key=$2 AND ur.revoked_at IS NULL
+          RETURNING ur.id`,
         [userId, roleKey, admin.userId]
       );
+      revokedIds = revoked.map((row) => row.id);
     } else {
       return NextResponse.json({ ok: false, error: "grant_id or user_id+role_key required" }, { status: 400 });
     }
@@ -163,6 +174,12 @@ export async function POST(req: NextRequest) {
       ip,
       userAgent: ua,
     });
+    if (revokedIds.length) await enqueueNotification({
+      eventType: "admin_role_changed", severity: "critical", audienceKind: "admin",
+      audienceRoles: ["superadmin"], requiredPermission: "admin.iam.roles.revoke",
+      dedupeKey: `admin-role-revoke:${revokedIds.sort().join(",")}`,
+      targetUrl: "/admin/iam", payload: { change: "revoke", target_user_id: userId || null, role_key: roleKey || null, grant_id: grantId || null },
+    }).catch((e) => console.warn("[notify] admin role revoke", e instanceof Error ? e.message : String(e)));
     return NextResponse.json({ ok: true });
   }
 

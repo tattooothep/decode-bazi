@@ -1,9 +1,8 @@
-/* hk-print.js · ตัวช่วยสร้าง PDF ร่วมทุกหน้า (client window.print · CSP-safe · ไม่มี lib นอก)
+/* hk-print.js · ตัวช่วยสร้าง PDF ร่วมทุกหน้า (server render + direct download)
  * ใช้: หน้าไหนจะ export → โหลด /css/hk-print.css + /js/hk-print.js
  *   HKPrint.open({ docTitle, cover:{...}, pages:[ {sections:[htmlString...]} ], land })
- * — สร้าง DOM print-only (.hkp-root) ต่อท้าย body แล้ว window.print() แล้วลบทิ้ง
- * ⚠️ ยัง "ยังไม่ wire หน้า production" — รอเจ้านาย approve mockup ก่อน (goal ลำดับบังคับ)
- *   หน้าจริงจะสร้าง sections จาก JSON เดียวกับที่ render อยู่ (chart/palm/fusion...) ไม่ดึงซ้ำ ไม่แตะ engine
+ * — PdfDocumentV2 ส่งไป server render แล้วบันทึก .pdf โดยไม่เปิด print dialog
+ * หน้าจริงสร้าง sections จาก JSON เดียวกับที่ render อยู่ (chart/palm/fusion...) ไม่ดึงซ้ำ ไม่แตะ engine
  */
 (function () {
   "use strict";
@@ -12,16 +11,22 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   // header/footer วิ่งทุกหน้า (โลโก้ 時 + ชื่อ + เลขหน้า)
-  function head(title) {
-    return '<div class="hkp-head"><span class="lg"><span class="seal">' + SEAL + '</span>hourkey · ' + esc(title) + '</span><span>' + esc(HKPrint._dateStr()) + '</span></div>';
+  function head(title, reportId) {
+    return '<div class="hkp-head"><span class="lg"><span class="seal">' + SEAL + '</span>hourkey · ' + esc(title) + '</span><span class="hkp-head-meta">' +
+      (reportId ? '<span class="hkp-report-id">' + esc(reportId) + '</span>' : '') + esc(HKPrint._dateStr()) + '</span></div>';
   }
-  function foot(pageNo, total) {
-    return '<div class="hkp-foot"><span>hourkey.io · TST verified</span><span>หน้า ' + pageNo + ' / ' + total + '</span></div>';
+  function foot(pageNo, total, opts) {
+    opts = opts || {};
+    var left = 'hourkey.io';
+    if (opts.verificationLabel) left += ' · ' + esc(opts.verificationLabel);
+    if (opts.reportId) left += ' · ' + esc(opts.reportId);
+    return '<div class="hkp-foot"><span>' + left + '</span><span>หน้า ' + pageNo + ' / ' + total + '</span></div>';
   }
 
   // หน้าปกมาตรฐาน (ตรา 時 + ชื่อรายงาน + เจ้าของดวง + meta + QR)
   function coverHtml(c) {
-    var qr = c.qr !== false ? '<div class="qr">QR<br>' + esc(c.qrLabel || "hourkey.io") + "</div>" : "";
+    // Never draw a fake QR placeholder. A QR is rendered only when a real SVG/HTML payload is supplied.
+    var qr = c.qr === true && c.qrHtml ? '<div class="qr">' + c.qrHtml + "</div>" : "";
     var big = c.big ? '<div class="big">' + esc(c.big) + "</div>" : "";
     var badge = c.badge ? '<div class="badge">' + esc(c.badge) + "</div>" : "";
     return '<div class="hkp-cover"><div class="seal-lg">' + SEAL + "</div>" +
@@ -37,40 +42,71 @@
   var HKPrint = {
     _now: null,
     _dateStr: function () { try { return "ออกเอกสาร " + (this._now || new Date()).toLocaleDateString("th-TH"); } catch (e) { return "hourkey"; } },
+    reportId: function (prefix) {
+      var p = String(prefix || 'HK').replace(/[^A-Za-z0-9]/g, '').slice(0, 8).toUpperCase() || 'HK';
+      var d = new Date(), ymd = d.getFullYear().toString() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+      var rnd = '';
+      try { rnd = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase(); }
+      catch (e) { rnd = Math.random().toString(36).slice(2, 10).toUpperCase(); }
+      return p + '-' + ymd + '-' + rnd;
+    },
+
+    _downloadPayload: function (payload, reportId) {
+      return fetch('/api/export/pdf', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (response) {
+        if (!response.ok) throw new Error('pdf_download_' + response.status);
+        return response.blob();
+      }).then(function (blob) {
+        if (!blob || blob.size < 400) throw new Error('pdf_download_empty');
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        var id = String(reportId || 'report').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64) || 'report';
+        link.href = url;
+        link.download = 'hourkey-' + id + '.pdf';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+        return true;
+      });
+    },
 
     /* opts: { docTitle, headTitle, cover, pages:[{sections:[html]}], land:bool } */
     open: function (opts) {
       opts = opts || {};
-      var total = (opts.pages ? opts.pages.length : 0) + (opts.cover ? 1 : 0);
-      var pn = 0;
-      var html = "";
-      var cls = "hkp-page" + (opts.land ? " land" : "");
-      // ปก = หน้าแรก
-      if (opts.cover) {
-        pn++;
-        html += '<div class="' + cls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน") + coverHtml(opts.cover) + foot(pn, total) + "</div>";
-      }
-      // เนื้อหาแต่ละหน้า
-      (opts.pages || []).forEach(function (p) {
-        pn++;
-        html += '<div class="' + cls + '">' + head(opts.headTitle || opts.docTitle || "รายงาน") +
-          (p.sections || []).join("\n") + foot(pn, total) + "</div>";
+      var reportId = opts.reportId || HKPrint.reportId('HKPDF');
+      var storedLang = '';
+      try { storedLang = localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || ''; } catch (e) {}
+      var lang = String(opts.lang || storedLang || document.documentElement.lang || 'en').toLowerCase().slice(0, 10) || 'en';
+      var cover = opts.cover ? {
+        kick: String(opts.cover.kick || ''), title: String(opts.cover.title || opts.docTitle || 'HourKey report'),
+        who: String(opts.cover.who || ''), metaHtml: String(opts.cover.metaHtml || opts.cover.meta || ''),
+        big: String(opts.cover.big || ''), sub: String(opts.cover.sub || ''), badge: String(opts.cover.badge || '')
+      } : undefined;
+      var legacy = {
+        version: 'hourkey.pdf.legacy.v1',
+        report: {
+          id: reportId, lang: lang, title: String(opts.docTitle || 'HourKey report'),
+          headerTitle: String(opts.headTitle || opts.docTitle || 'HourKey report'),
+          verificationLabel: String(opts.verificationLabel || '')
+        },
+        extraCss: String(opts.extraCss || ''),
+        cover: cover,
+        pages: (opts.pages || []).map(function (page) {
+          return { sections: (page.sections || []).map(String), landscape: !!(opts.land || page.landscape) };
+        })
+      };
+      return HKPrint._downloadPayload({ legacy: legacy }, reportId).catch(function (error) {
+        console.error('[hk-print] legacy PDF download failed', error);
+        try { window.alert(lang.indexOf('th') === 0 ? 'สร้างไฟล์ PDF ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' : 'Could not create the PDF file. Please try again.'); } catch (e) {}
+        return false;
       });
-
-      // ตั้งชื่อไฟล์ PDF = docTitle · สร้าง root print-only · พิมพ์ · ลบ
-      var prevTitle = document.title;
-      if (opts.docTitle) document.title = opts.docTitle;
-      var root = document.createElement("div");
-      root.className = "hkp-root";
-      root.innerHTML = html;
-      document.body.appendChild(root);
-      // ซ่อนเนื้อหาปกติตอนพิมพ์: เติมคลาส hkp-active ให้ body → print.css ซ่อน body.hkp-active>*:not(.hkp-root)
-      // (ผูกกับคลาสนี้เท่านั้น เพื่อไม่กระทบหน้าที่พิมพ์ตัวเอง เช่น book ที่ไม่มี .hkp-root)
-      root.setAttribute("data-hkp-print", "1");
-      document.body.classList.add("hkp-active");
-      var cleanup = function () { try { document.body.removeChild(root); } catch (e) {} document.body.classList.remove("hkp-active"); document.title = prevTitle; window.removeEventListener("afterprint", cleanup); };
-      window.addEventListener("afterprint", cleanup);
-      setTimeout(function () { window.print(); }, 60);
     },
 
     // helper สร้าง section html (หน้าจริงเรียกใช้ประกอบจาก data)
@@ -80,6 +116,26 @@
         (title ? "<h3>" + esc(title) + "</h3>" : "") + (bodyHtml || "") + "</div>";
     },
     verdict: function (lab, text) { return '<div class="hkp-verdict"><span class="lab">' + esc(lab) + "</span><p>" + esc(text) + "</p></div>"; },
+
+    _downloadDocument: function (doc) {
+      return HKPrint._downloadPayload({ document: doc }, doc.report.id);
+    },
+
+    /* Structured report renderer shared by deterministic quick PDFs and AI reports. */
+    openDocument: function (doc) {
+      if (!doc || doc.version !== 'hourkey.pdf.v2' || !doc.report || !doc.cover || !Array.isArray(doc.pages)) {
+        throw new Error('invalid_pdf_document_v2');
+      }
+      return HKPrint._downloadDocument(doc).catch(function (error) {
+        console.error('[hk-print] direct PDF download failed', error);
+        var lang = String(doc.report.lang || document.documentElement.lang || 'en').toLowerCase();
+        var message = lang.indexOf('th') === 0
+          ? 'สร้างไฟล์ PDF ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'
+          : 'Could not create the PDF file. Please try again.';
+        try { window.alert(message); } catch (e) {}
+        return false;
+      });
+    },
 
     /* markdown ปลอดภัย → html (escape ก่อนแปลง · หัวข้อ/ตาราง/ตัวหนา/ลิสต์/เส้นคั่น) · ยกจาก book.html mdSafe */
     mdSafe: function (md) {

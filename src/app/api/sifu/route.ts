@@ -16,7 +16,8 @@ import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
 import { getSession, type Session } from "@/lib/auth";
-import { reserveHourForUser, drainHoursByCharsForUser } from "@/lib/spend-hours";
+import { reserveHourForUser, settleReservedHourByCharsForUser, refundReservedHourForUser } from "@/lib/spend-hours";
+import { getProductAccess, entitlementDenied, type ProductAccess } from "@/lib/product-entitlement";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
@@ -31,12 +32,24 @@ import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"
 import { checkSifuCriticalEvidence, type CriticalEvidenceCheck } from "@/lib/sifu-critical-evidence-gate";
 import { checkSifuFactClaimGate, type SifuFactClaimCheck } from "@/lib/sifu-fact-claim-gate";
 import { ensureServerEnv } from "@/lib/server-env";
+import { publicAiPayload } from "@/lib/public-ai-response";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { buildSifuCompactBaseline } from "@/lib/sifu-compact-baseline";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
 import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
 import { logSifuSourceAuditSafe } from "@/lib/sifu-source-audit-log";
 import type { SifuAnswerSupportedByAudit } from "@/lib/sifu-source-audit";
+import {
+  classifySifuKnowledgeIntents,
+  knowledgeCapChars,
+  resolveSifuKnowledgeTier,
+  selectTieredBooks,
+  renderTieredExtraBlock,
+  tieredBooksVersion,
+  usesCompactKnowledgePath,
+  type SifuKnowledgeMeta,
+} from "@/lib/sifu-knowledge-tier";
+import { CLAUDE_TEXT_ONLY_ARGS, GROK_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 
 loadEnvConfig(process.cwd(), false, console, true);
 ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
@@ -64,7 +77,9 @@ const SIFU_CLAUDE_COMPACT_KNOWLEDGE = process.env.SIFU_CLAUDE_COMPACT_KNOWLEDGE 
 const SIFU_MIN_VISIBLE_REPLY_CHARS = Math.max(0, Number(process.env.SIFU_MIN_VISIBLE_REPLY_CHARS || 60));
 const SIFU_FUSION_MIN_VISIBLE_REPLY_CHARS = Math.max(SIFU_MIN_VISIBLE_REPLY_CHARS, Number(process.env.SIFU_FUSION_MIN_VISIBLE_REPLY_CHARS || 900));
 const SIFU_DIRECT_MESSAGE_MAX_CHARS = 2_000;
-const SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS = boundedIntEnv("SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS", 80_000, 4_000, 120_000);
+/* r513-fix · รองรับ fusion panel เต็มตาม knowledgeCapChars (claude 2M + headroom)
+ * default 2_200_000 · max 2_500_000 (safety กัน DoS) · ต้อง ≥ fusionPanelBudgetChars(claude) */
+const SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS = boundedIntEnv("SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS", 2_200_000, 4_000, 2_500_000);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function boundedIntEnv(name: string, fallback: number, min: number, max: number): number {
@@ -218,10 +233,18 @@ const CODEX_COMPACT_KNOWLEDGE = [
   "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน หรือวัยจรที่ packet ไม่ได้ให้; ถ้า packet field ขัด strict classic/canonical ให้ลดเป็น raw/secondary",
   "ถ้ามี block 窮通寶鑑 ให้ใช้ชั้น 調候/月令 ชนะตัวเลขธาตุดิบและ病藥 fallback; ถ้ามี子平真詮 strict月令 ให้ใช้เป็น格局หลัก",
   "ไทยนำ จีนรอง อธิบายผลจริงตรงคำถาม และรักษา ID line ตามกฎ prompt หลัก",
+  /* G7 conflict line — short hierarchy (always on compact/tier path) */
+  "ลำดับชนะเมื่อขัดกัน: (1) FACT/PILLAR LOCK (2) 子平真詮 格局/相神/雜氣 (3) 窮通 調候/月令 (4) 滴天髓/神峰 旺衰·從化·病藥 (5) 合冲 authority (6) 十神/淵海 แปลชีวิต (7) raw engine = รอง",
 ].join("\n");
 function shouldUseCompactKnowledge(model: SifuModel): boolean {
-  return model === "codex-cli" || model === "grok-cli" || SIFU_CLAUDE_COMPACT_KNOWLEDGE;
+  /* G1+ · tier SoT: t0/t1/t2 = compact path · t3 = full classics (Claude default)
+   * Rollback Codex/Grok → SIFU_KNOWLEDGE_TIER_CODEX=t0 / SIFU_KNOWLEDGE_TIER_GROK=t0 */
+  if (model === "claude-max-cli" && SIFU_CLAUDE_COMPACT_KNOWLEDGE) return true;
+  return usesCompactKnowledgePath(model);
 }
+
+/** Request-local meta out-param for buildPrompt (avoids cross-request race). */
+type KnowledgeMetaOut = { current?: SifuKnowledgeMeta | null };
 const STEM_ELEMENT_MAP: Record<string, string> = {
   甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire", 戊: "earth", 己: "earth",
   庚: "metal", 辛: "metal", 壬: "water", 癸: "water",
@@ -342,7 +365,6 @@ const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const QTBJ_TIAOHOU_THAI_NOTES_FILE = "qtbj-tiaohou-thai-notes.md";
 const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
-  { file: "bazi-career-modern.md", label: "สะพานอาชีพยุคใหม่ · 十神/格局/神煞→อาชีพปัจจุบัน (r510 · 5 ลายเซ็น)" },
   { file: "bazi-geju-master.md", label: "格局 · โครงสร้างดวง 子平真詮 spec" },
   { file: "bazi-hehun-classical.md", label: "合婚 · ความเข้ากันดวงคู่/หลายดวง" },
   { file: "bazi-nayin-master.md", label: "納音60 · เนื้อสัมผัสนาอิน" },
@@ -462,9 +484,10 @@ function loadSifuCompactAuthorityKnowledge(): { text: string; version: string } 
 }
 
 function buildSifuRuleVersion(model: SifuModel): string {
+  const tier = resolveSifuKnowledgeTier(model);
   if (shouldUseCompactKnowledge(model)) {
     const grokGuard = model === "grok-cli" ? `-${GROK_VISIBLE_GUARD_VERSION}` : "";
-    return loadSifuCompactAuthorityKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1-compactclassics2" + grokGuard;
+    return loadSifuCompactAuthorityKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + `-idlock1-dayboundary1-compactclassics2-tier${tier}` + grokGuard;
   }
   const baseVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
   if (model === "gemini-api") return baseVersion + `-gemini:${GEMINI_API_MODEL}`;
@@ -1054,9 +1077,9 @@ function streamStaticSifuReply(reply: string, model = "local-i18n"): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode(`event: first\ndata: ${JSON.stringify({ ms: 0, synthetic: true, provider: model })}\n\n`));
+      controller.enqueue(encoder.encode(`event: first\ndata: ${JSON.stringify(publicAiPayload({ ms: 0, synthetic: true, provider: model }))}\n\n`));
       controller.enqueue(encoder.encode(`event: chunk\ndata: ${JSON.stringify({ text: reply })}\n\n`));
-      controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({ ms: 0, model, cached: false, chars: reply.length })}\n\n`));
+      controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify(publicAiPayload({ ms: 0, model, cached: false, chars: reply.length }))}\n\n`));
       controller.close();
     },
   });
@@ -1551,9 +1574,17 @@ function buildPrompt(opts: {
   lang: string;
   mode?: string;
   compactKnowledge?: boolean;
+  /** G1+ model for tier resolution · default claude-max-cli when omitted */
+  model?: SifuModel;
+  /** G4 · filled with knowledge_files / chars / intents */
+  knowledgeOut?: KnowledgeMetaOut;
 }): string {
   /* 25 พ.ค. · ทุก persona/คำสั่ง/ภาษา/หัวคัมภีร์ อ่านจาก md (แก้ผ่าน /admin/sifu-prompts) · ไม่มี persona ผูกในโค้ด · .default.md = ตัวกันพัง */
   const langKey = (opts.lang || "th").toUpperCase();
+  const model: SifuModel = opts.model || "claude-max-cli";
+  const tier = resolveSifuKnowledgeTier(model);
+  const histForIntent = opts.history.map((h) => h.content).join("\n");
+  const intents = classifySifuKnowledgeIntents(opts.message, histForIntent + "\n" + opts.ctx.slice(0, 2000));
 
   if (opts.mode === "intro") {
     /* 5 ก.ค. (r404) · intro ส่งคัมภีร์+packet ชุดเดียวกับ master Q&A · คงเอกลักษณ์ intro (persona/โครง sifu-intro.md · ไม่บังคับ ⟦ID⟧/⟦TRACE⟧ FACT LOCK)
@@ -1568,7 +1599,32 @@ function buildPrompt(opts: {
       const introQtbjCompactBlock = introQtbjCompact.text
         ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + introQtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
         : "";
-      introKnowledgeBlock = "\n\n" + CODEX_COMPACT_KNOWLEDGE + "\n\n" + introCompactAuthority.text + "\n" + introQtbjCompactBlock;
+      /* G3: tier t1/t2 adds core (and intent) books under cap · t0 = baseline only (rollback) */
+      let tierExtra = "";
+      let metaFiles: string[] = ["compact-baseline", "qtbj-compact"];
+      let metaChars = introCompactAuthority.text.length + introQtbjCompact.text.length;
+      let dropped: string[] = [];
+      if (tier === "t1" || tier === "t2") {
+        const reserved = metaChars + CODEX_COMPACT_KNOWLEDGE.length;
+        const sel = selectTieredBooks({ tier, model, intents, reservedChars: reserved });
+        tierExtra = renderTieredExtraBlock(sel.selected);
+        metaFiles = metaFiles.concat(sel.selected.map((p) => p.id));
+        metaChars += sel.selected.reduce((n, p) => n + p.chars, 0);
+        dropped = sel.dropped;
+      }
+      if (opts.knowledgeOut) {
+        opts.knowledgeOut.current = {
+          tier,
+          model,
+          intents,
+          files: metaFiles,
+          knowledge_chars: metaChars,
+          dropped,
+          cap: knowledgeCapChars(model),
+          version: tieredBooksVersion([], tier, intents),
+        };
+      }
+      introKnowledgeBlock = "\n\n" + CODEX_COMPACT_KNOWLEDGE + "\n\n" + introCompactAuthority.text + "\n" + introQtbjCompactBlock + (tierExtra ? "\n" + tierExtra + "\n" : "");
     } else {
       const introAjek = loadAjekRules();
       const introRulesBlock = introAjek.text
@@ -1587,6 +1643,18 @@ function buildPrompt(opts: {
         ? "\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => introExtra.text) + "\n"
         : "";
       introKnowledgeBlock = introRulesBlock + introInteractionBlock + introEngineBlock + introExtraBlock;
+      if (opts.knowledgeOut) {
+        opts.knowledgeOut.current = {
+          tier: "t3",
+          model,
+          intents,
+          files: ["ajek", "interaction", "engine", "extra-full"],
+          knowledge_chars: introKnowledgeBlock.length,
+          dropped: [],
+          cap: 0,
+          version: introExtra.version || "full",
+        };
+      }
     }
     const introPrompt = loadPromptMd("prompts/sifu-intro.md")
       .replace("{{LANG}}", () => introLang[langKey] || introLang.TH || "")
@@ -1621,9 +1689,27 @@ function buildPrompt(opts: {
     ? "\n\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => engineKnow.text) + "\n"
     : "";
   const extraKnow = compact ? { text: "", version: "codex-compact" } : loadSifuExtraKnowledge();
-  const extraBlock = extraKnow.text
+  let extraBlock = extraKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
     : "";
+  /* G3/G5/G6 · tiered core (+ intent T2) under cap — only on compact path */
+  let tierMetaFiles: string[] = [];
+  let tierMetaChars = 0;
+  let tierDropped: string[] = [];
+  let tierVersion = compact ? compactAuthority.version : (extraKnow.version || "full");
+  if (compact && (tier === "t1" || tier === "t2")) {
+    const qtbjPre = loadQtbjTiaohouCompactKnowledge(`${opts.message}\n${histText}\n${opts.ctx}`);
+    const reserved = CODEX_COMPACT_KNOWLEDGE.length + compactAuthority.text.length + qtbjPre.text.length + 800;
+    const sel = selectTieredBooks({ tier, model, intents, reservedChars: reserved });
+    const body = renderTieredExtraBlock(sel.selected);
+    if (body) {
+      extraBlock = "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => body) + "\n";
+    }
+    tierMetaFiles = sel.selected.map((p) => p.id);
+    tierMetaChars = sel.selected.reduce((n, p) => n + p.chars, 0);
+    tierDropped = sel.dropped;
+    tierVersion = tieredBooksVersion(sel.selected, tier, intents);
+  }
   const qtbjCompact = compact ? loadQtbjTiaohouCompactKnowledge(`${opts.message}\n${histText}\n${opts.ctx}`) : { text: "", version: "full-extra" };
   const qtbjCompactBlock = qtbjCompact.text
     ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + qtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
@@ -1637,6 +1723,24 @@ function buildPrompt(opts: {
     .replace("{{FOCUS_HIST}}", () => focus + histText)
     .replace("{{MESSAGE}}", () => opts.message);
   const qaOut = compact ? prompt + compactOutputProtocol(opts.ctx) : prompt;
+  const files = compact
+    ? ["compact-baseline", ...(qtbjCompact.text ? ["qtbj-compact"] : []), ...tierMetaFiles]
+    : ["ajek", "interaction", "engine", "extra-full"];
+  const knowledgeChars = compact
+    ? CODEX_COMPACT_KNOWLEDGE.length + compactAuthority.text.length + qtbjCompact.text.length + tierMetaChars
+    : (ajek.text?.length || 0) + (interaction.text?.length || 0) + (engineKnow.text?.length || 0) + (extraKnow.text?.length || 0);
+  if (opts.knowledgeOut) {
+    opts.knowledgeOut.current = {
+      tier: compact ? tier : "t3",
+      model,
+      intents,
+      files,
+      knowledge_chars: knowledgeChars,
+      dropped: tierDropped,
+      cap: compact ? knowledgeCapChars(model) : 0,
+      version: tierVersion,
+    };
+  }
   // r414-i18n9: ภาษาใหม่ 6 ตัว ย้ำ directive ท้าย prompt (recency ชนะ · เทสจริง lang=vi แล้วโมเดลตอบไทยถ้ามีแค่ {{LANG}} ต้นไฟล์) · th/en/zh ไม่มี entry = เดิมเป๊ะ
   return LANG_ANSWER_DIRECTIVE[opts.lang] ? qaOut + "\n\n" + LANG_ANSWER_DIRECTIVE[opts.lang] : qaOut;
 }
@@ -1749,23 +1853,15 @@ function writeGrokPromptFile(prompt: string): string {
   return path;
 }
 function grokCliArgs(promptFile: string, format: "plain" | "streaming-json", adapter = false, lockTools = false): string[] {
+  /* r513-fix · GROK_TEXT_ONLY_ARGS มี --verbatim/--no-memory/--no-subagents/--disable-web-search/--max-turns อยู่แล้ว
+   * เดิม adapter ซ้ำ push ชุดเดียวกัน → grok 0.2.93 exit 2 "argument cannot be used multiple times"
+   * (รุ่น 0.2.64 ยอมซ้ำ · รุ่นใหม่ไม่ยอม) · ใช้ชุดเดียวจาก ai-cli-security ทุก path รวม fusion adapter */
+  void adapter;
+  void lockTools;
   const args = [
     "--prompt-file", promptFile,
+    ...GROK_TEXT_ONLY_ARGS,
   ];
-  if (adapter) {
-    args.push(
-      "--verbatim",
-      "--disable-web-search",
-      "--no-memory",
-      "--no-subagents",
-      "--max-turns", "1",
-    );
-  }
-  // lockTools: ปิดเครื่องมือ agent (Read/Write/Bash…) → กัน grok หลุดไปเรียก Read tool (agentic) แล้วจบเทิร์นโดยไม่ตอบ (r404 intro)
-  // ⚠️ ใช้ --disallowed-tools (ค่าไม่ว่าง) ห้ามใช้ --tools "" (empty arg หลุดผ่าน sudo/spawn ไปกิน flag ถัดไป → tool ไม่ถูกปิดจริง) · ห้าม --max-turns 1 (ตัดคำตอบสั้น)
-  if (lockTools) {
-    args.push("--disallowed-tools", "Read,Write,Edit,MultiEdit,Bash,Glob,Grep,WebSearch,WebFetch,NotebookEdit,Task,TodoWrite");
-  }
   args.push("--output-format", format);
   if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
   return args;
@@ -1872,8 +1968,7 @@ async function runClaudeCli(prompt: string, signal?: AbortSignal): Promise<strin
     const claudeArgs = [
       "-p",
       "--output-format", "text",
-      "--dangerously-skip-permissions",
-      "--setting-sources", "user",
+      ...CLAUDE_TEXT_ONLY_ARGS,
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, {
@@ -2136,8 +2231,7 @@ function spawnClaudeStreaming(prompt: string) {
     "--output-format", "stream-json",
     "--include-partial-messages",
     "--verbose",
-    "--dangerously-skip-permissions",
-    "--setting-sources", "user",
+    ...CLAUDE_TEXT_ONLY_ARGS,
   ];
   const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
   const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });
@@ -2387,8 +2481,41 @@ async function streamOpenRouter(prompt: string, onText: (text: string) => boolea
   }
 }
 
+async function sifuProfileAllowed(access: ProductAccess | null, orgId: string | null, profileId: string): Promise<boolean> {
+  if (!orgId || !profileId) return false;
+  const selected = await q1<{ is_self: boolean }>(
+    `SELECT (relationship_type IS NULL OR btrim(relationship_type)='') AS is_self
+       FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+    [profileId, orgId]
+  );
+  if (!selected) return false;
+  if (selected.is_self) return true;
+  const max = Math.max(0, access?.pages.sifu.other_profile_contexts || 1);
+  const allowed = await q<{ id: string }>(
+    `SELECT id FROM profiles
+      WHERE org_id=$1 AND is_archived=false
+        AND NOT (relationship_type IS NULL OR btrim(relationship_type)='')
+      ORDER BY created_at,id LIMIT $2`,
+    [orgId, max]
+  );
+  return allowed.some((row) => row.id === profileId);
+}
+
 export async function POST(req: Request) {
   const reqT0 = Date.now();
+  let reservedUserId: string | null = null;
+  const refundBilling = async () => {
+    const userId = reservedUserId;
+    if (!userId) return;
+    reservedUserId = null;
+    await refundReservedHourForUser(userId, "sifu_master").catch(() => {});
+  };
+  const settleBilling = async (chars: number) => {
+    const userId = reservedUserId;
+    if (!userId) return;
+    reservedUserId = null;
+    await settleReservedHourByCharsForUser(userId, chars, "sifu_master").catch(() => {});
+  };
   try {
     const parsedBody = await req.json().catch(() => ({}));
     const body = parsedBody && typeof parsedBody === "object" && !Array.isArray(parsedBody)
@@ -2401,8 +2528,11 @@ export async function POST(req: Request) {
     const topic = typeof body.topic === "string" ? body.topic : undefined;
     const lang = resolveSifuAnswerLang(body.lang, message); // r431-i18n: 9 ภาษา + infer จากคำถามเมื่อ caller ส่ง lang=en
     const mode = body.mode === "intro" ? "intro" : undefined;
-    const sifuModel = resolveSifuModel(body.model);
     const isFusionInternalCall = isTrustedFusionInternalCall(req);
+    const sifuModel = resolveSifuModel(isFusionInternalCall ? body.model : process.env.SIFU_DEFAULT_MODEL);
+    if (sifuModel === "codex-cli") {
+      return NextResponse.json({ error: "analysis_unavailable" }, { status: 503 });
+    }
     const fusionPacketAuditOnly = isFusionInternalCall && body.fusionPacketMode === "raw-data";
     const threadId = cleanSifuThreadId(body.threadId);
     const fusionRunId = isFusionInternalCall ? cleanSifuThreadId(body.fusionRunId || body.fusion_run_id) : null;
@@ -2420,9 +2550,7 @@ export async function POST(req: Request) {
     const session = await getSession();
     /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
-    if (sifuModel === "gemini-api" && !isFusionInternalCall) {
-      return NextResponse.json({ error: "model_not_available_on_master" }, { status: 400 });
-    }
+    const productAccess = await getProductAccess(session.userId);
     /* P1 kill switches (app_settings) — admin AI cost page · not affiliate */
     if (!isFusionInternalCall) {
       try {
@@ -2464,17 +2592,17 @@ export async function POST(req: Request) {
       }
     }
 
-    // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนสร้างคำตอบ (บล็อกยอด 0 + กัน race) · ข้าม fusion-internal · หักจริงตามตัวอักษรหลังได้คำตอบ
-    if (!isFusionInternalCall && session?.userId) {
-      const rsv = await reserveHourForUser(session.userId, "sifu_master");
-      if (!rsv.ok) return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
-    }
-
     if (mode !== "intro" && !profileId) {
       return NextResponse.json({ error: "profile_required" }, { status: 400 });
     }
     if (body.profileId && !profileId) {
       return NextResponse.json({ error: "invalid_profileId" }, { status: 400 });
+    }
+    if (profileId && !(await sifuProfileAllowed(productAccess, orgId, profileId))) {
+      return NextResponse.json(entitlementDenied("sifu_profile_context_limit", {
+        plan: productAccess?.plan || "free",
+        max: productAccess?.pages.sifu.other_profile_contexts || 1,
+      }), { status: 403 });
     }
     const historyProfileIds = Array.isArray(body.historyProfileIds)
       ? body.historyProfileIds.map(cleanProfileId).filter((x: string | null): x is string => !!x)
@@ -2504,6 +2632,11 @@ export async function POST(req: Request) {
     if (mode !== "intro" && (ctx.startsWith("(ไม่") || !expectedDMFromCtx || !factLockFromCtx || !pillarLockFromCtx)) {
       return NextResponse.json({ error: "profile_context_unlocked" }, { status: ctx.startsWith("(ไม่") ? 404 : 500 });
     }
+    if (!isFusionInternalCall && session?.userId) {
+      const rsv = await reserveHourForUser(session.userId, "sifu_master");
+      if (!rsv.ok) return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
+      reservedUserId = session.userId;
+    }
     /* 💾 Cache หลัง build context เท่านั้น: profile/dayBoundary/packet เปลี่ยน = ctx hash เปลี่ยน = ไม่คืนคำตอบดวงเก่า */
     const key = cacheKey({ profileId: profileId || undefined, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro" && !noCache;
@@ -2521,7 +2654,9 @@ export async function POST(req: Request) {
       } else {
       const answerSupportedBy = buildSifuAnswerSupportAudit(safeCachedReply, cachedCritical);
       const auditPromptT0 = Date.now();
-      const auditPrompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel) });
+      const knowledgeOutCached: KnowledgeMetaOut = {};
+      const auditPrompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel), model: sifuModel, knowledgeOut: knowledgeOutCached });
+      const knowledgeMetaCached = knowledgeOutCached.current || null;
       const auditPromptMs = Date.now() - auditPromptT0;
       const audit = buildSifuAuditEvidence({
         profileId,
@@ -2566,7 +2701,7 @@ export async function POST(req: Request) {
         answer: safeCachedReply,
         history,
         requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, fusion_run_id: fusionRunId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId, fusion_run_id: fusionRunId, audit_quality: audit.auditQuality, packet_hash: audit.packetHash, prompt_hash: audit.promptHash },
+        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId, fusion_run_id: fusionRunId, audit_quality: audit.auditQuality, packet_hash: audit.packetHash, prompt_hash: audit.promptHash, knowledge: knowledgeMetaCached },
         model: cached.model,
         durationMs: Date.now() - reqT0,
         cached: true,
@@ -2576,13 +2711,17 @@ export async function POST(req: Request) {
         route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
         promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
       });
-      return NextResponse.json({ ...cached, reply: safeCachedReply, cached: true, key: key.slice(0, 8) });
+      reservedUserId = null; // cached answer costs the one-yam reservation only
+      const cachedResponse = { ...cached, reply: safeCachedReply, cached: true, key: key.slice(0, 8), knowledge: knowledgeMetaCached || undefined };
+      return NextResponse.json(isFusionInternalCall ? cachedResponse : publicAiPayload(cachedResponse));
       }
     }
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const promptT0 = Date.now();
-    let prompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel) });
+    const knowledgeOut: KnowledgeMetaOut = {};
+    let prompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel), model: sifuModel, knowledgeOut });
     if (fusionPacketAuditOnly) prompt += fusionRawPacketPolicyText();
+    const knowledgeMeta = knowledgeOut.current || null;
     const promptMs = Date.now() - promptT0;
     const auditFor = (identityCheckResult: string) => buildSifuAuditEvidence({
       profileId,
@@ -2639,13 +2778,13 @@ export async function POST(req: Request) {
           const send = (event: string, data: unknown) => {
             if (closed) return;
             try {
-              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
             } catch {
               closed = true;
             }
           };
 
-          send("meta", { cached: false, key: key.slice(0, 8), model: sifuModel, startedAt: t0, timing: { ctxMs, promptMs, promptChars: prompt.length, contextCache } });
+          send("meta", { cached: false, key: key.slice(0, 8), model: sifuModel, startedAt: t0, timing: { ctxMs, promptMs, promptChars: prompt.length, contextCache }, knowledge: knowledgeMeta || undefined });
           stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
             if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
             if (expectedDM && !idChecked) return "stream_guard";
@@ -2654,14 +2793,14 @@ export async function POST(req: Request) {
           });
           /* 2 มิ.ย. · เข้าคิว slot ก่อน spawn · ถ้าเต็มเกิน MAX_QUEUE → เด้ง safety · heartbeat ข้างบนส่ง ping ระหว่างรอคิว user จึงไม่เห็นค้าง */
           const _slotOk = await acquireSifuSlot();
-          if (!_slotOk) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
+          if (!_slotOk) { void refundBilling(); send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
           let _slotReleased = false;
           const releaseSlotOnce = () => { if (!_slotReleased) { _slotReleased = true; releaseSifuSlot(); } };
           let child: ReturnType<typeof spawnSifuStreaming>;
           try { child = spawnSifuStreaming(prompt, sifuModel); }
           catch (e) {
             releaseSlotOnce();
-            send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
+            void refundBilling(); send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
             safeClose();
             return;
           }
@@ -2669,7 +2808,7 @@ export async function POST(req: Request) {
           child.on("error", releaseSlotOnce);
           const killTimer = setTimeout(() => {
             try { child.kill("SIGKILL"); } catch {}
-            send("error", { error: "timeout" });
+            void refundBilling(); send("error", { error: "timeout" });
             safeClose();
           }, TIMEOUT_MS);
 
@@ -2815,18 +2954,18 @@ export async function POST(req: Request) {
             releaseSlotOnce();
             activeChild = null;
             clearTimeout(killTimer);
-            if (idRejected) { safeClose(); return; } // ตัดไปแล้วจาก identity-lock
+            if (idRejected) { void refundBilling(); safeClose(); return; } // ตัดไปแล้วจาก identity-lock
             const ms = Date.now() - t0;
             if (expectedDM && !idChecked && idBuf) {
               const rest = releaseStreamGuard("close");
               if (rest !== null) emitVisible(rest);
             }
             flushVisible();
-            if (idRejected) { safeClose(); return; }
+            if (idRejected) { void refundBilling(); safeClose(); return; }
             if (expectedDM && !idChecked) { // AI ตอบจบโดยไม่มี text ให้ปล่อย
               console.error(`[sifu] stream guard empty on close (expect=${expectedDM})`);
               send("error", { error: "identity_mismatch", reason: "no_visible_text" });
-              safeClose(); return;
+              void refundBilling(); safeClose(); return;
             }
             if (code === 0 && full.trim()) {
               let finalReply = full.trim(); // full = strip ID/TRACE แล้ว (idBuf ไม่เข้า full)
@@ -2836,7 +2975,7 @@ export async function POST(req: Request) {
               if (!finalFactClaim.ok) {
                 console.error(`[sifu] stream fact claim FAIL on close (${finalFactClaim.violations.map((v) => v.code).join(",")})`);
                 send("error", { error: "fact_claim_mismatch", violations: finalFactClaim.violations });
-                safeClose();
+                void refundBilling(); safeClose();
                 return;
               }
               if (!finalCritical.ok) {
@@ -2852,7 +2991,7 @@ export async function POST(req: Request) {
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
               if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
-              if (!isFusionInternalCall && session?.userId) drainHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (POST stream)
+              if (!isFusionInternalCall && session?.userId) void settleBilling(payload.reply.length);
               scheduleSifuSourceShadowAudit({
                 session,
                 req,
@@ -2899,6 +3038,7 @@ export async function POST(req: Request) {
                 promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
               });
             } else {
+              void refundBilling();
               send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}`, ms });
               sifuTimingLog("stream-error", {
                 route: "POST", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
@@ -3072,9 +3212,12 @@ export async function POST(req: Request) {
       route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
     });
-    if (!isFusionInternalCall && session?.userId) drainHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (non-stream)
-    return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
+    if (!isFusionInternalCall && session?.userId) await settleBilling(payload.reply.length);
+    return NextResponse.json(isFusionInternalCall
+      ? { ...payload, cached: false, ms, key: key.slice(0, 8), knowledge: knowledgeMeta || undefined }
+      : publicAiPayload({ ...payload, cached: false, ms, key: key.slice(0, 8), knowledge: knowledgeMeta || undefined }));
   } catch (e: unknown) {
+    await refundBilling();
     const err = e as Error;
     console.error("[sifu] error:", err);
     return NextResponse.json({ error: err.message === "aborted" || String(err.message || "").startsWith("sifu_busy") ? err.message : "internal_error" }, { status: 500 });
@@ -3094,7 +3237,10 @@ export async function GET(req: Request) {
   const topic = url.searchParams.get("topic") || undefined;
   const lang = resolveSifuAnswerLang(url.searchParams.get("lang") || "", message); // r431-i18n: 9 ภาษา + infer จากคำถามเมื่อ caller ส่ง lang=en
   const mode = url.searchParams.get("mode") === "intro" ? "intro" : undefined;
-  const sifuModel = resolveSifuModel(url.searchParams.get("model"));
+  const sifuModel = resolveSifuModel(process.env.SIFU_DEFAULT_MODEL);
+  if (sifuModel === "codex-cli") {
+    return NextResponse.json({ error: "analysis_unavailable" }, { status: 503 });
+  }
   const threadId = cleanSifuThreadId(url.searchParams.get("threadId"));
   const threadProfileId = cleanProfileId(url.searchParams.get("threadProfileId") || url.searchParams.get("historyProfileId"));
   const historyProfileIds = (url.searchParams.get("historyProfileIds") || "")
@@ -3113,9 +3259,20 @@ export async function GET(req: Request) {
   const session = await getSession();
   /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
-  if (sifuModel === "gemini-api" && !isTrustedFusionInternalCall(req)) {
-    return NextResponse.json({ error: "model_not_available_on_master" }, { status: 400 });
-  }
+  let reservedUserIdG: string | null = null;
+  const refundBillingG = async () => {
+    const userId = reservedUserIdG;
+    if (!userId) return;
+    reservedUserIdG = null;
+    await refundReservedHourForUser(userId, "sifu_master").catch(() => {});
+  };
+  const settleBillingG = async (chars: number) => {
+    const userId = reservedUserIdG;
+    if (!userId) return;
+    reservedUserIdG = null;
+    await settleReservedHourByCharsForUser(userId, chars, "sifu_master").catch(() => {});
+  };
+  const productAccess = await getProductAccess(session.userId);
   const orgId = session?.orgId ?? null;
   if (mode !== "intro" && !profileId) {
     return NextResponse.json({ error: "profile_required" }, { status: 400 });
@@ -3123,17 +3280,17 @@ export async function GET(req: Request) {
   if (rawProfileId && !profileId) {
     return NextResponse.json({ error: "invalid_profileId" }, { status: 400 });
   }
+  if (profileId && !(await sifuProfileAllowed(productAccess, orgId, profileId))) {
+    return NextResponse.json(entitlementDenied("sifu_profile_context_limit", {
+      plan: productAccess?.plan || "free",
+      max: productAccess?.pages.sifu.other_profile_contexts || 1,
+    }), { status: 403 });
+  }
   if (mode === "intro" && !profileId) {
     const birthParams = parseIntroBirthParams(url);
     const noProfileReply = !birthParams && LANG_ANSWER_DIRECTIVE[lang] ? localizedIntroNeedsProfile(lang) : null;
     if (noProfileReply) return streamStaticSifuReply(noProfileReply);
   }
-  // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนเปิด stream (บล็อกยอด 0 + กัน race) · GET = แชทหลัก (EventSource)
-  if (session?.userId) {
-    const rsv = await reserveHourForUser(session.userId, "sifu_master");
-    if (!rsv.ok) return new Response(JSON.stringify({ error: "insufficient_hours" }), { status: 402, headers: { "Content-Type": "application/json" } });
-  }
-
   const ajekVersion = buildSifuRuleVersion(sifuModel);
   const dayKey = await getDayPillarKey();
   const ctxT0 = Date.now();
@@ -3164,6 +3321,9 @@ export async function GET(req: Request) {
   if (mode !== "intro" && (ctx.startsWith("(ไม่") || !extractExpectedDM(ctx) || !firstContextLine(ctx, "FACT LOCK:") || !firstContextLine(ctx, "PILLAR LOCK"))) {
     return NextResponse.json({ error: "profile_context_unlocked" }, { status: ctx.startsWith("(ไม่") ? 404 : 500 });
   }
+  const rsv = await reserveHourForUser(session.userId, "sifu_master");
+  if (!rsv.ok) return new Response(JSON.stringify({ error: "insufficient_hours" }), { status: 402, headers: { "Content-Type": "application/json" } });
+  reservedUserIdG = session.userId;
   const key = cacheKey({ profileId: profileId || undefined, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
   const cached = useCache ? await getCachedReply(key) : null;
@@ -3183,7 +3343,7 @@ export async function GET(req: Request) {
       const send = (event: string, data: unknown) => {
         if (closed) return;
         try {
-          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
         } catch {
           closed = true;
         }
@@ -3203,7 +3363,7 @@ export async function GET(req: Request) {
         } else {
         const answerSupportedBy = buildSifuAnswerSupportAudit(safeReply, cachedCritical);
         const auditPromptT0 = Date.now();
-        const auditPrompt = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel) });
+        const auditPrompt = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel), model: sifuModel });
         const auditPromptMs = Date.now() - auditPromptT0;
         const audit = buildSifuAuditEvidence({
           profileId,
@@ -3257,6 +3417,7 @@ export async function GET(req: Request) {
         send("meta", { cached: true, key: key.slice(0, 8), timing: { ctxMs, promptMs: auditPromptMs, promptChars: auditPrompt.length, contextCache } });
         send("chunk", { text: safeReply });
         send("done", { ms: 0, model: cached.model, cached: true });
+        reservedUserIdG = null; // cached answer costs the one-yam reservation only
         sifuTimingLog("stream-cache-hit", {
           route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
           promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
@@ -3270,7 +3431,7 @@ export async function GET(req: Request) {
       // r414-i18n9: ภาษาใหม่ 6 ตัวข้าม warmup (ย่อหน้าเปิดจาก engine เป็นไทย hardcode → intro ภาษาอื่นจะเปิดหัวเป็นไทยปน) · th/en/zh พฤติกรรมเดิม
       const warmup = mode === "intro" && !LANG_ANSWER_DIRECTIVE[lang] ? buildIntroWarmup(ctx) : null;
       const promptT0 = Date.now();
-      const promptBase = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel) });
+      const promptBase = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel), model: sifuModel });
       const prompt = warmup
         ? `${promptBase}\n\n${loadPromptMd("prompts/sifu-intro-resume-note.md").trim()}`
         : promptBase;
@@ -3280,7 +3441,7 @@ export async function GET(req: Request) {
       const t0 = Date.now();
       if (mode === "intro") {
         // grok = compact knowledge เดียวกับ master Q&A (เล็กพอสำหรับ context grok) · `prompt` เต็มเก็บไว้ให้ OpenRouter fallback
-        const introGrokBase = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: true });
+        const introGrokBase = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: true, model: sifuModel });
         // grok เป็น agent CLI · intro ไม่มี ⟦ID⟧ บังคับ output → grok เข้าโหมด agent เกริ่น "กำลังดึง/offloaded อ่านไฟล์" แล้วจบเทิร์นโดยไม่ตอบ
         // แก้: บังคับ ⟦ID⟧ บรรทัดแรก (กลไกเดียวกับ master Q&A ที่ทำงานได้ · adapter guard บังคับพิมพ์ machine header ก่อน) → grok หลุดจาก agent-mode มาเขียนเนื้อทันที
         // ⟦ID⟧ ใช้เป็นสมอบังคับ output เท่านั้น (intro ผ่อน · ไม่มี identity-lock reject/⟦TRACE⟧ แบบ Q&A) · sanitizeGrokUserVisibleText ตัดบรรทัด ⟦ID⟧ ทิ้งก่อนถึงผู้ใช้เสมอ
@@ -3445,14 +3606,14 @@ export async function GET(req: Request) {
 
       /* 2 มิ.ย. · เข้าคิว slot ก่อน spawn (เหมือน POST · heartbeat ส่ง ping ระหว่างรอ) */
       const _slotOkG = await acquireSifuSlot();
-      if (!_slotOkG) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
+      if (!_slotOkG) { void refundBillingG(); send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
       let _slotReleasedG = false;
       const releaseSlotOnceG = () => { if (!_slotReleasedG) { _slotReleasedG = true; releaseSifuSlot(); } };
       let c: ReturnType<typeof spawnSifuStreaming>;
       try { c = spawnSifuStreaming(prompt, sifuModel); }
       catch (e) {
         releaseSlotOnceG();
-        send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
+        void refundBillingG(); send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
         safeClose();
         return;
       }
@@ -3490,7 +3651,7 @@ export async function GET(req: Request) {
 
       const killTimer = setTimeout(() => {
         try { c.kill("SIGKILL"); } catch {}
-        send("error", { error: "timeout" });
+        void refundBillingG(); send("error", { error: "timeout" });
         safeClose();
       }, TIMEOUT_MS);
 
@@ -3636,15 +3797,15 @@ export async function GET(req: Request) {
         releaseSlotOnceG();
         clearTimeout(killTimer);
         clearGuardTimer();
-        if (idRejected) { safeClose(); return; }
+        if (idRejected) { void refundBillingG(); safeClose(); return; }
         const ms = Date.now() - t0;
         if (expectedDM && !idChecked && idBuf) {
           const rest = releaseStreamGuardG("close");
           if (rest !== null) emitVisibleG(rest);
         }
         flushVisibleG();
-        if (idRejected) { safeClose(); return; }
-        if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_visible_text" }); safeClose(); return; }
+        if (idRejected) { void refundBillingG(); safeClose(); return; }
+        if (expectedDM && !idChecked) { void refundBillingG(); send("error", { error: "identity_mismatch", reason: "no_visible_text" }); safeClose(); return; }
         if (code === 0 && full.trim()) {
           let finalReply = full.trim();
           const finalRawForAudit = idBuf;
@@ -3653,7 +3814,7 @@ export async function GET(req: Request) {
           if (!finalFactClaim.ok) {
             console.error(`[sifu] GET stream fact claim FAIL on close (${finalFactClaim.violations.map((v) => v.code).join(",")})`);
             send("error", { error: "fact_claim_mismatch", violations: finalFactClaim.violations });
-            safeClose();
+            void refundBillingG(); safeClose();
             return;
           }
           if (!finalCritical.ok) {
@@ -3663,7 +3824,7 @@ export async function GET(req: Request) {
           const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
           const payload: SifuPayload = { reply: finalReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
           if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
-          if (session?.userId) drainHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (GET stream)
+          if (session?.userId) void settleBillingG(payload.reply.length);
           scheduleSifuSourceShadowAudit({
             session,
             req,
@@ -3723,6 +3884,7 @@ export async function GET(req: Request) {
             promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
           });
         } else {
+          void refundBillingG();
           send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}` });
           sifuTimingLog("stream-error", {
             route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,

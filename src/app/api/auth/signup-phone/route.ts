@@ -7,6 +7,9 @@ import { normalizePhone, isValidThaiMobile, createOtp } from "@/lib/phone-otp";
 import { sendOtpSms, isSmsReady } from "@/lib/thaibulksms-sms";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
+import { ensureOrgMember } from "@/lib/ensure-org-member";
+import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
+import { applySignupProductDefaults } from "@/lib/product-entitlement";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -18,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "เบอร์โทรไม่ถูกต้อง (เริ่มต้นด้วย 06, 08, 09 · 10 หลัก)" }, { status: 400 });
   }
   /* 1 มิ.ย. · กัน spam สร้างบัญชี + ยิง SMS · 5 ครั้ง/ชม. ต่อ (IP + เบอร์) */
-  const rl = rateLimit(`signupphone:${clientIp(req)}:${phone}`, 5, 3_600_000);
+  const rl = await rateLimit(`signupphone:${clientIp(req)}:${phone}`, 5, 3_600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "สมัครบ่อยเกินไป · กรุณารอสักครู่" },
@@ -54,12 +57,17 @@ export async function POST(req: Request) {
   ).catch(async () => {
     await q1(`INSERT INTO organizations (id, name) VALUES ($1, $2)`, [orgId, displayName]);
   });
-  await q1(
-    `INSERT INTO org_members (org_id, user_id, role, created_at)
-     VALUES ($1, $2, 'owner', now())`,
-    [orgId, userId]
-  ).catch(() => null);
+  await ensureOrgMember(orgId, userId, "owner").catch((e) =>
+    console.warn("[signup-phone] org_members", e instanceof Error ? e.message : String(e))
+  );
   await q1(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [orgId, userId]);
+
+  await recordSignupFingerprint({
+    userId,
+    request: req,
+    deviceId: body.affiliateDeviceId || body.deviceId || null,
+  });
+  await applySignupProductDefaults(userId);
 
   const referral = await captureAffiliateAttribution({
     referredUserId: userId,

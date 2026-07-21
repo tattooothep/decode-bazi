@@ -136,6 +136,8 @@ const nextConfig: NextConfig = {
       { source: "/css/mobile-safe.css", headers: noStoreHeaders },
       { source: "/js/hk-lang-state.js", headers: noStoreHeaders },
       { source: "/js/hk-user-menu.js", headers: noStoreHeaders },
+      { source: "/js/hk-i18n-core.js", headers: noStoreHeaders },
+      { source: "/js/hk-settings-drawer.js", headers: noStoreHeaders },
       { source: "/js/hk-tooltips.js", headers: noStoreHeaders },
       // PWA r376 · no-store: deploy ใหม่ = SW/flag ใหม่ถูกเห็นใน navigation ถัดไป (kill-switch สด)
       { source: "/sw.js", headers: noStoreHeaders },

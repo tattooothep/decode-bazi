@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@400;500;600;700&display=optional" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/hk-print.css?v=4"/>
+<link rel="stylesheet" href="/css/hk-print.css?v=6"/>
 <style>
   /* fonts · matches /article/geometry */
   :root{
@@ -215,6 +215,7 @@
     </div>
   </div>
 
+<script src="/js/hk-print.js?v=6"></script>
 <script>
 (function(){
   "use strict";
@@ -583,23 +584,37 @@
     palmistry:{ th:"ลายมือ 手相", en:"Palmistry 手相", zh:"手相", cn:"手相", vi:"Xem chỉ tay 手相", ja:"手相", ru:"Хиромантия 手相", ko:"손금 手相", es:"Quiromancia 手相", needsBirthTime:false, available:true, isPalm:true }
   };
   var SCI_ORDER = ["bazi","qizheng","ziwei","western","vedic","uranian","palmistry"];
-  var BOOK_SCI_YAM = 50, BOOK_SYNTH_YAM = 50;
+  /* ตรง product-entitlement BOOK_SCIENCE_YAM / BOOK_SYNTHESIS_YAM */
+  var BOOK_SCI_YAM = 18, BOOK_SYNTH_YAM = 10;
   var cProfiles = [], cProfileId = "", cSel = {}, cSynth = true, cSubmitting = false;
+  var cCaps = { book_max_sciences: 6, book_synthesis: true, plan: "master" };
   function sciLabel(s){ var b=DISCIPLINES[s]; return b?(b[lang]||b.en||b.th):s; }
   function cProfileById(id){ return cProfiles.find(function(p){ return String(p.id)===String(id); })||null; }
   function cProfileHasTime(p){ return !p || p.birth_time_known !== false; }
+  function cMaxSci(){ var m=Number(cCaps.book_max_sciences); return isFinite(m)?m:6; }
   function cSelectable(){ var has=cProfileHasTime(cProfileById(cProfileId)); return SCI_ORDER.filter(function(s){ var b=DISCIPLINES[s]; return b&&b.available&&(!b.needsBirthTime||has); }); }
-  function cSelectedList(){ return cSelectable().filter(function(s){ return s!=="palmistry" && cSel[s]; }); } // palm แยก (includePalm · ไม่นับ yam/ไม่ใช่ ScienceId)
-  function cComputeYam(){ var n=cSelectedList().length; return n*BOOK_SCI_YAM+(cSynth&&n>=2?BOOK_SYNTH_YAM:0); }
+  function cSelectedList(){ return cSelectable().filter(function(s){ return s!=="palmistry" && cSel[s]; }); }
+  function cComputeYam(){ var n=cSelectedList().length; var synth=cSynth&&cCaps.book_synthesis&&n>=2; return n*BOOK_SCI_YAM+(synth?BOOK_SYNTH_YAM:0); }
+  function cEnforceCap(){
+    var max=cMaxSci();
+    var sel=cSelectedList();
+    if(max<=0){ Object.keys(cSel).forEach(function(k){ if(k!=="palmistry") cSel[k]=false; }); return; }
+    if(sel.length<=max) return;
+    var keep=sel.slice(0,max);
+    Object.keys(cSel).forEach(function(k){ if(k!=="palmistry") cSel[k]=keep.indexOf(k)>=0; });
+  }
   function cRenderSci(){
     var list=document.getElementById("cmodal-sci"); if(!list) return;
     var has=cProfileHasTime(cProfileById(cProfileId));
+    var max=cMaxSci();
+    var lockedPlan=max<=0;
     list.innerHTML = SCI_ORDER.map(function(s){
       var b=DISCIPLINES[s];
       var blockedTime=b.needsBirthTime&&!has;
-      var disabled=!b.available||blockedTime;
-      var checked=!!cSel[s]&&!disabled;
-      var note=!b.available?t("soon"):(blockedTime?t("needTime"):(s==="palmistry"?"0 時":(BOOK_SCI_YAM+" 時")));
+      var overCap=s!=="palmistry"&&!cSel[s]&&cSelectedList().length>=max&&max>0;
+      var disabled=!b.available||blockedTime||lockedPlan||overCap;
+      var checked=!!cSel[s]&&!disabled&&!lockedPlan;
+      var note=!b.available?t("soon"):(blockedTime?t("needTime"):(lockedPlan?"Premium+":(s==="palmistry"?"0 時":(BOOK_SCI_YAM+" 時"))));
       return '<label class="sci-item'+(checked?" checked":"")+(disabled?" disabled":"")+'" data-sci="'+s+'">'+
         '<input type="checkbox" data-sci-cb="'+s+'"'+(checked?" checked":"")+(disabled?" disabled":"")+'>'+
         '<span class="sci-name">'+esc(sciLabel(s))+'</span>'+
@@ -607,15 +622,25 @@
     }).join("");
   }
   function cUpdate(){
+    cEnforceCap();
+    cRenderSci();
     var n=cSelectedList().length;
+    var max=cMaxSci();
     var row=document.getElementById("cmodal-synth-row");
     var cb=document.getElementById("cmodal-synth");
-    var sd=n<2;
+    var sd=n<2||!cCaps.book_synthesis;
     if(row) row.classList.toggle("disabled",sd);
-    if(cb){ cb.disabled=sd; cb.checked=cSynth&&!sd; }
+    if(cb){ cb.disabled=sd; if(sd) cSynth=false; cb.checked=cSynth&&!sd; }
     var yam=document.getElementById("cmodal-yam"); if(yam) yam.textContent=cComputeYam();
-    var conf=document.getElementById("cmodal-confirm"); if(conf) conf.disabled=(n===0||cSubmitting);
-    var msg=document.getElementById("cmodal-msg"); if(msg&&!cSubmitting){ msg.className="cmodal-msg"; msg.textContent=(n===0?t("noSci"):""); }
+    var conf=document.getElementById("cmodal-confirm"); if(conf) conf.disabled=(n===0||cSubmitting||max<=0);
+    var msg=document.getElementById("cmodal-msg");
+    if(msg&&!cSubmitting){
+      msg.className="cmodal-msg";
+      if(max<=0) msg.textContent=(lang==="th"?"命書ต้องอัปเกรด · ดู /pricing":"Book requires upgrade · /pricing");
+      else if(n===0) msg.textContent=t("noSci");
+      else if(n>=max) msg.textContent=(lang==="th"?("แพ็กเกจนี้เลือกได้สูงสุด "+max+" ศาสตร์"):("Max "+max+" sciences on your plan"));
+      else msg.textContent="";
+    }
   }
   function cFillProfiles(){
     var sel=document.getElementById("cmodal-profile"); if(!sel) return;
@@ -626,28 +651,52 @@
     if(cProfileId && sel.querySelector('option[value="'+cProfileId+'"]')) sel.value=cProfileId;
     else cProfileId = sel.value;
   }
+  function loadCapsThen(cb){
+    fetch("/api/account/me",{ credentials:"same-origin", cache:"no-store", headers:{ "Accept":"application/json" } })
+      .then(function(r){ return r.json().catch(function(){ return {}; }); })
+      .then(function(me){
+        if(me&&me.caps){
+          cCaps.book_max_sciences=Number(me.caps.book_max_sciences)||0;
+          cCaps.book_synthesis=!!me.caps.book_synthesis;
+          cCaps.plan=me.plan||"free";
+        }
+        if(typeof cb==="function") cb();
+      })
+      .catch(function(){ if(typeof cb==="function") cb(); });
+  }
   function openCreateModal(){
     var m=document.getElementById("cmodal"); if(!m) return;
     var msg=document.getElementById("cmodal-msg"); if(msg){ msg.className="cmodal-msg"; msg.textContent=""; }
     cSubmitting=false;
-    cSel={}; cSelectable().forEach(function(s){ cSel[s]=true; }); cSynth=true;
     m.classList.remove("hidden");
-    if(!cProfiles.length){
-      fetch("/api/profile",{ credentials:"same-origin", cache:"no-store", headers:{ "Accept":"application/json" } })
-        .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, st:r.status, j:j }; }); })
-        .then(function(res){
-          if(res.st===401){ location.href="/signup?next="+encodeURIComponent(location.pathname); return; }
-          var j=res.j||{};
-          cProfiles=Array.isArray(j.profiles)?j.profiles:[];
-          if(!cProfiles.length){ if(msg){ msg.className="cmodal-msg"; msg.textContent=t("noProfile"); } var c=document.getElementById("cmodal-confirm"); if(c) c.disabled=true; return; }
-          cProfileId=String((j.active_profile&&j.active_profile.id)||cProfiles[0].id);
-          cSel={}; cSelectable().forEach(function(s){ cSel[s]=true; });
-          cFillProfiles(); cRenderSci(); cUpdate();
-        })
-        .catch(function(){ if(msg){ msg.className="cmodal-msg"; msg.textContent=t("jobError"); } });
-    } else {
-      cFillProfiles(); cRenderSci(); cUpdate();
-    }
+    loadCapsThen(function(){
+      function afterProfiles(){
+        cSel={};
+        var max=cMaxSci();
+        var i=0;
+        cSelectable().forEach(function(s){
+          if(s==="palmistry"){ cSel[s]=false; return; }
+          if(i<max){ cSel[s]=true; i++; } else cSel[s]=false;
+        });
+        cSynth=!!cCaps.book_synthesis;
+        cFillProfiles(); cRenderSci(); cUpdate();
+      }
+      if(!cProfiles.length){
+        fetch("/api/profile",{ credentials:"same-origin", cache:"no-store", headers:{ "Accept":"application/json" } })
+          .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, st:r.status, j:j }; }); })
+          .then(function(res){
+            if(res.st===401){ location.href="/signup?next="+encodeURIComponent(location.pathname); return; }
+            var j=res.j||{};
+            cProfiles=Array.isArray(j.profiles)?j.profiles:[];
+            if(!cProfiles.length){ if(msg){ msg.className="cmodal-msg"; msg.textContent=t("noProfile"); } var c=document.getElementById("cmodal-confirm"); if(c) c.disabled=true; return; }
+            cProfileId=String((j.active_profile&&j.active_profile.id)||cProfiles[0].id);
+            afterProfiles();
+          })
+          .catch(function(){ if(msg){ msg.className="cmodal-msg"; msg.textContent=t("jobError"); } });
+      } else {
+        afterProfiles();
+      }
+    });
   }
   function closeCreateModal(){ var m=document.getElementById("cmodal"); if(m) m.classList.add("hidden"); }
   function submitCreate(){
@@ -667,7 +716,10 @@
         cSubmitting=false; if(conf) conf.disabled=false;
         if(msg){ msg.className="cmodal-msg";
           if(j.error==="insufficient_hours"){ msg.textContent=t("needYam")+" · "+(j.needed||j.required||cComputeYam())+" 時"; }
+          else if(j.code==="book_requires_plan"||j.error==="book_requires_plan"){ msg.textContent=(lang==="th"?"命書ต้องอัปเกรด · ":"Book needs upgrade · ")+(j.upgrade||"/pricing"); }
+          else if(j.code==="book_science_limit"||j.error==="book_science_limit"){ msg.textContent=(lang==="th"?("เลือกได้สูงสุด "+(j.max||cMaxSci())+" ศาสตร์"):("Max "+(j.max||cMaxSci())+" sciences")); }
           else if(res.status===401){ msg.textContent=t("needLogin"); }
+          else if(res.status===403){ msg.textContent=String(j.message||j.error||"upgrade")+" · "+(j.upgrade||"/pricing"); }
           else { msg.textContent=String(j.error||res.status); }
         }
       })
@@ -677,7 +729,13 @@
     var sci=document.getElementById("cmodal-sci");
     if(sci) sci.addEventListener("change",function(e){
       var cb=e.target.closest&&e.target.closest("[data-sci-cb]"); if(!cb) return;
-      cSel[cb.getAttribute("data-sci-cb")]=cb.checked;
+      var key=cb.getAttribute("data-sci-cb");
+      if(cb.checked && key!=="palmistry" && cSelectedList().length>=cMaxSci() && !cSel[key]){
+        cb.checked=false;
+        cUpdate();
+        return;
+      }
+      cSel[key]=cb.checked;
       var lab=cb.closest(".sci-item"); if(lab) lab.classList.toggle("checked",cb.checked);
       cUpdate();
     });
@@ -713,11 +771,19 @@
     loadOverlayForLang(lang, function(){ load(); });
   });
   document.getElementById("printBtn").addEventListener("click", function(){
-    // ตั้งชื่อไฟล์ PDF ให้สวย (browser ใช้ document.title เป็นชื่อไฟล์ตอน Save as PDF)
-    var prev = document.title;
-    if(bookName){ document.title = t("brand") + "-" + bookName; }
-    window.print();
-    setTimeout(function(){ document.title = prev; }, 800);
+    if(!window.HKPrint){ alert(t("jobError")); return; }
+    var nodes = root.querySelectorAll(":scope > .cover, :scope > .toc, :scope > .chapter");
+    if(!bookName || !nodes.length){ alert(t("noId")); return; }
+    var css = "";
+    try { css = document.querySelector("head > style").textContent || ""; } catch(e) {}
+    window.HKPrint.open({
+      docTitle: t("brand") + "-" + bookName,
+      headTitle: t("brand") + " · " + bookName,
+      reportId: window.HKPrint.reportId("HKBOOK"),
+      lang: lang,
+      extraCss: css,
+      pages: Array.prototype.map.call(nodes, function(node){ return { sections:[node.outerHTML], landscape:false }; })
+    });
   });
 
   applyTheme();

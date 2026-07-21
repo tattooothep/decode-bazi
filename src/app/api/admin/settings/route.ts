@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { getAllSettings, setSetting, SETTING_DEFAULTS } from "@/lib/app-settings";
 
 /**
@@ -17,14 +17,14 @@ function guard(e: unknown) {
 const ALLOWED = new Set(Object.keys(SETTING_DEFAULTS));
 
 export async function GET() {
-  try { await requireAdmin(); } catch (e) { return guard(e); }
+  try { await requirePermission("admin.settings.read"); } catch (e) { return guard(e); }
   const map = await getAllSettings(true);
   return NextResponse.json({ ok: true, settings: map, keys: Object.keys(SETTING_DEFAULTS) });
 }
 
 export async function POST(req: NextRequest) {
   let admin;
-  try { admin = await requireAdmin(); } catch (e) { return guard(e); }
+  try { admin = await requirePermission("admin.settings.write"); } catch (e) { return guard(e); }
   const b = await req.json().catch(() => ({} as Record<string, unknown>));
   const incoming = (b.settings && typeof b.settings === "object") ? b.settings as Record<string, unknown> : {};
   const saved: string[] = [];

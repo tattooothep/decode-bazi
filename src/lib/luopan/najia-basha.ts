@@ -1,5 +1,6 @@
 import { MOUNTAIN_BY_NAME, findMountain24, isNearMountainBoundary, normalizeDeg } from "./mountains";
 import type { Mountain24 } from "./mountains";
+import { mountainForPlate, type LuopanPlate } from "./three-plates";
 
 export type PinFeatureCategory =
   | "water"
@@ -89,20 +90,36 @@ export const HUANG_QUAN: Record<string, string> = {
 const LONG_SHA_APPLIES = new Set<PinFeatureCategory>(["sharp_form", "tall_form", "road_rush", "water", "incoming_water", "outgoing_water", "water_mouth"]);
 const HUANG_QUAN_APPLIES = new Set<PinFeatureCategory>(["water", "incoming_water", "outgoing_water", "water_mouth", "drain", "door_gate"]);
 
+const PIN_TYPE_CATEGORY:Record<string,PinFeatureCategory> = {
+  bed:"bed",desk:"desk",door:"door_gate",door_gate:"door_gate",drain:"drain",
+  incoming_water:"incoming_water",neutral:"neutral",outgoing_water:"outgoing_water",
+  road:"road_rush",road_rush:"road_rush",sharp:"sharp_form",sharp_form:"sharp_form",
+  stove:"stove",tall:"tall_form",tall_form:"tall_form",water:"water",water_mouth:"water_mouth",
+};
+const PIN_FEATURE_CATEGORY = new Set<PinFeatureCategory>([
+  "water","incoming_water","outgoing_water","water_mouth","drain","door_gate","sharp_form",
+  "tall_form","road_rush","stove","bed","desk","neutral",
+]);
+
+export function categoryForPinType(value:unknown):PinFeatureCategory|null {
+  return PIN_TYPE_CATEGORY[String(value || "").toLowerCase()] || null;
+}
+
 export function resolvePinCategory(pin: LuopanPinInput): PinFeatureCategory {
-  if (pin.featureCategory) return pin.featureCategory;
   const t = String(pin.type || "").toLowerCase();
-  if (t === "water") return "water";
-  if (t === "drain") return "drain";
-  if (t === "door") return "door_gate";
+  const canonical=categoryForPinType(t);
+  if (canonical) return canonical;
+  if (pin.featureCategory && PIN_FEATURE_CATEGORY.has(pin.featureCategory)) return pin.featureCategory;
   if (t === "window") return "neutral";
-  if (t === "stove") return "stove";
-  if (t === "bed") return "bed";
-  if (t === "desk") return "desk";
-  if (t === "sharp" || t === "pole" || t === "corner") return "sharp_form";
-  if (t === "tall" || t === "tree" || t === "tower") return "tall_form";
-  if (t === "road") return "road_rush";
+  if (t === "pole" || t === "corner") return "sharp_form";
+  if (t === "tree" || t === "tower") return "tall_form";
   return "neutral";
+}
+
+export function plateForPinCategory(category:PinFeatureCategory):LuopanPlate {
+  if (["sharp_form","tall_form","road_rush"].includes(category)) return "human";
+  if (["water","incoming_water","outgoing_water","water_mouth","drain"].includes(category)) return "heaven";
+  return "earth";
 }
 
 export function najiaForMountain(mountainName: string) {
@@ -128,15 +145,17 @@ export function buildBashaContext(facingDeg: number): BashaContext {
   return { facingMountain, sittingMountain, longShaMountain, huangQuanMountain };
 }
 
-export function evaluateBashaHuangQuan(facingDeg: number, pin: LuopanPinInput): { context: BashaContext; pinMountain: Mountain24 | null; hits: BashaHit[] } {
+export function evaluateBashaHuangQuan(facingDeg: number, pin: LuopanPinInput): { context: BashaContext; pinMountain: Mountain24 | null; plate:LuopanPlate; hits: BashaHit[] } {
   const context = buildBashaContext(facingDeg);
   const deg = Number(pin.degree ?? pin.bearingDeg);
-  const pinMountain = Number.isFinite(deg) ? findMountain24(deg) : null;
-  const hits: BashaHit[] = [];
-  if (!pinMountain) return { context, pinMountain, hits };
-
   const category = resolvePinCategory(pin);
-  if (isNearMountainBoundary(deg, 1)) {
+  const plate=plateForPinCategory(category);
+  const pinMountain = Number.isFinite(deg) ? mountainForPlate(deg,plate) : null;
+  const hits: BashaHit[] = [];
+  if (!pinMountain) return { context, pinMountain, plate, hits };
+
+  const plateDegree=normalizeDeg(deg+(plate==="human"?7.5:plate==="heaven"?-7.5:0));
+  if (isNearMountainBoundary(plateDegree, 1)) {
     hits.push({
       code: "BOUNDARY_CAUTION",
       severity: "warning",
@@ -181,5 +200,5 @@ export function evaluateBashaHuangQuan(facingDeg: number, pin: LuopanPinInput): 
     });
   }
 
-  return { context, pinMountain, hits };
+  return { context, pinMountain, plate, hits };
 }

@@ -1,13 +1,17 @@
 /**
  * POST /api/today/directions
  *
- * รับ: { date: 'YYYY-MM-DD', school?: 'chaibu'|'zhirun', userChart?: { day:{stem,branch}, ... } }
+ * รับ: { date: 'YYYY-MM-DD', profileId?: string, school?: 'chaibu'|'zhirun' }
  * คืน: legacy directions + direction_energy (ฉีเหมิน + จื่อไป๋ ไม่รวมดวงคน)
  *
  * legacy directions ยังรองรับ 用神/DM เดิมเพื่อไม่ให้หน้าเก่าพัง
  */
 import { NextResponse } from "next/server";
 import { computeFlyingLayers } from "@/lib/fengshui-luxing";
+import { entitlementDenied } from "@/lib/product-entitlement";
+import { withinDayWindow } from "@/lib/product-date-gate";
+import { currentRequestProductAccess, nextRequiredPlan } from "@/lib/product-request-access";
+import { loadCalendarProfileContext } from "@/lib/calendar-profile-context";
 
 const STEM_ELEMENT: Record<string, "wood"|"fire"|"earth"|"metal"|"water"> = {
   甲:"wood",乙:"wood",丙:"fire",丁:"fire",戊:"earth",己:"earth",
@@ -532,18 +536,57 @@ function buildDirectionEnergy(opts: {
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const date: string = body.date || new Date().toISOString().slice(0, 10);
-  const userChart = body.userChart;
+  const product = await currentRequestProductAccess(req);
+  const requestedProfileId = String(body.profileId || "").replace(/^p_/, "").trim();
+  if (requestedProfileId && (!product.session?.userId || !product.session?.orgId)) {
+    return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  }
+  const profileContext = requestedProfileId && product.session?.userId && product.session?.orgId
+    ? await loadCalendarProfileContext({
+        userId: product.session.userId,
+        orgId: product.session.orgId,
+        profileId: requestedProfileId,
+      })
+    : null;
+  if (requestedProfileId && !profileContext) {
+    return NextResponse.json({ error: "profile not found" }, { status: 404 });
+  }
+  // Personal calculation inputs are server-owned. Never accept a chart or
+  // useful-god value supplied by the browser because it can cross identities.
+  const userChart = profileContext?.pillars || null;
   const dmStem: string | undefined = userChart?.day?.stem;
   const dmEl = dmStem ? STEM_ELEMENT[dmStem] : "";
-  const yongshen: string | null = body.yongshen || null;
+  let yongshen: string | null = null;
+  if (profileContext) {
+    try {
+      const { getYongshenSynth, extractFromSynth } = await import("@/lib/yongshen-cache");
+      const wrapped = await getYongshenSynth(
+        profileContext.birthDate,
+        profileContext.birthTime,
+        profileContext.birthLng,
+        { birthTimeKnown: profileContext.birthTimeKnown },
+      );
+      const extracted = wrapped ? extractFromSynth(wrapped.synth) : null;
+      yongshen = extracted?.yongshen?.[0] || null;
+    } catch { yongshen = null; }
+  }
   const lng = Number(body.lng ?? body.longitude ?? 100.5018);
   const lat = Number(body.lat ?? body.latitude ?? 13.7563);
   const school = resolveSchool(body.school);
   const bkk = bangkokNowParts();
-  const hourTime = typeof body.time === "string" && /^\d{2}:\d{2}$/.test(body.time) ? body.time : bkk.time;
+  const hasSelectedTime = typeof body.time === "string" && /^\d{2}:\d{2}$/.test(body.time);
+  const hourTime = hasSelectedTime ? body.time : (date === bkk.date ? bkk.time : "12:00");
+  const timeSource = hasSelectedTime ? "selected" : (date === bkk.date ? "current_today" : "reference_noon");
 
   const [yy, mm, dd] = date.split("-").map(Number);
   if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400 });
+  const todayCaps = product.pages.today;
+  if (!withinDayWindow(date, todayCaps.day_window)) {
+    return NextResponse.json(
+      entitlementDenied("today_date_window", { plan: product.plan, max_days: todayCaps.day_window }),
+      { status: 403 }
+    );
+  }
 
   /* day pillar เพื่อปรับ direction tilt (วันนี้ธาตุไหนเด่น) */
   const tyme = await import("tyme4ts");
@@ -559,9 +602,9 @@ export async function POST(req: Request) {
   stars.forEach(s => { (starsByDir[s.dir] = starsByDir[s.dir] || []).push({name:s.name,han:s.han,good:s.good}); });
 
   const DIRS: Array<keyof typeof DIRECTION_ELEMENT> = ["N","NE","E","SE","S","SW","W","NW"];
-  const directions = DIRS.map(d => {
+  const buildLegacyDirections = (personal: boolean) => DIRS.map(d => {
     const el = DIRECTION_ELEMENT[d];
-    let q = qualityFor(yongshen, dmEl, el);
+    let q = personal ? qualityFor(yongshen, dmEl, el) : "ok" as "best"|"good"|"ok"|"avoid";
     /* boost ทิศที่ตรงกับธาตุกิ่งวันนี้ (day branch element) */
     if (el === dayBranchEl && q === "ok") q = "good";
     /* 17 พ.ค. · ดาวมงคล day-based override (ตำราอากง) */
@@ -583,15 +626,9 @@ export async function POST(req: Request) {
       stars: dStars,
     };
   });
-
-  const summary = {
-    good: directions
-      .filter(d => d.quality === "best" || d.quality === "good")
-      .map(d => d.direction),
-    avoid: directions
-      .filter(d => d.quality === "avoid")
-      .map(d => d.direction),
-  };
+  const universalDirections = buildLegacyDirections(false);
+  const personalDirections = userChart?.day ? buildLegacyDirections(true) : [];
+  const directions = personalDirections.length ? personalDirections : universalDirections;
 
   const [qimenDay, qimenHour] = await Promise.all([
     buildQimenLayer(date, "12:00", lng, lat, school),
@@ -608,20 +645,78 @@ export async function POST(req: Request) {
     hasUserChart: !!userChart,
   });
 
+  const directionLimit = Math.max(0, Math.min(8, todayCaps.directions));
+  const allowedDirections = new Set(
+    directionEnergy.scores.slice(0, directionLimit).map((entry: any) => entry.direction)
+  );
+  const requiredPlan = nextRequiredPlan(product.plan);
+  const publicDirection = (entry: any) => {
+    if (allowedDirections.has(entry.direction)) return { ...entry, locked: false };
+    return {
+      direction: entry.direction,
+      direction_th: entry.direction_th,
+      direction_th_long: entry.direction_th_long,
+      direction_zh: entry.direction_zh,
+      direction_en: entry.direction_en,
+      locked: true,
+      required_plan: requiredPlan,
+    };
+  };
+  const publicQimenLayer = (layer: any) => {
+    if (!layer) return null;
+    const layerDirections = (layer.directions || []).map(publicDirection);
+    return {
+      ...layer,
+      directions: layerDirections,
+      good: layerDirections.filter((entry: any) => !entry.locked && (entry.quality === "best" || entry.quality === "good")).slice(0, 4),
+      avoid: layerDirections.filter((entry: any) => !entry.locked && entry.quality === "avoid").slice(-4).reverse(),
+    };
+  };
+  const publicDirections = directions.map(publicDirection);
+  const publicEnergyScores = directionEnergy.scores.map(publicDirection);
+  const publicDirectionEnergy = {
+    ...directionEnergy,
+    scores: publicEnergyScores,
+    best: publicEnergyScores.filter((entry: any) => !entry.locked).slice(0, 3),
+    avoid: publicEnergyScores
+      .filter((entry: any) => !entry.locked && (entry.label === "avoid" || entry.label === "caution"))
+      .slice(-4)
+      .reverse(),
+  };
+
   return NextResponse.json({
     date,
+    reference_time: hourTime,
+    time_source: timeSource,
+    profile_context: profileContext ? {
+      profileId: profileContext.profileId,
+      userId: profileContext.userId,
+      isSelf: profileContext.isSelf,
+      source: profileContext.source,
+      birthTimeKnown: profileContext.birthTimeKnown,
+    } : null,
     dayBranch,
     dayBranchEl,
     yongshen,
-    directions,
-    summary,
+    directions: publicDirections,
+    universal_directions: universalDirections.map(publicDirection),
+    personal_directions: personalDirections.map(publicDirection),
+    summary: {
+      good: publicDirections.filter((entry: any) => !entry.locked && (entry.quality === "best" || entry.quality === "good")).map((entry: any) => entry.direction),
+      avoid: publicDirections.filter((entry: any) => !entry.locked && entry.quality === "avoid").map((entry: any) => entry.direction),
+    },
     qimen: {
       source: qimenDay || qimenHour ? "qimen-api" : "unavailable",
       school,
-      day: qimenDay,
-      hour: qimenHour,
+      day: publicQimenLayer(qimenDay),
+      hour: publicQimenLayer(qimenHour),
     },
-    flying_focus: flyingFocus,
-    direction_energy: directionEnergy,
+    flying_focus: directionLimit >= 8 ? flyingFocus : null,
+    direction_energy: publicDirectionEnergy,
+    entitlement: {
+      plan: product.plan,
+      detailed_directions: directionLimit,
+      total_directions: 8,
+    },
   });
 }

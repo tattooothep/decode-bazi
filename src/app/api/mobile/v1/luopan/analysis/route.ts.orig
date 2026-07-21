@@ -1,0 +1,142 @@
+import { NextResponse } from "next/server";
+import { getMobileSession } from "@/lib/mobile-auth";
+import { getProductAccess } from "@/lib/product-entitlement";
+import { calcXuanKongChart, type TiguaSchool } from "@/lib/luopan/tigua";
+import { buildBashaContext, categoryForPinType, evaluateBashaHuangQuan, resolvePinCategory, type LuopanPinInput } from "@/lib/luopan/najia-basha";
+import { evaluateWaterMethod } from "@/lib/luopan/water-method";
+import { evaluateMobileLuopanMeasurement, type NorthReference } from "@/lib/mobile-luopan";
+import { threePlateReading } from "@/lib/luopan/three-plates";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(req: Request) {
+  const session = await getMobileSession(req);
+  if (!session) return NextResponse.json({ ok: false, error: "not logged in" }, { status: 401 });
+  const access = await getProductAccess(session.userId);
+  if (!access) return NextResponse.json({ ok: false, error: "account unavailable" }, { status: 403 });
+  const body = await req.json().catch(() => ({} as Record<string, unknown>));
+  const headingDeg = Number(body.heading_deg ?? body.facing_deg);
+  if (!Number.isFinite(headingDeg)) return NextResponse.json({ ok: false, error: "heading_deg required" }, { status: 400 });
+  const period = Math.trunc(Number(body.period));
+  if (!Number.isInteger(period) || period < 1 || period > 9) {
+    return NextResponse.json({ ok: false, error: "period 1..9 required", code: "house_period_required" }, { status: 422 });
+  }
+  const method = body.method === "manual" || body.method === "map" ? body.method : "sensor";
+  const northReference = (["magnetic", "true", "manual", "map_true"].includes(String(body.north_reference))
+    ? body.north_reference : "magnetic") as NorthReference;
+  const gate = evaluateMobileLuopanMeasurement({
+    headingDeg,
+    northReference,
+    method,
+    accuracyClass: Number(body.accuracy_class),
+    accuracyDeg: Number(body.accuracy_deg),
+    sampleCount: Number(body.sample_count),
+    circularStdDeg: Number(body.circular_std_deg),
+    repeatSpreadDeg: Number(body.repeat_spread_deg),
+    maxTiltDeg: Number(body.max_tilt_deg),
+  });
+  if (!gate.pass) {
+    return NextResponse.json({
+      ok: false,
+      error: "measurement quality insufficient",
+      code: "measurement_quality_failed",
+      measurement: gate,
+    }, { status: 422 });
+  }
+
+  const school = (access.luopan_mode === "full" && body.tigua_school === "full_24" ? "full_24" : "shen_13") as TiguaSchool;
+  const pinLimit = access.luopan_pins === "full" ? 100 : 3;
+  const requestedPins = Array.isArray(body.pins) ? body.pins.slice(0,pinLimit) : [];
+  const allowedPins:LuopanPinInput[]=[];
+  for (const value of requestedPins) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return NextResponse.json({ok:false,error:"invalid pin",code:"invalid_pin"},{status:400});
+    }
+    const raw=value as Record<string,unknown>;
+    const type=String(raw.type || "").toLowerCase();
+    const category=categoryForPinType(type);
+    const degree=Number(raw.degree ?? raw.bearingDeg);
+    if (!category || !Number.isFinite(degree) || (raw.featureCategory != null && raw.featureCategory !== category)) {
+      return NextResponse.json({ok:false,error:"invalid or conflicting pin category",code:"invalid_pin_category"},{status:400});
+    }
+    const waterFlow=["incoming","outgoing","static","unknown"].includes(String(raw.waterFlow))
+      ? raw.waterFlow as LuopanPinInput["waterFlow"] : undefined;
+    allowedPins.push({type,degree,featureCategory:category,waterFlow});
+  }
+  const chart = calcXuanKongChart(gate.headingDeg, period, school);
+  const fullChart = access.luopan_mode !== "core";
+  const waterMethod = fullChart ? evaluateWaterMethod({
+    houseLocked: gate.pass,
+    facingDeg: gate.headingDeg,
+    waterFeatures: allowedPins.map((pin) => {
+      const category = resolvePinCategory(pin);
+      const bearing = Number(pin.degree ?? pin.bearingDeg);
+      const waterCategory = ["water","incoming_water","outgoing_water","water_mouth","drain"].includes(category);
+      return {
+        type: category === "water_mouth" ? "door_water_mouth" as const : category === "drain" ? "drain" as const : "unknown" as const,
+        bearingDeg: Number.isFinite(bearing) ? bearing : undefined,
+        sourceDeg: category === "incoming_water" && Number.isFinite(bearing) ? bearing : undefined,
+        mouthDeg: category === "water_mouth" && Number.isFinite(bearing) ? bearing : undefined,
+        flowRole: category === "incoming_water" ? "incoming" as const : category === "outgoing_water" || category === "drain" ? "outgoing" as const : pin.waterFlow || "unknown" as const,
+        isRealWater: waterCategory,
+        confidence: Number.isFinite(bearing) ? "measured" as const : "unknown" as const,
+      };
+    }),
+  }) : null;
+  const pinWarnings = allowedPins.map((pin) => {
+    const result = evaluateBashaHuangQuan(gate.headingDeg, pin);
+    return {
+      pin,
+      plate: result.plate,
+      mountain: result.pinMountain?.name || null,
+      hits: result.hits.map((hit) => ({
+        code: hit.code,
+        severity: hit.severity,
+        pass: hit.pass,
+        applies: hit.applies,
+        thai: hit.thai,
+        zh: hit.zh,
+      })),
+    };
+  });
+
+  return NextResponse.json({
+    ok: true,
+    formula_version: "luopan-core-v1-xuankong-chart-v1-three-plates-v1",
+    verdict_scope: "verified_core_only",
+    measurement: gate,
+    core: {
+      north_reference: northReference,
+      facing: chart.facing,
+      sitting: chart.sitting,
+      three_plates:threePlateReading(gate.headingDeg),
+      period: chart.period,
+      school: chart.school,
+      tigua: {
+        facing: fullChart ? chart.waterFlight.decision : { mode:chart.waterFlight.decision.mode, nearBoundary:chart.waterFlight.decision.nearBoundary },
+        sitting: fullChart ? chart.mountainFlight.decision : { mode:chart.mountainFlight.decision.mode, nearBoundary:chart.mountainFlight.decision.nearBoundary },
+      },
+      xuan_kong: {
+        version: chart.version,
+        base: chart.base,
+        ...(fullChart ? {
+          water: chart.water,
+          mountain: chart.mountain,
+          water_flight: chart.waterFlight,
+          mountain_flight: chart.mountainFlight,
+        } : {}),
+      },
+      professional: fullChart ? { najia_basha:buildBashaContext(gate.headingDeg), water_method:waterMethod } : undefined,
+      pin_warnings: pinWarnings,
+    },
+    excluded_unverified_layers: ["pseudo_time_star", "simplified_kua", "sequential_hex64", "low_confidence_star_pairs"],
+    entitlement: {
+      plan: access.plan,
+      mode: access.luopan_mode,
+      pins: access.luopan_pins,
+      locked_sections: access.luopan_mode === "core"
+        ? ["xuan_kong_flights", "water_methods", "professional_rings", "sifu"]
+        : access.luopan_mode === "pro" ? ["full_24_tigua"] : [],
+    },
+  }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+}

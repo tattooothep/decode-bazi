@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     if (!s?.orgId) return NextResponse.json({ error: "not logged in" }, { status: 401 });
     const ownUuid = String(personId).replace(/^hk_/, "");
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownUuid)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-    const owns = await q1<{ id: string }>("SELECT id FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false", [ownUuid, s.orgId]);
+    const owns = await q1<{ id: string }>("SELECT id FROM profiles WHERE id=$1 AND org_id=$2 AND created_by_user_id=$3 AND is_archived=false", [ownUuid, s.orgId, s.userId]);
     if (!owns) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
     const c = birthTimeKnown

@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/members", key: "nav.members" },
   { href: "/admin/orders", key: "nav.orders" },
   { href: "/admin/support", key: "nav.support" },
+  { href: "/admin/community", key: "nav.community" },
   { href: "/admin/finance", key: "nav.finance" },
   { href: "/admin/ai-cost", key: "nav.aicost" },
   { href: "/admin/packages", key: "nav.packages" },

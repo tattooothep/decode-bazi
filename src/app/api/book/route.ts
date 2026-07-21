@@ -9,13 +9,14 @@
  * refund partial: บทพัง คืน yam ของบทนั้น (×1.5 rounded) · resume โหลด result = ฟรี
  */
 import { NextResponse } from "next/server";
-import { getSession, signSession, type Session } from "@/lib/auth";
+import { getSession, readSessionVersion, signSession, type Session } from "@/lib/auth";
 import { q1, q } from "@/lib/db";
 import { renderPalmBlock } from "@/lib/palm/prompt";
 import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
 import { createHash } from "crypto";
 import { DISCIPLINES, JUDGE_MODEL, type ScienceId } from "@/lib/fusion5/disciplines";
 import { isSifuAnswerLang } from "@/lib/sifu-answer-lang"; // r414-i18n9
+import { publicAiPayload } from "@/lib/public-ai-response";
 import {
   buildSciencePrompt, buildJudgeBookPrompt, loadBookDirective, resolveFusionTimingReference,
   BOOK_CHAPTER_ORDER, type BirthData,
@@ -25,6 +26,7 @@ import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type Fusion
 import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
 import { notifyFusionDone } from "@/lib/push-sender";
 import { buildScienceChartSvg } from "@/lib/book/chart-svg";
+import { BOOK_SCIENCE_YAM, BOOK_SYNTHESIS_YAM, computeBookYam } from "@/lib/book-pricing";
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
@@ -34,15 +36,7 @@ const CHILD_TIMEOUT_MS = Number(process.env.SIFU_BOOK_CHILD_TIMEOUT_MS || 360_00
 const FEATURE = "natal_book";
 const SERVER_STARTED_AT = new Date();
 
-// ยาม/เล่ม (r401 · เจ้านายสั่ง): บทละ 50 ยาม (flat ทุกศาสตร์) + บทหลอมรวม 50 (เมื่อติ๊ก+เลือก ≥2 ศาสตร์)
-// รวม 6 ศาสตร์ + หลอมรวม = 50×6 + 50 = 350 · เลือก 2 ศาสตร์ไม่หลอมรวม = 100
-export const BOOK_SCIENCE_YAM = 50;
-export const BOOK_SYNTHESIS_YAM = 50;
 function bookPanelYam(_s: ScienceId): number { return BOOK_SCIENCE_YAM; }
-export function computeBookYam(sciences: ScienceId[], includeSynthesis: boolean): number {
-  const valid = sciences.filter((s) => DISCIPLINES[s]?.available);
-  return valid.length * BOOK_SCIENCE_YAM + (includeSynthesis && valid.length >= 2 ? BOOK_SYNTHESIS_YAM : 0);
-}
 
 // มาตรฐานทุก user (format contract): บทต้องมีหัวข้อ "## 1." … "## 10." ครบ+เรียงลำดับ
 const BOOK_FORMAT_RETRY_NOTE = "\n\n⚠️ สำคัญมาก (รอบแก้รูปแบบ): รอบก่อนหน้าเขียนหัวข้อไม่ครบ 10 มิติ · รอบนี้ต้องเขียนให้ครบทั้ง 10 หัวข้อ ขึ้นต้นแต่ละหัวข้อด้วย \"## 1.\" \"## 2.\" … \"## 10.\" เรียงตามลำดับ ห้ามข้าม ห้ามสลับ ห้ามยุบรวมเป็นย่อหน้าเดียว";
@@ -70,7 +64,10 @@ function internalToken(): string {
   return createHash("sha256").update(`hourkey:sifu-fusion:${secret}`).digest("hex");
 }
 async function authCookie(session: Session): Promise<string> {
-  const token = await signSession({ userId: session.userId, email: session.email, orgId: session.orgId || null });
+  // r523 fix: ต้องใส่ sv (session_version) — ไม่ใส่ = sv 0 · user ที่เคยเปลี่ยนรหัส (sv>0)
+  // จะโดน /api/sifu ปฏิเสธ "not logged in" ทั้งที่ login อยู่ (fusion/คัมภีร์เงียบทั้งเว็บ+แอพ)
+  const sv = session.sv ?? (await readSessionVersion(session.userId));
+  const token = await signSession({ userId: session.userId, email: session.email, orgId: session.orgId || null, sv });
   return `decode_auth=${encodeURIComponent(token)}`;
 }
 
@@ -219,7 +216,7 @@ type NatalBookRow = {
 };
 
 function bookJson(row: NatalBookRow) {
-  return {
+  return publicAiPayload({
     bookId: row.id,
     status: row.status,
     result: row.result || null,
@@ -228,7 +225,7 @@ function bookJson(row: NatalBookRow) {
     sciences: row.sciences || [],
     profileId: row.profile_id || null,
     createdAt: row.created_at,
-  };
+  });
 }
 
 /** timeline หลายปี (deterministic) ป้อนบทจังหวะเวลาให้ judge · cap กันบวม prompt */
@@ -277,12 +274,12 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
               if (res.ok && res.reply) { usedModel = model; break; }
             }
           } else {
-            // ศาสตร์อื่น: externalPrompt (bookMode → directive อ่านเต็มดวงถูกฉีดใน buildSciencePrompt)
-            let prompt = buildSciencePrompt(science, [birth], "", lang, timingRef.refDate, timingRef, { bookMode: true });
-            if (emphasize) prompt += BOOK_FORMAT_RETRY_NOTE;
-            const payload = { message: name, externalPrompt: prompt, lang, profileId: birth.profileId, threadProfileId: birth.profileId, historyProfileIds: [birth.profileId], fusionRunId: bookId };
+            // ศาสตร์อื่น: externalPrompt (bookMode) · r513 rebuild prompt ต่อโมเดล (cap knowledgeCapChars)
             // วนทุกโมเดล (default → ทุก fallback) จนกว่าจะได้ · กัน 1 โมเดล abort/timeout/auth แล้วบททิ้งทั้งที่ยังมีตัวสำรอง
             for (const model of [bind.defaultModel, ...bind.fallbackModels]) {
+              let prompt = buildSciencePrompt(science, [birth], "", lang, timingRef.refDate, timingRef, { bookMode: true, model });
+              if (emphasize) prompt += BOOK_FORMAT_RETRY_NOTE;
+              const payload = { message: name, externalPrompt: prompt, lang, profileId: birth.profileId, threadProfileId: birth.profileId, historyProfileIds: [birth.profileId], fusionRunId: bookId };
               res = await callSifu(cookie, payload, model);
               if (res.ok && res.reply) { usedModel = model; break; }
             }
@@ -419,7 +416,7 @@ export async function POST(req: Request) {
     }
 
     // บทหลอมรวม: ติ๊กได้ (r401) · default true (เมื่อไม่ส่ง = พฤติกรรมเดิม) · ต้อง ≥2 ศาสตร์ถึงมีผล
-    const includeSynthesis = body.includeSynthesis === undefined
+    let includeSynthesis = body.includeSynthesis === undefined
       ? true
       : (body.includeSynthesis === true || body.includeSynthesis === 1 || body.includeSynthesis === "1");
     const includePalm = body.includePalm === true; // ศาสตร์ที่ 7: ลายมือ
@@ -437,6 +434,25 @@ export async function POST(req: Request) {
     const skippedReasons: Partial<Record<ScienceId, string>> = {};
     for (const s of skipped) skippedReasons[s] = "no_birth_time";
     if (!runSciences.length) return NextResponse.json({ error: "all_sciences_need_birthtime", skipped, skippedReasons }, { status: 400 });
+
+    // สิทธิ์แพ็กเกจ: free หลัง trial ปิด book · trial/premium จำกัดจำนวนศาสตร์
+    const { getProductAccess, entitlementDenied } = await import("@/lib/product-entitlement");
+    const access = await getProductAccess(userId);
+    if (!access || access.book_max_sciences <= 0) {
+      return NextResponse.json(entitlementDenied("book_requires_plan", { plan: access?.plan || "free" }), { status: 403 });
+    }
+    if (runSciences.length > access.book_max_sciences) {
+      return NextResponse.json(
+        entitlementDenied("book_science_limit", {
+          max: access.book_max_sciences,
+          requested: runSciences.length,
+          plan: access.plan,
+        }),
+        { status: 403 }
+      );
+    }
+    // บังคับ synthesis ตามแพ็ก (premium/trial ปิด)
+    includeSynthesis = !!(includeSynthesis && access.book_synthesis);
 
     // rate limit: เล่มกำลังทำอยู่ (running) ≥ 2 = ปฏิเสธ (งานหนัก 7 AI call/เล่ม)
     const runningCnt = await q1<{ n: string }>(

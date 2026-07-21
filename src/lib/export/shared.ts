@@ -3,7 +3,7 @@
  * ยกจาก src/app/api/export/summary/route.ts เดิม (chart นำร่อง) — พฤติกรรม/ค่าคงเดิมเป๊ะ ไม่แตะ logic
  * ⚠️ additive · ไม่แตะ /api/sifu (LOCKED) แค่เรียกผ่าน fusion-internal boundary เดิม
  */
-import { signSession, type Session } from "@/lib/auth";
+import { readSessionVersion, signSession, type Session } from "@/lib/auth";
 import { createHash } from "crypto";
 
 export const INTERNAL_BASE = process.env.SIFU_INTERNAL_BASE_URL || "http://127.0.0.1:3349";
@@ -16,9 +16,14 @@ export function internalToken(): string {
   return createHash("sha256").update(`hourkey:sifu-fusion:${secret}`).digest("hex");
 }
 
-/** เซ็น session ใหม่ → cookie สำหรับเรียก /api/chart, /api/sifu แบบ internal (server-to-server) */
+/** เซ็น session ใหม่ → cookie สำหรับเรียก /api/chart, /api/sifu แบบ internal (server-to-server)
+ * 21 ก.ค.: ต้องใส่ sv เสมอ — เดิมไม่ใส่ (default 0) ทำให้บัญชีที่เคยเปลี่ยนรหัส (sv>0)
+ * โดนด่าน session_version ปัด 401 → PDF ทั้ง 7 หน้าพังเงียบ (บั๊กตระกูลเดียวกับที่แก้ fusion ใน r523) */
 export async function authCookie(session: Session): Promise<string> {
-  const token = await signSession({ userId: session.userId, email: session.email, orgId: session.orgId || null });
+  const sv = typeof (session as { sv?: number }).sv === "number"
+    ? (session as { sv?: number }).sv
+    : await readSessionVersion(session.userId);
+  const token = await signSession({ userId: session.userId, email: session.email, orgId: session.orgId || null, sv });
   return `decode_auth=${encodeURIComponent(token)}`;
 }
 

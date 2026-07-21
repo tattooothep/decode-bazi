@@ -10,6 +10,8 @@ import {
 import { getSession, signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
 import { userHasProfile } from "@/lib/profile-status";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
+import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
+import { applySignupProductDefaults } from "@/lib/product-entitlement";
 
 const COOKIE_DOMAIN = process.env.NODE_ENV === "production" ? ".hourkey.io" : undefined;
 
@@ -72,13 +74,37 @@ export async function GET(req: Request) {
     const msg = e instanceof Error ? e.message : "create user failed";
     return redirect(`/signup?tab=login&err=${encodeURIComponent(msg)}`);
   }
-  if (user.is_new && stateData.ref) {
-    await captureAffiliateAttribution({
-      referredUserId: user.id,
-      referralCode: stateData.ref,
-      request: req,
-      channel: "google",
-    }).catch((e) => console.warn("[affiliate] google attribution failed", e instanceof Error ? e.message : String(e)));
+  if (user.is_new) {
+    await recordSignupFingerprint({ userId: user.id, request: req });
+    await applySignupProductDefaults(user.id);
+    if (stateData.ref) {
+      await captureAffiliateAttribution({
+        referredUserId: user.id,
+        referralCode: stateData.ref,
+        request: req,
+        channel: "google",
+      }).catch((e) => console.warn("[affiliate] google attribution failed", e instanceof Error ? e.message : String(e)));
+    }
+  }
+
+  // R522: สะพานมือถือ — state จาก /api/mobile/v1/auth/google/start ฝัง challenge เป็น
+  // path "/__mobile__/<code_challenge>" → ออก one-time code (PKCE S256 · ใช้ครั้งเดียว · 60 วิ)
+  // แล้วเด้งกลับเข้าแอพ ไม่ set cookie เว็บ
+  const mobileMarker = "/__mobile__/";
+  if (stateData.next && stateData.next.startsWith(mobileMarker)) {
+    const challenge = stateData.next.slice(mobileMarker.length);
+    if (!/^[A-Za-z0-9_-]{43,128}$/.test(challenge)) {
+      return redirect(`hourkey://auth/google?error=${encodeURIComponent("bad_challenge")}`);
+    }
+    const { q1 } = await import("@/lib/db");
+    const codeRow = await q1<{ code: string }>(
+      `INSERT INTO mobile_auth_codes (user_id, code_challenge) VALUES ($1, $2) RETURNING code`,
+      [user.id, challenge],
+    ).catch(() => null);
+    if (!codeRow) {
+      return redirect(`hourkey://auth/google?error=${encodeURIComponent("code_issue_failed")}`);
+    }
+    return redirect(`hourkey://auth/google?code=${encodeURIComponent(codeRow.code)}`);
   }
 
   const sv = await readSessionVersion(user.id);

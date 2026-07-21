@@ -261,6 +261,41 @@ async function fetchTongshuForDay(date: string): Promise<{ yi: string[]; ji: str
 }
 
 export async function POST(req: Request) {
+  /* product: trial/free ปิดค้นฉีเหมินลึก · premium+ เปิด · fail-closed */
+  try {
+    const { getSession } = await import("@/lib/auth");
+    const { getProductAccess, entitlementDenied } = await import("@/lib/product-entitlement");
+    const s = await getSession();
+    if (!s?.userId) {
+      return NextResponse.json(
+        entitlementDenied("qimen_search_locked", {
+          message: "ค้นฉีเหมินลึกต้องเข้าสู่ระบบและแพ็ก Premium+ · /pricing",
+        }),
+        { status: 403 }
+      );
+    }
+    const access = await getProductAccess(s.userId);
+    if (!access || access.qimen_search !== true) {
+      return NextResponse.json(
+        entitlementDenied("qimen_search_locked", {
+          message:
+            access?.plan === "trial"
+              ? "ช่วงทดลอง · ค้นฉีเหมินลึกยังไม่เปิด · อ่านผังยามพื้นฐานได้ · อัปเกรด /pricing"
+              : "แพ็กเกจนี้ค้นฉีเหมินลึกไม่ได้ · อัปเกรด /pricing",
+          plan: access?.plan || "free",
+        }),
+        { status: 403 }
+      );
+    }
+  } catch (e) {
+    if (e instanceof Response) return e;
+    console.error("[qimen/search] entitlement", e instanceof Error ? e.message : e);
+    return NextResponse.json(
+      { error: "qimen_search_locked", code: "qimen_search_locked", upgrade: "/pricing" },
+      { status: 403 }
+    );
+  }
+
   const body = await req.json().catch(() => ({}));
   const mode = (body.mode === "spec" ? "spec" : "activity") as "activity" | "spec";
   const activity = body.activity || "work_start";

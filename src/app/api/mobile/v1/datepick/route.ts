@@ -3,13 +3,16 @@ import { q } from "@/lib/db";
 import { internalAppOrigin } from "@/lib/internal-app-origin";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { ALL_MODULES } from "@/lib/luck-engine/types";
 import { cleanDatepickDate, parseDatepickPeople } from "./input";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const ACTIVITY_TYPES = new Set(["立約", "開市", "出行", "求財", "婚姻", "搬家", "動土", "祭祀"]);
-const ACTIVE_MODULES = [
+// allowlist = 20 ตัวใน ALL_MODULES (types.ts) · ปลายทาง /api/auspicious กรอง entitlement เองอีกชั้น
+const ALL_MODULE_SET = new Set<string>(ALL_MODULES);
+const DEFAULT_ACTIVE_MODULES = [
   "ze_ri",
   "twelve_officers",
   "twenty_eight",
@@ -20,6 +23,8 @@ const ACTIVE_MODULES = [
   "he_luo",
   "hex64",
 ];
+const DEFAULT_HARD_MODULES = ["ze_ri", "tai_sui", "qi_men"];
+const DIR8 = new Set(["N", "NE", "E", "SE", "S", "SW", "W", "NW"]);
 
 function cleanLimit(value: unknown): number {
   const num = Number(value);
@@ -30,6 +35,38 @@ function cleanLimit(value: unknown): number {
 function cleanActivityProfileKey(value: unknown): string | null {
   const text = typeof value === "string" ? value.trim() : "";
   return /^[a-z0-9_:-]{2,48}$/.test(text) ? text : null;
+}
+
+// กรอง array ของ module key: ต้องเป็น array ของ string ที่อยู่ใน allowlist เท่านั้น (กัน injection)
+function cleanModuleList(
+  value: unknown,
+  allowlist: Set<string>
+): { list: string[] } | { error: string } {
+  if (!Array.isArray(value)) return { error: "ต้องเป็น array" };
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const item of value) {
+    if (typeof item !== "string") return { error: "สมาชิกต้องเป็น string" };
+    const key = item.trim();
+    if (!allowlist.has(key)) return { error: `โมดูลไม่ถูกต้อง: ${key.slice(0, 32)}` };
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(key);
+    }
+  }
+  return { list: out };
+}
+
+function cleanScore(value: unknown): number | null {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return null;
+  return Math.max(0, Math.min(100, num));
+}
+
+function cleanCoord(value: unknown, max: number): number | null {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < -max || num > max) return null;
+  return num;
 }
 
 function cookieHeaderForAuspicious(req: Request): string {
@@ -73,6 +110,46 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: people.error }, { status: 400 });
   }
 
+  // activeModules: subset ของ ALL_MODULES 20 ตัว · ไม่ส่ง = default 9 เดิม
+  let activeModules = DEFAULT_ACTIVE_MODULES;
+  if (body.activeModules !== undefined) {
+    const res = cleanModuleList(body.activeModules, ALL_MODULE_SET);
+    if ("error" in res) {
+      return NextResponse.json({ ok: false, error: `activeModules ${res.error}` }, { status: 400 });
+    }
+    if (res.list.length === 0) {
+      return NextResponse.json({ ok: false, error: "activeModules ต้องมีอย่างน้อย 1 โมดูล" }, { status: 400 });
+    }
+    activeModules = res.list;
+  }
+  const activeSet = new Set<string>(activeModules);
+
+  // hardModules: subset ของ activeModules · ไม่ส่ง = default ze_ri/tai_sui/qi_men (ที่ยังอยู่ใน activeModules)
+  let hardModules = DEFAULT_HARD_MODULES.filter((m) => activeSet.has(m));
+  if (body.hardModules !== undefined) {
+    const res = cleanModuleList(body.hardModules, activeSet);
+    if ("error" in res) {
+      return NextResponse.json({ ok: false, error: `hardModules ${res.error}` }, { status: 400 });
+    }
+    hardModules = res.list;
+  }
+
+  // options เสริม (validate เข้ม type/allowlist/ช่วงตัวเลข) → forward ลง /api/auspicious
+  const rawOptions =
+    body.options && typeof body.options === "object" && !Array.isArray(body.options)
+      ? (body.options as Record<string, unknown>)
+      : {};
+  const targetDirection =
+    typeof rawOptions.targetDirection === "string" && DIR8.has(rawOptions.targetDirection.trim().toUpperCase())
+      ? rawOptions.targetDirection.trim().toUpperCase()
+      : null;
+  const minScore = cleanScore(rawOptions.minScore);
+  const relaxDoors = rawOptions.relaxDoors === true;
+  const eventLat = cleanCoord(rawOptions.eventLat, 90);
+  const eventLng = cleanCoord(rawOptions.eventLng, 180);
+  const eventPlace =
+    typeof rawOptions.eventPlace === "string" ? rawOptions.eventPlace.trim().slice(0, 120) : null;
+
   if (people.ids.length) {
     const owned = await q<{ id: string }>(
       `SELECT id
@@ -91,17 +168,26 @@ export async function POST(req: Request) {
 
   const origin = internalAppOrigin(req);
   const cookie = cookieHeaderForAuspicious(req);
+  const options: Record<string, unknown> = {
+    hardModules,
+    limit,
+    scanLimit: 240,
+  };
+  if (targetDirection) options.targetDirection = targetDirection;
+  if (minScore != null) options.minScore = minScore;
+  if (relaxDoors) options.relaxDoors = true;
+  if (eventLat != null && eventLng != null) {
+    options.eventLat = eventLat;
+    options.eventLng = eventLng;
+    if (eventPlace) options.eventPlace = eventPlace;
+  }
   const payload = {
     activityType,
     ...(activityProfileKey ? { activityProfileKey } : {}),
-    activeModules: ACTIVE_MODULES,
+    activeModules,
     dateFrom,
     dateTo,
-    options: {
-      hardModules: ["ze_ri", "tai_sui", "qi_men"],
-      limit,
-      scanLimit: 240,
-    },
+    options,
     peopleIds: people.ids.map((id) => `hk_${id}`),
   };
 

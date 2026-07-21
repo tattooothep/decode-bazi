@@ -3,13 +3,13 @@
  * 15 พ.ค. 2026 · 9 ก.ค. 2569 เพิ่ม: join orders (amount_thb+pay_method) + pagination (offset)
  */
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { getMobileSession } from "@/lib/mobile-auth";
 import { q } from "@/lib/db";
 
 const PAGE = 50;
 
 export async function GET(req: Request) {
-  const s = await getSession();
+  const s = await getMobileSession(req);
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const url = new URL(req.url);
   const offset = Math.max(0, Math.min(5000, parseInt(url.searchParams.get("offset") || "0", 10) || 0));

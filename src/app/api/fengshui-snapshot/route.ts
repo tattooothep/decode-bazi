@@ -9,6 +9,7 @@ import { getSession } from "@/lib/auth";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { computeFlyingLayers } from "@/lib/fengshui-luxing";
+import { getProductAccess, PRODUCT_PAGE_ENTITLEMENTS } from "@/lib/product-entitlement";
 
 // ── โหลดฐานข้อมูล玄空飛星ยุค 9 (อ่านครั้งเดียว · cache module-level) ──
 type XKMountain = {
@@ -312,11 +313,14 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const houseId = searchParams.get('house_id') ? parseInt(searchParams.get('house_id')!, 10) : null;
     const dt = searchParams.get('datetime') ? new Date(searchParams.get('datetime')!) : new Date();
+    const requestSession = await getSession();
+    const productAccess = requestSession ? await getProductAccess(requestSession.userId) : null;
+    const fengshuiCaps = productAccess?.pages.fengshui || PRODUCT_PAGE_ENTITLEMENTS.free.fengshui;
 
     // load house (จาก ka_houses ของ Phase C2) — 1 มิ.ย. ปิด IDOR: ต้อง login + เป็นเจ้าของบ้าน (กันดึงพิกัด/family_members บ้านคนอื่น)
     let house: any = null;
     if (houseId) {
-      const s = await getSession();
+      const s = requestSession;
       if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
       house = await q1<any>(`SELECT id, name, lat, lng, face_angle, sit_angle, facing_mountain, facing_direction, family_members FROM ka_houses WHERE id=$1 AND user_id=$2`, [houseId, s.userId]);
     }
@@ -372,8 +376,34 @@ export async function GET(req: NextRequest) {
     const warnings = buildWarnings(palaceStars, yearBranch, fsYear, xk);
     const recommendations = house?.family_members ? buildRecsPerPerson(house.family_members, palaceStars, xk) : [];
 
+    const publicLayers: Record<string, unknown> = {
+      flying_stars: layers.flying_stars,
+      twenty_four: layers.twenty_four,
+    };
+    if (fengshuiCaps.layers !== "basic") {
+      publicLayers.year_stars = layers.year_stars;
+    }
+    if (fengshuiCaps.layers === "full" || fengshuiCaps.layers === "professional") {
+      publicLayers.ai_xing = layers.ai_xing;
+      publicLayers.ba_zhai = layers.ba_zhai;
+      publicLayers.sixty_four = layers.sixty_four;
+      publicLayers.month_stars = layers.month_stars;
+      publicLayers.luxing_note = layers.luxing_note;
+    }
+    if (fengshuiCaps.layers === "professional") {
+      publicLayers.qi_men = layers.qi_men;
+      publicLayers.day_stars = layers.day_stars;
+      publicLayers.hour_stars = layers.hour_stars;
+    }
+    const publicHouse = house ? {
+      ...house,
+      family_members: fengshuiCaps.multi_profile
+        ? (house.family_members || [])
+        : (house.family_members || []).slice(0, 1),
+    } : null;
+
     return NextResponse.json({
-      house,
+      house: publicHouse,
       datetime: {
         gregorian: dt.toISOString(),
         year_pillar: ephemeris?.year_pillar,
@@ -383,7 +413,11 @@ export async function GET(req: NextRequest) {
         solar_term: ephemeris?.solar_term,
         shichen: ephemeris?.shichen,
       },
-      layers, today, warnings, recommendations,
+      layers: publicLayers,
+      today: fengshuiCaps.layers === "full" || fengshuiCaps.layers === "professional" ? today : null,
+      warnings: fengshuiCaps.layers === "basic" ? [] : warnings,
+      recommendations: fengshuiCaps.layers === "full" || fengshuiCaps.layers === "professional" ? recommendations : [],
+      entitlement: { plan: productAccess?.plan || "free", ...fengshuiCaps },
       source: 'อาเจ๊กฮ้ง compass 3 · 沈氏玄空 ยุค 9 (xuankong-period9.json) + 八宅 + 24山',
     });
   } catch (e: unknown) {

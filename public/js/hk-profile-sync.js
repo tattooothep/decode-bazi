@@ -19,7 +19,18 @@
       if (active) return active;
     }
     var self = list.find(function (p) { return !!p.is_self; });
-    return self || list[0];
+    return self || null;
+  }
+
+  function clearIdentityCache() {
+    try {
+      ['hk_birth','hk_profile_id','hk_profile_name','hk_user_yongshen','hk_view_as_xfer'].forEach(function (key) {
+        localStorage.removeItem(key);
+      });
+    } catch (_) {}
+    try {
+      ['hk_birth','hk_view_as'].forEach(function (key) { sessionStorage.removeItem(key); });
+    } catch (_) {}
   }
 
   function writeProfile(p) {
@@ -62,7 +73,11 @@
       return r.json();
     })
     .then(function (payload) {
-      return writeProfile(pickProfile(payload));
+      if (!payload) return null;
+      var profile = pickProfile(payload);
+      var dt = profile ? splitDt(profile.birth_datetime) : { date: '' };
+      if (!profile || !dt.date) clearIdentityCache();
+      return writeProfile(profile);
     })
     .catch(function () { return null; });
 

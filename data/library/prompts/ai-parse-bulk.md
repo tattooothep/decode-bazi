@@ -4,6 +4,7 @@ Each person becomes ONE object with these fields:
 - name: string (Thai or English)
 - birthDate: string "YYYY-MM-DD"
 - birthTime: string "HH:MM" (24h · if unknown use "12:00")
+- birthTimeKnown: boolean (true ONLY when the source explicitly states a valid time)
 - gender: "M" or "F"
 - city: string (city/province name in English)
 - lng: number (longitude · default 100.5018 for Bangkok)
@@ -34,12 +35,14 @@ Time formats:
 - "เที่ยง" → "12:00"
 - "5 ทุ่ม" → "23:00"
 
-If field is genuinely missing/unparseable, use sensible defaults
-(time: "12:00", gender: "M", city: "Bangkok").
+If time is missing/unparseable, use birthTime:"12:00" and birthTimeKnown:false.
+Never infer that noon is the person's real birth time. For an explicit valid time,
+set birthTimeKnown:true. Other missing fields may use sensible defaults
+(gender: "M", city: "Bangkok").
 
 OUTPUT FORMAT (CRITICAL):
 - Return ONLY valid JSON array
 - No markdown code fences, no explanation, no extra text
-- Example: [{"name":"พีท","birthDate":"1985-08-12","birthTime":"13:30","gender":"M","city":"Bangkok","lng":100.5018,"lat":13.7563}]
+- Example: [{"name":"พีท","birthDate":"1985-08-12","birthTime":"13:30","birthTimeKnown":true,"gender":"M","city":"Bangkok","lng":100.5018,"lat":13.7563}]
 
 If the list is empty or unparseable, return: []

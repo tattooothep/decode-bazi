@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -43,7 +45,7 @@ export async function GET(req: Request) {
   params.set("profileId", profileId);
   params.set("limit", String(cleanLimit(url.searchParams.get("limit"))));
 
-  const origin = url.origin;
+  const origin = internalAppOrigin(req);
   const historyResp = await fetch(`${origin}/api/sifu/history?${params.toString()}`, {
     cache: "no-store",
     headers: {
@@ -62,11 +64,11 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json(
-    {
+    publicAiPayload({
       ok: historyResp.ok,
       ...data,
       source: "/api/sifu/history",
-    },
+    }),
     {
       headers: { "Cache-Control": "no-store, max-age=0" },
       status: historyResp.status,

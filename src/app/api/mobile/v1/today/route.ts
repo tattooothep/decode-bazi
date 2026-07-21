@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { POST as todayPost } from "@/app/api/today/route";
 import { q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
+import {getProductAccess} from "@/lib/product-entitlement";
+import {PRODUCT_PAGE_ENTITLEMENTS} from "@/lib/product-page-entitlements";
+import { summarizeStars } from "@/lib/star-dict-th";
 
 export const dynamic = "force-dynamic";
 
@@ -115,6 +118,8 @@ async function handle(req: Request) {
   if (!profile) {
     return NextResponse.json({ ok: false, error: "profile not found" }, { status: 404 });
   }
+  const access=await getProductAccess(session.userId),caps=access?.pages.today||PRODUCT_PAGE_ENTITLEMENTS.free.today;
+  if(!profile.is_self&&!caps.multi_profile)return NextResponse.json({ok:false,error:"today_multi_profile_locked"},{status:403});
 
   const pillars = unwrapPillars(profile.bazi_pillars);
   const userChart = {
@@ -144,11 +149,25 @@ async function handle(req: Request) {
 
   const internalReq = new Request(req.url, {
     body: JSON.stringify(payload),
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Authorization: req.headers.get("authorization") || "",
+      "Content-Type": "application/json",
+    },
     method: "POST",
   });
   const todayResp = await todayPost(internalReq);
   const data = await todayResp.json();
+
+  /* r521 · เติม stars_detail ให้ 神煞 ของวัน (ชื่อไทย+อธิบาย) จากคลัง star-dict-th
+   * additive: field ใหม่ข้าง gods เดิม (ไม่แตะ tongshu.gods) · คำที่คลังไม่มี = อยู่ใน unknown */
+  if (data && data.tongshu && Array.isArray(data.tongshu.gods) && !data.tongshu.stars_detail) {
+    const names = data.tongshu.gods.filter((n: unknown): n is string => typeof n === "string" && n.length > 0);
+    if (names.length) {
+      // ตัด verdict/pos_sum/neg_sum ออก — ฟันธงรายวันเป็นของ premium (เว็บ fullDetail gate)
+      const { good, bad, unknown } = summarizeStars(names);
+      data.tongshu.stars_detail = { good, bad, unknown };
+    }
+  }
 
   return NextResponse.json(
     {
@@ -161,6 +180,8 @@ async function handle(req: Request) {
       },
       source: "api/today",
       ...data,
+      entitlement:{plan:access?.plan||"free",...caps},
+      request_context:{date,profile_id:profile.id},
     },
     { status: todayResp.status, headers: { "Cache-Control": "no-store, max-age=0" } }
   );

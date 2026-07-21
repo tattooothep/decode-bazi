@@ -134,7 +134,7 @@ ok(meta.format === "webp" && meta.width === 256 && meta.height === 256, `resize 
 setCookie(null);
 r = await avatarGetRoute.GET(new Request(`http://x/api/account/avatar/${A.userId}`), { params: Promise.resolve({ userId: A.userId }) });
 ok(r.status === 200 && r.headers.get("content-type") === "image/webp", "GET avatar → 200 webp");
-ok(r.headers.get("cache-control") === "public, max-age=3600", "Cache-Control 1 ชม.");
+ok(r.headers.get("cache-control") === "no-store, max-age=0", "avatar ไม่ cache เพื่อให้การลบมีผลทันที");
 const etag = r.headers.get("etag");
 const r304 = await avatarGetRoute.GET(new Request(`http://x/a`, { headers: { "if-none-match": etag } }), { params: Promise.resolve({ userId: A.userId }) });
 ok(r304.status === 304, "If-None-Match → 304");
@@ -158,6 +158,7 @@ ok(r.status === 400, "รหัสใหม่ <8 ตัว → 400");
 r = await passwordRoute.POST(jreq("http://x/a", "POST", { current: PASS_OLD, next: PASS_NEW }));
 d = await r.json();
 ok(r.status === 200 && d.mode === "changed", "เปลี่ยนรหัสสำเร็จ (mode=changed)");
+const tokenAAfterPassword = globalThis.__testCookies?.decode_auth;
 const pwRow = await q1(`SELECT password_hash FROM users WHERE id=$1`, [A.userId]);
 ok(await bcrypt.compare(PASS_NEW, pwRow.password_hash), "hash ใหม่เทียบ bcrypt ผ่าน");
 /* rate limit 5/ชม. — ใช้ไป 3 · ยิงผิดอีก 2 (ครั้งที่ 4,5) แล้วครั้งที่ 6 ต้อง 429 */
@@ -165,15 +166,15 @@ await passwordRoute.POST(jreq("http://x/a", "POST", { current: "WRONG-2", next: 
 await passwordRoute.POST(jreq("http://x/a", "POST", { current: "WRONG-3", next: PASS_NEW + "x" }));
 r = await passwordRoute.POST(jreq("http://x/a", "POST", { current: "WRONG-4", next: PASS_NEW + "x" }));
 ok(r.status === 429, "ครั้งที่ 6 ใน 1 ชม. → 429 (rate limit 5/ชม.)", "got " + r.status);
-/* google-only → ตั้งรหัสได้โดยไม่ต้องมี current */
+/* google-only → ต้องยืนยันตัวตนผ่าน reset/OAuth step-up ก่อนตั้งรหัส */
 setCookie(tokenB);
 r = await passwordRoute.POST(jreq("http://x/a", "POST", { next: "GoogleSet999" }));
 d = await r.json();
-ok(r.status === 200 && d.mode === "set", "บัญชี Google-only ตั้งรหัสครั้งแรก (mode=set)");
+ok(r.status === 403 && d.error === "password_setup_requires_email_reset", "บัญชี Google-only ต้อง step-up ก่อนตั้งรหัส");
 
 /* ═══ 4 · ping + devices ═══ */
 console.log("[4] /api/account/ping + /devices");
-setCookie(tokenA);
+setCookie(tokenAAfterPassword);
 r = await pingRoute.POST(new Request("http://x/a", { method: "POST", headers: { "Content-Type": "application/json", "user-agent": "TestUA/1.0 (Linux) Chrome/999", "x-forwarded-for": "203.0.113.9" }, body: JSON.stringify({ deviceId: "dv_test_r378" }) }));
 ok(r.status === 200, "ping บันทึกอุปกรณ์ → 200");
 r = await pingRoute.POST(new Request("http://x/a", { method: "POST", headers: { "Content-Type": "application/json", "user-agent": "TestUA/1.0 (Linux) Chrome/999", "x-forwarded-for": "203.0.113.9" }, body: JSON.stringify({ deviceId: "dv_test_r378" }) }));
@@ -264,7 +265,7 @@ const requiredIds = ["mg-avatar", "display-name", "btn-save-name", "pw-current",
 const missIds = requiredIds.filter((id) => !HTML.includes(`id="${id}"`));
 ok(missIds.length === 0, "element หลักครบ " + requiredIds.length + " ids", "ขาด: " + missIds.join(","));
 ok(/SPIRIT_BODY\s*=/.test(HTML) && ["phoenix", "dragon", "qilin", "tiger", "tortoise"].every((k) => HTML.includes(`${k}:`)), "SVG สัตว์มงคลครบ 5 ตัว");
-ok(HTML.includes("hk-user-menu.js?v=20"), "bump hk-user-menu.js เป็น ?v=20 ในหน้า account");
+ok(HTML.includes("hk-user-menu.js?v=24"), "หน้า account อ้าง asset hk-user-menu version ปัจจุบัน");
 
 /* ═══ cleanup ═══ */
 await cleanup();

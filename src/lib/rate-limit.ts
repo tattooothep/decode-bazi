@@ -1,14 +1,16 @@
-/**
- * Rate limiter เบาๆ (in-memory · per-process) · 1 มิ.ย.
- * กันยิงรัวๆ (brute-force login / OTP / spam) · ชั้นแรกพอสำหรับ single-node
- * (scale หลาย node ค่อยย้ายไป Redis · ตอนนี้กันเคสยิงเดารหัสได้จริง)
- *
- * ใช้: const r = rateLimit("login:"+ip+":"+email, 5, 60_000);
- *      if (!r.ok) return 429 (retry หลัง r.retryAfterMs)
- */
+import { createHash } from "crypto";
+import { getRedis } from "@/lib/redis";
+
 type Bucket = { hits: number[]; };
 const store = new Map<string, Bucket>();
 let _lastSweep = 0;
+
+const FIXED_WINDOW_SCRIPT = `
+local current = redis.call('INCR', KEYS[1])
+if current == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end
+local ttl = redis.call('PTTL', KEYS[1])
+return {current, ttl}
+`;
 
 function sweep(now: number) {
   /* ล้าง bucket เก่าเป็นระยะ กัน memory โต (ทุก 5 นาที) */
@@ -19,7 +21,7 @@ function sweep(now: number) {
   }
 }
 
-export function rateLimit(key: string, max: number, windowMs: number): { ok: boolean; remaining: number; retryAfterMs: number } {
+function memoryRateLimit(key: string, max: number, windowMs: number): { ok: boolean; remaining: number; retryAfterMs: number } {
   const now = Date.now();
   sweep(now);
   let b = store.get(key);
@@ -32,6 +34,30 @@ export function rateLimit(key: string, max: number, windowMs: number): { ok: boo
   }
   b.hits.push(now);
   return { ok: true, remaining: max - b.hits.length, retryAfterMs: 0 };
+}
+
+/** Shared limiter for all web instances. Raw email/phone/IP values are hashed
+ * before entering Redis. The bounded in-memory path preserves availability if
+ * Redis is briefly unavailable. */
+export async function rateLimit(key: string, max: number, windowMs: number): Promise<{ ok: boolean; remaining: number; retryAfterMs: number }> {
+  const safeMax = Math.max(1, Math.floor(max));
+  const safeWindow = Math.max(1_000, Math.floor(windowMs));
+  const digest = createHash("sha256").update(key).digest("hex");
+  try {
+    const redis = getRedis();
+    if (redis.status === "wait") await redis.connect();
+    const result = await redis.eval(FIXED_WINDOW_SCRIPT, 1, `hk:rl:${digest}`, String(safeWindow)) as [number, number];
+    const count = Number(result[0]);
+    const ttl = Math.max(0, Number(result[1]));
+    return {
+      ok: count <= safeMax,
+      remaining: Math.max(0, safeMax - count),
+      retryAfterMs: count <= safeMax ? 0 : ttl,
+    };
+  } catch (error) {
+    console.error("[rate-limit] redis fallback", error instanceof Error ? error.message : error);
+    return memoryRateLimit(digest, safeMax, safeWindow);
+  }
 }
 
 /** ดึง client IP · ใช้ x-real-ip ที่ nginx ใส่ (=remote_addr peer จริง ปลอมไม่ได้) เป็นหลัก

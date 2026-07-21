@@ -79,7 +79,7 @@ export async function loadMobileTimingProfile(
   if (!session.orgId) return null;
 
   const where = profileId
-    ? "id=$3"
+    ? "id=$3 AND created_by_user_id=$2"
     : "created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')";
   const params = profileId ? [session.orgId, session.userId, profileId] : [session.orgId, session.userId];
 

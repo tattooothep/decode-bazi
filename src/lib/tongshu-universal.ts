@@ -3,9 +3,9 @@
  * ─────────────────────────────────────────────────────────────────────
  * ใช้ในโหมด "ทั่วไป·黃曆" ของหน้า /calendar (คู่กับโหมด "ดวงฉัน·我" เดิมที่เป็น personal)
  *
- * สูตรนี้ผ่านฉันทามติ 3 agent + พ่อ (Codex) APPROVE · 1 มิ.ย. 2026
- * เลขทุกตัวอิงตำรา 协纪辨方书 (ผ่าน STAR_DICT_TH weight ที่ระบบ deploy แล้ว)
- * deterministic 100% (ไม่มี AI/random/Date.now) · NO_PERCENT (UI โชว์ป้ายไทย+bar ไม่โชว์ %)
+ * Classical systems provide the categorical inputs. Hourkey defines the
+ * numeric weights below as a deterministic product policy; those numbers are
+ * not claimed to appear in 協紀辨方書.
  *
  * แกนคะแนนวัน: 建除(หลัก ±25) > 神煞(reuse summarizeStars ×0.4 cap±24) > 黃黑道(รอง ±6) > 宜忌balance(±12)
  * 6 เป้าหมาย: คะแนนวัน + tier ของ INTENTS (good+8/bad-12) · relative (ไม่หลุดคุณภาพวัน)
@@ -15,19 +15,27 @@ type Tier = 'good' | 'neutral' | 'bad';
 type Verdict = '大吉' | '吉' | '中和' | '凶' | '大凶';
 export interface StarSummary { total: number; verdict: Verdict; }
 
-/* 建除十二 · STAR_DICT jianchu weight (协纪辨方书) · 破日พังทุกอย่าง · 成/開มงคลสุด */
+export const CALENDAR_SCIENCE_POLICY = {
+  version: "calendar-science-v2",
+  classicalInputs: ["建除十二神", "黃黑道十二神", "神煞", "宜忌"],
+  numericPolicy: "hourkey-weighted-score-v2",
+  deterministic: true,
+  aiGenerated: false,
+} as const;
+
+/* Hourkey numeric weights applied to the classical 建除 categories. */
 const OFFICER_SCORE: Record<string, number> = {
   建:+10, 除:+15, 滿:+5, 满:+5, 平:+10, 定:+15, 執:+5, 执:+5,
   破:-25, 危:-20, 成:+20, 收:+10, 開:+20, 开:+20, 閉:-15, 闭:-15,
 };
 
-/* 黃黑道十二神 luck · 黃道6=吉 黑道6=凶 · รองรับตัวย่อ/เต็ม · น้ำหนัก "รอง" (derived จาก建除+月支 กัน double-count) */
+/* Classical category lookup; the ±6 contribution below is Hourkey policy. */
 const HUANGHEI_LUCK: Record<string, '吉' | '凶'> = {
   青龍:'吉', 青龙:'吉', 明堂:'吉', 金匱:'吉', 金匮:'吉', 天德:'吉', 玉堂:'吉', 司命:'吉',
   天刑:'凶', 朱雀:'凶', 白虎:'凶', 天牢:'凶', 玄武:'凶', 元武:'凶', 勾陳:'凶', 勾陈:'凶',
 };
 
-/* hard cap 神煞ร้ายแรง (协纪辨方书 + HARD_BLOCK_GODS) · คะแนนวันถูกกดเพดานต่ำชัด */
+/* Hourkey safety caps triggered by selected severe classical categories. */
 const HARD_CAP_GODS: Record<string, number> = {
   月破:28, 受死:32, 四廢:32, 四废:32, 四離:38, 四离:38, 四絕:38, 四绝:38,
 };
@@ -46,6 +54,7 @@ export const GOAL_INTENTS: Record<string, string[]> = {
 const HEALTH_EXEMPT = new Set(['health']);
 
 const TIER_ADJ: Record<Tier, number> = { good: +8, neutral: 0, bad: -12 };
+const PERSONAL_TIER_ADJ: Record<Tier, number> = { good: +6, neutral: 0, bad: -18 };
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const clip595 = (v: number) => Math.max(5, Math.min(95, Math.round(v)));
@@ -120,6 +129,82 @@ export function universalGoals(
     out[goal] = { score: v, level: universalLevel(v) };
   }
   return out;
+}
+
+/**
+ * Hourkey product heuristic for broad personal goals. Classical intent status
+ * remains an independent input; the numeric blend is not presented as a
+ * classical formula. A forbidden activity can never retain a high score.
+ */
+export function personalGoals(
+  personalDayScore: number,
+  tenGodBoost: Record<string, number>,
+  status: Record<string, Tier>,
+  hardBlocked: boolean,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [goal, ids] of Object.entries(GOAL_INTENTS)) {
+    const tiers = ids.map((id) => status[id] ?? "neutral");
+    const intentAdjustment = clamp(
+      tiers.reduce((sum, tier) => sum + PERSONAL_TIER_ADJ[tier], 0),
+      -24,
+      16,
+    );
+    const boost = clamp(Number(tenGodBoost[goal] || 0), -12, 12);
+    let score = clip595(personalDayScore + intentAdjustment + boost);
+    if (tiers.includes("bad")) score = Math.min(score, 49);
+    if (hardBlocked && !HEALTH_EXEMPT.has(goal)) score = Math.min(score, 35);
+    out[goal] = score;
+  }
+  return out;
+}
+
+export type IntentScore = {
+  score: number;
+  level: UniversalLevel;
+  status: Tier;
+  universalScore: number;
+  personalScore: number | null;
+  policy: "tongshu" | "hourkey-personal-blend-v1";
+};
+
+/** Activity-specific scores used by ranked cards. */
+export function scoreIntents(
+  universalScore: number,
+  universalStatus: Record<string, Tier>,
+  personalDayScore?: number | null,
+  personalStatus?: Record<string, Tier> | null,
+): { universal: Record<string, IntentScore>; personal: Record<string, IntentScore> | null } {
+  const universal: Record<string, IntentScore> = {};
+  const personal: Record<string, IntentScore> | null = personalStatus && personalDayScore != null ? {} : null;
+  const ids = new Set([...Object.keys(universalStatus), ...Object.keys(personalStatus || {})]);
+  for (const id of ids) {
+    const uStatus = universalStatus[id] ?? "neutral";
+    let uScore = clip595(universalScore + TIER_ADJ[uStatus]);
+    if (uStatus === "bad") uScore = Math.min(uScore, 39);
+    universal[id] = {
+      score: uScore,
+      level: universalLevel(uScore),
+      status: uStatus,
+      universalScore,
+      personalScore: null,
+      policy: "tongshu",
+    };
+    if (personal && personalDayScore != null && personalStatus) {
+      const pStatus = personalStatus[id] ?? "neutral";
+      let pScore = clip595(Math.round(universalScore * 0.45 + personalDayScore * 0.55) + PERSONAL_TIER_ADJ[pStatus]);
+      if (pStatus === "bad") pScore = Math.min(pScore, 34);
+      personal[id] = {
+        score: pScore,
+        level: universalLevel(pScore),
+        status: pStatus,
+        universalScore,
+        personalScore: personalDayScore,
+        policy: "hourkey-personal-blend-v1",
+      };
+    }
+  }
+  return { universal, personal };
 }
 
 /* label 6 เป้าหมาย 3 ภาษา (ไทยนำ จีนรอง) · icon */

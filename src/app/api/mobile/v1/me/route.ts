@@ -2,8 +2,15 @@ import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
 import { userHasProfile } from "@/lib/profile-status";
+import {
+  getProductAccess,
+  FREE_SIGNUP_YAM,
+  TRIAL_DAYS,
+  productAccessToCaps,
+} from "@/lib/product-entitlement";
 
 export const dynamic = "force-dynamic";
+const MOBILE_LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
 
 type MobileAccountRow = {
   id: string;
@@ -15,11 +22,14 @@ type MobileAccountRow = {
   tier: string | null;
   hour_balance: number | null;
   sub_expires_at: string | null;
+  trial_ends_at: string | null;
+  email_verified:boolean|null;
+  password_hash:string|null;
 };
 
 async function loadAccountPayload(session: { userId: string }) {
   const user = await q1<MobileAccountRow>(
-    `SELECT id, email, name, locale, theme, avatar_url, tier, hour_balance, sub_expires_at
+    `SELECT id, email, name, locale, theme, avatar_url, tier, hour_balance, sub_expires_at, trial_ends_at,email_verified,password_hash
        FROM users
       WHERE id=$1`,
     [session.userId]
@@ -28,6 +38,7 @@ async function loadAccountPayload(session: { userId: string }) {
 
   const subActive = user.sub_expires_at ? new Date(user.sub_expires_at).getTime() > Date.now() : false;
   const hasProfile = await userHasProfile(session.userId);
+  const access = await getProductAccess(session.userId);
 
   return {
     ok: true,
@@ -44,6 +55,13 @@ async function loadAccountPayload(session: { userId: string }) {
       hour_balance: user.hour_balance ?? 0,
       sub_expires_at: user.sub_expires_at,
       sub_active: subActive,
+      trial_ends_at: user.trial_ends_at,
+      in_trial: !!access?.in_trial,
+      plan: access?.plan || "free",
+      caps: access ? productAccessToCaps(access) : null,
+      product: { free_signup_yam: FREE_SIGNUP_YAM, trial_days: TRIAL_DAYS },
+      email_verified:user.email_verified===true,
+      has_password:Boolean(user.password_hash),
     },
   };
 }
@@ -70,20 +88,31 @@ export async function PUT(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const name = String(body.name || "").trim();
-  if (!name) {
+  const hasName = body.name !== undefined;
+  const hasLocale = body.locale !== undefined;
+  const name = hasName ? String(body.name || "").trim() : null;
+  const locale = hasLocale ? String(body.locale || "").trim().toLowerCase() : null;
+  if (!hasName && !hasLocale) {
+    return NextResponse.json({ ok: false, error: "account_update_required" }, { status: 400 });
+  }
+  if (hasName && !name) {
     return NextResponse.json({ ok: false, error: "กรุณากรอกชื่อบัญชี" }, { status: 400 });
   }
-  if (name.length > 80) {
+  if (name && name.length > 80) {
     return NextResponse.json({ ok: false, error: "ชื่อบัญชียาวเกินไป" }, { status: 400 });
+  }
+  if (hasLocale && (!locale || !MOBILE_LOCALES.has(locale))) {
+    return NextResponse.json({ ok: false, error: "unsupported_locale" }, { status: 400 });
   }
 
   const updated = await q1<{ id: string }>(
     `UPDATE users
-        SET name=$2, last_active_at=now()
+        SET name=CASE WHEN $2::boolean THEN $3 ELSE name END,
+            locale=CASE WHEN $4::boolean THEN $5 ELSE locale END,
+            last_active_at=now()
       WHERE id=$1
       RETURNING id`,
-    [session.userId, name]
+    [session.userId, hasName, name, hasLocale, locale]
   );
   if (!updated) return NextResponse.json({ ok: false, error: "user not found" }, { status: 404 });
 

@@ -143,7 +143,7 @@ function applyTongshuVeto(c: CandidateSlot, activity: ActivityType, activeModule
 
   return changed ? { ...c, modules } : c;
 }
-function cacheKey(body: any): string {
+function cacheKey(body: any, planKey: string = "guest"): string {
   const options = body.options || {};
   // r367: dong_gong module state + พิกัดงาน (ปัด 2 ตำแหน่ง) เข้า key — additive fields only
   const dgModule = Array.isArray(body.activeModules) && body.activeModules.includes("dong_gong");
@@ -157,6 +157,8 @@ function cacheKey(body: any): string {
     ? body.activeModules.filter((m: ModuleKey) => PT_MODULE_SET.has(m)).slice().sort()
     : [];
   return JSON.stringify({
+    // plan แยก cache กัน free/trial/premium ไม่แชร์ผล
+    plan: planKey || "guest",
     dg: dgModule ? DONGGONG_MODULE_POLICY : DONGGONG_SCORING_POLICY,
     dgm: dgModule,
     sky: skyActive.length ? `${SKY_MODULE_POLICY}:${skyActive.join("+")}` : "off",
@@ -209,19 +211,128 @@ export async function POST(req: NextRequest) {
     /* r417: ผ่อนเกณฑ์ประตูฉีเหมิน avoidDoors จาก veto → กลับไปเป็น cap/warning เดิม (default false = veto ตามมาตรฐานใหม่) */
     const relaxDoors = options.relaxDoors === true;
 
+    /* product entitlement · trial~30% · fail-closed = free-level caps ถ้าโหลดสิทธิ์พลาด */
+    const { DATEPICK_MODULES_FREE } = await import("@/lib/product-entitlement");
+    let productPlan = "guest";
+    let productCaps: {
+      datepick_modules: string[];
+      datepick_max_people: number;
+      datepick_max_range_days: number;
+      datepick_max_results: number;
+    } = {
+      datepick_modules: [...DATEPICK_MODULES_FREE],
+      datepick_max_people: 0,
+      datepick_max_range_days: 30,
+      datepick_max_results: 10,
+    };
+    let strippedModules: string[] = [];
+    try {
+      const { getProductAccess } = await import("@/lib/product-entitlement");
+      const sEnt = await getSession();
+      if (sEnt?.userId) {
+        const access = await getProductAccess(sEnt.userId);
+        if (access) {
+          productPlan = access.plan;
+          productCaps = {
+            datepick_modules: access.datepick_modules,
+            datepick_max_people: access.datepick_max_people,
+            datepick_max_range_days: access.datepick_max_range_days,
+            datepick_max_results: access.datepick_max_results,
+          };
+        } else {
+          productPlan = "free";
+        }
+      }
+    } catch (e) {
+      console.warn("[auspicious] entitlement fail-closed free", e instanceof Error ? e.message : e);
+      productPlan = "guest";
+      productCaps = {
+        datepick_modules: [...DATEPICK_MODULES_FREE],
+        datepick_max_people: 0,
+        datepick_max_range_days: 30,
+        datepick_max_results: 10,
+      };
+    }
+
+    /* กรองโมดูลตาม plan ก่อน cache (กัน cache ข้าม plan) */
+    let filteredActiveModules = (activeModules as ModuleKey[]).filter((m: ModuleKey) => ALL_MODULES.includes(m));
+    {
+      const allow = new Set(productCaps.datepick_modules);
+      strippedModules = filteredActiveModules.filter((m: string) => !allow.has(m));
+      filteredActiveModules = filteredActiveModules.filter((m: ModuleKey) => allow.has(m));
+      if (!filteredActiveModules.length) {
+        const { entitlementDenied } = await import("@/lib/product-entitlement");
+        return NextResponse.json(
+          entitlementDenied("datepick_module_locked", {
+            message: "แพ็กเกจนี้ใช้ชั้นคะแนนที่เลือกไม่ได้ · เลือกเกณฑ์หลักหรืออัปเกรด /pricing",
+            stripped: strippedModules,
+            allowed: productCaps.datepick_modules,
+            plan: productPlan,
+          }),
+          { status: 403 }
+        );
+      }
+    }
+    // ใช้ modules ที่กรองแล้วทั้ง cache key + scoring
+    body.activeModules = filteredActiveModules;
+    if (productCaps.datepick_max_results && options && typeof options === "object") {
+      const lim = Number(options.limit);
+      if (!Number.isFinite(lim) || lim <= 0 || lim > productCaps.datepick_max_results) {
+        (options as { limit?: number }).limit = productCaps.datepick_max_results;
+      }
+    }
+
+    /* ช่วงวันที่ · จำกัดตาม plan (trial 45 · free 30 · premium 90 · master 365) */
+    {
+      const fromMs = Date.parse(String(dateFrom).slice(0, 10));
+      const toMs = Date.parse(String(dateTo).slice(0, 10));
+      if (Number.isFinite(fromMs) && Number.isFinite(toMs) && toMs >= fromMs) {
+        const days = Math.floor((toMs - fromMs) / 86400000) + 1;
+        if (days > productCaps.datepick_max_range_days) {
+          const { entitlementDenied } = await import("@/lib/product-entitlement");
+          return NextResponse.json(
+            entitlementDenied("datepick_range_limit", {
+              message_key: "datepick_range_limit",
+              max: productCaps.datepick_max_range_days,
+              requested: days,
+              plan: productPlan,
+            }),
+            { status: 403 }
+          );
+        }
+      }
+    }
+
     /* 1 มิ.ย. ปิด IDOR: ถ้าผูกดวงส่วนตัว (peopleIds) ต้อง login + กรองเหลือเฉพาะดวงใน org ตัวเอง (กันดึง/อ่าน cache ดวงคนอื่น) · ค้นฤกษ์ universal (ไม่มี peopleIds) ยังเปิด guest */
     let ownedPeopleIds: string[] = peopleIds;
     if (peopleIds.length > 0) {
       const s = await getSession();
       if (!s?.orgId) return NextResponse.json({ error: "not logged in" }, { status: 401 });
       const uuids = peopleIds.map((i: string) => String(i).replace(/^hk_/, "")).filter((u: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(u));
-      const rows = await q<{ id: string }>("SELECT id FROM profiles WHERE id = ANY($1::uuid[]) AND org_id=$2 AND is_archived=false", [uuids, s.orgId]).catch(() => []);
+      const rows = await q<{ id: string }>("SELECT id FROM profiles WHERE id = ANY($1::uuid[]) AND org_id=$2 AND created_by_user_id=$3 AND is_archived=false", [uuids, s.orgId, s.userId]).catch(() => []);
       const ok = new Set(rows.map(r => "hk_" + r.id));
       ownedPeopleIds = peopleIds.filter((i: string) => ok.has(i));
+      // trial/free = 1 ดวง · premium 3 · master 10
+      try {
+        const { getProductAccess, entitlementDenied } = await import("@/lib/product-entitlement");
+        const access = await getProductAccess(s.userId);
+        const maxP = access?.datepick_max_people ?? 1;
+        if (ownedPeopleIds.length > maxP) {
+          return NextResponse.json(
+            entitlementDenied("datepick_people_limit", {
+              message_key: "datepick_people_limit",
+              max: maxP,
+              requested: ownedPeopleIds.length,
+              plan: access?.plan,
+            }),
+            { status: 403 }
+          );
+        }
+      } catch { /* non-fatal if entitlement missing */ }
     }
 
-    // CACHE: ตรวจ in-memory cache (TTL 60s) · ลด DB load จาก concurrent traffic
-    const ck = cacheKey(body);
+    // CACHE: หลังกรอง modules + รวม plan ใน key (กันข้าม tier)
+    const ck = cacheKey(body, productPlan);
     const cached = _ausCache.get(ck);
     if (cached && cached.expires > Date.now()) {
       return NextResponse.json({ ...cached.data, meta: { ...cached.data.meta, cache: 'hit', durationMs: Date.now() - startTime } });
@@ -234,7 +345,8 @@ export async function POST(req: NextRequest) {
 
     // STEP 2: ดึง candidates จาก aj_ephemeris_cache
     // options.hardModules ใช้สำหรับ layer ที่ต้องตัดจริงเท่านั้น; activeModules ใช้จัดคะแนนทั้งหมด
-    const activeModuleKeys = activeModules.filter((m: ModuleKey) => ALL_MODULES.includes(m));
+    // product: modules ถูกกรองแล้วด้านบน (body.activeModules)
+    let activeModuleKeys = filteredActiveModules;
     const requestedHardModulesRaw = Array.isArray(options.hardModules)
       ? options.hardModules.filter((m: ModuleKey) =>
         ALL_MODULES.includes(m)
@@ -391,6 +503,14 @@ export async function POST(req: NextRequest) {
         mergedHardModules,
         /* r417: ผ่อนเกณฑ์ประตูฉีเหมิน avoidDoors หรือไม่ (default false = veto ตามมาตรฐานใหม่) */
         relaxDoors,
+        /* product entitlement · trial~30% modules */
+        entitlement: {
+          plan: productPlan,
+          modules_allowed: productCaps.datepick_modules,
+          modules_stripped: strippedModules,
+          max_range_days: productCaps.datepick_max_range_days,
+          max_results: productCaps.datepick_max_results,
+        },
       } as any,
     };
     // Save cache + evict ถ้าเกิน 1000 entries

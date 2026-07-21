@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
+import { publicAiPayload } from "@/lib/public-ai-response";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
+import { isSifuAnswerLang } from "@/lib/sifu-answer-lang";
+import { mobileBillingOperation } from "@/lib/mobile-billing-operation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -68,16 +72,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "mobile session token missing" }, { status: 401 });
   }
 
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
+  const billingOperation = mobileBillingOperation((body as { billingOperationId?: unknown }).billingOperationId);
   const groupResp = await fetch(`${origin}/api/sifu/group`, {
     body: JSON.stringify({
       groupLabel: cleanString((body as { groupLabel?: unknown }).groupLabel, 60) || "ดวงคู่",
       history: cleanHistory((body as { history?: unknown }).history),
-      lang: ["th", "en", "zh"].includes(String((body as { lang?: unknown }).lang))
-        ? (body as { lang?: string }).lang
-        : "th",
+      lang: isSifuAnswerLang((body as { lang?: unknown }).lang) ? (body as { lang?: string }).lang : "th",
       message,
-      model: cleanString((body as { model?: unknown }).model, 40),
       profileIds,
       stream: false,
     }),
@@ -86,6 +88,7 @@ export async function POST(req: Request) {
       Accept: "application/json",
       "Content-Type": "application/json",
       Cookie: cookie,
+      "X-Hourkey-Billing-Operation": billingOperation,
     },
     method: "POST",
   });
@@ -99,11 +102,11 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    {
+    publicAiPayload({
       ok: groupResp.ok,
       ...data,
       source: "/api/sifu/group",
-    },
+    }),
     {
       headers: { "Cache-Control": "no-store, max-age=0" },
       status: groupResp.status,

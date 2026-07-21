@@ -2,14 +2,18 @@
  * POST /api/network/ai-parse-bulk · 19 พ.ค. 2026
  *
  * รับ text list (1 คน 1 บรรทัด) → AI parse เป็น JSON array
- * พร้อมข้อมูล: name, birthDate, birthTime, gender, city, lng, lat
+ * พร้อมข้อมูล: name, birthDate, birthTime, birthTimeKnown, gender, city, lng, lat
  *
  * ใช้ Claude CLI (เหมือน /api/network/sifu)
  * Layer 3 · MVP feature "เพิ่มหลายคน · AI"
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { loadPromptMd } from "@/lib/prompt-md";
+import { getSession } from "@/lib/auth";
+import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 const CHILD_USER = "jarvis";
 const TIMEOUT_MS = 60_000;
@@ -21,6 +25,7 @@ Each person becomes ONE object with these fields:
 - name: string (Thai or English)
 - birthDate: string "YYYY-MM-DD"
 - birthTime: string "HH:MM" (24h · if unknown use "12:00")
+- birthTimeKnown: boolean (true ONLY when the source explicitly states a valid time)
 - gender: "M" or "F"
 - city: string (city/province name in English)
 - lng: number (longitude · default 100.5018 for Bangkok)
@@ -51,13 +56,15 @@ Time formats:
 - "เที่ยง" → "12:00"
 - "5 ทุ่ม" → "23:00"
 
-If field is genuinely missing/unparseable, use sensible defaults
-(time: "12:00", gender: "M", city: "Bangkok").
+If time is missing/unparseable, use birthTime:"12:00" and birthTimeKnown:false.
+Never infer that noon is the person's real birth time. For an explicit valid time,
+set birthTimeKnown:true. Other missing fields may use sensible defaults
+(gender: "M", city: "Bangkok").
 
 OUTPUT FORMAT (CRITICAL):
 - Return ONLY valid JSON array
 - No markdown code fences, no explanation, no extra text
-- Example: [{"name":"พีท","birthDate":"1985-08-12","birthTime":"13:30","gender":"M","city":"Bangkok","lng":100.5018,"lat":13.7563}]
+- Example: [{"name":"พีท","birthDate":"1985-08-12","birthTime":"13:30","birthTimeKnown":true,"gender":"M","city":"Bangkok","lng":100.5018,"lat":13.7563}]
 
 If the list is empty or unparseable, return: []`;
 
@@ -66,8 +73,7 @@ async function runClaudeCli(prompt: string): Promise<string> {
     const claudeArgs = [
       "-p",
       "--output-format", "text",
-      "--dangerously-skip-permissions",
-      "--setting-sources", "user",
+      ...CLAUDE_TEXT_ONLY_ARGS,
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });
@@ -107,16 +113,24 @@ function extractJson(raw: string): any[] {
 }
 
 export async function POST(req: Request) {
+  let reserved = false;
   try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+    const access = await getProductAccess(session.userId);
+    if (!access?.pages.network.bulk_ai) {
+      return NextResponse.json(entitlementDenied("network_bulk_ai_locked", { plan: access?.plan || "free" }), { status: 403 });
+    }
     const body = await req.json().catch(() => ({}));
     const text: string = (body.text || "").trim();
     if (!text) return NextResponse.json({ error: "text required" }, { status: 400 });
     if (text.length > 8000) return NextResponse.json({ error: "text too long (max 8000)" }, { status: 400 });
 
     /* เครดิต: เช็คยามก่อน · หักตามจำนวนตัวอักษรผลลัพธ์ AI (char-based ÷30) · 29 มิ.ย. */
-    const { reserveHour, drainHoursByChars } = await import("@/lib/spend-hours");
+    const { reserveHour, settleReservedHourByChars } = await import("@/lib/spend-hours");
     const rsv = await reserveHour("network_ai_parse_bulk");
     if (!rsv.ok) return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
+    reserved = true;
 
     const prompt = `${loadPromptMd("prompts/ai-parse-bulk.md", SYSTEM_PROMPT_FALLBACK)}
 
@@ -126,23 +140,30 @@ ${text}`;
     const raw = await runClaudeCli(prompt);
     const parsed = extractJson(raw);
     /* หักยามตามจำนวนตัวอักษรผลลัพธ์ AI */
-    const spend = await drainHoursByChars(raw.length, "network_ai_parse_bulk");
+    const spend = await settleReservedHourByChars(raw.length, "network_ai_parse_bulk");
+    reserved = false;
     const spent = spend.spent;
     const balanceAfter = spend.balance_after;
 
     /* validate + normalize */
-    const valid = parsed.filter(p => p && p.name && p.birthDate).map(p => ({
-      name: String(p.name || "").trim(),
-      nickname: p.nickname || null,
-      birthDate: String(p.birthDate || "").trim(),
-      birthTime: String(p.birthTime || "12:00").trim(),
-      gender: (p.gender === "F" || p.gender === "female") ? "F" : "M",
-      city: String(p.city || "Bangkok").trim(),
-      lng: typeof p.lng === "number" ? p.lng : 100.5018,
-      lat: typeof p.lat === "number" ? p.lat : 13.7563,
-    }));
+    const valid = parsed.filter(p => p && p.name && p.birthDate).map(p => {
+      const rawTime = String(p.birthTime || "12:00").trim();
+      const timeValid = /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(rawTime);
+      const birthTimeKnown = p.birthTimeKnown === true && timeValid;
+      return {
+        name: String(p.name || "").trim(),
+        nickname: p.nickname || null,
+        birthDate: String(p.birthDate || "").trim(),
+        birthTime: birthTimeKnown ? rawTime : "12:00",
+        birthTimeKnown,
+        gender: (p.gender === "F" || p.gender === "female") ? "F" : "M",
+        city: String(p.city || "Bangkok").trim(),
+        lng: typeof p.lng === "number" ? p.lng : 100.5018,
+        lat: typeof p.lat === "number" ? p.lat : 13.7563,
+      };
+    });
 
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       ok: true,
       count: valid.length,
       people: valid,
@@ -150,8 +171,12 @@ ${text}`;
       model: "claude-max-cli",
       balance_after: balanceAfter,
       spent,
-    });
+    }));
   } catch (e: any) {
+    if (reserved) {
+      const { refundReservedHour } = await import("@/lib/spend-hours");
+      await refundReservedHour("network_ai_parse_bulk").catch(() => {});
+    }
     console.error("[ai-parse-bulk]", e instanceof Error ? e.message : String(e));
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }

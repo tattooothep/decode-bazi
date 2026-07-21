@@ -9,7 +9,8 @@
 <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <title>ราคาและแพ็กเกจ · 6 ศาสตร์ในผังเดียว · hourkey</title>
 <meta name="description" content="hourkey รวมโหราศาสตร์ 6 ศาสตร์ไว้ในที่เดียว — เริ่มฟรีเพื่อสร้างดวงแรก อัปเกรด Premium สำหรับใช้งานจริง หรือ Master สำหรับอ่านหลายดวงและงานลึก"/>
-<link rel="canonical" href="https://www.hourkey.io/pricing"/>
+<link rel="canonical" href="https://hourkey.io/pricing"/>
+<meta property="og:image" content="https://hourkey.io/assets/pricing/hourkey-pricing-hero-v1.webp"/>
 <link rel="alternate" hreflang="th" href="https://www.hourkey.io/pricing?lang=th"/>
 <link rel="alternate" hreflang="en" href="https://www.hourkey.io/pricing?lang=en"/>
 <link rel="alternate" hreflang="zh-Hant" href="https://www.hourkey.io/pricing?lang=zh"/>
@@ -36,8 +37,8 @@
  "brand":{"@type":"Brand","name":"hourkey"},
  "offers":[
    {"@type":"Offer","name":"Free","price":"0","priceCurrency":"THB","description":"เริ่มฟรี · สร้างดวงแรก · ลอง AI Sifu"},
-   {"@type":"Offer","name":"Premium","price":"399","priceCurrency":"THB","description":"รายเดือน · แนะนำ · 6 ศาสตร์ครบ + AI Sifu เต็ม"},
-   {"@type":"Offer","name":"Master","price":"990","priceCurrency":"THB","description":"รายเดือน · อ่านหลายดวง · รายงานลึก · งานมืออาชีพ"}
+   {"@type":"Offer","name":"Premium 30-day pass","price":"399","priceCurrency":"THB","description":"Pass 30 วัน · +500 ยาม · ไม่ต่ออายุอัตโนมัติ"},
+   {"@type":"Offer","name":"Master 30-day pass","price":"990","priceCurrency":"THB","description":"Pass 30 วัน · +2,000 ยาม · ไม่ต่ออายุอัตโนมัติ"}
  ]}
 </script>
 <style>
@@ -99,18 +100,19 @@ html[data-lang="zh"] details.q summary[data-l="zh"]{display:flex;}
 .tbtn:hover{color:var(--gold);border-color:var(--gold);}
 
 /* ── hero ── */
-.hero{text-align:center;padding:52px 20px 34px;border-bottom:1px solid var(--line);background:radial-gradient(120% 90% at 50% -10%,var(--bg-2),var(--bg) 62%);}
-.hero .crest{font-family:var(--tc);font-size:15px;letter-spacing:.5em;color:var(--gold);text-indent:.5em;margin-bottom:14px;font-weight:600;}
-.hero h1{font-size:clamp(27px,6vw,46px);font-weight:700;letter-spacing:.01em;color:var(--fg);line-height:1.3;max-width:15ch;margin:0 auto;text-wrap:balance;}
+.hero{position:relative;isolation:isolate;min-height:min(68vh,650px);padding:72px max(20px,calc((100vw - 1080px)/2)) 34px;border-bottom:1px solid var(--line);background-color:#141312;background-image:url('/assets/pricing/hourkey-pricing-hero-v1.webp');background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:rgba(9,9,8,.48);z-index:-1;}
+.hero .crest{font-family:var(--tc);font-size:14px;letter-spacing:.18em;color:var(--gold-bright);margin-bottom:12px;font-weight:600;text-shadow:0 2px 16px #000;}
+.hero h1{font-size:clamp(34px,5vw,58px);font-weight:700;letter-spacing:0;color:#fff;line-height:1.16;max-width:14ch;margin:0;text-wrap:balance;text-shadow:0 3px 22px #000;}
 .hero h1 .gd{color:var(--gold);}
-.hero .sub{font-size:15.5px;color:var(--fg-soft);max-width:60ch;margin:16px auto 0;line-height:1.85;}
+.hero .sub{font-size:15.5px;color:#eee9df;max-width:58ch;margin:16px 0 0;line-height:1.78;text-shadow:0 2px 14px #000;}
 .hero .sub b{color:var(--gold-bright);font-weight:600;}
 /* six-arts seal row */
-.arts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 12px;margin:26px auto 4px;max-width:640px;}
+.arts{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:10px 12px;margin:26px 0 4px;max-width:640px;}
 .art{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:74px;}
-.art .ring{width:46px;height:46px;border-radius:50%;border:1px solid var(--gold-line);background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:17px;color:var(--gold);transition:.25s;}
+.art .ring{width:46px;height:46px;border-radius:50%;border:1px solid rgba(219,184,112,.56);background:rgba(10,10,9,.72);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:17px;color:var(--gold-bright);transition:.25s;backdrop-filter:blur(4px);}
 .art:hover .ring{border-color:var(--gold);color:var(--gold-bright);transform:translateY(-2px);box-shadow:0 6px 18px var(--card-glow);}
-.art small{font-size:10.5px;color:var(--fg-faint);letter-spacing:.02em;}
+.art small{font-size:10.5px;color:#d8d1c5;letter-spacing:0;text-shadow:0 1px 6px #000;}
 
 /* ── layout ── */
 main{max-width:1080px;margin:0 auto;padding:34px 18px 90px;}
@@ -122,6 +124,7 @@ main{max-width:1080px;margin:0 auto;padding:34px 18px 90px;}
 
 /* ── billing toggle ── */
 .bill{display:flex;justify-content:center;margin:6px auto 30px;}
+.bill[hidden]{display:none !important;}
 .bill-in{display:inline-flex;align-items:center;background:var(--bg-3);border:1px solid var(--gold-line);border-radius:99px;padding:4px;position:relative;}
 .bill-in button{position:relative;z-index:1;border:none;background:transparent;color:var(--fg-soft);padding:8px 18px;border-radius:99px;cursor:pointer;font-size:13.5px;font-weight:600;transition:.25s;white-space:nowrap;}
 .bill-in button.on{color:var(--bg);}
@@ -130,7 +133,7 @@ main{max-width:1080px;margin:0 auto;padding:34px 18px 90px;}
 
 /* ── tier cards ── */
 .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch;}
-.tier{position:relative;display:flex;flex-direction:column;background:var(--bg-2);border:1px solid var(--line);border-radius:18px;padding:26px 22px 24px;transition:transform .25s,border-color .25s,box-shadow .25s;}
+.tier{position:relative;display:flex;flex-direction:column;background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:26px 22px 24px;transition:transform .25s,border-color .25s,box-shadow .25s;}
 .tier:hover{transform:translateY(-3px);border-color:var(--gold-line);}
 .tier.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-line),0 18px 50px var(--card-glow);background:linear-gradient(180deg,var(--bg-2),var(--bg-3));}
 .tier .badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:4px 13px;border-radius:99px;white-space:nowrap;box-shadow:0 4px 12px var(--card-glow);}
@@ -151,14 +154,14 @@ main{max-width:1080px;margin:0 auto;padding:34px 18px 90px;}
 .feats li .ck{color:var(--gold);flex-shrink:0;font-weight:700;margin-top:1px;}
 .feats li.muted{color:var(--fg-faint);}
 .feats li.muted .ck{color:var(--dim);}
-.btn-buy{width:100%;border:1px solid var(--gold);background:var(--gold);color:var(--bg);font-weight:700;font-size:14.5px;padding:13px;border-radius:11px;cursor:pointer;transition:.2s;letter-spacing:.01em;}
+.btn-buy{width:100%;border:1px solid var(--gold);background:var(--gold);color:var(--bg);font-weight:700;font-size:14.5px;padding:13px;border-radius:6px;cursor:pointer;transition:.2s;letter-spacing:0;}
 .btn-buy:hover{background:var(--gold-bright);border-color:var(--gold-bright);}
 .btn-buy:disabled{opacity:.6;cursor:default;}
 .btn-buy.ghost{background:transparent;color:var(--gold);}
 .btn-buy.ghost:hover{background:var(--gold-soft);color:var(--gold-bright);}
 
 /* ── comparison table ── */
-.cmp-wrap{overflow-x:auto;margin-top:4px;border:1px solid var(--line);border-radius:16px;background:var(--bg-2);}
+.cmp-wrap{overflow-x:auto;margin-top:4px;border:1px solid var(--line);border-radius:8px;background:var(--bg-2);}
 table.cmp{border-collapse:collapse;width:100%;min-width:620px;font-size:13.5px;}
 table.cmp thead th{position:sticky;top:0;background:var(--bg-3);}
 table.cmp th{text-align:left;padding:13px 16px;border-bottom:1px solid var(--gold-line);}
@@ -169,17 +172,18 @@ table.cmp thead .colh{font-family:var(--mono);font-size:9.5px;letter-spacing:.14
 table.cmp td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:middle;}
 table.cmp tbody tr:last-child td{border-bottom:none;}
 table.cmp .feat-name{color:var(--fg);}
-table.cmp .feat-name .tool{display:block;font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.02em;margin-top:1px;}
 table.cmp .cell{text-align:center;font-variant-numeric:tabular-nums;}
-table.cmp .cell.feat-col{background:var(--gold-soft);}
+table.cmp .cell.feat-col{background:rgba(200,164,77,.055);}
 table.cmp .yes{color:var(--gold);font-size:16px;font-weight:700;}
 table.cmp .no{color:var(--dim);font-size:15px;}
-table.cmp .chip{display:inline-block;font-size:11px;font-weight:600;color:var(--gold-bright);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:2px 9px;letter-spacing:.01em;}
-table.cmp tr.grp td{background:var(--bg-3);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);padding:8px 16px;}
+table.cmp .cell-value{display:block;color:var(--fg);font-size:12.5px;font-weight:700;line-height:1.35;}
+table.cmp .cell-note{display:block;color:var(--fg-faint);font-size:10.5px;font-weight:400;line-height:1.45;margin-top:3px;}
+table.cmp .feat-col .cell-value{color:var(--gold-bright);}
+table.cmp tr.grp td{background:var(--bg-3);font-size:11px;font-weight:700;letter-spacing:0;color:var(--gold);padding:9px 16px;}
 
 /* ── topups ── */
 .topups{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.top{position:relative;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:20px 18px;text-align:center;transition:transform .2s,border-color .2s;}
+.top{position:relative;background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:20px 18px;text-align:center;transition:transform .2s,border-color .2s;}
 .top:hover{transform:translateY(-2px);border-color:var(--gold-line);}
 .top.best{border-color:var(--gold-line);background:linear-gradient(180deg,var(--bg-2),var(--bg-3));}
 .top .best-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 11px;border-radius:99px;white-space:nowrap;}
@@ -191,7 +195,7 @@ table.cmp tr.grp td{background:var(--bg-3);font-family:var(--mono);font-size:9.5
 
 /* ── faq ── */
 .faq{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
-details.q{border:1px solid var(--line);border-radius:12px;background:var(--bg-2);padding:2px 4px;transition:border-color .2s;}
+details.q{border:1px solid var(--line);border-radius:8px;background:var(--bg-2);padding:2px 4px;transition:border-color .2s;}
 details.q[open]{border-color:var(--gold-line);}
 details.q summary{cursor:pointer;list-style:none;padding:15px 18px;font-size:14.5px;font-weight:600;color:var(--fg);display:flex;justify-content:space-between;align-items:center;gap:12px;}
 details.q summary::-webkit-details-marker{display:none;}
@@ -222,7 +226,15 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
   .topups{grid-template-columns:1fr;max-width:440px;margin:0 auto;}
 }
 @media (max-width:560px){
-  .hero{padding:40px 18px 28px;}
+  .topbar{padding:8px 10px;gap:8px;}
+  .back>span:not(.seal){display:none;}
+  .top-r{flex:1;min-width:0;justify-content:flex-end;}
+  .lang-seg{flex:1;min-width:0;max-width:none;}
+  .lang-seg button{min-width:29px;padding:0 6px;}
+  .hero{min-height:560px;padding:48px 18px 24px;background-position:60% center;}
+  .hero::before{background:rgba(8,8,7,.60);}
+  .hero h1{font-size:36px;max-width:12ch;}
+  .hero .sub{font-size:14px;line-height:1.65;}
   main{padding:28px 14px 70px;}
   .art{min-width:64px;}
 }
@@ -240,7 +252,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
 </div>
 
 <header class="hero">
-  <div class="crest">六術一堂</div>
+  <div class="crest">hourkey · 六術一堂</div>
   <h1 data-l="th">โหราศาสตร์ <span class="gd">6 ศาสตร์</span> ในผังเดียว</h1>
   <h1 data-l="en">Six Traditions, <span class="gd">One Chart</span></h1>
   <h1 data-l="zh">六術 · <span class="gd">同盤合參</span></h1>
@@ -260,7 +272,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
 <main>
 
   <!-- ── billing toggle + tiers ── -->
-  <div class="bill">
+  <div class="bill" hidden aria-hidden="true">
     <div class="bill-in" id="billToggle">
       <span class="bill-thumb" id="billThumb"></span>
       <button data-bill="monthly" class="on"></button>
@@ -278,9 +290,9 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
       <h2 data-l="th">Free ลองใช้ · Premium ใช้งานจริง · Master งานลึก</h2>
       <h2 data-l="en">Free to try · Premium for real use · Master for deep work</h2>
       <h2 data-l="zh">Free 試用 · Premium 正式使用 · Master 深度工作</h2>
-      <p data-l="th">หน้า pricing นี้ตั้งใจพา user ส่วนใหญ่ไป Premium ก่อน ส่วน Master สำหรับคนที่รู้อยู่แล้วว่าต้องอ่านหลายดวงหรือทำรายงานลึก</p>
-      <p data-l="en">This page is designed to make Premium the main choice for most users. Master is for people who already know they need many charts or deeper reports.</p>
-      <p data-l="zh">本頁以 Premium 作為多數人的主選。Master 留給已確定需要多命盤或深度報告的人。</p>
+      <p data-l="th">เริ่มฟรีเพื่อรู้จักระบบ เลือก Premium เมื่อต้องการใช้เครื่องมือส่วนตัวเต็มขึ้น หรือ Master สำหรับหลายดวง กลุ่ม และหลักฐานเชิงเทคนิค</p>
+      <p data-l="en">Start free, choose Premium for complete personal tools, or Master for multiple charts, groups, and technical evidence.</p>
+      <p data-l="zh">先免費開始；完整個人工具選 Premium，多命盤、群組與技術依據選 Master。</p>
     </div>
     <div class="cmp-wrap">
       <table class="cmp" id="cmpTable"></table>
@@ -294,9 +306,9 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
       <h2 data-l="th">เติม<span class="han">時</span>ยามเพิ่มได้ทุกเมื่อ</h2>
       <h2 data-l="en">Add <span class="han">時</span> credits anytime</h2>
       <h2 data-l="zh">隨時加值<span class="han">時</span></h2>
-      <p data-l="th">ยาม = หน่วยที่ใช้เรียก AI ซินแส · ทุกแพ็กเกจได้ยามประจำเดือน จะเติมเพิ่มเมื่อไรก็ได้</p>
-      <p data-l="en">Credits power every AI Sifu reading. Each plan includes a monthly grant — top up more whenever you like.</p>
-      <p data-l="zh">「時」是呼叫 AI 師傅的單位 · 每個方案都含每月額度，隨時可再加值。</p>
+      <p data-l="th">ยาม = หน่วยที่ใช้เรียก AI ซินแส · ยามที่ได้ตอนสมัคร ซื้อ Pass หรือเติมเพิ่มไม่มีวันหมดอายุ</p>
+      <p data-l="en">Credits power AI Sifu readings. Credits from signup, a pass, or a top-up never expire.</p>
+      <p data-l="zh">「時」用於呼叫 AI 師傅；註冊、購買通行證或加值所得的時永不過期。</p>
     </div>
     <div class="topups" id="topups"></div>
   </section>
@@ -308,27 +320,32 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
       <h2 data-l="th">ถามก่อนสมัคร</h2><h2 data-l="en">Before you subscribe</h2><h2 data-l="zh">訂閱前想問</h2>
     </div>
     <div class="faq">
-      <details class="q"><summary data-l="th">"ยาม" คืออะไร?</summary><summary data-l="en">What is a "credit" (時)?</summary><summary data-l="zh">「時」是什麼？</summary>
+      <details class="q"><summary><span data-l="th">"ยาม" คืออะไร?</span><span data-l="en">What is a "credit" (時)?</span><span data-l="zh">「時」是什麼？</span></summary>
         <div class="a" data-l="th">ยาม (時) คือหน่วยที่ใช้เรียก AI ซินแสฟันธงและงานวิเคราะห์เชิงลึก 1 คำถาม/การวิเคราะห์ใช้ยามตามความยาว การเปิดผังดวง ปฏิทิน และคะแนนรายวันไม่ใช้ยาม</div>
         <div class="a" data-l="en">A credit (時) powers the AI Sifu and deep analysis. Each question or reading spends credits by length. Opening your chart, the calendar and the daily score costs nothing.</div>
         <div class="a" data-l="zh">「時」用於呼叫 AI 師傅與深度分析，依長度計費。查看命盤、曆法與每日分數則免費。</div>
       </details>
-      <details class="q"><summary data-l="th">รายปีคุ้มกว่ายังไง?</summary><summary data-l="en">Why is annual cheaper?</summary><summary data-l="zh">年費為何較划算？</summary>
-        <div class="a" data-l="th">จ่ายรายปีได้ราคาเท่ากับ 10 เดือน = ใช้ครบปีแต่ได้ 2 เดือนฟรี Premium รายปี ฿3,990 (จาก ฿4,788) · Master รายปี ฿9,900 (จาก ฿11,880)</div>
-        <div class="a" data-l="en">Annual is priced at 10 months — a full year with 2 months free. Premium annual ฿3,990 (vs ฿4,788) · Master annual ฿9,900 (vs ฿11,880).</div>
-        <div class="a" data-l="zh">年費以 10 個月計價——用滿一年、免 2 個月。賢者年費 ฿3,990（原 ฿4,788）· 大師年費 ฿9,900（原 ฿11,880）。</div>
+      <details class="q"><summary><span data-l="th">Pass 30 วันต่ออายุเองไหม?</span><span data-l="en">Does the 30-day pass auto-renew?</span><span data-l="zh">30 天通行證會自動續期嗎？</span></summary>
+        <div class="a" data-l="th">ไม่ต่ออายุและไม่ตัดเงินอัตโนมัติ สิทธิ์เริ่มเมื่อจ่ายสำเร็จและใช้ได้ 30 วัน หากต้องการใช้ต่อจึงค่อยซื้อ Pass ใหม่</div>
+        <div class="a" data-l="en">No. It never auto-renews or charges silently. Access starts after successful payment and lasts 30 days; buy another pass only when you choose.</div>
+        <div class="a" data-l="zh">不會自動續期或扣款。付款成功後權益生效 30 天；需要時再自行購買下一張通行證。</div>
       </details>
-      <details class="q"><summary data-l="th">Free ใช้ได้ถึงไหน?</summary><summary data-l="en">How far does Free go?</summary><summary data-l="zh">免費能用到哪？</summary>
-        <div class="a" data-l="th">Free มีไว้ให้เริ่มจริง: สมัคร กรอกวันเกิด สร้างดวงแรก เปิด chart และลองถาม AI Sifu ด้วย 500 ยามแรกเข้า ถ้าเริ่มใช้ซ้ำหรือต้องใช้ 6 ศาสตร์เต็ม ให้ไป Premium</div>
-        <div class="a" data-l="en">Free is for real activation: sign up, enter birth data, create the first chart, open the chart and try AI Sifu with the first 500 credits. Upgrade to Premium when you need repeat use and the full 6-tradition toolset.</div>
-        <div class="a" data-l="zh">Free 用來完成真正啟動：註冊、輸入出生資料、建立第一張命盤、打開 chart，並用首 500 時試問 AI 師傅。需要重複使用與完整六術時再升級 Premium。</div>
+      <details class="q"><summary><span data-l="th">Free ใช้ได้ถึงไหน?</span><span data-l="en">How far does Free go?</span><span data-l="zh">免費能用到哪？</span></summary>
+        <div class="a" data-l="th">สมัครฟรีได้ 1,000 ยาม + ทดลอง 14 วัน หลังวันที่ 14 ยังดูดวง ปฏิทิน วันนี้ พยากรณ์ และลายมือได้ และใช้ยามที่เหลือกับ AI ต่อได้ ส่วนที่ลึกกว่าจะยังเห็นพร้อมกุญแจบอก Pass ที่ต้องใช้</div>
+        <div class="a" data-l="en">Free signup includes 1,000 credits and a 14-day trial. After day 14, chart, calendar, Today, Forecast and Palmistry remain available, and remaining credits still work for AI. Deeper capabilities stay visible with their required-pass lock.</div>
+        <div class="a" data-l="zh">免費註冊送 1,000 時與 14 天試用。第 14 天後仍可使用命盤、曆、今日、預測與手相，剩餘時可繼續用於 AI；進階功能會保留顯示並標示所需通行證。</div>
       </details>
-      <details class="q"><summary data-l="th">ชำระเงินยังไง ปลอดภัยไหม?</summary><summary data-l="en">How do I pay — is it safe?</summary><summary data-l="zh">如何付款、安全嗎？</summary>
+      <details class="q"><summary><span data-l="th">ยามสมาชิกเติมทุกเดือนไหม?</span><span data-l="en">Do pass credits refill monthly?</span><span data-l="zh">通行證時額度每月補發嗎？</span></summary>
+        <div class="a" data-l="th">ตอนนี้ได้ยามก้อนตอนซื้อแพ็ก (Premium 500 · Master 2,000) · ยังไม่ refill อัตโนมัติทุกรอบเดือน · เติมเพิ่มได้ที่ Top-up · ยามไม่มีวันหมดอายุ</div>
+        <div class="a" data-l="en">Today you get a credit pack on purchase (Premium 500 · Master 2,000). Monthly auto-refill is not on yet — use Top-up anytime. Credits never expire.</div>
+        <div class="a" data-l="zh">目前於購買時一次給時（Premium 500 · Master 2,000），尚未每月自動補發；可隨時加值。時額度永不過期。</div>
+      </details>
+      <details class="q"><summary><span data-l="th">ชำระเงินยังไง ปลอดภัยไหม?</span><span data-l="en">How do I pay - is it safe?</span><span data-l="zh">如何付款、安全嗎？</span></summary>
         <div class="a" data-l="th">รองรับบัตรเครดิต/เดบิตและ PromptPay ผ่านหน้าชำระเงินที่ปลอดภัยของ Stripe เราไม่เก็บเลขบัตรบนเซิร์ฟเวอร์ ยามและสิทธิ์สมาชิกจะเพิ่มให้อัตโนมัติหลังชำระสำเร็จ</div>
         <div class="a" data-l="en">Cards and PromptPay are handled on Stripe's secure checkout — we never store card numbers on our servers. Credits and membership are applied automatically once payment clears.</div>
         <div class="a" data-l="zh">信用卡與 PromptPay 由 Stripe 安全結帳處理，我們不在伺服器保存卡號。付款完成後自動加值與升級。</div>
       </details>
-      <details class="q"><summary data-l="th">ยกเลิกได้ไหม?</summary><summary data-l="en">Can I cancel?</summary><summary data-l="zh">可以取消嗎？</summary>
+      <details class="q"><summary><span data-l="th">ยกเลิกได้ไหม?</span><span data-l="en">Can I cancel?</span><span data-l="zh">可以取消嗎？</span></summary>
         <div class="a" data-l="th">ได้ทุกเมื่อ สิทธิ์สมาชิกใช้ได้จนครบรอบที่จ่ายไว้ ไม่มีการต่ออายุอัตโนมัติที่ตัดเงินโดยไม่แจ้ง ยามที่เติมแยกไว้ไม่มีวันหมดอายุ</div>
         <div class="a" data-l="en">Anytime. Your membership stays active until the paid period ends, with no silent auto-renewal. Separately purchased credits never expire.</div>
         <div class="a" data-l="zh">隨時可取消。會員權益維持至已付週期結束，不會無聲自動續扣。另行加值的時額度永不過期。</div>
@@ -343,9 +360,9 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
       <a href="/datepick" data-l="th">วางฤกษ์</a><a href="/datepick" data-l="en">Date selection</a><a href="/datepick" data-l="zh">擇日</a>
       <a href="/account" data-l="th">บัญชีของฉัน</a><a href="/account" data-l="en">My account</a><a href="/account" data-l="zh">我的帳戶</a>
     </div>
-    <div data-l="th">ราคาทั้งหมดเป็นเงินบาท (THB) รวมแล้ว · สิทธิ์และจำนวนยามตรวจสอบและมอบให้จากฝั่งเซิร์ฟเวอร์หลังชำระสำเร็จเท่านั้น การเติมยามรายเดือนของสมาชิกจะทยอยเปิดใช้เต็มรูปแบบ</div>
-    <div data-l="en">All prices in Thai Baht (THB), inclusive. Access and credits are verified and granted server-side after successful payment only. Monthly credit refills for members are rolling out in full.</div>
-    <div data-l="zh">所有價格以泰銖（THB）計、含稅。權限與時額度僅於付款成功後由伺服器端核發。會員每月時額度補充正逐步全面啟用。</div>
+    <div data-l="th">ราคาเป็นบาท (THB) · Server ให้สิทธิ์และยามหลังจ่ายสำเร็จ · Pass ใช้ได้ 30 วัน ไม่ต่ออายุอัตโนมัติ · Trial 14 วันเริ่มตอนสมัคร · ยามไม่มีวันหมดอายุ</div>
+    <div data-l="en">Prices are in THB. Access and credits are granted server-side after payment. Passes last 30 days with no auto-renewal. The 14-day trial starts at signup. Credits never expire.</div>
+    <div data-l="zh">價格為泰銖；付款成功後由伺服器核發權益與時。通行證有效 30 天且不自動續期；14 天試用自註冊起算；時永不過期。</div>
     <div class="mono">hourkey.io · 六術一堂 · TH / EN / 中</div>
   </footer>
 </main>
@@ -359,91 +376,137 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
       ต้องแก้ให้ตรงกันทั้งสองที่ · โค้ดต้องมีอยู่ใน packages.ts
    ═══════════════════════════════════════════════════════════════ */
 const PRICING = {
-  monthsFreeOnAnnual: 2,
   tiers: [
     {
       id:'free', featured:false, han:'新',
       name:{ th:'Free', en:'Free', zh:'新人' },
-      tag:{ th:'เริ่มฟรี · สร้างดวงแรก · ลอง AI Sifu', en:'Start free · create your first chart · try AI Sifu', zh:'免費開始 · 建立第一張命盤 · 試用 AI 師傅' },
+      tag:{ th:'1,000 ยาม + ทดลอง 14 วัน · แล้วโหมดฟรี', en:'1,000 credits + 14-day trial · then free mode', zh:'1,000 時 + 14 天試用 · 之後免費模式' },
       price:{ monthly:0, yearly:0 },
       codeMonthly:null, codeYearly:null,
-      yam:{ th:'500 ยาม แรกเข้า', en:'500 credits on sign-up', zh:'註冊送 500 時' },
+      yam:{ th:'1,000 ยามแรกเข้า (ไม่หมดอายุ)', en:'1,000 credits on sign-up (never expire)', zh:'註冊送 1,000 時（永不過期）' },
       cta:{ th:'เริ่มฟรี · สร้างดวงแรก', en:'Start free · create first chart', zh:'免費開始 · 建第一張命盤' },
       ctaHref:'/signup?next=/input',
       feats:{
-        th:['สมัคร + กรอกวันเกิด + เปิดดวง','ผังดวงปาจื้อครบ 4 เสา','500 ยามแรกเข้าไว้ลอง AI Sifu','เหมาะกับการลองใช้ก่อนอัปเกรด'],
-        en:['Sign up + enter birth data + open the chart','Full 4-pillar BaZi chart','First 500 credits to try AI Sifu','Built for trying before upgrading'],
-        zh:['註冊 + 輸入出生資料 + 打開命盤','完整四柱八字命盤','首 500 時可試用 AI 師傅','適合先試用再升級']
+        th:[
+          'สมัคร + กรอกวันเกิด + เปิดผังดวง',
+          '1,000 ยามแรกเข้า · ใช้ AI ได้จนกว่าจะหมด',
+          'ทดลอง 14 วัน: Fusion สูงสุด 3 · 命書 2 · วางฤกษ์ 1 ดวง · Vision 1× · บ้าน 3',
+          'หลัง 14 วัน: ดวง/ปฏิทิน/วันนี้/พยากรณ์/ลายมือ + AI ด้วยยามเหลือ · ฟีเจอร์ลึกแสดงพร้อมกุญแจ'
+        ],
+        en:[
+          'Sign up + birth data + open chart',
+          '1,000 credits on join · AI until they run out',
+          '14-day trial: Fusion max 3 · Book 2 · datepick 1 chart · Vision 1× · 3 houses',
+          'After day 14: chart/calendar/today/forecast/palmistry + AI with remaining credits · deeper features stay visibly locked'
+        ],
+        zh:[
+          '註冊 + 出生資料 + 打開命盤',
+          '註冊送 1,000 時 · AI 用到完',
+          '14 天試用：Fusion 最多 3 · 命書 2 · 擇日 1 盤 · Vision 1 次 · 房宅 3',
+          '14 天後：命盤／曆／今日／預測／手相 + 剩餘時問 AI · 進階功能保留鎖定提示'
+        ]
       }
     },
     {
       id:'premium', featured:true, han:'賢',
       name:{ th:'Premium', en:'Premium', zh:'賢者' },
-      tag:{ th:'แนะนำ · ปลดล็อก 6 ศาสตร์ + AI Sifu เต็ม สำหรับใช้งานจริง', en:'Recommended · unlock 6 traditions + full AI Sifu for real use', zh:'推薦 · 解鎖六術 + 完整 AI 師傅，適合正式使用' },
+      tag:{ th:'แนะนำ · เครื่องมือคนเดียว + Fusion/命書จำกัด', en:'Recommended · solo tools + limited Fusion/Book', zh:'推薦 · 單人命盤工具 + 有限 Fusion／命書' },
       price:{ monthly:399, yearly:3990 },
       codeMonthly:'premium_1m', codeYearly:'premium_1y',
-      yam:{ th:'500 ยาม/เดือน', en:'500 credits / month', zh:'每月 500 時' },
+      yam:{ th:'+500 ยามตอนซื้อ · Pass 30 วัน · ไม่ต่ออายุเอง', en:'+500 credits on purchase · 30-day pass · no auto-renewal', zh:'購買時 +500 時 · 30 天通行證 · 不自動續期' },
       cta:{ th:'ปลดล็อก Premium', en:'Unlock Premium', zh:'解鎖 Premium' },
       badge:{ th:'⭐ แนะนำ · คุ้มสุด', en:'⭐ Recommended · best fit', zh:'⭐ 推薦 · 最適合' },
       feats:{
-        th:['6 ศาสตร์เต็ม + Master Fusion','AI Sifu เต็ม ใช้ถามซ้ำได้','วางฤกษ์ / 天星 / ปฏิทิน ใช้งานจริง','เหมาะกับผู้ใช้ทั่วไปที่เริ่มใช้ประจำ'],
-        en:['Full 6 traditions + Master Fusion','Full AI Sifu for repeat questions','Datepick / Tianxing / Calendar for real use','The main plan for regular users'],
-        zh:['完整六術 + Master Fusion','完整 AI 師傅，可重複提問','擇日 / 天星 / 曆 正式使用','最適合一般長期使用者']
+        th:[
+          'วางฤกษ์ / 天星 / ฮวงจุ้ย·หล่อแก / ฉีเหมิน / ยูเรเนียน',
+          'Fusion สูงสุด 4 ศาสตร์ · 1 ดวง',
+          '命書 ได้สูงสุด 3 ศาสตร์ (ยังไม่มีบทหลอมรวม)',
+          'บันทึกบ้านได้หลายหลัง · AI Sifu ใช้ยามตามจริง'
+        ],
+        en:[
+          'Datepick / Tianxing / Feng shui·luopan / Qi Men / Uranian',
+          'Fusion up to 4 sciences · 1 chart',
+          'Book up to 3 sciences (no deep synthesis chapter)',
+          'Multiple house saves · AI Sifu spends credits as used'
+        ],
+        zh:[
+          '擇日／天星／風水羅盤／奇門／天王星',
+          'Fusion 最多 4 術 · 1 命盤',
+          '命書最多 3 術（無深度融合章）',
+          '可存多房宅 · AI 師傅依使用扣時'
+        ]
       }
     },
     {
       id:'master', featured:false, han:'大',
       name:{ th:'Master', en:'Master', zh:'大師' },
-      tag:{ th:'สำหรับอ่านหลายดวง · รายงานลึก · งานมืออาชีพ', en:'For many charts · deep reports · professional work', zh:'多命盤 · 深度報告 · 專業使用' },
+      tag:{ th:'หลายดวง · 命書เต็ม · เครือข่าย/กลุ่ม', en:'Many charts · full Book · network/group', zh:'多命盤 · 完整命書 · 人脈／群組' },
       price:{ monthly:990, yearly:9900 },
       codeMonthly:'master_1m', codeYearly:'master_1y',
-      yam:{ th:'2,000 ยาม/เดือน', en:'2,000 credits / month', zh:'每月 2,000 時' },
+      yam:{ th:'+2,000 ยามตอนซื้อ · Pass 30 วัน · ไม่ต่ออายุเอง', en:'+2,000 credits on purchase · 30-day pass · no auto-renewal', zh:'購買時 +2,000 時 · 30 天通行證 · 不自動續期' },
       cta:{ th:'เลือก Master', en:'Choose Master', zh:'選擇大師' },
       feats:{
-        th:['ทุกอย่างใน Premium','命書 / รายงานเชิงลึก','合盤 / เครือข่าย / กลุ่ม','2,000 ยาม/เดือน + AI คิวด่วน'],
-        en:['Everything in Premium','Deep Book / Report work','Synastry / Network / Group','2,000 credits / month + Priority AI'],
-        zh:['包含 Premium 全部','深度命書 / 報告','合盤 / 人脈 / 群組','每月 2,000 時 + AI 優先']
+        th:[
+          'ทุกอย่างใน Premium',
+          'Fusion ครบ 6 ศาสตร์ · หลายดวง',
+          '命書เต็ม + บทหลอมรวม · 合盤/เครือข่าย/กลุ่ม',
+          '+2,000 ยามตอนซื้อ · งานมืออาชีพ/หลายเคส'
+        ],
+        en:[
+          'Everything in Premium',
+          'Fusion all 6 sciences · multi-chart',
+          'Full Book + synthesis · synastry/network/group',
+          '+2,000 credits on purchase · pro / multi-case work'
+        ],
+        zh:[
+          '包含 Premium 全部',
+          'Fusion 完整 6 術 · 多命盤',
+          '完整命書 + 融合章 · 合盤／人脈／群組',
+          '購買時 +2,000 時 · 適合專業／多案'
+        ]
       }
     }
   ],
   topups: [
     { code:'topup_100',  yam:100,  price:99,   best:false, tag:{ th:'เริ่มต้น', en:'Starter', zh:'入門' } },
-    { code:'topup_550',  yam:550,  price:449,  best:true,  tag:{ th:'คุ้มสุด', en:'Best value', zh:'最划算' } },
-    { code:'topup_1700', yam:1700, price:1290, best:false, tag:{ th:'งานหนัก', en:'Power', zh:'大量' } }
+    { code:'topup_550',  yam:550,  price:449,  best:false, tag:{ th:'ยอดนิยม', en:'Popular', zh:'熱門' } },
+    { code:'topup_1700', yam:1700, price:1290, best:true,  tag:{ th:'คุ้มสุด', en:'Best value', zh:'最划算' } }
   ]
 };
 
-/* comparison rows · value: true | false | {th,en,zh} chip */
+/* comparison rows · sync กับ entitlement contract · free = หลังทดลอง */
 const CMP = [
-  { grp:{ th:'Activation — เริ่มฟรีให้ติด', en:'Activation — free first success', zh:'Activation — 免費完成首次使用' } },
-  { name:{ th:'สมัคร + กรอกวันเกิด + เปิดดวง', en:'Sign up + enter birth data + open chart', zh:'註冊 + 輸入出生資料 + 打開命盤' }, tool:{ th:'สมัคร → กรอกวันเกิด → เปิดดวง', en:'Sign-up → birth data → chart', zh:'註冊 → 出生資料 → 命盤' }, free:true, premium:true, master:true },
-  { name:{ th:'ผังดวงปาจื้อ 4 เสา', en:'4-pillar BaZi chart', zh:'四柱八字命盤' }, tool:{ th:'ผังดวง', en:'Chart', zh:'命盤' }, free:true, premium:true, master:true },
-  { name:{ th:'500 ยามแรกเข้าไว้ลอง AI Sifu', en:'First 500 credits to try AI Sifu', zh:'首 500 時試用 AI 師傅' }, tool:{ th:'AI ซินแส', en:'AI Sifu', zh:'AI 師傅' }, free:true, premium:true, master:true },
-  { grp:{ th:'Premium — ใช้งานจริง', en:'Premium — real daily use', zh:'Premium — 正式使用' } },
-  { name:{ th:'6 ศาสตร์เต็ม + Master Fusion', en:'Full 6 traditions + Master Fusion', zh:'完整六術 + Master Fusion' }, tool:'/master-fusion', free:{th:'ชิม',en:'Trial',zh:'試閱'}, premium:true, master:true },
-  { name:{ th:'AI Sifu ถามซ้ำ / วิเคราะห์ต่อเนื่อง', en:'AI Sifu repeat questions / follow-ups', zh:'AI 師傅重複提問 / 追問' }, tool:'/master', free:{th:'ใช้ 500 แรก',en:'first 500',zh:'首 500'}, premium:true, master:true },
-  { name:{ th:'ยูเรเนียน · วงล้อ 90°', en:'Uranian · 90° dial', zh:'天王星 · 90° 盤' }, tool:'/uranian', free:false, premium:true, master:true },
-  { grp:{ th:'เครื่องมือสำคัญของ Premium', en:'Premium core tools', zh:'Premium 核心工具' } },
-  { name:{ th:'ปฏิทิน / วันนี้ ใช้งานประจำ', en:'Calendar / Today for regular use', zh:'曆 / 今日 日常使用' }, tool:{ th:'ปฏิทิน · วันนี้', en:'Calendar · Today', zh:'曆 · 今日' }, free:true, premium:true, master:true },
-  { name:{ th:'วางฤกษ์ 董公', en:'董公 date selection', zh:'董公擇日' }, tool:{ th:'วางฤกษ์', en:'Date selection', zh:'董公擇日' }, free:false, premium:true, master:true },
-  { name:{ th:'ฤกษ์ดาวจริง 七政 天星', en:'Real-sky 七政 date', zh:'天星七政擇日' }, tool:{ th:'天星七政', en:'Real-sky date', zh:'天星七政' }, free:false, premium:true, master:true },
-  { name:{ th:'ฮวงจุ้ย + หล่อแก 羅盤', en:'Feng shui + luopan 羅盤', zh:'風水 + 羅盤' }, tool:{ th:'風水羅盤', en:'Feng shui', zh:'風水羅盤' }, free:false, premium:true, master:true },
-  { name:{ th:'ฉีเหมิน 奇門', en:'Qi Men 奇門', zh:'奇門遁甲' }, tool:{ th:'奇門', en:'Qi Men', zh:'奇門' }, free:false, premium:true, master:true },
-  { grp:{ th:'Master — งานลึก / หลายดวง', en:'Master — deep work / many charts', zh:'Master — 深度工作 / 多命盤' } },
-  { name:{ th:'命書 / รายงานเชิงลึก', en:'Deep Book / Report work', zh:'深度命書 / 報告' }, tool:{ th:'命書 · รายงาน', en:'Book · report', zh:'命書 · 報告' }, free:false, premium:{th:'จำกัด',en:'Limited',zh:'限量'}, master:{th:'ลึกกว่า',en:'Deep',zh:'深度'} },
-  { name:{ th:'合盤 / เครือข่าย / กลุ่ม', en:'Synastry / Network / Group', zh:'合盤 / 人脈 / 群組' }, tool:{ th:'合盤 · เครือข่าย · กลุ่ม', en:'Synastry · network · group', zh:'合盤 · 人脈 · 群組' }, free:false, premium:false, master:true },
-  { name:{ th:'คิวด่วน AI ซินแส', en:'Priority AI Sifu queue', zh:'AI 師傅優先佇列' }, tool:'', free:false, premium:false, master:true },
-  { grp:{ th:'ยามรายเดือน', en:'Monthly credits', zh:'每月時額度' } },
-  { name:{ th:'ยาม (時) ต่อเดือน', en:'Credits (時) per month', zh:'每月時（時）' }, tool:'', free:{th:'500 แรกเข้า',en:'500 on join',zh:'註冊 500'}, premium:{th:'500',en:'500',zh:'500'}, master:{th:'2,000',en:'2,000',zh:'2,000'} }
+  { grp:{ th:'Activation — สมัครฟรี', en:'Activation — free signup', zh:'Activation — 免費註冊' } },
+  { name:{ th:'สมัคร + กรอกวันเกิด + เปิดดวง', en:'Sign up + birth data + open chart', zh:'註冊 + 出生資料 + 打開命盤' }, tool:{ th:'สมัคร → input → chart', en:'Sign-up → input → chart', zh:'註冊 → 輸入 → 命盤' }, free:true, premium:true, master:true },
+  { name:{ th:'ดวงปาจื้อ 4 เสา', en:'4-pillar BaZi chart', zh:'四柱八字命盤' }, tool:'/chart', free:{th:'สรุป · Trial แบบแนะนำ',en:'Summary · guided in Trial',zh:'摘要 · 試用引導版'}, premium:{th:'รายละเอียดเต็ม',en:'Full detail',zh:'完整詳情'}, master:{th:'ชั้นเทคนิค',en:'Technical layer',zh:'技術層'} },
+  { name:{ th:'1,000 ยามแรกเข้า (ใช้ AI ได้จนกว่าจะหมด)', en:'1,000 credits on join (AI until empty)', zh:'註冊 1,000 時（AI 用到完）' }, tool:{ th:'AI ซินแส', en:'AI Sifu', zh:'AI 師傅' }, free:true, premium:true, master:true },
+  { name:{ th:'ทดลอง 14 วัน', en:'14-day trial', zh:'14 天試用' }, tool:{ th:'อัตโนมัติตอนสมัคร', en:'automatic on signup', zh:'註冊自動' }, free:{th:'รวม · 14 วันแรก',en:'Included · first 14 days',zh:'包含 · 首 14 天'}, premium:{th:'รวมใน Pass',en:'Included in pass',zh:'通行證已包含'}, master:{th:'รวมใน Pass',en:'Included in pass',zh:'通行證已包含'} },
+  { grp:{ th:'Fusion / AI วิเคราะห์', en:'Fusion / deep AI', zh:'Fusion / 深度 AI' } },
+  { name:{ th:'Fusion หลายศาสตร์', en:'Multi-science Fusion', zh:'多術合參' }, tool:'/master-fusion', free:{th:'2 ศาสตร์ · Trial 3',en:'2 sciences · 3 in Trial',zh:'2 術 · 試用 3'}, premium:{th:'4 ศาสตร์ · 1 ดวง',en:'4 sciences · 1 chart',zh:'4 術 · 1 盤'}, master:{th:'ครบ 6 ศาสตร์ · หลายดวง',en:'All 6 · multi-chart',zh:'完整 6 術 · 多盤'} },
+  { name:{ th:'AI Sifu ถามต่อเนื่อง', en:'AI Sifu follow-ups', zh:'AI 師傅追問' }, tool:'/master', free:{th:'ใช้ได้ · หักยามตามคำตอบ',en:'Included · credits by answer',zh:'可用 · 按回答扣時'}, premium:{th:'ใช้ได้ · หักยามตามคำตอบ',en:'Included · credits by answer',zh:'可用 · 按回答扣時'}, master:{th:'ใช้ได้ · รองรับกลุ่ม',en:'Included · group context',zh:'可用 · 支援群組'} },
+  { name:{ th:'ยูเรเนียน · วงล้อ 90°', en:'Uranian · 90° dial', zh:'天王星 · 90° 盤' }, tool:'/uranian', free:{th:'ช่วง trial',en:'in trial',zh:'試用期'}, premium:true, master:true },
+  { grp:{ th:'เครื่องมือรายวัน', en:'Daily tools', zh:'日常工具' } },
+  { name:{ th:'ปฏิทิน / วันนี้', en:'Calendar / Today', zh:'曆 / 今日' }, tool:{ th:'/calendar · /today', en:'/calendar · /today', zh:'/calendar · /today' }, free:{th:'ปัจจุบัน · Trial ขยายช่วง',en:'Current · wider in Trial',zh:'目前 · 試用擴展'}, premium:{th:'30 วัน · 12 เดือน',en:'30 days · 12 months',zh:'30 天 · 12 個月'}, master:{th:'365 วัน · 60 เดือน',en:'365 days · 60 months',zh:'365 天 · 60 個月'} },
+  { name:{ th:'พยากรณ์ / ลายมือ', en:'Forecast / Palmistry', zh:'預測 / 手相' }, free:true, premium:true, master:true },
+  { name:{ th:'วางฤกษ์ 董公', en:'董公 date selection', zh:'董公擇日' }, tool:'/datepick', free:{th:'3 เกณฑ์ · Trial 6',en:'3 methods · 6 in Trial',zh:'3 法 · 試用 6'}, premium:{th:'20 เกณฑ์ · 3 ดวง',en:'20 methods · 3 charts',zh:'20 法 · 3 盤'}, master:{th:'20 เกณฑ์ · 10 ดวง',en:'20 methods · 10 charts',zh:'20 法 · 10 盤'} },
+  { name:{ th:'ฤกษ์ดาวจริง 七政 天星', en:'Real-sky 七政 / 天星', zh:'天星七政' }, tool:'/tianxing', free:{th:'ช่วง trial',en:'in trial',zh:'試用期'}, premium:true, master:true },
+  { name:{ th:'ฮวงจุ้ย + หล่อแก', en:'Feng shui + Luopan', zh:'風水羅盤' }, tool:'/fengshui', free:{th:'พื้นฐาน · Trial 3 บ้าน',en:'Basic · 3 houses in Trial',zh:'基礎 · 試用 3 宅'}, premium:{th:'ชั้นเต็ม · 50 บ้าน',en:'Full layers · 50 houses',zh:'完整層 · 50 宅'}, master:{th:'มืออาชีพ · หลายดวง',en:'Professional · multi-profile',zh:'專業 · 多命盤'} },
+  { name:{ th:'อ่านแปลนบ้าน', en:'Floor-plan analysis', zh:'平面圖分析' }, tool:'/luopan', free:{th:'Trial 1 ครั้ง · แล้วปิด',en:'1 use in Trial · then locked',zh:'試用 1 次 · 之後鎖定'}, premium:{th:'10 ครั้ง/วัน · หักยาม',en:'10/day · uses credits',zh:'每日 10 次 · 扣時'}, master:{th:'10 ครั้ง/วัน · หักยาม',en:'10/day · uses credits',zh:'每日 10 次 · 扣時'} },
+  { name:{ th:'ฉีเหมิน 奇門', en:'Qi Men 奇門', zh:'奇門遁甲' }, tool:'/qimen', free:{th:'พื้นฐาน · Trial ครบ 12 ยาม',en:'Basic · all 12 hours in Trial',zh:'基礎 · 試用全 12 時辰'}, premium:{th:'Pro · ค้นหา 7 วัน',en:'Pro · 7-day search',zh:'Pro · 搜尋 7 天'}, master:{th:'เทคนิค · ค้นหา 30 วัน',en:'Technical · 30-day search',zh:'技術 · 搜尋 30 天'} },
+  { grp:{ th:'งานลึก / หลายดวง', en:'Deep work / many charts', zh:'深度 / 多命盤' } },
+  { name:{ th:'命書 · รายงานเชิงลึก', en:'Destiny Book · deep report', zh:'命書 · 深度報告' }, tool:'/book', free:{th:'Trial 2 ศาสตร์ · แล้วปิด',en:'2 sciences in Trial · then locked',zh:'試用 2 術 · 之後鎖定'}, premium:{th:'3 ศาสตร์',en:'3 sciences',zh:'3 術'}, master:{th:'ครบ 6 · มีบทหลอมรวม',en:'All 6 · synthesis chapter',zh:'完整 6 術 · 融合章'} },
+  { name:{ th:'เครือข่าย / ความสัมพันธ์', en:'Network / relationships', zh:'人脈 / 關係' }, tool:'/network', free:{th:'ดวงตนเอง · Trial 3 ดวง',en:'Own chart · 3 in Trial',zh:'本人命盤 · 試用 3 盤'}, premium:{th:'คู่สัมพันธ์ · 10 ดวง',en:'Pairs · 10 charts',zh:'雙人關係 · 10 盤'}, master:{th:'กลุ่ม/ทีม · 100 ดวง',en:'Groups/teams · 100 charts',zh:'群組/團隊 · 100 盤'} },
+  { grp:{ th:'ยาม (時) — ไม่ใช่รายเดือนอัตโนมัติ', en:'Credits (時) — not monthly auto-refill yet', zh:'時額度 — 尚未每月自動補發' } },
+  { name:{ th:'ยามที่ได้', en:'Credits you get', zh:'可得時額' }, tool:{ th:'เติมเพิ่มได้ที่ Top-up', en:'Top-up anytime', zh:'可隨時加值' }, free:{th:'1,000 ตอนสมัคร',en:'1,000 on signup',zh:'註冊 1,000'}, premium:{th:'+500 ตอนซื้อ',en:'+500 on buy',zh:'購買 +500'}, master:{th:'+2,000 ตอนซื้อ',en:'+2,000 on buy',zh:'購買 +2,000'} }
 ];
 
 /* ── i18n helpers ── */
 const LANGS=['th','en','zh','cn','vi','ja','ru','ko','es'];
 const UI = {
-  monthly:{ th:'รายเดือน', en:'Monthly', zh:'月費' },
+  monthly:{ th:'Pass 30 วัน', en:'30-day pass', zh:'30 天通行證' },
   yearly:{ th:'รายปี', en:'Yearly', zh:'年費' },
   save:{ th:'ประหยัด 2 เดือน', en:'2 months free', zh:'省 2 個月' },
-  perMonth:{ th:'/เดือน', en:'/mo', zh:'／月' },
+  perMonth:{ th:'/ 30 วัน', en:'/ 30 days', zh:'／30 天' },
   perYear:{ th:'/ปี', en:'/yr', zh:'／年' },
   yearlyNote:{ th:'≈฿{M}/เดือน · แถม {F} เดือน', en:'≈฿{M}/mo · {F} months free', zh:'≈฿{M}／月 · 免 {F} 個月' },
   free:{ th:'ฟรี · เริ่มได้ทันที', en:'Free to start', zh:'免費開始' },
@@ -457,7 +520,7 @@ const UI = {
   themeBtn:{ th:'สลับธีม', en:'Toggle theme', zh:'切換主題' }
 };
 function lang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
-function L(o, fb){ if(o==null) return fb||''; if(typeof o==='string') return o; return o[lang()]||o.th||o.en||fb||''; }
+function L(o, fb){ if(o==null) return fb||''; if(typeof o==='string') return o; const c=lang(); return o[c]||(c==='th'?o.th:o.en)||o.th||fb||''; }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function fmt(n){ return Number(n||0).toLocaleString('en-US'); }
 
@@ -537,7 +600,10 @@ function cell(v, feat){
   const cls = 'cell' + (feat ? ' feat-col' : '');
   if (v === true) return `<td class="${cls}"><span class="yes">✓</span></td>`;
   if (v === false || v == null) return `<td class="${cls}"><span class="no">—</span></td>`;
-  return `<td class="${cls}"><span class="chip">${esc(L(v))}</span></td>`;
+  const parts = String(L(v)).split(/\s*·\s*/).filter(Boolean);
+  const main = parts.shift() || '';
+  const note = parts.length ? `<span class="cell-note">${esc(parts.join(' · '))}</span>` : '';
+  return `<td class="${cls}"><span class="cell-value">${esc(main)}</span>${note}</td>`;
 }
 function renderCmp(){
   const tb = document.getElementById('cmpTable');
@@ -550,7 +616,7 @@ function renderCmp(){
   const rows = CMP.map(r => {
     if (r.grp) return `<tr class="grp"><td colspan="4">${esc(L(r.grp))}</td></tr>`;
     return `<tr>
-      <td class="feat-name">${esc(L(r.name))}${r.tool?`<span class="tool">${esc(L(r.tool))}</span>`:''}</td>
+      <td class="feat-name">${esc(L(r.name))}</td>
       ${cell(r.free,false)}${cell(r.premium,true)}${cell(r.master,false)}
     </tr>`;
   }).join('');
@@ -713,7 +779,7 @@ document.getElementById('themeBtn').onclick=function(){
   window.addEventListener('load', positionThumb);
 })();
 </script>
-<script src="/js/pricing-i18n9.js?v=2"></script>
+<script src="/js/pricing-i18n9.js?v=3"></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
 <script>

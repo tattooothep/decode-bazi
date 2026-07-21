@@ -6,12 +6,13 @@ import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const { email, password } = body;
+  const email = String(body.email || "").trim().toLowerCase();
+  const password = body.password;
   if (!email || !password) {
     return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
   /* 1 มิ.ย. · กัน brute-force เดารหัส · 5 ครั้ง/นาที ต่อ (IP + อีเมล) */
-  const rl = rateLimit(`login:${clientIp(req)}:${String(email).toLowerCase()}`, 5, 60_000);
+  const rl = await rateLimit(`login:${clientIp(req)}:${email}`, 5, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ลองเข้าสู่ระบบบ่อยเกินไป · กรุณารอสักครู่แล้วลองใหม่" },
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
     is_active: boolean | null;
     deleted_at: string | null;
   }>(
-    "SELECT id, email, password_hash, current_org_id, is_active, deleted_at FROM users WHERE email=$1",
+    "SELECT id, email, password_hash, current_org_id, is_active, deleted_at FROM users WHERE lower(email)=lower($1)",
     [email]
   );
   if (!user || !user.password_hash) {

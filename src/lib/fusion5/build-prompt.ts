@@ -3,7 +3,7 @@
  * แต่ละศาสตร์ render ผังของตัวเอง → ป้อน AI · ห้ามปนผัง/ศัพท์ข้ามศาสตร์
  */
 import { createHash } from "crypto";
-import { readFileSync, existsSync, readdirSync } from "fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 import { buildQizhengPacket } from "../astro/qizheng/packet";
 import { renderQizhengPrompt } from "../astro/qizheng/render";
@@ -27,6 +27,7 @@ import { DISCIPLINES, type ScienceId } from "./disciplines";
 import { renderPairInteractionPacket } from "./pair-interactions";
 import { loadPromptMd } from "../prompt-md"; // r391-book: โหลด directive "อ่านเต็มดวง" (natal-book · แก้ผ่าน admin ได้ · .default กันพัง)
 import { NEW_LANG_NAME_TH, LANG_ANSWER_DIRECTIVE } from "../sifu-answer-lang"; // r414-i18n9: ภาษาใหม่ 6 ตัว · th/en/zh byte-identical
+import { knowledgeCapChars, type SifuKnowledgeModel } from "../sifu-knowledge-tier";
 
 export type BirthData = {
   name: string;
@@ -38,8 +39,6 @@ export type BirthData = {
   birthDate?: string;
   birthTime?: string;
   timezone?: string;
-  /** r510-tz: ชื่อสถานที่เกิด (profiles.birth_location_name / guest place) — แนบเข้า prompt เป็นบริบทถิ่นเกิด */
-  place?: string;
 };
 export type FusionTimingReference = {
   refDate: Date;
@@ -49,20 +48,81 @@ export type FusionTimingReference = {
 };
 
 const CANON_DIR = join(process.cwd(), "data/library/astro-canon");
-/* r510-canon-env: backport กลไก env override จาก prod r509 (ฟังก์ชันคัดลอกตรง ไม่แต่งเอง)
- * ⚠️ default ฝั่ง dev คงค่าเดิม 56K/118K — ไม่ตั้ง env = พฤติกรรมเดิมทุกไบต์ (prod default 1.2M/1.3M อยู่ในโค้ด release แยกต่างหาก) */
+/* r513-fix · เดิม 56k/118k เป็นเพดานเทียม (ต่ำกว่า context Claude 1M / Grok 500k / Codex 353k แบบ master มาก)
+ * ใช้เป็น safety ceiling เท่านั้น · override ได้ด้วย env · ต้อง ≤ SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS ฝั่ง /api/sifu */
 function fusionBudgetInt(name: string, fallback: number, min: number, max: number): number {
   const n = Number(process.env[name]);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, Math.floor(n)));
 }
-export const CANON_TEXT_MAX_CHARS = fusionBudgetInt("FUSION_CANON_TEXT_MAX_CHARS", 56_000, 56_000, 2_000_000);
+/**
+ * งบคัมภีร์ legacy (ไม่มี model) · default 1.2M
+ * ⚠️ เรียก panel จริงต้องใช้ fusionCanonBudgetChars(model) — แยกตาม knowledgeCapChars
+ */
+export const CANON_TEXT_MAX_CHARS = fusionBudgetInt("FUSION_CANON_TEXT_MAX_CHARS", 1_200_000, 56_000, 2_000_000);
 export const CANON_TEXT_MIN_CHARS = 4_000;
-// r377 · ziwei แนบ 四化斷訣 (~1.9K) ทุก request (packet มี 生年四化 เสมอ) — ให้ headroom เพิ่มเพื่อไม่เบียดคัมภีร์เดิมใน 56K · prompt รวมยังคุมด้วย FUSION_PANEL_PROMPT_MAX_CHARS เดิม
+// r377 · ziwei แนบ 四化斷訣 (~1.9K) ทุก request
 export const ZIWEI_SIHUA_CANON_EXTRA_CHARS = 2_000;
-// 118K รองรับ 4 ดวง (ผัง×4 + pair packet 6 คู่) · ต้อง < SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS (120000) ฝั่ง /api/sifu
-export const FUSION_PANEL_PROMPT_MAX_CHARS = fusionBudgetInt("FUSION_PANEL_PROMPT_MAX_CHARS", 118_000, 118_000, 2_200_000);
-export const JUDGE_PANEL_REPLY_MAX_CHARS = fusionBudgetInt("FUSION_JUDGE_PANEL_REPLY_MAX_CHARS", 8_000, 8_000, 200_000);
+/**
+ * เพดาน prompt ทั้ง panel (legacy · ไม่มี model)
+ * ⚠️ เรียก panel จริงต้องใช้ fusionPanelBudgetChars(model)
+ */
+export const FUSION_PANEL_PROMPT_MAX_CHARS = fusionBudgetInt("FUSION_PANEL_PROMPT_MAX_CHARS", 1_300_000, 118_000, 2_200_000);
+/** headroom chart+guards+question บน knowledge body (panel = knowledgeCap + headroom) */
+const FUSION_NON_CANON_HEADROOM = fusionBudgetInt("FUSION_NON_CANON_HEADROOM", 120_000, 20_000, 400_000);
+/** hard ceiling ทั้ง panel (กัน DoS · ต้อง ≤ SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS) */
+const FUSION_PANEL_HARD_MAX = fusionBudgetInt("FUSION_PANEL_PROMPT_HARD_MAX", 2_200_000, 118_000, 2_500_000);
+/** ตัดคำตอบ panel ก่อนเข้า judge · เดิม 8k · ขยายเป็น 60k */
+export const JUDGE_PANEL_REPLY_MAX_CHARS = fusionBudgetInt("FUSION_JUDGE_PANEL_REPLY_MAX_CHARS", 60_000, 8_000, 200_000);
+
+/**
+ * งบคัมภีร์ตามโมเดลที่ยิงจริง — reuse knowledgeCapChars (SoT ปาจื้อ) แล้ว clamp ด้วยเพดาน token-safe
+ *
+ * เหตุ: คัมภีร์ fusion (จีน/สันสกฤต/เยอรมัน) หนาแน่น ≈ 0.9–1.0 token/char
+ *   · Claude/Gemini ลิมิต ~1M tokens → knowledge 2M chars ยิงไม่เข้า (live: 1.53M tok / prompt 1.6M chars)
+ *   · Grok 500K tokens = 500K chars SoT
+ *   · Codex 280K อยู่แล้ว
+ *
+ * ปาจื้อ master path ยังใช้ knowledgeCapChars ดิบ (เนื้อไทย+structured ต่าง density)
+ * ไม่ส่ง model → ใช้ CANON_TEXT_MAX_CHARS (legacy)
+ */
+const FUSION_TOKEN_SAFE_CANON: Record<string, number> = {
+  "claude-max-cli": 750_000, // เหลือ headroom chart/system ใต้ 1M tokens
+  "gemini-api": 750_000,
+  "grok-cli": 500_000,
+  "codex-cli": 280_000,
+};
+
+export function fusionCanonBudgetChars(model?: string | null): number {
+  if (!model) return CANON_TEXT_MAX_CHARS;
+  const m = String(model);
+  const knowledgeKey: SifuKnowledgeModel = m === "gemini-api" ? "claude-max-cli" : (m as SifuKnowledgeModel);
+  const fromKnowledge = knowledgeCapChars(knowledgeKey);
+  const tokenSafe = FUSION_TOKEN_SAFE_CANON[m] ?? FUSION_TOKEN_SAFE_CANON[knowledgeKey] ?? fromKnowledge;
+  // ใช้ min(knowledge SoT, token-safe) — ไม่เกินความจุจริงของโมเดลบน fusion canons
+  return Math.max(CANON_TEXT_MIN_CHARS, Math.min(fromKnowledge, tokenSafe));
+}
+
+/**
+ * เพดาน prompt ทั้ง panel ตามโมเดล = knowledge body + headroom chart/guards
+ * ต้อง rebuild ทุกครั้งที่ fallback เปลี่ยนโมเดล (ห้ามส่ง prompt Claude ใหญ่เกินเข้า Codex/Grok)
+ */
+export function fusionPanelBudgetChars(model?: string | null): number {
+  if (!model) return FUSION_PANEL_PROMPT_MAX_CHARS;
+  const panel = fusionCanonBudgetChars(model) + FUSION_NON_CANON_HEADROOM;
+  // hard max ต่อโมเดล (token-safe + headroom) — อย่าดันถึง FUSION_PANEL_HARD_MAX 2.2M สำหรับ claude
+  const modelHard =
+    String(model) === "claude-max-cli" || String(model) === "gemini-api"
+      ? 870_000
+      : String(model) === "grok-cli"
+        ? 620_000
+        : String(model) === "codex-cli"
+          ? 400_000
+          : FUSION_PANEL_HARD_MAX;
+  return Math.max(118_000, Math.min(panel, modelHard, FUSION_PANEL_HARD_MAX));
+}
+/** r513 · หลังเลือกไฟล์ตาม intent แล้ว เติม .md ที่เหลือในโฟลเดอร์ศาสตร์ (intent มาก่อน · งบเหลือค่อยเติม) · ปิดด้วย FUSION_CANON_INCLUDE_ALL=0 */
+const FUSION_CANON_INCLUDE_ALL = process.env.FUSION_CANON_INCLUDE_ALL !== "0";
 
 type CanonMode = "verbatim" | "summary";
 type CanonLicenseClass = "public_domain" | "project_summary" | "project_synthesis" | "summary_only" | "licensed_internal" | "unknown";
@@ -112,7 +172,6 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "05-dignity-lots-specificity.md": { title: "Western dignity/lots/sect specificity pack · bounds/triplicity/face/lots evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "06-relationship-nativity-specificity.md": { title: "Western relationship and nativity specificity pack · 5th/7th/Venus/Mars/Moon/Sun/lots/pair evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "07-career-money-health-specificity.md": { title: "Western career/money/health specificity pack · MC/2nd/6th/8th/10th/11th/12th/lots/timing evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
-    "58-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "08-natal-life-direction-specificity.md": { title: "Western natal life-direction specificity pack · Asc/chart-ruler/Sun/Moon/sect/dominant/aspects/lots evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "09-home-family-travel-study-specificity.md": { title: "Western home/family/children/travel/study specificity pack · 3rd/4th/5th/9th/12th/lots/timing evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "10-people-network-collaboration-specificity.md": { title: "Western people/network/collaboration specificity pack · 3rd/6th/7th/10th/11th houses and people-role evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -176,7 +235,6 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "07-functional-topic-specificity.md": { title: "Jyotish functional topic specificity pack · bhava/karaka/varga/bala/dasha evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+incoming-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "08-compatibility-specificity.md": { title: "Jyotish compatibility and marriage specificity pack · Tara/Moon/D9/dasha/pair evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "09-career-wealth-health-specificity.md": { title: "Jyotish career/wealth/health specificity pack · 10th/D10/2nd/11th/5th/9th/6th/8th/12th evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
-    "60-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "10-natal-life-direction-specificity.md": { title: "Jyotish natal life-direction specificity pack · Lagna/Moon/Sun/bhava/varga/bala/dasha evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "11-home-family-travel-study-specificity.md": { title: "Jyotish home/family/children/travel/study specificity pack · 3rd/4th/5th/9th/12th/varga/dasha evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "12-people-network-collaboration-specificity.md": { title: "Jyotish people/network/collaboration specificity pack · 3rd/6th/7th/10th/11th bhava and role evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -244,7 +302,6 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "10-palace-sihua-specificity.md": { title: "Zi Wei palace/sihua/timing specificity pack · palace-topic/三方四正/四化 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "11-pair-relationship-specificity.md": { title: "Zi Wei pair and relationship specificity pack · 夫妻/命宮/crossSiHua/timing evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "12-career-wealth-health-specificity.md": { title: "Zi Wei career/wealth/health specificity pack · 官祿/財帛/田宅/疾厄 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
-    "63-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "13-natal-life-direction-specificity.md": { title: "Zi Wei natal life-direction specificity pack · 命宮/身宮/三方四正/四化/大限 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "14-home-family-travel-study-specificity.md": { title: "Zi Wei home/family/children/travel/study specificity pack · 田宅/子女/父母/兄弟/遷移 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "15-people-network-collaboration-specificity.md": { title: "Zi Wei people/network/collaboration specificity pack · 兄弟/僕役/夫妻/父母/官祿 role evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -314,7 +371,6 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "10-degree-limit-specificity.md": { title: "Qizheng degree lord/body lord/limit specificity pack · 命度/度主/身主/行限 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "11-pair-relationship-specificity.md": { title: "Qizheng pair and relationship specificity pack · 妻妾/命主/度主/身主/恩用仇難/timing evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "12-career-wealth-health-specificity.md": { title: "Qizheng career/wealth/health specificity pack · 官祿/財帛/田宅/疾厄/命度/身主/行限 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
-    "63-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "13-natal-life-direction-specificity.md": { title: "Qizheng natal life-direction specificity pack · 命主/命度/身主/恩用仇難/格局/行限 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "14-home-family-travel-study-specificity.md": { title: "Qizheng home/family/children/travel/study specificity pack · 田宅/男女/兄弟/遷移/福德 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "15-people-network-collaboration-specificity.md": { title: "Qizheng people/network/collaboration specificity pack · 兄弟/奴僕/官祿/妻妾/福德 role evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -368,7 +424,6 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
 				  },
   // ศาสตร์ที่ 6 · ยูเรเนียน (Uranian / Hamburger Schule) — คัมภีร์ Witte verbatim (PD · life+70 → PD 1 ม.ค. 2012)
   uranian: {
-    "91-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · Witte 4 TNP แท้ (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "00-source-policy.md": { title: "Uranian source policy (Witte PD scope · round 1)", sourceUrl: "local:uranian/source-policy", licenseClass: "project_summary", mode: "summary" },
     "01-source-policy-conclusion.md": { title: "Uranian source-policy conclusion · what PD Witte canon can/cannot do (method+Halbsumme=OK · A–Z lookup dictionary=Regelwerk Rudolph ยังไม่ PD)", sourceUrl: "local:uranian/source-policy-conclusion", licenseClass: "project_summary", mode: "summary" },
     "10-witte-canon-de.md": { title: "Alfred Witte canon verbatim (DE) · Planetenbild/Halbsumme/sensitive Punkte/Auslösung/Direktionen/vergleichende Astrologie/Häuser/Transneptun(Cupido/Hades/Kronos/Zeus)/Fallbeispiele — Astrologische Rundschau + Astrologische Blätter 1913–1925", sourceUrl: "https://astrax.de (Kulturgut Astrologie e.V.) · AR/AB Jg.1913–1925", licenseClass: "public_domain", mode: "verbatim" },
@@ -894,7 +949,272 @@ function prioritizeToFront(list: string[], ...files: string[]): void {
   list.unshift(...present);
 }
 
-function selectCanonFilesForPrompt(science: ScienceId, question: string, births: BirthData[], selOpts?: { bookMode?: boolean }): string[] | undefined {
+/**
+ * เติมไฟล์ .md ทั้งโฟลเดอร์ศาสตร์ต่อท้ายรายการที่ router เลือกตามคำถาม
+ * ลำดับ: intent/base ก่อน → ไฟล์ licensed* ก่อน → ไฟล์อื่นเรียงชื่อ
+ * ผล: งบสูงขึ้น = ได้คัมภีร์มากขึ้นโดยไม่เสียไฟล์ที่เกี่ยวกับคำถาม + ลิขสิทธิ์มาก่อน
+ */
+function expandCanonSelectionWithFullLibrary(science: ScienceId, selected: string[] | undefined): string[] | undefined {
+  if (science === "bazi") return selected;
+  if (!FUSION_CANON_INCLUDE_ALL) return selected;
+  const files: string[] = selected ? [...selected] : [];
+  try {
+    const dir = join(CANON_DIR, science);
+    if (!existsSync(dir)) return files.length ? files : undefined;
+    const all = readdirSync(dir)
+      .filter((x) => x.endsWith(".md") && !x.includes(".NOTE."));
+    const licensedFirst = all
+      .filter((x) => /licen|official|verbatim|extract|dykes|witte|restricted/i.test(x))
+      .sort();
+    const rest = all.filter((x) => !licensedFirst.includes(x)).sort();
+    pushUnique(files, ...licensedFirst, ...rest);
+  } catch { /* best-effort */ }
+  return files.length ? files : undefined;
+}
+
+/** เปิดเติม extract จากคลังลิขสิทธิ์ หลัง astro-canon · ปิดด้วย FUSION_LICENSED_EXTRACTS=0 */
+const FUSION_LICENSED_EXTRACTS = process.env.FUSION_LICENSED_EXTRACTS !== "0";
+/**
+ * รากคลังลิขสิทธิ์ — อย่า symlink เข้า project root (Turbopack ปฏิเสธ symlink ออกนอก tree)
+ * default: env FUSION_LICENSED_ROOT หรือ path ถาวรบนเครื่อง + fallback ใต้ cwd ถ้ามีจริง
+ */
+function resolveLicensedRoot(): string {
+  const fromEnv = (process.env.FUSION_LICENSED_ROOT || "").trim();
+  if (fromEnv && existsSync(fromEnv)) return fromEnv;
+  const candidates = [
+    "/root/releases/decode-app-r493-combined/private/restricted-sources",
+    "/root/releases/decode-app-r490-cache-tuning/private/restricted-sources",
+    join(process.cwd(), "private", "restricted-sources"),
+  ];
+  for (const c of candidates) {
+    try { if (existsSync(c)) return c; } catch { /* skip */ }
+  }
+  return candidates[0];
+}
+const LICENSED_ROOT = resolveLicensedRoot();
+
+function walkTextFiles(dir: string, acc: string[] = [], depth = 0): string[] {
+  if (depth > 4 || !existsSync(dir)) return acc;
+  try {
+    for (const name of readdirSync(dir)) {
+      if (name.startsWith(".")) continue;
+      const p = join(dir, name);
+      try {
+        const st = statSync(p);
+        if (st.isDirectory()) walkTextFiles(p, acc, depth + 1);
+        else if (/\.(txt|md)$/i.test(name) && !/\.NOTE\./i.test(name)) acc.push(p);
+      } catch { /* skip */ }
+    }
+  } catch { /* skip */ }
+  return acc;
+}
+
+/** ลำดับ priority ไฟล์ extract ลิขสิทธิ์ — official / licensed / dykes ก่อน · OCR ดิบท้าย */
+function licensedExtractPriority(path: string): number {
+  const b = path.toLowerCase();
+  if (b.includes("official-excerpts") || b.includes("official_excerpts")) return 100;
+  if (b.includes("licensed") || b.includes("dykes") || b.includes("witte")) return 90;
+  if (b.includes("/extracted/")) return 70;
+  if (b.includes("public-domain")) return 50;
+  if (b.includes("/ocr/")) return 20;
+  return 40;
+}
+
+/** งบต่อไฟล์ extract · กันไฟล์เดียวกินงบทั้งก้อน (retrieval เลือกหลายไฟล์ที่เกี่ยว) */
+const LICENSED_PER_FILE_MAX = fusionBudgetInt("FUSION_LICENSED_PER_FILE_MAX", 80_000, 4_000, 400_000);
+/** คะแนนขั้นต่ำถึงจะแนบ (ต่ำลง = ยัดกว้างขึ้น) */
+const LICENSED_MIN_SCORE = fusionBudgetInt("FUSION_LICENSED_MIN_SCORE", 10, 0, 100);
+/** จำนวนไฟล์สูงสุดต่อ panel จากคลังลิขสิทธิ์ */
+const LICENSED_MAX_FILES = fusionBudgetInt("FUSION_LICENSED_MAX_FILES", 40, 5, 120);
+
+/** คำค้นจาก intent + คำถาม สำหรับ retrieval คลังลิขสิทธิ์ */
+function licensedRetrievalKeywords(question: string, births: BirthData[]): { intent: CanonIntent; keywords: string[] } {
+  const intent = canonIntentFromQuestion(question, births);
+  const kws: string[] = [];
+  const add = (...xs: string[]) => { for (const x of xs) if (x && x.length >= 2) kws.push(x.toLowerCase()); };
+
+  // กัน "แต่งงาน" ไปติด keyword "งาน" แล้วดึงตำราอาชีพแทนตำราคู่
+  const careerishQ = /อาชีพ|การงาน|ตำแหน่ง|เลื่อน|เจ้านาย|career|job|profession|promotion|employer/i.test(String(question || ""));
+  const loveishQ = /แต่งงาน|สมรส|คู่ครอง|ความรัก|แฟน|ดูคู่|synastry|marriage|love|spouse|wedding/i.test(String(question || ""));
+  if (intent.career && (!loveishQ || careerishQ)) {
+    add("career", "work", "job", "profession", "employment", "promotion", "office", "employer", "salary", "อาชีพ", "การงาน", "ตำแหน่ง", "官", "事業", "mc", "midheaven", "10th");
+    if (!loveishQ) add("งาน");
+  }
+  if (intent.money) add("money", "wealth", "finance", "income", "profit", "debt", "invest", "fortune", "เงิน", "ทรัพย์", "การเงิน", "財", "2nd", "8th", "lot of fortune");
+  if (intent.relationship || intent.pair || loveishQ) {
+    add("love", "marriage", "spouse", "partner", "synastry", "relationship", "wedding", "divorce", "7th", "venus", "คู่ครอง", "แต่งงาน", "ความรัก", "สมรส", "合盤", "婚", "夫妻", "戀");
+  }
+  if (intent.health) add("health", "medical", "surgery", "disease", "illness", "recovery", "6th", "12th", "สุขภาพ", "โรค", "疾", "病");
+  if (intent.timing) add("timing", "transit", "progress", "return", "forecast", "year", "month", "dasha", "profection", "ปี", "จร", "流年", "大限", "行運");
+  if (intent.travel) add("travel", "relocation", "foreign", "abroad", "9th", "3rd", "เดินทาง", "ย้าย", "遷移");
+  if (intent.home) add("home", "house", "property", "family", "4th", "บ้าน", "ที่ดิน", "田宅", "家族");
+  if (intent.children) add("child", "children", "pregnancy", "fertility", "5th", "ลูก", "บุตร", "孕");
+  if (intent.education || intent.study) add("education", "exam", "study", "school", "mercury", "9th", "เรียน", "สอบ", "學");
+  if (intent.people) add("people", "network", "friend", "colleague", "11th", "3rd", "คน", "เครือ", "友");
+  if (intent.risk) add("risk", "dispute", "lawsuit", "enemy", "danger", "8th", "12th", "7th", "เสี่ยง", "คดี", "煞");
+  if (intent.business) add("business", "contract", "client", "commerce", "trade", "ธุรกิจ", "สัญญา", "商");
+  if (intent.authority) add("authority", "legal", "document", "court", "government", "กฎหมาย", "ราชการ", "官");
+  if (intent.employment) add("employment", "interview", "hire", "boss", "สมัครงาน", "สัมภาษณ์", "นายจ้าง");
+  if (intent.property) add("property", "real estate", "vehicle", "land", "อสังหา", "รถ", "ที่ดิน");
+  if (intent.decision) add("decision", "choice", "elect", "horary", "ตัดสิน", "เลือก");
+  if (intent.remedy) add("remedy", "mitigation", "แก้", "ปรับ");
+  if (intent.talent) add("talent", "skill", "temperament", "พรสวรรค์", "นิสัย");
+  if (intent.general) add("nativity", "natal", "life", "กำเนิด", "ดวง", "命");
+  if (intent.horary) add("horary", "question chart", "hour chart");
+  if (intent.electional) add("electional", "election", "choose time", "ฤกษ์");
+  if (intent.mundane) add("mundane", "world", "nation", "ingress");
+
+  // tokens จากคำถาม (ไทย/อังกฤษ ยาว ≥3)
+  const q = String(question || "").toLowerCase();
+  for (const m of q.match(/[a-z]{3,}|[\u0e00-\u0e7f]{2,}|[\u4e00-\u9fff]{1,4}/g) || []) {
+    if (m.length >= 2 && m.length <= 24) add(m);
+  }
+  // unique preserve order
+  const seen = new Set<string>();
+  const keywords = kws.filter((k) => (seen.has(k) ? false : (seen.add(k), true)));
+  return { intent, keywords };
+}
+
+function scoreLicensedExtract(path: string, head: string, keywords: string[], intent: CanonIntent): number {
+  const blob = `${path}\n${head}`.toLowerCase();
+  let score = licensedExtractPriority(path) / 5; // ~4–20
+  for (const k of keywords) {
+    if (!k) continue;
+    if (blob.includes(k)) score += Math.min(18, 6 + Math.floor(k.length / 2));
+  }
+  // path/topic boosts
+  if ((intent.relationship || intent.pair) && /synastry|marriage|love|venus|7th|合|婚|夫妻|relationship/.test(blob)) score += 30;
+  if (intent.career && /career|profession|10th|midheaven|官|事業|employment|job/.test(blob)) score += 28;
+  if (intent.money && /wealth|money|finance|2nd|8th|fortune|財|祿/.test(blob)) score += 28;
+  if (intent.health && /health|medical|disease|6th|12th|疾|病|surgery/.test(blob)) score += 28;
+  if (intent.timing && /transit|progress|return|dasha|timing|forecast|流年|大限|profection/.test(blob)) score += 26;
+  if (/dykes|witte|official|licensed/.test(blob)) score += 12;
+  if (/\/ocr\//.test(blob)) score -= 15;
+  return score;
+}
+
+/**
+ * Retrieval คลังลิขสิทธิ์: เลือก extract ที่คะแนนสูงกับคำถาม/intent ก่อน
+ * แล้วค่อยเติมงบที่เหลือ — ใช้เงินลงทุน SoT ให้ตรงคำถาม ไม่ยัดไฟล์เรียงชื่อ
+ */
+function appendLicensedExtractsToBundle(
+  science: ScienceId,
+  bundle: CanonBundle,
+  maxChars: number,
+  question = "",
+  births: BirthData[] = [],
+): CanonBundle {
+  if (!FUSION_LICENSED_EXTRACTS || science === "bazi") return bundle;
+  if (bundle.text.length >= maxChars) return bundle;
+
+  const roots = [
+    join(LICENSED_ROOT, science, "official-excerpts"),
+    join(LICENSED_ROOT, science, "extracted"),
+    join(LICENSED_ROOT, science, "public-domain"),
+  ];
+  const paths: string[] = [];
+  for (const r of roots) walkTextFiles(r, paths);
+  if (!paths.length) return bundle;
+
+  const { intent, keywords } = licensedRetrievalKeywords(question, births);
+  type Ranked = { abs: string; score: number; head: string };
+  const ranked: Ranked[] = [];
+
+  for (const abs of paths) {
+    try {
+      // อ่านหัวไฟล์อย่างเดียวเพื่อคะแนน (เร็ว · ไม่โหลดทั้งไฟล์ 100MB)
+      const fd = readFileSync(abs, "utf8");
+      if (!fd.trim()) continue;
+      const head = fd.slice(0, 4_000);
+      const score = scoreLicensedExtract(abs, head, keywords, intent);
+      ranked.push({ abs, score, head });
+    } catch { /* skip */ }
+  }
+  ranked.sort((a, b) => b.score - a.score || a.abs.localeCompare(b.abs));
+
+  // ถ้า ranking ว่าง — fallback path priority
+  const pick = ranked.length
+    ? ranked
+    : paths.map((abs) => ({ abs, score: licensedExtractPriority(abs), head: "" }))
+        .sort((a, b) => b.score - a.score);
+
+  let text = bundle.text;
+  const sourceMap = [...bundle.sourceMap];
+  const dropped: string[] = [...(bundle.droppedForBudget || [])];
+  let anyLicensed = false;
+  let filesUsed = 0;
+  const retrievalLog: string[] = [];
+
+  for (const item of pick) {
+    if (filesUsed >= LICENSED_MAX_FILES || text.length >= maxChars) {
+      dropped.push(`licensed:${item.abs.split("/").slice(-2).join("/")}`);
+      continue;
+    }
+    if (item.score < LICENSED_MIN_SCORE && filesUsed >= 6) {
+      // หลังได้ 6 ไฟล์แรกแล้ว ข้ามคะแนนต่ำ
+      continue;
+    }
+    try {
+      const raw = readFileSync(item.abs, "utf8");
+      if (!raw.trim()) continue;
+      const remaining = Math.max(0, maxChars - text.length);
+      const cap = Math.min(remaining, LICENSED_PER_FILE_MAX);
+      const segment = raw.slice(0, cap);
+      if (!segment) break;
+      const rel = item.abs.includes("/restricted-sources/")
+        ? item.abs.split("/restricted-sources/")[1]
+        : item.abs;
+      text += (text.endsWith("\n") ? "" : "\n")
+        + `\n──────── LICENSED/PROJECT EXTRACT · score=${item.score.toFixed(1)} · ${rel} ────────\n`
+        + segment + "\n";
+      sourceMap.push({
+        science,
+        sourceId: `licensed:${rel.replace(/[^a-zA-Z0-9._/-]+/g, "_").slice(0, 120)}`,
+        file: rel,
+        title: `Licensed/project extract · ${rel}`,
+        sourceUrl: `local:private/restricted-sources/${rel}`,
+        licenseClass: /public-domain/i.test(rel) ? "public_domain" : "licensed_internal",
+        mode: /public-domain/i.test(rel) ? "verbatim" : "summary",
+        sourceHashSha256: sha256(raw),
+        promptSegmentHashSha256: sha256(segment),
+        includedChars: segment.length,
+        totalChars: raw.length,
+        truncated: segment.length < raw.length,
+      });
+      anyLicensed = true;
+      filesUsed++;
+      retrievalLog.push(`${item.score.toFixed(0)}:${rel.split("/").pop()}`);
+    } catch { /* skip */ }
+  }
+
+  if (!anyLicensed && !dropped.length) return bundle;
+  if (retrievalLog.length) {
+    try {
+      console.info(`[licensed-retrieval] ${science}: attached ${filesUsed} file(s) · top ${retrievalLog.slice(0, 8).join(" | ")}`);
+    } catch { /* noop */ }
+  }
+  if (dropped.length) {
+    try {
+      console.warn(`[licensed-retrieval] ${science}: budget/file-cap · skipped ${dropped.length}`);
+    } catch { /* noop */ }
+  }
+  // ฝัง log retrieval สั้นๆ ใน text ให้ audit / AI เห็นว่าเลือกตามคำถาม
+  const note = retrievalLog.length
+    ? `\nRETRIEVAL_LICENSED: science=${science} files=${filesUsed} top=${retrievalLog.slice(0, 12).join(",")}\n`
+    : "";
+  const finalText = (note + text).slice(0, maxChars);
+  return {
+    ...bundle,
+    text: finalText,
+    textHashSha256: sha256(finalText),
+    promptChars: finalText.length,
+    truncated: bundle.truncated || sourceMap.some((r) => r.truncated),
+    sourceMap,
+    droppedForBudget: dropped.length ? dropped.slice(0, 40) : bundle.droppedForBudget,
+  };
+}
+
+function selectCanonFilesForPrompt(science: ScienceId, question: string, births: BirthData[]): string[] | undefined {
   if (science === "bazi") return undefined;
   const intent = canonIntentFromQuestion(question, births);
   const files: string[] = [];
@@ -1071,11 +1391,6 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
       prioritizeAfterMethod(files, "10-degree-limit-specificity.md", "08-topic-evidence-gates.md", "13-natal-life-direction-specificity.md", "09-star-nature-operational-summary.md", "05-xingxian.md");
     } else {
       prioritizeAfterMethod(files, "10-degree-limit-specificity.md", "08-topic-evidence-gates.md", "09-star-nature-operational-summary.md");
-    }
-    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
-    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
-      pushUnique(files, "63-career-modern-bridge.md");
-      prioritizeAfterMethod(files, "63-career-modern-bridge.md");
     }
     return files;
   }
@@ -1904,11 +2219,6 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     //   (ก่อน summary/topic ที่ยอมให้ shrink) · droppedForBudget (r398) ยังโปร่งใสถ้าเบียดจนล้น · ไม่ขึ้นเพดาน
     pushUnique(files, "ziwei-quanshu-core.md", "07-quanshu-xingyuan-wenda.md");
     prioritizeAfterMethod(files, ziweiSihuaToken, "09-evidence-gates-topic-router.md", "10-palace-sihua-specificity.md", "ziwei-quanshu-core.md", "07-quanshu-xingyuan-wenda.md");
-    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
-    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
-      pushUnique(files, "63-career-modern-bridge.md");
-      prioritizeAfterMethod(files, "63-career-modern-bridge.md");
-    }
     return files;
   }
 
@@ -2099,11 +2409,6 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     //   แม่บทเล่มแรกเข้าเต็ม เล่มถัดไปติด /truncated (โปร่งใสผ่าน SOURCE_MAP) — ยังต้องคู่กับ section splitter (R4) เฟสหน้า
     pushUnique(files, "02-lilly-houses.md", "tetrabiblos-core.md");
     prioritizeAfterMethod(files, "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md", "02-lilly-houses.md", "tetrabiblos-core.md");
-    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
-    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
-      pushUnique(files, "58-career-modern-bridge.md");
-      prioritizeAfterMethod(files, "58-career-modern-bridge.md");
-    }
     return files;
   }
 
@@ -2284,11 +2589,6 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     prioritizeAfterMethod(files, "06-evidence-gates-specialty-router.md", "07-functional-topic-specificity.md", "02-bphs-dasha-yoga.md", "vedic-core.md");
     // r377 · ดัน BPHS section ไว้ถัดจาก 00-method เพื่อรอด shrink loop (ตาราง+โศลกต้องไม่ถูกตัด)
     if (bphsToken) prioritizeAfterMethod(files, bphsToken);
-    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
-    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
-      pushUnique(files, "60-career-modern-bridge.md");
-      prioritizeAfterMethod(files, "60-career-modern-bridge.md");
-    }
     return files;
   }
 
@@ -2369,11 +2669,6 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     if (intent.timing || intent.advancedTiming || intent.validation) mStar.push("saturn", "outer");
     if (intent.general) mStar.push("sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "outer");
     if (mStar.length) pushUnique(files, `11-method-reading-uranian.md#${Array.from(new Set(mStar)).join("+")}`);
-    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
-    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
-      pushUnique(files, "91-career-modern-bridge.md");
-      prioritizeAfterMethod(files, "91-career-modern-bridge.md");
-    }
     return files;
   }
 
@@ -2463,71 +2758,12 @@ function qizhengTransitYears(refDate: Date): number[] {
   return Array.from({ length: 13 }, (_, i) => center - 6 + i);
 }
 
-/* r510-tz: ล้างข้อความ user-supplied ก่อนแทรกเข้า prompt — ตัด control/format chars + ยุบช่องว่าง + cap ความยาว (กัน prompt injection/แย่งพื้นที่ prompt · ตามรีวิวพ่อ) */
-export function sanitizePromptInline(raw: unknown, maxChars = 80): string {
-  return String(raw ?? "")
-    /* C0+C1 controls + zero-width/bidi/format chars */
-    .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u206F\uFEFF]/g, " ")
-    /* กันหลุดกรอบเครื่องหมายคำพูด: แปลง " และ ` เป็นเครื่องหมายคำพูดตัวพิมพ์ (ไม่ใช่ delimiter) */
-    .replace(/["`]/g, "\u2019")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, maxChars)
-    .trim();
-}
-
-/* r510-tz: รับเฉพาะรูปแบบ IANA timezone (เช่น Asia/Bangkok, America/New_York, America/Kentucky/Louisville) — ค่าอื่น fallback กรุงเทพ */
-const IANA_TZ_RE = /^[A-Za-z_][A-Za-z0-9_+\-]{0,30}(\/[A-Za-z0-9_+\-]{1,30}){0,2}$/;
-export function normalizeTimezoneLabel(raw: unknown): string {
-  const tz = String(raw ?? "").trim();
-  if (!IANA_TZ_RE.test(tz)) return "Asia/Bangkok";
-  /* r510-tz รอบ 2 (พ่อ): regex กันแค่รูปแบบ — ต้องเช็คว่า runtime รู้จักโซนจริง (กัน "Mars/Olympus" ป้ายปลอมทับเวลากรุงเทพ) */
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: tz });
-    return tz;
-  } catch {
-    return "Asia/Bangkok";
-  }
-}
-
-/* r510-tz: แปลง dtUTC → วันที่/เวลาท้องถิ่นตามเขตเวลา (ใช้เฉพาะ fallback ตอนไม่มี birthDate/birthTime) · พังเมื่อไร fallback กรุงเทพแบบเดิม */
-function localDateTimeInTz(dtUTC: Date, tz: string): { date: string; time: string } | null {
-  try {
-    const f = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-    });
-    const p: Record<string, string> = {};
-    for (const part of f.formatToParts(dtUTC)) p[part.type] = part.value;
-    if (!p.year || !p.month || !p.day || !p.hour || !p.minute) return null;
-    return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` };
-  } catch { return null; }
-}
-
 function birthLocalLine(b: BirthData): string {
-  /* r510-tz: เลิก hardcode Asia/Bangkok — ใช้เขตเวลาจริงของดวง (validate เป็น IANA · default เดิมคงไว้ เพราะข้อมูล profiles ปัจจุบันเก็บเวลาแบบกรุงเทพ) */
-  const tz = normalizeTimezoneLabel(b.timezone);
-  /* fallback เมื่อไม่มี birthDate/birthTime: ต้องแปลงตามเขตเวลาจริง ไม่ใช่บวก +7 ตายตัว (บั๊กที่พ่อจับได้ — ดวง ตปท. จะได้เวลากรุงเทพแปะป้าย ตปท.) */
-  let date = b.birthDate || "";
-  let time = b.birthTime || "";
-  if (!date || !time) {
-    const loc = tz !== "Asia/Bangkok" ? localDateTimeInTz(b.dtUTC, tz) : null;
-    if (loc) {
-      date = date || loc.date;
-      time = time || loc.time;
-    } else {
-      const parts = bangkokParts(b.dtUTC);
-      const bkk = new Date(b.dtUTC.getTime() + BANGKOK_OFFSET_MS);
-      date = date || `${parts.year}-${pad2(parts.month)}-${pad2(parts.day)}`;
-      time = time || `${pad2(bkk.getUTCHours())}:${pad2(bkk.getUTCMinutes())}`;
-    }
-  }
-  /* r510-tz: บริบทถิ่นเกิด — ซินแสจริงใช้ถิ่นเกิดอ่านราก/ต่างแดน · engine คำนวณจากพิกัดไปแล้ว บรรทัดนี้ให้ AI รู้บริบทเท่านั้น · place = ข้อความ user กรอก ล้างก่อนเสมอ + ครอบเครื่องหมายคำพูดให้อ่านเป็น data */
-  const place = sanitizePromptInline(b.place, 80);
-  const placePart = place
-    ? ` · สถานที่เกิด: "${place}" (lat ${b.lat} lng ${b.lng})`
-    : ` · พิกัดเกิด: lat ${b.lat} lng ${b.lng}`;
-  return `เวลาเกิดท้องถิ่นที่ผู้ใช้กรอก: ${date} ${time} ${tz}${placePart} · ใช้ค่านี้เป็นวันเกิดผู้ใช้เท่านั้น (UTC instant ภายในระบบ: ${b.dtUTC.toISOString()} · ห้ามนำวันที่ UTC ไปแสดงเป็นวันเกิด)`;
+  const parts = bangkokParts(b.dtUTC);
+  const bkk = new Date(b.dtUTC.getTime() + BANGKOK_OFFSET_MS);
+  const date = b.birthDate || `${parts.year}-${pad2(parts.month)}-${pad2(parts.day)}`;
+  const time = b.birthTime || `${pad2(bkk.getUTCHours())}:${pad2(bkk.getUTCMinutes())}`;
+  return `เวลาเกิดท้องถิ่นที่ผู้ใช้กรอก: ${date} ${time} Asia/Bangkok · ใช้ค่านี้เป็นวันเกิดผู้ใช้เท่านั้น (UTC instant ภายในระบบ: ${b.dtUTC.toISOString()} · ห้ามนำวันที่ UTC ไปแสดงเป็นวันเกิด)`;
 }
 
 function metaFor(science: ScienceId, file: string): Pick<CanonSourceMapRow, "title" | "sourceUrl" | "licenseClass" | "mode"> {
@@ -2541,8 +2777,8 @@ function metaFor(science: ScienceId, file: string): Pick<CanonSourceMapRow, "tit
 }
 
 /** โหลดคัมภีร์ศาสตร์ (data/library/astro-canon/<science>/*.md) · best-effort · cap ขนาด
- *  cap 56K = qizheng มี 4 ไฟล์ (恩用12宮+廟旺+格局+星情 ~50K) โหลดครบ · ศาสตร์อื่นไฟล์เดียว <30K ไม่กระทบ
- *  รวม canon+packet+question ยังต่ำกว่า SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS (80K) */
+ *  r513: default CANON_TEXT_MAX_CHARS สูงขึ้น (env FUSION_CANON_TEXT_MAX_CHARS) · ลด CANON_DROPPED_FOR_BUDGET
+ *  ยังต้องไม่เกิน FUSION_PANEL_PROMPT_MAX_CHARS / SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS */
 export function loadCanonBundle(science: ScienceId, maxChars = CANON_TEXT_MAX_CHARS, selectedFiles?: string[]): CanonBundle {
   const selectedKey = selectedFiles?.length ? selectedFiles.join("|") : "";
   const cacheKey = `${science}:${maxChars}:${selectedKey}`;
@@ -2611,6 +2847,7 @@ export function loadCanonBundle(science: ScienceId, maxChars = CANON_TEXT_MAX_CH
     sourceMap,
     droppedForBudget,
   };
+  /* licensed extracts แนบทีหลังใน buildSciencePrompt หลัง shrink (retrieval ตามคำถาม) */
   canonCache.set(cacheKey, bundle);
   return bundle;
 }
@@ -2998,6 +3235,7 @@ const SPECIFIC_READING_CONTRACT = [
   "ต้องยกหลักฐานเฉพาะจากผังอย่างน้อย 5 จุดในโหมดเดี่ยว หรือ 6 จุดในโหมดคู่; ถ้า topic pack ที่ถูกเลือกมีหัวข้อ Answer Contract ให้ตอบให้ครบทุกบรรทัดของ contract นั้นแม้ต้องใช้หลักฐานมากกว่า 5 จุด",
   "แต่ละจุดต้องมีตำแหน่ง/ดาว/เรือน/เสา/วัยจร/สถานะจริงจากผัง แล้วแปลเป็นผลชีวิตหนึ่งประโยค",
   "ทุกคำฟันธงหลักต้องมี anchor จาก packet ติดอยู่ในประโยคเดียวกัน เช่น ดาว+ราศี+เรือน, องศา/宿/ฤกษ์, 四化/大限/流年, dignity/bala/ashtakavarga, หรือช่วงปีจรที่ระบบส่งมา",
+  "ทุกคำตอบต้องโยงกับชั้นเวลา/วัยจรของเจ้าชะตา (ช่วงชีวิตที่ active) ไม่ใช่อ่านพื้นดวงอย่างเดียวแล้วสรุปทั้งชีวิต",
   "ถ้าประโยคใดสามารถใช้กับคนทั่วไปได้โดยไม่ต้องมีผังนี้ ให้เขียนใหม่ให้มีชื่อเจ้าชะตา + field เฉพาะ + ผลชีวิตเฉพาะทันที",
   "ห้ามเขียนบทเรียนตำรา ห้ามอธิบายความหมายดาว/เรือน/เสาแบบลอย ๆ โดยไม่ผูกกับตำแหน่งของเจ้าชะตา",
   "ห้ามตอบกว้างแบบ 'การงานมีโอกาสดี', 'ความรักต้องสื่อสาร', 'สุขภาพควรพักผ่อน' ถ้าไม่มีหลักฐานเฉพาะจากผังตามหลังทันที",
@@ -3005,6 +3243,38 @@ const SPECIFIC_READING_CONTRACT = [
   "ห้ามไล่ครบทุกเรื่องชีวิตถ้าคำถามไม่ได้ถาม ให้ลงลึกเฉพาะเรื่องที่ถามก่อน แล้วค่อยเสริมจุดเฉพาะที่จำเป็น",
   "ปิดท้ายด้วย 'จุดเฉพาะที่ทำให้คำตอบนี้เป็นของดวงนี้' 3 ข้อ เว้นแต่คำตอบสั้นมาก; แต่ละข้อต้องมี field เฉพาะ ไม่ใช่คำแนะนำทั่วไป",
 ].join("\n");
+
+/**
+ * วัยจร / ช่วงชีวิต — แกนบังคับทุกศาสตร์ fusion (panel + judge + guest bazi + book)
+ * ข้อมูลชั้นเวลามาจาก packet/engine แล้ว · หน้าที่ AI คือย้ำและไล่ช่วงชีวิต ไม่ใช่คำนวณเอง
+ */
+const LIFE_PERIOD_LAYER_BY_SCIENCE: Record<ScienceId | "judge" | "bazi" | "palm", string> = {
+  bazi: "วัยจร 大運 (ตารางทั้งชีวิต + ปีครอบใน packet) · ปีจร 流年 · เดือนจร ถ้ามี · อ่านปีไหนใช้วัยจรของปีนั้น ห้ามยกวัยจรปัจจุบันไปทุกปี",
+  qizheng: "行限 / 限度主 (洞微百六限 · ช่วงอายุ) + จรรายปีในผัง · ไล่ช่วงที่เดินอยู่ / เพิ่งผ่าน / กำลังจะเข้า",
+  ziwei: "大限 (ทศวรรษตามอายุบน 12 宮) + 流年 + 流月/流日 ถ้ามี · 疊宮 natal×大限×流年 เมื่อ packet ส่งมา",
+  western: "profection ปี · secondary progression · solar return · exact transit ของปีเป้าหมาย · ผูกกับอายุจริงของเจ้าชะตา",
+  vedic: "Vimshottari mahadasha ทั้งชีวิต + antardasha/pratyantar ของปี + gochara · ระบุ maha–antar ที่ active",
+  uranian: "Auslösung (solar arc / directed / transit) ตามช่วงอายุ–ปีเป้าหมาย · วัน/เดือนที่ระบบส่งมาเท่านั้น",
+  palm: "จุดเปลี่ยน/วัยจรจากตำแหน่งบนเส้น (อดีต→ปัจจุบัน→แนวโน้ม) · งาน/เงิน/รัก ต้องสอดวัยจรเมื่อมีเครื่องหมาย",
+  judge: "ชั้นเวลาที่แต่ละ panel ส่งมา (วัยจร/大限/dasha/profection/行限/Auslösung/จุดเปลี่ยนลายมือ) · หลอมเป็นไทม์ไลน์ชีวิตเดียว",
+};
+
+/** export ให้ guest-bazi / route / เทสใช้ชุดเดียว */
+export function lifePeriodContract(science: ScienceId | "judge" | "bazi" | "palm"): string {
+  const layer = LIFE_PERIOD_LAYER_BY_SCIENCE[science] || LIFE_PERIOD_LAYER_BY_SCIENCE.bazi;
+  return [
+    "=== วัยจร / ช่วงชีวิต (บังคับ · สำคัญมาก) ===",
+    "ผู้ใช้ต้องเห็นว่าชีวิตเดินเป็นช่วง ๆ ไม่ใช่พื้นดวงนิ่ง ๆ — ทุกคำตอบต้องมีแกนเวลาของเจ้าชะตา",
+    `ชั้นเวลาของศาสตร์นี้: ${layer}`,
+    "กติกาอ่าน:",
+    "1) ระบุช่วงชีวิตที่ active ตอนนี้: อายุโดยประมาณ + ชื่อชั้นเวลาจาก packet (เช่น วัยจรไหน / 大限ไหน / mahadasha ไหน / 行限ช่วงไหน)",
+    "2) ไล่อย่างน้อย 3 ช่วง: อดีตใกล้ที่เพิ่งผ่าน · ปัจจุบัน · ช่วงถัดไป (หรือ 3 ช่วงจากตารางทั้งชีวิตที่ packet ส่ง) — ใช้เฉพาะค่าในผัง ห้ามแต่งปี/เสาเอง",
+    "3) โยงคำถามเข้ากับช่วงที่ active: เรื่องที่ถาม “หนัก/เบา/ควรทำ” เพราะอยู่ในจังหวะชีวิตช่วงนี้ ไม่ใช่เพราะพื้นดวงอย่างเดียว",
+    "4) ถ้าคำถามระบุปี/ช่วงปี: ใช้ชั้นเวลาของปีนั้น (ไม่ใช่วัยจร/大限/dasha ปัจจุบันเสมอ) · ปีรอยต่อ (เปลี่ยนรอบ) ต้องบอกว่ากำลังจะสลับ",
+    "5) ห้าม: อ่านแค่ natal/พื้นดวงแล้วสรุปทั้งชีวิต · ยกช่วงปัจจุบันไปครอบทุกปี · เดาปฏิกิริยาข้ามช่วง (三合/拱 ข้ามวัยจร, dasha ผิดชั้น) ถ้า packet ไม่ปล่อย",
+    "6) ถ้า field ชั้นเวลาขาดจริงในผัง: บอกตรง ๆ แล้วฟันธงเฉพาะขอบเขตที่มี — ห้ามสร้างตารางวัยจรเอง",
+  ].join("\n");
+}
 
 const FUSION_JUDGE_SYNTHESIS_CONTRACT = [
   "=== สัญญาการหลอมรวม Fusion Judge ===",
@@ -3014,6 +3284,7 @@ const FUSION_JUDGE_SYNTHESIS_CONTRACT = [
   "จุดร่วมที่ฟันธงหนักต้องมีอย่างน้อย 2 ศาสตร์หนุนด้วย anchor เฉพาะ ถ้ามีแค่ศาสตร์เดียวให้เขียนว่าเป็นสัญญาณเฉพาะศาสตร์นั้น ไม่ใช่ฉันทามติ",
   "ถ้าศาสตร์ต่างกัน ให้แปลเป็นเงื่อนไขชีวิตจริง ไม่ใช่บอกว่าสับสน เช่น 'งานหนุนแต่เงินรั่ว', 'คู่มีแรงดึงแต่ timing ยังหนัก'",
   "คำตอบสุดท้ายต้องมีอย่างน้อย 3 หลักฐานข้ามศาสตร์ที่ระบุชื่อศาสตร์และ anchor เฉพาะ เช่น ดาว/เรือน/ภพ/วัยจร/四化/行限/dasha/transit",
+  "ต้องมีหัวข้อ '## วัยจร / ช่วงชีวิต (หลอมรวม)' — เทียบว่าศาสตร์ต่าง ๆ ชี้ช่วงชีวิตเดียวกันหรือคนละจังหวะ แล้วสรุปไทม์ไลน์ชีวิตของผู้ถาม (อดีตใกล้·ปัจจุบัน·ถัดไป) จากชั้นเวลาที่ panel ส่งมาเท่านั้น",
   "ถ้าคำถามเป็นฤกษ์/ถามยาม/medical/mundane/locality ให้รักษาขอบเขตของแต่ละ panel: specialty missing ไม่ใช่ห้ามตอบทั้งหมด แต่ห้ามแปลง fallback เป็นคำตัดสิน specialty เต็มระบบ",
 ].join("\n");
 
@@ -3049,25 +3320,29 @@ function answerFormatLine(births: BirthData[], judge = false): string {
     return [
       MARKDOWN_FORMAT_CONTRACT,
       "รูปแบบตอบบังคับ:",
-      `1) ฟันธงรวมเฉพาะ ${names} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป`,
+      `1) ฟันธงรวมเฉพาะ ${names} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป — ใส่จังหวะชีวิต/ช่วงที่ active ถ้าเกี่ยวกับคำถาม`,
       "2) จุดที่ศาสตร์เห็นตรงกัน 3 ข้อ โดยแต่ละข้อระบุหลักฐานเฉพาะจากศาสตร์นั้น ๆ",
-      "3) จุดที่ต่างกันหรือข้อระวัง 1-2 ข้อ เฉพาะที่มีผลต่อคำถาม",
-      "4) ทำอะไรต่อ 3 ข้อ แบบลงมือได้จริง",
+      "3) ## วัยจร / ช่วงชีวิต (หลอมรวม) — เทียบชั้นเวลาข้ามศาสตร์ · ไล่ อดีตใกล้ · ปัจจุบัน · ถัดไป (บังคับ มีตาราง markdown ถ้า ≥3 ช่วง/ศาสตร์)",
+      "4) จุดที่ต่างกันหรือข้อระวัง 1-2 ข้อ เฉพาะที่มีผลต่อคำถาม",
+      "5) ทำอะไรต่อ 3 ข้อ แบบลงมือได้จริง และผูกกับช่วงชีวิตที่ active",
       "ห้ามพูดคำว่า packet/engine/prompt/CLI/คัมภีร์ในคำตอบ",
     ].join("\n");
   }
   return [
     MARKDOWN_FORMAT_CONTRACT,
     "รูปแบบตอบบังคับ:",
-    `1) ฟันธงเฉพาะ ${names} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป`,
-    "2) หลักฐานเฉพาะจากผังอย่างน้อย 5 จุด (โหมดคู่ใช้ 6 จุด) และถ้า topic pack มี Answer Contract ให้ทำครบทุกบรรทัด แต่ละจุดต้องโยงกับคำถามโดยตรง",
-    "3) คำตอบตรงคำถามแบบลงลึก ไม่ใช่สรุปกว้างทุกมิติ",
-    "4) คำแนะนำปฏิบัติ 3 ข้อ ที่สัมพันธ์กับหลักฐานดวง",
+    `1) ฟันธงเฉพาะ ${names} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป — ระบุช่วงชีวิต/ชั้นเวลาที่ active ถ้า packet มี`,
+    "2) หลักฐานเฉพาะจากผังอย่างน้อย 5 จุด (โหมดคู่ใช้ 6 จุด) และถ้า topic pack มี Answer Contract ให้ทำครบทุกบรรทัด แต่ละจุดต้องโยงกับคำถามโดยตรง — อย่างน้อย 1 จุดต้องเป็นชั้นเวลา/วัยจร/大限/dasha/行限/profection/Auslösung",
+    "3) ## วัยจร / ช่วงชีวิต — ไล่ อดีตใกล้ · ปัจจุบัน · ถัดไป จากตาราง/ชั้นเวลาในผัง (บังคับ) · โยงคำถามเข้าช่วงที่ active",
+    "4) คำตอบตรงคำถามแบบลงลึก ไม่ใช่สรุปกว้างทุกมิติ",
+    "5) คำแนะนำปฏิบัติ 3 ข้อ ที่สัมพันธ์กับหลักฐานดวง + จังหวะชีวิตช่วงนี้",
     "ห้ามพูดคำว่า packet/engine/prompt/CLI/คัมภีร์ในคำตอบ",
   ].join("\n");
 }
 
-/** prompt 1 panel ศาสตร์ (รองรับ 1-4 ดวง · ≥2 ดวง = ดูคู่/กลุ่ม พร้อม pair packet ทุกคู่ i<j) */
+/** prompt 1 panel ศาสตร์ (รองรับ 1-4 ดวง · ≥2 ดวง = ดูคู่/กลุ่ม พร้อม pair packet ทุกคู่ i<j)
+ *  opts.model = โมเดลที่จะยิงจริง → cap คัมภีร์/panel ตาม knowledgeCapChars (claude 2M / grok 500K / codex 280K)
+ *  ⚠️ fallback โมเดลต้องเรียก buildSciencePrompt ใหม่ด้วย model ใหม่ — ห้าม reuse prompt ใหญ่เกิน */
 export function buildSciencePrompt(
   science: ScienceId,
   births: BirthData[],
@@ -3075,16 +3350,21 @@ export function buildSciencePrompt(
   lang = "th",
   refDate = new Date("2026-06-30T00:00:00Z"),
   timingRefOverride?: FusionTimingReference,
-  opts?: { bookMode?: boolean; wholeLifeMode?: "research" | "user" }, // r391-book + r510-wl: additive ทั้งคู่ · default undefined = Q&A เดิม byte-identical
+  opts?: { bookMode?: boolean; model?: string | null }, // r391-book + r513 model-aware cap
 ): string {
   const bind = DISCIPLINES[science];
   const bookMode = opts?.bookMode === true;
-  const wholeLifeMode = opts?.wholeLifeMode; // r510-wl: สลับเฉพาะบล็อก timing (precedence: ชนะ timing · ไม่แตะ question/canon router)
+  const model = opts?.model || null;
+  const panelCap = fusionPanelBudgetChars(model);
+  const canonCap = fusionCanonBudgetChars(model);
   // r391-book: bookMode → question ถูกแทนด้วย read-full directive (เจาะ 10 มิติ) · ใช้เลือก canon ให้ครอบทุกมิติ
   const bookDirective = bookMode ? loadBookDirective(science, births[0]?.name || "เจ้าชะตา") : "";
   const effectiveQuestion = bookMode ? bookDirective : question;
   const timingRef = timingRefOverride || resolveFusionTimingReference(question, refDate);
-  const selectedCanonFiles = selectCanonFilesForPrompt(science, effectiveQuestion, births, { bookMode }); // r510-fix: bookMode ไม่ดึงสะพานอาชีพ (read-full มีคำอาชีพเสมอ จะเบียดคัมภีร์ verbatim)
+  const selectedCanonFiles = expandCanonSelectionWithFullLibrary(
+    science,
+    selectCanonFilesForPrompt(science, effectiveQuestion, births),
+  );
   // r399 · memo ผลเรนเดอร์ผัง/pair ต่อ call — assemble ถูกเรียกซ้ำใน shrink loop + compaction loop
   //   เดิม re-render (รัน engine ใหม่) ทุกรอบ · memo = คำนวณครั้งเดียว (ผลเท่าเดิม · เร็วขึ้น)
   const chartCache = new Map<number, string>();
@@ -3104,19 +3384,22 @@ export function buildSciencePrompt(
     L.push(`อ่านดวงจาก "ผังที่ระบบคำนวณ" ด้านล่างเท่านั้น · ⚠️ ${bind.termGuard}`);
     L.push(`ห้ามเดาตำแหน่งดาว/เรือน/ดวง · field ไหนไม่มีจริง (หายจากทั้งบล็อกผังข้อความและ STRUCTURED_CHART_PACKET) จึงบอกว่าไม่มี · ตอบภาษา${LANG_NAME[lang] || "ไทย"}นำ`);
     if (LANG_ANSWER_DIRECTIVE[lang]) L.push(LANG_ANSWER_DIRECTIVE[lang]); // r414-i18n9: เฉพาะภาษาใหม่ (th/en/zh ไม่มี entry → prompt เดิมไม่เปลี่ยน)
+    /* r513 · คัมภีร์/extract ที่ระบบแนบ = Source of Truth ที่โปรเจกต์ลงทุนจัดหา (รวมลิขสิทธิ์) — ต้องใช้ให้สุด ห้ามทิ้งไปใช้ความจำโมเดล */
+    L.push("=== PROJECT SOURCE OF TRUTH (บังคับ) ===");
+    L.push("บล็อกคัมภีร์ + LICENSED/PROJECT EXTRACT ด้านล่างคือ source of truth ของ hourkey (รวมตำรา/extract ที่ซื้อลิขสิทธิ์และสรุปจากคลัง restricted) — เมื่อขัดกับความจำฝึกฝนของโมเดล ให้ยึดข้อความที่แนบใน prompt เป็นหลัก");
+    L.push("อ้างได้เฉพาะแหล่งที่อยู่ใน SOURCE_MAP หรือหัวข้อ LICENSED/PROJECT EXTRACT ที่แนบจริง · ห้ามแต่งชื่อตำรา/หน้า/บทที่ไม่ได้แนบ · ห้ามตอบแบบท่องจำทั่วไปถ้าผัง+คัมภีร์ที่แนบมีหลักพอฟันธง");
+    L.push("=== END PROJECT SOURCE OF TRUTH ===");
+    if (model) {
+      L.push(`KNOWLEDGE_BUDGET: model=${model} · canon_cap=${canonCap} · panel_cap=${panelCap} (reuse knowledgeCapChars · ห้ามเกินความจุโมเดล)`);
+    }
     // r398 · ผ่อนคำสั่ง: เดิมยก STRUCTURED_CHART_PACKET (JSON) เป็นแหล่งเดียว → ค่าที่ engine ส่งมาเป็น prose (=== ผังดวง/TIMING) แต่ไม่อยู่ JSON กลายเป็น "นอก packet" → AI แจ้ง "ส่งไม่ครบ" ทั้งที่มีค่า
     //   แก้: ยึดสองแหล่งคู่กัน (prose + JSON) · ค่าปรากฏแหล่งใดแหล่งหนึ่ง = ระบบส่งมาแล้ว · คง guard เดิม (ห้ามเดา/ห้ามความรู้นอกผัง/NO_PERCENT)
     L.push("คำตอบต้องยึดข้อมูลจากผังที่ระบบส่งมา 2 แหล่งคู่กัน: (1) บล็อกผังที่ render เป็นข้อความ (=== ผังดวง … === และ TIMING/TIMELINE/ชั้นเวลาต่าง ๆ) และ (2) STRUCTURED_CHART_PACKET (JSON) — ถ้าค่าปรากฏในแหล่งใดแหล่งหนึ่ง ถือว่าระบบส่งมาแล้ว ใช้ฟันธงได้ · ให้บอกว่า 'ไม่มีข้อมูล/ยังไม่ได้ส่งมา' เฉพาะเมื่อค่านั้นหายจากทั้งสองแหล่ง · ยังคงห้ามใช้ความรู้ทั่วไป/horoscope นอกผังมาเติม ห้ามเดา/แต่งตำแหน่ง-มุม-ดาว-วัน-ตัวเลขเอง และห้ามใส่ % ความแม่น");
     L.push(DECISIVE_READING_POLICY);
     L.push(subjectLockLine(births));
     L.push(SPECIFIC_READING_CONTRACT);
-    if (wholeLifeMode) {
-      /* r510-wl: โหมดอ่านทั้งชีวิต — แทนบล็อก timing เดิมจุดเดียว (ผัง/ตารางจรยัง render ตาม refDate ปกติ) */
-      L.push(loadWholeLifeDirective(wholeLifeMode));
-      L.push(`(หมายเหตุระบบ: ตารางจรรายปีที่แนบใช้วันอ้างอิงเทคนิค ${timingRef.refDate.toISOString().slice(0, 10)} — ใช้เป็นข้อมูลประกอบ ไม่ใช่แกนคำตอบของโหมดนี้)`);
-    } else {
-      L.push(`=== จังหวะเวลาที่ใช้คำนวณจร ===\nวันอ้างอิงจร: ${timingRef.refDate.toISOString().slice(0, 10)} · ปีเป้าหมาย ${timingRef.targetYear} · ที่มา: ${timingRef.label}\nถ้าคำถามถามปี/วันที่นี้ ให้ใช้จรของปีเป้าหมายนี้เป็นแกน ห้ามตอบว่าเห็นเฉพาะปีปัจจุบันเมื่อข้อมูลจรปีเป้าหมายถูกส่งมาแล้ว`);
-    }
+    L.push(lifePeriodContract(science));
+    L.push(`=== จังหวะเวลาที่ใช้คำนวณจร ===\nวันอ้างอิงจร: ${timingRef.refDate.toISOString().slice(0, 10)} · ปีเป้าหมาย ${timingRef.targetYear} · ที่มา: ${timingRef.label}\nถ้าคำถามถามปี/วันที่นี้ ให้ใช้จรของปีเป้าหมายนี้เป็นแกน ห้ามตอบว่าเห็นเฉพาะปีปัจจุบันเมื่อข้อมูลจรปีเป้าหมายถูกส่งมาแล้ว\nชั้นเวลาทั้งชีวิต (วัยจร/大限/dasha/行限 ฯลฯ) อยู่ในบล็อกผังด้านล่าง — ต้องอ่านประกอบ ไม่ใช่แค่ปีเป้าหมาย`);
     if (bundle.text) {
       L.push(`\n=== คัมภีร์ ${bind.labelTh} (หลักการตีความ — ใช้เป็นฐาน) ===`);
       if (selectedCanonFiles?.length) {
@@ -3174,43 +3457,59 @@ export function buildSciencePrompt(
     }
     return L.join("\n");
   };
-  let maxCanon = CANON_TEXT_MAX_CHARS + (science === "ziwei" ? ZIWEI_SIHUA_CANON_EXTRA_CHARS : 0);
+  // r513 model-aware: maxCanon ตาม knowledgeCapChars(model) ไม่ใช่ CANON_TEXT_MAX_CHARS ตายตัว
+  let maxCanon = canonCap + (science === "ziwei" ? ZIWEI_SIHUA_CANON_EXTRA_CHARS : 0);
   let bundle = loadCanonBundle(science, maxCanon, selectedCanonFiles);
   let prompt = assemble(bundle);
-  while (prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS && maxCanon > CANON_TEXT_MIN_CHARS) {
-    const shrinkBy = prompt.length - FUSION_PANEL_PROMPT_MAX_CHARS + 2_000;
+  while (prompt.length > panelCap && maxCanon > CANON_TEXT_MIN_CHARS) {
+    const shrinkBy = prompt.length - panelCap + 2_000;
     maxCanon = Math.max(CANON_TEXT_MIN_CHARS, maxCanon - shrinkBy);
     bundle = loadCanonBundle(science, maxCanon, selectedCanonFiles);
     prompt = assemble(bundle);
   }
+  /* r513 retrieval · เติมคลังลิขสิทธิ์ตามคำถาม/intent หลัง pack settle (ไม่ยัดเรียงชื่อ) */
+  {
+    // เผื่องบ chart+question ใน prompt รวม — ใช้ maxCanon เป็นเพดานคัมภีร์รวม pack+licensed
+    const room = Math.max(0, maxCanon);
+    bundle = appendLicensedExtractsToBundle(science, bundle, room, effectiveQuestion, births);
+    prompt = assemble(bundle);
+    // ถ้าเกิน panel cap หลัง retrieval → ลด licensed โดย shrink maxCanon แล้ว reload pack + retrieve ใหม่ (สูงสุด 4 รอบ)
+    for (let guard = 0; guard < 4 && prompt.length > panelCap && maxCanon > CANON_TEXT_MIN_CHARS; guard++) {
+      const over = prompt.length - panelCap + 3_000;
+      maxCanon = Math.max(CANON_TEXT_MIN_CHARS, maxCanon - over);
+      bundle = loadCanonBundle(science, maxCanon, selectedCanonFiles);
+      bundle = appendLicensedExtractsToBundle(science, bundle, maxCanon, effectiveQuestion, births);
+      prompt = assemble(bundle);
+    }
+  }
   // r399 · โหมดกลุ่ม (≥2 ดวง) canon ถึงพื้นแล้วยังเกินเพดาน → บีบ "prose ต่อดวง" + "pair packet"
   //   คง STRUCTURED_CHART_PACKET (core) ทุกดวงเต็มเสมอ · แทน tail-cut (head+tail) ที่ตัดกลาง prompt
   //   จนบางดวง packet หาย (r2L-10 ข้อ 4.2) · เป้า: ทุกดวงมี packet ครบ + ≤เพดาน + ไม่ตัด packet
-  if (births.length >= 2 && prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS) {
+  if (births.length >= 2 && prompt.length > panelCap) {
     let proseBudget = 30_000;
     let pairBudget = 30_000;
     const reassemble = () => { prompt = assemble(bundle, { proseBudget, pairBudget }); };
     reassemble();
     // 1) ลด prose ต่อดวงก่อน (ตัวหลักที่กินงบ) — packet ยังเต็ม
-    for (let guard = 0; guard < 60 && prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS && proseBudget > 0; guard++) {
-      const over = prompt.length - FUSION_PANEL_PROMPT_MAX_CHARS;
+    for (let guard = 0; guard < 60 && prompt.length > panelCap && proseBudget > 0; guard++) {
+      const over = prompt.length - panelCap;
       proseBudget = Math.max(0, proseBudget - Math.ceil(over / births.length) - 500);
       reassemble();
     }
     // 2) ยังเกิน → ลด pair packet (prose ถูกบีบสุดแล้ว เหลือ packet ล้วน)
-    for (let guard = 0; guard < 60 && prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS && pairBudget > 0; guard++) {
-      const over = prompt.length - FUSION_PANEL_PROMPT_MAX_CHARS;
+    for (let guard = 0; guard < 60 && prompt.length > panelCap && pairBudget > 0; guard++) {
+      const over = prompt.length - panelCap;
       pairBudget = Math.max(0, pairBudget - over - 500);
       reassemble();
     }
   }
-  if (prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS) {
-    const marker = `\n[TRUNCATED_NONCRITICAL_PREFIX_FOR_PROMPT_CAP originalChars=${prompt.length}]\n`;
+  if (prompt.length > panelCap) {
+    const marker = `\n[TRUNCATED_NONCRITICAL_PREFIX_FOR_PROMPT_CAP originalChars=${prompt.length} model=${model || "legacy"}]\n`;
     const headBudget = 12_000;
-    const tailBudget = FUSION_PANEL_PROMPT_MAX_CHARS - headBudget - marker.length;
-    prompt = `${prompt.slice(0, headBudget)}${marker}${prompt.slice(-tailBudget)}`;
+    const tailBudget = panelCap - headBudget - marker.length;
+    prompt = `${prompt.slice(0, headBudget)}${marker}${prompt.slice(-Math.max(0, tailBudget))}`;
   }
-  const sciOut = prompt.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  const sciOut = prompt.slice(0, panelCap);
   // r414-i18n9: ภาษาใหม่ 6 ตัว ย้ำ directive ท้าย prompt หลัง cap (recency ชนะ prompt ไทยหนัก · เทสจริงแล้วบรรทัดต้นอย่างเดียวเอาไม่อยู่) · th/en/zh ไม่มี entry = byte-identical
   return LANG_ANSWER_DIRECTIVE[lang] ? `${sciOut}\n\n${LANG_ANSWER_DIRECTIVE[lang]}` : sciOut;
 }
@@ -3227,6 +3526,7 @@ export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[]
   L.push(DECISIVE_READING_POLICY);
   L.push(subjectLockLine(births));
   L.push(SPECIFIC_READING_CONTRACT);
+  L.push(lifePeriodContract("judge"));
   L.push(FUSION_JUDGE_SYNTHESIS_CONTRACT);
   L.push(`ถ้า panel ใดหลุดไปตอบแบบ audit ระบบ/Gap Register/readiness ทั้งที่คำถามเป็นการดูดวง ให้ถือว่าเป็นคำตอบหลุดรูปแบบ และใช้เฉพาะหลักฐานดวงหรือคำฟันธงที่เกี่ยวกับชีวิตผู้ถามเท่านั้น`);
   panels.forEach((p) => {
@@ -3297,15 +3597,6 @@ const BOOK_CHAPTER_FORMAT = [
 ].join("\n");
 
 /** โหลด directive "อ่านเต็มดวง" ของศาสตร์ (แทน {{NAME}}) · แก้ผ่าน /admin/sifu-prompts (prompts/natal-book/read-full-{science}.md) */
-/** r510-wl: โหลด directive โหมดอ่านทั้งชีวิต (research=ดวงย้อนประวัติ · user=ลูกค้าจริง) — additive ไม่แตะ Q&A เดิม */
-export function loadWholeLifeDirective(mode: "research" | "user"): string {
-  const raw = loadPromptMd("prompts/whole-life-directive.md", "").trim();
-  const fallback = "=== โหมดอ่านทั้งชีวิต ===\nไล่อ่านแผนที่ทั้งชีวิตจากตารางวัยจร/ทศาที่ engine ส่งมา ตั้งแต่เกิดจนสุดตาราง ระบุช่วงอายุ ธีม ขึ้น/ลง เหตุผลจากผัง · ชี้ด่านวิกฤต 1-3 ด่านตามหลักฐานจริงพร้อมทางรับมือ · ห้ามการันตีปีตาย ใช้ถ้อยคำสัญญาณ · ทุกคำฟันธงอ้างหลักฐานผัง";
-  const body = raw || fallback;
-  const drop = mode === "research" ? "**[user]**" : "**[research]**";
-  return body.split("\n").filter((l) => !l.includes(drop)).join("\n");
-}
-
 export function loadBookDirective(science: ScienceId, name: string): string {
   const raw = loadPromptMd(`prompts/natal-book/read-full-${science}.md`, "").trim();
   const safeName = (name || "เจ้าชะตา").slice(0, 40);
@@ -3345,6 +3636,7 @@ export function buildJudgeBookPrompt(
   L.push(DECISIVE_READING_POLICY);
   L.push(subjectLockLine(births));
   L.push(SPECIFIC_READING_CONTRACT);
+  L.push(lifePeriodContract("judge"));
   L.push(FUSION_JUDGE_SYNTHESIS_CONTRACT);
   chapters.forEach((c) => {
     const reply = c.reply.length > JUDGE_PANEL_REPLY_MAX_CHARS

@@ -2,8 +2,8 @@
  * 神煞 dict v1.1 · ตำราอาเจ๊กฮ้ง (协纪辨方书)
  * Source: /var/www/hourkey/docs/จากอาเจ๊กฮ้งถึงสุดหล่อข้อมูลดาวนะ.md
  *
- * Compiled: 2026-05-18 · 110+ stars · 6 Tier · classical rule aware
- * Score scale: ±5 (微) → ±30 (大吉/大凶)
+ * Compiled: 2026-05-18 · 110+ stars · 6 Tier · classical category aware
+ * Numeric weights are Hourkey product policy, not verbatim classical values.
  */
 
 export type StarSeverity = 'minor' | 'medium' | 'major' | 'fatal' | 'virtue' | 'conditional';
@@ -209,6 +209,7 @@ export const STAR_DICT_TH: Record<string, StarEntry> = {
 
 /* alias map · ตัวย่อ → key (key ของ dict ใช้ตัวเต็ม) */
 const SIMP_TO_TRAD: Record<string, string> = {
+  '生气':'生氣','死气':'死氣',
   '时德':'時德','阳德':'陽德','月虚':'月虛','五虚':'五虛','陰德':'陰德','阴德':'陰德',
   '阳贵':'陽貴','阴贵':'陰貴','陽貴登天':'陽貴登天','阳贵登天':'陽貴登天',
   '陰貴登天':'陰貴登天','阴贵登天':'陰貴登天','驿马':'驛馬','日马':'日馬','日禄':'日祿',

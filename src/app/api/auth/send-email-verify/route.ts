@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Email service not configured" }, { status: 503 });
   }
   /* 1 มิ.ย. · กันยิงอีเมลยืนยันเปลืองเงิน · 3 ครั้ง/10 นาที ต่อ IP */
-  const rl = rateLimit(`emailverify:${clientIp(req)}`, 3, 600_000);
+  const rl = await rateLimit(`emailverify:${clientIp(req)}`, 3, 600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ขอบ่อยเกินไป · กรุณารอสักครู่" },

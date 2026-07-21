@@ -95,6 +95,14 @@
   function persist(raw, opts) {
     var state = normalize(raw) || normalize('th');
     opts = opts || {};
+    if (state.raw === 'zh' && clean(raw) === 'zh') {
+      var queryRaw = clean(readQuery());
+      var existingZhVariant = readStorageKey('hk_zh_variant');
+      if (existingZhVariant === 'cn' || queryRaw === 'cn' || queryRaw === 'zh-cn' || queryRaw === 'zh-hans') {
+        state.variant = 'cn';
+        state.html = 'zh-Hans';
+      }
+    }
     if (state.raw === 'zh' && opts.keepZhVariant) {
       var existingVariant = readStorageKey('hk_zh_variant');
       if (existingVariant === 'cn') {
@@ -118,8 +126,68 @@
     return state;
   }
 
+  function urlCode(state) {
+    if (!state) return '';
+    if (state.raw === 'zh' && state.variant === 'cn') return 'cn';
+    return state.raw || '';
+  }
+
+  function syncUrl(state, opts) {
+    opts = opts || {};
+    if (opts.noUrl) return;
+    var code = urlCode(state);
+    if (!code) return;
+    try {
+      var url = new URL(location.href);
+      if (url.searchParams.get('lang') === code && !url.searchParams.get('locale')) return;
+      url.searchParams.set('lang', code);
+      url.searchParams.delete('locale');
+      history.replaceState(null, '', url.pathname + url.search + url.hash);
+    } catch (_) {}
+  }
+
+  function shouldCarryLang(url) {
+    try {
+      if (!url || url.origin !== location.origin) return false;
+      if (!/^https?:$/.test(url.protocol)) return false;
+      var p = url.pathname || '/';
+      if (p.indexOf('/api/') === 0 || p.indexOf('/assets/') === 0 || p.indexOf('/js/') === 0 || p.indexOf('/css/') === 0 || p.indexOf('/i18n/') === 0) return false;
+      if (/\.(?:png|jpe?g|webp|gif|svg|ico|mp4|webm|css|js|json|pdf|txt|xml|map|woff2?)$/i.test(p)) return false;
+      return true;
+    } catch (_) { return false; }
+  }
+
+  function withLangHref(href, state) {
+    var code = urlCode(state || current());
+    if (!code || !href) return href;
+    try {
+      if (/^(?:mailto:|tel:|sms:|javascript:)/i.test(href)) return href;
+      if (href.charAt(0) === '#') return href;
+      var url = new URL(href, location.href);
+      if (!shouldCarryLang(url)) return href;
+      url.searchParams.set('lang', code);
+      url.searchParams.delete('locale');
+      return url.pathname + url.search + url.hash;
+    } catch (_) { return href; }
+  }
+
+  function decorateLinks(state, root) {
+    try {
+      state = state || current();
+      root = root && root.querySelectorAll ? root : document;
+      root.querySelectorAll('a[href]').forEach(function (a) {
+        if (a.hasAttribute('download') || a.getAttribute('data-no-lang') === '1') return;
+        var href = a.getAttribute('href') || '';
+        var next = withLangHref(href, state);
+        if (next && next !== href) a.setAttribute('href', next);
+      });
+    } catch (_) {}
+  }
+
   function set(raw, opts) {
     var state = persist(raw, opts);
+    syncUrl(state, opts);
+    decorateLinks(state);
     try {
       document.dispatchEvent(new CustomEvent('hk:locale', { detail: { locale: state.raw, raw: state.raw, app: state.app, html: state.html } }));
     } catch (_) {}
@@ -136,6 +204,15 @@
       if (key !== 'hk_locale' && key !== 'hk_lang' && key !== 'hk_article_locale') return;
       var state = normalize(value);
       if (!state) return;
+      var rawValue = clean(value);
+      if (state.raw === 'zh' && rawValue === 'zh') {
+        try {
+          if (localStorage.getItem('hk_zh_variant') === 'cn') {
+            state.variant = 'cn';
+            state.html = 'zh-Hans';
+          }
+        } catch (_) {}
+      }
       try {
         writing = true;
         nativeSet.call(localStorage, 'hk_locale', state.storage);
@@ -165,7 +242,9 @@
     },
     applyDom: applyDom,
     persist: persist,
-    set: set
+    set: set,
+    withLangHref: withLangHref,
+    decorateLinks: decorateLinks
   };
 
   window.HK = window.HK || {};
@@ -173,5 +252,44 @@
   window.HK_LANG_STATE = api;
 
   patchStorage();
-  persist(currentRaw(), { keepZhVariant: true });
+  decorateLinks(persist(currentRaw(), { keepZhVariant: true }));
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { decorateLinks(current()); });
+  else decorateLinks(current());
+  try {
+    var linkTimer = 0;
+    new MutationObserver(function (records) {
+      var should = records.some(function (r) { return r.addedNodes && r.addedNodes.length; });
+      if (!should) return;
+      clearTimeout(linkTimer);
+      linkTimer = setTimeout(function () { decorateLinks(current()); }, 80);
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  } catch (_) {}
+
+  /* Global glossary tooltips · loaded from the language guard so public pages share one help system. */
+  try {
+    if (!window.__HK_TOOLTIPS_LOADER__) {
+      window.__HK_TOOLTIPS_LOADER__ = true;
+      var s = document.createElement('script');
+      s.src = '/js/hk-tooltips.js?v=20260707';
+      s.defer = true;
+      document.head.appendChild(s);
+    }
+    if (!window.__HK_ZHCN_LOADER__) {
+      window.__HK_ZHCN_LOADER__ = true;
+      var z = document.createElement('script');
+      z.src = '/js/hk-zhcn.js?v=20260707';
+      z.defer = true;
+      document.head.appendChild(z);
+    }
+    /* Legacy DOM upgrader mutates selects/buttons. React owns those nodes and
+       must hydrate them unchanged; static HTML pages still receive the upgrader. */
+    var isReactApp = document.body && document.body.getAttribute('data-hk-react-app') === '1';
+    if (!isReactApp && !window.__HK_LANG_UPGRADE_LOADER__) {
+      window.__HK_LANG_UPGRADE_LOADER__ = true;
+      var u = document.createElement('script');
+      u.src = '/js/hk-lang-upgrade.js?v=20260707';
+      u.defer = true;
+      document.head.appendChild(u);
+    }
+  } catch (_) {}
 })();

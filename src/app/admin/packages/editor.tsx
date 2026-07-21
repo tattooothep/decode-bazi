@@ -38,19 +38,25 @@ export default function PackagesAdmin() {
     <AdminShell title="แพ็กเกจ & คูปอง">
       {msg && <div className="text-sm opacity-70 mb-3">{msg}</div>}
 
+      <div className="mb-5 border border-amber-400/30 bg-amber-400/5 p-3 text-sm leading-6 text-amber-100">
+        แพ็กเกจด้านล่างเป็นค่าที่ checkout ใช้จริงจาก server และเปิดดูอย่างเดียว
+        การเปลี่ยนราคา ยาม หรือ tier ต้องผ่านการแก้ config และ deploy เพื่อให้ตรวจสอบย้อนหลังได้
+        ส่วนคูปองเชื่อม checkout โดยตรงและจัดการได้จากหน้านี้
+      </div>
+
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs uppercase tracking-wider opacity-50">แพ็คเกจ ({packages.length})</h2>
-        <button onClick={() => setEditP({ ...blankPkg })} className="text-sm border border-foreground/30 px-3 py-1 hover:bg-foreground/10">+ เพิ่มแพ็ค</button>
+        <h2 className="text-xs uppercase tracking-wider opacity-50">แพ็คเกจที่ checkout ใช้จริง ({packages.length})</h2>
+        <span className="text-xs opacity-50">อ่านอย่างเดียว</span>
       </div>
       <div className="grid sm:grid-cols-2 gap-3 mb-8">
         {packages.map((p) => (
-          <div key={p.id} className={`border p-4 ${p.active ? "border-foreground/20" : "border-foreground/10 opacity-50"}`}>
+          <div key={p.code} className={`border p-4 ${p.active ? "border-foreground/20" : "border-foreground/10 opacity-50"}`}>
             <div className="flex justify-between items-start">
               <div>
                 <div className="font-serif text-lg">{p.name_th} {p.badge && <span className="text-xs bg-foreground/15 px-1.5 py-0.5 align-middle">{p.badge}</span>}</div>
                 <div className="text-xs opacity-50">{p.code} · {p.kind}</div>
               </div>
-              <button onClick={() => setEditP(p)} className="text-xs opacity-60 hover:opacity-100">แก้</button>
+              <span className="text-xs opacity-40">server config</span>
             </div>
             <div className="mt-2 text-sm flex gap-4">
               <span className="font-serif text-xl">{baht(p.price_thb)}</span>
@@ -59,7 +65,7 @@ export default function PackagesAdmin() {
             </div>
           </div>
         ))}
-        {!packages.length && <div className="opacity-40 text-sm col-span-2 border border-foreground/10 p-6 text-center">ยังไม่มีแพ็คเกจ — กด “+ เพิ่มแพ็ค”</div>}
+        {!packages.length && <div className="opacity-40 text-sm col-span-2 border border-foreground/10 p-6 text-center">ไม่พบแพ็คเกจใน server config</div>}
       </div>
 
       <div className="flex items-center justify-between mb-3">

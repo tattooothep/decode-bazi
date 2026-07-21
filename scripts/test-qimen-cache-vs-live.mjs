@@ -47,7 +47,14 @@ async function liveChart(dt) {
   return j.data;
 }
 
-const client = new Client({ host: 'localhost', port: 5433, database: 'decode_db', user: 'decode_user', password: '98a1021d6df0d117cff8d7aef3be275e' });
+if (!process.env.PGPASSWORD) throw new Error('PGPASSWORD is required');
+const client = new Client({
+  host: process.env.PGHOST || 'localhost',
+  port: Number(process.env.PGPORT || 5433),
+  database: process.env.PGDATABASE || 'decode_db',
+  user: process.env.PGUSER || 'decode_user',
+  password: process.env.PGPASSWORD,
+});
 await client.connect();
 
 let pass = 0, fail = 0;

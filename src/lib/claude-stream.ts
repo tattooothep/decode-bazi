@@ -10,6 +10,7 @@
  * NOTE: /api/sifu LOCKED ยังคง inline helpers ของตัวเอง · byte-equal · ไม่แตะ
  */
 import { spawn, type ChildProcess } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 
 const CHILD_USER = "jarvis";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -21,8 +22,7 @@ export function spawnClaudeStreaming(prompt: string): ChildProcess {
     "--output-format", "stream-json",
     "--include-partial-messages",
     "--verbose",
-    "--dangerously-skip-permissions",
-    "--setting-sources", "user",
+    ...CLAUDE_TEXT_ONLY_ARGS,
   ];
   const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
   const c = spawn("sudo", spawnArgs, {

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const password = String(form.get("password") || "");
   if (!email || !password) return redirect303("/signup?tab=login&err=" + encodeURIComponent("กรอก email + password"));
   /* 1 มิ.ย. · กัน brute-force · 5 ครั้ง/นาที ต่อ (IP + อีเมล) */
-  const rl = rateLimit(`loginform:${clientIp(req)}:${email}`, 5, 60_000);
+  const rl = await rateLimit(`loginform:${clientIp(req)}:${email}`, 5, 60_000);
   if (!rl.ok) return redirect303("/signup?tab=login&err=" + encodeURIComponent("ลองบ่อยเกินไป · รอสักครู่"));
   const user = await q1<{
     id: string; email: string; password_hash: string; current_org_id: string;

@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { calcBazi, type BaziAnalysis } from "@/lib/bazi-calc";
 import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang";
 import { buildAskAnchors, anchorIds, type AskAnchorBundle } from "./anchors";
+import { GROK_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -688,7 +690,7 @@ function writeGrokPromptFile(prompt: string): string {
 }
 
 function grokCliArgs(promptFile: string): string[] {
-  const args = ["--prompt-file", promptFile, "--output-format", "plain"];
+  const args = ["--prompt-file", promptFile, ...GROK_TEXT_ONLY_ARGS, "--output-format", "plain"];
   if (GROK_MODEL) args.push("-m", GROK_MODEL);
   return args;
 }
@@ -948,32 +950,10 @@ function normalizeTimeline(raw: unknown[], fallback: ReportTimelineItem[]): Repo
   return out;
 }
 
-type LiveBuckets = Map<string, number[]>;
-function liveBudgetAllowed(req: Request): boolean {
+async function liveBudgetAllowed(req: Request): Promise<boolean> {
   if (!LIVE_ENABLED) return false;
-  const ip = (req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "local")
-    .split(",")[0]
-    .trim()
-    .slice(0, 80);
-  const globalStore = globalThis as typeof globalThis & { __askReportLiveBuckets?: LiveBuckets };
-  const buckets = globalStore.__askReportLiveBuckets || new Map<string, number[]>();
-  globalStore.__askReportLiveBuckets = buckets;
-  const now = Date.now();
-  const recent = (buckets.get(ip) || []).filter((ts) => now - ts < LIVE_WINDOW_MS);
-  if (recent.length >= LIVE_MAX_PER_WINDOW) {
-    buckets.set(ip, recent);
-    return false;
-  }
-  recent.push(now);
-  buckets.set(ip, recent);
-  if (buckets.size > 2000) {
-    for (const [key, hits] of buckets.entries()) {
-      const fresh = hits.filter((ts) => now - ts < LIVE_WINDOW_MS);
-      if (fresh.length) buckets.set(key, fresh);
-      else buckets.delete(key);
-    }
-  }
-  return true;
+  const result = await rateLimit(`ask-report:${clientIp(req)}`, LIVE_MAX_PER_WINDOW, LIVE_WINDOW_MS);
+  return result.ok;
 }
 
 export async function POST(req: Request) {
@@ -1006,7 +986,7 @@ export async function POST(req: Request) {
   }
 
   /* 🚦 เกินเพดานสด = บอกตรง ๆ ว่าให้รอคิว (ห้ามเสิร์ฟ template ปลอมเป็นคำพยากรณ์) */
-  if (!liveBudgetAllowed(req)) {
+  if (!(await liveBudgetAllowed(req))) {
     return NextResponse.json(
       { ok: false, status: "queued", draftId: id, retryAfterSec: 30 },
       { status: 202, headers: NO_STORE_HEADERS }

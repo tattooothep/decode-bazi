@@ -45,5 +45,6 @@ export async function POST(req: Request) {
   const paidAmount = body.amountThb != null ? Number(body.amountThb) : Number(order.amount_thb);
 
   const result = await fulfillOrder(orderId, `mock:${Date.now()}`, "mock", paidAmount);
+  if (!result.ok) return NextResponse.json({ error: "fulfillment_failed", result }, { status: 500 });
   return NextResponse.json({ ok: result.ok, result });
 }

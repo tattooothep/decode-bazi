@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
         return {
           type: p.type || null,
           category: resolvePinCategory(p),
+          plate: result.plate,
           degree: normalizeDeg(Number(p.degree ?? p.bearingDeg)),
           mountain: result.pinMountain ? {
             code: result.pinMountain.name,

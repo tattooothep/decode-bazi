@@ -11,6 +11,9 @@
 [data-theme="light"]{--bg:#f5efe2;--panel:#fffaf0;--panel2:#f2e8d6;--fg:#1a1612;--soft:rgba(26,22,18,.68);--faint:rgba(26,22,18,.42);--line:rgba(138,109,42,.28);--gold:#8a6d2a;--green:#4f8a58;--blue:#3c6f9e;--red:#b04d41;--shadow:0 18px 45px rgba(86,63,27,.13)}
 *{box-sizing:border-box;margin:0;padding:0}html{background:var(--bg)}body{min-height:100vh;background:linear-gradient(180deg,rgba(200,164,77,.08),transparent 260px),var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif}a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.brand{display:inline-flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:650}.seal{width:30px;height:30px;border:1px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;color:var(--gold);font-size:13px}.nav{display:flex;align-items:center;gap:10px;min-width:0}.nav-link{height:34px;display:inline-flex;align-items:center;border:1px solid var(--line);padding:0 12px;color:var(--soft);font-size:12px;white-space:nowrap}.nav-link:hover{color:var(--fg);border-color:var(--gold)}.langbox{height:34px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);padding:0 9px;color:var(--soft);font-size:12px}.langbox select{border:0;background:transparent;color:var(--fg);outline:none;min-width:96px}.langbox option{background:var(--panel);color:var(--fg)}.stage{width:min(1120px,100%);margin:0 auto;padding:34px 22px 70px}.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:20px}.eyebrow{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:42px;font-weight:650;line-height:1.15;letter-spacing:0}.lede{max-width:690px;color:var(--soft);font-size:14px;line-height:1.8;margin-top:10px}.hero-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.btn{min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:0 14px;font-size:13px;cursor:pointer}.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:750}.btn:hover{border-color:var(--gold)}.btn:disabled{opacity:.5;cursor:wait}.grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(340px,1.05fr);gap:18px;align-items:start}.panel{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 80%,var(--bg)));box-shadow:var(--shadow);border-radius:8px;padding:18px}.panel h2{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:24px;font-weight:650;margin-bottom:4px}.panel-sub{color:var(--faint);font-size:12px;line-height:1.7;margin-bottom:16px}.form{display:grid;gap:14px}.field{display:grid;gap:7px}.field span{font-size:12px;color:var(--soft)}input,select,textarea{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--fg);border-radius:6px;padding:11px 12px;outline:none}textarea{min-height:172px;resize:vertical;line-height:1.65}input:focus,select:focus,textarea:focus{border-color:var(--gold)}.status{min-height:20px;color:var(--soft);font-size:13px;line-height:1.7}.status.ok{color:var(--green)}.status.err{color:var(--red)}.reports{display:grid;gap:10px}.report{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);border-radius:8px;padding:13px}.report-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:7px;align-items:center;color:var(--faint);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px}.pill{display:inline-flex;align-items:center;border:1px solid var(--line);padding:4px 7px;color:var(--gold);text-transform:uppercase}.report p{white-space:pre-wrap;color:var(--soft);font-size:13px;line-height:1.7}.pagepath{margin-top:8px;word-break:break-all;color:var(--blue);font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px}.empty,.login{border:1px dashed var(--line);background:var(--panel);padding:26px 16px;text-align:center;color:var(--soft);border-radius:8px}.login b,.empty b{display:block;color:var(--fg);font-weight:650;margin-bottom:6px}@media(max-width:860px){.grid,.hero{grid-template-columns:1fr}.hero-actions{justify-content:flex-start}.topbar{padding:12px 14px}.nav-link{display:none}.stage{padding:24px 14px 54px}h1{font-size:32px}.langbox select{min-width:74px}}@media(max-width:420px){.brand span:last-child{display:none}.langbox{padding:0 7px}}
 </style>
+<style>
+.report{cursor:pointer;transition:border-color .15s,background .15s}.report:hover,.report.is-selected{border-color:var(--gold);background:color-mix(in srgb,var(--panel2) 82%,var(--gold))}.unread{display:inline-flex;min-width:20px;height:20px;align-items:center;justify-content:center;border-radius:10px;background:var(--red);color:white;font-size:10px;font-weight:700}.thread{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}.thread[hidden]{display:none}.thread-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.thread-head h3{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:20px}.messages{display:grid;gap:9px;max-height:420px;overflow:auto;padding-right:3px}.bubble{max-width:88%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel2)}.bubble.user{margin-left:auto;border-color:color-mix(in srgb,var(--blue) 48%,transparent)}.bubble.admin{margin-right:auto;border-color:color-mix(in srgb,var(--gold) 52%,transparent)}.bubble.system{max-width:100%;margin:0 auto;background:transparent;color:var(--faint);font-size:11px;text-align:center}.bubble-meta{display:flex;justify-content:space-between;gap:10px;margin-bottom:5px;color:var(--faint);font-size:10px}.bubble-body{white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.65}.replybox{display:grid;gap:8px;margin-top:12px}.replybox textarea{min-height:92px}.thread-actions{display:flex;flex-wrap:wrap;gap:8px}.btn.danger{border-color:color-mix(in srgb,var(--red) 45%,transparent);color:var(--red)}
+</style>
 </head>
 <body>
 <header class="topbar">
@@ -53,6 +56,19 @@
       <h2 data-t="historyTitle">ประวัติที่แจ้งไว้</h2>
       <p class="panel-sub" data-t="historySub">แสดง ticket ล่าสุดของบัญชีนี้</p>
       <div class="reports" id="reports"><div class="empty"><b data-t="loading">กำลังโหลด...</b></div></div>
+      <section class="thread" id="thread" hidden>
+        <div class="thread-head"><h3 id="thread-title"></h3><button class="btn" type="button" id="thread-back"></button></div>
+        <div class="messages" id="thread-messages"></div>
+        <form class="replybox" id="reply-form">
+          <textarea id="reply-message" maxlength="8000"></textarea>
+          <div class="thread-actions">
+            <button class="btn primary" type="submit" id="reply-submit"></button>
+            <button class="btn" type="button" id="confirm-resolved"></button>
+            <button class="btn danger" type="button" id="reopen-ticket"></button>
+          </div>
+          <div class="status" id="reply-status"></div>
+        </form>
+      </section>
     </div>
   </section>
 </main>
@@ -64,7 +80,7 @@
     {v:'vi',label:'VI · Tiếng Việt'},{v:'ja',label:'JA · 日本語'},{v:'ru',label:'RU · Русский'},{v:'ko',label:'KO · 한국어'},{v:'es',label:'ES · Español'}
   ];
   var CATS=['bug','account','payment','language','notification','prediction','other'];
-  var STATUSES=['new','triaged','in_progress','resolved','closed'];
+  var STATUSES=['new','triaged','in_progress','waiting_user','user_replied','resolved','closed'];
   var COPY={
     th:{title:'hourkey · แจ้งปัญหาการใช้งาน',navToday:'วันนี้',navNews:'ข่าวสาร',eyebrow:'SUPPORT',h1:'แจ้งปัญหาการใช้งาน',sub:'ส่งรายละเอียดปัญหาให้ทีมงานตรวจต่อจากหลังบ้าน พร้อมหน้าที่เกิดปัญหา ภาษา และอุปกรณ์ที่ใช้งาน',newsCta:'ดูข่าวสาร',accountCta:'บัญชีของฉัน',formTitle:'ส่งรายงานปัญหา',formSub:'ระบบจะบันทึกเป็น ticket ให้ admin ดูและเปลี่ยนสถานะได้',category:'หมวดปัญหา',page:'หน้าที่เกิดปัญหา',message:'รายละเอียด',messagePh:'บอกสิ่งที่เกิดขึ้น สิ่งที่คาดหวัง และถ้ามี ให้ใส่ขั้นตอนที่ทำก่อนเกิดปัญหา',send:'ส่งรายงาน',sending:'กำลังส่ง...',sent:'ส่งรายงานแล้ว ทีมงานจะตรวจจากหลังบ้าน',needLogin:'กรุณาเข้าสู่ระบบก่อนส่งรายงาน',loginTitle:'ต้องเข้าสู่ระบบ',loginBody:'การแจ้งปัญหาผูกกับบัญชี เพื่อให้ทีมงานดูประวัติและติดต่อกลับได้',loginCta:'เข้าสู่ระบบ',historyTitle:'ประวัติที่แจ้งไว้',historySub:'แสดง ticket ล่าสุดของบัญชีนี้',loading:'กำลังโหลด...',emptyTitle:'ยังไม่มีประวัติแจ้งปัญหา',emptyBody:'เมื่อส่งรายงานแล้ว รายการจะแสดงที่นี่',failed:'โหลดข้อมูลไม่สำเร็จ',cat_bug:'บั๊ก / หน้าเว็บผิดปกติ',cat_account:'บัญชี / เข้าสู่ระบบ',cat_payment:'ชำระเงิน / แพ็กเกจ',cat_language:'ภาษา / คำแปล',cat_notification:'แจ้งเตือน',cat_prediction:'ผลคำนวณ / คำพยากรณ์',cat_other:'อื่น ๆ',st_new:'ใหม่',st_triaged:'รับเรื่องแล้ว',st_in_progress:'กำลังตรวจ',st_resolved:'แก้แล้ว',st_closed:'ปิดแล้ว'},
     en:{title:'hourkey · Report an issue',navToday:'Today',navNews:'News',eyebrow:'SUPPORT',h1:'Report an issue',sub:'Send the issue details to the team with the affected page, language, and device context for admin follow-up.',newsCta:'View news',accountCta:'My account',formTitle:'Submit a report',formSub:'The report is stored as a ticket for admin review and status tracking.',category:'Category',page:'Affected page',message:'Details',messagePh:'Tell us what happened, what you expected, and the steps before the issue if available.',send:'Send report',sending:'Sending...',sent:'Report sent. The team can review it from admin.',needLogin:'Please sign in before sending a report.',loginTitle:'Sign in required',loginBody:'Reports are linked to your account so the team can see history and follow up.',loginCta:'Sign in',historyTitle:'Your reports',historySub:'Latest tickets from this account',loading:'Loading...',emptyTitle:'No reports yet',emptyBody:'After you submit a report, it will appear here.',failed:'Could not load data',cat_bug:'Bug / broken page',cat_account:'Account / sign-in',cat_payment:'Payment / plans',cat_language:'Language / translation',cat_notification:'Notifications',cat_prediction:'Calculation / reading',cat_other:'Other',st_new:'New',st_triaged:'Triaged',st_in_progress:'In progress',st_resolved:'Resolved',st_closed:'Closed'},
@@ -76,6 +92,17 @@
     ko:{title:'hourkey · 문제 신고',navToday:'오늘',navNews:'소식',eyebrow:'SUPPORT',h1:'문제 신고',sub:'문제 상세, 발생한 페이지, 언어, 기기 정보를 팀에 보내 관리자 화면에서 추적할 수 있게 합니다.',newsCta:'소식 보기',accountCta:'내 계정',formTitle:'신고 보내기',formSub:'신고는 admin이 확인하고 상태를 바꿀 수 있는 ticket으로 저장됩니다.',category:'분류',page:'문제가 발생한 페이지',message:'상세 내용',messagePh:'무슨 일이 있었는지, 기대한 결과, 문제 전 단계가 있다면 적어 주세요.',send:'신고 보내기',sending:'전송 중...',sent:'신고가 접수되었습니다. 팀이 관리자 화면에서 확인할 수 있습니다.',needLogin:'신고를 보내려면 먼저 로그인하세요.',loginTitle:'로그인이 필요합니다',loginBody:'신고는 계정에 연결되어 팀이 기록을 보고 후속 조치할 수 있습니다.',loginCta:'로그인',historyTitle:'신고 내역',historySub:'이 계정의 최신 ticket',loading:'불러오는 중...',emptyTitle:'아직 신고가 없습니다',emptyBody:'신고를 보내면 여기에 표시됩니다.',failed:'데이터를 불러오지 못했습니다',cat_bug:'버그 / 페이지 오류',cat_account:'계정 / 로그인',cat_payment:'결제 / 플랜',cat_language:'언어 / 번역',cat_notification:'알림',cat_prediction:'계산 / 해석',cat_other:'기타',st_new:'새로 접수',st_triaged:'접수됨',st_in_progress:'처리 중',st_resolved:'해결됨',st_closed:'종료됨'},
     es:{title:'hourkey · Reportar problema',navToday:'Hoy',navNews:'Noticias',eyebrow:'SUPPORT',h1:'Reportar un problema',sub:'Envía los detalles del problema con la página afectada, idioma y contexto del dispositivo para seguimiento desde admin.',newsCta:'Ver noticias',accountCta:'Mi cuenta',formTitle:'Enviar reporte',formSub:'El reporte se guarda como ticket para revisión y seguimiento de estado en admin.',category:'Categoría',page:'Página afectada',message:'Detalles',messagePh:'Cuéntanos qué ocurrió, qué esperabas y los pasos previos al problema si los tienes.',send:'Enviar reporte',sending:'Enviando...',sent:'Reporte enviado. El equipo puede revisarlo desde admin.',needLogin:'Inicia sesión antes de enviar un reporte.',loginTitle:'Se requiere iniciar sesión',loginBody:'Los reportes se vinculan a tu cuenta para ver historial y dar seguimiento.',loginCta:'Iniciar sesión',historyTitle:'Tus reportes',historySub:'Tickets recientes de esta cuenta',loading:'Cargando...',emptyTitle:'Aún no hay reportes',emptyBody:'Después de enviar un reporte, aparecerá aquí.',failed:'No se pudieron cargar los datos',cat_bug:'Error / página rota',cat_account:'Cuenta / acceso',cat_payment:'Pago / planes',cat_language:'Idioma / traducción',cat_notification:'Notificaciones',cat_prediction:'Cálculo / lectura',cat_other:'Otro',st_new:'Nuevo',st_triaged:'Clasificado',st_in_progress:'En progreso',st_resolved:'Resuelto',st_closed:'Cerrado'}
   };
+  var THREAD_COPY={
+    th:{threadTitle:'การสนทนา',back:'กลับ',replyPh:'พิมพ์ข้อความตอบทีมงาน',sendReply:'ส่งข้อความ',replySent:'ส่งข้อความแล้ว',confirmResolved:'ปัญหาแก้แล้ว',reopen:'ยังมีปัญหา',noMessages:'ยังไม่มีข้อความ',author_user:'คุณ',author_admin:'ทีมงาน',author_system:'ระบบ',st_waiting_user:'รอคำตอบจากคุณ',st_user_replied:'คุณตอบแล้ว',user_confirmed_resolved:'คุณยืนยันว่าแก้แล้ว',user_reopened_ticket:'คุณแจ้งว่ายังมีปัญหา'},
+    en:{threadTitle:'Conversation',back:'Back',replyPh:'Write a reply to the support team',sendReply:'Send message',replySent:'Message sent',confirmResolved:'Issue resolved',reopen:'Still having an issue',noMessages:'No messages yet',author_user:'You',author_admin:'Support',author_system:'System',st_waiting_user:'Waiting for you',st_user_replied:'You replied',user_confirmed_resolved:'You confirmed the issue is resolved',user_reopened_ticket:'You reported that the issue remains'},
+    zh:{threadTitle:'對話',back:'返回',replyPh:'回覆支援團隊',sendReply:'送出訊息',replySent:'訊息已送出',confirmResolved:'問題已解決',reopen:'仍有問題',noMessages:'尚無訊息',author_user:'你',author_admin:'團隊',author_system:'系統',st_waiting_user:'等待你的回覆',st_user_replied:'你已回覆',user_confirmed_resolved:'你已確認問題解決',user_reopened_ticket:'你回報問題仍然存在'},
+    cn:{threadTitle:'对话',back:'返回',replyPh:'回复支持团队',sendReply:'发送消息',replySent:'消息已发送',confirmResolved:'问题已解决',reopen:'仍有问题',noMessages:'暂无消息',author_user:'你',author_admin:'团队',author_system:'系统',st_waiting_user:'等待你的回复',st_user_replied:'你已回复',user_confirmed_resolved:'你已确认问题解决',user_reopened_ticket:'你反馈问题仍然存在'},
+    vi:{threadTitle:'Cuộc trò chuyện',back:'Quay lại',replyPh:'Trả lời đội hỗ trợ',sendReply:'Gửi tin nhắn',replySent:'Đã gửi tin nhắn',confirmResolved:'Đã giải quyết',reopen:'Vẫn còn vấn đề',noMessages:'Chưa có tin nhắn',author_user:'Bạn',author_admin:'Hỗ trợ',author_system:'Hệ thống',st_waiting_user:'Đang chờ bạn',st_user_replied:'Bạn đã trả lời',user_confirmed_resolved:'Bạn xác nhận vấn đề đã được giải quyết',user_reopened_ticket:'Bạn báo rằng vấn đề vẫn còn'},
+    ja:{threadTitle:'会話',back:'戻る',replyPh:'サポートチームへ返信',sendReply:'送信',replySent:'送信しました',confirmResolved:'解決済み',reopen:'まだ問題がある',noMessages:'メッセージはありません',author_user:'あなた',author_admin:'サポート',author_system:'システム',st_waiting_user:'返信待ち',st_user_replied:'返信済み',user_confirmed_resolved:'解決を確認しました',user_reopened_ticket:'問題が続いていると報告しました'},
+    ru:{threadTitle:'Переписка',back:'Назад',replyPh:'Ответить службе поддержки',sendReply:'Отправить',replySent:'Сообщение отправлено',confirmResolved:'Проблема решена',reopen:'Проблема осталась',noMessages:'Сообщений пока нет',author_user:'Вы',author_admin:'Поддержка',author_system:'Система',st_waiting_user:'Ожидает вашего ответа',st_user_replied:'Вы ответили',user_confirmed_resolved:'Вы подтвердили решение проблемы',user_reopened_ticket:'Вы сообщили, что проблема осталась'},
+    ko:{threadTitle:'대화',back:'뒤로',replyPh:'지원팀에 답변하기',sendReply:'메시지 보내기',replySent:'메시지를 보냈습니다',confirmResolved:'문제 해결됨',reopen:'아직 문제가 있음',noMessages:'메시지가 없습니다',author_user:'나',author_admin:'지원팀',author_system:'시스템',st_waiting_user:'답변 대기 중',st_user_replied:'답변함',user_confirmed_resolved:'문제가 해결되었음을 확인함',user_reopened_ticket:'문제가 계속된다고 신고함'},
+    es:{threadTitle:'Conversación',back:'Volver',replyPh:'Responder al equipo de soporte',sendReply:'Enviar mensaje',replySent:'Mensaje enviado',confirmResolved:'Problema resuelto',reopen:'El problema continúa',noMessages:'Aún no hay mensajes',author_user:'Tú',author_admin:'Soporte',author_system:'Sistema',st_waiting_user:'Esperando tu respuesta',st_user_replied:'Has respondido',user_confirmed_resolved:'Confirmaste que el problema está resuelto',user_reopened_ticket:'Informaste que el problema continúa'}
+  };
   function norm(){
     var st=window.HK_LANG_STATE&&window.HK_LANG_STATE.current?window.HK_LANG_STATE.current():null;
     if(st&&st.raw==='zh')return st.variant==='cn'?'cn':'zh';
@@ -85,10 +112,10 @@
     if(raw.indexOf('zh')===0)return'zh';
     return COPY[raw]?raw:'en';
   }
-  function t(k){var lang=norm();return(COPY[lang]&&COPY[lang][k])||COPY.en[k]||k}
+  function t(k){var lang=norm();return(THREAD_COPY[lang]&&THREAD_COPY[lang][k])||(COPY[lang]&&COPY[lang][k])||(THREAD_COPY.en&&THREAD_COPY.en[k])||COPY.en[k]||k}
   function setLocale(lang){
     if(window.HK_LANG_STATE&&window.HK_LANG_STATE.set)window.HK_LANG_STATE.set(lang==='cn'?'zh-cn':lang==='zh'?'zh-hant':lang);
-    applyText(); renderReports(lastReports);
+    applyText(); renderReports(lastReports); renderThread(lastMessages);
   }
   function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
   function deviceId(){try{var id=localStorage.getItem('hk_device_id');if(!id){id='dv_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);localStorage.setItem('hk_device_id',id);}return id;}catch(_){return''}}
@@ -102,6 +129,11 @@
     sel.innerHTML=LANGS.map(function(l){return'<option value="'+l.v+'">'+l.label+'</option>'}).join('');
     sel.value=norm();
     document.getElementById('message').placeholder=t('messagePh');
+    document.getElementById('reply-message').placeholder=t('replyPh');
+    document.getElementById('reply-submit').textContent=t('sendReply');
+    document.getElementById('confirm-resolved').textContent=t('confirmResolved');
+    document.getElementById('reopen-ticket').textContent=t('reopen');
+    document.getElementById('thread-back').textContent=t('back');
     renderCategory();
   }
   function renderCategory(){
@@ -114,7 +146,7 @@
     var map={th:'th-TH',en:'en-US',zh:'zh-Hant',cn:'zh-Hans-CN',vi:'vi-VN',ja:'ja-JP',ru:'ru-RU',ko:'ko-KR',es:'es-ES'};
     try{return new Intl.DateTimeFormat(map[norm()]||'en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(iso));}catch(_){return String(iso||'').slice(0,16);}
   }
-  var lastReports=[];
+  var lastReports=[],lastMessages=[],selectedReportId=null;
   function renderReports(reports){
     lastReports=reports||[];
     var box=document.getElementById('reports');
@@ -124,8 +156,42 @@
     }
     box.innerHTML=lastReports.map(function(r){
       var status=STATUSES.indexOf(r.status)>=0?r.status:'new';
-      return'<article class="report"><div class="report-top"><div class="meta"><span class="pill">'+escapeHtml(t('st_'+status))+'</span><span>'+escapeHtml(t('cat_'+r.category)||r.category)+'</span><span>'+escapeHtml(fmt(r.createdAt))+'</span></div></div><p>'+escapeHtml(r.message)+'</p>'+(r.pagePath?'<div class="pagepath">'+escapeHtml(r.pagePath)+'</div>':'')+'</article>';
+      return'<article class="report'+(String(r.id)===String(selectedReportId)?' is-selected':'')+'" data-report-id="'+escapeHtml(r.id)+'"><div class="report-top"><div class="meta"><span class="pill">'+escapeHtml(t('st_'+status))+'</span><span>'+escapeHtml(t('cat_'+r.category)||r.category)+'</span><span>'+escapeHtml(fmt(r.lastMessageAt||r.createdAt))+'</span></div>'+(r.unreadCount?'<span class="unread">'+Number(r.unreadCount)+'</span>':'')+'</div><p>'+escapeHtml(r.message)+'</p>'+(r.pagePath?'<div class="pagepath">'+escapeHtml(r.pagePath)+'</div>':'')+'</article>';
     }).join('');
+  }
+  function systemText(body){
+    if(String(body).indexOf('status:')===0)return t('st_'+String(body).slice(7));
+    return t(body)||body;
+  }
+  function renderThread(messages){
+    lastMessages=messages||[];
+    var thread=document.getElementById('thread');
+    if(!selectedReportId){thread.hidden=true;return;}
+    thread.hidden=false;
+    document.getElementById('thread-title').textContent=t('threadTitle')+' #'+selectedReportId;
+    var box=document.getElementById('thread-messages');
+    box.innerHTML=lastMessages.length?lastMessages.map(function(m){
+      var kind=['user','admin','system'].indexOf(m.authorType)>=0?m.authorType:'system';
+      var body=kind==='system'?systemText(m.body):m.body;
+      return'<div class="bubble '+kind+'"><div class="bubble-meta"><span>'+escapeHtml(t('author_'+kind))+'</span><span>'+escapeHtml(fmt(m.createdAt))+'</span></div><div class="bubble-body">'+escapeHtml(body)+'</div></div>';
+    }).join(''):'<div class="empty">'+escapeHtml(t('noMessages'))+'</div>';
+    box.scrollTop=box.scrollHeight;
+    var report=lastReports.find(function(r){return String(r.id)===String(selectedReportId)});
+    document.getElementById('confirm-resolved').hidden=!report||report.status==='closed';
+    document.getElementById('reopen-ticket').hidden=!report||(['resolved','closed'].indexOf(report.status)<0);
+  }
+  async function openThread(id){
+    selectedReportId=String(id);renderReports(lastReports);
+    var r=await fetch('/api/support/report?id='+encodeURIComponent(selectedReportId),{cache:'no-store',credentials:'same-origin'});
+    var j=await r.json().catch(function(){return null});
+    if(!j||!j.ok){selectedReportId=null;renderThread([]);return;}
+    if(j.reports&&j.reports[0]){
+      var ix=lastReports.findIndex(function(x){return String(x.id)===selectedReportId});
+      if(ix>=0)lastReports[ix]=j.reports[0];
+    }
+    renderThread(j.messages||[]);
+    await fetch('/api/support/report',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({action:'mark_read',id:selectedReportId})}).catch(function(){});
+    try{history.replaceState(null,'','/support?report='+encodeURIComponent(selectedReportId));}catch(_){}
   }
   function renderLogin(){
     document.getElementById('reports').innerHTML='<div class="login"><b>'+escapeHtml(t('loginTitle'))+'</b><span>'+escapeHtml(t('loginBody'))+'</span><br><br><a class="btn primary" href="/signup?tab=login&next=/support">'+escapeHtml(t('loginCta'))+'</a></div>';
@@ -136,6 +202,8 @@
       if(r.status===401){renderLogin();return;}
       var j=await r.json();
       renderReports(j&&j.ok?j.reports||[]:[]);
+      var requested=new URLSearchParams(location.search).get('report');
+      if(requested&&!selectedReportId&&j&&j.ok&&j.reports.some(function(x){return String(x.id)===String(requested)}))openThread(requested);
     }catch(_){
       document.getElementById('reports').innerHTML='<div class="empty"><b>'+escapeHtml(t('failed'))+'</b></div>';
     }
@@ -160,8 +228,22 @@
     }catch(_){setStatus(t('failed'),false);}
     finally{btn.disabled=false;btn.textContent=t('send');}
   });
+  document.getElementById('reports').addEventListener('click',function(e){var row=e.target.closest('[data-report-id]');if(row)openThread(row.getAttribute('data-report-id'));});
+  document.getElementById('thread-back').addEventListener('click',function(){selectedReportId=null;lastMessages=[];renderReports(lastReports);renderThread([]);try{history.replaceState(null,'','/support');}catch(_){}});
+  document.getElementById('reply-form').addEventListener('submit',async function(e){
+    e.preventDefault();if(!selectedReportId)return;var text=document.getElementById('reply-message').value.trim();if(!text)return;
+    var btn=document.getElementById('reply-submit');btn.disabled=true;
+    var key='web-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);
+    var r=await fetch('/api/support/report',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({action:'reply',id:selectedReportId,message:text,clientMessageId:key})});
+    var j=await r.json().catch(function(){return null});btn.disabled=false;
+    document.getElementById('reply-status').textContent=j&&j.ok?t('replySent'):(j&&j.error)||t('failed');
+    if(j&&j.ok){document.getElementById('reply-message').value='';await loadReports();await openThread(selectedReportId);}
+  });
+  async function ticketAction(action){if(!selectedReportId)return;await fetch('/api/support/report',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({action:action,id:selectedReportId})});await loadReports();await openThread(selectedReportId);}
+  document.getElementById('confirm-resolved').addEventListener('click',function(){ticketAction('confirm_resolved');});
+  document.getElementById('reopen-ticket').addEventListener('click',function(){ticketAction('reopen');});
   document.getElementById('lang-select').addEventListener('change',function(e){setLocale(e.target.value);});
-  document.addEventListener('hk:locale',function(){applyText();renderReports(lastReports);});
+  document.addEventListener('hk:locale',function(){applyText();renderReports(lastReports);renderThread(lastMessages);});
   document.getElementById('page-path').value=defaultPage();
   applyText();
   loadReports();

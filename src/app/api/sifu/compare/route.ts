@@ -19,14 +19,26 @@
  * - Rate limit: นับเฉพาะ cache miss (cache hit ไม่นับ)
  */
 import { NextResponse } from "next/server";
+import { publicAiPayload } from "@/lib/public-ai-response";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { q1, q } from "@/lib/db";
 import { spawnClaudeStreaming, makeJsonlParser, streamOpenRouter } from "@/lib/claude-stream";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { loadPromptMd } from "@/lib/prompt-md";
 import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
 import { buildSynastry, altPillar, type PersonSyn } from "@/lib/bazi-synastry";
+import { getSession } from "@/lib/auth";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
+import {
+  claimCachedNetworkPairTrial,
+  networkBillingOperationId,
+  networkBillingRequestFingerprint,
+  refundNetworkAiOperation,
+  reserveNetworkAiOperation,
+  settleNetworkAiOperation,
+} from "@/lib/network-pair-billing";
 
 /* 25 พ.ค. · compare persona ย้ายไป prompts/compare-{th,en,zh}.md (section marker) · parser + fallback */
 function parseCompareSections(raw: string): Record<string, string> {
@@ -386,7 +398,14 @@ async function saveCache(key: string, reply: string, warmup: string, lang: strin
 
 export async function POST(req: Request) {
   /* 1 มิ.ย. · AI ดูดวงเทียบคู่ต้องสมัคร/login ก่อน (เจ้านายสั่ง) */
-  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  const session = await getSession();
+  if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  const productAccess = await getProductAccess(session.userId);
+  const pairAi = productAccess?.pages.network.pair_ai || "locked";
+  if (pairAi === "locked") {
+    return NextResponse.json(entitlementDenied("network_pair_ai_locked", { plan: productAccess?.plan || "free" }), { status: 403 });
+  }
+  const operationId = networkBillingOperationId(req, session.userId, "sifu_network_pair");
   /* preflight common · ใช้ทั้ง JSON และ stream mode */
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
     || req.headers.get("x-real-ip") || "unknown";
@@ -422,11 +441,21 @@ export async function POST(req: Request) {
   const url = new URL(req.url);
   const queryStream = url.searchParams.get("stream") === "1";
   const wantStream = acceptSse || queryStream;
+  const requestFingerprint = networkBillingRequestFingerprint("sifu_compare", { lang: L, p1, p2, stream: wantStream });
 
   /* JSON mode · backward compat (ของเดิม Phase 11c) */
   if (!wantStream) {
     const cached = await getCachedReply(key);
     if (cached) {
+      if (pairAi === "once") {
+        const claim = await claimCachedNetworkPairTrial(session.userId, operationId, requestFingerprint);
+        if (!claim.ok) {
+          if (claim.error === "network_pair_ai_trial_used") {
+            return NextResponse.json(entitlementDenied(claim.error, { plan: productAccess?.plan, max: 1 }), { status: 403 });
+          }
+          return NextResponse.json({ error: claim.error }, { status: claim.status });
+        }
+      }
       return NextResponse.json({ reply: cached.reply, lang: L, cached: true });
     }
     if (rateLimitHit(ip)) {
@@ -435,14 +464,30 @@ export async function POST(req: Request) {
     const warmupText = buildEngineWarmup(p1, p2, L);
     const prompt = buildPrompt(p1, p2, L, true, protocol.text);
     const startMs = Date.now();
+    const reserved = await reserveNetworkAiOperation({
+      feature: "sifu_network_pair",
+      operationId,
+      requestFingerprint,
+      trial: pairAi === "once",
+      userId: session.userId,
+    });
+    if (!reserved.ok) {
+      return NextResponse.json({ error: reserved.error, required: reserved.required, balance: reserved.balance }, { status: reserved.status });
+    }
+    if (reserved.replay?.reply) {
+      return NextResponse.json({ reply: reserved.replay.reply, lang: L, cached: true, replayed: true, yam: { charged: reserved.spent, balance_after: reserved.balance_after } });
+    }
     try {
       /* JSON mode ใช้ Claude CLI synchronous (เดิม) · ไม่ stream */
       const reply = await runClaudeCliSync(prompt);
       const elapsedMs = Date.now() - startMs;
       const full = warmupText + "\n" + reply;
       saveCache(key, full, warmupText, L, elapsedMs, "claude-cli", protocol.version);
-      return NextResponse.json({ reply: full, lang: L, cached: false });
+      const settled = await settleNetworkAiOperation({ chars: reply.length, feature: "sifu_network_pair", operationId, replay: { reply: full }, userId: session.userId });
+      if (!settled.ok) throw new Error(`billing_${settled.status}`);
+      return NextResponse.json({ reply: full, lang: L, cached: false, yam: { charged: settled.spent, balance_after: settled.balance_after } });
     } catch (e) {
+      await refundNetworkAiOperation({ feature: "sifu_network_pair", operationId, reason: "sifu_compare_failed", userId: session.userId }).catch(() => {});
       const msg = (e as Error)?.message || "claude failed";
       return NextResponse.json({ error: msg }, { status: 500 });
     }
@@ -453,6 +498,20 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let closed = false;
+      let streamReserved = false;
+      let billingFinalized = false;
+      const settleBilling = async (chars: number, reply: string) => {
+        if (!streamReserved || billingFinalized) return null;
+        const result = await settleNetworkAiOperation({ chars, feature: "sifu_network_pair", operationId, replay: { reply }, userId: session.userId });
+        if (!result.ok) throw new Error(`billing_${result.status}`);
+        billingFinalized = true;
+        return result;
+      };
+      const refundBilling = async () => {
+        if (!streamReserved || billingFinalized) return;
+        await refundNetworkAiOperation({ feature: "sifu_network_pair", operationId, reason: "sifu_compare_stream_failed", userId: session.userId }).catch(() => {});
+        billingFinalized = true;
+      };
       const safeClose = () => {
         if (closed) return;
         closed = true;
@@ -461,7 +520,7 @@ export async function POST(req: Request) {
       const send = (event: string, data: unknown) => {
         if (closed) return;
         try {
-          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(publicAiPayload(data))}\n\n`));
         } catch {
           closed = true;
         }
@@ -474,6 +533,18 @@ export async function POST(req: Request) {
       /* 1. Cache hit → ส่งทั้งก้อนทันที · ไม่นับ rate limit */
       const cached = await getCachedReply(key);
       if (cached) {
+        if (pairAi === "once") {
+          const claim = await claimCachedNetworkPairTrial(session.userId, operationId, requestFingerprint);
+          if (!claim.ok) {
+            send("error", {
+              error: claim.error,
+              status: claim.status,
+              ...(claim.error === "network_pair_ai_trial_used" ? { upgrade: "/pricing" } : {}),
+            });
+            safeClose();
+            return;
+          }
+        }
         send("meta", { cached: true, lang: L, key: key.slice(0, 8) });
         send("chunk", { text: cached.reply });
         send("done", { ms: 0, cached: true, provider: "cache" });
@@ -484,6 +555,29 @@ export async function POST(req: Request) {
       /* 2. Cache miss → rate limit check */
       if (rateLimitHit(ip)) {
         send("error", { error: "rate limit · ลองอีกใน 1 ชม.", status: 429 });
+        safeClose();
+        return;
+      }
+
+      const reserve = await reserveNetworkAiOperation({
+        feature: "sifu_network_pair",
+        operationId,
+        requestFingerprint,
+        trial: pairAi === "once",
+        userId: session.userId,
+      });
+      if (!reserve.ok) {
+        send("error", { error: reserve.error, status: reserve.status, required: reserve.required, balance: reserve.balance });
+        safeClose();
+        return;
+      }
+      streamReserved = true;
+      if (reserve.replay?.reply) {
+        const replay = reserve.replay.reply;
+        billingFinalized = true;
+        send("meta", { cached: true, replayed: true, lang: L });
+        send("chunk", { text: replay });
+        send("done", { ms: 0, cached: true, replayed: true, chars: replay.length, yam: { charged: reserve.spent, balance_after: reserve.balance_after } });
         safeClose();
         return;
       }
@@ -532,20 +626,24 @@ export async function POST(req: Request) {
           if (!closed && aiText) {
             const elapsedMs = Date.now() - t0;
             saveCache(key, warmup + "\n" + aiText, warmup, L, elapsedMs, providerUsed, protocol.version);
-            send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length });
+            const settled = await settleBilling(aiText.length, warmup + aiText);
+            send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length, yam: settled ? { charged: settled.spent, balance_after: settled.balance_after } : undefined });
           }
         } catch (e) {
+          await refundBilling();
           if (!closed) send("error", { error: "fallback failed: " + ((e as Error)?.message || "unknown") });
         } finally {
+          if (!aiText) await refundBilling();
           clearTimeout(hardTimer);
           safeClose();
         }
       }, FIRST_BYTE_TIMEOUT_MS);
 
       /* Hard timeout · 180s · kill ทุก provider (CLI + fallback) */
-      const hardTimer = setTimeout(() => {
+      const hardTimer = setTimeout(async () => {
         try { child.kill("SIGKILL"); } catch {}
         fallbackAbort.abort();
+        await refundBilling();
         if (!closed) send("error", { error: "timeout" });
         safeClose();
       }, TIMEOUT_MS);
@@ -564,19 +662,26 @@ export async function POST(req: Request) {
       child.stderr?.on("data", (chunk: Buffer) => {
         console.warn("[sifu/compare stderr]", chunk.toString().slice(0, 200));
       });
-      child.on("close", (code) => {
+      child.on("close", async (code) => {
         /* fallback กำลังหรือทำสำเร็จไปแล้ว · CLI close ห้ามทับ stream */
         if (fallbackActive) return;
         clearTimeout(firstByteTimer);
         clearTimeout(hardTimer);
         if (closed) return;
-        if (code === 0 && aiText) {
-          const elapsedMs = Date.now() - t0;
-          /* Codex รอบ 52 fix · CLI success path ส่ง protocol.version ด้วย */
-          saveCache(key, warmup + "\n" + aiText, warmup, L, elapsedMs, providerUsed, protocol.version);
-          send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length });
-        } else {
-          send("error", { error: `claude exit ${code}` });
+        try {
+          if (code === 0 && aiText) {
+            const elapsedMs = Date.now() - t0;
+            /* Codex รอบ 52 fix · CLI success path ส่ง protocol.version ด้วย */
+            saveCache(key, warmup + "\n" + aiText, warmup, L, elapsedMs, providerUsed, protocol.version);
+            const settled = await settleBilling(aiText.length, warmup + aiText);
+            send("done", { ms: elapsedMs, provider: providerUsed, cached: false, chars: aiText.length, yam: settled ? { charged: settled.spent, balance_after: settled.balance_after } : undefined });
+          } else {
+            await refundBilling();
+            send("error", { error: `claude exit ${code}` });
+          }
+        } catch {
+          await refundBilling();
+          send("error", { error: "billing_failed" });
         }
         safeClose();
       });
@@ -587,6 +692,7 @@ export async function POST(req: Request) {
         clearTimeout(hardTimer);
         try { child.kill("SIGKILL"); } catch {}
         fallbackAbort.abort();
+        void refundBilling();
         safeClose();
       });
     },
@@ -609,8 +715,7 @@ async function runClaudeCliSync(prompt: string): Promise<string> {
     const claudeArgs = [
       "-p",
       "--output-format", "text",
-      "--dangerously-skip-permissions",
-      "--setting-sources", "user",
+      ...CLAUDE_TEXT_ONLY_ARGS,
     ];
     const spawnArgs = ["-u", "jarvis", "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });

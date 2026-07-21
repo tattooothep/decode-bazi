@@ -6,15 +6,16 @@
  */
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
-import { verifyPassword, hashPassword } from "@/lib/auth";
+import { verifyPassword, hashPassword, signSession, setAuthCookie } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { getAccountUser, clientIpFrom } from "@/lib/account-utils";
+import { mobileBearerToken } from "@/lib/mobile-auth";
 
 export async function POST(req: Request) {
-  const acc = await getAccountUser();
+  const acc = await getAccountUser(req);
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
 
-  const rl = rateLimit(`acct-pw:${acc.u.id}:${clientIpFrom(req)}`, 5, 3600_000);
+  const rl = await rateLimit(`acct-pw:${acc.u.id}:${clientIpFrom(req)}`, 5, 3600_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ลองเปลี่ยนรหัสผ่านบ่อยเกินไป กรุณารอ 1 ชั่วโมง" },
@@ -34,6 +35,9 @@ export async function POST(req: Request) {
   }
 
   const hasPassword = !!acc.u.password_hash;
+  if(!hasPassword) {
+    return NextResponse.json({error:"password_setup_requires_email_reset"},{status:403});
+  }
   if (hasPassword) {
     if (!current) {
       return NextResponse.json({ error: "กรุณากรอกรหัสผ่านปัจจุบัน" }, { status: 400 });
@@ -48,9 +52,23 @@ export async function POST(req: Request) {
   }
 
   const hash = await hashPassword(next);
-  await q1(
-    `UPDATE users SET password_hash=$2, last_active_at=now() WHERE id=$1 AND deleted_at IS NULL`,
-    [acc.u.id, hash]
+  const rotated=await q1<{session_version:number}>(
+    `UPDATE users SET password_hash=$2,session_version=COALESCE(session_version,0)+1,last_active_at=now()
+      WHERE id=$1 AND deleted_at IS NULL AND ($3::text IS NULL OR password_hash=$3)
+      RETURNING session_version`,[acc.u.id,hash,acc.u.password_hash]
   );
-  return NextResponse.json({ ok: true, mode: hasPassword ? "changed" : "set" });
+  if(!rotated) return NextResponse.json({error:"credential_changed_retry"},{status:409});
+  const sv=Number(rotated.session_version)||0;
+  const sess = await signSession({
+    userId: acc.u.id,
+    email: acc.u.email,
+    orgId: acc.u.current_org_id ?? null,
+    sv,
+  });
+  await setAuthCookie(sess);
+  return NextResponse.json({
+    ok: true,
+    mode: hasPassword ? "changed" : "set",
+    ...(mobileBearerToken(req) ? {access_token:sess,token_type:"Bearer"} : {}),
+  });
 }

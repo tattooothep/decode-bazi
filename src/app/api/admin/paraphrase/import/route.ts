@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { TYPES, expandFields } from "@/lib/paraphrase-types";
 import { q, q1 } from "@/lib/db";
 
@@ -18,7 +18,7 @@ import { q, q1 } from "@/lib/db";
 export async function POST(req: Request) {
   let admin;
   try {
-    admin = await requireAdmin();
+    admin = await requirePermission("admin.paraphrase.write");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

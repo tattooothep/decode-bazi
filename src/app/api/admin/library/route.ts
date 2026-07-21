@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
 import { mkdirSync, writeFileSync, readFileSync, unlinkSync } from "fs";
 import { join, extname } from "path";
@@ -42,7 +42,7 @@ function mimeOf(ext: string) {
 }
 
 export async function GET(req: Request) {
-  try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
+  try { await requirePermission("admin.library.read"); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
   const id = new URL(req.url).searchParams.get("id");
   if (id) {
     /* เล่มที่ซ่อนด้านนอก → ปฏิบัติเหมือนไม่มี (กดเข้าไม่ได้) · DB ยังมีจริง กู้ได้ผ่านไฟล์ซ่อน */
@@ -65,8 +65,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  let admin: Awaited<ReturnType<typeof requireAdmin>>;
-  try { admin = await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
+  let admin: Awaited<ReturnType<typeof requirePermission>>;
+  try { admin = await requirePermission("admin.library.write"); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
   const ctype = req.headers.get("content-type") || "";
 
   // ── เพิ่มหน้า (อัพรูป · ทีละไฟล์หรือหลายไฟล์) เข้าเล่มที่มีอยู่ ──

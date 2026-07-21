@@ -2,16 +2,18 @@
  * /api/account/devices · Account Phase 1 (r378 · 3 ก.ค. 2026)
  * GET    → รายการอุปกรณ์ (จาก user_devices best-effort log) · ?device=<deviceId> ไว้ mark เครื่องปัจจุบัน
  * DELETE → ลบรายการอุปกรณ์ ?id=<uuid> (ลบแค่บันทึก — ไม่ revoke JWT ของเครื่องนั้น
- *          เพราะ token stateless + verifySession อยู่ใน src/lib/auth.ts ที่ LOCKED · แจ้งตรงๆ ใน UI)
+ * POST   → revoke session เก่าทุกเครื่องด้วย session_version แล้วออก token ใหม่ให้เครื่องปัจจุบัน
  */
 import { NextResponse } from "next/server";
 import { q, q1 } from "@/lib/db";
 import { getAccountUser, deviceHash } from "@/lib/account-utils";
+import { bumpSessionVersion, setAuthCookie, signSession } from "@/lib/auth";
+import { mobileBearerToken } from "@/lib/mobile-auth";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function GET(req: Request) {
-  const acc = await getAccountUser();
+  const acc = await getAccountUser(req);
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
 
   const url = new URL(req.url);
@@ -42,7 +44,7 @@ export async function GET(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const acc = await getAccountUser();
+  const acc = await getAccountUser(req);
   if (!acc) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const url = new URL(req.url);
   const id = String(url.searchParams.get("id") || "");
@@ -53,4 +55,18 @@ export async function DELETE(req: Request) {
   );
   if (!row) return NextResponse.json({ error: "not found" }, { status: 404 });
   return NextResponse.json({ ok: true });
+}
+
+export async function POST(req:Request) {
+  const acc=await getAccountUser(req);
+  if(!acc) return NextResponse.json({error:"not logged in"},{status:401});
+  const body=await req.json().catch(()=>({}));
+  if(body.action!=="sign_out_others") return NextResponse.json({error:"unknown action"},{status:400});
+  const installationId=String(body.installation_id||"").trim();
+  if(installationId&&!UUID_RE.test(installationId)) return NextResponse.json({error:"invalid installation"},{status:400});
+  const sv=await bumpSessionVersion(acc.u.id);
+  const token=await signSession({userId:acc.u.id,email:acc.u.email,orgId:acc.u.current_org_id,sv});
+  await setAuthCookie(token);
+  await q(`UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now() WHERE user_id=$1 AND enabled=true AND ($2::uuid IS NULL OR installation_id<>$2::uuid)`,[acc.u.id,installationId||null]).catch(()=>null);
+  return NextResponse.json({ok:true,revoked_other_sessions:true,...(mobileBearerToken(req)?{access_token:token,token_type:"Bearer"}:{})});
 }

@@ -1,0 +1,1022 @@
+[
+ {
+  "combo": "木木木",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "同类相生，性情温和，易获成功",
+  "th": "ธาตุเดียวกันเกื้อกัน นิสัยอ่อนโยน สำเร็จได้ง่าย",
+  "en": "Same element supporting each other; gentle temperament; success comes easily.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木木火",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "成功顺调，希望圆满达成",
+  "th": "สำเร็จราบรื่น ความหวังบรรลุอย่างสมบูรณ์",
+  "en": "Smooth success; hopes fully achieved.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木木土",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "稳固安泰，心身健全",
+  "th": "มั่นคงร่มเย็น กายใจสมบูรณ์แข็งแรง",
+  "en": "Stable and secure; sound in body and mind.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木木金",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "受上级压迫，难获成功",
+  "th": "ถูกผู้ใหญ่เบื้องบนกดทับ ยากได้รับความสำเร็จ",
+  "en": "Oppressed by superiors; success hard to gain.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木木水",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "得上下惠助，顺利发展",
+  "th": "ได้ผู้ใหญ่ผู้น้อยช่วยเหลือ พัฒนาราบรื่น",
+  "en": "Helped from above and below; smooth development.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木火木",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "承蒙上师引进，易获成功",
+  "th": "ได้รับการชักนำจากผู้ใหญ่ครูบาอาจารย์ สำเร็จได้ง่าย",
+  "en": "Introduced by mentors and superiors; success comes easily.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木火火",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "得顺调发展，但有缺乏耐久力",
+  "th": "ได้พัฒนาอย่างราบรื่น แต่ขาดความทรหดอดทน",
+  "en": "Smooth development, but lacking staying power.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木火土",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "可获得成功及名利双收",
+  "th": "สำเร็จได้ทั้งชื่อเสียงและลาภยศพร้อมกัน",
+  "en": "Success with both fame and fortune.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木火金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽有成功运，多受环境影响",
+  "th": "แม้มีดวงสำเร็จ แต่ถูกสภาพแวดล้อมกระทบมาก",
+  "en": "Some success luck, but much affected by circumstances.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木火水",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "境遇不安定，受下属迫害",
+  "th": "สถานการณ์ไม่มั่นคง ถูกผู้ใต้บังคับบัญชาบ่อนทำลาย",
+  "en": "Unstable circumstances; undermined by subordinates.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木土木",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运被压抑，不能有所伸张",
+  "th": "ดวงสำเร็จถูกกดทับ ไม่อาจแผ่ขยายได้",
+  "en": "Success luck suppressed; unable to stretch out.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木土火",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽获得发展，但易生不平不满",
+  "th": "แม้พัฒนาได้ แต่มักเกิดความคับข้องไม่พอใจ",
+  "en": "Development possible, but grievance and discontent easily arise.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木土土",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "承父祖之德，得长者之栽培",
+  "th": "รับบุญบารมีบรรพบุรุษ ได้ผู้อาวุโสฟูมฟักเลี้ยงดู",
+  "en": "Inheriting ancestral virtue; nurtured by elders.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木土金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "可获得意外成功发展",
+  "th": "ได้รับความสำเร็จและพัฒนาเกินความคาดหมาย",
+  "en": "Unexpected success and development attainable.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木土水",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运不佳，常有烦恼苦闷",
+  "th": "ดวงสำเร็จไม่ดี มักมีความกลุ้มใจขุ่นข้อง",
+  "en": "Poor success luck; frequent worry and gloom.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "木金木",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木金火",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木金土",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木金金",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木金水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木水木",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木水火",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木水土",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木水金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "木水水",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火木木",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "希望能平稳达成，易成功发展",
+  "th": "ความหวังบรรลุอย่างราบเรียบ สำเร็จพัฒนาได้ง่าย",
+  "en": "Hopes steadily fulfilled; easy success and development.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火木火",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "得上下之惠助，顺调发展成功",
+  "th": "ได้เบื้องบนเบื้องล่างช่วยเหลือ พัฒนาสำเร็จราบรื่น",
+  "en": "Helped from above and below; smooth successful development.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火木土",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "成功运佳，向上发展容易达成",
+  "th": "ดวงสำเร็จดี ก้าวหน้าขึ้นสูงบรรลุได้ง่าย",
+  "en": "Good success luck; upward progress easily achieved.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火木金",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "虽有成功运，但易生心肺疾病",
+  "th": "แม้มีดวงสำเร็จ แต่เสี่ยงเกิดโรคหัวใจและปอด",
+  "en": "Some success luck, but prone to heart and lung ailments.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火木水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "可得一时之吉运，但基础薄弱",
+  "th": "ได้โชคดีเพียงชั่วครู่ แต่พื้นฐานอ่อนแอ",
+  "en": "Momentary good luck, but weak foundation.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火火木",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "希望易达，成功发展，基础稳固",
+  "th": "ความหวังถึงได้ง่าย สำเร็จพัฒนา พื้นฐานมั่นคง",
+  "en": "Hopes easily reached; success and development on a firm base.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火火火",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "性急如火，缺乏忍耐力",
+  "th": "ใจร้อนดั่งไฟ ขาดความอดทน",
+  "en": "Fiery impatience; lacking endurance.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火火土",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "得部下拥戴，及长辈引进",
+  "th": "ได้ผู้น้อยหนุนนำ และผู้อาวุโสชักนำ",
+  "en": "Supported by subordinates and introduced by elders.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火火金",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运被抑制，不能有所伸张",
+  "th": "ดวงสำเร็จถูกกดขี่ ไม่อาจแผ่ขยายได้",
+  "en": "Success luck restrained; unable to stretch out.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火火水",
+  "luck": "great_bad",
+  "luck_zh": "大凶",
+  "note_zh": "水火相克，大凶之象",
+  "th": "น้ำกับไฟพิฆาตกัน ลางร้ายใหญ่",
+  "en": "Water and fire clash; a greatly inauspicious sign.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火土木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可获得发展，但易生心肺疾病",
+  "th": "แม้พัฒนาได้ แต่เสี่ยงเกิดโรคหัวใจและปอด",
+  "en": "Development possible, but prone to heart and lung ailments.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火土火",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "得上级提拔，享父母余德",
+  "th": "ได้ผู้ใหญ่ดึงขึ้น ได้เสวยบุญที่พ่อแม่เหลือไว้",
+  "en": "Promoted by superiors; enjoying parents' remaining merit.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火土土",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "可获得意外之成功发展",
+  "th": "ได้รับความสำเร็จและพัฒนาเกินความคาดหมาย",
+  "en": "Unexpected success and development attainable.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火土金",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "境遇安定，身心健康",
+  "th": "สถานการณ์มั่นคง กายใจแข็งแรง",
+  "en": "Stable circumstances; healthy body and mind.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火土水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可得发展，但易生不满",
+  "th": "แม้พัฒนาได้ แต่มักเกิดความไม่พอใจ",
+  "en": "Development possible, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "火金木",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火金火",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火金土",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火金金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火金水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火水木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火水火",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火水土",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火水金",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "火水水",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土木木",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "命运被压抑，不能伸张",
+  "th": "ชะตาถูกกดทับ ไม่อาจแผ่ขยาย",
+  "en": "Fate suppressed; unable to stretch out.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土木火",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "向上发展容易，境遇安固",
+  "th": "ก้าวหน้าขึ้นสูงได้ง่าย สถานะมั่นคงแน่นหนา",
+  "en": "Easy upward progress; secure and firm situation.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土木土",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "可得平安荣华之幸运",
+  "th": "ได้โชคแห่งความสงบสุขและรุ่งเรือง",
+  "en": "Gaining the luck of peace and prosperity.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土木金",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "受父辈余德，或长者引进",
+  "th": "รับบุญที่เหลือของรุ่นพ่อ หรือได้ผู้อาวุโสชักนำ",
+  "en": "Receiving forebears' remaining merit, or elders' introduction.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土木水",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运不佳，常有苦闷",
+  "th": "ดวงสำเร็จไม่ดี มักมีความกลุ้มใจ",
+  "en": "Poor success luck; frequent gloom.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土火木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可顺利成功，但易生不满",
+  "th": "แม้สำเร็จราบรื่นได้ แต่มักเกิดความไม่พอใจ",
+  "en": "Smooth success possible, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土火火",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "受上司惠泽，易成功发展",
+  "th": "ได้รับเมตตาจากเจ้านาย สำเร็จพัฒนาได้ง่าย",
+  "en": "Favored by superiors; easy success and development.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土火土",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "得上下之惠助，发展安泰",
+  "th": "ได้เบื้องบนเบื้องล่างช่วยเหลือ พัฒนาอย่างร่มเย็น",
+  "en": "Helped from above and below; secure development.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土火金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "成功运尚佳，但易招致不满",
+  "th": "ดวงสำเร็จค่อนข้างดี แต่มักก่อความไม่พอใจ",
+  "en": "Fair success luck, but inviting discontent.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土火水",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "境遇不安，常受压迫",
+  "th": "สถานการณ์ไม่สงบ ถูกกดดันอยู่บ่อยครั้ง",
+  "en": "Unsettled circumstances; often oppressed.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土土木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "成功运被压抑，易生不满",
+  "th": "ดวงสำเร็จถูกกดทับ มักเกิดความไม่พอใจ",
+  "en": "Success luck suppressed; discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土土火",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "可得平安荣华之幸运",
+  "th": "ได้โชคแห่งความสงบสุขและรุ่งเรือง",
+  "en": "Gaining the luck of peace and prosperity.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土土土",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "稳重厚实，易得成功",
+  "th": "หนักแน่นมั่นคง สำเร็จได้ง่าย",
+  "en": "Steady and solid; success comes easily.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土土金",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "境遇安全，心身健全",
+  "th": "สถานการณ์ปลอดภัย กายใจสมบูรณ์แข็งแรง",
+  "en": "Safe circumstances; sound body and mind.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土土水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可成功，但易生不满",
+  "th": "แม้สำเร็จได้ แต่มักเกิดความไม่พอใจ",
+  "en": "Success possible, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "土金木",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土金火",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土金土",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土金金",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土金水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土水木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土水火",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土水土",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土水金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "土水水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "金木木",
+  "luck": "great_bad",
+  "luck_zh": "大凶",
+  "note_zh": "金克木，命运被压抑",
+  "th": "ทองพิฆาตไม้ ชะตาถูกกดทับ",
+  "en": "Metal overcomes wood; fate suppressed.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金木火",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运被抑制，不得伸张",
+  "th": "ดวงสำเร็จถูกยับยั้ง ไม่อาจแผ่ขยายได้",
+  "en": "Success luck restrained; unable to stretch out.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金木土",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可得长者之提拔而成功",
+  "th": "อาศัยผู้อาวุโสดึงขึ้นจึงสำเร็จได้",
+  "en": "Success possible through elders' promotion.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金木金",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "境遇不安定，受部下压迫",
+  "th": "สถานการณ์ไม่มั่นคง ถูกผู้ใต้บังคับบัญชากดดัน",
+  "en": "Unstable circumstances; pressured by subordinates.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金木水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "成功运佳，但易生不满",
+  "th": "ดวงสำเร็จดี แต่มักเกิดความไม่พอใจ",
+  "en": "Good success luck, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金火木",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "命运被压抑，不得成功",
+  "th": "ชะตาถูกกดทับ ไม่อาจสำเร็จได้",
+  "en": "Fate suppressed; success denied.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金火火",
+  "luck": "great_bad",
+  "luck_zh": "大凶",
+  "note_zh": "火克金，大凶之象",
+  "th": "ไฟพิฆาตทอง ลางร้ายใหญ่",
+  "en": "Fire overcomes metal; a greatly inauspicious sign.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金火土",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运不佳，常有烦恼",
+  "th": "ดวงสำเร็จไม่ดี มักมีความกังวลใจ",
+  "en": "Poor success luck; frequent vexation.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金火金",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "境遇虽安定，但易生不满",
+  "th": "สถานะแม้มั่นคง แต่มักเกิดความไม่พอใจ",
+  "en": "Though circumstances are stable, discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金火水",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "一时虽可成功，终必失败",
+  "th": "แม้สำเร็จได้ชั่วคราว สุดท้ายย่อมล้มเหลว",
+  "en": "Momentary success, but ultimately doomed to fail.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金土木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "可得意外成功发展",
+  "th": "ได้รับความสำเร็จพัฒนาเกินความคาดหมาย",
+  "en": "Unexpected success and development attainable.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金土火",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "承蒙上师引进，易成功",
+  "th": "ได้ผู้ใหญ่ครูบาอาจารย์ชักนำ สำเร็จง่าย",
+  "en": "Introduced by mentors; easy success.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金土土",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "境遇安定，身心健康",
+  "th": "สถานการณ์มั่นคง กายใจแข็งแรง",
+  "en": "Stable circumstances; healthy body and mind.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金土金",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "成功运佳，可达希望目的",
+  "th": "ดวงสำเร็จดี บรรลุจุดหมายที่หวังได้",
+  "en": "Good success luck; hoped-for goals attainable.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金土水",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "得长辈引进，顺调成功发展",
+  "th": "ได้ผู้อาวุโสชักนำ สำเร็จพัฒนาราบรื่น",
+  "en": "Elders' introduction; smooth successful development.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金金木",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运被抑制，易生不满",
+  "th": "ดวงสำเร็จถูกยับยั้ง มักเกิดความไม่พอใจ",
+  "en": "Success luck restrained; discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金金火",
+  "luck": "great_bad",
+  "luck_zh": "大凶",
+  "note_zh": "火克金，境遇不安",
+  "th": "ไฟพิฆาตทอง สถานการณ์ไม่สงบ",
+  "en": "Fire overcomes metal; unsettled circumstances.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金金土",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "承蒙上师提拔，易获成功",
+  "th": "ได้ผู้ใหญ่ครูบาอาจารย์ดึงขึ้น สำเร็จได้ง่าย",
+  "en": "Promoted by mentors; success easily won.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金金金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "成功运佳，但过刚易折",
+  "th": "ดวงสำเร็จดี แต่แข็งเกินไปย่อมหักง่าย",
+  "en": "Good success luck, but excessive rigidity easily breaks.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金金水",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "有成功运，得以发展",
+  "th": "มีดวงสำเร็จ ได้พัฒนาต่อไป",
+  "en": "Success luck present; development follows.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "金水木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "金水火",
+  "luck": "neutral",
+  "luck_zh": "平",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "金水土",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "金水金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "金水水",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "source": "12_tianji_computed"
+ },
+ {
+  "combo": "水木木",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "得上级提拔，享成功运",
+  "th": "ได้ผู้ใหญ่ดึงขึ้น เสวยดวงแห่งความสำเร็จ",
+  "en": "Promoted by superiors; enjoying success luck.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水木火",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "希望易达，顺利成功",
+  "th": "ความหวังถึงได้ง่าย สำเร็จอย่างราบรื่น",
+  "en": "Hopes easily reached; smooth success.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水木土",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可成功，但易生不满",
+  "th": "แม้สำเร็จได้ แต่มักเกิดความไม่พอใจ",
+  "en": "Success possible, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水木金",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "成功运佳，但易招不满",
+  "th": "ดวงสำเร็จดี แต่มักก่อความไม่พอใจ",
+  "en": "Good success luck, but inviting discontent.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水木水",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "顺利成功，易达目的",
+  "th": "สำเร็จราบรื่น ถึงเป้าหมายได้ง่าย",
+  "en": "Smooth success; goals easily reached.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水火木",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "水火不容，境遇不安",
+  "th": "น้ำกับไฟไม่ลงรอยกัน สถานการณ์ไม่สงบ",
+  "en": "Water and fire incompatible; unsettled circumstances.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水火火",
+  "luck": "great_bad",
+  "luck_zh": "大凶",
+  "note_zh": "水火相克，大凶配置",
+  "th": "น้ำกับไฟพิฆาตกัน ชุดร้ายใหญ่",
+  "en": "Water and fire clash; a greatly inauspicious configuration.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水火土",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运被抑制",
+  "th": "ดวงสำเร็จถูกยับยั้ง",
+  "en": "Success luck restrained.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水火金",
+  "luck": "great_bad",
+  "luck_zh": "大凶",
+  "note_zh": "命运被压抑，不得伸张",
+  "th": "ชะตาถูกกดทับ ไม่อาจแผ่ขยายได้",
+  "en": "Fate suppressed; unable to stretch out.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水火水",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "境遇不安定，多受迫害",
+  "th": "สถานการณ์ไม่มั่นคง ถูกบีฑาอยู่บ่อยครั้ง",
+  "en": "Unstable circumstances; often persecuted.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水土木",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "成功运被抑制，不能有所伸张",
+  "th": "ดวงสำเร็จถูกยับยั้ง ไม่อาจแผ่ขยายได้",
+  "en": "Success luck restrained; unable to stretch out.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水土火",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "境遇不安定，易生疾病",
+  "th": "สถานการณ์ไม่มั่นคง เจ็บป่วยได้ง่าย",
+  "en": "Unstable circumstances; prone to illness.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水土土",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可得发展，但易生不满",
+  "th": "แม้พัฒนาได้ แต่มักเกิดความไม่พอใจ",
+  "en": "Development possible, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水土金",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "得长辈引进，得以顺利发展",
+  "th": "ได้ผู้อาวุโสชักนำ ได้พัฒนาอย่างราบรื่น",
+  "en": "Elders' introduction; smooth development follows.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水土水",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "成功运佳，但易招不满",
+  "th": "ดวงสำเร็จดี แต่มักก่อความไม่พอใจ",
+  "en": "Good success luck, but inviting discontent.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水金木",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "成功运虽佳，易生不满",
+  "th": "ดวงสำเร็จแม้ดี แต่มักเกิดความไม่พอใจ",
+  "en": "Success luck fair, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水金火",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "火克金，境遇不安",
+  "th": "ไฟพิฆาตทอง สถานการณ์ไม่สงบ",
+  "en": "Fire overcomes metal; unsettled circumstances.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水金土",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "承蒙上师引进，易获成功",
+  "th": "ได้ผู้ใหญ่ครูบาอาจารย์ชักนำ สำเร็จได้ง่าย",
+  "en": "Introduced by mentors; success easily won.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水金金",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "得长辈提拔，顺调成功",
+  "th": "ได้ผู้อาวุโสดึงขึ้น สำเร็จอย่างราบรื่น",
+  "en": "Promoted by elders; smooth success.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水金水",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "成功运极佳，境遇安固",
+  "th": "ดวงสำเร็จดีเยี่ยม สถานะมั่นคงแน่นหนา",
+  "en": "Excellent success luck; secure and firm position.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水水木",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "顺利成功，易达目的",
+  "th": "สำเร็จราบรื่น ถึงเป้าหมายได้ง่าย",
+  "en": "Smooth success; goals easily reached.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水水火",
+  "luck": "bad",
+  "luck_zh": "凶",
+  "note_zh": "水火不容，境遇不安",
+  "th": "น้ำกับไฟไม่ลงรอยกัน สถานการณ์ไม่สงบ",
+  "en": "Water and fire incompatible; unsettled circumstances.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水水土",
+  "luck": "half",
+  "luck_zh": "半吉",
+  "note_zh": "虽可成功，但易生不满",
+  "th": "แม้สำเร็จได้ แต่มักเกิดความไม่พอใจ",
+  "en": "Success possible, but discontent easily arises.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水水金",
+  "luck": "great_luck",
+  "luck_zh": "大吉",
+  "note_zh": "承蒙上师引进，得以顺利成功",
+  "th": "ได้ผู้ใหญ่ครูบาอาจารย์ชักนำ ได้สำเร็จอย่างราบรื่น",
+  "en": "Mentors' introduction; smooth success follows.",
+  "source": "10_bename"
+ },
+ {
+  "combo": "水水水",
+  "luck": "luck",
+  "luck_zh": "吉",
+  "note_zh": "有成功运，但易流于漂泊",
+  "th": "มีดวงสำเร็จ แต่มักไหลไปสู่การเร่ร่อนลอยลม",
+  "en": "Success luck present, but tending to drift adrift.",
+  "source": "10_bename"
+ }
+]

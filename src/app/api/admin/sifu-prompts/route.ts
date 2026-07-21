@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { readFileSync, writeFileSync, statSync, mkdirSync } from "fs";
 import { join } from "path";
 import { SIFU_PROMPT_FILES } from "@/lib/sifu-prompt-files";
@@ -54,7 +54,7 @@ const PAGE_ORDER = [
 ];
 
 export async function GET() {
-  try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 }); }
+  try { await requirePermission("admin.prompts.read"); } catch (e) { return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 }); }
   const files = Object.entries(FILES).map(([name, meta]) => {
     let content = "", size = 0, mtime = "";
     try { const p = join(DIR, name); content = readFileSync(p, "utf8"); const st = statSync(p); size = st.size; mtime = st.mtime.toISOString(); }
@@ -67,7 +67,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   let admin;
-  try { admin = await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 }); }
+  try { admin = await requirePermission("admin.prompts.write"); } catch (e) { return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 }); }
   const body = await req.json().catch(() => ({}));
   const file: string = body.file;
   const content: string = body.content;

@@ -328,10 +328,11 @@ async function loadHouses(){
     const d = await r.json();
     document.getElementById('main-content').style.display='block';
     document.getElementById('auth-needed').style.display='none';
-    // tier badge
+    // plan + house cap (SoT จาก product-entitlement ผ่าน /api/houses)
     const tb = document.getElementById('tier-badge');
-    tb.textContent = `${d.tier.toUpperCase()} · ${d.count}/${d.limit}`;
-    tb.classList.toggle('pro', d.tier !== 'free');
+    const plan = String(d.plan || d.tier || 'free').toUpperCase();
+    tb.textContent = `${plan} · ${d.count}/${d.limit}`;
+    tb.classList.toggle('pro', plan !== 'FREE');
     renderHouses(d.houses || []);
   } catch(e){ showAlert('err', e.message); }
 }
@@ -378,7 +379,11 @@ async function saveHouse(){
   try {
     const r = await fetch('/api/houses', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(payload) });
     const d = await r.json();
-    if (!r.ok) { showAlert('err', d.error+(d.message?' · '+d.message:'')); return; }
+    if (!r.ok) {
+      const msg = d.message || d.error || 'error';
+      showAlert('err', msg + (d.upgrade ? ' · ' + d.upgrade : (d.code === 'house_limit' ? ' · /pricing' : '')));
+      return;
+    }
     showAlert('ok', t.ok_saved);
     document.getElementById('h-name').value='';
     loadHouses();

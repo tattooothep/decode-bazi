@@ -26,7 +26,11 @@ import { computeSiLingDays } from "../chart-table";
 import { boundaryWarning3p, monthPillarBoundary } from "../bazi-boundary";
 import { loadPromptKV } from "../prompt-md";
 import { DISCIPLINES } from "./disciplines";
-import { FUSION_PANEL_PROMPT_MAX_CHARS, sanitizePromptInline, normalizeTimezoneLabel } from "./build-prompt";
+import {
+  fusionCanonBudgetChars,
+  fusionPanelBudgetChars,
+  lifePeriodContract,
+} from "./build-prompt";
 import { NEW_LANG_NAME_TH, LANG_ANSWER_DIRECTIVE } from "../sifu-answer-lang"; // r414-i18n9
 
 /* ── ค่าคงที่แปลไทย (self-contained ตามแบบ resonance.ts/bazi-synastry.ts — ไม่ import จาก route LOCKED) ── */
@@ -75,10 +79,7 @@ export type GuestComputedBirth = {
   lng: number;
   hasTime: boolean;
   gender: "M" | "F";
-  /* r510-tz: เดิมล็อก literal "Asia/Bangkok" — เปิดเป็น string เพื่อรองรับดวงต่างประเทศ (ค่า default ยังกรุงเทพ) */
-  timezone: string;
-  /* r510-tz: ชื่อสถานที่เกิดที่ user กรอก (GuestBirthStored.place) — ส่งต่อเข้า prompt */
-  place?: string;
+  timezone: "Asia/Bangkok";
   birthDate: string;
   birthTime: string;            // "12:00" เมื่อไม่ทราบเวลา (convention loadBirth เดิม)
   dayBoundary: "23:00";
@@ -166,7 +167,6 @@ export async function buildGuestFusionBirth(gs: GuestBirthStored): Promise<Guest
     hasTime,
     gender: gs.gender,
     timezone: "Asia/Bangkok",
-    place: (gs.place || "").trim() || undefined, // r510-tz: ต่อท่อสถานที่เกิด guest เข้า prompt
     birthDate: gs.birthDate,
     birthTime: time,
     dayBoundary: "23:00",
@@ -201,17 +201,20 @@ export type GuestBaziPromptArgs = {
   notes?: string[];            // BAZI_DECISIVE_READING_NOTE + SUBJECT_LOCK/specificity จาก worker (ข้อความเดียวกับ profile path)
   pairPacket?: string;         // PAIR_INTERACTION_PACKET bazi (มีเมื่อ ≥2 ดวง)
   now?: Date;                  // เทส inject ได้
+  /** โมเดลที่จะยิงจริง → cap ตาม knowledgeCapChars (rebuild ตอน fallback) */
+  model?: string | null;
 };
 
 /** bazi panel prompt สำหรับ "ดวงชั่วคราว" — ส่งเป็น externalPrompt เข้า /api/sifu (fusion-internal)
  *  โครง: หัวซินแส+guard → คัมภีร์ปฏิกิริยา (ย่อได้เมื่อชนเพดาน) → FACT/PILLAR LOCK + packet canonical → pair → คำถาม → format
- *  เพดาน: FUSION_PANEL_PROMPT_MAX_CHARS − headroom (เผื่อ PRIOR_FUSION_THREAD_CONTEXT ~1.7K ที่ worker เติมหน้า prompt) */
+ *  เพดาน: fusionPanelBudgetChars(model) − headroom (เผื่อ PRIOR_FUSION_THREAD_CONTEXT ~1.7K ที่ worker เติมหน้า prompt) */
 export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Promise<string> {
   const { focus, question } = args;
   const lang = args.lang || "th";
   const bind = DISCIPLINES.bazi;
   const now = args.now || new Date();
   const calc = focus.guestCalc;
+  const model = args.model || bind.defaultModel;
   const g = loadPromptKV("prompts/sifu-ctx-guards.md");
   const is3p = calc.mode === "3p";
 
@@ -269,15 +272,9 @@ export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Prom
     `=== ผังดวง ${focus.name} (ดวงชั่วคราว) ===`,
     `GUEST_NOTE: ดวงนี้เป็น "ดวงชั่วคราว" — ผู้ใช้กรอกวันเกิดสด ไม่ได้บันทึกเป็นโปรไฟล์ · ไม่มีข้อมูล用神ที่บันทึกไว้ในระบบ (บรรทัด YONG_LOCK ด้านล่างเป็นค่าจาก engine ของผังนี้เท่านั้น) · ห้ามอ้างประวัติ/บริบทเก่าของโปรไฟล์ใดๆ`,
     `ชื่อ: ${focus.name} · เพศ ${focus.gender} · อายุปัจจุบันประมาณ ${ageNow}`,
-    /* r510-tz: ป้ายเขตเวลาตามดวงจริง (validate IANA · default กรุงเทพ) + สถานที่เกิดถ้ามี — place เป็นข้อความ user กรอก ล้าง+cap+ครอบเครื่องหมายคำพูดก่อนเสมอ (กัน prompt injection) */
-    ((): string => {
-      const gp = sanitizePromptInline(focus.place, 80);
-      const gtz = normalizeTimezoneLabel(focus.timezone);
-      const placeSeg = gp ? ` · สถานที่เกิด: "${gp}"` : "";
-      return focus.hasTime
-        ? `เกิด: ${focus.birthDate} ${focus.birthTime}${placeSeg} · lat ${focus.lat} lng ${focus.lng} · timezone ${gtz} · ขอบวัน 23:00 (default ดวงชั่วคราว)`
-        : `เกิด: ${focus.birthDate} · ไม่ทราบเวลาเกิด (อ่านแบบ 3 เสา · ห้ามเดายาม)${placeSeg} · lat ${focus.lat} lng ${focus.lng} · timezone ${gtz}`;
-    })(),
+    focus.hasTime
+      ? `เกิด: ${focus.birthDate} ${focus.birthTime} · lat ${focus.lat} lng ${focus.lng} · timezone Asia/Bangkok · ขอบวัน 23:00 (default ดวงชั่วคราว)`
+      : `เกิด: ${focus.birthDate} · ไม่ทราบเวลาเกิด (อ่านแบบ 3 เสา · ห้ามเดายาม) · lat ${focus.lat} lng ${focus.lng} · timezone Asia/Bangkok`,
     `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement}${g.DM_FACT_LOCK ? ` · ${g.DM_FACT_LOCK}` : ""}`,
     `PILLAR LOCK (ก้าน/กิ่งทุกเสา · เวลาอ้างเสาใดให้คัดจากบรรทัดนี้ตรงๆ ห้ามประกอบ/เดาเอง): ${pillarLine}`,
     ...(g.DM_THAI_LOCK ? [g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh)] : []),
@@ -290,13 +287,15 @@ export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Prom
   ];
 
   const canon = loadBaziCanon();
-  const cap = FUSION_PANEL_PROMPT_MAX_CHARS - 2_000; // headroom ให้ PRIOR_FUSION_THREAD_CONTEXT ที่ worker เติมหน้า prompt
+  // r513 model-aware · headroom ให้ PRIOR_FUSION_THREAD_CONTEXT ~1.7K ที่ worker เติมหน้า prompt
+  const cap = fusionPanelBudgetChars(model) - 2_000;
   const assemble = (canonText: string, truncated: boolean, chartLines: string[]) => {
     const L: string[] = [];
     L.push(`คุณคือซินแสผู้เชี่ยวชาญ "${bind.labelTh}" (${bind.labelZh})`);
     L.push(`อ่านดวงจาก "ผังที่ระบบคำนวณ" ด้านล่างเท่านั้น · ⚠️ ${bind.termGuard}`);
     L.push(`ห้ามเดาเสา/ก้าน/กิ่ง/ธาตุ/วัยจร · field ไหนไม่มีให้บอกว่าไม่มี · ตอบภาษา${LANG_NAME[lang] || "ไทย"}นำ`);
     if (LANG_ANSWER_DIRECTIVE[lang]) L.push(LANG_ANSWER_DIRECTIVE[lang]); // r414-i18n9: เฉพาะภาษาใหม่
+    L.push(lifePeriodContract("bazi"));
     for (const n of args.notes || []) if (n && n.trim()) L.push(n.trim());
     if (args.timingLine && args.timingLine.trim()) L.push(args.timingLine.trim());
     if (canonText) {
@@ -320,10 +319,11 @@ export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Prom
       "- ถ้าเทียบหลายรายการ/หลายเดือน/หลายปี/หลายคน ตั้งแต่ 3 แถวขึ้นไป ต้องใช้ตาราง markdown",
       "- หลักฐานหลายจุดใช้ bullet (- ) จุดละบรรทัด · เน้นคำสำคัญ/วันที่/ชื่อเสาด้วย **ตัวหนา**",
       "รูปแบบตอบบังคับ:",
-      `1) ฟันธงเฉพาะ ${focus.name} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป`,
-      `2) หลักฐานเฉพาะจากผังอย่างน้อย ${args.pairPacket ? 6 : 5} จุด (ก้าน/กิ่ง/เสา/วัยจร/ปฏิกิริยาจริงจาก packet) แต่ละจุดโยงกับคำถามโดยตรง`,
-      "3) คำตอบตรงคำถามแบบลงลึก ไม่ใช่สรุปกว้างทุกมิติ",
-      "4) คำแนะนำปฏิบัติ 3 ข้อ ที่สัมพันธ์กับหลักฐานดวง",
+      `1) ฟันธงเฉพาะ ${focus.name} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป — ระบุวัยจร 大運 ที่ active ถ้า packet มี`,
+      `2) หลักฐานเฉพาะจากผังอย่างน้อย ${args.pairPacket ? 6 : 5} จุด (ก้าน/กิ่ง/เสา/วัยจร/ปฏิกิริยาจริงจาก packet) แต่ละจุดต้องโยงกับคำถามโดยตรง — อย่างน้อย 1 จุดต้องเป็นวัยจร/ปีจร`,
+      "3) ## วัยจร / ช่วงชีวิต — ไล่ อดีตใกล้ · ปัจจุบัน · ถัดไป จากตารางวัยจรทั้งชีวิตใน packet (บังคับ) · โยงคำถามเข้าช่วงที่ active · อ่านปีไหนใช้วัยจรของปีนั้น",
+      "4) คำตอบตรงคำถามแบบลงลึก ไม่ใช่สรุปกว้างทุกมิติ",
+      "5) คำแนะนำปฏิบัติ 3 ข้อ ที่สัมพันธ์กับหลักฐานดวง + จังหวะวัยจรช่วงนี้",
       "ห้ามพูดคำว่า packet/engine/prompt/CLI/คัมภีร์ในคำตอบ",
     ].join("\n"));
     return L.join("\n");
@@ -339,7 +339,7 @@ export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Prom
   let out = "";
   for (const lvl of renderLevels) {
     const chartLines = buildChartLines(lvl);
-    let canonBudget = Math.min(canon.text.length, 56_000);
+    let canonBudget = Math.min(canon.text.length, fusionCanonBudgetChars(model));
     out = assemble(canon.text.slice(0, canonBudget), canonBudget < canon.text.length, chartLines);
     while (out.length > cap && canonBudget > 4_000) {
       canonBudget = Math.max(4_000, canonBudget - (out.length - cap + 2_000));

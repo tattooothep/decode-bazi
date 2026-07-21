@@ -27,6 +27,12 @@
       og: '從出生資料、時機、方位與真實背景，整合成一個可用於決策的答案。',
       twitter: 'AI Sifu 會一起讀取你的命盤、時間、方位與真實背景。',
     },
+    cn: {
+      title: 'Hourkey | 用中式命理辅助真实决策',
+      description: 'Hourkey 把出生时间、择日、方位、空间与问题背景连接起来，让 AI Sifu 给出可追溯、可执行的答案。',
+      og: '从出生资料、时机、方位与真实背景，整合成一个可用于决策的答案。',
+      twitter: 'AI Sifu 会一起读取你的命盘、时间、方位与真实背景。',
+    },
     vi: {
       title: 'Hourkey | Huyền học Trung Hoa cho quyết định thật',
       description: 'Hourkey kết nối giờ sinh, thời điểm, phương hướng, không gian và bối cảnh câu hỏi để AI Sifu đưa ra câu trả lời có thể kiểm chứng.',
@@ -191,6 +197,10 @@
     [`ask anything`, `ถามได้ทุกเรื่อง`, `ask anything`, `什麼都能問`, `hỏi mọi chuyện`, `何でも質問`, `무엇이든 질문`, `спросить что угодно`, `pregunta lo que quieras`],
     [`ถามต่อจากข้อมูลจริง ไม่ใช่ chatbot ทั่วไปที่ตอบจาก prompt ลอย ๆ`, `ถามต่อจากข้อมูลจริง ไม่ใช่ chatbot ทั่วไปที่ตอบจาก prompt ลอย ๆ`, `Ask from real data, not a generic chatbot answering from a loose prompt.`, `依真實資料追問，不是只靠空泛 prompt 的一般聊天機器人。`, `Hỏi tiếp từ dữ liệu thật, không phải chatbot chung chung trả lời từ prompt rời rạc.`, `実データから質問でき、曖昧なプロンプトだけで答える一般チャットボットではありません。`, `실제 데이터에서 이어 묻는 방식이며 막연한 프롬프트 챗봇이 아닙니다.`, `Вопросы опираются на реальные данные, а не на общий prompt чатбота.`, `Pregunta desde datos reales, no desde un chatbot genérico con prompt suelto.`],
     [`ถามซินแส →`, `ถามซินแส →`, `Ask Sifu →`, `問師父 →`, `Hỏi Sifu →`, `Sifu に聞く →`, `Sifu에게 묻기 →`, `Спросить Sifu →`, `Preguntar a Sifu →`],
+    [`ศาสตร์ที่ 7 · your hand`, `ศาสตร์ที่ 7 · ลายมือของคุณ`, `7th art · your palms`, `第七術 · 你的手相`, `Môn thứ 7 · bàn tay của bạn`, `第7の術 · あなたの手相`, `제7의 술 · 나의 손금`, `7-е искусство · ваши ладони`, `7.º arte · tus manos`],
+    [`ทำนายลายมือ`, `ทำนายลายมือ`, `AI palm reading`, `AI 手相解讀`, `AI xem chỉ tay`, `AI 手相鑑定`, `AI 손금 풀이`, `Анализ ладоней с ИИ`, `Lectura de manos con IA`],
+    [`ถ่ายฝ่ามือสองข้าง AI อ่านเส้นตามคัมภีร์ 3 อารยธรรม จีน อินเดีย ตะวันตก แล้วหลอมรวมกับดวง`, `ถ่ายฝ่ามือสองข้าง AI อ่านเส้นตามคัมภีร์ 3 อารยธรรม จีน อินเดีย ตะวันตก แล้วหลอมรวมกับดวง`, `Photograph both palms. AI reads the lines through Chinese, Indian, and Western traditions, then combines them with your birth chart.`, `拍攝雙手掌，AI 依中國、印度與西方三大傳統解讀掌紋，再與你的命盤整合。`, `Chụp cả hai lòng bàn tay. AI đọc đường chỉ theo ba truyền thống Trung Hoa, Ấn Độ và phương Tây, rồi kết hợp với lá số của bạn.`, `両手のひらを撮影。AIが中国・インド・西洋の三大伝統で掌線を読み、あなたの命盤と統合します。`, `양쪽 손바닥을 촬영하면 AI가 중국·인도·서양의 세 전통으로 손금을 읽고 내 명식과 통합합니다.`, `Сфотографируйте обе ладони. ИИ прочитает линии по китайской, индийской и западной традициям и объединит их с вашей картой рождения.`, `Fotografía ambas palmas. La IA lee las líneas según las tradiciones china, india y occidental, y las integra con tu carta natal.`],
+    [`ดูลายมือ →`, `ดูลายมือ →`, `Read my palms →`, `查看手相 →`, `Xem chỉ tay →`, `手相を見る →`, `손금 보기 →`, `Читать ладони →`, `Leer mis manos →`],
     [`หลังจากกดเริ่ม`, `หลังจากกดเริ่ม`, `After you start`, `開始之後`, `Sau khi bắt đầu`, `開始後`, `시작한 뒤`, `После старта`, `Después de empezar`],
     [`จากข้อมูลส่วนตัว ไปจนถึงคำแนะนำที่ลงมือได้`, `จากข้อมูลส่วนตัว ไปจนถึงคำแนะนำที่ลงมือได้`, `From personal data to advice you can act on`, `從個人資料到可執行建議`, `Từ dữ liệu cá nhân đến lời khuyên có thể làm ngay`, `個人データから実行できる助言へ`, `개인 데이터에서 실행 가능한 조언까지`, `От личных данных к практическому совету`, `De datos personales a consejos accionables`],
     [`ยิ่งบริบทครบ คำตอบยิ่งเฉพาะตัว: วันเกิด เวลาเกิด สถานที่เกิด ความสัมพันธ์ งานที่ถาม และพื้นที่จริง`, `ยิ่งบริบทครบ คำตอบยิ่งเฉพาะตัว: วันเกิด เวลาเกิด สถานที่เกิด ความสัมพันธ์ งานที่ถาม และพื้นที่จริง`, `The more complete the context, the more personal the answer: birth date, birth time, place, relationships, the task, and real space.`, `背景越完整，答案越個人化：生日、出生時間、出生地、關係、所問事項與真實空間。`, `Bối cảnh càng đầy đủ, câu trả lời càng cá nhân: ngày sinh, giờ sinh, nơi sinh, quan hệ, việc đang hỏi và không gian thật.`, `背景が揃うほど答えは個別化されます：生年月日、出生時刻、出生地、関係、質問内容、実空間。`, `맥락이 완전할수록 답은 더 개인화됩니다: 생일, 출생 시간, 장소, 관계, 질문한 일, 실제 공간.`, `Чем полнее контекст, тем персональнее ответ: дата и время рождения, место, отношения, задача и пространство.`, `Cuanto más completo el contexto, más personal la respuesta: fecha, hora, lugar, relaciones, asunto y espacio real.`],
@@ -265,6 +275,13 @@
     });
   });
 
+  const CN_OVERRIDES = new Map([
+    ['ศาสตร์ที่ 7 · your hand', '第七术 · 你的手相'],
+    ['ทำนายลายมือ', 'AI 手相解读'],
+    ['ถ่ายฝ่ามือสองข้าง AI อ่านเส้นตามคัมภีร์ 3 อารยธรรม จีน อินเดีย ตะวันตก แล้วหลอมรวมกับดวง', '拍摄双手掌，AI 依据中国、印度与西方三大传统解读掌纹，再与你的命盘整合。'],
+    ['ดูลายมือ →', '查看手相 →'],
+  ]);
+
   const attrSources = new WeakMap();
   const textSources = new WeakMap();
   const skipTags = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'SELECT', 'OPTION']);
@@ -283,18 +300,19 @@
     const fromUrl = normalizeLang(params.get('lang'));
     if (fromUrl) return fromUrl;
     try {
-      const landingStored = normalizeLang(window.localStorage.getItem(LANDING_STORAGE_KEY));
-      if (landingStored) return landingStored;
       for (const key of GLOBAL_STORAGE_KEYS) {
         const stored = normalizeLang(window.localStorage.getItem(key));
         if (stored === 'zh' && window.localStorage.getItem('hk_zh_variant') === 'cn') return 'cn';
         if (stored) return stored;
       }
+      const landingStored = normalizeLang(window.localStorage.getItem(LANDING_STORAGE_KEY));
+      if (landingStored) return landingStored;
     } catch (_) {}
     return 'th';
   }
 
   function t(source, lang) {
+    if (lang === 'cn' && CN_OVERRIDES.has(source)) return CN_OVERRIDES.get(source);
     const dictLang = lang === 'cn' ? 'zh' : lang;
     const dict = dictionaries[dictLang] || dictionaries.th;
     return dict.get(source) || dictionaries.th.get(source) || source;
@@ -350,7 +368,7 @@
   }
 
   function applyMeta(lang) {
-    const meta = META[lang === 'cn' ? 'zh' : lang] || META.th;
+    const meta = META[lang] || META.th;
     document.title = meta.title;
     const setContent = (selector, value) => {
       const node = document.querySelector(selector);

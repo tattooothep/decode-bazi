@@ -14,6 +14,8 @@ import { logResearchAiMessage } from "@/lib/research-log";
 import { ensureServerEnv } from "@/lib/server-env";
 import { refundHours, spendHours, type RefundResult, type SpendResult } from "@/lib/spend-hours";
 import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
+import { getRedis } from "@/lib/redis";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 loadEnvConfig(process.cwd(), false, console, true);
 ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
@@ -178,6 +180,38 @@ const fusionStatusGlobal = globalThis as typeof globalThis & {
 const fusionStatusStore = fusionStatusGlobal.__hkSifuFusionStatus || new Map<string, FusionRunStatus>();
 fusionStatusGlobal.__hkSifuFusionStatus = fusionStatusStore;
 
+function fusionStatusKey(runId: string): string {
+  return `hk:fusion:status:${runId}`;
+}
+
+async function persistFusionStatus(status: FusionRunStatus): Promise<void> {
+  try {
+    const redis = getRedis();
+    if (redis.status === "wait") await redis.connect();
+    await redis.set(fusionStatusKey(status.runId), JSON.stringify(status), "PX", FUSION_STATUS_TTL_MS);
+  } catch (error) {
+    console.error("[sifu-fusion] progress persistence failed", error instanceof Error ? error.message : error);
+  }
+}
+
+async function readFusionStatus(runId: string): Promise<FusionRunStatus | null> {
+  const local = fusionStatusStore.get(runId);
+  if (local) return local;
+  try {
+    const redis = getRedis();
+    if (redis.status === "wait") await redis.connect();
+    const raw = await redis.get(fusionStatusKey(runId));
+    if (!raw) return null;
+    const status = JSON.parse(raw) as FusionRunStatus;
+    if (!status || status.runId !== runId || typeof status.userId !== "string") return null;
+    fusionStatusStore.set(runId, status);
+    return status;
+  } catch (error) {
+    console.error("[sifu-fusion] progress read failed", error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
 function pruneFusionStatusStore() {
   const cutoff = Date.now() - FUSION_STATUS_TTL_MS;
   for (const [runId, status] of fusionStatusStore.entries()) {
@@ -213,12 +247,14 @@ function initFusionStatus(runId: string | null, panelModels: SifuModel[], userId
     judge: {},
   };
   fusionStatusStore.set(runId, status);
+  void persistFusionStatus(status);
   return status;
 }
 
 function saveFusionStatus(status: FusionRunStatus) {
   status.updatedAt = Date.now();
   fusionStatusStore.set(status.runId, status);
+  void persistFusionStatus(status);
 }
 
 function stateFromResult(result: PanelResult): ProgressModelState["state"] {
@@ -695,13 +731,20 @@ async function getFusionAccess(session: Session): Promise<{
     if (member && ["owner", "admin"].includes(member.role)) adminRole = member.role;
   }
   const allowAll = process.env.SIFU_FUSION_ALLOW_ALL === "1";
+  // product entitlement: trial / premium / master (paid or trial) · free หมด trial = ไม่ผ่าน
+  let productOk = false;
+  try {
+    const { getProductAccess } = await import("@/lib/product-entitlement");
+    const acc = await getProductAccess(session.userId);
+    productOk = !!acc?.fusion_suite;
+  } catch { /* fall through */ }
   const minRank = tierRank(MIN_TIER);
   const currentRank = tierRank(tier) ?? 0;
   const tierAllowed = minRank !== null && currentRank >= minRank && subActive;
-  const allowed = allowAll || !!adminRole || tierAllowed;
+  const allowed = allowAll || !!adminRole || productOk || tierAllowed;
   return {
     allowed,
-    reason: allowed ? undefined : `requires_${MIN_TIER}_tier_or_admin`,
+    reason: allowed ? undefined : `requires_premium_or_trial`,
     tier,
     hour_balance: user?.hour_balance ?? 0,
     sub_expires_at: user?.sub_expires_at || null,
@@ -1036,7 +1079,7 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   if (!JUDGE_MODEL) {
-    return NextResponse.json({ error: "invalid_judge_model", judge_model: RAW_JUDGE_MODEL }, { status: 500 });
+    return NextResponse.json({ error: "analysis_unavailable" }, { status: 500 });
   }
 
   const access = await getFusionAccess(session);
@@ -1064,7 +1107,7 @@ export async function POST(req: Request) {
   if (!message) return NextResponse.json({ error: "no message" }, { status: 400 });
   if (message.length > 2_000) return NextResponse.json({ error: "message too long" }, { status: 400 });
   if (!profileId) return NextResponse.json({ error: "profile_required" }, { status: 400 });
-  if (panelModels.length < 2) return NextResponse.json({ error: "fusion_requires_two_models" }, { status: 400 });
+  if (panelModels.length < 2) return NextResponse.json({ error: "fusion_configuration_invalid" }, { status: 400 });
   if (!session.orgId) return NextResponse.json({ error: "org_required" }, { status: 403 });
   const progress = makeFusionProgress(runId, panelModels, session.userId);
   progress?.phase("queued", "ตรวจ profile และเตรียมเรียก AI", 4);
@@ -1145,12 +1188,12 @@ export async function POST(req: Request) {
       error: "fusion_panel_incomplete",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       error: "fusion_panel_incomplete",
       reply: "",
       model: "fusion-api",
       fusion: { ...fusion, history_id: historyId },
-    }, { status: 502 });
+    }), { status: 502 });
   }
   if (fusionMode === "strict" && successful.length < requiredPanelCount) {
     progress?.failed("Fusion strict มี panel ตอบไม่พอ");
@@ -1190,12 +1233,12 @@ export async function POST(req: Request) {
       error: "fusion_panel_insufficient",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       error: "fusion_panel_insufficient",
       reply: "",
       model: "fusion-api",
       fusion: { ...fusion, history_id: historyId },
-    }, { status: 502 });
+    }), { status: 502 });
   }
   if (fusionMode === "resilient" && successful.length < 1) {
     progress?.failed("ไม่มี AI panel ที่ตอบสำเร็จ ระบบคืนชั่วโมงรอบนี้");
@@ -1240,12 +1283,12 @@ export async function POST(req: Request) {
       error: "no_panel_answer_refunded",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       reply: noPanel,
       model: "fusion-api",
       cached: false,
       fusion: { ...fusion, history_id: historyId },
-    });
+    }));
   }
 
   const judgeMessage = buildJudgeMessage(message, successful, lang);
@@ -1302,12 +1345,12 @@ export async function POST(req: Request) {
       error: judge.ok ? "fusion_empty" : "fusion_judge_failed",
       fusion,
     });
-    return NextResponse.json({
+    return NextResponse.json(publicAiPayload({
       error: judge.ok ? "fusion_empty" : "fusion_judge_failed",
       reply: "",
       model: "fusion-api",
       fusion: { ...fusion, history_id: historyId },
-    }, { status: 502 });
+    }), { status: 502 });
   }
 
   progress?.done(`Fusion complete · AI answered ${stats.ai_answered_count}/${stats.ai_requested_count}`);
@@ -1358,12 +1401,12 @@ export async function POST(req: Request) {
     fusionStatus: fusionPublicStatus(degraded ? "degraded" : "done", degraded),
     fusion,
   });
-  return NextResponse.json({
+  return NextResponse.json(publicAiPayload({
     reply: finalReply,
     model: "fusion-api",
     cached: false,
     fusion: { ...fusion, history_id: historyId },
-  });
+  }));
 }
 
 export async function GET(req: Request) {
@@ -1373,24 +1416,24 @@ export async function GET(req: Request) {
   if (url.searchParams.get("check") === "access" || url.searchParams.get("access") === "1") {
     const access = await getFusionAccess(session);
     return NextResponse.json(
-      {
+      publicAiPayload({
         ok: true,
         access,
         min_tier: MIN_TIER,
         spend_hours: SPEND_HOURS,
         panel_models: PANEL_MODELS,
         judge_model: JUDGE_MODEL,
-      },
+      }),
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   }
   const runId = cleanRunId(url.searchParams.get("runId") || url.searchParams.get("run_id"));
   if (!runId) return NextResponse.json({ error: "run_id_required" }, { status: 400 });
   pruneFusionStatusStore();
-  const status = fusionStatusStore.get(runId);
+  const status = await readFusionStatus(runId);
   if (!status) return NextResponse.json({ error: "run_not_found" }, { status: 404 });
   if (status.userId !== session.userId) return NextResponse.json({ error: "run_not_found" }, { status: 404 });
   const publicStatus = { ...status } as Record<string, unknown>;
   delete publicStatus.userId;
-  return NextResponse.json({ ok: true, status: publicStatus });
+  return NextResponse.json(publicAiPayload({ ok: true, status: publicStatus }));
 }

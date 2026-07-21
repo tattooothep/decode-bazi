@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import {
   approveAffiliateMember,
   approveAffiliateReward,
@@ -24,7 +24,7 @@ function csvCell(value: unknown): string {
 }
 
 export async function GET(req: NextRequest) {
-  try { await requireAdmin(); } catch (e) { return guard(e); }
+  try { await requirePermission("admin.affiliate.members.read"); } catch (e) { return guard(e); }
   const url = new URL(req.url);
   const data = await getAffiliateAdminDashboard();
   if (url.searchParams.get("format") === "csv") {
@@ -57,10 +57,22 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let admin;
-  try { admin = await requireAdmin(); } catch (e) { return guard(e); }
   const body = await req.json().catch(() => ({} as Record<string, unknown>));
   const action = String(body.action || "");
+  const permission =
+    action === "approve_member" ? "admin.affiliate.members.approve" :
+    ["suspend_member", "reject_member", "reactivate_member"].includes(action) ? "admin.affiliate.members.suspend" :
+    action === "approve_reward" ? "admin.affiliate.rewards.approve" :
+    action === "mark_paid" ? "admin.affiliate.rewards.pay" :
+    action === "reverse_order" ? "admin.affiliate.rewards.reverse" :
+    ["approve_signup", "block_signup", "cancel_signup"].includes(action) ? "admin.affiliate.attributions.review" :
+    null;
+  if (!permission) {
+    try { await requirePermission("admin.dashboard.read"); } catch (e) { return guard(e); }
+    return NextResponse.json({ ok: false, error: "unknown_action" }, { status: 400 });
+  }
+  let admin;
+  try { admin = await requirePermission(permission); } catch (e) { return guard(e); }
   try {
     if (action === "approve_member") {
       const member = await approveAffiliateMember({

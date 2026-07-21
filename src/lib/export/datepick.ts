@@ -11,6 +11,7 @@ import { createHash } from "crypto";
 import { langName } from "@/lib/palm/prompt";
 import { LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang";
 import { authCookie, callSifu, esc } from "./shared";
+import { assertAiSectionCount, assertEvidenceBoundMeasurements, makeAiDocument } from "./pdf-v2";
 import type { PageHandler, ResolveOk, ResolveErr, GenerateResult } from "./types";
 
 /* ── ปกหลายภาษา (9 ภาษา) ── */
@@ -124,7 +125,6 @@ function buildDatepickSummaryPrompt(facts: SlotFact[], meta: { activityLabel: st
   const langDir = LANG_ANSWER_DIRECTIVE[lang] || "";
   const target = langName(lang);
   const factBlock = factBlockFromSlots(facts, meta);
-  const tableRows = facts.map((f) => `| ${f.date} ${f.time} | ${f.score} | ${f.action} | (เขียนเหตุผลสั้นจาก宜/忌ด้านบนของอันดับนี้) |`).join("\n");
   return [
     `คุณคือซินแสฤกษ์ยาม (擇日) หน้าที่: เรียบเรียง "ผลค้นฤกษ์จริง" ด้านล่าง (engine deterministic ตัด/ให้คะแนนเสร็จแล้ว) ให้เป็นรายงานฉบับเต็มสำหรับ Export เป็น PDF`,
     `⚠️ คะแนน/ระดับ/เหมาะ-เลี่ยงด้านล่างคือผลคำนวณจริงที่เสร็จแล้ว — ห้ามเดา/แก้ตัวเลขใหม่ ห้ามขัดแย้งกับผลเดิม ให้เรียบเรียง/อธิบายเหตุผลให้อ่านลื่นเท่านั้น`,
@@ -134,20 +134,26 @@ function buildDatepickSummaryPrompt(facts: SlotFact[], meta: { activityLabel: st
     factBlock,
     `━━━━━━━━━━━━━━━━━━━━━`,
     ``,
-    `เขียนรายงานเป็น Markdown ตามโครงสร้างนี้ครบ เรียงลำดับ ห้ามข้าม ห้ามเพิ่มหัวข้ออื่นนอกเหนือนี้:`,
-    `## สรุปฤกษ์ — ทักทายอบอุ่นแบบซินแส สรุปภาพรวมว่าอันดับ 🥇🥈🥉 เหมาะกับกิจกรรมนี้อย่างไร ระบุหลักการ "ทงซู/ตงกง=ตัดจริง · ดวงบุคคล=เตือน" ให้ชัด`,
-    `ตามด้วยตาราง Markdown คอลัมน์นี้เป๊ะ (ห้ามเพิ่ม/ลดคอลัมน์) ครบทุกอันดับที่ให้มาด้านบน เรียงตามอันดับ:`,
-    `| วันที่ | คะแนน | เหมาะ/เลี่ยง | เหตุผล |`,
-    `|---|---|---|---|`,
-    tableRows,
-    `(ในช่อง "เหตุผล" ให้สรุปจากรายการ 宜/忌 ที่ให้มาของอันดับนั้น ๆ สั้น กระชับ 1 บรรทัด ห้ามแต่งเหตุผลใหม่ที่ไม่มีในข้อมูล)`,
-    `## ข้อควรระวัง — รวมข้อควรระวัง/วันชง/เหตุถ่วงที่เจอในผลค้นนี้ + เตือนเรื่องวันที่ตำราตัดออก (ถ้ามี) + คำแนะนำการใช้ฤกษ์ให้ปลอดภัย`,
+    `เขียนรายงานเป็น Markdown ด้วยหัวข้อระดับ 2 ตามนี้ครบ เรียงลำดับ ห้ามข้าม ห้ามเพิ่มหัวข้ออื่น:`,
+    `## คำตอบสั้น — เลือกวันไหน`,
+    `ฟันธงจากอันดับของ engine ว่าควรเลือกอันดับหนึ่งเมื่อใด และสรุปเหตุผลหนุน/เหตุถ่วงที่มีอยู่จริงเท่านั้น ระบุหลักการ "通書/董公=ตัดจริง · ดวงบุคคล=เตือน" ให้ชัด`,
+    `## เหตุผลที่อันดับหนึ่งเหมาะที่สุด`,
+    `อธิบายหลักฐานของอันดับหนึ่ง แยกเหตุหนุน เหตุถ่วง และเงื่อนไขที่ต้องรักษา ห้ามเพิ่มศาสตร์หรือเหตุผลที่ packet ไม่ได้ส่ง`,
+    `## ฤกษ์สำรอง`,
+    `เปรียบเทียบอันดับถัดไปตามลำดับเดิมของ engine ว่าเหมาะใช้แทนในสถานการณ์ใด ห้ามจัดอันดับใหม่`,
+    `## ความเข้ากับเจ้าของงานและผู้เกี่ยวข้อง`,
+    `กล่าวเฉพาะหลักฐานบุคคลที่ปรากฏใน packet หากไม่มี ให้ระบุว่าข้อมูลส่วนบุคคลยังไม่พอ ห้ามเดาดวงเจ้าของงาน`,
+    `## วันที่หรือช่วงเวลาที่ควรหลีกเลี่ยง`,
+    `สรุป veto/วันชง/เหตุถ่วงจาก packet เท่านั้น ไม่สร้างวันหรือเวลาใหม่`,
+    `## ขั้นตอนเตรียมตัวและขอบเขต`,
+    `ให้ checklist ที่ทำได้จริง พร้อมระบุข้อมูลไม่ครบและขอบเขตของผลคำนวณ`,
     ``,
     `กติกาการเขียน (เคร่งครัด):`,
     `- โทนซินแสที่กล้า "ฟันธง" ชัดเจน ไม่กั๊ก ไม่พูดลอย แต่สุภาพ ให้กำลังใจ (ยึดผลคำนวณเดิมเป็นหลัก ขยายความให้ลึกและอ่านลื่นขึ้น)`,
     `- ⛔ ห้ามพูด 6 เรื่องต้องห้ามเด็ดขาด: วันตาย/อายุขัย · โรคร้ายแรงเจาะจง · การแท้ง–มี/ไม่มีบุตร · การหย่าร้างฟันธง · ภัยพิบัติ/อุบัติเหตุถึงชีวิต (ให้พูดเชิงดูแล/ป้องกันแทน)`,
     `- ⛔ NO_PERCENT: ห้ามใส่ตัวเลขเปอร์เซ็นต์หรือสถิติที่แต่งขึ้นเอง (คะแนน 0-100 ในตารางเป็นค่าที่ engine คำนวณไว้แล้ว ใช้ได้ตามที่ให้มาเท่านั้น ห้ามเปลี่ยนหน่วยเป็น % หรือแต่งตัวเลขใหม่)`,
-    `- ใช้ bullet (- ) และ **ตัวหนา** ได้ ให้อ่านง่าย`,
+    `- ใช้ย่อหน้าสั้นและ bullet (- ) ได้ ห้ามสร้างตาราง เพราะตารางข้อเท็จจริงจะถูกวาดจาก engine โดยระบบ`,
+    `- ห้ามใส่วัน เวลา คะแนน ทิศ ชื่อศาสตร์ หรือเหตุผลที่ไม่มีอยู่ใน packet`,
     `- เริ่มที่เนื้อหาเลย ห้ามเกริ่นว่ากำลังอ่านไฟล์/ข้อมูล/prompt`,
     langDir ? `\n${langDir}` : `\n⚠️ ภาษา: เขียนทั้งฉบับเป็น ${target}`,
   ].join("\n");
@@ -181,7 +187,7 @@ export const datepickHandler: PageHandler<DatepickCtx> = {
 
     // dataHash ผูกกับผลค้นฤกษ์ + lang (ผลเปลี่ยน/ภาษาเปลี่ยน = cache ใหม่)
     const lang = typeof inputs.lang === "string" ? inputs.lang : "th";
-    const dataHash = createHash("sha256").update(JSON.stringify({ facts, meta, lang })).digest("hex");
+    const dataHash = createHash("sha256").update(JSON.stringify({ pdfVersion: "hourkey.pdf.v2", facts, meta, lang })).digest("hex");
     const cookie = await authCookie(session);
     return { dataHash, ctx: { facts, meta, cookie } };
   },
@@ -190,6 +196,9 @@ export const datepickHandler: PageHandler<DatepickCtx> = {
     const prompt = buildDatepickSummaryPrompt(ctx.facts, ctx.meta, lang);
     const ai = await callSifu(ctx.cookie, prompt);
     if (!ai.ok || !ai.reply) throw new Error(ai.error || "ai_failed");
+    const evidence = { version: "datepick_evidence_v2", facts: ctx.facts, meta: ctx.meta };
+    assertAiSectionCount(ai.reply, 6);
+    assertEvidenceBoundMeasurements(ai.reply, evidence);
     const ci = coverI18n(lang);
     const top3 = ctx.facts.slice(0, 3).map((f) => `${medal(f.rank - 1)} ${esc(f.date)}`).join(" · ");
     const cover: Record<string, unknown> = {
@@ -199,8 +208,56 @@ export const datepickHandler: PageHandler<DatepickCtx> = {
       metaHtml: [ctx.meta.windowLabel, top3].filter(Boolean).map(esc).join("<br>"),
       big: "擇",
       badge: ci.badge,
-      qrLabel: "hourkey.io",
+      qr: false,
     };
-    return { markdown: ai.reply, cover, figs: [] };
+    const rankingRows = ctx.facts.slice(0, 8).map((fact) => ({
+      rank: String(fact.rank),
+      datetime: `${fact.date} ${fact.time}`.trim(),
+      score: String(fact.score),
+      verdict: `${fact.tier} · ${fact.action}`,
+      evidence: [...fact.up.slice(0, 2), ...fact.down.slice(0, 1)].join(" · ") || "—",
+    }));
+    const document = makeAiDocument({
+      prefix: "HKDP",
+      evidence,
+      lang,
+      title: ci.title,
+      headerTitle: ci.kick,
+      verificationLabel: "Engine evidence · AI interpretation",
+      cover: {
+        kick: ci.kick,
+        title: ci.title,
+        who: ctx.meta.activityLabel || "",
+        meta: [ctx.meta.windowLabel, top3].filter(Boolean),
+        glyph: "擇",
+        badge: ci.badge,
+      },
+      markdown: ai.reply,
+      deterministicFirstPage: [
+        {
+          type: "facts",
+          columns: 2,
+          items: [
+            { label: "Activity", value: ctx.meta.activityLabel || "—" },
+            { label: "Search window", value: ctx.meta.windowLabel || "—" },
+            { label: "Scanned", value: ctx.meta.totalScanned == null ? "—" : String(ctx.meta.totalScanned) },
+            { label: "Canon vetoes", value: String(ctx.meta.cutCount) },
+          ],
+        },
+        {
+          type: "table",
+          compact: true,
+          columns: [
+            { key: "rank", label: "#", width: "7%" },
+            { key: "datetime", label: "Date / time", width: "21%" },
+            { key: "score", label: "Score", width: "10%" },
+            { key: "verdict", label: "Engine verdict", width: "20%" },
+            { key: "evidence", label: "Evidence", width: "42%" },
+          ],
+          rows: rankingRows,
+        },
+      ],
+    });
+    return { markdown: ai.reply, cover, figs: [], document };
   },
 };

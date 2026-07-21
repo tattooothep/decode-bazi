@@ -120,6 +120,9 @@ export async function createStripeCheckout(args: CheckoutArgs): Promise<Checkout
 
 /** ดึง Checkout Session สด (สำหรับ status poll / re-verify) */
 export async function retrieveStripeSession(sessionId: string): Promise<{
+  id?: string;
+  status?: string;
+  url?: string;
   payment_status?: string;
   amount_total?: number;
   payment_intent?: string;

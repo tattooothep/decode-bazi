@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<script src="/js/hk-lang-state.js?v=2"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ยืนยันอีเมล · hourkey</title>
+<meta name="robots" content="noindex"/>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+Thai:wght@300;400;600&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+    font-family:'Noto Serif Thai',serif;background:radial-gradient(circle at 50% 0%,#14171c 0%,#0b0d10 70%);color:#f6f1e6;transition:.3s}
+  [data-theme="light"] body{background:radial-gradient(circle at 50% 0%,#faf5e8 0%,#f1ebdc 70%);color:#1a1612}
+  .card{background:linear-gradient(160deg,#14171c 0%,#0d0f12 100%);border:1px solid rgba(200,164,77,.3);border-radius:18px;
+    padding:36px 30px;max-width:440px;width:100%;position:relative;text-align:center}
+  [data-theme="light"] .card{background:linear-gradient(160deg,#f9f4e6 0%,#f5efe2 100%);border-color:rgba(138,109,42,.35)}
+  .seal{display:inline-flex;width:52px;height:52px;border:1.5px solid #c8a44d;border-radius:50%;
+    align-items:center;justify-content:center;color:#c8a44d;font-size:22px;margin-bottom:14px}
+  .eye{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.32em;color:#c8a44d;text-transform:uppercase;margin-bottom:10px}
+  h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;margin-bottom:10px}
+  .sub{font-size:13.5px;color:rgba(246,241,230,.65);margin-bottom:22px;line-height:1.65}
+  [data-theme="light"] .sub{color:rgba(26,22,18,.65)}
+  .badge{display:inline-block;font-size:12px;padding:6px 12px;border-radius:99px;margin-bottom:18px;
+    font-family:'JetBrains Mono',monospace;letter-spacing:.06em}
+  .badge.ok{background:rgba(122,200,138,.12);color:#7ac88a;border:1px solid rgba(122,200,138,.35)}
+  .badge.err{background:rgba(224,122,106,.12);color:#e07a6a;border:1px solid rgba(224,122,106,.35)}
+  .actions{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+  .btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;text-decoration:none;text-align:center;
+    font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:.2s}
+  .btn-primary{background:linear-gradient(135deg,#c8a44d,#a8862f);color:#1a1410}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{background:transparent;color:#c8a44d;border:1px solid rgba(200,164,77,.35)}
+  .btn-ghost:hover{background:rgba(200,164,77,.08)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .msg{font-size:13px;margin-top:14px;line-height:1.6;min-height:18px}
+  .msg.err{color:#e07a6a}.msg.ok{color:#7ac88a}
+  .foot{margin-top:22px;font-size:12px;color:rgba(246,241,230,.45)}
+  .foot a{color:#c8a44d;text-decoration:none}
+  [data-theme="light"] .foot{color:rgba(26,22,18,.5)}
+  .topbar{position:fixed;top:16px;right:18px;display:flex;gap:10px;z-index:5}
+  .topbar button{width:auto;padding:6px 10px;background:transparent;border:1px solid rgba(200,164,77,.3);color:#c8a44d;
+    font-size:10px;letter-spacing:.1em;border-radius:8px;cursor:pointer;font-family:'JetBrains Mono',monospace}
+  #resendBox{display:none;margin-top:12px;text-align:left}
+  #resendBox label{display:block;font-size:11px;letter-spacing:.06em;color:#c8a44d;margin-bottom:6px;
+    text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+  #resendBox input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(200,164,77,.28);
+    background:rgba(255,255,255,.04);color:inherit;font-family:'Noto Serif Thai',serif;font-size:15px;margin-bottom:10px}
+  [data-theme="light"] #resendBox input{background:rgba(0,0,0,.03);border-color:rgba(138,109,42,.3)}
+  #resendBox input:focus{outline:none;border-color:#c8a44d}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button type="button" id="langBtn" onclick="cycleLang()">TH</button>
+  <button type="button" id="themeBtn" onclick="toggleTheme()">☾</button>
+</div>
+<div class="card">
+  <div class="seal">時</div>
+  <div class="eye" id="t_eye">VERIFY EMAIL · 驗證電郵</div>
+  <div class="badge" id="badge">…</div>
+  <h1 id="t_h1">ยืนยันอีเมล</h1>
+  <p class="sub" id="t_sub">กำลังตรวจสอบลิงก์…</p>
+  <div class="actions" id="actions"></div>
+  <div id="resendBox">
+    <label id="t_email_l">อีเมล</label>
+    <input type="email" id="emailIn" autocomplete="email" placeholder="you@email.com"/>
+    <button type="button" class="btn btn-primary" id="resendBtn" onclick="resendVerify()">ส่งลิงก์ยืนยันใหม่</button>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div class="foot"><a href="/" id="t_home">hourkey.io</a></div>
+</div>
+<script>
+var params = new URLSearchParams(location.search);
+var OK = params.get('ok') === '1' || params.get('ok') === 'true';
+var ERR = params.get('err') || '';
+
+/* 8 ภาษามาตรฐานเว็บ: th en zh vi ja ko ru es (inline ครบ · ไม่พึ่ง overlay อย่างเดียว) */
+var I18N = {
+  th: {
+    title: 'ยืนยันอีเมล · hourkey',
+    eye: 'VERIFY EMAIL · 驗證電郵',
+    ok_badge: 'สำเร็จ',
+    err_badge: 'ไม่สำเร็จ',
+    ok_h1: 'อีเมลยืนยันแล้ว',
+    err_h1: 'ยืนยันไม่สำเร็จ',
+    ok_sub: 'บัญชีของคุณพร้อมใช้งานแล้ว · เข้าสู่ระบบหรือไปต่อที่หน้าหลักได้เลย',
+    err_sub: 'ลิงก์อาจหมดอายุ ถูกใช้ไปแล้ว หรือไม่ถูกต้อง · ขอส่งลิงก์ใหม่ได้ด้านล่าง',
+    cta_today: 'เข้าสู่หน้าหลัก →',
+    cta_login: 'เข้าสู่ระบบ',
+    cta_signup: 'สมัครสมาชิก',
+    cta_resend: 'ส่งลิงก์ยืนยันใหม่',
+    email_l: 'อีเมล',
+    resend_ok: '✓ ส่งลิงก์แล้ว · ตรวจกล่องจดหมาย (และ spam)',
+    resend_sending: 'กำลังส่ง…',
+    resend_need: 'กรอกอีเมลก่อน',
+    resend_fail: 'ส่งไม่สำเร็จ · ลองใหม่ภายหลัง',
+    home: 'hourkey.io'
+  },
+  en: {
+    title: 'Verify email · hourkey',
+    eye: 'VERIFY EMAIL',
+    ok_badge: 'Verified',
+    err_badge: 'Failed',
+    ok_h1: 'Email verified',
+    err_h1: 'Verification failed',
+    ok_sub: 'Your account is ready · continue to the app or sign in.',
+    err_sub: 'This link may be expired, already used, or invalid · request a new one below.',
+    cta_today: 'Go to app →',
+    cta_login: 'Sign in',
+    cta_signup: 'Sign up',
+    cta_resend: 'Resend verification email',
+    email_l: 'Email',
+    resend_ok: '✓ Link sent · check inbox (and spam)',
+    resend_sending: 'Sending…',
+    resend_need: 'Enter your email first',
+    resend_fail: 'Could not send · try again later',
+    home: 'hourkey.io'
+  },
+  zh: {
+    title: '驗證電郵 · hourkey',
+    eye: 'VERIFY EMAIL · 驗證電郵',
+    ok_badge: '已驗證',
+    err_badge: '失敗',
+    ok_h1: '電郵已驗證',
+    err_h1: '驗證失敗',
+    ok_sub: '帳戶已就緒 · 可繼續使用或登入。',
+    err_sub: '連結可能已過期、已使用或不正確 · 可在下方重新寄送。',
+    cta_today: '進入應用 →',
+    cta_login: '登入',
+    cta_signup: '註冊',
+    cta_resend: '重新寄送驗證信',
+    email_l: '電郵',
+    resend_ok: '✓ 已寄出 · 請檢查收件匣（與垃圾郵件）',
+    resend_sending: '寄送中…',
+    resend_need: '請先填寫電郵',
+    resend_fail: '寄送失敗 · 請稍後再試',
+    home: 'hourkey.io'
+  },
+  vi: {
+    title: 'Xác minh email · hourkey',
+    eye: 'VERIFY EMAIL',
+    ok_badge: 'Thành công',
+    err_badge: 'Thất bại',
+    ok_h1: 'Email đã được xác minh',
+    err_h1: 'Xác minh không thành công',
+    ok_sub: 'Tài khoản đã sẵn sàng · đăng nhập hoặc vào trang chính.',
+    err_sub: 'Liên kết có thể hết hạn, đã dùng hoặc không hợp lệ · gửi lại bên dưới.',
+    cta_today: 'Vào trang chính →',
+    cta_login: 'Đăng nhập',
+    cta_signup: 'Đăng ký',
+    cta_resend: 'Gửi lại email xác minh',
+    email_l: 'Email',
+    resend_ok: '✓ Đã gửi · kiểm tra hộp thư (và spam)',
+    resend_sending: 'Đang gửi…',
+    resend_need: 'Vui lòng nhập email',
+    resend_fail: 'Gửi không thành công · thử lại sau',
+    home: 'hourkey.io'
+  },
+  ja: {
+    title: 'メール認証 · hourkey',
+    eye: 'VERIFY EMAIL',
+    ok_badge: '完了',
+    err_badge: '失敗',
+    ok_h1: 'メールを確認しました',
+    err_h1: '認証に失敗しました',
+    ok_sub: 'アカウントの準備ができました · ログインまたはホームへ。',
+    err_sub: 'リンクの期限切れ・使用済み・無効の可能性があります · 下から再送信できます。',
+    cta_today: 'ホームへ →',
+    cta_login: 'ログイン',
+    cta_signup: '新規登録',
+    cta_resend: '確認メールを再送',
+    email_l: 'メール',
+    resend_ok: '✓ 送信しました · 受信箱（迷惑メールも）を確認',
+    resend_sending: '送信中…',
+    resend_need: 'メールを入力してください',
+    resend_fail: '送信に失敗 · 後でもう一度',
+    home: 'hourkey.io'
+  },
+  ko: {
+    title: '이메일 인증 · hourkey',
+    eye: 'VERIFY EMAIL',
+    ok_badge: '완료',
+    err_badge: '실패',
+    ok_h1: '이메일이 인증되었습니다',
+    err_h1: '인증에 실패했습니다',
+    ok_sub: '계정이 준비되었습니다 · 로그인하거나 홈으로 이동하세요.',
+    err_sub: '링크가 만료되었거나 이미 사용·잘못되었을 수 있습니다 · 아래에서 다시 보내세요.',
+    cta_today: '홈으로 →',
+    cta_login: '로그인',
+    cta_signup: '가입',
+    cta_resend: '인증 메일 다시 보내기',
+    email_l: '이메일',
+    resend_ok: '✓ 보냈습니다 · 받은편지함(스팸 포함) 확인',
+    resend_sending: '보내는 중…',
+    resend_need: '이메일을 입력하세요',
+    resend_fail: '전송 실패 · 나중에 다시 시도',
+    home: 'hourkey.io'
+  },
+  ru: {
+    title: 'Подтверждение email · hourkey',
+    eye: 'VERIFY EMAIL',
+    ok_badge: 'Готово',
+    err_badge: 'Ошибка',
+    ok_h1: 'Email подтверждён',
+    err_h1: 'Не удалось подтвердить',
+    ok_sub: 'Аккаунт готов · войдите или перейдите на главную.',
+    err_sub: 'Ссылка могла истечь, уже использована или неверна · запросите новую ниже.',
+    cta_today: 'На главную →',
+    cta_login: 'Войти',
+    cta_signup: 'Регистрация',
+    cta_resend: 'Отправить письмо снова',
+    email_l: 'Email',
+    resend_ok: '✓ Отправлено · проверьте почту (и спам)',
+    resend_sending: 'Отправка…',
+    resend_need: 'Сначала введите email',
+    resend_fail: 'Не удалось отправить · попробуйте позже',
+    home: 'hourkey.io'
+  },
+  es: {
+    title: 'Verificar email · hourkey',
+    eye: 'VERIFY EMAIL',
+    ok_badge: 'Hecho',
+    err_badge: 'Error',
+    ok_h1: 'Email verificado',
+    err_h1: 'Verificación fallida',
+    ok_sub: 'Tu cuenta está lista · inicia sesión o ve a la app.',
+    err_sub: 'El enlace puede haber caducado, usarse ya o ser inválido · solicita uno nuevo abajo.',
+    cta_today: 'Ir a la app →',
+    cta_login: 'Iniciar sesión',
+    cta_signup: 'Registrarse',
+    cta_resend: 'Reenviar email de verificación',
+    email_l: 'Email',
+    resend_ok: '✓ Enviado · revisa bandeja (y spam)',
+    resend_sending: 'Enviando…',
+    resend_need: 'Escribe tu email primero',
+    resend_fail: 'No se pudo enviar · inténtalo más tarde',
+    home: 'hourkey.io'
+  }
+};
+
+var LANGS = ['th','en','zh','vi','ja','ru','ko','es'];
+function normLang(raw){
+  raw = String(raw || '').toLowerCase().replace('_','-');
+  if (raw === 'cn' || raw === 'zh-cn' || raw === 'zh-hans') return 'zh';
+  if (raw.indexOf('zh') === 0) return 'zh';
+  if (LANGS.indexOf(raw) !== -1) return raw;
+  return 'th';
+}
+var LANG = normLang((params.get('lang')) || localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th');
+
+function _vtx(k){
+  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('verify-email-result.html',k,LANG);if(ov!=null)return ov;}catch(_){}
+  var d=I18N[LANG]||I18N.en; var v=d[k]; return v!=null?v:(LANG==='th'?I18N.th[k]:I18N.en[k]);
+}
+function _vbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_vtx(k);});return o;}
+window.__hkOverlayApply=function(l){LANG=normLang(l);render();};
+
+function render(){
+  var t = _vbag();
+  document.documentElement.lang = LANG;
+  document.title = t.title;
+  document.getElementById('t_eye').textContent = t.eye;
+  document.getElementById('t_home').textContent = t.home;
+  document.getElementById('langBtn').textContent = LANG.toUpperCase();
+  document.getElementById('t_email_l').textContent = t.email_l;
+  document.getElementById('resendBtn').textContent = t.cta_resend;
+
+  var badge = document.getElementById('badge');
+  var h1 = document.getElementById('t_h1');
+  var sub = document.getElementById('t_sub');
+  var actions = document.getElementById('actions');
+  var resendBox = document.getElementById('resendBox');
+
+  if (OK) {
+    badge.textContent = t.ok_badge;
+    badge.className = 'badge ok';
+    h1.textContent = t.ok_h1;
+    sub.textContent = t.ok_sub;
+    actions.innerHTML =
+      '<a class="btn btn-primary" href="/today">' + t.cta_today + '</a>' +
+      '<a class="btn btn-ghost" href="/signup?tab=login">' + t.cta_login + '</a>';
+    resendBox.style.display = 'none';
+  } else {
+    badge.textContent = t.err_badge;
+    badge.className = 'badge err';
+    h1.textContent = t.err_h1;
+    sub.textContent = ERR ? decodeURIComponent(ERR) : t.err_sub;
+    if (ERR && !sub.textContent) sub.textContent = t.err_sub;
+    actions.innerHTML =
+      '<a class="btn btn-ghost" href="/signup?tab=login">' + t.cta_login + '</a>' +
+      '<a class="btn btn-ghost" href="/signup">' + t.cta_signup + '</a>';
+    resendBox.style.display = 'block';
+  }
+}
+
+function cycleLang(){
+  LANG = LANGS[(LANGS.indexOf(LANG)+1)%LANGS.length];
+  try{ localStorage.setItem('hk_locale',LANG); localStorage.setItem('hk_lang',LANG); }catch(e){}
+  render();
+}
+function toggleTheme(){
+  var cur = document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',cur);
+  localStorage.setItem('hk_theme',cur);
+  document.getElementById('themeBtn').textContent = cur==='light'?'☀':'☾';
+}
+
+async function resendVerify(){
+  var t = _vbag();
+  var email = (document.getElementById('emailIn').value || '').trim();
+  var msg = document.getElementById('msg');
+  var btn = document.getElementById('resendBtn');
+  if (!email || email.indexOf('@') < 0) {
+    msg.textContent = t.resend_need; msg.className = 'msg err'; return;
+  }
+  btn.disabled = true;
+  msg.textContent = t.resend_sending; msg.className = 'msg';
+  try {
+    var r = await fetch('/api/auth/send-email-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    });
+    var j = await r.json().catch(function(){ return {}; });
+    if (r.ok) {
+      msg.textContent = t.resend_ok; msg.className = 'msg ok';
+    } else {
+      msg.textContent = '⚠ ' + (j.error || t.resend_fail); msg.className = 'msg err';
+    }
+  } catch (_) {
+    msg.textContent = t.resend_fail; msg.className = 'msg err';
+  }
+  btn.disabled = false;
+}
+
+(function(){
+  var th = localStorage.getItem('hk_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', th);
+  document.getElementById('themeBtn').textContent = th==='light'?'☀':'☾';
+  /* prefill email from query if any */
+  var em = params.get('email');
+  if (em) document.getElementById('emailIn').value = em;
+  render();
+})();
+</script>
+<script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
+</body>
+</html>

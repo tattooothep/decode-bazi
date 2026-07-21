@@ -4,8 +4,26 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AdminShell, useAdminDict } from "@/components/admin/AdminShell";
 
+type ProductAccess = {
+  plan: string;
+  in_trial: boolean;
+  trial_ends_at: string | null;
+  sub_active: boolean;
+  house_limit: number;
+  fusion_max_sciences: number;
+  fusion_max_profiles: number;
+  book_max_sciences: number;
+  book_synthesis: boolean;
+  luopan_vision_max: number;
+  datepick_max_people: number;
+  fusion_suite: boolean;
+  network_multi: boolean;
+};
+
 type Detail = {
   user: Record<string, any>;
+  product_access?: ProductAccess | null;
+  product_constants?: { free_signup_yam: number; trial_days: number };
   profiles: any[];
   profile_count: number;
   chats: number;
@@ -13,12 +31,25 @@ type Detail = {
   orders: any[];
   notes: any[];
   affiliate: any;
+  signup_peers?: {
+    same_device: { id: string; email: string; created_at: string }[];
+    same_ip: { id: string; email: string; created_at: string }[];
+    same_device_count: number;
+    same_ip_count: number;
+  };
   caps: Record<string, boolean>;
 };
 
 const TIERS = ["free", "premium", "master"] as const;
 const fmt = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" }) : "—";
+
+function paymentBadge(state: string) {
+  if (state === "paid") return { text: "จ่ายแล้ว · PAID", cls: "border-emerald-400/35 bg-emerald-400/10 text-emerald-200" };
+  if (state === "refunded") return { text: "คืนเงินแล้ว", cls: "border-violet-400/35 bg-violet-400/10 text-violet-200" };
+  if (state === "failed") return { text: "ล้มเหลว", cls: "border-rose-400/35 bg-rose-400/10 text-rose-200" };
+  return { text: "ยังไม่จ่าย · UNPAID", cls: "border-amber-400/35 bg-amber-400/10 text-amber-100" };
+}
 
 export default function User360Client({ userId, lang }: { userId: string; lang: string }) {
   const { dict, locale } = useAdminDict();
@@ -74,6 +105,7 @@ export default function User360Client({ userId, lang }: { userId: string; lang: 
 
   const u = d?.user;
   const caps = d?.caps || {};
+  const pa = d?.product_access;
   const tabs = [
     ["overview", dict["tab.overview"]],
     ["billing", dict["tab.billing"]],
@@ -84,6 +116,10 @@ export default function User360Client({ userId, lang }: { userId: string; lang: 
     ["pdpa", "PDPA"],
     ["affiliate", dict["tab.affiliate"]],
   ] as const;
+  const trialLeftDays =
+    pa?.in_trial && pa.trial_ends_at
+      ? Math.max(0, Math.ceil((new Date(pa.trial_ends_at).getTime() - Date.now()) / 86400000))
+      : null;
 
   const revokeAll = async () => {
     if (!confirm("Revoke ALL sessions for this user?")) return;
@@ -157,14 +193,48 @@ export default function User360Client({ userId, lang }: { userId: string; lang: 
         <>
           <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Card label={dict["col.yam"]} value={u.hour_balance} />
-            <Card label={dict["col.tier"]} value={u.tier} />
+            <Card label={dict["col.plan"] || "Plan"} value={(pa?.plan || u.tier || "free").toUpperCase()} />
+            <Card label={dict["col.tier"]} value={`${u.tier}${pa?.sub_active ? " · sub✓" : ""}`} />
+            <Card
+              label={dict["col.trial"] || "Trial"}
+              value={
+                pa?.in_trial
+                  ? `${trialLeftDays ?? "?"}d left`
+                  : u.trial_ends_at
+                    ? "ended"
+                    : "—"
+              }
+            />
             <Card label={dict["tab.profiles"]} value={d.profile_count} />
             <Card label="Sifu" value={d.chats} />
             <Card label={dict["col.joined"]} value={fmt(u.created_at)} />
             <Card label="Last active" value={fmt(u.last_active_at)} />
             <Card label="Sub expires" value={fmt(u.sub_expires_at)} />
+            <Card label="Trial ends" value={fmt(u.trial_ends_at || pa?.trial_ends_at)} />
             <Card label={dict["col.status"]} value={u.is_active ? "🟢" : "🔴"} />
           </div>
+
+          {pa && (
+            <div className="mb-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm">
+              <div className="mb-2 text-xs uppercase tracking-wide text-white/40">
+                Product caps · SoT product-entitlement
+                {d.product_constants
+                  ? ` · signup ${d.product_constants.free_signup_yam} yam / trial ${d.product_constants.trial_days}d`
+                  : ""}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 font-mono text-xs">
+                <div>house ≤ {pa.house_limit}</div>
+                <div>fusion sci ≤ {pa.fusion_max_sciences} · profiles ≤ {pa.fusion_max_profiles}</div>
+                <div>book sci ≤ {pa.book_max_sciences}{pa.book_synthesis ? " + synth" : ""}</div>
+                <div>vision ≤ {pa.luopan_vision_max} · datepick people ≤ {pa.datepick_max_people}</div>
+                <div>fusion_suite {pa.fusion_suite ? "on" : "off"}</div>
+                <div>network_multi {pa.network_multi ? "on" : "off"}</div>
+              </div>
+              <div className="mt-2 text-[11px] text-white/40">
+                tier อย่างเดียวไม่เปิดสิทธิ์ paid — ต้อง sub_expires_at ยังไม่หมด · trial ใช้ trial_ends_at
+              </div>
+            </div>
+          )}
 
           <div className="mb-4 flex flex-wrap gap-2">
             {tabs.map(([k, label]) => (
@@ -189,6 +259,48 @@ export default function User360Client({ userId, lang }: { userId: string; lang: 
                 <div><span className="text-white/40">Verified</span><div>{u.email_verified ? "email✓" : ""} {u.phone_verified ? "phone✓" : ""}</div></div>
                 <div><span className="text-white/40">Locale</span><div>{u.locale || "th"}</div></div>
               </div>
+              <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3 text-sm">
+                <div className="mb-2 text-xs uppercase tracking-wide text-white/40">Signup fingerprint (ดูอย่างเดียว · ไม่บล็อก)</div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div>
+                    <span className="text-white/40">Device hash</span>
+                    <div className="font-mono text-xs break-all">{u.signup_device_hash ? String(u.signup_device_hash).slice(0, 16) + "…" : "—"}</div>
+                    <div className="text-xs text-amber-200/80">
+                      บัญชีอื่นเครื่องเดียวกัน: {d?.signup_peers?.same_device_count ?? 0}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-white/40">IP hash</span>
+                    <div className="font-mono text-xs break-all">{u.signup_ip_hash || "—"}</div>
+                    <div className="text-xs text-amber-200/80">
+                      บัญชีอื่น IP เดียวกัน: {d?.signup_peers?.same_ip_count ?? 0}
+                    </div>
+                  </div>
+                </div>
+                {!!d?.signup_peers?.same_device?.length && (
+                  <div className="mt-2 text-xs text-white/60">
+                    <div className="text-white/40 mb-1">same device →</div>
+                    {d.signup_peers.same_device.map((p) => (
+                      <div key={p.id}>
+                        <Link href={`/admin/users/${p.id}?lang=${locale}`} className="text-cyan-200 hover:underline">{p.email}</Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!!d?.signup_peers?.same_ip?.length && (
+                  <div className="mt-2 text-xs text-white/60">
+                    <div className="text-white/40 mb-1">same IP →</div>
+                    {d.signup_peers.same_ip.map((p) => (
+                      <div key={p.id}>
+                        <Link href={`/admin/users/${p.id}?lang=${locale}`} className="text-cyan-200 hover:underline">{p.email}</Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {u.signup_ua && (
+                  <div className="mt-2 text-[10px] text-white/35 break-all">UA: {String(u.signup_ua).slice(0, 160)}</div>
+                )}
+              </div>
               <div className="mt-5 space-y-3 border-t border-white/10 pt-4 text-sm">
                 {caps.can_credit && (
                   <div className="flex flex-wrap items-center gap-2">
@@ -211,6 +323,9 @@ export default function User360Client({ userId, lang }: { userId: string; lang: 
                     <span className="w-24 text-white/50">{dict["action.extend"]}</span>
                     <input value={days} onChange={(e) => setDays(e.target.value)} className="w-20 rounded-lg border border-white/15 bg-black/30 px-2 py-1" />
                     <button type="button" onClick={() => act("extend_sub", { days: Number(days) })} className="rounded-lg border border-white/20 px-3 py-1 hover:bg-white/10">{dict["action.extend"]}</button>
+                    <button type="button" onClick={() => act("extend_trial", { days: Number(days) })} className="rounded-lg border border-amber-400/30 px-3 py-1 text-amber-100 hover:bg-amber-500/10" title="trial_ends_at">
+                      {dict["action.extend_trial"] || "ต่อ trial"}
+                    </button>
                   </div>
                 )}
                 {caps.can_suspend && (
@@ -234,7 +349,11 @@ export default function User360Client({ userId, lang }: { userId: string; lang: 
                     <div>
                       <div className="font-mono text-xs text-white/40">{o.id?.slice?.(0, 8)}</div>
                       <div>{o.package_code} · ฿{o.amount_thb} · {o.yam_granted} yam</div>
-                      <div className="text-xs text-white/40">{o.status} · {o.pay_method || "—"} · {fmt(o.paid_at || o.created_at)}</div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white/40">
+                        <span className={`rounded border px-2 py-0.5 text-[11px] ${paymentBadge(o.payment_state || o.status).cls}`}>{paymentBadge(o.payment_state || o.status).text}</span>
+                        <span>{o.pay_method || "—"} · {fmt(o.paid_at || o.created_at)}</span>
+                        {o.payment_state === "paid" && <span className={o.credit_linked ? "text-emerald-200" : "text-rose-200"}>เครดิต {o.credit_linked ? "linked" : "missing"}</span>}
+                      </div>
                     </div>
                     {caps.can_refund && o.status === "paid" && (
                       <button type="button" onClick={() => refund(o.id)} className="rounded-lg border border-rose-400/30 px-2 py-1 text-xs text-rose-200">

@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { findMountain24 } from "../../src/lib/luopan/mountains";
 import { calcXuanKongChart, decideTigua, replacementForMountain } from "../../src/lib/luopan/tigua";
 import { buildBashaContext, evaluateBashaHuangQuan, najiaForMountain, resolvePinCategory } from "../../src/lib/luopan/najia-basha";
 import { evaluateWaterMethod, waterMouthJu } from "../../src/lib/luopan/water-method";
 import { dayShaDirection, evaluateMonthDaySha, MONTH_SHA_BY_MONTH_BRANCH } from "../../src/lib/luopan/month-day-sha";
+import { mountainForPlate, threePlateReading } from "../../src/lib/luopan/three-plates";
 
 function eq<T>(actual: T, expected: T, label: string) {
   assert.deepEqual(actual, expected, label);
@@ -15,6 +17,11 @@ eq(findMountain24(15).name, "癸", "15° ต้องเป็น 癸");
 eq(findMountain24(180).name, "午", "180° ต้องเป็น 午");
 eq(findMountain24(337.49).name, "亥", "337.49° ต้องเป็น 亥");
 eq(findMountain24(337.5).name, "壬", "337.5° ต้องเป็น 壬");
+eq(threePlateReading(15).earth.name,"癸","15° 地盤 = 癸");
+eq(threePlateReading(15).human.name,"丑","15° 人盤逆移วง = 丑");
+eq(threePlateReading(15).heaven.name,"癸","15° 天盤順移วง = 癸");
+eq(mountainForPlate(105,"human").name,"辰","105° high form reads 辰 on 人盤");
+eq(mountainForPlate(127.5,"heaven").name,"辰","127.5° water reads 辰 on 天盤");
 
 eq(findMountain24(345).yuan, "地元", "壬 = 地元");
 eq(findMountain24(0).yuan, "天元", "子 = 天元");
@@ -47,6 +54,12 @@ eq(basha.longShaMountain.name, "辰", "坐坎龍上八煞在辰");
 
 const longHit = evaluateBashaHuangQuan(180, { type: "water", degree: 120 });
 assert.ok(longHit.hits.some((h) => h.code === "LONG_SHA_HIT" && h.pass === false), "坐坎 + 辰水 ต้อง hit 龍上八煞");
+const humanLongHit=evaluateBashaHuangQuan(180,{type:"tall",degree:105});
+assert.equal(humanLongHit.plate,"human","ของสูงต้องอ่าน人盤");
+assert.ok(humanLongHit.hits.some((h)=>h.code==="LONG_SHA_HIT"&&!h.pass),"105° ของสูงอ่าน人盤辰 ต้อง hit 龍上八煞");
+const heavenLongHit=evaluateBashaHuangQuan(180,{type:"water",degree:127.5});
+assert.equal(heavenLongHit.plate,"heaven","น้ำต้องอ่าน天盤");
+assert.ok(heavenLongHit.hits.some((h)=>h.code==="LONG_SHA_HIT"&&!h.pass),"127.5° น้ำอ่าน天盤辰 ต้อง hit 龍上八煞");
 
 const hqHit = evaluateBashaHuangQuan(252, { type: "water", degree: 225 });
 assert.ok(hqHit.hits.some((h) => h.code === "HUANG_QUAN_HIT" && h.pass === false), "向庚 + 坤水 ต้อง hit 黃泉");
@@ -54,6 +67,11 @@ assert.ok(hqHit.hits.some((h) => h.code === "HUANG_QUAN_HIT" && h.pass === false
 const hqDesk = evaluateBashaHuangQuan(252, { type: "desk", degree: 225 });
 assert.ok(hqDesk.hits.some((h) => h.code === "HUANG_QUAN_HIT" && h.pass === true), "向庚 + 坤โต๊ะ เป็น warning ไม่ใช่ hard fail");
 assert.equal(resolvePinCategory({ type: "window" }), "neutral", "หน้าต่างไม่ควรถูกนับเป็น door_gate");
+assert.equal(resolvePinCategory({ type:"incoming_water",featureCategory:"tall_form" }),"incoming_water","ชนิด pin ต้องมีอำนาจเหนือ featureCategory ที่ขัดกัน");
+const shiftedWater=evaluateBashaHuangQuan(252,{type:"water",degree:217.5});
+assert.ok(!shiftedWater.hits.some((h)=>h.code==="HUANG_QUAN_HIT"),"217.5° น้ำอ่าน天盤未 ไม่ควรถูก地盤坤ทำให้ false hit");
+const legacyDegreesRoute=readFileSync(new URL("../../src/app/api/luopan/degrees/route.ts",import.meta.url),"utf8");
+assert.match(legacyDegreesRoute,/plate:\s*result\.plate/,"legacy degrees contract must disclose the plate used for each shifted pin mountain");
 
 eq(waterMouthJu(120)?.ju, "水局", "辰水口 = 水局");
 eq(waterMouthJu(300)?.ju, "火局", "戌水口 = 火局");

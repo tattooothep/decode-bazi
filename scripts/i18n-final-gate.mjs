@@ -228,7 +228,14 @@ async function runPageCell(ctx, lang, pageName) {
       return { pass: false, thai: -1, reason: "โดนเด้งไปหน้า login — session ไม่ติด" };
     }
     await DRIVERS[pageName](page);
-    const text = await page.evaluate(() => document.body.innerText);
+    const text = await page.evaluate(() => {
+      const endonyms = Array.from(document.querySelectorAll('.hk-um-lang-name'));
+      const displays = endonyms.map((el) => el.style.display);
+      endonyms.forEach((el) => { el.style.display = 'none'; });
+      const visible = document.body.innerText;
+      endonyms.forEach((el, i) => { el.style.display = displays[i]; });
+      return visible;
+    });
     const thai = (text.match(THAI_RE) || []).length;
     if (lang === "th") return { pass: true, thai, skippedCount: true }; // th ข้ามการนับ (แต่ต้องผลิตผลสำเร็จ)
     return { pass: thai === 0, thai, samples: thai > 0 ? thaiSamples(text) : [] };
@@ -236,7 +243,14 @@ async function runPageCell(ctx, lang, pageName) {
     // ผลิตผลไม่สำเร็จ = FAIL ไม่ว่าภาษาไหน · แนบไทยเท่าที่เห็นเพื่อ debug
     let thai = -1, samples = [];
     try {
-      const text = await page.evaluate(() => document.body.innerText);
+      const text = await page.evaluate(() => {
+        const endonyms = Array.from(document.querySelectorAll('.hk-um-lang-name'));
+        const displays = endonyms.map((el) => el.style.display);
+        endonyms.forEach((el) => { el.style.display = 'none'; });
+        const visible = document.body.innerText;
+        endonyms.forEach((el, i) => { el.style.display = displays[i]; });
+        return visible;
+      });
       thai = (text.match(THAI_RE) || []).length;
       samples = thaiSamples(text);
     } catch { /* หน้าตายไปแล้ว */ }

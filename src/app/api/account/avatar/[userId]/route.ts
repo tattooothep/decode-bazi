@@ -1,7 +1,6 @@
 /**
  * GET /api/account/avatar/[userId] · Account Phase 1 (r378 · 3 ก.ค. 2026)
- * เสิร์ฟรูปโปรไฟล์จาก DB (webp 256px) · cache 1 ชม. · ไม่ต้อง login (เหมือน avatar สาธารณะทั่วไป
- * เช่นในเครือข่ายดวง/กลุ่ม) · cache-bust ด้วย ?v= จาก avatar_url
+ * เสิร์ฟรูปโปรไฟล์สาธารณะจาก DB (webp 256px) แบบ no-store เพื่อให้การลบมีผลทันที
  */
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
@@ -26,7 +25,7 @@ export async function GET(_req: Request, ctx: Ctx) {
   }
   const etag = `"av-${new Date(row.avatar_updated_at || 0).getTime()}"`;
   if (_req.headers.get("if-none-match") === etag) {
-    return new Response(null, { status: 304, headers: { ETag: etag } });
+    return new Response(null, { status: 304, headers: {"Cache-Control":"no-store, max-age=0",ETag:etag} });
   }
   const body = new Uint8Array(row.avatar);
   return new Response(body, {
@@ -34,7 +33,7 @@ export async function GET(_req: Request, ctx: Ctx) {
     headers: {
       "Content-Type": "image/webp",
       "Content-Length": String(body.length),
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": "no-store, max-age=0",
       ETag: etag,
     },
   });

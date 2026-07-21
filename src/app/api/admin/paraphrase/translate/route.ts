@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 
 /**
  * POST /api/admin/paraphrase/translate
@@ -10,7 +10,7 @@ import { requireAdmin } from "@/lib/admin-guard";
  */
 export async function POST(req: Request) {
   try {
-    await requireAdmin();
+    await requirePermission("admin.paraphrase.write");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

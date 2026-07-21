@@ -65,10 +65,12 @@ export async function proxy(req: NextRequest) {
 
   if (await hasValidSession(req)) return NextResponse.next();
 
+  const requestedLang = req.nextUrl.searchParams.get("lang") || req.nextUrl.searchParams.get("locale") || "";
   const loginUrl = req.nextUrl.clone();
   loginUrl.pathname = "/signup";
   loginUrl.search = "";
   loginUrl.searchParams.set("tab", "login");
+  if (requestedLang) loginUrl.searchParams.set("lang", requestedLang);
   loginUrl.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
   return NextResponse.redirect(loginUrl);
 }

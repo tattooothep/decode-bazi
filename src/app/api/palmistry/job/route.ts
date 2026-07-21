@@ -8,14 +8,11 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q1, q } from "@/lib/db";
 import { rm } from "fs/promises";
+import { refundPalmJobBilling } from "@/lib/palm-billing";
+import { publicAiPayload } from "@/lib/public-ai-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// ⚠️ ต้องเป็น process-global ร่วมกับ read route (คนละ module แต่ process เดียว) — read route โหลดก่อนเสมอ (POST มาก่อน poll)
-// ถ้าตั้งใน job module เอง มันโหลด lazy ตอน poll แรก → อาจ "หลัง" งานที่เพิ่งสร้าง → orphan false-positive กับงานแรกหลัง restart
-const _g = globalThis as unknown as { __palmServerStartedAt?: Date };
-const SERVER_STARTED_AT: Date = _g.__palmServerStartedAt || (_g.__palmServerStartedAt = new Date());
 
 function cleanId(x: unknown): string | null {
   const s = String(x || "").trim();
@@ -33,14 +30,15 @@ type PalmJobRow = {
   created_at: string;
 };
 
-/* recovery: งาน running เก่า >25 นาที หรือสร้างก่อน server restart → mark error 'timeout' + ลบรูปค้าง (privacy) */
+/* BullMQ retries across web restarts. Only a genuinely stale running job is
+ * reconciled here; a restart is no longer proof that the worker was lost. */
 async function reconcileStaleJob(row: PalmJobRow): Promise<PalmJobRow> {
   const createdMs = new Date(row.created_at).getTime();
   const stale = row.status === "running" && Date.now() - createdMs > 25 * 60_000;
-  const orphanedByRestart = row.status === "running" && Number.isFinite(createdMs) && createdMs < SERVER_STARTED_AT.getTime() - 1_000;
-  if (!stale && !orphanedByRestart) return row;
-  const reason = orphanedByRestart ? "server_restart_orphan" : "timeout";
+  if (!stale) return row;
+  const reason = "timeout";
   await q(`UPDATE palm_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1 AND status='running'`, [row.id, reason]).catch(() => {});
+  await refundPalmJobBilling(row.id, reason).catch(() => {});
   if (row.job_dir) await rm(row.job_dir, { recursive: true, force: true }).catch(() => {}); // runner ตายแล้ว = ลบรูปที่ค้าง
   return { ...row, status: "error", result: null, error: reason };
 }
@@ -63,12 +61,10 @@ export async function GET(req: Request) {
   );
   if (!row) return NextResponse.json({ ok: false, error: "job_not_found" }, { status: 404 });
 
-  // ownership guard — งานที่ผูก user ต้อง login + userId ตรง (guest job = เข้าถึงด้วย uuid ได้)
-  if (row.user_id) {
-    const session = await getSession();
-    if (!session || session.userId !== row.user_id) {
-      return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
-    }
+  // All new palm jobs are private and login-bound. Legacy guest jobs are closed.
+  const session = await getSession();
+  if (!row.user_id || !session || session.userId !== row.user_id) {
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
   const safeRow = await reconcileStaleJob(row);
@@ -77,10 +73,10 @@ export async function GET(req: Request) {
   const headers = { "Cache-Control": "no-store, max-age=0" };
   if (safeRow.status === "done") {
     const result = (safeRow.result && typeof safeRow.result === "object") ? safeRow.result as Record<string, unknown> : {};
-    return NextResponse.json({ status: "done", ...result }, { headers });
+    return NextResponse.json(publicAiPayload({ status: "done", ...result }), { headers });
   }
   if (safeRow.status === "error") {
-    return NextResponse.json({ ok: false, status: "error", error: safeRow.error || "read_failed", engine: safeRow.engine || null }, { headers });
+    return NextResponse.json(publicAiPayload({ ok: false, status: "error", error: safeRow.error || "read_failed", engine: safeRow.engine || null }), { headers });
   }
-  return NextResponse.json({ ok: true, status: "running", job_id: safeRow.id }, { headers });
+  return NextResponse.json({ ok: true, status: safeRow.status, job_id: safeRow.id }, { headers });
 }

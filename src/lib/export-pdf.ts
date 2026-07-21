@@ -10,6 +10,14 @@ import { spawn } from "child_process";
 import { mkdirSync, writeFileSync, readFileSync, rmSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { randomBytes } from "crypto";
+import {
+  assertLegacyPdfDocumentServerSafe,
+  parseLegacyPdfDocument,
+  parsePdfDocumentV2,
+  type LegacyPdfDocument,
+  type PdfBlockV2,
+  type PdfDocumentV2,
+} from "@/lib/pdf-document-v2";
 
 const SEAL = "時";
 const CHROME_TIMEOUT_MS = Number(process.env.EXPORT_CHROME_TIMEOUT_MS || 30_000);
@@ -20,7 +28,7 @@ export type ExportCover = {
   kick?: string; title?: string; who?: string; metaHtml?: string; meta?: string;
   big?: string; sub?: string; badge?: string; qrLabel?: string; qr?: boolean;
 };
-export type ExportResult = { markdown?: string; cover?: ExportCover; figs?: ExportFig[]; page?: string; lang?: string };
+export type ExportResult = { markdown?: string; cover?: ExportCover; figs?: ExportFig[]; page?: string; lang?: string; document?: unknown; legacy?: unknown };
 
 /* ── i18n เล็ก (หัว/ท้ายกระดาษ · เนื้อหลักมาจาก result แล้ว) ── */
 const PAGE_WORD: Record<string, string> = { th: "หน้า", en: "Page", zh: "頁", cn: "页", vi: "Trang", ja: "ページ", ko: "페이지", ru: "Стр.", es: "Pág." };
@@ -77,8 +85,8 @@ function mdSafe(md: string): string {
 }
 
 /* ── หน้าปก · พอร์ตตรงจาก hk-print.js coverHtml (ตรา 時 + ชื่อ + เจ้าของ + meta + QR) ── */
-function coverHtml(c: ExportCover): string {
-  const qr = c.qr !== false ? '<div class="qr">QR<br>' + esc(c.qrLabel || "hourkey.io") + "</div>" : "";
+function coverHtml(c: ExportCover & { qrHtml?: string }): string {
+  const qr = c.qr === true && c.qrHtml ? '<div class="qr">' + c.qrHtml + "</div>" : "";
   const big = c.big ? '<div class="big">' + esc(c.big) + "</div>" : "";
   const badge = c.badge ? '<div class="badge">' + esc(c.badge) + "</div>" : "";
   return '<div class="hkp-cover"><div class="seal-lg">' + SEAL + "</div>" +
@@ -90,12 +98,96 @@ function coverHtml(c: ExportCover): string {
     (c.sub ? '<div class="meta">' + esc(c.sub) + "</div>" : "") +
     badge + qr + "</div>";
 }
-function head(title: string, lang: string): string {
-  return '<div class="hkp-head"><span class="lg"><span class="seal">' + SEAL + '</span>hourkey · ' + esc(title) + '</span><span>' + esc(dateStr(lang)) + "</span></div>";
+function head(title: string, lang: string, reportId = ""): string {
+  return '<div class="hkp-head"><span class="lg"><span class="seal">' + SEAL + '</span>hourkey · ' + esc(title) + '</span><span class="hkp-head-meta">' +
+    (reportId ? '<span class="hkp-report-id">' + esc(reportId) + '</span>' : '') + esc(dateStr(lang)) + "</span></div>";
 }
-function foot(pageNo: number, total: number, lang: string): string {
+function foot(pageNo: number, total: number, lang: string, reportId = "", verificationLabel = ""): string {
   const pw = PAGE_WORD[lang] || PAGE_WORD.en;
-  return '<div class="hkp-foot"><span>hourkey.io · TST verified</span><span>' + esc(pw) + " " + pageNo + " / " + total + "</span></div>";
+  const left = ["hourkey.io", verificationLabel, reportId].filter(Boolean).map(esc).join(" · ");
+  return '<div class="hkp-foot"><span>' + left + '</span><span>' + esc(pw) + " " + pageNo + " / " + total + "</span></div>";
+}
+
+function structuredBlockHtml(block: PdfBlockV2): string {
+  if (block.type === "heading") {
+    return block.level === 3
+      ? '<h3 class="hkp-subsec">' + esc(block.text) + "</h3>"
+      : '<h2 class="sec">' + esc(block.text) + "</h2>";
+  }
+  if (block.type === "callout") {
+    return '<div class="hkp-callout ' + esc(block.tone) + '">' +
+      (block.label ? '<span class="lab">' + esc(block.label) + "</span>" : "") +
+      "<p>" + esc(block.text) + "</p></div>";
+  }
+  if (block.type === "facts") {
+    return '<div class="hkp-facts cols-' + block.columns + '">' + block.items.map((item) =>
+      '<div class="x"><span class="l">' + esc(item.label) + '</span><span class="v">' + esc(item.value) + "</span></div>"
+    ).join("") + "</div>";
+  }
+  if (block.type === "table") {
+    const colgroup = block.columns.some((col) => col.width)
+      ? "<colgroup>" + block.columns.map((col) => '<col' + (col.width ? ' style="width:' + esc(col.width) + '"' : "") + ">").join("") + "</colgroup>"
+      : "";
+    return '<div class="hkp-table-wrap"><table class="hkp-table' + (block.compact ? " compact" : "") + '">' + colgroup +
+      "<thead><tr>" + block.columns.map((col) => "<th>" + esc(col.label) + "</th>").join("") + "</tr></thead><tbody>" +
+      block.rows.map((row) => "<tr>" + block.columns.map((col) => "<td>" + esc(row[col.key] ?? "") + "</td>").join("") + "</tr>").join("") +
+      "</tbody></table></div>";
+  }
+  if (block.type === "list") {
+    const tag = block.ordered ? "ol" : "ul";
+    return "<" + tag + ' class="hkp-list">' + block.items.map((item) => "<li>" + esc(item) + "</li>").join("") + "</" + tag + ">";
+  }
+  if (block.type === "prose") {
+    return '<div class="hkp-prose">' + block.paragraphs.map((p) => "<p>" + esc(p) + "</p>").join("") + "</div>";
+  }
+  if (block.type === "figure") {
+    return '<figure class="hkp-figure">' + block.svg + (block.caption ? "<figcaption>" + esc(block.caption) + "</figcaption>" : "") + "</figure>";
+  }
+  return "";
+}
+
+function structuredDocPages(doc: PdfDocumentV2, lang: string): string {
+  const reportId = doc.report.id;
+  const headTitle = doc.report.headerTitle || doc.report.title;
+  const verification = doc.report.verificationLabel || "";
+  const cover: ExportCover = {
+    kick: doc.cover.kick,
+    title: doc.cover.title,
+    who: doc.cover.who,
+    metaHtml: doc.cover.meta.map(esc).join("<br>"),
+    big: doc.cover.glyph,
+    badge: doc.cover.badge,
+    qr: false,
+  };
+  const total = doc.pages.length + 1;
+  const coverClass = doc.report.kind === "ai" ? " premium-cover" : " quick-cover";
+  let pages = '<div class="hkp-page' + coverClass + '">' + head(headTitle, lang, reportId) + coverHtml(cover) + foot(1, total, lang, reportId, verification) + "</div>";
+  doc.pages.forEach((page, index) => {
+    const cls = "hkp-page" + (page.landscape ? " land" : "");
+    const title = page.title ? '<h2 class="sec">' + esc(page.title) + "</h2>" : "";
+    pages += '<div class="' + cls + '">' + head(headTitle, lang, reportId) + title + page.blocks.map(structuredBlockHtml).join("\n") +
+      foot(index + 2, total, lang, reportId, verification) + "</div>";
+  });
+  return pages;
+}
+
+function legacyDocPages(doc: LegacyPdfDocument, lang: string): string {
+  const reportId = doc.report.id;
+  const headTitle = doc.report.headerTitle || doc.report.title;
+  const total = doc.pages.length + (doc.cover ? 1 : 0);
+  let pageNo = 0;
+  let pages = "";
+  if (doc.cover) {
+    pageNo += 1;
+    pages += '<div class="hkp-page">' + head(headTitle, lang, reportId) + coverHtml(doc.cover) +
+      foot(pageNo, total, lang, reportId, doc.report.verificationLabel || "") + "</div>";
+  }
+  doc.pages.forEach((page) => {
+    pageNo += 1;
+    pages += '<div class="hkp-page' + (page.landscape ? " land" : "") + '">' + head(headTitle, lang, reportId) +
+      page.sections.join("\n") + foot(pageNo, total, lang, reportId, doc.report.verificationLabel || "") + "</div>";
+  });
+  return pages;
 }
 
 /* ── CSS จาก public/css/hk-print.css (อ่านครั้งเดียว · cache) ── */
@@ -139,6 +231,29 @@ function resolveChrome(): string {
 
 /* ── HTML เต็มหน้า (ปก + figs + สรุป) · โครงเดียวกับ hk-print.js summaryFromMarkdown ── */
 function buildDocHtml(result: ExportResult, lang: string): string {
+  const legacy = result.legacy ? parseLegacyPdfDocument(result.legacy) : null;
+  if (legacy) {
+    assertLegacyPdfDocumentServerSafe(legacy);
+    const css = loadCss();
+    const pages = legacyDocPages(legacy, lang);
+    return "<!doctype html><html lang=\"" + esc(lang) + "\"><head><meta charset=\"utf-8\">" +
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      "<title>" + esc(legacy.report.title) + "</title>" +
+      "<style>" + css + "\n" + (legacy.extraCss || "") + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
+      '</head><body class="hkp-active"><div class="hkp-root">' + pages + "</div></body></html>";
+  }
+  const structured = result.document ? parsePdfDocumentV2(result.document) : null;
+  if (structured) {
+    const css = loadCss();
+    const pages = structuredDocPages(structured, lang);
+    return "<!doctype html><html lang=\"" + esc(lang) + "\"><head><meta charset=\"utf-8\">" +
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      "<title>" + esc(structured.report.title) + "</title>" +
+      "<style>" + css + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
+      '</head><body class="hkp-active"><div class="hkp-root">' + pages + "</div></body></html>";
+  }
   const cover: ExportCover = result.cover || { kick: "สรุปดวงชะตา", title: "รายงานสรุป", who: "", qrLabel: "hourkey.io" };
   const md = String(result.markdown == null ? "" : result.markdown);
 
@@ -181,6 +296,7 @@ function buildDocHtml(result: ExportResult, lang: string): string {
   const docTitle = "hourkey-summary" + (cover.title ? "-" + cover.title : "");
   // chromium --print-to-pdf render เป็น print media → @media print ใน hk-print.css ทำงาน (.hkp-root โผล่)
   return "<!doctype html><html lang=\"" + esc(lang) + "\"><head><meta charset=\"utf-8\">" +
+    '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:">' +
     '<meta name="viewport" content="width=device-width, initial-scale=1">' +
     "<title>" + esc(docTitle) + "</title>" +
     "<style>" + css + "\n@page{size:A4;margin:12mm}\nhtml,body{background:#fff}\n.hkp-root{display:block}</style>" +
@@ -192,6 +308,7 @@ function runChrome(chrome: string, inPath: string, outPath: string): Promise<voi
   return new Promise((resolve, reject) => {
     const args = [
       "--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
+      "--disable-background-networking", "--disable-sync",
       "--no-pdf-header-footer", "--print-to-pdf=" + outPath, inPath,
     ];
     const child = spawn(chrome, args, { stdio: ["ignore", "ignore", "pipe"] });

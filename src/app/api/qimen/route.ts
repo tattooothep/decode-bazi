@@ -3,6 +3,9 @@
  * Proxy → qimen-api POST /api/qimen/calculate · 15 พ.ค. 2026 fixed
  */
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { entitlementDenied, getProductAccess, type ProductPlan } from "@/lib/product-entitlement";
+import type { ProductPageEntitlements } from "@/lib/product-page-entitlements";
 
 const QIMEN_BASE = process.env.QIMEN_API_URL || "http://localhost:4090";
 
@@ -266,6 +269,99 @@ function nowDateTime() {
   return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
 }
 
+type QimenPageCaps = ProductPageEntitlements["qimen"];
+type QimenGate =
+  | { ok: true; plan: ProductPlan; caps: QimenPageCaps }
+  | { ok: false; response: NextResponse };
+
+function qimenShichen(time: string): number {
+  const hour = Number(String(time || "").slice(0, 2));
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return -1;
+  return hour === 23 ? 0 : Math.floor((hour + 1) / 2);
+}
+
+async function gateQimenRequest(date: string, time: string): Promise<QimenGate> {
+  const session = await getSession();
+  if (!session?.userId) {
+    return { ok: false, response: NextResponse.json(entitlementDenied("qimen_login_required"), { status: 401 }) };
+  }
+  const access = await getProductAccess(session.userId);
+  if (!access) {
+    return { ok: false, response: NextResponse.json(entitlementDenied("qimen_not_entitled"), { status: 403 }) };
+  }
+  const caps = access.pages.qimen;
+  const now = nowDateTime();
+  const requestedDay = Date.parse(`${date}T00:00:00Z`);
+  const today = Date.parse(`${now.date}T00:00:00Z`);
+  if (!Number.isFinite(requestedDay) || !/^\d{2}:\d{2}$/.test(time)) {
+    return { ok: false, response: NextResponse.json({ error: "bad_date_or_time" }, { status: 400 }) };
+  }
+  const dayDistance = Math.abs(Math.round((requestedDay - today) / 86400000));
+  if (dayDistance > caps.time_window_days) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        entitlementDenied("qimen_time_window_locked", {
+          message: caps.time_window_days === 0
+            ? "แพ็กเกจนี้เปิดผังฉีเหมินได้เฉพาะวันนี้ · อัปเกรดที่ /pricing"
+            : `แพ็กเกจนี้เปิดผังได้ในช่วง ${caps.time_window_days} วันจากวันนี้ · อัปเกรดที่ /pricing`,
+          plan: access.plan,
+          max_days: caps.time_window_days,
+          requested_days: dayDistance,
+        }),
+        { status: 403 }
+      ),
+    };
+  }
+  if (caps.hours_per_day <= 1 && (date !== now.date || qimenShichen(time) !== qimenShichen(now.time))) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        entitlementDenied("qimen_hour_locked", {
+          message: "Free เปิดได้เฉพาะผังยามปัจจุบัน · ช่วงทดลองเปิดครบ 12 ยามของวันนี้ · /pricing",
+          plan: access.plan,
+          hours_per_day: caps.hours_per_day,
+        }),
+        { status: 403 }
+      ),
+    };
+  }
+  return { ok: true, plan: access.plan, caps };
+}
+
+const QIMEN_TECHNICAL_KEY = /(source|trace|readiness|coverage|classical|ctext|legacy|p0_|api_capabilities|context_flags|temporal_flags)/i;
+const QIMEN_PRO_KEY = /(advanced|stem_response|stem_combo|formula|evidence|yongshen|calculation)/i;
+const QIMEN_BEGINNER_KEY = /(beginner_reading|description_|advice_|good_for|bad_for|situation_role)/i;
+
+function stripQimenKeys(record: Record<string, any>, predicate: (key: string) => boolean): void {
+  for (const key of Object.keys(record)) if (predicate(key)) delete record[key];
+}
+
+function shapeQimenForPlan(payload: Record<string, any>, detail: QimenPageCaps["detail"]): Record<string, any> {
+  if (detail === "technical") return payload;
+  const copy = JSON.parse(JSON.stringify(payload)) as Record<string, any>;
+  const data = isObjectRecord(copy.data) ? copy.data : copy;
+  const predicates = [QIMEN_TECHNICAL_KEY];
+  if (detail === "beginner" || detail === "basic") predicates.push(QIMEN_PRO_KEY);
+  if (detail === "basic") predicates.push(QIMEN_BEGINNER_KEY);
+  const shouldStrip = (key: string) => predicates.some((pattern) => pattern.test(key));
+  stripQimenKeys(data, shouldStrip);
+  if (isObjectRecord(data.chart)) stripQimenKeys(data.chart, shouldStrip);
+  if (Array.isArray(data.palaces)) {
+    data.palaces.forEach((palace: unknown) => { if (isObjectRecord(palace)) stripQimenKeys(palace, shouldStrip); });
+  }
+  if (detail === "basic" || detail === "beginner") {
+    delete data.stored_formations;
+    delete data.compound_formations;
+    delete data.source_formations;
+  }
+  return copy;
+}
+
+function qimenProductMeta(plan: ProductPlan, caps: QimenPageCaps) {
+  return { plan, qimen: caps };
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const dt = nowDateTime();
@@ -275,6 +371,8 @@ export async function GET(req: Request) {
   const lat = Number(url.searchParams.get("lat") || 13.7563);
   const school = resolveSchool(url.searchParams.get("school"));
   if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
+  const gate = await gateQimenRequest(date, time);
+  if (!gate.ok) return gate.response;
   const context = {
     question: url.searchParams.get("question") || undefined,
     use_case: url.searchParams.get("use_case") || undefined,
@@ -284,8 +382,8 @@ export async function GET(req: Request) {
   };
 
   try {
-    const data = await callQimen(date, time, lng, lat, school, context);
-    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, ...data });
+    const data = shapeQimenForPlan(await callQimen(date, time, lng, lat, school, context), gate.caps.detail);
+    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, product: qimenProductMeta(gate.plan, gate.caps), ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
     if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {
@@ -304,6 +402,8 @@ export async function POST(req: Request) {
   const lat = Number(body.lat ?? body.latitude ?? 13.7563);
   const school = resolveSchool(body.school);
   if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
+  const gate = await gateQimenRequest(date, time);
+  if (!gate.ok) return gate.response;
   const context = {
     question: body.question,
     use_case: body.use_case,
@@ -313,8 +413,8 @@ export async function POST(req: Request) {
   };
 
   try {
-    const data = await callQimen(date, time, lng, lat, school, context);
-    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, ...data });
+    const data = shapeQimenForPlan(await callQimen(date, time, lng, lat, school, context), gate.caps.detail);
+    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, product: qimenProductMeta(gate.plan, gate.caps), ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
     if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {

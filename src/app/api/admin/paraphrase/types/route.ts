@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { TYPES } from "@/lib/paraphrase-types";
 
 export async function GET() {
   try {
-    await requireAdmin();
+    await requirePermission("admin.paraphrase.read");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

@@ -15,12 +15,11 @@ if [ -d "$JOBS_ROOT" ]; then
   find "$JOBS_ROOT" -mindepth 1 -maxdepth 1 -type d -mmin +60 -exec rm -rf {} + 2>/dev/null
 fi
 
-# 2) DB: reconcile job running ค้าง >25 นาที → error · TTL ลบ row เก่า (guest >24ชม · ทั้งหมด >7วัน)
-SQL="UPDATE palm_jobs SET status='error', error='sweeper_orphan', updated_at=now()
-       WHERE status='running' AND created_at < now() - interval '25 min';
-     DELETE FROM palm_jobs
-       WHERE (user_id IS NULL AND created_at < now() - interval '24 hour')
-          OR (created_at < now() - interval '7 day');"
+# 2) DB: route poll performs billing-safe reconciliation. Sweeper only expires
+# old rows; never mark a reserved job error here because that would skip refund.
+SQL="DELETE FROM palm_jobs
+       WHERE created_at < now() - interval '7 day'
+         AND billing_status IN ('settled','refunded','legacy');"
 DBOUT=$(docker exec -i decode-postgres psql -U decode_user -d decode_db -tc "$SQL" 2>&1 | tr '\n' ' ')
 
 echo "$TS · dirs_removed=$DIRS · db=[$DBOUT]" >> "$LOG"

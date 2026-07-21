@@ -93,6 +93,11 @@ export type PairReactionResult = {
     cautions: string[];
     intent: Record<"work" | "love" | "friend", { th: string; en: string; zh: string }>;
     disclaimer: string;
+    /* r524 · คู่แปลของช่องบน (เพิ่มใหม่ ไม่แตะช่องเดิม · เว็บเก่าอ่าน string เดิมต่อได้) */
+    primary_i18n?: { th: string; en: string; zh: string };
+    context_i18n?: Array<{ th: string; en: string; zh: string }>;
+    cautions_i18n?: Array<{ th: string; en: string; zh: string }>;
+    disclaimer_i18n?: { th: string; en: string; zh: string };
   };
 };
 
@@ -550,7 +555,7 @@ function buildContexts(atob: PairReactionDirection, btoa: PairReactionDirection)
   };
 }
 
-function intentValue(score: number, mode: "work" | "love" | "friend"): { th: string; en: string; zh: string } {
+function intentBase(score: number, mode: "work" | "love" | "friend"): { th: string; en: string; zh: string } {
   if (score >= 25) {
     if (mode === "work") return { th: "เหมาะร่วมงาน มีแรงส่ง", en: "Good for work", zh: "宜共事" };
     if (mode === "love") return { th: "เปิดใจได้ แต่ต้องคุยตรง", en: "Open, with clear talks", zh: "宜情但須明" };
@@ -566,6 +571,100 @@ function intentValue(score: number, mode: "work" | "love" | "friend"): { th: str
   return { th: "รักษาระยะและขอบเขต", en: "Keep boundaries", zh: "留距" };
 }
 
+/* r521 · ผูก guidance.intent กับ tag/ปฏิกิริยาเด่นของคู่นั้นจริง (เดิม = ตาม score bucket ล้วน · คู่ที่ดวงต่างกันได้คำเหมือนกัน)
+ * ความหมาย tag อิงคัมภีร์ ref_interactions_9 (六合/三合/三會 = ประสาน · 沖 = ปะทะ · 刑/害 = โทษ/ลับ) + 用神/忌神 จาก bazi-interaction-master
+ * แตะเฉพาะข้อความ intent · ไม่แตะ score/verdict/label ใด ๆ */
+type IntentFlavor = "bond" | "clash" | "harm" | "useful" | "avoid";
+
+function pairFlavor(tags: string[], score: number): IntentFlavor | null {
+  const has = (re: RegExp) => tags.some((t) => re.test(t));
+  const bond = has(/六合|三合|三會|三会/);
+  const clash = has(/沖|冲/);
+  const harm = has(/害|刑/);
+  const useful = has(/用神|藥|药|喜神/);
+  const avoid = has(/忌神|病/);
+  /* ทิศบวก: ยกแรงประสาน/หนุนขึ้นก่อน · ทิศลบ: ยกแรงปะทะ/ขัดขึ้นก่อน */
+  if (score >= 0) {
+    if (bond) return "bond";
+    if (useful) return "useful";
+    if (clash) return "clash";
+    if (harm) return "harm";
+    if (avoid) return "avoid";
+  } else {
+    if (clash) return "clash";
+    if (harm) return "harm";
+    if (avoid) return "avoid";
+    if (bond) return "bond";
+    if (useful) return "useful";
+  }
+  return null;
+}
+
+const INTENT_FLAVOR_SUFFIX: Record<IntentFlavor, Record<"work" | "love" | "friend", { th: string; en: string; zh: string }>> = {
+  bond: {
+    work: { th: "ประสานงานลื่น เข้าขากันดี", en: "smooth teamwork", zh: "合 · 協作順" },
+    love: { th: "ผูกพันเข้าใจกันง่าย", en: "natural closeness", zh: "合 · 相知" },
+    friend: { th: "คบยาว หนุนกันได้", en: "lasting support", zh: "合 · 久友" },
+  },
+  clash: {
+    work: { th: "มีแรงปะทะ ต้องแบ่งบทบาทให้ชัด", en: "friction — divide roles clearly", zh: "沖 · 明分工" },
+    love: { th: "หลีกเลี่ยงปะทะตรง ค่อยคุยด้วยเหตุผล", en: "avoid head-on conflict", zh: "沖 · 忌正撞" },
+    friend: { th: "ตรงข้ามดึงดูด แต่ต้องมีพื้นที่", en: "opposites attract, keep space", zh: "沖 · 留空間" },
+  },
+  harm: {
+    work: { th: "ระวังเกี่ยงงาน/เอาเปรียบเงียบ ๆ", en: "watch hidden friction", zh: "刑害 · 防暗損" },
+    love: { th: "ระวังคำพูดทิ่มแทงกัน", en: "watch cutting words", zh: "刑害 · 慎言" },
+    friend: { th: "รักษาระยะ ระวังกินแหนงกัน", en: "keep distance, avoid grudges", zh: "刑害 · 留距" },
+  },
+  useful: {
+    work: { th: "เขาหนุนธาตุที่เราขาด พึ่งพาได้", en: "they supply what you lack", zh: "用神 · 得助" },
+    love: { th: "พลังของเขาเติมเต็มเรา", en: "their energy complements you", zh: "用神 · 相補" },
+    friend: { th: "เพื่อนที่ช่วยเสริมจุดอ่อนเรา", en: "friend who covers your gaps", zh: "用神 · 補益" },
+  },
+  avoid: {
+    work: { th: "พลังไม่ตรงทาง ตั้งขอบเขตให้ชัด", en: "misaligned — set boundaries", zh: "忌神 · 立界" },
+    love: { th: "ธาตุไม่ค่อยเข้ากัน ต้องตั้งใจมากกว่าปกติ", en: "less aligned — needs extra effort", zh: "忌神 · 需用心" },
+    friend: { th: "ไม่ใช่ทางเดียวกันนัก คบแบบมีระยะ", en: "different paths — keep it light", zh: "忌神 · 淡交" },
+  },
+};
+
+function intentValue(score: number, mode: "work" | "love" | "friend", tags: string[] = []): { th: string; en: string; zh: string } {
+  const base = intentBase(score, mode);
+  const flavor = pairFlavor(tags, score);
+  if (!flavor) return base;
+  const suf = INTENT_FLAVOR_SUFFIX[flavor][mode];
+  return {
+    th: `${base.th} · ${suf.th}`,
+    en: `${base.en} · ${suf.en}`,
+    zh: `${base.zh} · ${suf.zh}`,
+  };
+}
+
+
+/* r524 · คำแปลชุดปิดของ guidance (ไทยเดิมเป็นหลัก · en/zh คู่ขนาน · ห้ามแตะความหมาย) */
+type TriText = { th: string; en: string; zh: string };
+const GUID_TRI: Record<string, TriText> = {
+  "ใช้ได้แบบมีเงื่อนไข ต้องวางจังหวะให้ดี": { th: "ใช้ได้แบบมีเงื่อนไข ต้องวางจังหวะให้ดี", en: "Workable with conditions — pace it well", zh: "有條件可行，須拿捏節奏" },
+  "ความสัมพันธ์นี้มีแรงหนุน ใช้ให้เกิดผลด้วยบทบาทที่ชัด": { th: "ความสัมพันธ์นี้มีแรงหนุน ใช้ให้เกิดผลด้วยบทบาทที่ชัด", en: "This bond carries real support — make it count with clear roles", zh: "此關係有助力，明確分工方見效" },
+  "ความสัมพันธ์นี้มีแรงปะทะชัด ต้องตั้งขอบเขตก่อนเข้าใกล้": { th: "ความสัมพันธ์นี้มีแรงปะทะชัด ต้องตั้งขอบเขตก่อนเข้าใกล้", en: "Clear friction here — set boundaries before getting close", zh: "此關係沖剋明顯，先立界線再靠近" },
+  "พอเดินร่วมกันได้ แต่ต้องเลือกเรื่องและเวลาที่เหมาะ": { th: "พอเดินร่วมกันได้ แต่ต้องเลือกเรื่องและเวลาที่เหมาะ", en: "You can walk together — choose the right matters and timing", zh: "可同行，但須擇事擇時" },
+  "ควรระวังจังหวะและคำพูด ความใกล้มากเกินไปทำให้เสียดสีง่าย": { th: "ควรระวังจังหวะและคำพูด ความใกล้มากเกินไปทำให้เสียดสีง่าย", en: "Mind timing and words — too much closeness breeds friction", zh: "慎言慎時，過近易生摩擦" },
+  "อีกฝ่ายมีธาตุที่ช่วยพยุงโจทย์หลักของเรา ใช้ร่วมงานหรือขอแรงได้เมื่อเป้าหมายชัด": { th: "อีกฝ่ายมีธาตุที่ช่วยพยุงโจทย์หลักของเรา ใช้ร่วมงานหรือขอแรงได้เมื่อเป้าหมายชัด", en: "They carry the element that supports your core need — good to work with when goals are clear", zh: "對方五行正補我所需，目標明確時宜合作借力" },
+  "มีธาตุที่กระตุ้นจุดอ่อนไหวของเรา ต้องตั้งขอบเขตและอย่าตัดสินใจตอนอารมณ์ขึ้น": { th: "มีธาตุที่กระตุ้นจุดอ่อนไหวของเรา ต้องตั้งขอบเขตและอย่าตัดสินใจตอนอารมณ์ขึ้น", en: "Their element stirs your sensitive spots — set boundaries and never decide on a surge of emotion", zh: "對方五行易觸我忌，宜立界線，情緒起時勿決斷" },
+  "มีแรงปะทะจริง เหมาะใช้กับงานที่ต้องผลักดัน แต่ไม่ควรปล่อยให้คลุมเครือ": { th: "มีแรงปะทะจริง เหมาะใช้กับงานที่ต้องผลักดัน แต่ไม่ควรปล่อยให้คลุมเครือ", en: "Real clash energy — useful for pushing work forward, but never leave things vague", zh: "確有沖剋之力，宜用於推進之事，忌含糊不清" },
+  "มีแรงดึงดูดหรือแรงประสาน ใช้ให้ดีด้วยการกำหนดบทบาทและจังหวะคุยให้ชัด": { th: "มีแรงดึงดูดหรือแรงประสาน ใช้ให้ดีด้วยการกำหนดบทบาทและจังหวะคุยให้ชัด", en: "There is pull and harmony — use it well by fixing roles and the rhythm of talks", zh: "有相合相引之力，明定角色與談事節奏方得其用" },
+  "ทิศทางสองฝั่งไม่เท่ากัน ฝ่ายหนึ่งอาจรู้สึกได้ประโยชน์มากกว่าอีกฝ่าย": { th: "ทิศทางสองฝั่งไม่เท่ากัน ฝ่ายหนึ่งอาจรู้สึกได้ประโยชน์มากกว่าอีกฝ่าย", en: "The two directions are uneven — one side may feel they gain more", zh: "兩向不均，一方受益或多於另一方" },
+  "ความสัมพันธ์พอเดินต่อได้ จุดสำคัญคือเลือกบริบทให้ถูก": { th: "ความสัมพันธ์พอเดินต่อได้ จุดสำคัญคือเลือกบริบทให้ถูก", en: "The bond can continue — the key is choosing the right context", zh: "關係尚可維繫，關鍵在擇對場合" },
+  "ความสัมพันธ์เป็นกลางหรือมีแรงเสียดทาน ใช้ตัวเลขนี้เป็นตัวช่วยวางระยะ": { th: "ความสัมพันธ์เป็นกลางหรือมีแรงเสียดทาน ใช้ตัวเลขนี้เป็นตัวช่วยวางระยะ", en: "Neutral or somewhat abrasive — use this score to set the distance", zh: "關係中平或有磨擦，可依此分數拿捏距離" },
+  "สัญญาณบวกและลบแรงพร้อมกัน อย่าตัดสินจากความรู้สึกช่วงแรกอย่างเดียว": { th: "สัญญาณบวกและลบแรงพร้อมกัน อย่าตัดสินจากความรู้สึกช่วงแรกอย่างเดียว", en: "Strong positive and negative signals at once — do not judge by first impressions alone", zh: "吉凶並見，勿憑初感定論" },
+  "มีแรงปะทะหลายชั้น ควรคุยเรื่องเงิน งาน และความคาดหวังให้ชัด": { th: "มีแรงปะทะหลายชั้น ควรคุยเรื่องเงิน งาน และความคาดหวังให้ชัด", en: "Multi-layer friction — talk money, work and expectations through clearly", zh: "沖剋多層，錢財、工作與期望須談清" },
+  "คะแนนสองทิศไม่เท่ากัน ต้องดูว่าฝ่ายไหนเสียพลังมากกว่า": { th: "คะแนนสองทิศไม่เท่ากัน ต้องดูว่าฝ่ายไหนเสียพลังมากกว่า", en: "The two directions score unevenly — see which side loses more energy", zh: "兩向分數不均，須看何方耗力較多" },
+  "คะแนนนี้อ่านปฏิกิริยาดวงสองคน ไม่ใช่คำตัดสินคนดีหรือไม่ดี ผลจริงขึ้นกับเจตนา เวลา และการสื่อสาร": { th: "คะแนนนี้อ่านปฏิกิริยาดวงสองคน ไม่ใช่คำตัดสินคนดีหรือไม่ดี ผลจริงขึ้นกับเจตนา เวลา และการสื่อสาร", en: "This score reads the reaction between two charts, not anyone's character; real outcomes depend on intention, timing and communication", zh: "此分數僅論兩盤之互動，非論人品好壞；實際結果視乎心意、時機與溝通" },
+};
+function guidTri(th: string): TriText {
+  return GUID_TRI[th] || { th, en: th, zh: th };
+}
+
 function buildGuidance(
   scores: PairReactionResult["scores"],
   atob: PairReactionDirection,
@@ -573,6 +672,8 @@ function buildGuidance(
   contexts: PairReactionResult["contexts"],
 ): PairReactionResult["guidance"] {
   const overall = scores.overall;
+  /* r521 · tag รวมสองทิศของคู่นี้ · ใช้ผูก intent ให้ต่างตามปฏิกิริยาจริง (ไม่กระทบ score) */
+  const intentTags = uniqueStrings([...atob.tags, ...btoa.tags]);
   const mixed = atob.breakdown.support >= 28 && atob.breakdown.friction >= 28;
   const confidence = Math.max(
     0.55,
@@ -609,17 +710,23 @@ function buildGuidance(
   else if (overall >= 10) primary = "พอเดินร่วมกันได้ แต่ต้องเลือกเรื่องและเวลาที่เหมาะ";
   else if (overall <= -10) primary = "ควรระวังจังหวะและคำพูด ความใกล้มากเกินไปทำให้เสียดสีง่าย";
 
+  const disclaimer = "คะแนนนี้อ่านปฏิกิริยาดวงสองคน ไม่ใช่คำตัดสินคนดีหรือไม่ดี ผลจริงขึ้นกับเจตนา เวลา และการสื่อสาร";
+  const contextOut = context.slice(0, 4);
   return {
     confidence: Math.round(confidence * 100) / 100,
     primary,
-    context: context.slice(0, 4),
+    context: contextOut,
     cautions,
     intent: {
-      work: intentValue(contexts.work, "work"),
-      love: intentValue(contexts.love, "love"),
-      friend: intentValue(contexts.team, "friend"),
+      work: intentValue(contexts.work, "work", intentTags),
+      love: intentValue(contexts.love, "love", intentTags),
+      friend: intentValue(contexts.team, "friend", intentTags),
     },
-    disclaimer: "คะแนนนี้อ่านปฏิกิริยาดวงสองคน ไม่ใช่คำตัดสินคนดีหรือไม่ดี ผลจริงขึ้นกับเจตนา เวลา และการสื่อสาร",
+    disclaimer,
+    primary_i18n: guidTri(primary),
+    context_i18n: contextOut.map(guidTri),
+    cautions_i18n: cautions.map(guidTri),
+    disclaimer_i18n: guidTri(disclaimer),
   };
 }
 

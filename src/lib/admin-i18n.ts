@@ -3,9 +3,9 @@
  * Simplified Chinese uses zh strings + browser font; cn alias → zh.
  */
 
-export type AdminLocale = "th" | "en" | "zh" | "vi" | "ja" | "ko" | "ru" | "es";
+export type AdminLocale = "th" | "en" | "zh" | "cn" | "vi" | "ja" | "ko" | "ru" | "es";
 
-export const ADMIN_LOCALES: AdminLocale[] = ["th", "en", "zh", "vi", "ja", "ko", "ru", "es"];
+export const ADMIN_LOCALES: AdminLocale[] = ["th", "en", "zh", "cn", "vi", "ja", "ko", "ru", "es"];
 
 type Dict = Record<string, Partial<Record<AdminLocale, string>> & { th: string; en: string }>;
 
@@ -14,6 +14,7 @@ const D: Dict = {
   "nav.members": { th: "สมาชิก", en: "Members", zh: "會員", vi: "Thành viên", ja: "会員", ko: "회원", ru: "Участники", es: "Miembros" },
   "nav.orders": { th: "ออเดอร์", en: "Orders", zh: "訂單", vi: "Đơn hàng", ja: "注文", ko: "주문", ru: "Заказы", es: "Pedidos" },
   "nav.support": { th: "ซัพพอร์ต", en: "Support", zh: "支援", vi: "Hỗ trợ", ja: "サポート", ko: "지원", ru: "Поддержка", es: "Soporte" },
+  "nav.community": { th: "ข่าวสาร / แจ้งปัญหา", en: "News / Reports", zh: "公告 / 問題回報", vi: "Tin tức / Báo lỗi", ja: "お知らせ / 問題報告", ko: "소식 / 문제 신고", ru: "Новости / Обращения", es: "Noticias / Reportes" },
   "nav.aicost": { th: "ต้นทุน AI", en: "AI cost", zh: "AI 成本", vi: "Chi phí AI", ja: "AIコスト", ko: "AI 비용", ru: "Стоимость AI", es: "Coste AI" },
   "nav.finance": { th: "การเงิน", en: "Finance", zh: "財務", vi: "Tài chính", ja: "財務", ko: "재무", ru: "Финансы", es: "Finanzas" },
   "nav.packages": { th: "แพ็กเกจ", en: "Packages", zh: "方案", vi: "Gói", ja: "プラン", ko: "패키지", ru: "Пакеты", es: "Paquetes" },
@@ -140,6 +141,19 @@ const D: Dict = {
   "notify.ev.order_paid.desc": { th: "มีออเดอร์จ่ายเงินสำเร็จ · กดแล้วเปิดหน้าออเดอร์", en: "An order was paid · opens Orders", zh: "訂單付款成功 · 點擊開啟訂單頁" },
   "notify.ev.job_fail_spike": { th: "งานพังผิดปกติ", en: "Job failure spike", zh: "任務異常失敗" },
   "notify.ev.job_fail_spike.desc": { th: "งานเบื้องหลังพังหลายงานใน 10 นาที · กดแล้วเปิดหลังบ้าน", en: "Multiple background jobs failed within 10 minutes", zh: "10 分鐘內多個背景任務失敗" },
+  "notify.ev.support_report_new": { th: "รายงานปัญหาใหม่", en: "New issue report", zh: "新的問題回報", cn: "新的问题反馈", vi: "Báo lỗi mới", ja: "新しい問題報告", ko: "새 문제 신고", ru: "Новое обращение", es: "Nuevo reporte" },
+  "notify.ev.support_report_new.desc": { th: "ผู้ใช้ส่ง ticket ใหม่ · เปิดหน้าแจ้งปัญหา", en: "A user submitted a new ticket", zh: "用戶送出新的 ticket", cn: "用户提交了新工单", vi: "Người dùng đã gửi ticket mới", ja: "ユーザーが新しい ticket を送信", ko: "사용자가 새 ticket을 보냄", ru: "Пользователь создал ticket", es: "Un usuario envió un ticket" },
+  "notify.ev.support_user_reply": { th: "ผู้ใช้ตอบกลับ", en: "User reply", zh: "用戶回覆", cn: "用户回复", vi: "Người dùng phản hồi", ja: "ユーザー返信", ko: "사용자 답변", ru: "Ответ пользователя", es: "Respuesta del usuario" },
+  "notify.ev.support_user_reply.desc": { th: "มีข้อความใหม่ใน ticket ที่กำลังติดตาม", en: "A tracked ticket has a new user message", zh: "追蹤中的 ticket 有新訊息", cn: "跟进中的工单有新消息", vi: "Ticket đang theo dõi có tin nhắn mới", ja: "対応中 ticket に新着メッセージ", ko: "진행 중 ticket에 새 메시지", ru: "Новое сообщение в ticket", es: "Nuevo mensaje en el ticket" },
+  "notify.ev.payment_exception": { th: "การจ่ายเงินผิดปกติ", en: "Payment exception", zh: "付款異常", cn: "付款异常", vi: "Thanh toán bất thường", ja: "決済異常", ko: "결제 이상", ru: "Ошибка платежа", es: "Incidencia de pago" },
+  "notify.ev.payment_exception.desc": { th: "จ่ายแล้วแต่ fulfillment ไม่สำเร็จ · ต้องตรวจทันที", en: "Paid but fulfillment failed", zh: "已付款但未能完成權益發放", cn: "已付款但权益发放失败", vi: "Đã thanh toán nhưng cấp quyền thất bại", ja: "支払済みだが権限付与に失敗", ko: "결제 후 권한 지급 실패", ru: "Оплачено, но выдача не выполнена", es: "Pagado, pero falló la entrega" },
+  "notify.ev.refund_failed": { th: "Refund ไม่สำเร็จ", en: "Refund failed", zh: "退款失敗", cn: "退款失败", vi: "Hoàn tiền thất bại", ja: "返金失敗", ko: "환불 실패", ru: "Ошибка возврата", es: "Reembolso fallido" },
+  "notify.ev.refund_failed.desc": { th: "คืนเงินหรือดึงยามไม่ครบ", en: "Refund or credit clawback did not complete", zh: "退款或點數回收未完成", cn: "退款或点数回收未完成", vi: "Hoàn tiền hoặc thu hồi tín dụng chưa hoàn tất", ja: "返金またはクレジット回収が未完了", ko: "환불 또는 크레딧 회수 미완료", ru: "Возврат или списание не завершены", es: "Reembolso o retirada incompletos" },
+  "notify.ev.service_unhealthy": { th: "สถานะระบบ", en: "Service health", zh: "系統狀態", cn: "系统状态", vi: "Tình trạng hệ thống", ja: "システム状態", ko: "시스템 상태", ru: "Состояние системы", es: "Estado del sistema" },
+  "notify.ev.service_unhealthy.desc": { th: "แจ้งเมื่อระบบล้มต่อเนื่องและเมื่อกลับมาปกติ", en: "Alerts on sustained failure and recovery", zh: "持續故障與恢復時通知", cn: "持续故障及恢复时通知", vi: "Cảnh báo khi lỗi kéo dài và phục hồi", ja: "継続障害と復旧を通知", ko: "지속 장애 및 복구 알림", ru: "Сбой и восстановление", es: "Fallo sostenido y recuperación" },
+  "notify.ev.admin_role_changed": { th: "สิทธิ์แอดมินเปลี่ยน", en: "Admin access changed", zh: "管理員權限變更", cn: "管理员权限变更", vi: "Quyền admin thay đổi", ja: "管理者権限変更", ko: "관리자 권한 변경", ru: "Изменение прав", es: "Cambio de permisos" },
+  "notify.ev.admin_role_changed.desc": { th: "เพิ่มหรือถอน role ของแอดมิน", en: "An admin role was granted or revoked", zh: "管理員角色已新增或撤銷", cn: "管理员角色已新增或撤销", vi: "Vai trò admin được cấp hoặc thu hồi", ja: "管理者ロールの付与・取消", ko: "관리자 역할 부여 또는 취소", ru: "Роль выдана или отозвана", es: "Rol concedido o revocado" },
+  "notify.history": { th: "ประวัติแจ้งเตือน", en: "Notification history", zh: "通知紀錄", cn: "通知记录", vi: "Lịch sử thông báo", ja: "通知履歴", ko: "알림 기록", ru: "История уведомлений", es: "Historial de avisos" },
   "notify.worker_note": {
     th: "ตัวส่งจริงคือ watcher หลังบ้าน (เช็คทุก 60 วิ) — แจ้งเตือนถึงทุกเครื่องที่เปิดรับของแอดมินแต่ละคน",
     en: "Delivered by the backend watcher (polls every 60s) to every subscribed device of each admin.",
@@ -149,7 +163,8 @@ const D: Dict = {
 
 export function normalizeAdminLocale(raw: string | null | undefined): AdminLocale {
   const x = String(raw || "th").trim().toLowerCase().replace("_", "-");
-  if (x.startsWith("zh") || x === "cn" || x === "hans" || x === "hant") return "zh";
+  if (x === "cn" || x === "hans" || x.startsWith("zh-cn") || x.startsWith("zh-hans")) return "cn";
+  if (x.startsWith("zh") || x === "hant") return "zh";
   if (x.startsWith("en")) return "en";
   if (x.startsWith("th")) return "th";
   if ((ADMIN_LOCALES as string[]).includes(x)) return x as AdminLocale;

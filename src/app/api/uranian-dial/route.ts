@@ -169,7 +169,7 @@ export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ ok: false, error: "Login required" }, { status: 401, headers: NO_STORE });
 
-  const rl = rateLimit(`uranian-dial:${session.userId}:${clientIp(req)}`, 40, 60_000);
+  const rl = await rateLimit(`uranian-dial:${session.userId}:${clientIp(req)}`, 40, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ ok: false, error: "rate_limited", retryAfterMs: rl.retryAfterMs }, { status: 429, headers: NO_STORE });
   }

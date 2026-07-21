@@ -4,8 +4,11 @@
  * Returns 303 redirect to /input (success) or /signup?err=... (error)
  */
 import { q1 } from "@/lib/db";
-import { hashPassword, signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
+import { hashPassword, signSession, setAuthCookie, readSessionVersion } from "@/lib/auth";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
+import { ensureOrgMember } from "@/lib/ensure-org-member";
+import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
+import { applySignupProductDefaults } from "@/lib/product-entitlement";
 import crypto from "node:crypto";
 
 function redirect303(url: string): Response {
@@ -42,12 +45,17 @@ export async function POST(req: Request) {
   ).catch(async () => {
     await q1(`INSERT INTO organizations (id, name) VALUES ($1,$2)`, [orgId, displayName]);
   });
-  await q1(
-    `INSERT INTO org_members (org_id, user_id, role, created_at)
-     VALUES ($1,$2,'owner',now())`,
-    [orgId, userId]
-  ).catch(() => null);
+  await ensureOrgMember(orgId, userId, "owner").catch((e) =>
+    console.warn("[signup-form] org_members", e instanceof Error ? e.message : String(e))
+  );
   await q1(`UPDATE users SET current_org_id=$1 WHERE id=$2`, [orgId, userId]);
+
+  await recordSignupFingerprint({
+    userId,
+    request: req,
+    deviceId: form.get("affiliateDeviceId") || form.get("deviceId") || null,
+  });
+  await applySignupProductDefaults(userId);
 
   await captureAffiliateAttribution({
     referredUserId: userId,
@@ -56,7 +64,8 @@ export async function POST(req: Request) {
     channel: "form",
   }).catch((e) => console.warn("[affiliate] form attribution failed", e instanceof Error ? e.message : String(e)));
 
-  const token = await signSession({ userId, email, orgId });
+  const sv = await readSessionVersion(userId);
+  const token = await signSession({ userId, email, orgId, sv });
   await setAuthCookie(token);
 
   return redirect303("/input");

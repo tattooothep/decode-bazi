@@ -7,7 +7,7 @@ type Dash = {
   revenue: { paid_orders: number; total_thb: number; thb_30d: number; yam_sold: number };
   yam: { spent: number; given: number; outstanding: number };
   ai_cost: { total_thb: number; thb_30d: number; tokens: number };
-  users: { total: number; paying: number };
+  users: { total: number; paying: number; in_trial?: number; post_trial_free?: number };
   daily: { day: string; thb: number }[];
   byFeature: { feature: string; n: number; yam: number }[];
   margin?: {
@@ -63,6 +63,12 @@ export default function FinanceAdmin() {
             <Card label="ยามที่แจกฟรี" value={dash.yam.given.toLocaleString()} />
             <Card label="ยามที่ใช้ไป" value={dash.yam.spent.toLocaleString()} />
             <Card label="ยามคงค้าง (หนี้)" value={dash.yam.outstanding.toLocaleString()} sub={`${dash.users.total} user · ${dash.users.paying} จ่าย`} />
+            <Card
+              label="In trial"
+              value={(dash.users.in_trial ?? 0).toLocaleString()}
+              sub={`post-trial free ${(dash.users.post_trial_free ?? 0).toLocaleString()}`}
+            />
+            <Card label="Paying (sub active)" value={(dash.users.paying ?? 0).toLocaleString()} sub="premium/master + sub" />
           </div>
           {dash.margin && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

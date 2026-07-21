@@ -58,6 +58,16 @@ function cleanUuid(v: unknown): string | null {
   return UUID_RE.test(s) ? s : null;
 }
 
+async function ownedProfileId(userId: string | null, value: unknown): Promise<string | null> {
+  const profileId = cleanUuid(value);
+  if (!userId || !profileId) return null;
+  const row = await q1<{ id: string }>(
+    `SELECT id FROM profiles WHERE id=$1 AND created_by_user_id=$2 AND is_archived=false`,
+    [profileId, userId]
+  ).catch(() => null);
+  return row?.id || null;
+}
+
 function cleanThreadId(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const s = v.trim().replace(/[^\w:.-]+/g, "_").slice(0, 100);
@@ -131,8 +141,10 @@ export async function logResearchAiMessage(input: {
   const meta = requestMeta(input.req);
   const userId = input.session?.userId || null;
   const orgId = input.session?.orgId || null;
-  const profileId = cleanUuid(input.profileId);
-  const threadProfileId = cleanUuid(input.threadProfileId);
+  const [profileId, threadProfileId] = await Promise.all([
+    ownedProfileId(userId, input.profileId),
+    ownedProfileId(userId, input.threadProfileId),
+  ]);
   const requestPayloadObj = typeof input.requestPayload === "object" && input.requestPayload
     ? input.requestPayload as Record<string, unknown>
     : {};
@@ -235,6 +247,7 @@ export async function logResearchEvent(input: {
   payload?: unknown;
 }): Promise<string | null> {
   const meta = requestMeta(input.req);
+  const profileId = await ownedProfileId(input.session?.userId || null, input.profileId);
   const row = await q1<{ id: string }>(
     `INSERT INTO research_events
        (org_id, user_id, profile_id, event_name, page_path, referrer,
@@ -244,7 +257,7 @@ export async function logResearchEvent(input: {
     [
       input.session?.orgId || null,
       input.session?.userId || null,
-      cleanUuid(input.profileId),
+      profileId,
       input.eventName,
       clipText(input.pagePath, 1_000),
       clipText(input.referrer || meta.referrer, 1_000),

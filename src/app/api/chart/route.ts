@@ -7,8 +7,10 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { NO_STORE_HEADERS, sanitizeChartPayload } from "@/lib/api-scrub";
-import { getDaymasterProfile } from "@/lib/daymaster-profile";
+import { getDaymasterProfile, attachDaymasterI18n } from "@/lib/daymaster-profile";
 import { buildElementRoles } from "@/lib/element-roles";
+import { getProductAccess, PRODUCT_PAGE_ENTITLEMENTS } from "@/lib/product-entitlement";
+import { shapeChartPayload } from "@/lib/chart-product-shape";
 
 /* HK_ELEMENT_ROLES_V1 (10 มิ.ย.) · เติม "บทบาทธาตุในชีวิต" เข้า yongshen_v2 (display semantics ทุกดวง)
  * แยก 財星ให้ผล/เปิดทางเงิน/งาน/調候/พยุงตัว ออกจาก 用神/忌神 — แก้ "เว็บพูดสองภาษาในหน้าเดียว" */
@@ -81,6 +83,9 @@ export async function POST(req: Request) {
   if (!session?.userId) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE_HEADERS });
   }
+  const productAccess = await getProductAccess(session.userId);
+  const productPlan = productAccess?.plan || "free";
+  const chartCaps = productAccess?.pages.chart || PRODUCT_PAGE_ENTITLEMENTS.free.chart;
 
   const body = await req.json().catch(() => ({}));
   const {
@@ -362,13 +367,16 @@ export async function POST(req: Request) {
           element_distribution: (ext as any).element_distribution,
           start_luck_age: qiyunStartAge,
           qiyun_lock: qiyunLock,
-          daymaster_profile: overrideNeedsForFollow(daymasterProfile, yongshenV2_3p),
+          daymaster_profile: attachDaymasterI18n(overrideNeedsForFollow(daymasterProfile, yongshenV2_3p), yongshenV2_3p),
         },
         yongshen_v2: attachElementRoles(yongshenV2_3p, natal.day.stem, calc.strength?.level || null),
         heluo_astrology: null,        /* 3p · ต้องการ hour pillar · skip */
         solar_terms_birth: null,       /* 3p · ต้องการ time precise · skip */
       };
-      return NextResponse.json(sanitizeChartPayload(response), { headers: NO_STORE_HEADERS });
+      return NextResponse.json(
+        shapeChartPayload(sanitizeChartPayload(response), productPlan, chartCaps),
+        { headers: NO_STORE_HEADERS }
+      );
     }
 
     /* 4p path · เดิม · backward compat 100% (TS narrowed calc to BaziAnalysis4p จาก early return) */
@@ -625,7 +633,7 @@ export async function POST(req: Request) {
         rootedness_explain_v2: (ext as any).rootedness_explain_v2,
         /* Phase 17g · distribution engine output · debug/observability */
         element_distribution: (ext as any).element_distribution,
-        daymaster_profile: overrideNeedsForFollow(daymasterProfile, yongshenV2),
+        daymaster_profile: attachDaymasterI18n(overrideNeedsForFollow(daymasterProfile, yongshenV2), yongshenV2),
       },
       /* 📜 Yongshen v2 (wrapper-7) · structure + disease + medicine + bridges · 15 พ.ค. */
       yongshen_v2: attachElementRoles(yongshenV2, natal.day.stem, calc.strength?.level || null),
@@ -639,7 +647,10 @@ export async function POST(req: Request) {
       /* 📜 อากง v3 · 24 節氣 ของปีเกิด + jieqi ของเดือนเกิด · 16 พ.ค. */
       solar_terms_birth: solarTermsBirth,
     };
-    return NextResponse.json(sanitizeChartPayload(response), { headers: NO_STORE_HEADERS });
+    return NextResponse.json(
+      shapeChartPayload(sanitizeChartPayload(response), productPlan, chartCaps),
+      { headers: NO_STORE_HEADERS }
+    );
   } catch (e: unknown) {
     console.error("[chart] error:", e);  // 1 มิ.ย. · log เต็มฝั่ง server · ไม่คืน stack/message ดิบให้ client
     return NextResponse.json({ error: "internal error" }, { status: 500, headers: NO_STORE_HEADERS });

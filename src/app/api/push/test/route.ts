@@ -11,9 +11,9 @@ import { sendToUser } from "@/lib/push-sender";
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not_logged_in" }, { status: 401 });
-  const r = rateLimit("push-test:" + session.userId, 5, 60_000);
+  const r = await rateLimit("push-test:" + session.userId, 5, 60_000);
   if (!r.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
-  const r2 = rateLimit("push-test-ip:" + clientIp(req), 10, 60_000);
+  const r2 = await rateLimit("push-test-ip:" + clientIp(req), 10, 60_000);
   if (!r2.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
 
   const report = await sendToUser(

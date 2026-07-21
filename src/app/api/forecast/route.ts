@@ -12,9 +12,16 @@ import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"
 /* 25 พ.ค. · persona ย้ายไป prompts/forecast-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{METHOD}}+{{BODY}}=dynamic · fallback กันพัง */
 const FORECAST_TPL_FALLBACK = `คุณคือซินแสพยากรณ์ของ hourkey.io · ใช้วิธี "{{METHOD}}" ตอบคำถามนี้\n{{BODY}}\nตอบให้ตรงคำถาม · เริ่มด้วย "✓ ปิดได้" / "✗ ยังไม่ได้" / "⚠ ต้องระวัง" ตามผัง แล้วอธิบายเหตุผลจาก 卦/星/門/神 · ปิดท้ายด้วยคำแนะนำ 1-2 บรรทัด`;
 import { spawn } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { calcBazi } from "@/lib/bazi-calc";
 import { hexagramForStemBranch, HEXAGRAMS_64, TRIGRAMS_8 } from "@/lib/year-hexagram";
 import { q1 } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import {
+  reserveHourForUser,
+  settleReservedHourByCharsForUser,
+  refundReservedHourForUser,
+} from "@/lib/spend-hours";
 
 const TIMEOUT_MS = 60_000;
 const CHILD_USER = "jarvis";
@@ -62,13 +69,13 @@ async function fetchYaoCi(num: number, lines: number[]): Promise<YaoCi[]> {
 }
 
 /* ─── Engine 1: Mei Hua Yi Shu (梅花易數) — by time + question hash ─── */
-async function engineMeihua(_question: string) {
+async function engineMeihua(_question: string, longitude = 100.5018) {
   const now = new Date();
   // pillars จาก current time
   const c = await calcBazi({
     date: now.toISOString().slice(0, 10),
     time: now.toTimeString().slice(0, 5),
-    longitude: 100.5018,
+    longitude,
     gmtOffsetHours: 7,
   });
   // upperGua = year+month+day stem-branch idx · lowerGua = +hour
@@ -118,14 +125,14 @@ const TRIGRAM_ZH: Record<string, string> = {
   XUN: "巽", KAN: "坎", GEN: "艮", KUN: "坤",
   ZHONG: "中",
 };
-async function engineQmdj(_question: string, _category: string) {
+async function engineQmdj(_question: string, _category: string, latitude = 13.7563, longitude = 100.5018) {
   const now = new Date();
   const date = now.toISOString().slice(0, 10);
   const time = now.toTimeString().slice(0, 5);
   const r = await fetch(`${QIMEN_BASE}/api/qimen/calculate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ datetime: `${date}T${time}:00`, longitude: 100.5018, latitude: 13.7563, profile_id: 4 }),
+    body: JSON.stringify({ datetime: `${date}T${time}:00`, longitude, latitude, profile_id: 4 }),
     signal: AbortSignal.timeout(8000),
   });
   if (!r.ok) throw new Error("qimen-api failed");
@@ -287,7 +294,7 @@ function buildPrompt(question: string, method: Method, category: string, lang: s
 
 async function runClaudeCli(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const claudeArgs = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "user"];
+    const claudeArgs = ["-p", "--output-format", "text", ...CLAUDE_TEXT_ONLY_ARGS];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });
     let out = ""; let err = "";
@@ -305,23 +312,30 @@ async function runClaudeCli(prompt: string): Promise<string> {
 }
 
 export async function POST(req: Request) {
+  let reservedUserId: string | null = null;
   try {
     /* 1 มิ.ย. · AI พยากรณ์ต้องสมัคร/login ก่อน (กัน anonymous spawn Claude ฟรี · cost abuse) */
-    if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    const session = await getSession();
+    if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const body = await req.json().catch(() => ({}));
     const question: string = (body.question || "").trim();
     const method: Method = ["meihua", "qmdj", "coin"].includes(body.method) ? body.method : "qmdj";
     const category: string = body.category || "general";
     const lang: string = isSifuAnswerLang(body.lang) ? body.lang : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
+    const latitude = Number(body.latitude ?? body.lat ?? 13.7563);
+    const longitude = Number(body.longitude ?? body.lng ?? 100.5018);
 
     if (!question) return NextResponse.json({ error: "no question" }, { status: 400 });
     if (question.length > 500) return NextResponse.json({ error: "question too long (max 500 chars)" }, { status: 400 });
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+      return NextResponse.json({ error: "bad_location" }, { status: 400 });
+    }
 
     /* coin_lines ถ้า client ส่ง (อากง ritual UI) — ใช้แทน random server-side */
     const coin_lines: number[] | undefined = Array.isArray(body.coin_lines) ? body.coin_lines : undefined;
     let result: { engine: string; structured: unknown };
-    if (method === "meihua") result = await engineMeihua(question);
-    else if (method === "qmdj") result = await engineQmdj(question, category);
+    if (method === "meihua") result = await engineMeihua(question, longitude);
+    else if (method === "qmdj") result = await engineQmdj(question, category, latitude, longitude);
     else result = engineCoin(question, coin_lines);
 
     /* 16 พ.ค. (อากงอาม่า v2.0): ดึง deep interpretation 64 卦 ของ ben/bian จาก DB */
@@ -335,26 +349,52 @@ export async function POST(req: Request) {
                             (typeof s?.changing_line === 'number' && s.changing_line > 0 ? [s.changing_line] : []);
     const yaoCi = (s?.ben_hex?.num && lines.length) ? await fetchYaoCi(s.ben_hex.num, lines) : [];
 
-    /* AI sifu — ใช้ deep + yao ci ในการตอบ */
+    /* Deterministic engine is free; reserve only before the optional AI layer. */
     let ai = "";
+    let aiBilling: Record<string, unknown> = { charged: 0, estimated: true };
+    const reserve = await reserveHourForUser(session.userId, "forecast_ai");
+    if (!reserve.ok) {
+      return NextResponse.json({
+        ok: true, method,
+        engine: result.engine,
+        ai: "",
+        ai_error: "insufficient_hours",
+        ai_billing: { charged: 0, balance: reserve.balance ?? 0 },
+        structured: result.structured,
+        ben_deep: benDeep,
+        bian_deep: bianDeep,
+        yao_ci: yaoCi,
+      });
+    }
+    reservedUserId = session.userId;
     try {
       const ctx = { ...result.structured as object, ben_deep: benDeep, bian_deep: bianDeep, yao_ci: yaoCi };
       ai = await runClaudeCli(buildPrompt(question, method, category, lang, ctx));
+      if (!ai) throw new Error("empty_reply");
+      const settled = await settleReservedHourByCharsForUser(session.userId, ai.length, "forecast_ai");
+      aiBilling = { charged: settled.spent, balance: settled.balance_after };
+      reservedUserId = null;
     } catch (e: unknown) {
       console.warn("[forecast] AI failed:", (e as Error).message);
-      ai = "(ระบบ AI ไม่ตอบกลับในเวลา · ลองอีกครั้งสักครู่)";
+      await refundReservedHourForUser(session.userId, "forecast_ai").catch(() => {});
+      reservedUserId = null;
+      ai = "";
+      aiBilling = { charged: 0, refunded: 1 };
     }
 
     return NextResponse.json({
       ok: true, method,
       engine: result.engine,
       ai,
+      ai_error: ai ? null : "ai_unavailable",
+      ai_billing: aiBilling,
       structured: result.structured,
       ben_deep: benDeep,  // 16 พ.ค. v2: deep interpretation สำหรับ UI tooltip
       bian_deep: bianDeep,
       yao_ci: yaoCi,      // 16 พ.ค. v3: 384 爻辭 ของเส้นที่เปลี่ยน
     });
   } catch (e: unknown) {
+    if (reservedUserId) await refundReservedHourForUser(reservedUserId, "forecast_ai").catch(() => {});
     const err = e as Error;
     console.error("[forecast] failed:", err);
     return NextResponse.json({ error: "internal_error" }, { status: 500 });

@@ -119,6 +119,56 @@ export async function drainHoursByCharsForUser(userId: string, chars: number, fe
   }
   return { spent, balance_after: Number(row.new_bal) };
 }
+
+/**
+ * Settle a request that already reserved one yam.
+ * The total charge is exactly charsToHours(chars), not reservation + full usage.
+ */
+export async function settleReservedHourByCharsForUser(
+  userId: string,
+  chars: number,
+  feature: string,
+  reserved = 1
+): Promise<{ spent: number; balance_after: number }> {
+  if (!userId) return { spent: 0, balance_after: 0 };
+  const held = Math.max(0, Math.floor(reserved));
+  const extra = Math.max(0, charsToHours(chars) - held);
+  if (extra === 0) {
+    return { spent: held, balance_after: await getHourBalanceForUser(userId) };
+  }
+  const row = await q1<{ new_bal: number; old_bal: number }>(
+    `WITH cur AS (SELECT hour_balance AS old_bal FROM users WHERE id = $1 FOR UPDATE)
+     UPDATE users SET hour_balance = GREATEST(0, hour_balance - $2)
+     FROM cur WHERE users.id = $1
+     RETURNING users.hour_balance AS new_bal, cur.old_bal`,
+    [userId, extra]
+  );
+  if (!row) return { spent: held, balance_after: 0 };
+  const extraSpent = Math.max(0, Number(row.old_bal) - Number(row.new_bal));
+  if (extraSpent > 0) {
+    await q(
+      `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_feature) VALUES ($1, $2, $3, $4, $5)`,
+      [userId, -extraSpent, `spend_${feature}`, Number(row.new_bal), feature]
+    );
+  }
+  return { spent: held + extraSpent, balance_after: Number(row.new_bal) };
+}
+
+export async function refundReservedHourForUser(userId: string, feature: string): Promise<RefundResult> {
+  return refundHoursForUser(userId, 1, `${feature}_pre`);
+}
+
+export async function settleReservedHourByChars(chars: number, feature: string) {
+  const s = await getSession();
+  if (!s) return { spent: 0, balance_after: 0 };
+  return settleReservedHourByCharsForUser(s.userId, chars, feature);
+}
+
+export async function refundReservedHour(feature: string): Promise<RefundResult> {
+  const s = await getSession();
+  if (!s) return { ok: false, error: "not logged in", status: 401 };
+  return refundReservedHourForUser(s.userId, feature);
+}
 /** drain (getSession) */
 export async function drainHoursByChars(chars: number, feature: string): Promise<{ spent: number; balance_after: number }> {
   const s = await getSession();

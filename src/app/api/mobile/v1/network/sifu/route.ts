@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { q } from "@/lib/db";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { buildNetworkScorePayload } from "@/lib/scoring/network-score-payload";
+import { publicAiPayload } from "@/lib/public-ai-response";
+import { internalAppOrigin } from "@/lib/internal-app-origin";
+import { isSifuAnswerLang } from "@/lib/sifu-answer-lang";
+import { mobileBillingOperation } from "@/lib/mobile-billing-operation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -22,6 +26,7 @@ type NetworkSifuProfile = {
   day_master: string | null;
   yongshen: unknown;
   bazi_pillars: unknown;
+  birth_time_known: boolean | null;
   is_self: boolean;
 };
 
@@ -38,7 +43,7 @@ function cleanString(value: unknown, max = 120): string | undefined {
 
 function cleanUuid(value: unknown): string | null {
   const text = typeof value === "string" ? value.trim().replace(/^hk_/, "") : "";
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i.test(text)
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
     ? text
     : null;
 }
@@ -109,15 +114,19 @@ function profileLabel(profile: NetworkSifuProfile) {
 
 function personPayload(profile: NetworkSifuProfile) {
   const pillars = unwrapPillars(profile.bazi_pillars);
+  const birthTimeKnown = profile.birth_time_known !== false;
   const payload = {
     id: profile.id,
     name: profile.nickname || profile.name,
     label: profileLabel(profile),
     day_master: profile.day_master,
+    birthTimeKnown,
+    birth_time_known: birthTimeKnown,
+    chart_mode: birthTimeKnown ? "4p" : "3p",
     year: normalizePillar(pillars.year) || undefined,
     month: normalizePillar(pillars.month) || undefined,
     day: normalizePillar(pillars.day),
-    hour: normalizePillar(pillars.hour) || undefined,
+    hour: birthTimeKnown ? normalizePillar(pillars.hour) || undefined : undefined,
   };
   return {
     ...payload,
@@ -133,7 +142,7 @@ function personPayload(profile: NetworkSifuProfile) {
 async function loadProfiles(orgId: string, userId: string) {
   return q<NetworkSifuProfile>(
     `SELECT id, name, nickname, relationship_type, network_group, network_group_label,
-            day_master, yongshen, bazi_pillars,
+            day_master, yongshen, bazi_pillars, birth_time_known,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
        FROM profiles
       WHERE created_by_user_id=$2 AND org_id=$1
@@ -243,13 +252,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "mobile session token missing" }, { status: 401 });
   }
 
-  const origin = new URL(req.url).origin;
+  const origin = internalAppOrigin(req);
+  const billingOperation = mobileBillingOperation((body as { billingOperationId?: unknown }).billingOperationId);
   const networkResp = await fetch(`${origin}/api/network/sifu`, {
     body: JSON.stringify({
       history: cleanHistory((body as { history?: unknown }).history),
-      lang: ["th", "en", "zh"].includes(String((body as { lang?: unknown }).lang))
-        ? (body as { lang?: string }).lang
-        : "th",
+      lang: isSifuAnswerLang((body as { lang?: unknown }).lang) ? (body as { lang?: string }).lang : "th",
       message,
       mode,
       payload: sifuPayload,
@@ -261,6 +269,7 @@ export async function POST(req: Request) {
       Accept: "application/json",
       "Content-Type": "application/json",
       Cookie: cookie,
+      "X-Hourkey-Billing-Operation": billingOperation,
     },
     method: "POST",
   });
@@ -274,11 +283,11 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    {
+    publicAiPayload({
       ok: networkResp.ok,
       ...data,
       source: "/api/network/sifu",
-    },
+    }),
     {
       headers: { "Cache-Control": "no-store, max-age=0" },
       status: networkResp.status,

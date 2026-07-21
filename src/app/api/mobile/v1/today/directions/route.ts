@@ -2,28 +2,42 @@ import { NextResponse } from "next/server";
 import { POST as todayDirectionsPost } from "@/app/api/today/directions/route";
 import { getMobileSession } from "@/lib/mobile-auth";
 import {
-  buildMobileTimingPayload,
   loadMobileTimingProfile,
   mobileProfileSummary,
 } from "@/lib/mobile-timing-context";
 
 export const dynamic = "force-dynamic";
 
-async function resolveInput(req: Request): Promise<{ date: string; profileId: string | null }> {
-  const url = new URL(req.url);
-  if (req.method === "GET") {
-    return {
-      date: url.searchParams.get("date") || new Date().toISOString().slice(0, 10),
-      profileId: url.searchParams.get("profileId"),
-    };
-  }
+type DirectionInput = {
+  date: string;
+  time: string;
+  profileId: string | null;
+  latitude: number;
+  longitude: number;
+  school: "chaibu" | "zhirun";
+  timezone: string;
+};
 
-  const body = await req.json().catch(() => ({}));
+function inputValue(body: Record<string, unknown>, url: URL, key: string) {
+  return body[key] ?? url.searchParams.get(key);
+}
+
+async function resolveInput(req: Request): Promise<DirectionInput> {
+  const url = new URL(req.url);
+  const body = req.method === "GET"
+    ? {} as Record<string, unknown>
+    : await req.json().catch(() => ({} as Record<string, unknown>));
+  const school = String(inputValue(body, url, "school") || "chaibu").toLowerCase();
+  const latitudeRaw = inputValue(body, url, "latitude") ?? inputValue(body, url, "lat");
+  const longitudeRaw = inputValue(body, url, "longitude") ?? inputValue(body, url, "lng");
   return {
-    date: String((body as { date?: unknown }).date || url.searchParams.get("date") || new Date().toISOString().slice(0, 10)),
-    profileId: (body as { profileId?: unknown }).profileId
-      ? String((body as { profileId?: unknown }).profileId)
-      : url.searchParams.get("profileId"),
+    date: String(inputValue(body, url, "date") || ""),
+    time: String(inputValue(body, url, "time") || ""),
+    profileId: inputValue(body, url, "profileId") ? String(inputValue(body, url, "profileId")) : null,
+    latitude: latitudeRaw === null || latitudeRaw === undefined || latitudeRaw === "" ? Number.NaN : Number(latitudeRaw),
+    longitude: longitudeRaw === null || longitudeRaw === undefined || longitudeRaw === "" ? Number.NaN : Number(longitudeRaw),
+    school: school === "zhirun" ? "zhirun" : "chaibu",
+    timezone: String(inputValue(body, url, "timezone") || ""),
   };
 }
 
@@ -33,9 +47,20 @@ async function handle(req: Request) {
     return NextResponse.json({ ok: false, error: "not logged in" }, { status: 401 });
   }
 
-  const { date, profileId } = await resolveInput(req);
+  const input = await resolveInput(req);
+  const { date, profileId } = input;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json({ ok: false, error: "date YYYY-MM-DD required" }, { status: 400 });
+  }
+  if (!/^\d{2}:\d{2}$/.test(input.time)) {
+    return NextResponse.json({ ok: false, error: "local time HH:MM required", code: "time_required" }, { status: 422 });
+  }
+  if (!Number.isFinite(input.latitude) || input.latitude < -90 || input.latitude > 90 ||
+      !Number.isFinite(input.longitude) || input.longitude < -180 || input.longitude > 180) {
+    return NextResponse.json({ ok: false, error: "location required", code: "location_required" }, { status: 422 });
+  }
+  if (!input.timezone || input.timezone.length > 80) {
+    return NextResponse.json({ ok: false, error: "timezone required", code: "timezone_required" }, { status: 422 });
   }
 
   const profile = await loadMobileTimingProfile(session, profileId);
@@ -43,18 +68,19 @@ async function handle(req: Request) {
     return NextResponse.json({ ok: false, error: "profile not found" }, { status: 404 });
   }
 
-  const payload = buildMobileTimingPayload(profile, date);
-  if (!payload.userChart.day) {
-    return NextResponse.json({ ok: false, error: "profile has no day pillar" }, { status: 422 });
-  }
-
   const internalReq = new Request(req.url, {
     body: JSON.stringify({
-      date: payload.date,
-      userChart: payload.userChart,
-      yongshen: payload.yongshen[0] || null,
+      date,
+      time: input.time,
+      profileId: profile.id,
+      lat: input.latitude,
+      lng: input.longitude,
+      school: input.school,
     }),
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Authorization: req.headers.get("authorization") || "",
+      "Content-Type": "application/json",
+    },
     method: "POST",
   });
   const resp = await todayDirectionsPost(internalReq);
@@ -65,6 +91,15 @@ async function handle(req: Request) {
       ok: resp.ok,
       profile: mobileProfileSummary(profile),
       source: "/api/today/directions",
+      request_context: {
+        date,
+        local_time: input.time,
+        timezone: input.timezone,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        location_source: "mobile_explicit",
+        school: input.school,
+      },
       ...data,
     },
     { status: resp.status, headers: { "Cache-Control": "no-store, max-age=0" } }

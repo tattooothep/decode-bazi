@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
-import { clearAuthCookie, setAuthCookie, signSession, readSessionVersion, verifyPassword } from "@/lib/auth";
+import {
+  bumpSessionVersion,
+  clearAuthCookie,
+  readSessionVersion,
+  setAuthCookie,
+  signSession,
+  verifyPassword,
+} from "@/lib/auth";
 import { q1 } from "@/lib/db";
-import { getMobileSession } from "@/lib/mobile-auth";
+import { getMobileSession, mobileBearerToken, validateMobileBearerToken } from "@/lib/mobile-auth";
 import { userHasProfile } from "@/lib/profile-status";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
@@ -15,11 +22,12 @@ type MobileUserRow = {
   current_org_id: string | null;
   tier: string | null;
   hour_balance: number | null;
+  email_verified: boolean | null;
 };
 
 async function loadMobileUser(userId: string): Promise<MobileUserRow | null> {
   return q1<MobileUserRow>(
-    `SELECT id, email, name, avatar_url, current_org_id, tier, hour_balance
+    `SELECT id, email, name, avatar_url, current_org_id, tier, hour_balance, email_verified
        FROM users
       WHERE id=$1`,
     [userId]
@@ -54,6 +62,7 @@ export async function GET(req: Request) {
         avatar_url: user.avatar_url,
         tier: user.tier || "free",
         hour_balance: user.hour_balance ?? 0,
+        email_verified: user.email_verified === true,
       },
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
@@ -69,7 +78,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
 
-  const rl = rateLimit(`mobile-login:${clientIp(req)}:${email}`, 5, 60_000);
+  const rl = await rateLimit(`mobile-login:${clientIp(req)}:${email}`, 5, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { ok: false, error: "ลองเข้าสู่ระบบบ่อยเกินไป · กรุณารอสักครู่แล้วลองใหม่" },
@@ -78,9 +87,11 @@ export async function POST(req: Request) {
   }
 
   const user = await q1<MobileUserRow & { password_hash: string | null }>(
-    `SELECT id, email, password_hash, name, avatar_url, current_org_id, tier, hour_balance
+    `SELECT id, email, password_hash, name, avatar_url, current_org_id, tier, hour_balance, email_verified
        FROM users
-      WHERE lower(email)=lower($1)`,
+      WHERE lower(email)=lower($1)
+        AND deleted_at IS NULL
+        AND is_active IS DISTINCT FROM false`,
     [email]
   );
   if (!user?.password_hash) {
@@ -92,10 +103,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
 
+  const sv = await readSessionVersion(user.id);
   const token = await signSession({
     userId: user.id,
     email: user.email,
     orgId: user.current_org_id,
+    sv,
   });
 
   await setAuthCookie(token);
@@ -108,7 +121,7 @@ export async function POST(req: Request) {
       token_type: "Bearer",
       access_token: token,
       has_profile: hasProfile,
-      intro_url: "/today",
+      intro_url: "/master?intro=1&next=%2Ftoday",
       user: {
         id: user.id,
         email: user.email,
@@ -116,16 +129,35 @@ export async function POST(req: Request) {
         avatar_url: user.avatar_url,
         tier: user.tier || "free",
         hour_balance: user.hour_balance ?? 0,
+        email_verified: user.email_verified === true,
       },
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
   );
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
+  const bearer = mobileBearerToken(req);
+  let revokedServerSession = false;
+  if (bearer) {
+    const session = await validateMobileBearerToken(bearer);
+    if (session) {
+      await bumpSessionVersion(session.userId);
+      await q1(
+        `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+          WHERE user_id=$1 AND enabled=true RETURNING id`,
+        [session.userId]
+      ).catch(() => null);
+      revokedServerSession = true;
+    }
+  }
   await clearAuthCookie();
   return NextResponse.json(
-    { ok: true, revoked_server_session: false, client_action: "discard_bearer_token" },
+    {
+      ok: true,
+      revoked_server_session: revokedServerSession,
+      client_action: "discard_bearer_token",
+    },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
   );
 }

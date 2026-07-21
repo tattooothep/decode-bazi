@@ -7,7 +7,7 @@
 //   fusion   = fusion5_jobs (1 job = 1 chat) + research_ai_messages feature='sifu_fusion' (แชทต่อเนื่อง)
 // ทุกแหล่ง JOIN users จริง → แถวผีของ user ที่ถูกลบไม่นับ
 import { NextResponse } from "next/server";
-import { requireAdmin, requirePermission } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q1 } from "@/lib/db";
 
 const SCOPED_USERS_CTE = `scoped_users AS (
@@ -21,8 +21,7 @@ const SCOPED_USERS_CTE = `scoped_users AS (
 export async function GET() {
   let admin;
   try {
-    admin = await requireAdmin();
-    await requirePermission("admin.users.read"); /* แชท user = ข้อมูลอ่อนไหว (ลายเซน C·A1) */
+    admin = await requirePermission("admin.research.read");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

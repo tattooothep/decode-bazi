@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
 
 /**
@@ -16,7 +16,7 @@ function guard(e: unknown) {
 }
 
 export async function GET(req: NextRequest) {
-  try { await requireAdmin(); } catch (e) { return guard(e); }
+  try { await requirePermission("admin.finance.read"); } catch (e) { return guard(e); }
   const url = new URL(req.url);
   const view = url.searchParams.get("view") || "dashboard";
 
@@ -69,10 +69,34 @@ export async function GET(req: NextRequest) {
     `SELECT COALESCE(SUM(cost_cents),0)::int AS cost_cents, COALESCE(SUM(tokens_used),0)::int AS tokens FROM ai_usage`);
   const aiCost30 = await q1<{ cost_cents: number }>(
     `SELECT COALESCE(SUM(cost_cents),0)::int AS cost_cents FROM ai_usage WHERE date >= (now() - interval '30 days')::date`);
-  const users = await q1<{ total: number; paying: number; balance_outstanding: number }>(
+  const users = await q1<{
+    total: number;
+    paying: number;
+    in_trial: number;
+    post_trial_free: number;
+    balance_outstanding: number;
+  }>(
     `SELECT COUNT(*)::int AS total,
-            COUNT(*) FILTER (WHERE tier <> 'free')::int AS paying,
-            COALESCE(SUM(hour_balance),0)::int AS balance_outstanding FROM users`);
+            COUNT(*) FILTER (
+              WHERE LOWER(COALESCE(tier,'free')) IN ('premium','master')
+                AND sub_expires_at IS NOT NULL AND sub_expires_at > now()
+            )::int AS paying,
+            COUNT(*) FILTER (
+              WHERE trial_ends_at IS NOT NULL AND trial_ends_at > now()
+                AND NOT (
+                  LOWER(COALESCE(tier,'free')) IN ('premium','master')
+                  AND sub_expires_at IS NOT NULL AND sub_expires_at > now()
+                )
+            )::int AS in_trial,
+            COUNT(*) FILTER (
+              WHERE NOT (
+                LOWER(COALESCE(tier,'free')) IN ('premium','master')
+                AND sub_expires_at IS NOT NULL AND sub_expires_at > now()
+              )
+              AND NOT (trial_ends_at IS NOT NULL AND trial_ends_at > now())
+            )::int AS post_trial_free,
+            COALESCE(SUM(hour_balance),0)::int AS balance_outstanding
+       FROM users WHERE deleted_at IS NULL`);
   // รายได้รายวัน 14 วัน
   const daily = await q(
     `SELECT to_char(date_trunc('day', paid_at),'MM-DD') AS day, COALESCE(SUM(amount_thb),0)::int AS thb
@@ -111,7 +135,12 @@ export async function GET(req: NextRequest) {
     revenue: { paid_orders: rev?.paid_orders ?? 0, total_thb: rev?.revenue_thb ?? 0, thb_30d: rev30?.revenue_thb ?? 0, yam_sold: rev?.yam_sold ?? 0 },
     yam: { spent: yamSpent?.spent ?? 0, given: yamGiven?.given ?? 0, outstanding: users?.balance_outstanding ?? 0 },
     ai_cost: { total_thb: aiThb, thb_30d: Math.round((aiCost30?.cost_cents ?? 0) / 100), tokens: aiCost?.tokens ?? 0 },
-    users: { total: users?.total ?? 0, paying: users?.paying ?? 0 },
+    users: {
+      total: users?.total ?? 0,
+      paying: users?.paying ?? 0,
+      in_trial: users?.in_trial ?? 0,
+      post_trial_free: users?.post_trial_free ?? 0,
+    },
     daily, byFeature,
     margin: {
       gross_thb: gross,

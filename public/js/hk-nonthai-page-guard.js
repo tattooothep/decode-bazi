@@ -13,7 +13,11 @@
     var raw = 'th';
     try { raw = localStorage.getItem('hk_lang') || localStorage.getItem('hk_locale') || 'th'; } catch (_) {}
     raw = String(raw || 'th').toLowerCase();
-    if (raw.indexOf('zh') === 0) return { raw: 'zh', app: 'zh', storage: 'zh', html: 'zh-Hant' };
+    if (raw.indexOf('zh') === 0) {
+      var variant = 'hant';
+      try { if (localStorage.getItem('hk_zh_variant') === 'cn') variant = 'cn'; } catch (_) {}
+      return { raw: 'zh', app: 'zh', storage: 'zh', html: variant === 'cn' ? 'zh-Hans' : 'zh-Hant', variant: variant };
+    }
     if (raw.indexOf('en') === 0) return { raw: 'en', app: 'en', storage: 'en', html: 'en' };
     return { raw: 'th', app: 'th', storage: 'th', html: 'th' };
   }
@@ -23,15 +27,28 @@
     try {
       document.documentElement.lang = st.html;
       document.documentElement.setAttribute('data-lang', st.app);
+      document.documentElement.setAttribute('data-hk-locale', st.raw);
+      if (st.raw === 'zh') document.documentElement.setAttribute('data-zh-variant', st.variant === 'cn' ? 'cn' : 'hant');
+      else document.documentElement.removeAttribute('data-zh-variant');
       localStorage.setItem('hk_locale', st.storage);
       localStorage.setItem('hk_lang', st.storage);
+      if (st.raw === 'zh') localStorage.setItem('hk_zh_variant', st.variant === 'cn' ? 'cn' : 'hant');
+      if (st.raw === 'zh' && st.variant === 'cn' && window.HK_ZHCN && typeof window.HK_ZHCN.apply === 'function') {
+        window.HK_ZHCN.apply();
+      }
     } catch (_) {}
     return st;
   }
 
+  function pageLocale(st) {
+    if (!st) return 'th';
+    return st.raw;
+  }
+
   function callPageI18n(st) {
     try {
-      if (typeof window.__hkOverlayApply === 'function') window.__hkOverlayApply(st.raw);
+      var locale = pageLocale(st);
+      if (typeof window.__hkOverlayApply === 'function') window.__hkOverlayApply(locale);
       else if (typeof window.applyI18N === 'function') window.applyI18N(st.raw);
     } catch (_) {}
   }

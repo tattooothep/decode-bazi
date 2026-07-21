@@ -1,0 +1,58 @@
+import {readFileSync} from "node:fs";
+
+const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),"utf8");
+const bulk=read("src/app/api/mobile/v1/network/bulk/route.ts");
+const bulkCore=read("src/app/api/network/ai-parse-bulk/route.ts");
+const bulkPrompt=read("data/library/prompts/ai-parse-bulk.md");
+const network=read("src/app/api/mobile/v1/network/route.ts");
+const networkSifu=read("src/app/api/mobile/v1/network/sifu/route.ts");
+const networkSifuCore=read("src/app/api/network/sifu/route.ts");
+const networkPairBilling=read("src/lib/network-pair-billing.ts");
+const groupSifu=read("src/app/api/mobile/v1/sifu/group/route.ts");
+const groupSifuCore=read("src/app/api/sifu/group/route.ts");
+const compareSifuCore=read("src/app/api/sifu/compare/route.ts");
+const billingMigration=read("migrations/20260712_network_ai_billing_operations.sql");
+const staleReconciler=read("scripts/ops/reconcile-stale-jobs.mjs");
+const upload=read("src/app/api/mobile/v1/upload/route.ts");
+let checks=0;
+function check(value,label){if(!value)throw new Error(`FAIL ${label}`);checks+=1;console.log(`✓ ${label}`);}
+
+check(bulk.includes("getMobileSession(req)")&&bulk.includes("mobileBearerToken(req)"),"bulk import requires the private mobile session and bearer token");
+check(bulk.includes("MAX_TEXT_LENGTH = 8_000")&&bulk.includes("text.trim()"),"bulk import accepts only a bounded text field");
+check(bulk.includes("rateLimit(`mobile-network-bulk:")&&bulk.includes("AbortSignal.timeout(70_000)"),"bulk import is rate and time bounded");
+check(bulk.includes("JSON.stringify({ text })")&&!bulk.includes("body:raw"),"bulk proxy forwards only normalized text");
+check(bulkCore.includes("p.birthTimeKnown === true && timeValid")&&bulkCore.includes('birthTime: birthTimeKnown ? rawTime : "12:00"'),"bulk import never turns a missing or invalid time into a known noon birth");
+check(bulkPrompt.includes("birthTimeKnown:false")&&bulkPrompt.includes("Never infer that noon"),"bulk parser prompt preserves unknown-time provenance");
+check(network.includes("created_by_user_id=$2 AND org_id=$1")&&network.includes("COALESCE(is_archived, false)=false"),"Network reads owner and organization scoped profiles");
+check(network.includes("networkCaps.visualization_profiles")&&network.includes("lockedPeople"),"Network visualization is capped by authoritative entitlement");
+check(networkSifu.includes("profileById(profiles")&&networkSifu.includes("isSifuAnswerLang"),"Network Sifu binds saved profiles and all supported answer languages");
+check(networkSifu.includes("birth_time_known")&&networkSifu.includes('chart_mode: birthTimeKnown ? "4p" : "3p"'),"Network Sifu preserves saved three-pillar provenance");
+check(networkSifuCore.includes("LANG_ANSWER_DIRECTIVE")&&networkSifuCore.includes("answerLanguageInstruction(lang)"),"Network Sifu applies the shared nine-language answer directive");
+check(networkSifuCore.includes("3P_NO_HOUR")&&networkSifuCore.includes("do not infer an hour pillar"),"Network Sifu explicitly closes hour-dependent claims for unknown-time charts");
+check(networkPairBilling.includes("SELECT hour_balance FROM users WHERE id=$1 AND deleted_at IS NULL FOR UPDATE")&&networkSifuCore.includes("reserveNetworkAiOperation({"),"trial pair reservation serializes concurrent requests on the account");
+check(networkPairBilling.includes("ai:${feature}:${operationId}")&&networkPairBilling.includes("settleNetworkAiOperation")&&networkPairBilling.includes("refundNetworkAiOperation"),"pair billing has durable idempotent reserve, settle, and refund operations");
+check(networkPairBilling.includes("networkBillingRequestFingerprint")&&networkPairBilling.includes("billing_operation_mismatch")&&networkPairBilling.includes("billing_operation_in_progress")&&networkPairBilling.includes("billing_operation_settled"),"billing operation binds a canonical request and rejects every fresh replay state");
+check(billingMigration.includes("CREATE TABLE IF NOT EXISTS network_ai_operation_replays")&&billingMigration.includes("request_fingerprint")&&billingMigration.includes("octet_length(reply) BETWEEN 1 AND 65536")&&billingMigration.includes("expires_at"),"AI replay uses a 64 KiB bounded, expiring, owner- and request-scoped table outside the billing ledger");
+check(billingMigration.includes("GRANT SELECT, INSERT, UPDATE, DELETE ON network_ai_operation_replays TO hourkey_app"),"runtime role receives only replay-table DML privileges from the owner-run migration");
+check(networkPairBilling.includes("MAX_REPLAY_BYTES = 64 * 1024")&&networkPairBilling.includes("INSERT INTO network_ai_operation_replays")&&networkPairBilling.includes("request_fingerprint=$4")&&!networkPairBilling.includes("JSON.stringify({ charged, replay:"),"billing ledger stores replay metadata only, never the full AI answer");
+check(staleReconciler.includes("DELETE FROM network_ai_operation_replays WHERE expires_at<=now()")&&staleReconciler.includes("networkReplaysDeleted"),"hourly reconciliation deletes expired AI replay payloads and reports the result");
+check(networkSifuCore.includes('networkBillingRequestFingerprint("network_sifu"')&&networkSifuCore.includes("requestFingerprint,"),"Network Sifu binds billing to its normalized endpoint payload");
+check(networkSifuCore.includes("rsv.replay?.reply")&&networkSifuCore.includes("replay: { reply }"),"Network Sifu durably replays a settled answer without another AI execution");
+check(networkSifuCore.includes("settleReservation(full.length, full)")&&!networkSifuCore.includes("settleReservation(full.length, full.trim())"),"Network SSE replay preserves the exact emitted text");
+check(networkSifuCore.includes('entitlementDenied("network_team_ai_locked"')&&networkSifuCore.includes('entitlementDenied("network_pair_ai_locked"'),"Network Sifu enforces pair and team entitlements server-side");
+check(groupSifu.includes("isSifuAnswerLang")&&!groupSifu.includes('["th", "en", "zh"].includes'),"group Sifu shares the canonical nine-language validator");
+check(groupSifuCore.includes("AND created_by_user_id=$3")&&groupSifuCore.includes("[profileIds, orgId, session.userId]"),"group Sifu profile lookup is owner and organization scoped");
+check(groupSifuCore.includes("rows.length !== profileIds.length"),"group Sifu rejects a partially authorized profile set");
+check(groupSifuCore.includes("productAccess?.pages.network.pair_ai")&&groupSifuCore.includes("reserveNetworkAiOperation({"),"group Sifu enforces the shared pair entitlement and one-time trial quota");
+check(groupSifuCore.includes("settleReservation(full.length, full)")&&groupSifuCore.includes("settleReservation(reply.length, reply)"),"group Sifu settles streamed and JSON responses by exact answer length");
+check(groupSifuCore.includes("void refundReservation()")&&groupSifuCore.includes("await refundReservation()"),"group Sifu refunds failed, timed-out, and cancelled reservations");
+check(groupSifuCore.includes('networkBillingRequestFingerprint("sifu_group"')&&groupSifuCore.includes("requestFingerprint,"),"group Sifu binds billing to its normalized endpoint payload");
+check(groupSifuCore.includes("reserveResult.replay?.reply")&&groupSifuCore.includes("replay: { reply }"),"group Sifu durably replays a settled answer without another AI execution");
+check(groupSifuCore.includes("settleReservation(full.length, full)")&&!groupSifuCore.includes("settleReservation(full.length, full.trim())"),"group SSE replay preserves the exact emitted text");
+check(compareSifuCore.includes("claimCachedNetworkPairTrial")&&compareSifuCore.includes("reserveNetworkAiOperation({")&&compareSifuCore.includes("settleNetworkAiOperation")&&compareSifuCore.includes("refundNetworkAiOperation"),"compare Sifu shares the same serialized trial and durable billing contract");
+check(compareSifuCore.includes('networkBillingRequestFingerprint("sifu_compare"')&&compareSifuCore.includes("claimCachedNetworkPairTrial(session.userId, operationId, requestFingerprint)"),"compare Sifu binds both cache and live billing to the same request fingerprint");
+check(compareSifuCore.includes("reserved.replay?.reply")&&compareSifuCore.includes("reserve.replay?.reply")&&compareSifuCore.includes("replay: { reply:"),"compare Sifu durably replays settled JSON and stream answers without another AI execution");
+check(compareSifuCore.includes("settleBilling(aiText.length, warmup + aiText)"),"compare SSE replay preserves the original adjacent warmup and AI chunks");
+check(upload.includes("AND created_by_user_id=$3")&&upload.includes("[profileId, session.orgId, session.userId]"),"attachment profile binding requires the profile owner, not only a shared organization");
+
+console.log(`mobile Network/Sifu P0 passed: ${checks}/${checks}`);

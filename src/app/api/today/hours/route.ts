@@ -1,13 +1,17 @@
 /**
  * POST /api/today/hours
  *
- * รับ: { date: 'YYYY-MM-DD', userChart?: { day:{stem,branch}, ... } }
+ * รับ: { date: 'YYYY-MM-DD', profileId?: string }
  * คืน: { hours: [{label, branch, range, element, quality, isNow}] }
  *
- * 12 ชั่วยาม + quality score เทียบ DM (ถ้ามี userChart)
+ * 12 ชั่วยาม + quality score เทียบ DM จาก profile ที่ตรวจ ownership แล้ว
  */
 import { NextResponse } from "next/server";
 import { buildLiuShi, type ElementEN } from "@/lib/bazi-liushi";
+import { entitlementDenied } from "@/lib/product-entitlement";
+import { withinDayWindow } from "@/lib/product-date-gate";
+import { currentRequestProductAccess, nextRequiredPlan } from "@/lib/product-request-access";
+import { loadCalendarProfileContext } from "@/lib/calendar-profile-context";
 
 const BRANCH_ELEMENT: Record<string, "wood"|"fire"|"earth"|"metal"|"water"> = {
   子:"water", 丑:"earth", 寅:"wood", 卯:"wood", 辰:"earth", 巳:"fire",
@@ -150,21 +154,48 @@ async function _calcYongshenFromBirth(birthDate?: string, birthTime?: string, bi
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const date: string = body.date || new Date().toISOString().slice(0, 10);
-  const userChart = body.userChart;
+  const product = await currentRequestProductAccess(req);
+  const requestedProfileId = String(body.profileId || "").replace(/^p_/, "").trim();
+  if (requestedProfileId && (!product.session?.userId || !product.session?.orgId)) {
+    return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  }
+  const profileContext = requestedProfileId && product.session?.userId && product.session?.orgId
+    ? await loadCalendarProfileContext({
+        userId: product.session.userId,
+        orgId: product.session.orgId,
+        profileId: requestedProfileId,
+      })
+    : null;
+  if (requestedProfileId && !profileContext) {
+    return NextResponse.json({ error: "profile not found" }, { status: 404 });
+  }
+  // Personal timing inputs must come from the owned server profile only.
+  const userChart = profileContext?.pillars || null;
   const dmStem: string | undefined = userChart?.day?.stem;
   const dmEl = dmStem ? STEM_ELEMENT[dmStem] : "";
   const userBranch: string | undefined = userChart?.day?.branch;
   /* 18 พ.ค. · รับ yongshen/jishen หรือคำนวณภายในจาก birth · อาเจ๊กฮ้งสอน */
-  let yongshen: string[] = Array.isArray(body.yongshen) ? body.yongshen : [];
-  let jishen:   string[] = Array.isArray(body.jishen)   ? body.jishen   : [];
-  let dominantJishen: string | null = typeof body.dominantJishen === 'string' ? body.dominantJishen : null;
-  if (!yongshen.length && body.birthDate) {
-    const r = await _calcYongshenFromBirth(body.birthDate, body.birthTime, body.birthLng, body.birthTimeKnown !== false);
+  let yongshen: string[] = [];
+  let jishen:   string[] = [];
+  let dominantJishen: string | null = null;
+  const trustedBirthDate = profileContext?.birthDate || undefined;
+  const trustedBirthTime = profileContext?.birthTime || undefined;
+  const trustedBirthLng = profileContext?.birthLng ?? undefined;
+  const trustedBirthTimeKnown = profileContext?.birthTimeKnown ?? false;
+  if (!yongshen.length && trustedBirthDate) {
+    const r = await _calcYongshenFromBirth(trustedBirthDate, trustedBirthTime, trustedBirthLng, trustedBirthTimeKnown);
     yongshen = r.yongshen; jishen = r.jishen; dominantJishen = r.dominantJishen;
   }
 
   const [yy, mm, dd] = date.split("-").map(Number);
   if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400 });
+  const todayCaps = product.pages.today;
+  if (!withinDayWindow(date, todayCaps.day_window)) {
+    return NextResponse.json(
+      entitlementDenied("today_date_window", { plan: product.plan, max_days: todayCaps.day_window }),
+      { status: 403 }
+    );
+  }
 
   /* === คำนวณกิ่งวัน (วันนี้) เพื่อ detect 六沖 · อากงสอน === */
   let dayBranch = "";
@@ -184,7 +215,7 @@ export async function POST(req: Request) {
   const localDateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const isToday = localDateStr === date;
   /* 18 พ.ค. · A · ใช้ TST · ใกล้ขอบเปลี่ยนชั่วยามแม่นกว่า · longitude จาก birthLng ถ้ามี */
-  const nowLng = typeof body.birthLng === 'number' ? body.birthLng : 100.5018;
+  const nowLng = typeof trustedBirthLng === 'number' ? trustedBirthLng : 100.5018;
   const nowBranch = isToday ? await currentHourBranchTST(now, nowLng) : "";
 
   const QUAL_TH: Record<string, string> = { best:"ดีมาก", good:"ดี", ok:"กลาง", bad:"ห้าม" };
@@ -323,25 +354,43 @@ export async function POST(req: Request) {
   function rngStart(r: string): number { return parseInt(r.split("-")[0].split(":")[0], 10); }
   function rngEnd(r: string): number { return parseInt(r.split("-")[1].split(":")[0], 10); }
 
-  function findLongestRun(predicate: (q: string) => boolean): { start: string; end: string } | null {
-    let best: { from: number; to: number; len: number } | null = null;
-    let cur: { from: number; to: number; len: number } | null = null;
-    for (let i = 0; i < hours.length; i++) {
-      const h = hours[i];
-      if (predicate(h.quality)) {
-        const s = rngStart(h.range), e = rngEnd(h.range);
-        if (!cur) cur = { from: s, to: e, len: 1 };
-        else { cur.to = e; cur.len++; }
-      } else {
-        if (cur && (!best || cur.len > best.len)) best = cur;
-        cur = null;
-      }
+  /* R520 · calm/golden/avoid window = ช่วง "ต่อเนื่องจริง" ยาวสุดของ 12 ยาม
+   * 12 ยามเรียงเป็น "วง" 24 ชม. (子 23:00 → 亥 21:00-23:00) · 亥 ต่อ 子 ข้ามเที่ยงคืนได้
+   * เดิม (r519) สแกนเป็นเส้นตรง → ไม่ต่อ 亥→子 · ช่วงที่คร่อมเที่ยงคืนถูกตัด/สั้นผิด
+   *   เช่น 辰-day: ยามสงบจริง 21:00-07:00 (亥子丑寅卯) แต่เดิมรายงาน 23:00-07:00
+   * แก้: หา run ต่อเนื่องยาวสุดแบบวงกลม + ธง crosses_midnight ให้สื่อ wrap ชัด
+   *   (ค่า start/end เดิมยังคงรูปเดิม HH:00 เพื่อ backward-compat กับ passthrough ในแอพ) */
+  function findLongestRun(predicate: (q: string) => boolean): { start: string; end: string; crosses_midnight: boolean } | null {
+    const n = hours.length;                                   // 12
+    const match = hours.map(h => predicate(h.quality));
+    const count = match.filter(Boolean).length;
+    if (count === 0) return null;
+    if (count === n) {
+      /* ทุกยามเข้าเงื่อนไข = ต่อเนื่องทั้งวัน (23:00→23:00 รอบวง) */
+      const s = String(rngStart(hours[0].range)).padStart(2,"0") + ":00";
+      return { start: s, end: s, crosses_midnight: true };
     }
-    if (cur && (!best || cur.len > best.len)) best = cur;
-    if (!best) return null;
+    /* สแกน 2 รอบ (วงกลม) หา run ต่อเนื่องยาวสุด · reset เมื่อเจอยามที่ไม่เข้า */
+    let bestLen = 0, bestStart = -1, curLen = 0, curStart = -1;
+    for (let i = 0; i < 2 * n; i++) {
+      const idx = i % n;
+      if (match[idx]) {
+        if (curLen === 0) curStart = idx;
+        curLen++;
+        if (curLen > bestLen) { bestLen = curLen; bestStart = curStart; }
+      } else {
+        curLen = 0;
+      }
+      if (curLen === n) break;                                // กันเผื่อ (count<n จึงไม่ถึง)
+    }
+    if (bestLen === 0 || bestStart < 0) return null;
+    const endIdx = (bestStart + bestLen - 1) % n;
+    /* คร่อมเที่ยงคืน = run เริ่มที่ยาม子(23:00, index 0) หรือ run พันข้ามปลาย array (亥→子) */
+    const crosses_midnight = bestStart === 0 || bestStart + bestLen > n;
     return {
-      start: String(best.from).padStart(2,"0") + ":00",
-      end:   String(best.to).padStart(2,"0") + ":00",
+      start: String(rngStart(hours[bestStart].range)).padStart(2,"0") + ":00",
+      end:   String(rngEnd(hours[endIdx].range)).padStart(2,"0") + ":00",
+      crosses_midnight,
     };
   }
 
@@ -375,14 +424,57 @@ export async function POST(req: Request) {
     }
   } catch (_) { liushi = null; }
 
+  const detailedLimit = Math.max(0, Math.min(hours.length, todayCaps.detailed_hours));
+  const detailedIndexes = new Set<number>();
+  const currentIndex = hours.findIndex((hour) => hour.isNow);
+  if (product.plan === "free" && currentIndex >= 0) {
+    detailedIndexes.add(currentIndex);
+    if (detailedLimit > 1) detailedIndexes.add((currentIndex + 1) % hours.length);
+  }
+  const qualityRank: Record<string, number> = { best: 4, good: 3, ok: 2, bad: 1 };
+  [...hours.keys()]
+    .sort((a, b) => (qualityRank[hours[b].quality] || 0) - (qualityRank[hours[a].quality] || 0) || a - b)
+    .forEach((index) => {
+      if (detailedIndexes.size < detailedLimit) detailedIndexes.add(index);
+    });
+  const requiredPlan = nextRequiredPlan(product.plan);
+  const entitledHours = hours.map((hour, index) => {
+    if (detailedIndexes.has(index)) return { ...hour, locked: false };
+    return {
+      branch: hour.branch,
+      range: hour.range,
+      name_th: hour.name_th,
+      isNow: hour.isNow,
+      locked: true,
+      required_plan: requiredPlan,
+    };
+  });
+  const fullHourAccess = detailedLimit >= hours.length;
+
   return NextResponse.json({
     date,
+    profile_context: profileContext ? {
+      profileId: profileContext.profileId,
+      userId: profileContext.userId,
+      isSelf: profileContext.isSelf,
+      source: profileContext.source,
+      birthTimeKnown: profileContext.birthTimeKnown,
+    } : null,
     day_pillar: dayStem + dayBranch,
     day_branch: dayBranch,
     clash_branch: dayBranch ? BRANCH_CLASH[dayBranch] : null,
     user_branch: userBranch || null,
     yongshen, jishen,
-    hours, golden_window, avoid_window, calm_window,
-    liushi   /* deep · null ถ้า natal ไม่ครบ · UI ใช้ถ้ามี ไม่งั้น fallback hours */
+    hours: entitledHours,
+    golden_window: fullHourAccess ? golden_window : null,
+    avoid_window: fullHourAccess ? avoid_window : null,
+    calm_window: fullHourAccess ? calm_window : null,
+    liushi: product.plan === "master" ? liushi : null,
+    entitlement: {
+      plan: product.plan,
+      detailed_hours: detailedLimit,
+      total_hours: hours.length,
+      technical: product.plan === "master",
+    },
   });
 }

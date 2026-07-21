@@ -12,6 +12,7 @@
 import { pool } from "@/lib/db";
 import { getPackage, thbToSatang } from "./packages";
 import { createPendingAffiliateRewardForOrder } from "@/lib/affiliate";
+import { recomputePaidEntitlement } from "@/lib/mobile-store-ledger";
 
 export type FulfillResult =
   | { ok: true; status: "credited"; orderId: string; userId: string; yam: number; balance_after: number; tier: string | null; sub_expires_at: string | null }
@@ -153,13 +154,35 @@ export async function fulfillOrder(
       if (orgId) {
         await client.query(
           `INSERT INTO subscriptions
-             (org_id, tier, status, started_at, current_period_start, current_period_end,
+             (id, org_id, tier, status, started_at, current_period_start, current_period_end,
               payment_provider, payment_id, amount_cents, currency, interval)
-           VALUES ($1,$2,'active', now(), now(), now() + ($3 || ' days')::interval,
-              $4, $5, $6, 'thb', 'year')`,
-          [orgId, pkg.tier, String(pkg.days), payMethod, payRef, thbToSatang(pkg.price_thb)]
+           VALUES (gen_random_uuid(), $1,$2,'active', now(), now(), now() + ($3 || ' days')::interval,
+              $4, $5, $6, 'thb', $7)`,
+          [
+            orgId,
+            pkg.tier,
+            String(pkg.days),
+            payMethod,
+            payRef,
+            thbToSatang(pkg.price_thb),
+            pkg.days >= 365 ? "year" : "month",
+          ]
         );
       }
+
+      const source = await client.query<{ id: string }>(
+        `INSERT INTO product_entitlement_sources
+           (user_id,source_kind,source_ref,tier,status,starts_at,expires_at,metadata)
+         VALUES($1,'web',$2,$3,'active',now(),$4::timestamptz,$5::jsonb)
+         ON CONFLICT(source_kind,source_ref) DO UPDATE SET
+           status='active',expires_at=EXCLUDED.expires_at,updated_at=now()
+         RETURNING id`,
+        [order.user_id, `order:${orderId}`, pkg.tier, subExpiresAt, JSON.stringify({ gateway: payMethod, package_code: pkg.code })]
+      );
+      if (!source.rows[0]) throw new Error("web_entitlement_source_failed");
+      const selected = await recomputePaidEntitlement(client, order.user_id);
+      tier = selected?.tier || tier;
+      subExpiresAt = selected?.sub_expires_at || subExpiresAt;
     }
 
     await client.query("COMMIT");
@@ -277,17 +300,42 @@ export async function refundPaidOrder(
   reason: string,
   actorUserId?: string | null
 ): Promise<RefundOrderResult> {
-  const { reverseAffiliateRewardsForOrder } = await import("@/lib/affiliate");
   const clawback = await clawbackYamForOrder(orderId, reason);
   if (!clawback.ok) {
     return { ok: false, orderId, error: clawback.error };
   }
+  const entitlementClient = await pool.connect();
+  try {
+    await entitlementClient.query("BEGIN");
+    const order = await entitlementClient.query<{ user_id: string }>(
+      `SELECT user_id::text FROM orders WHERE id=$1 FOR UPDATE`,
+      [orderId]
+    );
+    if (!order.rows[0]) throw new Error("order_not_found");
+    await entitlementClient.query(
+      `UPDATE product_entitlement_sources
+          SET status='revoked',updated_at=now(),
+              metadata=metadata || $2::jsonb
+        WHERE source_kind='web' AND source_ref=$1 AND status<>'revoked'`,
+      [`order:${orderId}`, JSON.stringify({ refund_reason: reason.slice(0, 120), refunded_at: new Date().toISOString() })]
+    );
+    await recomputePaidEntitlement(entitlementClient, order.rows[0].user_id);
+    await entitlementClient.query("COMMIT");
+  } catch (e) {
+    await entitlementClient.query("ROLLBACK").catch(() => null);
+    return { ok: false, orderId, error: e instanceof Error ? e.message : String(e) };
+  } finally {
+    entitlementClient.release();
+  }
   let affiliate_reversed = 0;
   try {
-    const r = await reverseAffiliateRewardsForOrder(orderId, reason, actorUserId);
-    affiliate_reversed = Number(r?.reversed || 0);
+    const mod = await import("@/lib/affiliate").catch(() => null);
+    if (mod?.reverseAffiliateRewardsForOrder) {
+      const r = await mod.reverseAffiliateRewardsForOrder(orderId, reason, actorUserId);
+      affiliate_reversed = Number(r?.reversed || 0);
+    }
   } catch (e) {
-    console.warn("[refund] affiliate reverse failed", e instanceof Error ? e.message : String(e));
+    console.warn("[refund] affiliate reverse skipped", e instanceof Error ? e.message : String(e));
   }
   // Ensure order marked refunded even if no affiliate reward row
   try {

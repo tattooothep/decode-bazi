@@ -9,7 +9,7 @@
 //   fusion   = fusion5_jobs (งานอ่านดวง fusion5 · 1 job = 1 ถาม-ตอบ · คำตอบ = result->>'reply')
 //              + research_ai_messages feature='sifu_fusion' (โหมดแชทต่อเนื่อง fusion r385 · กลุ่มตาม conversation_key)
 import { NextResponse } from "next/server";
-import { requireAdmin, requirePermission } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
 
 const SOURCES = ["research", "sifu", "fusion"] as const;
@@ -93,7 +93,7 @@ function clampInt(v: string | null, def: number, min: number, max: number): numb
   return Math.max(min, Math.min(max, Number.isFinite(n) ? Math.floor(n) : def));
 }
 
-export type ChatRow = {
+type ChatRow = {
   id: string;
   source: Source;
   user_email: string | null;
@@ -108,8 +108,7 @@ export type ChatRow = {
 export async function GET(req: Request) {
   let admin;
   try {
-    admin = await requireAdmin();
-    await requirePermission("admin.users.read"); /* แชท user = ข้อมูลอ่อนไหว (ลายเซน C·A1) */
+    admin = await requirePermission("admin.research.read");
   } catch (e) {
     return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
   }

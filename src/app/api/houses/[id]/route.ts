@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const s = await getSession();
@@ -25,6 +26,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const { id } = await params;
   const b = await req.json().catch(() => ({} as any));
+  if (Array.isArray(b.family_members)) {
+    const access = await getProductAccess(s.userId);
+    const familyLimit = access?.pages.fengshui.multi_profile ? 30 : 1;
+    if (b.family_members.length > familyLimit) {
+      return NextResponse.json(
+        entitlementDenied("fengshui_multi_profile_locked", {
+          plan: access?.plan || "free",
+          requested: b.family_members.length,
+          max: familyLimit,
+        }),
+        { status: 403 }
+      );
+    }
+  }
   // allowed fields
   const allow = ['name','note','is_primary','lat','lng','address','face_angle','sit_angle',
                  'facing_mountain','facing_direction','method','floor_plan_url','family_members'];

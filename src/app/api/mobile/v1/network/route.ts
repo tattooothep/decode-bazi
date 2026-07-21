@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { q } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
 import { buildNetworkScorePayload } from "@/lib/scoring/network-score-payload";
+import { getProductAccess, PRODUCT_PAGE_ENTITLEMENTS } from "@/lib/product-entitlement";
 
 export const dynamic = "force-dynamic";
 
@@ -115,9 +116,19 @@ export async function GET(req: Request) {
   }
 
   const profiles = await loadProfiles(session.orgId, session.userId);
+  const productAccess = await getProductAccess(session.userId);
+  const networkCaps = productAccess?.pages.network || PRODUCT_PAGE_ENTITLEMENTS.free.network;
   const activeProfile = profiles.find((profile) => (centerId ? profile.id === centerId : profile.is_self)) || null;
   if (!activeProfile) {
-    return NextResponse.json({ ok: true, date, count: 0, active_profile: null, people: [] });
+    return NextResponse.json({
+      ok: true,
+      date,
+      count: 0,
+      active_profile: null,
+      people: [],
+      locked_people: [],
+      entitlement: { plan: productAccess?.plan || "free", ...networkCaps },
+    });
   }
 
   const self = profileToPerson(activeProfile);
@@ -125,10 +136,19 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "center profile has no day pillar" }, { status: 422 });
   }
 
-  const others = profiles
+  const allOthers = profiles
     .filter((profile) => profile.id !== activeProfile.id)
     .map((profile) => ({ profile, person: profileToPerson(profile) }))
     .filter((item): item is { profile: MobileNetworkProfile; person: NonNullable<ReturnType<typeof profileToPerson>> } => !!item.person);
+  const others = allOthers.slice(0, Math.max(0, networkCaps.visualization_profiles - 1));
+  const lockedPeople = allOthers.slice(Math.max(0, networkCaps.visualization_profiles - 1)).map(({ profile }) => ({
+    id: profile.id,
+    name: profile.name,
+    nickname: profile.nickname,
+    label: profileLabel(profile),
+    locked: true,
+    required_plan: productAccess?.plan === "trial" ? "premium" : "trial",
+  }));
 
   const useful = usefulElements(activeProfile.yongshen);
   const scorePayload = await buildNetworkScorePayload(
@@ -186,9 +206,15 @@ export async function GET(req: Request) {
         day_master: activeProfile.day_master,
       },
       people,
+      locked_people: lockedPeople,
+      entitlement: {
+        plan: productAccess?.plan || "free",
+        ...networkCaps,
+      },
       meta: {
         total_profiles: profiles.length,
         scored_profiles: people.length,
+        locked_profiles: lockedPeople.length,
       },
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }

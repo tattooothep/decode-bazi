@@ -10,12 +10,18 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { q1, q } from "@/lib/db";
 import { getDaymasterProfile } from "@/lib/daymaster-profile";
 import { getSession, type Session } from "@/lib/auth";
+import {
+  refundReservedHourForUser,
+  reserveHourForUser,
+  settleReservedHourByCharsForUser,
+} from "@/lib/spend-hours";
 
 const TIMEOUT_MS = 180_000;
 const CHILD_USER = "jarvis";
@@ -340,8 +346,7 @@ async function runClaudeStream(prompt: string, onChunk: (s: string) => void): Pr
       "--output-format", "stream-json",
       "--include-partial-messages",
       "--verbose",
-      "--dangerously-skip-permissions",
-      "--setting-sources", "user",
+      ...CLAUDE_TEXT_ONLY_ARGS,
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, {
@@ -450,6 +455,12 @@ export async function POST(req: Request) {
   const session = question ? await getSession() : null;
   /* 1 มิ.ย. · ถามซินแส (question mode = spawn Claude) ต้อง login ก่อน (กัน anonymous ยิง AI ฟรี · cost) */
   if (question && !session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  if (question && session) {
+    const reserve = await reserveHourForUser(session.userId, "sifu_chart_overview");
+    if (!reserve.ok) {
+      return NextResponse.json({ error: reserve.error, required: reserve.required, balance: reserve.balance }, { status: reserve.status });
+    }
+  }
   /* check cache first · ไม่ regen ถ้า exist (user ต้องกด force) */
   if (!question && !body.force) {
     const cached = await q1<{ content: string }>(
@@ -469,6 +480,7 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let accumulated = "";
+      let billingFinalized = false;
       let historyId: string | null = null;
       let historySaved = false;
       try {
@@ -494,6 +506,10 @@ export async function POST(req: Request) {
           } catch (historyErr) {
             console.error("[chart/overview] history save failed", historyErr);
           }
+          if (session && !billingFinalized) {
+            billingFinalized = true;
+            await settleReservedHourByCharsForUser(session.userId, full.length, "sifu_chart_overview");
+          }
         } else {
           /* save DB · upsert */
           await q(
@@ -506,6 +522,10 @@ export async function POST(req: Request) {
         }
         controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({hash, length: full.length, history_id: historyId, history_saved: historySaved})}\n\n`));
       } catch (e: any) {
+        if (question && session && !billingFinalized) {
+          billingFinalized = true;
+          await refundReservedHourForUser(session.userId, "sifu_chart_overview").catch(() => {});
+        }
         console.error("[chart/overview] stream error:", e instanceof Error ? e.message : String(e));
         controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({error: "internal_error"})}\n\n`));
       } finally {

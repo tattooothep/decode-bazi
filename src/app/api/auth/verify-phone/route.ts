@@ -1,7 +1,7 @@
 // POST /api/auth/verify-phone — ยืนยัน OTP · set session
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
-import { signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
+import { signSession, setAuthCookie, readSessionVersion } from "@/lib/auth";
 import { normalizePhone, verifyOtp } from "@/lib/phone-otp";
 import { userHasProfile } from "@/lib/profile-status";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ระบุเบอร์และรหัส OTP" }, { status: 400 });
   }
   /* 1 มิ.ย. · กันเดา OTP brute-force · 5 ครั้ง/นาที ต่อ (IP + เบอร์) */
-  const rl = rateLimit(`verifyotp:${clientIp(req)}:${phone}`, 5, 60_000);
+  const rl = await rateLimit(`verifyotp:${clientIp(req)}:${phone}`, 5, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "ลองยืนยันบ่อยเกินไป · กรุณารอสักครู่" },
@@ -37,10 +37,12 @@ export async function POST(req: Request) {
     [user.id]
   );
 
+  const sv = await readSessionVersion(user.id);
   const token = await signSession({
     userId: user.id,
     email: user.email,
     orgId: user.current_org_id,
+    sv,
   });
   await setAuthCookie(token);
 

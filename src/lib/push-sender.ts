@@ -11,6 +11,7 @@
  * เฟสถัดไป (ยังไม่ทำ): cron รายวัน day_sniper/daily_omens — ฟังก์ชันพร้อมเรียกได้เลย
  */
 import { q } from "@/lib/db";
+import { sendMobilePushToUser } from "@/lib/mobile-push";
 
 export type PushMessage = {
   title: string;
@@ -135,14 +136,30 @@ export async function sendToUser(
       }
     }
 
+    const mobile = await sendMobilePushToUser(userId, msg).catch(() => ({
+      accepted: 0,
+      failed: 0,
+      removed: 0,
+      skipped: "no_mobile_subscription" as const,
+    }));
+    report.sent += mobile.accepted;
+    report.failed += mobile.failed;
+    report.removed += mobile.removed;
+
     const subs = await q<SubRow>(
       `SELECT id, endpoint, p256dh, auth, fail_count FROM push_subscriptions WHERE user_id=$1`,
       [userId]
     );
-    if (!subs.length) { report.skipped = "no_subscription"; return report; }
+    if (!subs.length) {
+      if (!report.sent && !report.failed && !report.removed) report.skipped = "no_subscription";
+      return report;
+    }
 
     const wp = await getWebPush();
-    if (!wp) { report.skipped = "no_vapid"; return report; }
+    if (!wp) {
+      if (!report.sent && !report.failed && !report.removed) report.skipped = "no_vapid";
+      return report;
+    }
 
     const payload = JSON.stringify({
       title: String(msg.title || "").slice(0, 120),

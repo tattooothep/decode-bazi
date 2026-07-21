@@ -27,6 +27,8 @@
  */
 (function () {
   'use strict';
+  if (window.__HK_ZHCN_SCRIPT__) return;
+  window.__HK_ZHCN_SCRIPT__ = true;
 
   function isEnabled() {
     try {

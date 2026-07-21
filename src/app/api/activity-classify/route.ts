@@ -7,6 +7,7 @@
  * 17 พ.ค. 2026 · เจ้านาย idea
  */
 import { NextRequest, NextResponse } from "next/server";
+import { CLAUDE_TEXT_ONLY_ARGS } from "@/lib/ai-cli-security";
 
 // Map 13 activities → 8 UI buttons ของ /datepick (เก่ายังใช้ engine)
 const UI_BUTTON_MAP: Record<string, string> = {
@@ -213,7 +214,7 @@ export async function POST(req: NextRequest) {
       const ACTIVITY_FALLBACK = `Activity classifier for Chinese date selection. User said: "{{QUERY}}"\nPick ONE activity from this list (return JSON only):\n- break-ground (動土 ก่อสร้าง)\n- renovate (修造 รีโนเวท)\n- sign-contract (立約 เซ็นสัญญา)\n- close-deal (立券交易 ปิดดีล)\n- permit-license (上書 ขอใบอนุญาต)\n- loan-credit (求財 ขอกู้/เครดิต)\n- move-in (入宅 ย้ายบ้าน)\n- office-move (移徙 ย้ายออฟฟิศ)\n- open-shop (開市 เปิดกิจการ)\n- open-project (開業 เปิดโปรเจกต์/เปิดตัว)\n- travel (出行 เดินทาง)\n- long-travel (出行 เดินทางไกล)\n- negotiate (會見 เจรจา/พบ)\n- meet-senior (見貴 พบผู้ใหญ่)\n- ask-favor (求人 ขอความช่วยเหลือ)\n- partner-meeting (結交 พบพันธมิตร)\n- pitch-present (上陳 pitch/นำเสนอ)\n- interview (面試 สมัครงาน/สัมภาษณ์)\n- client-sales (求財 พบลูกค้า/ขายของ)\n- collect-money (納財 รับเงิน)\n- debt-followup (索債 ทวงหนี้/ตามเงิน)\n- pay-transfer (出財 จ่ายเงิน/โอน)\n- invest (財貨 ลงทุน/ซื้อ)\n- ship-goods (出貨 ส่งของ)\n- hire-onboard (受聘 จ้าง/รับพนักงาน)\n- take-position (上任 รับตำแหน่ง/เริ่มงานวันแรก)\n- board-meeting (會親友 ประชุมใหญ่/board)\n- wedding (嫁娶 แต่งงาน)\n- health (求醫 รักษา)\n- medical-visit (求醫 พบแพทย์)\n- surgery (手術 ผ่าตัดแบบเลือกเวลาได้)\n- study (入學 เรียน)\n- exam-study (考試 สอบ/สมัครเรียน)\n- ritual (祭祀 พิธี)\n- haircut (剃頭 ตัดผม)\n- authority (求官 ขออำนาจ/ตำแหน่ง)\nReturn JSON: {"activity":"key","reason":"why in Thai 1 line"}`;
       const prompt = loadPromptMd("prompts/activity-classify.md", ACTIVITY_FALLBACK).replace("{{QUERY}}", () => query);
       const result = await new Promise<string>((resolve, reject) => {
-        const p = spawn('sudo', ['-u', 'jarvis', 'claude', '--print', '--output-format', 'text'], { timeout: 8000 });
+        const p = spawn('sudo', ['-u', 'jarvis', 'claude', '--print', '--output-format', 'text', ...CLAUDE_TEXT_ONLY_ARGS], { timeout: 8000 });
         let out = '', err = '';
         p.stdout.on('data', d => out += d.toString());
         p.stderr.on('data', d => err += d.toString());

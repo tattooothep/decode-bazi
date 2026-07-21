@@ -1,6 +1,6 @@
 /**
- * POST/GET /api/export/summary · "Export สรุป PDF ด้วย AI" (registry: chart/palm/fusion · 50 ยาม/ครั้ง)
- * ─ async job แบบเดียวกับ /api/book: POST → spend 50 ยาม → INSERT running → คืน job_id → worker detached
+ * POST/GET /api/export/summary · "Export สรุป PDF ด้วย AI" (registry: chart/palm/fusion · 20 ยาม/ครั้ง)
+ * ─ async job แบบเดียวกับ /api/book: POST → spend 20 ยาม → INSERT running → คืน job_id → worker detached
  *   GET poll · deliver-once (seen_at) · refund ถ้าพัง · reconcileStale (running > 25 นาที / ก่อน server start)
  * ─ cache: 1 (user_id,page,lang,data_hash) done ที่ยังไม่หมดอายุ = reuse ฟรี (ไม่หักยาม) · running เดิม = คืน id เดิม
  * ─ registry: HANDLERS[page] (src/lib/export/{chart,palm,fusion}.ts) — resolveInputs(rawInputs,session)→{dataHash,ctx}
@@ -22,12 +22,14 @@ import { fusionHandler } from "@/lib/export/fusion";
 import { qimenHandler } from "@/lib/export/qimen";
 import { datepickHandler } from "@/lib/export/datepick";
 import { calendarHandler } from "@/lib/export/calendar";
+import { luopanHandler } from "@/lib/export/luopan";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const FEATURE = "export_pdf";
-const EXPORT_YAM = 50;
+const EXPORT_YAM = 20;
 const CACHE_TTL_DAYS = 30;
 const SERVER_STARTED_AT = new Date();
 
@@ -40,6 +42,7 @@ const HANDLERS: Record<string, PageHandler<any>> = {
   qimen: qimenHandler,
   datepick: datepickHandler,
   calendar: calendarHandler,
+  luopan: luopanHandler,
 };
 
 /* ── worker (detached · ไม่ throw ออกนอก · UPDATE row เสมอ) ── */
@@ -47,14 +50,15 @@ async function processExport(jobId: string, userId: string, page: string, lang: 
   try {
     const handler = HANDLERS[page];
     if (!handler) throw new Error("handler_missing");
-    const { markdown, cover, figs } = await handler.generate(ctx, lang);
+    const { markdown, cover, figs, document } = await handler.generate(ctx, lang);
     const result = {
-      version: "export_summary_v1",
+      version: document ? "export_summary_v2" : "export_summary_v1",
       page,
       lang,
       markdown,
       cover,
       figs,
+      ...(document ? { document } : {}),
       meta: { yam: { charged: EXPORT_YAM, refunded: 0 }, ms: Date.now() - started },
     };
     await q(`UPDATE export_jobs SET status='done', result=$2, updated_at=now() WHERE id=$1`, [jobId, JSON.stringify(result)]);
@@ -82,6 +86,18 @@ export async function POST(req: Request) {
     const page = String(body.page || "chart").trim();
     const handler = HANDLERS[page];
     if (!handler) return NextResponse.json({ error: "unsupported_page" }, { status: 400 });
+    const productAccess = await getProductAccess(userId);
+    const exportAllowed = page === "chart"
+      ? !!productAccess?.pages.chart.ai_summary_pdf
+      : page === "calendar"
+        ? !!productAccess?.pages.calendar.pdf
+        : true;
+    if (!exportAllowed) {
+      return NextResponse.json(
+        entitlementDenied(`${page}_pdf_locked`, { plan: productAccess?.plan || "free" }),
+        { status: 403 }
+      );
+    }
     const lang = isSifuAnswerLang(body.lang) ? String(body.lang) : "th";
     const rawInputs = (body.inputs || {}) as Record<string, unknown>;
 
@@ -104,7 +120,7 @@ export async function POST(req: Request) {
       [userId, page, lang, dataHash]);
     if (running) return NextResponse.json({ job_id: running.id, status: "running", reused: true });
 
-    // spend 50 ยาม (atomic · 402 ถ้าไม่พอ)
+    // spend 20 ยาม (atomic · 402 ถ้าไม่พอ)
     const spend = await spendHoursForUser(userId, EXPORT_YAM, FEATURE);
     if (!spend.ok) return NextResponse.json({ error: "insufficient_hours", needed: EXPORT_YAM, balance: spend.balance ?? 0 }, { status: 402 });
     chargedYam = EXPORT_YAM;

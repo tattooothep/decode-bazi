@@ -13,7 +13,8 @@ export type ScienceBinding = {
   fallbackModels: string[];
   knowledgeId: string;                 // คัมภีร์เฉพาะศาสตร์ (lock)
   needsBirthTime: boolean;             // true = ไม่มีเวลา → disable ทั้งศาสตร์; false = อาจอ่านแบบ degraded/no-time ได้
-  costYam: number;                     // ยามต่อ 1 ดวง
+  /** @deprecated billing 2026-07: fusion หักตามตัวอักษรคำตอบ (≈30 ตัว/1 ยาม) เหมือน sifu · ค่านี้เหลือเพื่อ UI เก่า/ประมาณการเท่านั้น ไม่ใช้ charge */
+  costYam: number;
   available: boolean;                  // false = engine ยังไม่พร้อม → "เร็วๆนี้"
   termGuard: string;                   // ศัพท์ที่ panel นี้ห้ามใช้ (กันปนศาสตร์)
 };
@@ -59,6 +60,7 @@ export const DISCIPLINES: Record<ScienceId, ScienceBinding> = {
 };
 
 export const JUDGE_MODEL = "claude-max-cli";
+/** @deprecated fusion billing = chars · ไม่ใช้ judge flat yam แล้ว */
 export const JUDGE_YAM = 5;
 
 /** ศาสตร์ที่เปิดใช้ได้จริงตอนนี้ */
@@ -66,7 +68,10 @@ export function availableSciences(): ScienceId[] {
   return (Object.keys(DISCIPLINES) as ScienceId[]).filter((k) => DISCIPLINES[k].available);
 }
 
-/** คิดยามรวม: Σ ศาสตร์ที่ติ๊ก × จำนวนดวง + judge (ติ๊กหลายศาสตร์ถึงมี judge) */
+/**
+ * @deprecated 2026-07 · fusion5 หักยามตามตัวอักษรคำตอบ (reserve 1 + drain) เหมือน /api/sifu
+ * เหลือไว้เพื่อ estimate UI / compatibility · ห้ามใช้เป็น SoT ตัดเงิน
+ */
 export function computeYam(sciences: ScienceId[], profileCount: number): number {
   const valid = sciences.filter((s) => DISCIPLINES[s]?.available);
   const panels = valid.reduce((sum, s) => sum + DISCIPLINES[s].costYam * profileCount, 0);

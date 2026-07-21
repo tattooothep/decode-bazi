@@ -1,18 +1,19 @@
 /**
- * GET /api/calendar?year=2026&month=5&dm=己
- *   หรือ &birthDate=1984-12-31&birthTime=13:15&birthLng=100.5018
+ * GET /api/calendar?year=2026&month=5&profileId=<owned-profile-id>
  * Returns: full month batch · pillar + lunar + tongshu + verdict + 6 goals
  *
  * Scoring · 3-layer
  *  - คะแนนหลัก: wrapper-7 strict · primary_yongshen เป็น用神จริง, xishen เป็น喜神รอง
  *  - 6 เป้าหมาย: mapping ten god ของวันต่อ DM (ตำราคลาสสิก)
- *  - fallback: wrapper-4 useful_god ถ้าไม่มี birthDate
+ *  - no profile: universal-only; personal birth inputs are never browser-owned
  */
 import { NextResponse } from "next/server";
 import { summarizeStars } from "@/lib/star-dict-th";
 import { computeIntentStatus, pickTopWorst } from "@/lib/tongshu-intents";
-import { universalDayScore, universalGoals } from "@/lib/tongshu-universal";
+import { personalGoals, scoreIntents, universalDayScore, universalGoals, type IntentScore } from "@/lib/tongshu-universal";
 import { computeDailyPersonalVerdict } from "@/lib/daily-personal-verdict";
+import { loadCalendarProfileContext } from "@/lib/calendar-profile-context";
+import { computeTongshuLive } from "@/lib/luck-engine/tongshu-live";
 import { currentDateWindow, withinMonthWindow } from "@/lib/product-date-gate";
 import { entitlementDenied, type ProductPlan } from "@/lib/product-entitlement";
 import type { ProductPageEntitlements } from "@/lib/product-page-entitlements";
@@ -21,7 +22,7 @@ type CalendarCacheEntry = { exp: number; payload: unknown };
 const CALENDAR_CACHE_TTL_MS = 10 * 60 * 1000;
 /* 10 ก.ค. · 96→2000: คีย์ส่วนตัว unique ต่อคน ที่ 5k user ช่อง 96 = hit แทบ 0 · payload ~18KB × 2000 ≈ 36MB/instance รับได้ */
 const CALENDAR_CACHE_MAX = Number(process.env.CALENDAR_CACHE_MAX || 2000);
-const CALENDAR_CACHE_VERSION = "calendar-v1";
+const CALENDAR_CACHE_VERSION = "calendar-v2";
 const calendarCacheGlobal = globalThis as typeof globalThis & {
   __hkCalendarMonthCache?: Map<string, CalendarCacheEntry>;
   __hkCalendarInflight?: Map<string, Promise<unknown>>;
@@ -35,6 +36,8 @@ calendarCacheGlobal.__hkCalendarInflight = CALENDAR_INFLIGHT;
 function calendarCacheKey(input: {
   year: number;
   month: number;
+  profileId: string;
+  userId: string;
   dmArg: string;
   birthDate: string;
   birthTime: string;
@@ -47,6 +50,8 @@ function calendarCacheKey(input: {
     CALENDAR_CACHE_VERSION,
     input.year,
     input.month,
+    input.userId || "anonymous",
+    input.profileId || "universal",
     input.dmArg || "",
     input.birthDate || "",
     input.birthTime || "",
@@ -83,6 +88,17 @@ function setCalendarCache(key: string, payload: unknown): void {
     if (firstKey) CALENDAR_MONTH_CACHE.delete(firstKey);
   }
   CALENDAR_MONTH_CACHE.set(key, { exp: Date.now() + CALENDAR_CACHE_TTL_MS, payload });
+}
+
+// tyme4ts returns a few labels in simplified Chinese. Calendar keeps one
+// canonical Traditional source; the CN presentation layer converts to Hans.
+function calendarHanCanonical(value: string): string {
+  return String(value || "")
+    .replace(/农历/g, "農曆")
+    .replace(/惊蛰/g, "驚蟄")
+    .replace(/小满/g, "小滿")
+    .replace(/芒种/g, "芒種")
+    .replace(/处暑/g, "處暑");
 }
 
 /* 19 พ.ค. spec #2 · 六沖 dict สำหรับ branchClash check ใน intent system */
@@ -153,16 +169,18 @@ type DayCell = {
   lunar: string;
   day_officer: string;
   twelve_star: string;
+  twenty_eight_star: string;
+  nine_star: number;
   ten_god: string | null;
   yi: string[];
   ji: string[];
-  gods: { good: string[]; bad: string[] };
+  gods: { good: string[]; bad: string[]; unknown: string[] };
   stars_detail?: ReturnType<typeof summarizeStars>;
   pillars_full?: {
     year:  { stem: string; branch: string; hex: { num: number; zh: string; th: string; en: string; symbol: string } | null };
     month: { stem: string; branch: string; hex: { num: number; zh: string; th: string; en: string; symbol: string } | null };
     day:   { stem: string; branch: string; hex: { num: number; zh: string; th: string; en: string; symbol: string } | null };
-    hour:  { stem: string; branch: string; hex: { num: number; zh: string; th: string; en: string; symbol: string } | null };
+    hour:  { stem: string; branch: string; reference_time: "23:00"; hex: { num: number; zh: string; th: string; en: string; symbol: string } | null };
   };
   verdict: {
     score: number;
@@ -173,24 +191,31 @@ type DayCell = {
     source?: string;
     engine?: string;
     legacy?: { score: number; label: string; level: string; raw: number; source: string };
-    role?: "yongshen" | "xishen" | "jishen" | "neutral";
+    role?: "yongshen" | "xishen" | "jishen" | "mixed" | "neutral";
     role_element?: string | null;
     role_label?: string;
   } | null;
   goals?: { wealth: number; career: number; love: number; family: number; health: number; travel: number };
   /* 19 พ.ค. spec #2 · 15 หมวด tongshu */
   intentStatus?: Record<string, 'good'|'neutral'|'bad'>;
-  topIntents?: Array<{ id: string; label: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
-  worstIntents?: Array<{ id: string; label: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
+  universal_intent_status?: Record<string, 'good'|'neutral'|'bad'>;
+  topIntents?: Array<{ id: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
+  worstIntents?: Array<{ id: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
+  universal_top_intents?: Array<{ id: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
+  universal_worst_intents?: Array<{ id: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
   /* 1 มิ.ย. · คะแนน Tongshu สากล (ไม่ขึ้นดวง) · โหมด "ทั่วไป·黃曆" */
   universal_verdict?: { score: number; level: string; hardBlocked: boolean };
   universal_goals?: Record<string, { score: number; level: string }>;
+  intent_scores?: {
+    universal: Record<string, IntentScore>;
+    personal: Record<string, IntentScore> | null;
+  };
 };
 
 const CALENDAR_INTENT_IDS = [
   "start_work", "sign_contract", "open_business", "negotiate", "invest", "loan",
   "marriage", "engagement", "gathering", "move_house", "construct", "renovate",
-  "install_bed", "travel", "pray_heal",
+  "install_bed", "travel", "pray_heal", "medical",
 ] as const;
 
 function shapeCalendarPayload(
@@ -216,6 +241,15 @@ function shapeCalendarPayload(
     const intentStatus = day.intentStatus
       ? Object.fromEntries(Object.entries(day.intentStatus).filter(([id]) => allowedIntentSet.has(id)))
       : undefined;
+    const universalIntentStatus = day.universal_intent_status
+      ? Object.fromEntries(Object.entries(day.universal_intent_status).filter(([id]) => allowedIntentSet.has(id)))
+      : undefined;
+    const intentScores = day.intent_scores ? {
+      universal: Object.fromEntries(Object.entries(day.intent_scores.universal || {}).filter(([id]) => allowedIntentSet.has(id))),
+      personal: day.intent_scores.personal
+        ? Object.fromEntries(Object.entries(day.intent_scores.personal).filter(([id]) => allowedIntentSet.has(id)))
+        : null,
+    } : undefined;
     const verdict = day.verdict && !fullDetail
       ? {
           score: day.verdict.score,
@@ -234,6 +268,7 @@ function shapeCalendarPayload(
       gods: {
         good: (day.gods?.good || []).slice(0, godLimit),
         bad: (day.gods?.bad || []).slice(0, godLimit),
+        unknown: (day.gods?.unknown || []).slice(0, godLimit),
       },
       stars_detail: fullDetail ? day.stars_detail : undefined,
       pillars_full: fullDetail ? day.pillars_full : undefined,
@@ -241,8 +276,12 @@ function shapeCalendarPayload(
       goals,
       universal_goals: universalGoals,
       intentStatus,
+      universal_intent_status: universalIntentStatus,
       topIntents: (day.topIntents || []).filter((item) => allowedIntentSet.has(item.id)),
       worstIntents: (day.worstIntents || []).filter((item) => allowedIntentSet.has(item.id)),
+      universal_top_intents: (day.universal_top_intents || []).filter((item) => allowedIntentSet.has(item.id)),
+      universal_worst_intents: (day.universal_worst_intents || []).filter((item) => allowedIntentSet.has(item.id)),
+      intent_scores: intentScores,
     };
   }) : [];
 
@@ -258,39 +297,6 @@ function shapeCalendarPayload(
       technical_detail: plan === "master",
     },
   };
-}
-
-/* ตำราคลาสสิก · ดาวมงคล/อัปมงคล · ใช้ classify gods array จาก tyme4ts
- * 17 พ.ค. fix · ครอบคลุม simplified+traditional · เพิ่มดาวที่ tyme4ts ส่งจริง */
-const GOOD_GODS = new Set([
-  // ดาวเทพ (吉星)
-  "天德","月德","天德合","月德合","天恩","月恩","母倉","母仓","吉慶","吉庆","解神","文昌","太陽","太阳","太陰","太阴","福星",
-  "三合","六合","天醫","天医","四相","天馬","天马","不將","不将","金堂","玉堂","益後","益后","續世","续世","明堂",
-  "青龍","青龙","金匱","金匮","寶光","宝光","司命","驛馬","驿马","天后","天倉","天仓","天富","天貴","天贵",
-  // เพิ่ม 17 พ.ค. (tyme4ts จริง)
-  "時德","时德","陽德","阳德","福生","王日","官日","守日","相日","民日","敬安","普護","普护","聖心","圣心","金匱","金匮","寶光","宝光",
-  "天巫","福德","天倉","天仓","三合","臨日","临日","驛馬","驿马","天后","天醫","天医","要安","玉宇","金堂","解神","除神","天恩",
-  "鳴吠","鸣吠","鳴吠對","鸣吠对","益後","益后","續世","续世","六儀","六仪","金匱","金匮",
-]);
-const BAD_GODS = new Set([
-  // ดาวร้าย (凶星)
-  "月破","大耗","五離","五离","八專","八专","復日","复日","重日","月害","月厭","月厌","月刑","五黃","五黄","劫煞","劫殺","劫杀",
-  "災煞","灾煞","歲煞","岁煞","致死","五虛","五虚","天吏","死神","死氣","死气","小耗","天賊","天贼",
-  "天牢","天罡","河魁","勾陳","勾陈","元武","白虎","朱雀","厭對","厌对","招搖","招摇","咸池","五墓",
-  "土符","土忌","土公","八風","八风","八座","四廢","四废","受死","重喪","重丧","重複","重复","八敗","八败",
-  // เพิ่ม 17 พ.ค. (tyme4ts จริง)
-  "月煞","月虛","月虚","血支","血忌","滅門","灭门","厭","厌","遊禍","游祸","天火","地火","獨火","独火",
-  "歸忌","归忌","往亡","小時","小时","土府","月建","月厭","月厌","死別","死别","披麻","咸池","八專","八专",
-  "九空","九坎","九焦","土王用事","荒蕪","荒芜","羅網","罗网","刀砧","天瘟","地瘟","河魁","白虎","勾絞","勾绞",
-]);
-function classifyGods(arr: string[]): { good: string[]; bad: string[] } {
-  const good: string[] = [], bad: string[] = [];
-  arr.forEach(g => {
-    if (GOOD_GODS.has(g)) good.push(g);
-    else if (BAD_GODS.has(g)) bad.push(g);
-    else good.push(g); /* unknown · เก็บฝั่ง good (default safe) */
-  });
-  return { good, bad };
 }
 
 /* 12 建除 day officer · ห้าม/ดี เด็ดขาดตาม 协纪辨方书 (ตำราอากง)
@@ -356,13 +362,14 @@ function classifyWrapper7DayRole(
   primary: string[],
   xishen: string[],
   jishen: string[],
-): { role: "yongshen" | "xishen" | "jishen" | "neutral"; element: string | null; label: string } {
+): { role: "yongshen" | "xishen" | "jishen" | "mixed" | "neutral"; element: string | null; label: string } {
   const hits = [stemEl, branchEl].filter(Boolean);
   const y = hits.find(e => primary.includes(e));
-  if (y) return { role: "yongshen", element: y, label: "用神" };
   const x = hits.find(e => xishen.includes(e));
-  if (x) return { role: "xishen", element: x, label: "喜神" };
   const j = hits.find(e => jishen.includes(e));
+  if ((y || x) && j) return { role: "mixed", element: null, label: "吉忌並見" };
+  if (y) return { role: "yongshen", element: y, label: "用神" };
+  if (x) return { role: "xishen", element: x, label: "喜神" };
   if (j) return { role: "jishen", element: j, label: "忌神" };
   return { role: "neutral", element: null, label: "平" };
 }
@@ -371,14 +378,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const year = parseInt(url.searchParams.get("year") || "0", 10);
   const month = parseInt(url.searchParams.get("month") || "0", 10);
-  const dmArg = url.searchParams.get("dm") || "";
-  const birthDate = url.searchParams.get("birthDate") || "";
-  const birthTime = url.searchParams.get("birthTime") || "12:00";
-  const birthTimeKnown = url.searchParams.get("birthTimeKnown") !== "false";
-  const birthLngRaw = parseFloat(url.searchParams.get("birthLng") || "100.5018");
-  const birthLng = Number.isFinite(birthLngRaw) ? birthLngRaw : 100.5018;
-  const gender = ((url.searchParams.get("gender") || "M").toLowerCase().startsWith("f") ? "F" : "M") as "M" | "F";
-  const dayBoundary = url.searchParams.get("dayBoundary") === "00:00" ? "00:00" : "23:00";
+  const requestedProfileId = String(url.searchParams.get("profileId") || "").replace(/^p_/, "").trim();
   if (!year || !month || month < 1 || month > 12) {
     return NextResponse.json({ error: "year + month (1-12) required" }, { status: 400 });
   }
@@ -389,7 +389,41 @@ export async function GET(req: Request) {
       { status: 403 }
     );
   }
-  const cacheKey = calendarCacheKey({ year, month, dmArg, birthDate, birthTime, birthTimeKnown, birthLng, gender, dayBoundary });
+  if (requestedProfileId && (!dateAccess.userId || !dateAccess.orgId)) {
+    return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  }
+  const profileContext = dateAccess.userId && dateAccess.orgId
+    ? await loadCalendarProfileContext({
+        userId: dateAccess.userId,
+        orgId: dateAccess.orgId,
+        profileId: requestedProfileId || null,
+      })
+    : null;
+  if (requestedProfileId && !profileContext) {
+    return NextResponse.json({ error: "profile not found" }, { status: 404 });
+  }
+
+  /* Personal inputs are server-owned. Browser birth fields and dm are ignored. */
+  const dmArg = profileContext?.pillars.day?.stem || "";
+  const birthDate = profileContext?.birthDate || "";
+  const birthTime = profileContext?.birthTime || "12:00";
+  const birthTimeKnown = profileContext?.birthTimeKnown ?? false;
+  const birthLng = profileContext?.birthLng ?? 100.5018;
+  const gender = profileContext?.gender || "M";
+  const dayBoundary = profileContext?.dayBoundary || "23:00";
+  const cacheKey = calendarCacheKey({
+    year,
+    month,
+    profileId: profileContext?.profileId || "",
+    userId: dateAccess.userId || "",
+    dmArg,
+    birthDate,
+    birthTime,
+    birthTimeKnown,
+    birthLng,
+    gender,
+    dayBoundary,
+  });
   const cached = getCalendarCache(cacheKey);
   if (cached) return calendarJson(
     shapeCalendarPayload(cached, dateAccess.plan, dateAccess.caps as ProductPageEntitlements["calendar"]),
@@ -427,8 +461,8 @@ export async function GET(req: Request) {
     let primaryYongshen: string[] = [];
     let xishenElements: string[] = [];
     let userDM = dmArg;
-    let source = "fallback";
-    let userPillars: any = null;
+    let source = profileContext ? "profile-db" : "universal-only";
+    let userPillars: any = profileContext?.pillars.day ? profileContext.pillars : null;
     let jishenElements: string[] = [];
     let dominantJishen: string | null = null;
 
@@ -440,12 +474,12 @@ export async function GET(req: Request) {
           const ex = extractFromSynth(wrapped.synth);
           primaryYongshen = listFromSynthField(wrapped.synth?.primary_yongshen);
           xishenElements = listFromSynthField(wrapped.synth?.xishen);
-          userDM = wrapped.calc.pillars.day.stem;
-          userPillars = wrapped.calc.pillars;
+          userDM = profileContext?.pillars.day?.stem || wrapped.calc.pillars.day.stem;
+          if (!userPillars) userPillars = wrapped.calc.pillars;
           friendly = primaryYongshen.length ? primaryYongshen : ex.yongshen; /* strict: primary only */
           jishenElements = ex.jishen;     /* explicit · ไม่ใช่ 5-friendly */
           dominantJishen = ex.dominantJishen;
-          source = "wrapper-7";
+          source = "profile-db+wrapper-7";
         }
       } catch (e) {
         console.warn("[/api/calendar] wrapper-7 failed", e);
@@ -468,15 +502,16 @@ export async function GET(req: Request) {
                 gmtOffsetHours: 7,
                 birthTimeKnown: false,
               });
-          userDM = calc.pillars.day.stem;
-          userPillars = calc.pillars;
+          userDM = profileContext?.pillars.day?.stem || calc.pillars.day.stem;
+          if (!userPillars) userPillars = calc.pillars;
           const top3 = ((calc.yongshen as any[]) || []).slice(0, 3);
           friendly = Array.from(new Set(top3.map((y: any) => y.element).filter(Boolean)));
           primaryYongshen = friendly.slice(0, 1);
           xishenElements = friendly.slice(1);
-          const allEls = ['wood','fire','earth','metal','water'];
-          jishenElements = allEls.filter(e => !friendly.includes(e));
-          source = "wrapper-6-fallback";
+          /* wrapper-6 does not provide an explicit 忌神 set. Unknown elements
+           * remain neutral instead of treating every non-top-3 element as bad. */
+          jishenElements = [];
+          source = "profile-db+wrapper-6-fallback";
         } catch (e) {
           console.warn("[/api/calendar] wrapper-6 fallback also failed", e);
         }
@@ -490,7 +525,7 @@ export async function GET(req: Request) {
         friendly = ug?.summary?.friendlyElements || [];
         primaryYongshen = friendly.slice(0, 1);
         xishenElements = friendly.slice(1);
-        source = "wrapper-4";
+        source = "profile-db+wrapper-4";
       } catch (_) {}
     }
 
@@ -499,6 +534,7 @@ export async function GET(req: Request) {
     const days: DayCell[] = [];
     for (let d = 1; d <= totalDays; d++) {
       const isoDate = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const tongshuLive = computeTongshuLive(isoDate);
       const st = tyme.SolarTime.fromYmdHms(year, month, d, 12, 0, 0);
       const lh = st.getLunarHour();
       const ld = lh.getLunarDay();
@@ -513,6 +549,8 @@ export async function GET(req: Request) {
 
       let verdict: any = null;
       let goals = undefined;
+      let personalBaseScore: number | null = null;
+      let personalTenGodBoost: Record<string, number> = {};
       if (friendly.length) {
         /* 18 พ.ค. unified · ใช้ computeUserDayScore + ส่ง tags + flags กลับเพื่ออธิบาย */
         let score: number;
@@ -572,22 +610,22 @@ export async function GET(req: Request) {
           };
         }
 
-        /* 6 goals · base = verdict score · + ten god boost */
-        const boost = tg ? GOAL_BOOST[tg] || {} : {};
-        goals = {
-          wealth: clip(score + (boost.wealth || 0)),
-          career: clip(score + (boost.career || 0)),
-          love:   clip(score + (boost.love   || 0)),
-          family: clip(score + (boost.family || 0)),
-          health: clip(score + (boost.health || 0)),
-          travel: clip(score + (boost.travel || 0)),
-        };
+        personalBaseScore = score;
+        personalTenGodBoost = tg ? GOAL_BOOST[tg] || {} : {};
       }
 
-      const godsArr = ld.getGods().slice(0, 16).map((g: { getName(): string }) => g.getName());
+      /* Score the complete star set. Entitlement limits are applied only when
+       * shaping the response, never before the science layer runs. */
+      const godsArr = ld.getGods().map((g: { getName(): string }) => g.getName());
+      const starSummary = summarizeStars(godsArr);
+      const cls = {
+        good: starSummary.good.map((entry) => entry.key),
+        bad: starSummary.bad.map((entry) => entry.key),
+        unknown: starSummary.unknown,
+      };
       /* 月柱 ของวันนี้ · ตามอากง 立春→立夏→芒種 (ถูก jieqi) */
       const dayMonthPillar = ec.getMonth().getName();
-      const officerName = ld.getDuty().getName();
+      const officerName = tongshuLive.officer;
       const rawYi = ld.getRecommends().map((x: { getName(): string }) => x.getName());
       const rawJi = ld.getAvoids().map((x: { getName(): string }) => x.getName());
       const fixed = filterYiJiByOfficer(rawYi, rawJi, officerName);
@@ -610,19 +648,35 @@ export async function GET(req: Request) {
         year:  { stem: ys, branch: yb, hex: mkHex(ys, yb) },
         month: { stem: ms, branch: mb, hex: mkHex(ms, mb) },
         day:   { stem: ds, branch: db, hex: mkHex(ds, db) },
-        hour:  { stem: hs, branch: hb, hex: mkHex(hs, hb) },
+        hour:  { stem: hs, branch: hb, reference_time: "23:00" as const, hex: mkHex(hs, hb) },
       };
-      /* 19 พ.ค. spec #2 · 15 หมวด intentStatus + top/worst สำหรับการ์ดวัน */
-      const cls = classifyGods(godsArr);
+      /* Universal and personal intent layers are deliberately independent. */
       const userBranch = userPillars?.day?.branch || "";
       const branchClash = userBranch && SIX_CLASHES_CAL[userBranch] === branch;
-      const intentStatus = computeIntentStatus(fixed.yi, fixed.ji, cls.bad, !!branchClash);
-      const topWorst = pickTopWorst(intentStatus, 'th');
+      const universalIntentStatus = computeIntentStatus(fixed.yi, fixed.ji, cls.bad, false);
+      const personalIntentStatus = userPillars
+        ? computeIntentStatus(fixed.yi, fixed.ji, cls.bad, !!branchClash)
+        : undefined;
+      const universalTopWorst = pickTopWorst(universalIntentStatus);
+      const personalTopWorst = personalIntentStatus ? pickTopWorst(personalIntentStatus) : { top: [], worst: [] };
       /* 1 มิ.ย. · คะแนน Tongshu สากล (ไม่ขึ้นดวง user) · โหมด "ทั่วไป·黃曆" · ฉันทามติ 3 agent + พ่อ APPROVE */
-      const twelveStarName = ld.getTwelveStar().getName();
-      const starSummary = summarizeStars(godsArr);
+      const twelveStarName = tongshuLive.spirit;
       const universalVerdict = universalDayScore(officerName, twelveStarName, starSummary, fixed.yi, fixed.ji, godsArr);
-      const universalGoalsObj = universalGoals(universalVerdict.score, intentStatus, universalVerdict.hardBlocked);
+      const universalGoalsObj = universalGoals(universalVerdict.score, universalIntentStatus, universalVerdict.hardBlocked);
+      if (personalBaseScore != null && personalIntentStatus) {
+        goals = personalGoals(
+          personalBaseScore,
+          personalTenGodBoost,
+          personalIntentStatus,
+          universalVerdict.hardBlocked,
+        ) as DayCell["goals"];
+      }
+      const intentScores = scoreIntents(
+        universalVerdict.score,
+        universalIntentStatus,
+        personalBaseScore,
+        personalIntentStatus,
+      );
       days.push({
         date: isoDate,
         day: d,
@@ -631,9 +685,11 @@ export async function GET(req: Request) {
         stem, branch,
         stem_element: stemEl,
         branch_element: branchEl,
-        lunar: ld.toString(),
+        lunar: calendarHanCanonical(ld.toString()),
         day_officer: officerName,
         twelve_star: twelveStarName,
+        twenty_eight_star: tongshuLive.xiu,
+        nine_star: tongshuLive.nineStar,
         ten_god: tg,
         yi: fixed.yi.slice(0, 8),
         ji: fixed.ji.slice(0, 8),
@@ -644,12 +700,16 @@ export async function GET(req: Request) {
         verdict,
         goals,
         /* 19 พ.ค. spec #2 · intent system */
-        intentStatus,
-        topIntents: topWorst.top,
-        worstIntents: topWorst.worst,
+        intentStatus: personalIntentStatus,
+        universal_intent_status: universalIntentStatus,
+        topIntents: personalTopWorst.top,
+        worstIntents: personalTopWorst.worst,
+        universal_top_intents: universalTopWorst.top,
+        universal_worst_intents: universalTopWorst.worst,
         /* 1 มิ.ย. · คะแนนสากล (Tongshu · ไม่ขึ้นดวง) · โหมด "ทั่วไป·黃曆" */
         universal_verdict: universalVerdict,
         universal_goals: universalGoalsObj,
+        intent_scores: intentScores,
       });
     }
 
@@ -668,7 +728,7 @@ export async function GET(req: Request) {
         let jq = "";
         try {
           const sd = tyme.SolarTime.fromYmdHms(year, month, days[i].day, 12, 0, 0).getSolarDay();
-          jq = sd.getTerm().getName();
+          jq = calendarHanCanonical(sd.getTerm().getName());
         } catch (_) {}
         transitions.push({ from_day: days[i].day, pillar: mp, jieqi: jq });
         lastPillar = mp;
@@ -685,14 +745,14 @@ export async function GET(req: Request) {
     try {
       const sd = st1.getSolarDay();
       const jq = sd.getTerm();
-      jieqiCurrent = jq.getName();
-      jieqiNext = jq.next(2).getName();
+      jieqiCurrent = calendarHanCanonical(jq.getName());
+      jieqiNext = calendarHanCanonical(jq.next(2).getName());
       /* loop หา jieqi เปลี่ยนภายในเดือน */
       let lastTerm = jieqiCurrent;
       for (let i = 0; i < days.length; i++) {
         try {
           const sd2 = tyme.SolarTime.fromYmdHms(year, month, days[i].day, 0, 0, 0).getSolarDay();
-          const t = sd2.getTerm().getName();
+          const t = calendarHanCanonical(sd2.getTerm().getName());
           if (t !== lastTerm) {
             jieqiList.push({ name: t, day: days[i].day, date: days[i].date });
             lastTerm = t;
@@ -703,6 +763,21 @@ export async function GET(req: Request) {
 
     const payload = {
       year, month,
+      personal_available: Boolean(profileContext && userPillars?.day && friendly.length),
+      profile_context: profileContext ? {
+        profileId: profileContext.profileId,
+        userId: profileContext.userId,
+        isSelf: profileContext.isSelf,
+        relationshipType: profileContext.relationshipType,
+        source: profileContext.source,
+        name: profileContext.name,
+        birthTimeKnown: profileContext.birthTimeKnown,
+        confidence: profileContext.birthTimeKnown && profileContext.pillars.hour
+          ? "full_birth_time"
+          : profileContext.pillars.day
+            ? "no_birth_time"
+            : "day_master_only",
+      } : null,
       dm: userDM,
       friendly_elements: friendly,
       primary_yongshen: primaryYongshen.length ? primaryYongshen : friendly,

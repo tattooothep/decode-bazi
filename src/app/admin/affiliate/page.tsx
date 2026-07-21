@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import AffiliateAdmin from "./view";
 
 export const metadata = { title: "Affiliate · Admin" };
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Page() {
   try {
-    await requireAdmin();
+    await requirePermission("admin.affiliate.members.read");
   } catch {
     redirect("/signup?tab=login&next=/admin/affiliate");
   }

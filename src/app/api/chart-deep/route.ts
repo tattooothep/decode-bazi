@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { NO_STORE_HEADERS, scrubFormulaTrace } from "@/lib/api-scrub";
 import { getSession } from "@/lib/auth";
 import { loadProfileChart } from "../../chart-v2/load-profile";
+import { entitlementDenied, getProductAccess } from "@/lib/product-entitlement";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -19,6 +20,13 @@ export async function GET(req: Request) {
   const session = await getSession();
   if (!session?.orgId) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE_HEADERS });
+  }
+  const productAccess = await getProductAccess(session.userId);
+  if (!productAccess || (productAccess.pages.chart.detail !== "full" && productAccess.pages.chart.detail !== "technical")) {
+    return NextResponse.json(
+      entitlementDenied("chart_deep_locked", { plan: productAccess?.plan || "free", required_plan: "premium" }),
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
   }
 
   const r = await loadProfileChart(profileId, session.orgId);
@@ -104,5 +112,12 @@ export async function GET(req: Request) {
     },
   };
 
-  return NextResponse.json(scrubFormulaTrace(response), { headers: NO_STORE_HEADERS });
+  return NextResponse.json({
+    ...scrubFormulaTrace(response) as Record<string, unknown>,
+    entitlement: {
+      plan: productAccess.plan,
+      detail: productAccess.pages.chart.detail,
+      technical_detail: productAccess.pages.chart.detail === "technical",
+    },
+  }, { headers: NO_STORE_HEADERS });
 }
