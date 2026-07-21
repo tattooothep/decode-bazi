@@ -7,7 +7,7 @@ import {
   findOrCreateUser,
   linkGoogleToUser,
 } from "@/lib/oauth-google";
-import { getSession, signSession, setAuthCookie } from "@/lib/auth";
+import { getSession, signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
 import { userHasProfile } from "@/lib/profile-status";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
 
@@ -81,10 +81,12 @@ export async function GET(req: Request) {
     }).catch((e) => console.warn("[affiliate] google attribution failed", e instanceof Error ? e.message : String(e)));
   }
 
+  const sv = await readSessionVersion(user.id);
   const token = await signSession({
     userId: user.id,
     email: user.email,
     orgId: user.current_org_id,
+    sv,
   });
   await setAuthCookie(token);
 

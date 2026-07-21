@@ -14,6 +14,7 @@ import { q1 } from "@/lib/db";
 import { getPackage, listPackagesPublic } from "@/lib/payment/packages";
 import { createStripeCheckout } from "@/lib/payment/stripe";
 import { createOmiseCharge } from "@/lib/payment/omise";
+import { markCouponUsed, resolveCheckoutPricing } from "@/lib/payment/coupons";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,27 +57,41 @@ export async function POST(req: Request) {
     gateway?: string;
     omiseToken?: string;
     returnPath?: string;
+    couponCode?: string;
+    coupon?: string;
   };
 
-  const pkg = getPackage(body.packageCode);
-  if (!pkg) {
+  const pricing = await resolveCheckoutPricing(
+    String(body.packageCode || ""),
+    body.couponCode || body.coupon,
+    getPackage
+  );
+  if (!pricing.ok) {
     return NextResponse.json(
-      { error: "invalid_package", available: Object.keys(listPackagesPublic().reduce((m, p) => ((m[p.code] = 1), m), {} as Record<string, number>)) },
+      {
+        error: pricing.error,
+        available: Object.keys(listPackagesPublic().reduce((m, p) => ((m[p.code] = 1), m), {} as Record<string, number>)),
+      },
       { status: 400 }
     );
   }
+  const pkg = pricing.pkg;
+  const amountThb = pricing.applied?.amount_thb ?? pkg.price_thb;
+  const yamGranted = pricing.applied?.yam ?? pkg.yam;
+  const couponCode = pricing.applied?.code || null;
 
   const method: "promptpay" | "card" = body.method === "card" ? "card" : "promptpay";
   const gateway: "omise" | "stripe" = body.gateway === "omise" ? "omise" : "stripe";
 
-  // สร้าง order pending (amount/yam จาก config เท่านั้น)
+  // สร้าง order pending — ราคา/ยามจาก packages.ts ± coupon server-side เท่านั้น
   const order = await q1<{ id: string }>(
-    `INSERT INTO orders(user_id, package_code, amount_thb, yam_granted, status, pay_method)
-       VALUES ($1, $2, $3, $4, 'pending', $5) RETURNING id`,
-    [s.userId, pkg.code, pkg.price_thb, pkg.yam, `${gateway}_${method}`]
+    `INSERT INTO orders(user_id, package_code, amount_thb, yam_granted, coupon_code, status, pay_method)
+       VALUES ($1, $2, $3, $4, $5, 'pending', $6) RETURNING id`,
+    [s.userId, pkg.code, amountThb, yamGranted, couponCode, `${gateway}_${method}`]
   );
   if (!order) return NextResponse.json({ error: "order_create_failed" }, { status: 500 });
   const orderId = order.id;
+  if (couponCode) await markCouponUsed(couponCode);
 
   const site = baseUrl(req);
   const returnPath = safeReturnPath(body.returnPath);
@@ -89,7 +104,7 @@ export async function POST(req: Request) {
       const email = await q1<{ email: string }>(`SELECT email FROM users WHERE id=$1`, [s.userId]);
       const r = await createStripeCheckout({
         orderId,
-        amountThb: pkg.price_thb,
+        amountThb,
         packageCode: pkg.code,
         packageName: pkg.name.th,
         method,
@@ -107,15 +122,16 @@ export async function POST(req: Request) {
         method,
         mock: r.mock,
         redirectUrl: r.redirectUrl,
-        amount_thb: pkg.price_thb,
-        yam: pkg.yam,
+        amount_thb: amountThb,
+        yam: yamGranted,
+        coupon: pricing.applied,
       });
     }
 
     // omise
     const r = await createOmiseCharge({
       orderId,
-      amountThb: pkg.price_thb,
+      amountThb,
       packageCode: pkg.code,
       method,
       omiseToken: body.omiseToken,
@@ -130,8 +146,9 @@ export async function POST(req: Request) {
       mock: r.mock,
       qrImage: r.qrImage,
       redirectUrl: r.authorizeUri,
-      amount_thb: pkg.price_thb,
-      yam: pkg.yam,
+      amount_thb: amountThb,
+      yam: yamGranted,
+      coupon: pricing.applied,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

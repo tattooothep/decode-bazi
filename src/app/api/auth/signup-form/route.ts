@@ -4,7 +4,7 @@
  * Returns 303 redirect to /input (success) or /signup?err=... (error)
  */
 import { q1 } from "@/lib/db";
-import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { hashPassword, signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
 import crypto from "node:crypto";
 

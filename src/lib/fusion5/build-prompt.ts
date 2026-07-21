@@ -38,6 +38,8 @@ export type BirthData = {
   birthDate?: string;
   birthTime?: string;
   timezone?: string;
+  /** r510-tz: ชื่อสถานที่เกิด (profiles.birth_location_name / guest place) — แนบเข้า prompt เป็นบริบทถิ่นเกิด */
+  place?: string;
 };
 export type FusionTimingReference = {
   refDate: Date;
@@ -47,13 +49,20 @@ export type FusionTimingReference = {
 };
 
 const CANON_DIR = join(process.cwd(), "data/library/astro-canon");
-export const CANON_TEXT_MAX_CHARS = 56_000;
+/* r510-canon-env: backport กลไก env override จาก prod r509 (ฟังก์ชันคัดลอกตรง ไม่แต่งเอง)
+ * ⚠️ default ฝั่ง dev คงค่าเดิม 56K/118K — ไม่ตั้ง env = พฤติกรรมเดิมทุกไบต์ (prod default 1.2M/1.3M อยู่ในโค้ด release แยกต่างหาก) */
+function fusionBudgetInt(name: string, fallback: number, min: number, max: number): number {
+  const n = Number(process.env[name]);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, Math.floor(n)));
+}
+export const CANON_TEXT_MAX_CHARS = fusionBudgetInt("FUSION_CANON_TEXT_MAX_CHARS", 56_000, 56_000, 2_000_000);
 export const CANON_TEXT_MIN_CHARS = 4_000;
 // r377 · ziwei แนบ 四化斷訣 (~1.9K) ทุก request (packet มี 生年四化 เสมอ) — ให้ headroom เพิ่มเพื่อไม่เบียดคัมภีร์เดิมใน 56K · prompt รวมยังคุมด้วย FUSION_PANEL_PROMPT_MAX_CHARS เดิม
 export const ZIWEI_SIHUA_CANON_EXTRA_CHARS = 2_000;
 // 118K รองรับ 4 ดวง (ผัง×4 + pair packet 6 คู่) · ต้อง < SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS (120000) ฝั่ง /api/sifu
-export const FUSION_PANEL_PROMPT_MAX_CHARS = 118_000;
-export const JUDGE_PANEL_REPLY_MAX_CHARS = 8_000;
+export const FUSION_PANEL_PROMPT_MAX_CHARS = fusionBudgetInt("FUSION_PANEL_PROMPT_MAX_CHARS", 118_000, 118_000, 2_200_000);
+export const JUDGE_PANEL_REPLY_MAX_CHARS = fusionBudgetInt("FUSION_JUDGE_PANEL_REPLY_MAX_CHARS", 8_000, 8_000, 200_000);
 
 type CanonMode = "verbatim" | "summary";
 type CanonLicenseClass = "public_domain" | "project_summary" | "project_synthesis" | "summary_only" | "licensed_internal" | "unknown";
@@ -103,6 +112,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "05-dignity-lots-specificity.md": { title: "Western dignity/lots/sect specificity pack · bounds/triplicity/face/lots evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "06-relationship-nativity-specificity.md": { title: "Western relationship and nativity specificity pack · 5th/7th/Venus/Mars/Moon/Sun/lots/pair evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "07-career-money-health-specificity.md": { title: "Western career/money/health specificity pack · MC/2nd/6th/8th/10th/11th/12th/lots/timing evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
+    "58-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "08-natal-life-direction-specificity.md": { title: "Western natal life-direction specificity pack · Asc/chart-ruler/Sun/Moon/sect/dominant/aspects/lots evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "09-home-family-travel-study-specificity.md": { title: "Western home/family/children/travel/study specificity pack · 3rd/4th/5th/9th/12th/lots/timing evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "10-people-network-collaboration-specificity.md": { title: "Western people/network/collaboration specificity pack · 3rd/6th/7th/10th/11th houses and people-role evidence weighting", sourceUrl: "local:private/restricted-sources/western/public-domain+licensed-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -166,6 +176,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "07-functional-topic-specificity.md": { title: "Jyotish functional topic specificity pack · bhava/karaka/varga/bala/dasha evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+incoming-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "08-compatibility-specificity.md": { title: "Jyotish compatibility and marriage specificity pack · Tara/Moon/D9/dasha/pair evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "09-career-wealth-health-specificity.md": { title: "Jyotish career/wealth/health specificity pack · 10th/D10/2nd/11th/5th/9th/6th/8th/12th evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
+    "60-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "10-natal-life-direction-specificity.md": { title: "Jyotish natal life-direction specificity pack · Lagna/Moon/Sun/bhava/varga/bala/dasha evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "11-home-family-travel-study-specificity.md": { title: "Jyotish home/family/children/travel/study specificity pack · 3rd/4th/5th/9th/12th/varga/dasha evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "12-people-network-collaboration-specificity.md": { title: "Jyotish people/network/collaboration specificity pack · 3rd/6th/7th/10th/11th bhava and role evidence weighting", sourceUrl: "local:private/restricted-sources/vedic/public-domain+licensed-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -233,6 +244,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "10-palace-sihua-specificity.md": { title: "Zi Wei palace/sihua/timing specificity pack · palace-topic/三方四正/四化 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "11-pair-relationship-specificity.md": { title: "Zi Wei pair and relationship specificity pack · 夫妻/命宮/crossSiHua/timing evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "12-career-wealth-health-specificity.md": { title: "Zi Wei career/wealth/health specificity pack · 官祿/財帛/田宅/疾厄 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
+    "63-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "13-natal-life-direction-specificity.md": { title: "Zi Wei natal life-direction specificity pack · 命宮/身宮/三方四正/四化/大限 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "14-home-family-travel-study-specificity.md": { title: "Zi Wei home/family/children/travel/study specificity pack · 田宅/子女/父母/兄弟/遷移 evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "15-people-network-collaboration-specificity.md": { title: "Zi Wei people/network/collaboration specificity pack · 兄弟/僕役/夫妻/父母/官祿 role evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -302,6 +314,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "10-degree-limit-specificity.md": { title: "Qizheng degree lord/body lord/limit specificity pack · 命度/度主/身主/行限 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-summary", licenseClass: "project_summary", mode: "summary" },
     "11-pair-relationship-specificity.md": { title: "Qizheng pair and relationship specificity pack · 妻妾/命主/度主/身主/恩用仇難/timing evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-relationship-summary", licenseClass: "project_summary", mode: "summary" },
     "12-career-wealth-health-specificity.md": { title: "Qizheng career/wealth/health specificity pack · 官祿/財帛/田宅/疾厄/命度/身主/行限 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-topic-summary", licenseClass: "project_summary", mode: "summary" },
+    "63-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · แปลหมวดอาชีพโบราณ→ปัจจุบัน (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "13-natal-life-direction-specificity.md": { title: "Qizheng natal life-direction specificity pack · 命主/命度/身主/恩用仇難/格局/行限 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-natal-summary", licenseClass: "project_summary", mode: "summary" },
     "14-home-family-travel-study-specificity.md": { title: "Qizheng home/family/children/travel/study specificity pack · 田宅/男女/兄弟/遷移/福德 evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-life-field-summary", licenseClass: "project_summary", mode: "summary" },
     "15-people-network-collaboration-specificity.md": { title: "Qizheng people/network/collaboration specificity pack · 兄弟/奴僕/官祿/妻妾/福德 role evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-people-summary", licenseClass: "project_summary", mode: "summary" },
@@ -355,6 +368,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
 				  },
   // ศาสตร์ที่ 6 · ยูเรเนียน (Uranian / Hamburger Schule) — คัมภีร์ Witte verbatim (PD · life+70 → PD 1 ม.ค. 2012)
   uranian: {
+    "91-career-modern-bridge.md": { title: "สะพานอาชีพยุคใหม่ · Witte 4 TNP แท้ (r510 · 5 ลายเซ็น)", sourceUrl: "local:project/career-modern-bridge", licenseClass: "project_synthesis", mode: "summary" },
     "00-source-policy.md": { title: "Uranian source policy (Witte PD scope · round 1)", sourceUrl: "local:uranian/source-policy", licenseClass: "project_summary", mode: "summary" },
     "01-source-policy-conclusion.md": { title: "Uranian source-policy conclusion · what PD Witte canon can/cannot do (method+Halbsumme=OK · A–Z lookup dictionary=Regelwerk Rudolph ยังไม่ PD)", sourceUrl: "local:uranian/source-policy-conclusion", licenseClass: "project_summary", mode: "summary" },
     "10-witte-canon-de.md": { title: "Alfred Witte canon verbatim (DE) · Planetenbild/Halbsumme/sensitive Punkte/Auslösung/Direktionen/vergleichende Astrologie/Häuser/Transneptun(Cupido/Hades/Kronos/Zeus)/Fallbeispiele — Astrologische Rundschau + Astrologische Blätter 1913–1925", sourceUrl: "https://astrax.de (Kulturgut Astrologie e.V.) · AR/AB Jg.1913–1925", licenseClass: "public_domain", mode: "verbatim" },
@@ -880,7 +894,7 @@ function prioritizeToFront(list: string[], ...files: string[]): void {
   list.unshift(...present);
 }
 
-function selectCanonFilesForPrompt(science: ScienceId, question: string, births: BirthData[]): string[] | undefined {
+function selectCanonFilesForPrompt(science: ScienceId, question: string, births: BirthData[], selOpts?: { bookMode?: boolean }): string[] | undefined {
   if (science === "bazi") return undefined;
   const intent = canonIntentFromQuestion(question, births);
   const files: string[] = [];
@@ -1057,6 +1071,11 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
       prioritizeAfterMethod(files, "10-degree-limit-specificity.md", "08-topic-evidence-gates.md", "13-natal-life-direction-specificity.md", "09-star-nature-operational-summary.md", "05-xingxian.md");
     } else {
       prioritizeAfterMethod(files, "10-degree-limit-specificity.md", "08-topic-evidence-gates.md", "09-star-nature-operational-summary.md");
+    }
+    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
+    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
+      pushUnique(files, "63-career-modern-bridge.md");
+      prioritizeAfterMethod(files, "63-career-modern-bridge.md");
     }
     return files;
   }
@@ -1885,6 +1904,11 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     //   (ก่อน summary/topic ที่ยอมให้ shrink) · droppedForBudget (r398) ยังโปร่งใสถ้าเบียดจนล้น · ไม่ขึ้นเพดาน
     pushUnique(files, "ziwei-quanshu-core.md", "07-quanshu-xingyuan-wenda.md");
     prioritizeAfterMethod(files, ziweiSihuaToken, "09-evidence-gates-topic-router.md", "10-palace-sihua-specificity.md", "ziwei-quanshu-core.md", "07-quanshu-xingyuan-wenda.md");
+    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
+    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
+      pushUnique(files, "63-career-modern-bridge.md");
+      prioritizeAfterMethod(files, "63-career-modern-bridge.md");
+    }
     return files;
   }
 
@@ -2075,6 +2099,11 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     //   แม่บทเล่มแรกเข้าเต็ม เล่มถัดไปติด /truncated (โปร่งใสผ่าน SOURCE_MAP) — ยังต้องคู่กับ section splitter (R4) เฟสหน้า
     pushUnique(files, "02-lilly-houses.md", "tetrabiblos-core.md");
     prioritizeAfterMethod(files, "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md", "02-lilly-houses.md", "tetrabiblos-core.md");
+    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
+    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
+      pushUnique(files, "58-career-modern-bridge.md");
+      prioritizeAfterMethod(files, "58-career-modern-bridge.md");
+    }
     return files;
   }
 
@@ -2255,6 +2284,11 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     prioritizeAfterMethod(files, "06-evidence-gates-specialty-router.md", "07-functional-topic-specificity.md", "02-bphs-dasha-yoga.md", "vedic-core.md");
     // r377 · ดัน BPHS section ไว้ถัดจาก 00-method เพื่อรอด shrink loop (ตาราง+โศลกต้องไม่ถูกตัด)
     if (bphsToken) prioritizeAfterMethod(files, bphsToken);
+    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
+    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
+      pushUnique(files, "60-career-modern-bridge.md");
+      prioritizeAfterMethod(files, "60-career-modern-bridge.md");
+    }
     return files;
   }
 
@@ -2335,6 +2369,11 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     if (intent.timing || intent.advancedTiming || intent.validation) mStar.push("saturn", "outer");
     if (intent.general) mStar.push("sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "outer");
     if (mStar.length) pushUnique(files, `11-method-reading-uranian.md#${Array.from(new Set(mStar)).join("+")}`);
+    /* r510-career: สะพานอาชีพยุคใหม่ (ผ่าน 5 ลายเซ็น 13 ก.ค. 2026) — วางหลัง method กันโดนตัดที่งบ fallback */
+    if (!selOpts?.bookMode && ((intent.career && !intent.relationship) || intent.industryFit || intent.employment || intent.talent)) { // r510-fix: กัน over-fire แต่งงาน/งานแต่ง + กันรั่วเข้า bookMode
+      pushUnique(files, "91-career-modern-bridge.md");
+      prioritizeAfterMethod(files, "91-career-modern-bridge.md");
+    }
     return files;
   }
 
@@ -2424,12 +2463,71 @@ function qizhengTransitYears(refDate: Date): number[] {
   return Array.from({ length: 13 }, (_, i) => center - 6 + i);
 }
 
+/* r510-tz: ล้างข้อความ user-supplied ก่อนแทรกเข้า prompt — ตัด control/format chars + ยุบช่องว่าง + cap ความยาว (กัน prompt injection/แย่งพื้นที่ prompt · ตามรีวิวพ่อ) */
+export function sanitizePromptInline(raw: unknown, maxChars = 80): string {
+  return String(raw ?? "")
+    /* C0+C1 controls + zero-width/bidi/format chars */
+    .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u206F\uFEFF]/g, " ")
+    /* กันหลุดกรอบเครื่องหมายคำพูด: แปลง " และ ` เป็นเครื่องหมายคำพูดตัวพิมพ์ (ไม่ใช่ delimiter) */
+    .replace(/["`]/g, "\u2019")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxChars)
+    .trim();
+}
+
+/* r510-tz: รับเฉพาะรูปแบบ IANA timezone (เช่น Asia/Bangkok, America/New_York, America/Kentucky/Louisville) — ค่าอื่น fallback กรุงเทพ */
+const IANA_TZ_RE = /^[A-Za-z_][A-Za-z0-9_+\-]{0,30}(\/[A-Za-z0-9_+\-]{1,30}){0,2}$/;
+export function normalizeTimezoneLabel(raw: unknown): string {
+  const tz = String(raw ?? "").trim();
+  if (!IANA_TZ_RE.test(tz)) return "Asia/Bangkok";
+  /* r510-tz รอบ 2 (พ่อ): regex กันแค่รูปแบบ — ต้องเช็คว่า runtime รู้จักโซนจริง (กัน "Mars/Olympus" ป้ายปลอมทับเวลากรุงเทพ) */
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return tz;
+  } catch {
+    return "Asia/Bangkok";
+  }
+}
+
+/* r510-tz: แปลง dtUTC → วันที่/เวลาท้องถิ่นตามเขตเวลา (ใช้เฉพาะ fallback ตอนไม่มี birthDate/birthTime) · พังเมื่อไร fallback กรุงเทพแบบเดิม */
+function localDateTimeInTz(dtUTC: Date, tz: string): { date: string; time: string } | null {
+  try {
+    const f = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    });
+    const p: Record<string, string> = {};
+    for (const part of f.formatToParts(dtUTC)) p[part.type] = part.value;
+    if (!p.year || !p.month || !p.day || !p.hour || !p.minute) return null;
+    return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` };
+  } catch { return null; }
+}
+
 function birthLocalLine(b: BirthData): string {
-  const parts = bangkokParts(b.dtUTC);
-  const bkk = new Date(b.dtUTC.getTime() + BANGKOK_OFFSET_MS);
-  const date = b.birthDate || `${parts.year}-${pad2(parts.month)}-${pad2(parts.day)}`;
-  const time = b.birthTime || `${pad2(bkk.getUTCHours())}:${pad2(bkk.getUTCMinutes())}`;
-  return `เวลาเกิดท้องถิ่นที่ผู้ใช้กรอก: ${date} ${time} Asia/Bangkok · ใช้ค่านี้เป็นวันเกิดผู้ใช้เท่านั้น (UTC instant ภายในระบบ: ${b.dtUTC.toISOString()} · ห้ามนำวันที่ UTC ไปแสดงเป็นวันเกิด)`;
+  /* r510-tz: เลิก hardcode Asia/Bangkok — ใช้เขตเวลาจริงของดวง (validate เป็น IANA · default เดิมคงไว้ เพราะข้อมูล profiles ปัจจุบันเก็บเวลาแบบกรุงเทพ) */
+  const tz = normalizeTimezoneLabel(b.timezone);
+  /* fallback เมื่อไม่มี birthDate/birthTime: ต้องแปลงตามเขตเวลาจริง ไม่ใช่บวก +7 ตายตัว (บั๊กที่พ่อจับได้ — ดวง ตปท. จะได้เวลากรุงเทพแปะป้าย ตปท.) */
+  let date = b.birthDate || "";
+  let time = b.birthTime || "";
+  if (!date || !time) {
+    const loc = tz !== "Asia/Bangkok" ? localDateTimeInTz(b.dtUTC, tz) : null;
+    if (loc) {
+      date = date || loc.date;
+      time = time || loc.time;
+    } else {
+      const parts = bangkokParts(b.dtUTC);
+      const bkk = new Date(b.dtUTC.getTime() + BANGKOK_OFFSET_MS);
+      date = date || `${parts.year}-${pad2(parts.month)}-${pad2(parts.day)}`;
+      time = time || `${pad2(bkk.getUTCHours())}:${pad2(bkk.getUTCMinutes())}`;
+    }
+  }
+  /* r510-tz: บริบทถิ่นเกิด — ซินแสจริงใช้ถิ่นเกิดอ่านราก/ต่างแดน · engine คำนวณจากพิกัดไปแล้ว บรรทัดนี้ให้ AI รู้บริบทเท่านั้น · place = ข้อความ user กรอก ล้างก่อนเสมอ + ครอบเครื่องหมายคำพูดให้อ่านเป็น data */
+  const place = sanitizePromptInline(b.place, 80);
+  const placePart = place
+    ? ` · สถานที่เกิด: "${place}" (lat ${b.lat} lng ${b.lng})`
+    : ` · พิกัดเกิด: lat ${b.lat} lng ${b.lng}`;
+  return `เวลาเกิดท้องถิ่นที่ผู้ใช้กรอก: ${date} ${time} ${tz}${placePart} · ใช้ค่านี้เป็นวันเกิดผู้ใช้เท่านั้น (UTC instant ภายในระบบ: ${b.dtUTC.toISOString()} · ห้ามนำวันที่ UTC ไปแสดงเป็นวันเกิด)`;
 }
 
 function metaFor(science: ScienceId, file: string): Pick<CanonSourceMapRow, "title" | "sourceUrl" | "licenseClass" | "mode"> {
@@ -2977,15 +3075,16 @@ export function buildSciencePrompt(
   lang = "th",
   refDate = new Date("2026-06-30T00:00:00Z"),
   timingRefOverride?: FusionTimingReference,
-  opts?: { bookMode?: boolean }, // r391-book: additive · true = สลับ "คำถามผู้ใช้" → directive "อ่านเต็มทุกมิติ" (Q&A เดิมไม่กระทบ · default false)
+  opts?: { bookMode?: boolean; wholeLifeMode?: "research" | "user" }, // r391-book + r510-wl: additive ทั้งคู่ · default undefined = Q&A เดิม byte-identical
 ): string {
   const bind = DISCIPLINES[science];
   const bookMode = opts?.bookMode === true;
+  const wholeLifeMode = opts?.wholeLifeMode; // r510-wl: สลับเฉพาะบล็อก timing (precedence: ชนะ timing · ไม่แตะ question/canon router)
   // r391-book: bookMode → question ถูกแทนด้วย read-full directive (เจาะ 10 มิติ) · ใช้เลือก canon ให้ครอบทุกมิติ
   const bookDirective = bookMode ? loadBookDirective(science, births[0]?.name || "เจ้าชะตา") : "";
   const effectiveQuestion = bookMode ? bookDirective : question;
   const timingRef = timingRefOverride || resolveFusionTimingReference(question, refDate);
-  const selectedCanonFiles = selectCanonFilesForPrompt(science, effectiveQuestion, births);
+  const selectedCanonFiles = selectCanonFilesForPrompt(science, effectiveQuestion, births, { bookMode }); // r510-fix: bookMode ไม่ดึงสะพานอาชีพ (read-full มีคำอาชีพเสมอ จะเบียดคัมภีร์ verbatim)
   // r399 · memo ผลเรนเดอร์ผัง/pair ต่อ call — assemble ถูกเรียกซ้ำใน shrink loop + compaction loop
   //   เดิม re-render (รัน engine ใหม่) ทุกรอบ · memo = คำนวณครั้งเดียว (ผลเท่าเดิม · เร็วขึ้น)
   const chartCache = new Map<number, string>();
@@ -3011,7 +3110,13 @@ export function buildSciencePrompt(
     L.push(DECISIVE_READING_POLICY);
     L.push(subjectLockLine(births));
     L.push(SPECIFIC_READING_CONTRACT);
-    L.push(`=== จังหวะเวลาที่ใช้คำนวณจร ===\nวันอ้างอิงจร: ${timingRef.refDate.toISOString().slice(0, 10)} · ปีเป้าหมาย ${timingRef.targetYear} · ที่มา: ${timingRef.label}\nถ้าคำถามถามปี/วันที่นี้ ให้ใช้จรของปีเป้าหมายนี้เป็นแกน ห้ามตอบว่าเห็นเฉพาะปีปัจจุบันเมื่อข้อมูลจรปีเป้าหมายถูกส่งมาแล้ว`);
+    if (wholeLifeMode) {
+      /* r510-wl: โหมดอ่านทั้งชีวิต — แทนบล็อก timing เดิมจุดเดียว (ผัง/ตารางจรยัง render ตาม refDate ปกติ) */
+      L.push(loadWholeLifeDirective(wholeLifeMode));
+      L.push(`(หมายเหตุระบบ: ตารางจรรายปีที่แนบใช้วันอ้างอิงเทคนิค ${timingRef.refDate.toISOString().slice(0, 10)} — ใช้เป็นข้อมูลประกอบ ไม่ใช่แกนคำตอบของโหมดนี้)`);
+    } else {
+      L.push(`=== จังหวะเวลาที่ใช้คำนวณจร ===\nวันอ้างอิงจร: ${timingRef.refDate.toISOString().slice(0, 10)} · ปีเป้าหมาย ${timingRef.targetYear} · ที่มา: ${timingRef.label}\nถ้าคำถามถามปี/วันที่นี้ ให้ใช้จรของปีเป้าหมายนี้เป็นแกน ห้ามตอบว่าเห็นเฉพาะปีปัจจุบันเมื่อข้อมูลจรปีเป้าหมายถูกส่งมาแล้ว`);
+    }
     if (bundle.text) {
       L.push(`\n=== คัมภีร์ ${bind.labelTh} (หลักการตีความ — ใช้เป็นฐาน) ===`);
       if (selectedCanonFiles?.length) {
@@ -3192,6 +3297,15 @@ const BOOK_CHAPTER_FORMAT = [
 ].join("\n");
 
 /** โหลด directive "อ่านเต็มดวง" ของศาสตร์ (แทน {{NAME}}) · แก้ผ่าน /admin/sifu-prompts (prompts/natal-book/read-full-{science}.md) */
+/** r510-wl: โหลด directive โหมดอ่านทั้งชีวิต (research=ดวงย้อนประวัติ · user=ลูกค้าจริง) — additive ไม่แตะ Q&A เดิม */
+export function loadWholeLifeDirective(mode: "research" | "user"): string {
+  const raw = loadPromptMd("prompts/whole-life-directive.md", "").trim();
+  const fallback = "=== โหมดอ่านทั้งชีวิต ===\nไล่อ่านแผนที่ทั้งชีวิตจากตารางวัยจร/ทศาที่ engine ส่งมา ตั้งแต่เกิดจนสุดตาราง ระบุช่วงอายุ ธีม ขึ้น/ลง เหตุผลจากผัง · ชี้ด่านวิกฤต 1-3 ด่านตามหลักฐานจริงพร้อมทางรับมือ · ห้ามการันตีปีตาย ใช้ถ้อยคำสัญญาณ · ทุกคำฟันธงอ้างหลักฐานผัง";
+  const body = raw || fallback;
+  const drop = mode === "research" ? "**[user]**" : "**[research]**";
+  return body.split("\n").filter((l) => !l.includes(drop)).join("\n");
+}
+
 export function loadBookDirective(science: ScienceId, name: string): string {
   const raw = loadPromptMd(`prompts/natal-book/read-full-${science}.md`, "").trim();
   const safeName = (name || "เจ้าชะตา").slice(0, 40);

@@ -1,0 +1,35 @@
+--- /root/releases/decode-app-r519-luopan-datepick/src/lib/mobile-luopan.ts.orig	2026-07-12 06:35:15.949761284 +0700
++++ /root/releases/decode-app-r519-luopan-datepick/src/lib/mobile-luopan.ts	2026-07-17 14:00:01.251366014 +0700
+@@ -23,6 +23,7 @@
+   boundaryDistanceDeg: number;
+   uncertaintyDeg: number;
+   nearBoundary: boolean;
++  boundary_warning: boolean;
+ };
+ 
+ function finite(value: unknown, fallback: number) {
+@@ -64,7 +65,16 @@
+   if (input.northReference === "true" && accuracyClass <= 0 && accuracyDeg <= 0) {
+     reasons.push("true_north_unavailable");
+   }
+-  if (nearBoundary) reasons.push("mountain_boundary_uncertain");
++  // sensor path เดิม: คาบเส้น = fail (ห้ามเปลี่ยนพฤติกรรม)
++  // manual/map (ผู้ใช้กรอกองศาเอง): คาบเส้น = warning ไม่ fail (ให้ผังออกได้)
++  let boundaryWarning = false;
++  if (nearBoundary) {
++    if (input.method === "sensor") {
++      reasons.push("mountain_boundary_uncertain");
++    } else {
++      boundaryWarning = true;
++    }
++  }
+ 
+   return {
+     pass: reasons.length === 0,
+@@ -75,5 +85,6 @@
+     boundaryDistanceDeg,
+     uncertaintyDeg,
+     nearBoundary,
++    boundary_warning: boundaryWarning,
+   };
+ }

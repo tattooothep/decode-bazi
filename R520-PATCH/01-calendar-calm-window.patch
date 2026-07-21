@@ -1,0 +1,61 @@
+--- a/src/app/api/today/hours/route.ts
++++ b/src/app/api/today/hours/route.ts
+@@ -354,25 +354,43 @@
+   function rngStart(r: string): number { return parseInt(r.split("-")[0].split(":")[0], 10); }
+   function rngEnd(r: string): number { return parseInt(r.split("-")[1].split(":")[0], 10); }
+ 
+-  function findLongestRun(predicate: (q: string) => boolean): { start: string; end: string } | null {
+-    let best: { from: number; to: number; len: number } | null = null;
+-    let cur: { from: number; to: number; len: number } | null = null;
+-    for (let i = 0; i < hours.length; i++) {
+-      const h = hours[i];
+-      if (predicate(h.quality)) {
+-        const s = rngStart(h.range), e = rngEnd(h.range);
+-        if (!cur) cur = { from: s, to: e, len: 1 };
+-        else { cur.to = e; cur.len++; }
++  /* R520 · calm/golden/avoid window = ช่วง "ต่อเนื่องจริง" ยาวสุดของ 12 ยาม
++   * 12 ยามเรียงเป็น "วง" 24 ชม. (子 23:00 → 亥 21:00-23:00) · 亥 ต่อ 子 ข้ามเที่ยงคืนได้
++   * เดิม (r519) สแกนเป็นเส้นตรง → ไม่ต่อ 亥→子 · ช่วงที่คร่อมเที่ยงคืนถูกตัด/สั้นผิด
++   *   เช่น 辰-day: ยามสงบจริง 21:00-07:00 (亥子丑寅卯) แต่เดิมรายงาน 23:00-07:00
++   * แก้: หา run ต่อเนื่องยาวสุดแบบวงกลม + ธง crosses_midnight ให้สื่อ wrap ชัด
++   *   (ค่า start/end เดิมยังคงรูปเดิม HH:00 เพื่อ backward-compat กับ passthrough ในแอพ) */
++  function findLongestRun(predicate: (q: string) => boolean): { start: string; end: string; crosses_midnight: boolean } | null {
++    const n = hours.length;                                   // 12
++    const match = hours.map(h => predicate(h.quality));
++    const count = match.filter(Boolean).length;
++    if (count === 0) return null;
++    if (count === n) {
++      /* ทุกยามเข้าเงื่อนไข = ต่อเนื่องทั้งวัน (23:00→23:00 รอบวง) */
++      const s = String(rngStart(hours[0].range)).padStart(2,"0") + ":00";
++      return { start: s, end: s, crosses_midnight: true };
++    }
++    /* สแกน 2 รอบ (วงกลม) หา run ต่อเนื่องยาวสุด · reset เมื่อเจอยามที่ไม่เข้า */
++    let bestLen = 0, bestStart = -1, curLen = 0, curStart = -1;
++    for (let i = 0; i < 2 * n; i++) {
++      const idx = i % n;
++      if (match[idx]) {
++        if (curLen === 0) curStart = idx;
++        curLen++;
++        if (curLen > bestLen) { bestLen = curLen; bestStart = curStart; }
+       } else {
+-        if (cur && (!best || cur.len > best.len)) best = cur;
+-        cur = null;
++        curLen = 0;
+       }
++      if (curLen === n) break;                                // กันเผื่อ (count<n จึงไม่ถึง)
+     }
+-    if (cur && (!best || cur.len > best.len)) best = cur;
+-    if (!best) return null;
++    if (bestLen === 0 || bestStart < 0) return null;
++    const endIdx = (bestStart + bestLen - 1) % n;
++    /* คร่อมเที่ยงคืน = run เริ่มที่ยาม子(23:00, index 0) หรือ run พันข้ามปลาย array (亥→子) */
++    const crosses_midnight = bestStart === 0 || bestStart + bestLen > n;
+     return {
+-      start: String(best.from).padStart(2,"0") + ":00",
+-      end:   String(best.to).padStart(2,"0") + ":00",
++      start: String(rngStart(hours[bestStart].range)).padStart(2,"0") + ":00",
++      end:   String(rngEnd(hours[endIdx].range)).padStart(2,"0") + ":00",
++      crosses_midnight,
+     };
+   }
+ 

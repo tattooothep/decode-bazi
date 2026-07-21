@@ -1,0 +1,28 @@
+--- /root/decode-app/R521-PATCH/orig/src_app_api_mobile_v1_today_route.ts.orig	2026-07-12 22:15:58.618158676 +0700
++++ src/app/api/mobile/v1/today/route.ts	2026-07-18 14:41:48.314519815 +0700
+@@ -4,6 +4,7 @@
+ import { getMobileSession } from "@/lib/mobile-auth";
+ import {getProductAccess} from "@/lib/product-entitlement";
+ import {PRODUCT_PAGE_ENTITLEMENTS} from "@/lib/product-page-entitlements";
++import { summarizeStars } from "@/lib/star-dict-th";
+ 
+ export const dynamic = "force-dynamic";
+ 
+@@ -157,6 +158,17 @@
+   const todayResp = await todayPost(internalReq);
+   const data = await todayResp.json();
+ 
++  /* r521 · เติม stars_detail ให้ 神煞 ของวัน (ชื่อไทย+อธิบาย) จากคลัง star-dict-th
++   * additive: field ใหม่ข้าง gods เดิม (ไม่แตะ tongshu.gods) · คำที่คลังไม่มี = อยู่ใน unknown */
++  if (data && data.tongshu && Array.isArray(data.tongshu.gods) && !data.tongshu.stars_detail) {
++    const names = data.tongshu.gods.filter((n: unknown): n is string => typeof n === "string" && n.length > 0);
++    if (names.length) {
++      // ตัด verdict/pos_sum/neg_sum ออก — ฟันธงรายวันเป็นของ premium (เว็บ fullDetail gate)
++      const { good, bad, unknown } = summarizeStars(names);
++      data.tongshu.stars_detail = { good, bad, unknown };
++    }
++  }
++
+   return NextResponse.json(
+     {
+       ok: todayResp.ok,

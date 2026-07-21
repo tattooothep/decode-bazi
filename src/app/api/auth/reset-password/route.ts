@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { consumeToken } from "@/lib/auth-tokens";
-import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { hashPassword, signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));

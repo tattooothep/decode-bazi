@@ -128,11 +128,12 @@ async function handle(req: Request) {
   }
 
   const { birthDate, birthTime } = birthParts(profile.birth_datetime);
-  const yongshen = yongshenElements(profile.yongshen);
+  /* r514 (12 ก.ค. 2569): เลิกส่ง yongshen เก่าจาก DB — ให้ /api/today คำนวณสดจาก wrapper-7
+   * เหมือน request ของหน้าเว็บทุกประการ → score/label/jishen + userSummary ตรงเว็บ 100%
+   * (yongshen ใน DB เป็น snapshot ตอนสร้าง profile · ไม่ตรง primary_yongshen ของ synth → เว็บ 50/中和 แอพ 49/凶) */
   const payload = {
     date,
     userChart,
-    ...(yongshen.length ? { yongshen } : {}),
     birthDate,
     birthTime,
     birthLng: profile.birth_lng ?? "100.5018",

@@ -1,19 +1,20 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
-import { q1 } from "@/lib/db";
+import { Suspense } from "react";
+import { requirePermission } from "@/lib/admin-guard";
 import MembersAdmin from "./editor";
 
 export const metadata = { title: "สมาชิก · Admin" };
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const s = await getSession();
-  if (!s) redirect("/signup?tab=login&next=/admin/members");
-  const allow = (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
-  let ok = allow.includes((s.email || "").toLowerCase());
-  if (!ok && s.orgId) {
-    const m = await q1<{ role: string }>(`SELECT role FROM org_members WHERE org_id=$1 AND user_id=$2 AND status='active' LIMIT 1`, [s.orgId, s.userId]);
-    if (m && ["owner", "admin"].includes(m.role)) ok = true;
+  try {
+    await requirePermission("admin.users.read");
+  } catch {
+    redirect("/signup?tab=login&next=/admin/members");
   }
-  if (!ok) return <div className="min-h-screen flex items-center justify-center"><div className="border border-foreground/15 p-8"><h1 className="font-serif text-2xl">Forbidden</h1></div></div>;
-  return <MembersAdmin />;
+  return (
+    <Suspense fallback={<div className="min-h-screen p-8 text-white/50">Loading…</div>}>
+      <MembersAdmin />
+    </Suspense>
+  );
 }

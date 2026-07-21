@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { buildResearchConversationKey } from "@/lib/research-log";
+import { isSifuAnswerLang } from "@/lib/sifu-answer-lang"; // r414-i18n9
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_TEXT = 24_000;
@@ -28,7 +29,7 @@ function cleanShort(v: unknown, max = 80): string | null {
 }
 
 function cleanLang(v: unknown): string {
-  return ["th", "en", "zh"].includes(String(v)) ? String(v) : "th";
+  return isSifuAnswerLang(v) ? String(v) : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
 }
 
 function safeDate(v: unknown): Date {

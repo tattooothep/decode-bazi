@@ -1,0 +1,21 @@
+--- a/src/app/api/mobile/v1/luopan/analysis/route.ts
++++ b/src/app/api/mobile/v1/luopan/analysis/route.ts
+@@ -118,10 +118,16 @@
+       },
+       xuan_kong: {
+         version: chart.version,
++        /* R520 · 玄空飛星 ผังพื้นฐาน = 3 ดาวต่อช่อง (運星 base / 向星 water / 山星 mountain)
++         * engine (calcXuanKongChart) คำนวณครบทั้ง 3 อาเรย์เสมอทุก period/facing
++         * เดิม (r519) ห่อ water/mountain ไว้ใน fullChart รวมกับ *_flight → ผู้ใช้ core
++         *   (free/trial) ได้แค่ base → แอพโชว์ดาวเดียว/ช่อง แต่ legend บอก 山/向/運
++         * แก้: ส่ง base+water+mountain เสมอ (ผังหลัก) · คง *_flight (เหตุผลบินดาว/替卦)
++         *   ไว้หลัง fullChart ตาม locked_sections "xuan_kong_flights" ของ core */
+         base: chart.base,
++        water: chart.water,
++        mountain: chart.mountain,
+         ...(fullChart ? {
+-          water: chart.water,
+-          mountain: chart.mountain,
+           water_flight: chart.waterFlight,
+           mountain_flight: chart.mountainFlight,
+         } : {}),

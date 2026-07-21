@@ -1,0 +1,109 @@
+--- src/lib/scoring/pair-reaction-v2.ts.orig	2026-07-12 06:35:15.954761299 +0700
++++ src/lib/scoring/pair-reaction-v2.ts	2026-07-18 14:25:11.092605864 +0700
+@@ -550,7 +550,7 @@
+   };
+ }
+ 
+-function intentValue(score: number, mode: "work" | "love" | "friend"): { th: string; en: string; zh: string } {
++function intentBase(score: number, mode: "work" | "love" | "friend"): { th: string; en: string; zh: string } {
+   if (score >= 25) {
+     if (mode === "work") return { th: "เหมาะร่วมงาน มีแรงส่ง", en: "Good for work", zh: "宜共事" };
+     if (mode === "love") return { th: "เปิดใจได้ แต่ต้องคุยตรง", en: "Open, with clear talks", zh: "宜情但須明" };
+@@ -566,6 +566,75 @@
+   return { th: "รักษาระยะและขอบเขต", en: "Keep boundaries", zh: "留距" };
+ }
+ 
++/* r521 · ผูก guidance.intent กับ tag/ปฏิกิริยาเด่นของคู่นั้นจริง (เดิม = ตาม score bucket ล้วน · คู่ที่ดวงต่างกันได้คำเหมือนกัน)
++ * ความหมาย tag อิงคัมภีร์ ref_interactions_9 (六合/三合/三會 = ประสาน · 沖 = ปะทะ · 刑/害 = โทษ/ลับ) + 用神/忌神 จาก bazi-interaction-master
++ * แตะเฉพาะข้อความ intent · ไม่แตะ score/verdict/label ใด ๆ */
++type IntentFlavor = "bond" | "clash" | "harm" | "useful" | "avoid";
++
++function pairFlavor(tags: string[], score: number): IntentFlavor | null {
++  const has = (re: RegExp) => tags.some((t) => re.test(t));
++  const bond = has(/六合|三合|三會|三会/);
++  const clash = has(/沖|冲/);
++  const harm = has(/害|刑/);
++  const useful = has(/用神|藥|药|喜神/);
++  const avoid = has(/忌神|病/);
++  /* ทิศบวก: ยกแรงประสาน/หนุนขึ้นก่อน · ทิศลบ: ยกแรงปะทะ/ขัดขึ้นก่อน */
++  if (score >= 0) {
++    if (bond) return "bond";
++    if (useful) return "useful";
++    if (clash) return "clash";
++    if (harm) return "harm";
++    if (avoid) return "avoid";
++  } else {
++    if (clash) return "clash";
++    if (harm) return "harm";
++    if (avoid) return "avoid";
++    if (bond) return "bond";
++    if (useful) return "useful";
++  }
++  return null;
++}
++
++const INTENT_FLAVOR_SUFFIX: Record<IntentFlavor, Record<"work" | "love" | "friend", { th: string; en: string; zh: string }>> = {
++  bond: {
++    work: { th: "ประสานงานลื่น เข้าขากันดี", en: "smooth teamwork", zh: "合 · 協作順" },
++    love: { th: "ผูกพันเข้าใจกันง่าย", en: "natural closeness", zh: "合 · 相知" },
++    friend: { th: "คบยาว หนุนกันได้", en: "lasting support", zh: "合 · 久友" },
++  },
++  clash: {
++    work: { th: "มีแรงปะทะ ต้องแบ่งบทบาทให้ชัด", en: "friction — divide roles clearly", zh: "沖 · 明分工" },
++    love: { th: "หลีกเลี่ยงปะทะตรง ค่อยคุยด้วยเหตุผล", en: "avoid head-on conflict", zh: "沖 · 忌正撞" },
++    friend: { th: "ตรงข้ามดึงดูด แต่ต้องมีพื้นที่", en: "opposites attract, keep space", zh: "沖 · 留空間" },
++  },
++  harm: {
++    work: { th: "ระวังเกี่ยงงาน/เอาเปรียบเงียบ ๆ", en: "watch hidden friction", zh: "刑害 · 防暗損" },
++    love: { th: "ระวังคำพูดทิ่มแทงกัน", en: "watch cutting words", zh: "刑害 · 慎言" },
++    friend: { th: "รักษาระยะ ระวังกินแหนงกัน", en: "keep distance, avoid grudges", zh: "刑害 · 留距" },
++  },
++  useful: {
++    work: { th: "เขาหนุนธาตุที่เราขาด พึ่งพาได้", en: "they supply what you lack", zh: "用神 · 得助" },
++    love: { th: "พลังของเขาเติมเต็มเรา", en: "their energy complements you", zh: "用神 · 相補" },
++    friend: { th: "เพื่อนที่ช่วยเสริมจุดอ่อนเรา", en: "friend who covers your gaps", zh: "用神 · 補益" },
++  },
++  avoid: {
++    work: { th: "พลังไม่ตรงทาง ตั้งขอบเขตให้ชัด", en: "misaligned — set boundaries", zh: "忌神 · 立界" },
++    love: { th: "ธาตุไม่ค่อยเข้ากัน ต้องตั้งใจมากกว่าปกติ", en: "less aligned — needs extra effort", zh: "忌神 · 需用心" },
++    friend: { th: "ไม่ใช่ทางเดียวกันนัก คบแบบมีระยะ", en: "different paths — keep it light", zh: "忌神 · 淡交" },
++  },
++};
++
++function intentValue(score: number, mode: "work" | "love" | "friend", tags: string[] = []): { th: string; en: string; zh: string } {
++  const base = intentBase(score, mode);
++  const flavor = pairFlavor(tags, score);
++  if (!flavor) return base;
++  const suf = INTENT_FLAVOR_SUFFIX[flavor][mode];
++  return {
++    th: `${base.th} · ${suf.th}`,
++    en: `${base.en} · ${suf.en}`,
++    zh: `${base.zh} · ${suf.zh}`,
++  };
++}
++
+ function buildGuidance(
+   scores: PairReactionResult["scores"],
+   atob: PairReactionDirection,
+@@ -573,6 +642,8 @@
+   contexts: PairReactionResult["contexts"],
+ ): PairReactionResult["guidance"] {
+   const overall = scores.overall;
++  /* r521 · tag รวมสองทิศของคู่นี้ · ใช้ผูก intent ให้ต่างตามปฏิกิริยาจริง (ไม่กระทบ score) */
++  const intentTags = uniqueStrings([...atob.tags, ...btoa.tags]);
+   const mixed = atob.breakdown.support >= 28 && atob.breakdown.friction >= 28;
+   const confidence = Math.max(
+     0.55,
+@@ -615,9 +686,9 @@
+     context: context.slice(0, 4),
+     cautions,
+     intent: {
+-      work: intentValue(contexts.work, "work"),
+-      love: intentValue(contexts.love, "love"),
+-      friend: intentValue(contexts.team, "friend"),
++      work: intentValue(contexts.work, "work", intentTags),
++      love: intentValue(contexts.love, "love", intentTags),
++      friend: intentValue(contexts.team, "friend", intentTags),
+     },
+     disclaimer: "คะแนนนี้อ่านปฏิกิริยาดวงสองคน ไม่ใช่คำตัดสินคนดีหรือไม่ดี ผลจริงขึ้นกับเจตนา เวลา และการสื่อสาร",
+   };

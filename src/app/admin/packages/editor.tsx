@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { AdminShell } from "@/components/admin/AdminShell";
 
 type Pkg = {
   id?: string; code: string; name_th: string; name_en?: string; name_zh?: string;
@@ -34,11 +35,7 @@ export default function PackagesAdmin() {
   };
 
   return (
-    <div className="min-h-screen px-5 py-8 max-w-5xl mx-auto">
-      <div className="flex items-baseline justify-between mb-5">
-        <h1 className="font-serif text-2xl">แพ็คเกจ &amp; คูปอง</h1>
-        <Link href="/admin" className="text-sm opacity-60 hover:opacity-100">← หลังบ้าน</Link>
-      </div>
+    <AdminShell title="แพ็กเกจ & คูปอง">
       {msg && <div className="text-sm opacity-70 mb-3">{msg}</div>}
 
       <div className="flex items-center justify-between mb-3">
@@ -90,7 +87,7 @@ export default function PackagesAdmin() {
 
       {editP && <PkgModal p={editP} onClose={() => setEditP(null)} onSave={(p) => post({ action: "save_package", ...p })} onDelete={editP.id ? () => post({ action: "delete_package", id: editP.id }) : undefined} />}
       {editC && <CouponModal c={editC} onClose={() => setEditC(null)} onSave={(c) => post({ action: "save_coupon", ...c })} onDelete={editC.id ? () => post({ action: "delete_coupon", id: editC.id }) : undefined} />}
-    </div>
+    </AdminShell>
   );
 }
 
@@ -114,7 +111,7 @@ function PkgModal({ p, onClose, onSave, onDelete }: { p: Pkg; onClose: () => voi
         <Field label="ยามที่ได้"><input type="number" className={inp} value={f.yam} onChange={(e) => set("yam", +e.target.value)} /></Field>
         <Field label="ยามโบนัส"><input type="number" className={inp} value={f.bonus_yam} onChange={(e) => set("bonus_yam", +e.target.value)} /></Field>
         <Field label="อายุ (วัน · ว่าง=ไม่หมด)"><input type="number" className={inp} value={f.duration_days ?? ""} onChange={(e) => set("duration_days", e.target.value ? +e.target.value : null)} /></Field>
-        <Field label="ปลดล็อก tier (ว่าง=ไม่เปลี่ยน)"><input className={inp} value={f.grants_tier || ""} onChange={(e) => set("grants_tier", e.target.value)} placeholder="pro / vip" /></Field>
+        <Field label="ปลดล็อก tier (ว่าง=ไม่เปลี่ยน)"><input className={inp} value={f.grants_tier || ""} onChange={(e) => set("grants_tier", e.target.value)} placeholder="premium / master (checkout SoT = packages.ts)" /></Field>
         <Field label="ลำดับ"><input type="number" className={inp} value={f.sort} onChange={(e) => set("sort", +e.target.value)} /></Field>
         <Field label="ป้าย (badge)"><input className={inp} value={f.badge || ""} onChange={(e) => set("badge", e.target.value)} placeholder="คุ้มสุด" /></Field>
       </div>

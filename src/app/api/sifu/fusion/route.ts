@@ -13,6 +13,7 @@ import { q, q1 } from "@/lib/db";
 import { logResearchAiMessage } from "@/lib/research-log";
 import { ensureServerEnv } from "@/lib/server-env";
 import { refundHours, spendHours, type RefundResult, type SpendResult } from "@/lib/spend-hours";
+import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 
 loadEnvConfig(process.cwd(), false, console, true);
 ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
@@ -335,7 +336,7 @@ function cleanHistory(raw: unknown): Msg[] {
 
 function cleanLang(v: unknown): string {
   const s = String(v || "th").trim().toLowerCase();
-  return ["th", "en", "zh"].includes(s) ? s : "th";
+  return isSifuAnswerLang(s) ? s : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
 }
 
 function cleanTopic(v: unknown): string | undefined {
@@ -1015,7 +1016,9 @@ function buildJudgeMessage(question: string, panel: PanelResult[], lang: string)
     ? "\nAnswer in English as one final answer. Do not reveal internal process."
     : lang === "zh"
       ? "\n請用中文給出一個最終答案，不要揭露內部流程。"
-      : "\nตอบภาษาไทยเป็นคำตอบสุดท้ายเดียว ไม่ต้องแจกแจง process ภายใน";
+      : LANG_ANSWER_DIRECTIVE[lang] // r414-i18n9: ภาษาใหม่ 6 ตัว · th ยังลงเคสเดิม byte-identical
+        ? `\n${LANG_ANSWER_DIRECTIVE[lang]} ให้คำตอบสุดท้ายเดียว ไม่ต้องแจกแจง process ภายใน`
+        : "\nตอบภาษาไทยเป็นคำตอบสุดท้ายเดียว ไม่ต้องแจกแจง process ภายใน";
   return clip(`${fixed}\n${blocks}${tail}`, MAX_JUDGE_MESSAGE_CHARS);
 }
 

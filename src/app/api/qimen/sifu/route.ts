@@ -9,6 +9,7 @@ import { spawn } from "child_process";
 import { readFileSync, statSync } from "fs";
 import { join } from "path";
 import { loadPromptMd } from "@/lib/prompt-md";
+import { isSifuAnswerLang, LANG_ANSWER_DIRECTIVE } from "@/lib/sifu-answer-lang"; // r414-i18n9
 import { getSession } from "@/lib/auth";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
 
@@ -913,8 +914,7 @@ function formatStemResponse(stemResponse: any): string {
 
 const LANG_INSTR: Record<string, string> = {
   th: "ตอบเป็นภาษาไทยสำหรับคนทั่วไป · ไทยนำจีนรอง · กระชับ · อธิบายศัพท์จีนทุกคำที่ใช้",
-  en: "ตอบเป็นภาษาไทยสำหรับคนทั่วไป · ไทยนำจีนรองเสมอ แม้ผู้ใช้เปิดโหมดอังกฤษ · ถ้าจำเป็นใส่อังกฤษเป็นคำช่วยท้ายประโยคเท่านั้น",
-  zh: "ตอบเป็นภาษาไทยสำหรับคนทั่วไป · ไทยนำจีนรองเสมอ แม้ผู้ใช้เปิดโหมดจีน · คำจีนใช้เป็นคำรองหลังคำไทย",
+  ...LANG_ANSWER_DIRECTIVE, // r414-i18n9: en/zh + ภาษาใหม่ ตอบภาษาผู้ใช้จริง
 };
 
 const TOPIC_FOCUS: Record<string, string> = {
@@ -925,6 +925,34 @@ const TOPIC_FOCUS: Record<string, string> = {
   formation: "รูปแบบพิเศษ 格局 (formations) ในผัง · ดี/ระวัง · กระทบยังไง",
   search_advice: "วิเคราะห์ผลค้นหา · แนะนำ top 3 ที่ดีสุดสำหรับผู้ใช้คนนี้ · เหตุผลตำรา · เลี่ยงอันไหน",
 };
+
+function qimenAnswerStyleRule(lang: string): string {
+  if (lang === "en") {
+    return "3. Answer in English. Keep Chinese technical terms in Hanzi on first mention, e.g. Open Door 開門, Tian Fu star 天輔, Liu He deity 六合, Northeast 東北. Do not answer in Thai.";
+  }
+  if (lang === "zh") {
+    return "3. 全文用繁體中文回答。術語使用中文原詞，例如開門、天輔、六合、東北。不要用泰文作為主要語言。";
+  }
+  if (lang === "cn") {
+    return "3. 全文用简体中文回答。术语使用中文原词，例如开门、天辅、六合、东北。不要用泰文作为主要语言。";
+  }
+  if (lang === "vi") {
+    return "3. Trả lời bằng tiếng Việt. Thuật ngữ dùng từ Hán-Việt và kèm chữ Hán khi nhắc lần đầu, ví dụ Khai Môn 開門, sao Thiên Phù 天輔, thần Lục Hợp 六合, Đông Bắc 東北. Không trả lời bằng tiếng Thái.";
+  }
+  if (lang === "ja") {
+    return "3. 日本語で回答してください。術語は日本語の慣用表記と漢字を併記してください。例: 開門、天輔、六合、東北。タイ語で答えてはいけません。";
+  }
+  if (lang === "ko") {
+    return "3. 한국어로 답변하십시오. 전문 용어는 한국어 관용어와 한자를 함께 쓰십시오. 예: 개문(開門), 천보성(天輔), 육합(六合), 동북(東北). 태국어로 답하지 마십시오.";
+  }
+  if (lang === "ru") {
+    return "3. Отвечай на русском языке. Китайские технические термины указывай в иероглифах при первом упоминании, например Open Door (開門), Tian Fu star (天輔), Liu He deity (六合), Northeast (東北). Не отвечай на тайском.";
+  }
+  if (lang === "es") {
+    return "3. Responde en español. Mantén los términos técnicos chinos en Hanzi en la primera mención, por ejemplo Puerta Abierta 開門, estrella Tian Fu 天輔, deidad Liu He 六合, Nordeste 東北. No respondas en tailandés.";
+  }
+  return "3. ใช้ภาษาไทยเป็นหลักและใส่คำจีนกำกับ เช่น ประตูเปิด 開門, ดาวเทียนฝู่ 天輔, เทพลิ่วเหอ 六合, ทิศตะวันออกเฉียงเหนือ 東北";
+}
 
 function pillarValue(pillar: any, fallback: any): string {
   if (pillar && typeof pillar === "object") {
@@ -1520,7 +1548,7 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 1. อ่านจาก "ผังเวลา (QiMen Chart)" ก่อนเสมอ; ชุดแหล่งอ้างอิงมีไว้แปลความหมาย ไม่ใช่สร้างค่าผังใหม่
 2. ถ้าข้อมูลของผังไม่มี/ไม่พอ ให้บอกว่า "ข้อมูลไม่พอจะตัดสิน" ห้ามแต่งประตู ดาว เทพ ทิศ หรือรูปแบบพิเศษ 格局 เอง
 2ก. 格局 (เช่น 青龍返首/飛鳥跌穴/伏吟/六儀擊刑) ให้ใช้เฉพาะชื่อที่ระบบส่งมาในผังเท่านั้น · ห้ามตั้งชื่อ格局ใหม่จากคัมภีร์ที่ไม่อยู่ในผัง (เช่น 青龍折足) และห้ามพูดถึง格局เดิมซ้ำมากกว่า 1 ครั้ง · ถ้าผังให้ 青龍返首 ห้ามบอกว่ามี 折足 พร้อมกัน
-3. ตอบไทยนำจีนรอง เช่น ประตูเปิด 開門, ดาวเทียนฝู่ 天輔, เทพลิ่วเหอ 六合, ทิศตะวันออกเฉียงเหนือ 東北
+${qimenAnswerStyleRule(lang)}
 4. คะแนน/ระดับเป็นน้ำหนักระบบของ Hourkey ให้พูดว่า "คะแนนระบบ" หรือ "น้ำหนักระบบ" ไม่ใช่เลขจากตำราโบราณ
 5. ถ้าพูดเรื่องต่างสำนัก เช่น ผังปี/เดือน/วัน 年/月/日家, แปดเทพ 八神, การฝากวัง 寄宮, ยามห้าไม่พบ 五不遇時 ให้ใส่ข้อควรระวังว่าสายตำราอาจต่างกัน
 6. ถ้าข้อมูลที่ส่งมาเป็นผังวัน 日家 / ผังเดือน 月家 / ผังปี 年家 ต้องบอกว่าเป็นภาพรวมระดับวัน/เดือน/ปี ไม่ใช่ผังยาม 時家 เฉพาะชั่วโมง และห้ามใช้คำว่า "ชั่วยามนี้" กับผังเหล่านี้
@@ -1539,7 +1567,8 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 19. ถ้าผังวัน/เดือน/ปีถูกส่งมาแบบอ่านประกอบเท่านั้น ให้ตอบว่าเป็นภาพรวม/บริบท ต้องเช็กผังยาม 時家 ก่อนลงมือ ห้ามสรุปว่าเหมาะหรือใช้ได้จากคะแนนช่วยจัดลำดับ
 20. ถ้ามี "ข้อมูลหน้าวางฤกษ์ล่าสุด" ให้ใช้เป็น snapshot หลักของแชท: activity, filters, คนที่เลือก, funnel, layers, top results และคะแนนย่อย ห้ามตอบเหมือนยังไม่เห็นผลค้นหา
 21. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุรหัสแหล่งอ้างอิงที่ใช้ 1-3 ตัวจากรายการแหล่งอ้างอิง`;
-  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${fmtUserElementDistribution(userElementDistribution)}${datepickText}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
+  const languageLock = lang === "th" ? "" : `\nFINAL LANGUAGE LOCK:\n${LANG_INSTR[lang] || LANG_ANSWER_DIRECTIVE.en || ""}\n`;
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}${languageLock}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${fmtUserElementDistribution(userElementDistribution)}${datepickText}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return {
     prompt: loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body),
     knowledgeVersion: know.version,
@@ -1575,7 +1604,7 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
     const history: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
-    const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
+    const lang: string = isSifuAnswerLang(body.lang) ? body.lang : "th"; // r414-i18n9: 9 ภาษา (เดิม th/en/zh)
     const topic: string | undefined = body.topic;
     const payload = body.payload || {};
 

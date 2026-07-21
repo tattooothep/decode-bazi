@@ -19,24 +19,48 @@
 
   window.HK_I18N = window.HK_I18N || {};
 
+  function stateLocale() {
+    try {
+      var st = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+      if (st && typeof st.current === 'function') return st.current();
+    } catch (_) {}
+    return null;
+  }
+
+  function normalizeLocale(raw) {
+    var x = String(raw || '').trim().toLowerCase().replace('_', '-');
+    if (!x) return '';
+    if (x.indexOf('zh') === 0 || x === 'cn' || x === 'hans' || x === 'hant') return 'zh';
+    if (x.indexOf('en') === 0) return 'en';
+    if (x.indexOf('th') === 0) return 'th';
+    return x;
+  }
+
   function getLocale() {
     try {
-      var l = localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th';
-      if (LIVE.indexOf(l) !== -1) return l;
-      // เฟส overlay (6 ก.ค. 2569): ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่ LIVE ในเมนู แต่ถ้า overlay
-      // ของภาษานั้นโหลดสำเร็จแล้ว (_overlayLocale ตรงกับ l) → ใช้ได้ทันที ไม่ต้องรอ LIVE
-      // (ปลอดภัยกับของเดิม: ไม่มี hk_locale ไหนเป็นค่านี้จนกว่าจะมีคนตั้ง localStorage เอง/ทดสอบ)
-      if (SUPPORTED.indexOf(l) !== -1 && l === _overlayLocale) return l;
+      var st = stateLocale();
+      var l = normalizeLocale(st && st.raw);
+      if (!l) l = normalizeLocale(localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th');
+      if (SUPPORTED.indexOf(l) !== -1) return l;
       return 'th';
     } catch (_) { return 'th'; }
   }
 
   function setLocale(l) {
-    if (SUPPORTED.indexOf(l) === -1) return;
-    try { localStorage.setItem('hk_locale', l); localStorage.setItem('hk_lang', l); } catch (_) {}
-    document.documentElement.lang = l;
+    var loc = normalizeLocale(l);
+    if (SUPPORTED.indexOf(loc) === -1) return;
+    try {
+      var st = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+      if (st && typeof st.set === 'function') st.set(l);
+      else {
+        localStorage.setItem('hk_locale', loc);
+        localStorage.setItem('hk_lang', loc);
+        document.documentElement.lang = loc === 'zh' ? 'zh-Hant' : loc;
+        document.documentElement.setAttribute('data-lang', (loc === 'th' || loc === 'en' || loc === 'zh') ? loc : 'en');
+      }
+    } catch (_) {}
     applyI18N();
-    document.dispatchEvent(new CustomEvent('hk:locale', { detail: { locale: l } }));
+    document.dispatchEvent(new CustomEvent('hk:locale', { detail: { locale: loc } }));
   }
 
   // ── overlay ไฟล์ภาษาเดี่ยว (public/i18n/<locale>.json) — เฟส "ไฟล์ภาษาเดี่ยวต่อภาษา" ──
@@ -98,7 +122,9 @@
     if (ov != null) return ov;
     var e = window.HK_I18N[key];
     if (!e) return fallback != null ? fallback : key;
-    return (e[l] != null && e[l] !== '') ? e[l] : (e.th != null ? e.th : (fallback != null ? fallback : key));
+    if (e[l] != null && e[l] !== '') return e[l];
+    if (l !== 'th' && e.en != null && e.en !== '') return e.en;
+    return e.th != null ? e.th : (fallback != null ? fallback : key);
   }
 
   // ── ศัพท์วิชากลาง (science-terms.json) — โหลดครั้งเดียว แชร์ทุกหน้า ──
@@ -114,7 +140,9 @@
     var e = _terms && _terms[glyph];
     if (!e) return glyph;
     var l = getLocale();
-    return (e[l] != null && e[l] !== '') ? e[l] : (e.th || glyph);
+    if (e[l] != null && e[l] !== '') return e[l];
+    if (l !== 'th' && e.en != null && e.en !== '') return e.en;
+    return e.th || glyph;
   }
   function termWithGlyph(glyph) {
     var w = term(glyph);

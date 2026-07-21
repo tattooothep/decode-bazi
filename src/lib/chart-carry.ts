@@ -118,6 +118,8 @@ export interface CarryInfo {
   strict: boolean;              /* true ถ้าเข้าเงื่อนไข 格 classical · strict pair (日時 same stem) */
   note_th: string;
   note_en: string;
+  /* r420 · i18n additive */
+  note_zh?: string;
 }
 
 export interface CarryDetectOpts {
@@ -301,6 +303,9 @@ function buildCarry(a: BuildCarryArgs): CarryInfo {
   const strictTag_en = a.strict ? ' · classical 格' : ' · 象 (weak)';
   const note_th = `${TYPE_TH[a.type]} · ${a.sourceBranches.join('-')} คีบ ${a.virtualBranch}${tenGod ? ` (${tenGod})` : ''}${strictTag_th}${role === 'useful' ? ' · 用神' : role === 'jishen' ? ' · 忌神' : ''}${activated.length ? ` · เปิดโดย ${activated.join(',')}` : ''}${broken.length ? ` · 沖โดย ${broken.join(',')}` : ''}`;
   const note_en = `${TYPE_EN[a.type]} · ${a.sourceBranches.join('-')} brackets ${a.virtualBranch}${tenGod ? ` (${tenGod})` : ''}${strictTag_en}${role === 'useful' ? ' · useful' : role === 'jishen' ? ' · harmful' : ''}${activated.length ? ` · activated by ${activated.join(',')}` : ''}${broken.length ? ` · clashed by ${broken.join(',')}` : ''}`;
+  /* r420 · i18n additive · zh อิงศัพท์ตำรา 拱/夾 · ไม่แตะ logic */
+  const strictTag_zh = a.strict ? ' · 拱格' : ' · 象 (弱)';
+  const note_zh = `${a.type} · ${a.sourceBranches.join('-')} 夾 ${a.virtualBranch}${tenGod ? ` (${tenGod})` : ''}${strictTag_zh}${role === 'useful' ? ' · 用神' : role === 'jishen' ? ' · 忌神' : ''}${activated.length ? ` · ${activated.join(',')}引動` : ''}${broken.length ? ` · ${broken.join(',')}沖破` : ''}`;
   return {
     type: a.type,
     type_th: TYPE_TH[a.type],
@@ -318,6 +323,7 @@ function buildCarry(a: BuildCarryArgs): CarryInfo {
     strict: a.strict,
     note_th,
     note_en,
+    note_zh,
   };
 }
 

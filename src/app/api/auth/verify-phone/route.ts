@@ -1,7 +1,7 @@
 // POST /api/auth/verify-phone — ยืนยัน OTP · set session
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
-import { signSession, setAuthCookie } from "@/lib/auth";
+import { signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
 import { normalizePhone, verifyOtp } from "@/lib/phone-otp";
 import { userHasProfile } from "@/lib/profile-status";
 import { rateLimit, clientIp } from "@/lib/rate-limit";

@@ -9,7 +9,9 @@
  */
 import { NextResponse } from "next/server";
 import { constructStripeEvent, retrieveStripeSession } from "@/lib/payment/stripe";
-import { fulfillOrder } from "@/lib/payment/credit";
+import { clawbackYamForOrder, fulfillOrder } from "@/lib/payment/credit";
+import { reverseAffiliateRewardsForPaymentRefs } from "@/lib/affiliate";
+import { q } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +26,23 @@ export async function POST(req: Request) {
   }
 
   const type = String(event.type || "");
+  if (type === "charge.refunded" || type === "charge.dispute.created" || type === "refund.created") {
+    const dataObj = (event.data as { object?: Record<string, unknown> } | undefined)?.object || {};
+    const paymentIntent = String(dataObj.payment_intent || "");
+    const charge = String(dataObj.charge || dataObj.id || "");
+    const refs = [paymentIntent, charge, paymentIntent && `stripe:${paymentIntent}`, charge && `stripe:${charge}`].filter(Boolean);
+    // Platform: clawback yam before/alongside affiliate reverse (affiliate never writes hour_balance)
+    const orders = await q<{ id: string }>(
+      `SELECT id FROM orders WHERE pay_ref = ANY($1::varchar[]) OR pay_ref = ANY($2::varchar[])`,
+      [refs, refs.map((r) => String(r))]
+    ).catch(() => [] as { id: string }[]);
+    const clawbacks = [];
+    for (const o of orders) {
+      clawbacks.push(await clawbackYamForOrder(o.id, `stripe:${type}`));
+    }
+    const reversal = await reverseAffiliateRewardsForPaymentRefs(refs, `stripe:${type}`);
+    return NextResponse.json({ received: true, reversal, clawbacks, type });
+  }
   // สนใจเฉพาะเหตุการณ์ "จ่ายสำเร็จ"
   if (type !== "checkout.session.completed" && type !== "checkout.session.async_payment_succeeded") {
     return NextResponse.json({ received: true, ignored: type });

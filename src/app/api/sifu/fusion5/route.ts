@@ -113,6 +113,7 @@ type ProfileRow = {
   birth_datetime: string;
   birth_lat: number | null;
   birth_lng: number | null;
+  birth_location_name: string | null;
   gender: string | null;
   birth_time_known: boolean | null;
   day_boundary: string | null;
@@ -165,7 +166,7 @@ async function loadBirth(profileId: string, orgId: string | null): Promise<Fusio
             relationship_type,
             (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-            birth_lat, birth_lng, gender, birth_time_known, day_boundary, bazi_pillars, yongshen
+            birth_lat, birth_lng, birth_location_name, gender, birth_time_known, day_boundary, bazi_pillars, yongshen
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [profileId, orgId]
   );
@@ -183,6 +184,8 @@ async function loadBirth(profileId: string, orgId: string | null): Promise<Fusio
     hasTime: row.birth_time_known !== false,
     gender: (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M"),
     timezone: "Asia/Bangkok",
+    /* r510-tz: ต่อท่อชื่อสถานที่เกิดจาก DB เข้า prompt (มีข้อมูลอยู่แล้ว แค่ไม่เคย SELECT) */
+    place: String(row.birth_location_name || "").trim() || undefined,
     birthDate,
     birthTime: (birthTimeRaw || "12:00").slice(0, 5),
     dayBoundary: row.day_boundary === "00:00" ? "00:00" : "23:00",

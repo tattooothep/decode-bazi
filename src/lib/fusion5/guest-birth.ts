@@ -26,7 +26,8 @@ import { computeSiLingDays } from "../chart-table";
 import { boundaryWarning3p, monthPillarBoundary } from "../bazi-boundary";
 import { loadPromptKV } from "../prompt-md";
 import { DISCIPLINES } from "./disciplines";
-import { FUSION_PANEL_PROMPT_MAX_CHARS } from "./build-prompt";
+import { FUSION_PANEL_PROMPT_MAX_CHARS, sanitizePromptInline, normalizeTimezoneLabel } from "./build-prompt";
+import { NEW_LANG_NAME_TH, LANG_ANSWER_DIRECTIVE } from "../sifu-answer-lang"; // r414-i18n9
 
 /* ── ค่าคงที่แปลไทย (self-contained ตามแบบ resonance.ts/bazi-synastry.ts — ไม่ import จาก route LOCKED) ── */
 const STEM_ELEMENT_MAP: Record<string, string> = {
@@ -43,7 +44,7 @@ const STEM_TH: Record<string, string> = {
   甲: "ไม้หยาง", 乙: "ไม้หยิน", 丙: "ไฟหยาง", 丁: "ไฟหยิน", 戊: "ดินหยาง", 己: "ดินหยิน",
   庚: "ทองหยาง", 辛: "ทองหยิน", 壬: "น้ำหยาง", 癸: "น้ำหยิน",
 };
-const LANG_NAME: Record<string, string> = { th: "ไทย", en: "อังกฤษ", zh: "จีน" };
+const LANG_NAME: Record<string, string> = { th: "ไทย", en: "อังกฤษ", zh: "จีน", ...NEW_LANG_NAME_TH }; // r414-i18n9: additive (th/en/zh ค่าเดิม)
 
 export const GUEST_MAX_BIRTHS = 4;
 const DEFAULT_LAT = 13.7563;
@@ -74,7 +75,10 @@ export type GuestComputedBirth = {
   lng: number;
   hasTime: boolean;
   gender: "M" | "F";
-  timezone: "Asia/Bangkok";
+  /* r510-tz: เดิมล็อก literal "Asia/Bangkok" — เปิดเป็น string เพื่อรองรับดวงต่างประเทศ (ค่า default ยังกรุงเทพ) */
+  timezone: string;
+  /* r510-tz: ชื่อสถานที่เกิดที่ user กรอก (GuestBirthStored.place) — ส่งต่อเข้า prompt */
+  place?: string;
   birthDate: string;
   birthTime: string;            // "12:00" เมื่อไม่ทราบเวลา (convention loadBirth เดิม)
   dayBoundary: "23:00";
@@ -162,6 +166,7 @@ export async function buildGuestFusionBirth(gs: GuestBirthStored): Promise<Guest
     hasTime,
     gender: gs.gender,
     timezone: "Asia/Bangkok",
+    place: (gs.place || "").trim() || undefined, // r510-tz: ต่อท่อสถานที่เกิด guest เข้า prompt
     birthDate: gs.birthDate,
     birthTime: time,
     dayBoundary: "23:00",
@@ -264,9 +269,15 @@ export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Prom
     `=== ผังดวง ${focus.name} (ดวงชั่วคราว) ===`,
     `GUEST_NOTE: ดวงนี้เป็น "ดวงชั่วคราว" — ผู้ใช้กรอกวันเกิดสด ไม่ได้บันทึกเป็นโปรไฟล์ · ไม่มีข้อมูล用神ที่บันทึกไว้ในระบบ (บรรทัด YONG_LOCK ด้านล่างเป็นค่าจาก engine ของผังนี้เท่านั้น) · ห้ามอ้างประวัติ/บริบทเก่าของโปรไฟล์ใดๆ`,
     `ชื่อ: ${focus.name} · เพศ ${focus.gender} · อายุปัจจุบันประมาณ ${ageNow}`,
-    focus.hasTime
-      ? `เกิด: ${focus.birthDate} ${focus.birthTime} · lat ${focus.lat} lng ${focus.lng} · timezone Asia/Bangkok · ขอบวัน 23:00 (default ดวงชั่วคราว)`
-      : `เกิด: ${focus.birthDate} · ไม่ทราบเวลาเกิด (อ่านแบบ 3 เสา · ห้ามเดายาม) · lat ${focus.lat} lng ${focus.lng} · timezone Asia/Bangkok`,
+    /* r510-tz: ป้ายเขตเวลาตามดวงจริง (validate IANA · default กรุงเทพ) + สถานที่เกิดถ้ามี — place เป็นข้อความ user กรอก ล้าง+cap+ครอบเครื่องหมายคำพูดก่อนเสมอ (กัน prompt injection) */
+    ((): string => {
+      const gp = sanitizePromptInline(focus.place, 80);
+      const gtz = normalizeTimezoneLabel(focus.timezone);
+      const placeSeg = gp ? ` · สถานที่เกิด: "${gp}"` : "";
+      return focus.hasTime
+        ? `เกิด: ${focus.birthDate} ${focus.birthTime}${placeSeg} · lat ${focus.lat} lng ${focus.lng} · timezone ${gtz} · ขอบวัน 23:00 (default ดวงชั่วคราว)`
+        : `เกิด: ${focus.birthDate} · ไม่ทราบเวลาเกิด (อ่านแบบ 3 เสา · ห้ามเดายาม)${placeSeg} · lat ${focus.lat} lng ${focus.lng} · timezone ${gtz}`;
+    })(),
     `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement}${g.DM_FACT_LOCK ? ` · ${g.DM_FACT_LOCK}` : ""}`,
     `PILLAR LOCK (ก้าน/กิ่งทุกเสา · เวลาอ้างเสาใดให้คัดจากบรรทัดนี้ตรงๆ ห้ามประกอบ/เดาเอง): ${pillarLine}`,
     ...(g.DM_THAI_LOCK ? [g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh)] : []),
@@ -285,6 +296,7 @@ export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Prom
     L.push(`คุณคือซินแสผู้เชี่ยวชาญ "${bind.labelTh}" (${bind.labelZh})`);
     L.push(`อ่านดวงจาก "ผังที่ระบบคำนวณ" ด้านล่างเท่านั้น · ⚠️ ${bind.termGuard}`);
     L.push(`ห้ามเดาเสา/ก้าน/กิ่ง/ธาตุ/วัยจร · field ไหนไม่มีให้บอกว่าไม่มี · ตอบภาษา${LANG_NAME[lang] || "ไทย"}นำ`);
+    if (LANG_ANSWER_DIRECTIVE[lang]) L.push(LANG_ANSWER_DIRECTIVE[lang]); // r414-i18n9: เฉพาะภาษาใหม่
     for (const n of args.notes || []) if (n && n.trim()) L.push(n.trim());
     if (args.timingLine && args.timingLine.trim()) L.push(args.timingLine.trim());
     if (canonText) {
@@ -333,10 +345,15 @@ export async function buildGuestBaziPanelPrompt(args: GuestBaziPromptArgs): Prom
       canonBudget = Math.max(4_000, canonBudget - (out.length - cap + 2_000));
       out = assemble(canon.text.slice(0, canonBudget), true, chartLines);
     }
-    if (out.length <= cap) return out;
+    if (out.length <= cap) return withLangTail(out);
   }
   const marker = `\n[TRUNCATED_NONCRITICAL_MIDDLE_FOR_PROMPT_CAP originalChars=${out.length}]\n`;
   const headBudget = 12_000;
   const tailBudget = cap - headBudget - marker.length;
-  return `${out.slice(0, headBudget)}${marker}${out.slice(-tailBudget)}`;
+  return withLangTail(`${out.slice(0, headBudget)}${marker}${out.slice(-tailBudget)}`);
+
+  // r414-i18n9: ย้ำ directive ภาษาใหม่ท้าย prompt (th/en/zh ไม่มี entry = byte-identical)
+  function withLangTail(p: string): string {
+    return LANG_ANSWER_DIRECTIVE[lang] ? `${p}\n\n${LANG_ANSWER_DIRECTIVE[lang]}` : p;
+  }
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
-import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { hashPassword, signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
 import crypto from "node:crypto";

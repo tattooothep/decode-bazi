@@ -34,26 +34,57 @@ const QIMEN_SYSTEM_SCOPE: Record<QimenSystemType, {
   calculation_scope_th: string;
   source_note_th: string;
   caveat_th: string;
+  /* r420 · i18n additive · EN/ZH คู่ขนาน · ไม่แตะ logic */
+  calculation_scope_en: string;
+  calculation_scope_zh: string;
+  source_note_en: string;
+  source_note_zh: string;
+  caveat_en: string;
+  caveat_zh: string;
 }> = {
   hour: {
     calculation_scope_th: "ผังฉีเหมินยาม 時家奇門",
     source_note_th: "ผังนี้มาจากระบบคำนวณฉีเหมินตามสำนัก เวลา และพิกัดที่ส่งมา ใช้กับคำถามเฉพาะหน้าและการเลือกยาม",
     caveat_th: "ใช้กับคำถามช่วงเวลานี้และการเลือกยาม ไม่ใช่ภาพรวมทั้งวัน/เดือน/ปี",
+    calculation_scope_en: "Hour chart 時家奇門",
+    calculation_scope_zh: "時家奇門",
+    source_note_en: "This chart is computed from the school, time and coordinates provided. Use it for immediate questions and hour selection.",
+    source_note_zh: "此盤依所選門派、時間與座標排出，用於眼前之問與擇時。",
+    caveat_en: "For questions about this hour and hour selection only — not a day/month/year overview.",
+    caveat_zh: "僅用於此時辰之問與擇時，非全日／月／年之總覽。",
   },
   day: {
     calculation_scope_th: "ผังฉีเหมินวัน 日家奇門",
     source_note_th: "ผังนี้ใช้ดูแรงของวันและภาพรวมกิจกรรมวันนั้น ไม่ใช่ผังยามเฉพาะชั่วโมง",
     caveat_th: "ไม่ใช่ผังยามเฉพาะชั่วโมง ถ้าจะลงมือจริงยังควรดูผังยาม 時家 ประกอบ",
+    calculation_scope_en: "Day chart 日家奇門",
+    calculation_scope_zh: "日家奇門",
+    source_note_en: "This chart reads the strength of the day and the day's overall activities — it is not an hour-specific chart.",
+    source_note_zh: "此盤看當日之力與全日事象，非逐時之時盤。",
+    caveat_en: "Not an hour-specific chart. Before acting, also consult the 時家 hour chart.",
+    caveat_zh: "非逐時之時盤；實際行事仍宜參看時家盤。",
   },
   month: {
     calculation_scope_th: "ผังฉีเหมินเดือน 月家奇門",
     source_note_th: "ผังนี้ใช้ดูแนวโน้มระดับเดือนและบริบทงานใหญ่ ไม่ใช่คำตัดสินจังหวะลงมือรายชั่วโมง",
     caveat_th: "ใช้เป็นภาพรวมรายเดือน ไม่ควรฟันธงจังหวะลงมือรายชั่วโมงจากผังนี้อย่างเดียว",
+    calculation_scope_en: "Month chart 月家奇門",
+    calculation_scope_zh: "月家奇門",
+    source_note_en: "This chart reads month-level trends and the context of major undertakings — it does not judge hour-by-hour timing.",
+    source_note_zh: "此盤看月度大勢與大事之局，非逐時斷訣。",
+    caveat_en: "Use as a monthly overview; do not fix hourly action timing from this chart alone.",
+    caveat_zh: "作月度總覽之用，不宜僅憑此盤斷逐時行事。",
   },
   year: {
     calculation_scope_th: "ผังฉีเหมินปี 年家奇門",
     source_note_th: "ผังนี้ใช้ดูภาพใหญ่ระดับปีและทิศทางระยะยาว ไม่ใช่ฤกษ์ยามเฉพาะชั่วโมง",
     caveat_th: "ใช้เป็นภาพรวมรายปี ไม่ใช่คำตัดสินยามลงมือเฉพาะหน้า",
+    calculation_scope_en: "Year chart 年家奇門",
+    calculation_scope_zh: "年家奇門",
+    source_note_en: "This chart reads the year-level picture and long-term direction — it is not an hour-selection chart.",
+    source_note_zh: "此盤看年度大局與長線方向，非擇時之用。",
+    caveat_en: "Use as a yearly overview; not a verdict for immediate action timing.",
+    caveat_zh: "作年度總覽之用，非眼前擇時之斷。",
   },
 };
 
@@ -89,6 +120,9 @@ function decorateQimenChartScope(chart: unknown, requestedSystemType: unknown): 
     no_score_mutation: existingPolicy.no_score_mutation ?? true,
     score_effect: existingPolicy.score_effect ?? "none",
     caveat_th: existingPolicy.caveat_th || scope.caveat_th,
+    /* r420 · i18n additive */
+    caveat_en: existingPolicy.caveat_en || scope.caveat_en,
+    caveat_zh: existingPolicy.caveat_zh || scope.caveat_zh,
   };
 
   const qimenContextFlags = {
@@ -106,8 +140,15 @@ function decorateQimenChartScope(chart: unknown, requestedSystemType: unknown): 
     chart_type: chart.chart_type || engineSystemType,
     calculation_scope_th: chart.calculation_scope_th || scope.calculation_scope_th,
     source_note_th: chart.source_note_th || scope.source_note_th,
+    /* r420 · i18n additive · EN/ZH คู่ขนาน */
+    calculation_scope_en: chart.calculation_scope_en || scope.calculation_scope_en,
+    calculation_scope_zh: chart.calculation_scope_zh || scope.calculation_scope_zh,
+    source_note_en: chart.source_note_en || scope.source_note_en,
+    source_note_zh: chart.source_note_zh || scope.source_note_zh,
     requested_system_type: requestedRaw,
     requested_calculation_scope_th: requestedScope.calculation_scope_th,
+    requested_calculation_scope_en: requestedScope.calculation_scope_en,
+    requested_calculation_scope_zh: requestedScope.calculation_scope_zh,
     qimen_system_scope_request: {
       version: "qimen-system-scope-request-v1",
       requested_system_type: requestedRaw,
@@ -115,12 +156,28 @@ function decorateQimenChartScope(chart: unknown, requestedSystemType: unknown): 
       fulfilled,
       calculation_scope_th: scope.calculation_scope_th,
       requested_calculation_scope_th: requestedScope.calculation_scope_th,
+      calculation_scope_en: scope.calculation_scope_en,
+      calculation_scope_zh: scope.calculation_scope_zh,
+      requested_calculation_scope_en: requestedScope.calculation_scope_en,
+      requested_calculation_scope_zh: requestedScope.calculation_scope_zh,
       status_th: fulfilled
         ? "คำขอตรงกับผังที่ engine คำนวณจริง"
         : `ยังไม่ได้คำนวณ ${requestedScope.calculation_scope_th} ในคำตอบนี้ จึงแสดง ${scope.calculation_scope_th} ที่ engine ส่งมาจริง`,
+      status_en: fulfilled
+        ? "The request matches the chart the engine actually computed"
+        : `The ${requestedScope.calculation_scope_en} was not computed in this response; showing the ${scope.calculation_scope_en} the engine actually returned`,
+      status_zh: fulfilled
+        ? "所請與 engine 實際排出之盤相符"
+        : `本次未排出${requestedScope.calculation_scope_zh}，故顯示 engine 實際回傳之${scope.calculation_scope_zh}`,
       caveat_th: fulfilled
         ? scope.caveat_th
         : "ห้ามอ่านผังนี้เป็นผังวัน/เดือน/ปี ถ้า engine ยังส่ง system_type เป็น hour",
+      caveat_en: fulfilled
+        ? scope.caveat_en
+        : "Do not read this as a day/month/year chart while the engine still returns system_type = hour",
+      caveat_zh: fulfilled
+        ? scope.caveat_zh
+        : "engine 仍回傳 system_type = hour 時，勿將此盤當作日／月／年盤解讀",
     },
     temporal_context_policy: temporalContextPolicy,
     api_capabilities: {
@@ -134,6 +191,10 @@ function decorateQimenChartScope(chart: unknown, requestedSystemType: unknown): 
         fulfilled,
         calculation_scope_th: chart.calculation_scope_th || scope.calculation_scope_th,
         source_note_th: chart.source_note_th || scope.source_note_th,
+        calculation_scope_en: chart.calculation_scope_en || scope.calculation_scope_en,
+        calculation_scope_zh: chart.calculation_scope_zh || scope.calculation_scope_zh,
+        source_note_en: chart.source_note_en || scope.source_note_en,
+        source_note_zh: chart.source_note_zh || scope.source_note_zh,
         verdict_allowed: temporalContextPolicy.verdict_allowed,
         no_score_mutation: temporalContextPolicy.no_score_mutation,
         score_effect: temporalContextPolicy.score_effect,

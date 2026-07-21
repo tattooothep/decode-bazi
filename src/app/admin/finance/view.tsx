@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { AdminShell } from "@/components/admin/AdminShell";
 
 type Dash = {
   revenue: { paid_orders: number; total_thb: number; thb_30d: number; yam_sold: number };
@@ -9,6 +10,16 @@ type Dash = {
   users: { total: number; paying: number };
   daily: { day: string; thb: number }[];
   byFeature: { feature: string; n: number; yam: number }[];
+  margin?: {
+    gross_thb: number;
+    refunds_thb: number;
+    net_revenue_thb: number;
+    ai_cogs_thb: number;
+    affiliate_paid_thb: number;
+    affiliate_reserve_thb: number;
+    gateway_fee_est_thb: number;
+    contribution_thb: number;
+  };
 };
 type Txn = { created_at: string; email: string; delta: number; reason: string; balance_after: number; ref_feature: string | null; note: string | null };
 
@@ -34,12 +45,7 @@ export default function FinanceAdmin() {
   const maxDaily = Math.max(1, ...(dash?.daily || []).map((d) => d.thb));
 
   return (
-    <div className="min-h-screen px-5 py-8 max-w-6xl mx-auto">
-      <div className="flex items-baseline justify-between mb-5">
-        <h1 className="font-serif text-2xl">การเงิน</h1>
-        <Link href="/admin" className="text-sm opacity-60 hover:opacity-100">← หลังบ้าน</Link>
-      </div>
-
+    <AdminShell title="การเงิน · Finance">
       <div className="flex gap-1 mb-5 text-sm">
         {([["dash", "ภาพรวม"], ["txns", "ธุรกรรมยาม"], ["orders", "ออเดอร์"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={`px-4 py-1.5 border ${tab === k ? "border-foreground/50 bg-foreground/10" : "border-foreground/15"}`}>{l}</button>
@@ -58,6 +64,14 @@ export default function FinanceAdmin() {
             <Card label="ยามที่ใช้ไป" value={dash.yam.spent.toLocaleString()} />
             <Card label="ยามคงค้าง (หนี้)" value={dash.yam.outstanding.toLocaleString()} sub={`${dash.users.total} user · ${dash.users.paying} จ่าย`} />
           </div>
+          {dash.margin && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <Card label="Net revenue" value={baht(dash.margin.net_revenue_thb)} sub={`refunds ${baht(dash.margin.refunds_thb)}`} />
+              <Card label="AI COGS" value={baht(dash.margin.ai_cogs_thb)} />
+              <Card label="Affiliate paid" value={baht(dash.margin.affiliate_paid_thb)} sub={`reserve ${baht(dash.margin.affiliate_reserve_thb)}`} />
+              <Card label="Contribution" value={baht(dash.margin.contribution_thb)} sub={`fee est ${baht(dash.margin.gateway_fee_est_thb)}`} />
+            </div>
+          )}
 
           <div className="border border-foreground/15 p-4 mb-6">
             <div className="text-xs uppercase opacity-50 mb-3">รายได้ 14 วัน</div>
@@ -127,7 +141,7 @@ export default function FinanceAdmin() {
           </table>
         </div>
       )}
-    </div>
+    </AdminShell>
   );
 }
 

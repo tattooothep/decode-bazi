@@ -1,0 +1,320 @@
+{
+    "Nobleman Star": {
+        "Year": {
+            "label_en": "Social Network",
+            "description_en": "You naturally attract goodwill from the public, strangers, and authority figures, giving you a distinct advantage in networking and external dealings.",
+            "label_th": "เครือข่ายสังคม",
+            "description_th": "คุณดึงดูดคนดีมีใจช่วยเหลือได้อย่างเป็นธรรมชาติ ไม่ว่าจะเป็นผู้อาวุโสหรือคนแปลกหน้า ทำให้คุณมีข้อได้เปรียบในการสร้างสัมพันธ์กับโลกภายนอก"
+        },
+        "Month": {
+            "label_en": "Career & Mentors",
+            "description_en": "You are likely to have supportive bosses and mentors who protect you, provide opportunities, and help you navigate career challenges smoothly.",
+            "label_th": "อาชีพและที่ปรึกษา",
+            "description_th": "คุณมักได้หัวหน้าและพี่เลี้ยงที่ดีคอยสนับสนุน ปกป้อง และมอบโอกาสดีๆให้ในเส้นทางอาชีพ"
+        },
+        "Day": {
+            "label_en": "Spouse & Self",
+            "description_en": "Your spouse or partner acts as a genuine ally who supports your growth, and you possess strong innate instincts to save yourself during crises.",
+            "label_th": "คู่ครองและตัวตน",
+            "description_th": "คู่ครองของคุณจะเป็นผู้สนับสนุนที่แท้จริง และตัวคุณเองก็มีสัญชาตญาณที่แข็งแกร่งในการรอดพ้นจากวิกฤต"
+        },
+        "Hour": {
+            "label_en": "Team & Assets",
+            "description_en": "You have reliable subordinates, staff, or children who are capable of solving problems for you, ensuring your plans are executed effectively.",
+            "label_th": "ทีมงานและทรัพย์สิน",
+            "description_th": "คุณจะมีลูกน้องหรือลูกหลานที่มีความสามารถคอยช่วยเหลือ แก้ปัญหา และดูแลคุณในยามต้องการ"
+        }
+    },
+    "Peach Blossom": {
+        "Year": {
+            "label_en": "Social Network",
+            "description_en": "You have wide public appeal that makes networking easy; strangers and large groups naturally find you approachable and likable.",
+            "label_th": "เครือข่ายสังคม",
+            "description_th": "คุณมีเสน่ห์ดึงดูดใจคนทั่วไปได้ง่าย ทำให้การสร้างเครือข่ายและการเข้าสังคมเป็นเรื่องราบรื่น"
+        },
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "Your charm is your professional asset, helping you win over clients, colleagues, and bosses, making you a popular figure in your industry.",
+            "label_th": "อาชีพและอุตสาหกรรม",
+            "description_th": "เสน่ห์คือสินทรัพย์ทางอาชีพของคุณ ช่วยให้คุณเอาชนะใจลูกค้า เพื่อนร่วมงาน และเจ้านายได้ง่าย"
+        },
+        "Day": {
+            "label_en": "Spouse & Self",
+            "description_en": "You possess high personal magnetism and romantic appeal, making it easy for you to attract partners and maintain strong chemistry in relationships.",
+            "label_th": "คู่ครองและตัวตน",
+            "description_th": "คุณมีแรงดึงดูดทางเพศสูง ทำให้ดึงดูดคู่รักได้ง่ายและรักษาเคมีในความสัมพันธ์ได้ดี"
+        },
+        "Hour": {
+            "label_en": "Subordinates & Fans",
+            "description_en": "Your charisma resonates strongly with younger generations, staff, or audiences, allowing you to build a loyal following or a dedicated team.",
+            "label_th": "ลูกน้องและแฟนคลับ",
+            "description_th": "เสน่ห์ของคุณส่งผลต่อคนรุ่นใหม่ ลูกน้อง หรือผู้ติดตาม ทำให้คุณสามารถสร้างฐานแฟนคลับหรือทีมที่ภักดีได้"
+        }
+    },
+    "Sky Horse": {
+        "Year": {
+            "label_en": "Global Reach",
+            "description_en": "You are destined to connect with the wider world; your best opportunities often come from international sources or working far from your hometown.",
+            "label_th": "การเข้าถึงระดับโลก",
+            "description_th": "คุณถูกลิขิตให้เชื่อมต่อกับโลกกว้าง โอกาสที่ดีที่สุดมักมาจากต่างประเทศหรือการทำงานไกลบ้าน"
+        },
+        "Month": {
+            "label_en": "Career Movement",
+            "description_en": "Your career benefits from mobility; you thrive in jobs involving travel, logistics, or working in multiple locations.",
+            "label_th": "การเคลื่อนไหวในอาชีพ",
+            "description_th": "อาชีพของคุณได้ประโยชน์จากการเคลื่อนไหว คุณเหมาะกับงานที่ต้องเดินทาง โลจิสติกส์ หรือทำงานหลายสถานที่"
+        },
+        "Day": {
+            "label_en": "Lifestyle & Partner",
+            "description_en": "You or your spouse prefer a dynamic lifestyle; staying in one place too long feels restrictive, and change energizes you.",
+            "label_th": "วิถีชีวิตและคู่ครอง",
+            "description_th": "คุณหรือคู่ครองชอบวิถีชีวิตที่กระตือรือร้น การอยู่กับที่นานเกินไปทำให้รู้สึกอึดอัด และการเปลี่ยนแปลงช่วยเติมพลังให้คุณ"
+        },
+        "Hour": {
+            "label_en": "Expansion & Legacy",
+            "description_en": "Your later years involve movement or relocation; your children may live abroad or your legacy expands beyond your home country.",
+            "label_th": "การขยายและมรดก",
+            "description_th": "ช่วงบั้นปลายชีวิตมีการเคลื่อนย้ายหรือย้ายถิ่น ลูกหลานอาจอยู่ต่างประเทศหรือมรดกของคุณขยายออกไปนอกประเทศ"
+        }
+    },
+    "Intelligence": {
+        "Year": {
+            "label_en": "Reputation",
+            "description_en": "You are known for your wisdom and analytical mind; others seek your counsel and respect your intellectual capabilities.",
+            "label_th": "ชื่อเสียง",
+            "description_th": "คุณเป็นที่รู้จักในเรื่องปัญญาและความสามารถในการวิเคราะห์ คนอื่นมักขอคำปรึกษาและเคารพความสามารถทางปัญญาของคุณ"
+        },
+        "Month": {
+            "label_en": "Strategy",
+            "description_en": "Your career benefits from your sharp analytical skills; you excel in roles requiring planning, research, or problem-solving.",
+            "label_th": "กลยุทธ์",
+            "description_th": "อาชีพของคุณได้ประโยชน์จากทักษะการวิเคราะห์ที่คมคาย คุณเก่งในบทบาทที่ต้องการการวางแผน การวิจัย หรือการแก้ปัญหา"
+        },
+        "Day": {
+            "label_en": "Mindset & Partner",
+            "description_en": "You have a naturally curious and strategic mind; you or your spouse value intellectual connection above all else.",
+            "label_th": "ความคิดและคู่ครอง",
+            "description_th": "คุณมีจิตใจที่อยากรู้อยากเห็นและเชิงกลยุทธ์ตามธรรมชาติ คุณหรือคู่ครองให้คุณค่ากับการเชื่อมต่อทางปัญญามากที่สุด"
+        },
+        "Hour": {
+            "label_en": "Innovation & Teaching",
+            "description_en": "Your wisdom shines in your later years; you may become a teacher, advisor, or innovator whose ideas outlast you.",
+            "label_th": "นวัตกรรมและการสอน",
+            "description_th": "ปัญญาของคุณส่องแสงในช่วงบั้นปลาย คุณอาจกลายเป็นครู ที่ปรึกษา หรือนักคิดผู้สร้างสรรค์ที่ไอเดียคงอยู่ตลอดไป"
+        }
+    },
+    "Kong Wang": {
+        "Year": {
+            "label_en": "Ancestral Void",
+            "description_en": "Ancestral support and early-life blessings may feel weakened or absent; grandparent luck and family foundation are hollowed.",
+            "label_th": "บรรพบุรุษว่างเปล่า",
+            "description_th": "พลังสนับสนุนจากบรรพบุรุษและโชคในวัยเด็กอาจอ่อนลงหรือขาดหายไป รากฐานครอบครัวอาจไม่แข็งแรงเท่าที่ควร"
+        },
+        "Month": {
+            "label_en": "Career Void",
+            "description_en": "Career support from bosses or mentors may have gaps; promotions and industry backing feel elusive or delayed.",
+            "label_th": "อาชีพว่างเปล่า",
+            "description_th": "การสนับสนุนจากหัวหน้าหรือพี่เลี้ยงอาจมีช่องว่าง การเลื่อนตำแหน่งและโอกาสในอาชีพอาจล่าช้าหรือเลื่อนลอย"
+        },
+        "Hour": {
+            "label_en": "Legacy Void",
+            "description_en": "Connection with children or subordinates may feel distant; late-life plans and legacy-building require extra effort.",
+            "label_th": "มรดกว่างเปล่า",
+            "description_th": "ความสัมพันธ์กับลูกหลานหรือลูกน้องอาจรู้สึกห่างเหิน การวางแผนบั้นปลายชีวิตและการสร้างมรดกต้องใช้ความพยายามมากขึ้น"
+        }
+    },
+    "Elegant Seal": {
+        "Year": {
+            "label_en": "Social Circle & Early Life",
+            "description_en": "You likely felt different from your peers during childhood, possessing a quiet, observant, or artistic nature. While other children sought noisy play, you may have preferred solitary activities, reading, or deep thinking, indicating an early spiritual or intellectual maturity.",
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "คุณมักมีความคิดอ่านลึกซึ้งหรือมีโลกส่วนตัวสูงมาตั้งแต่เด็ก อาจรู้สึกแปลกแยกจากเพื่อนรุ่นเดียวกันเพราะชอบความเงียบสงบ หรือสนใจในศิลปะและปรัชญามากกว่าการเล่นสนุกทั่วไปเหมือนเด็กคนอื่น"
+        },
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "Your career thrives in fields requiring deep focus, creativity, or specialized knowledge (such as arts, design, metaphysics, or research). You prefer working independently rather than in large, chaotic teams, excelling as a specialist whose work reflects a unique, signature style.",
+            "label_th": "การงาน & อาชีพ",
+            "description_th": "คุณเหมาะกับงานที่ต้องใช้ความคิดสร้างสรรค์ สมาธิ หรือความเชี่ยวชาญเฉพาะด้าน (เช่น ศิลปิน นักวิชาการ หรือนักโหราศาสตร์) คุณมักทำผลงานได้ดีเยี่ยมเมื่อได้ฉายเดี่ยวหรือทำงานในบรรยากาศที่เงียบสงบ มากกว่าการทำงานเป็นทีมใหญ่ที่วุ่นวาย"
+        },
+        "Hour": {
+            "label_en": "Late Life & Legacy",
+            "description_en": "Your later years are marked by a pursuit of wisdom or spiritual truth. You may choose a quiet, contemplative retirement, focusing on philosophy, religion, or artistic hobbies rather than seeking social status, finding peace in solitude.",
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "บั้นปลายชีวิตของคุณจะมุ่งเน้นไปที่ความสงบทางใจ การปฏิบัติธรรม หรือการทำงานศิลปะ คุณมีแนวโน้มที่จะปลีกวิเวกจากความวุ่นวายทางสังคมเพื่อค้นหาสัจธรรมหรือความสุขที่แท้จริงในแบบของตัวเอง"
+        },
+        "Day": {
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "คุณหวงแหนพื้นที่ส่วนตัวและชอบใช้เวลาอยู่กับความคิดของตัวเอง ในชีวิตคู่ คุณหรือคู่ครองอาจต้องการระยะห่างพอสมควร (Personal Space) หรือมีความสัมพันธ์ที่เน้นความเข้าใจทางจิตวิญญาณมากกว่าความใกล้ชิดตัวติดกันตลอดเวลา"
+        }
+    },
+    "The General Star": {
+        "Year": {
+            "label_en": "Social Circle & Early Life",
+            "description_en": "You likely displayed leadership traits from a very young age, often being chosen as a class monitor or team captain. You may also come from a family with a background in government, military, or authoritative roles.",
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "คุณฉายแววความเป็นผู้นำมาตั้งแต่เด็ก มักได้รับเลือกให้เป็นหัวหน้าห้องหรือผู้นำทีมกิจกรรม นอกจากนี้อาจหมายถึงการเกิดในครอบครัวข้าราชการ ทหาร ตำรวจ หรือตระกูลที่มีอำนาจวาสนา"
+        },
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "This is the ultimate career placement. You are born to lead. You thrive in management, executive roles, or entrepreneurship where you can make decisive calls. You command respect naturally and are likely to rise to the top of your organizational hierarchy."
+        },
+        "Day": {
+            "label_en": "Spouse & Inner Self",
+            "description_en": "You possess a strong, authoritative personality and high self-discipline. In marriage, you likely hold the decision-making power, or you may attract a spouse who is successful, powerful, and holds a high-ranking position in their field.",
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "คุณเป็นคนเด็ดขาด เข้มงวด และมีระเบียบวินัยในตนเองสูง ในชีวิตคู่ คุณมักจะเป็นคนกุมอำนาจตัดสินใจในบ้าน หรือดึงดูดคู่ครองที่เป็นคนเก่ง มีหน้าที่การงานดี และมียศมีตำแหน่ง"
+        },
+        "Hour": {
+            "label_en": "Late Life & Legacy",
+            "description_en": "Your influence remains strong well into retirement. You are likely to be a community leader or a respected advisor in your old age. It also indicates that your children will be successful, capable, and hold positions of authority.",
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "บารมีของคุณยังคงเปี่ยมล้นแม้ในวัยเกษียณ มักเป็นที่เคารพนับถือของคนในสังคมหรือเป็นผู้นำชุมชน นอกจากนี้ยังส่งผลให้ลูกหลานมีความเจริญก้าวหน้า เป็นเจ้าคนนายคน หรือสืบทอดกิจการได้ดี"
+        }
+    },
+    "Blood Knife": {
+        "Year": {
+            "label_en": "Social Circle & Early Life",
+            "description_en": "In childhood, you may have experienced frequent minor injuries such as falls, scrapes, or cuts from sharp objects. There may have been a need for hospital visits or minor surgeries from a young age.",
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "ในวัยเด็กคุณมักเจ็บตัวเล็กๆ น้อยๆ บ่อยครั้ง เช่น หกล้ม มีแผลถลอก หรือโดนของมีคมบาด อาจมีเกณฑ์ต้องเข้าโรงพยาบาลหรือผ่าตัดเล็กตั้งแต่ยังเป็นเด็ก"
+        },
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "Your work environment may carry risks, or you work with machinery and sharp tools. If not in such a field, be cautious of workplace accidents or injuries while performing your duties.",
+            "label_th": "การงาน & อาชีพ",
+            "description_th": "สภาพแวดล้อมการทำงานของคุณอาจมีความเสี่ยง หรือคุณต้องทำงานที่เกี่ยวข้องกับเครื่องจักรและของมีคม หากไม่ได้ทำงานสายนี้ ต้องระวังอุบัติเหตุในที่ทำงานหรือการเจ็บตัวจากการปฏิบัติหน้าที่"
+        },
+        "Hour": {
+            "label_en": "Late Life & Legacy",
+            "description_en": "Special attention to health is required in later life, as there is a high likelihood of illness requiring surgery or accidents from falls. It may also indicate that children often have injuries or pursue careers involving surgical tools or weapons.",
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "ต้องดูแลสุขภาพเป็นพิเศษในช่วงบั้นปลายชีวิต เพราะมีเกณฑ์สูงที่จะต้องเจ็บป่วยถึงขั้นผ่าตัด หรือเกิดอุบัติเหตุหกล้ม นอกจากนี้อาจหมายถึงลูกหลานมักมีเรื่องเจ็บตัว หรือลูกหลานประกอบอาชีพที่ต้องใช้มีดหมอหรืออาวุธ"
+        },
+        "Day": {
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "เป็นจุดที่ส่งผลต่อร่างกายโดยตรงที่สุด คุณมีเกณฑ์เสี่ยงต่อการผ่าตัด อุบัติเหตุเลือดตกยางออก หรือมีโรคเกี่ยวกับเลือด นอกจากนี้ยังเป็นสัญญาณเตือนไปถึงสุขภาพของคู่ครองที่อาจต้องรับการผ่าตัดเช่นกัน"
+        }
+    },
+    "Solitary": {
+        "Year": {
+            "label_en": "Social Circle & Early Life",
+            "description_en": "You may have experienced a lonely childhood or felt disconnected from your family early on. This placement sometimes indicates being separated from parents at a young age, or simply being an introverted child who preferred playing alone.",
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "คุณอาจมีวัยเด็กที่รู้สึกเหงาหรือห่างเหินจากครอบครัว บางกรณีหมายถึงการต้องแยกจากพ่อแม่ไปอยู่ไกลตั้งแต่เล็ก หรือเป็นเด็กที่ชอบเก็บตัวเงียบๆ ไม่ค่อยสุงสิงกับใคร (Introvert)"
+        },
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "You are a lone wolf in the professional world. You work best when left alone to manage your own tasks and dislike micromanagement or excessive teamwork. While you are highly self-reliant, you may struggle with office politics or building alliances."
+        },
+        "Hour": {
+            "label_en": "Late Life & Legacy",
+            "description_en": "You are prepared to face old age on your own terms. This placement suggests a solitary retirement where you may live alone or feel distant from your children. It warns of potential loneliness in later years if you do not actively maintain family bonds.",
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "บั้นปลายชีวิตคุณมีแนวโน้มจะอยู่แบบสันโดษ คุณอาจเลือกที่จะอยู่คนเดียวหรือมีความห่างเหินกับลูกหลาน ดาวนี้เตือนให้ระวังความเหงาจับใจในยามแก่เฒ่าหากไม่หมั่นสร้างสายสัมพันธ์กับคนในครอบครัวไว้"
+        },
+        "Day": {
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "นี่คือตำแหน่งที่ส่งผลกระทบต่อความรักมากที่สุด คุณรักอิสระและหวงแหนพื้นที่ส่วนตัวสูง ซึ่งอาจทำให้ชีวิตคู่ดูห่างเหิน เช่น ต่างคนต่างอยู่ คุยกันน้อยลง หรือมีความรู้สึกโดดเดี่ยวลึกๆ แม้จะมีคู่อยู่ข้างกายก็ตาม"
+        }
+    },
+    "Lonesome": {
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "You often feel isolated in your professional environment, even if you are surrounded by people. You prefer roles where you can work behind the scenes or in a private office. You may struggle with team-building activities, preferring to keep your personal life completely separate from work.",
+            "label_th": "การงาน & อาชีพ",
+            "description_th": "คุณมักรู้สึกโดดเดี่ยวในที่ทำงาน แม้จะมีเพื่อนร่วมงานมากมาย คุณชอบทำงานเบื้องหลังหรือในห้องส่วนตัวมากกว่าการสังสรรค์เฮฮา และมักจะขีดเส้นแบ่งระหว่างเรื่องงานกับเรื่องส่วนตัวอย่างชัดเจนจนดูเหมือนคนเข้าถึงยาก"
+        },
+        "Hour": {
+            "label_en": "Late Life & Legacy",
+            "description_en": "You are likely to face a solitary period in old age. This could mean outliving your spouse or simply choosing to live alone. It warns of a potential disconnect from your children, where they may live far away or visit infrequently.",
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "บั้นปลายชีวิตมีเกณฑ์ต้องอยู่ลำพัง อาจเกิดจากการเป็นม่าย หรือลูกหลานแยกย้ายไปอยู่ไกล ดาวนี้เตือนให้เตรียมใจและวางแผนชีวิตในช่วงชราให้ดี เพราะอาจขาดคนดูแลใกล้ชิดหรือลูกหลานไม่ค่อยมาเยี่ยมเยียน"
+        },
+        "Year": {
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "คุณอาจเป็นเด็กขี้อายหรือเก็บตัว รู้สึกเข้ากับกลุ่มเพื่อนหรือญาติพี่น้องได้ยาก เหมือนมีกำแพงบางอย่างกั้นกลาง ทำให้รู้สึกว่าตัวเองเป็นคนนอก (Outsider) แม้จะอยู่ท่ามกลางครอบครัวก็ตาม"
+        }
+    },
+    "Funeral Door": {
+        "Year": {
+            "label_en": "Social Circle & Early Life",
+            "description_en": "You may have experienced the loss of a grandparent or elder relative during your childhood. This placement can also indicate that you were a frail child with frequent illnesses, or you grew up in a family environment that carried a sense of heaviness or sorrow.",
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "คุณอาจมีประสบการณ์การสูญเสียญาติผู้ใหญ่ (เช่น ปู่ย่าตายาย) ตั้งแต่ยังเล็ก หรือเป็นเด็กที่สุขภาพไม่ค่อยแข็งแรง เจ็บป่วยออดแอดบ่อยกว่าเด็กทั่วไป ทำให้ครอบครัวต้องคอยเป็นห่วงอยู่เสมอ"
+        },
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "Family matters often interfere with your career. You may find yourself frequently distracted from work to solve domestic crises. It warns that family distress or the health of an elder could interrupt your professional progress or force you to take leave.",
+            "label_th": "การงาน & อาชีพ",
+            "description_th": "คุณมักมีความกังวลเรื่องสุขภาพของพ่อแม่เข้ามาแทรกแซงในช่วงวัยทำงาน หรืออาจต้องรับภาระดูแลบุพการีที่เจ็บป่วย ในด้านการงาน คุณอาจต้องทำงานในสภาพแวดล้อมที่ดูหดหู่ อึมครึม หรือทำงานเกี่ยวข้องกับความเจ็บป่วยและความตาย"
+        },
+        "Hour": {
+            "label_en": "Late Life & Legacy",
+            "description_en": "You must prioritize your health in old age, as this star indicates a risk of lingering illnesses. It also suggests that you might spend your later years worrying excessively about the health and well-being of your children or descendants.",
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "ต้องระวังโรคภัยไข้เจ็บที่จะมาเบียดเบียนในช่วงบั้นปลายชีวิต ทำให้ความสุขในวัยเกษียณลดลง นอกจากนี้ยังอาจหมายถึงความทุกข์ใจหรือความกังวลเกี่ยวกับสุขภาพและความปลอดภัยของลูกหลาน"
+        },
+        "Day": {
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "ดาวนี้ส่งผลกระทบต่อคนข้างกายโดยตรง คู่ครองของคุณอาจมีสุขภาพไม่ดี หรือมีโรคประจำตัวที่ต้องดูแลรักษาต่อเนื่อง ตัวคุณเองอาจรู้สึกอ่อนเพลีย ไร้ชีวิตชีวา หรือมีภาวะซึมเศร้าได้ง่าย"
+        }
+    },
+    "Robbery Sha": {
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "Your professional life is a battlefield. You face intense competition where rivals may try to steal your clients, credit for your work, or your promotion. It warns of sudden office politics or sabotage that can derail your career progress unexpectedly."
+        },
+        "Year": {
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "ครอบครัวของคุณอาจเคยประสบปัญหาทางการเงินแบบกะทันหันในช่วงที่คุณยังเด็ก หรือคุณมักถูกเพื่อนแย่งของเล่น แย่งโอกาส หรือถูกเอารัดเอาเปรียบจากคนรอบข้างในวัยเรียน"
+        },
+        "Day": {
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "คุณต้องระวังกระเป๋ารั่วอย่างหนัก อาจเกิดจากการทำของหาย ถูกขโมย หรือถูกโกง ในชีวิตคู่ คู่ครองอาจเป็นคนใช้เงินเก่ง (ล้างผลาญ) หรือนำปัญหาหนี้สินมาให้คุณต้องตามแก้จนทรัพย์สินร่อยหรอ"
+        },
+        "Hour": {
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "ต้องกอดสมบัติไว้ให้แน่นในยามแก่ เพราะมีเกณฑ์จะสูญเสียเงินก้อนใหญ่จากการถูกหลอกลงทุน หรือลูกหลานมาเบียดเบียนขอเงินไปใช้จนหมดตัว ทำให้บั้นปลายชีวิตขาดความมั่นคงทางการเงิน"
+        }
+    },
+    "Separating Edge": {
+        "Year": {
+            "label_en": "Social Circle & Early Life",
+            "description_en": "This placement specifically targets the luck of your parents or elders during your childhood. It suggests that you may have witnessed frequent arguments between your parents, or one of your parents may have had poor health or bad luck during your upbringing.",
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "ดาวนี้ส่งผลกระทบโดยตรงต่อพ่อแม่หรือญาติผู้ใหญ่ในช่วงที่คุณยังเด็ก คุณอาจเติบโตมาในบ้านที่พ่อแม่ทะเลาะกันบ่อย (บ้านแตกสาแหรกขาด) หรือบุพการีมีปัญหาสุขภาพและความโชคร้ายรุมเร้า"
+        },
+        "Month": {
+            "label_en": "Career & Industry",
+            "description_en": "Family matters often interfere with your career. You may find yourself frequently distracted from work to solve domestic crises. It warns that family distress or the health of an elder could interrupt your professional progress or force you to take leave.",
+            "label_th": "การงาน & อาชีพ",
+            "description_th": "ปัญหาครอบครัวมักจะลามปามมาถึงที่ทำงาน คุณอาจต้องคอยลางานหรือเสียสมาธิในการทำงานเพราะต้องคอยตามแก้ปัญหาให้ญาติพี่น้อง หรือต้องรับภาระดูแลผู้ใหญ่ที่เจ็บป่วยจนกระทบความก้าวหน้า"
+        },
+        "Day": {
+            "label_en": "Spouse & Inner Self",
+            "description_en": "This star casts a shadow over your marriage. It suggests friction between your spouse and your family (in-laws), or a sense of disorder and untidiness within your household that causes stress. It implies that domestic life lacks peace and harmony.",
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "ความวุ่นวายเกิดขึ้นในบ้านของคุณเอง อาจหมายถึงความขัดแย้งระหว่างคู่ครองกับญาติพี่น้องของคุณ (แม่ผัวลูกสะใภ้) หรือบรรยากาศในบ้านที่ไม่มีความสุข เต็มไปด้วยความยุ่งเหยิงและขาดระเบียบวินัย"
+        },
+        "Hour": {
+            "label_en": "Late Life & Legacy",
+            "description_en": "You may face distance from your children in your later years. It suggests that your children might move far away or that you might spend your retirement worrying about their stability. It serves as a reminder to maintain family bonds to avoid isolation.",
+            "label_th": "บั้นปลาย & ลูกหลาน",
+            "description_th": "บั้นปลายชีวิตอาจต้องอยู่ห่างไกลจากลูกหลาน หรือมีความทุกข์ใจเกี่ยวกับความประพฤติของลูกหลาน ดาวนี้เตือนให้ระวังความสัมพันธ์ในครอบครัวที่อาจแตกแยกจนต่อกันไม่ติดในยามแก่เฒ่า"
+        }
+    },
+    "Death God": {
+        "Year": {
+            "label_en": "Social Circle & Early Life",
+            "description_en": "You may have been an anxious or restless child, often feeling unsettled even in safe environments. It can also indicate growing up in a family dealing with legal disputes or hidden troubles that created an atmosphere of uneasiness.",
+            "label_th": "สังคมเพื่อนฝูง & วัยเด็ก",
+            "description_th": "คุณอาจเป็นเด็กที่ขี้กังวลหรือรู้สึกไม่ปลอดภัย (Insecure) แม้จะไม่มีเรื่องร้ายแรงเกิดขึ้น หรือเติบโตมาในครอบครัวที่มีคดีความ มีเรื่องปิดบังซ่อนเร้น ทำให้บรรยากาศในวัยเด็กเต็มไปด้วยความอึดอัด"
+        },
+        "Day": {
+            "label_en": "Spouse & Inner Self",
+            "description_en": "This star attacks your peace of mind. You are prone to overthinking, paranoia, or chronic anxiety. In marriage, it suggests a spouse who may be secretive, legally troubled, or simply a source of constant worry, preventing you from finding inner calm.",
+            "label_th": "คู่ครอง & ตัวตน",
+            "description_th": "ดาวนี้กัดกินความสงบสุขในใจ คุณมักเป็นคนคิดมาก วิตกจริต หรือมองโลกในแง่ร้าย ในชีวิตคู่ คู่ครองอาจเป็นคนที่มีลับลมคมใน สร้างปัญหาทางกฎหมาย หรือทำให้คุณต้องคอยหวาดระแวงอยู่เสมอ"
+        }
+    }
+}

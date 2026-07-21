@@ -89,6 +89,25 @@ ck("allows DaYun that matches HK_QIYUN_LOCK", r.ok, JSON.stringify(r.violations)
 r = checkSifuFactClaimGate("ปี 2569 ลูกอยู่วัยจร 甲午 ตาม map ปีนั้น", timingCtx);
 ck("allows correct DaYun for queried year", r.ok, JSON.stringify(r.violations));
 
+/* 11 ก.ค. · ดวงรอยต่อวัยจร (交運) · กัน false-positive ที่เคยฆ่าคำตอบซินแสทิ้งเงียบ (dayun_year_mismatch เกินเหตุ) */
+// (ก) ปีรอยต่อ (2026/2569 = ปีที่วัยจรสิ้นสุด) + ภาษา "กำลังจะสลับ" → พูดวัยจรถัดไปได้ตามจริง
+r = checkSifuFactClaimGate("ราวปี 2026 คุณกำลังจะสลับเข้าวัยจร 乙未 ครับ เหมาะเริ่มธุรกิจ", timingCtx);
+ck("allows next-DaYun talk at jiaoyun boundary year with transition wording (AD)", r.ok, JSON.stringify(r.violations));
+r = checkSifuFactClaimGate("ราวปี 2569 คุณกำลังจะย่างเข้าวัยจร 乙未 ครับ", timingCtx);
+ck("allows next-DaYun talk at jiaoyun boundary year with transition wording (BE)", r.ok, JSON.stringify(r.violations));
+// (ข) 流年 (year_pillar) อยู่ใกล้คำ "วัยจร" · เป็นปีจร ไม่ใช่วัยจรผิด
+r = checkSifuFactClaimGate("ปี 2026 วัยจรหนุนเรื่องเงิน ปีจร 丙午 เปิดโอกาสการค้าครับ", timingCtx);
+ck("allows LiuNian year_pillar near the word วัยจร (not a DaYun claim)", r.ok, JSON.stringify(r.violations));
+// ยังจับของผิดจริง: ปีที่ไม่ใช่รอยต่อ ฟันธงวัยจรถัดไปเต็มตัว = ผิด
+r = checkSifuFactClaimGate("ปี 2569 ลูกเข้าสู่วัยจร 乙未 เต็มตัวแล้วครับ", timingCtx);
+ck("still blocks wrong next-DaYun on a NON-boundary year", !r.ok && r.violations.some((v) => v.code === "timing:dayun_year_mismatch"), JSON.stringify(r.violations));
+// ยังจับของผิดจริง: ปีรอยต่อ แต่ฟันธงเต็มตัว ไม่มีภาษาสลับ = ผิด
+r = checkSifuFactClaimGate("ปี 2026 วัยจร 乙未 ครับ", timingCtx);
+ck("still blocks flat wrong DaYun at boundary year without transition wording", !r.ok && r.violations.some((v) => v.code === "timing:dayun_year_mismatch"), JSON.stringify(r.violations));
+// ยังจับของผิดจริง: ปีรอยต่อ + ภาษาสลับ แต่อ้างวัยจรถัดไป "มั่ว" (壬午 ไม่ใช่วัยจรปี 2027=乙未) = ผิด
+r = checkSifuFactClaimGate("ราวปี 2026 คุณกำลังจะสลับเข้าวัยจร 壬午 ครับ", timingCtx);
+ck("still blocks garbage next-DaYun at boundary year (not the real next dayun)", !r.ok && r.violations.some((v) => v.code === "timing:dayun_year_mismatch"), JSON.stringify(r.violations));
+
 r = checkSifuFactClaimGate("ม.ค. 2569 เข้า 丙午 แล้ว", timingCtx);
 ck("blocks January before Li Chun being labeled new LiuNian", !r.ok && r.violations.some((v) => v.code === "timing:jan_before_lichun_new_year"), JSON.stringify(r.violations));
 

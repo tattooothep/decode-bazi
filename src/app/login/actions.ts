@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { q1 } from "@/lib/db";
-import { verifyPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { verifyPassword, signSession, readSessionVersion, setAuthCookie } from "@/lib/auth";
 
 export async function loginAction(prev: { error?: string } | null, formData: FormData): Promise<{ error?: string }> {
   const email = String(formData.get("email") || "").trim();

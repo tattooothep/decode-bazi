@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { clearAuthCookie, setAuthCookie, signSession, verifyPassword } from "@/lib/auth";
+import { clearAuthCookie, setAuthCookie, signSession, readSessionVersion, verifyPassword } from "@/lib/auth";
 import { q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
 import { userHasProfile } from "@/lib/profile-status";

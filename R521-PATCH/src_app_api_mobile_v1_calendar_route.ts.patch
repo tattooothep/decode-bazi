@@ -1,0 +1,39 @@
+--- /root/decode-app/R521-PATCH/orig/src_app_api_mobile_v1_calendar_route.ts.orig	2026-07-12 06:35:15.902761139 +0700
++++ src/app/api/mobile/v1/calendar/route.ts	2026-07-18 14:41:48.313519810 +0700
+@@ -7,6 +7,7 @@
+ } from "@/lib/mobile-timing-context";
+ import {getProductAccess} from "@/lib/product-entitlement";
+ import {PRODUCT_PAGE_ENTITLEMENTS} from "@/lib/product-page-entitlements";
++import { summarizeStars } from "@/lib/star-dict-th";
+ 
+ export const dynamic = "force-dynamic";
+ 
+@@ -74,6 +75,28 @@
+   }));
+   const data = await resp.json();
+ 
++  /* r521 · เติม stars_detail (ชื่อไทย + คำอธิบาย 神煞) ต่อวัน
++   * เว็บ /api/calendar ตัด stars_detail ทิ้งสำหรับแผนต่ำกว่า premium (fullDetail gate)
++   * แต่แอพ (r515) พร้อม render CalendarStarDetailRow แล้ว → gods เลยเป็นจีนดิบ
++   * แก้: annotate เฉพาะ gods ที่แสดงอยู่ (ตาม entitlement · ไม่เปิดเพิ่ม) ด้วยคลัง star-dict-th
++   * additive: เติมเฉพาะวันที่ยังไม่มี stars_detail · ไม่แตะ gods/score/verdict · คำที่คลังไม่มี = อยู่ใน unknown (แอพ fallback จีน) */
++  if (data && Array.isArray(data.days)) {
++    for (const day of data.days) {
++      if (day && !day.stars_detail && day.gods) {
++        const names = [
++          ...(Array.isArray(day.gods.good) ? day.gods.good : []),
++          ...(Array.isArray(day.gods.bad) ? day.gods.bad : []),
++          ...(Array.isArray(day.gods.unknown) ? day.gods.unknown : []),
++        ].filter((n: unknown): n is string => typeof n === "string" && n.length > 0);
++        if (names.length) {
++          // ตัด verdict/pos_sum/neg_sum/applied_rule ออก — เว็บกั๊กฟันธงรายวันไว้ให้ premium (fullDetail gate)
++          const { good, bad, unknown } = summarizeStars(names);
++          day.stars_detail = { good, bad, unknown };
++        }
++      }
++    }
++  }
++
+   return NextResponse.json(
+     {
+       ok: resp.ok,

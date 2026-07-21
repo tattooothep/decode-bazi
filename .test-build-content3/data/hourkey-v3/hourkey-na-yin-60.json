@@ -1,0 +1,362 @@
+{
+    "甲子": {
+        "na_yin": "海中金",
+        "en": "Gold in the Sea",
+        "element": "Metal",
+        "symbol": "🌊"
+    },
+    "乙丑": {
+        "na_yin": "海中金",
+        "en": "Gold in the Sea",
+        "element": "Metal",
+        "symbol": "🌊"
+    },
+    "丙寅": {
+        "na_yin": "爐中火",
+        "en": "Fire in the Furnace",
+        "element": "Fire",
+        "symbol": "🔥"
+    },
+    "丁卯": {
+        "na_yin": "爐中火",
+        "en": "Fire in the Furnace",
+        "element": "Fire",
+        "symbol": "🔥"
+    },
+    "戊辰": {
+        "na_yin": "大林木",
+        "en": "Wood in the Great Forest",
+        "element": "Wood",
+        "symbol": "🌳"
+    },
+    "己巳": {
+        "na_yin": "大林木",
+        "en": "Wood in the Great Forest",
+        "element": "Wood",
+        "symbol": "🌳"
+    },
+    "庚午": {
+        "na_yin": "路旁土",
+        "en": "Earth on the Roadside",
+        "element": "Earth",
+        "symbol": "🛤️"
+    },
+    "辛未": {
+        "na_yin": "路旁土",
+        "en": "Earth on the Roadside",
+        "element": "Earth",
+        "symbol": "🛤️"
+    },
+    "壬申": {
+        "na_yin": "劍鋒金",
+        "en": "Metal at the Sword Edge",
+        "element": "Metal",
+        "symbol": "⚔️"
+    },
+    "癸酉": {
+        "na_yin": "劍鋒金",
+        "en": "Metal at the Sword Edge",
+        "element": "Metal",
+        "symbol": "⚔️"
+    },
+    "甲戌": {
+        "na_yin": "山頭火",
+        "en": "Fire on the Mountain Top",
+        "element": "Fire",
+        "symbol": "🌋"
+    },
+    "乙亥": {
+        "na_yin": "山頭火",
+        "en": "Fire on the Mountain Top",
+        "element": "Fire",
+        "symbol": "🌋"
+    },
+    "丙子": {
+        "na_yin": "澗下水",
+        "en": "Water at the Valley Stream",
+        "element": "Water",
+        "symbol": "💧"
+    },
+    "丁丑": {
+        "na_yin": "澗下水",
+        "en": "Water at the Valley Stream",
+        "element": "Water",
+        "symbol": "💧"
+    },
+    "戊寅": {
+        "na_yin": "城頭土",
+        "en": "Earth on the City Wall",
+        "element": "Earth",
+        "symbol": "🏯"
+    },
+    "己卯": {
+        "na_yin": "城頭土",
+        "en": "Earth on the City Wall",
+        "element": "Earth",
+        "symbol": "🏯"
+    },
+    "庚辰": {
+        "na_yin": "白蠟金",
+        "en": "White Wax Metal",
+        "element": "Metal",
+        "symbol": "🕯️"
+    },
+    "辛巳": {
+        "na_yin": "白蠟金",
+        "en": "White Wax Metal",
+        "element": "Metal",
+        "symbol": "🕯️"
+    },
+    "壬午": {
+        "na_yin": "楊柳木",
+        "en": "Willow Tree Wood",
+        "element": "Wood",
+        "symbol": "🌿"
+    },
+    "癸未": {
+        "na_yin": "楊柳木",
+        "en": "Willow Tree Wood",
+        "element": "Wood",
+        "symbol": "🌿"
+    },
+    "甲申": {
+        "na_yin": "泉中水",
+        "en": "Water from the Spring",
+        "element": "Water",
+        "symbol": "⛲"
+    },
+    "乙酉": {
+        "na_yin": "泉中水",
+        "en": "Water from the Spring",
+        "element": "Water",
+        "symbol": "⛲"
+    },
+    "丙戌": {
+        "na_yin": "屋上土",
+        "en": "Earth on the Rooftop",
+        "element": "Earth",
+        "symbol": "🏠"
+    },
+    "丁亥": {
+        "na_yin": "屋上土",
+        "en": "Earth on the Rooftop",
+        "element": "Earth",
+        "symbol": "🏠"
+    },
+    "戊子": {
+        "na_yin": "霹靂火",
+        "en": "Lightning Fire",
+        "element": "Fire",
+        "symbol": "⚡"
+    },
+    "己丑": {
+        "na_yin": "霹靂火",
+        "en": "Lightning Fire",
+        "element": "Fire",
+        "symbol": "⚡"
+    },
+    "庚寅": {
+        "na_yin": "松柏木",
+        "en": "Pine Cypress Wood",
+        "element": "Wood",
+        "symbol": "🌲"
+    },
+    "辛卯": {
+        "na_yin": "松柏木",
+        "en": "Pine Cypress Wood",
+        "element": "Wood",
+        "symbol": "🌲"
+    },
+    "壬辰": {
+        "na_yin": "長流水",
+        "en": "Long Flowing Water",
+        "element": "Water",
+        "symbol": "🏞️"
+    },
+    "癸巳": {
+        "na_yin": "長流水",
+        "en": "Long Flowing Water",
+        "element": "Water",
+        "symbol": "🏞️"
+    },
+    "甲午": {
+        "na_yin": "沙中金",
+        "en": "Gold in the Sand",
+        "element": "Metal",
+        "symbol": "🏖️"
+    },
+    "乙未": {
+        "na_yin": "沙中金",
+        "en": "Gold in the Sand",
+        "element": "Metal",
+        "symbol": "🏖️"
+    },
+    "丙申": {
+        "na_yin": "山下火",
+        "en": "Fire at the Foot of Mountain",
+        "element": "Fire",
+        "symbol": "🏔️"
+    },
+    "丁酉": {
+        "na_yin": "山下火",
+        "en": "Fire at the Foot of Mountain",
+        "element": "Fire",
+        "symbol": "🏔️"
+    },
+    "戊戌": {
+        "na_yin": "平地木",
+        "en": "Plain Land Wood",
+        "element": "Wood",
+        "symbol": "🌾"
+    },
+    "己亥": {
+        "na_yin": "平地木",
+        "en": "Plain Land Wood",
+        "element": "Wood",
+        "symbol": "🌾"
+    },
+    "庚子": {
+        "na_yin": "壁上土",
+        "en": "Earth on the Wall",
+        "element": "Earth",
+        "symbol": "🧱"
+    },
+    "辛丑": {
+        "na_yin": "壁上土",
+        "en": "Earth on the Wall",
+        "element": "Earth",
+        "symbol": "🧱"
+    },
+    "壬寅": {
+        "na_yin": "金箔金",
+        "en": "Gold Foil Metal",
+        "element": "Metal",
+        "symbol": "✨"
+    },
+    "癸卯": {
+        "na_yin": "金箔金",
+        "en": "Gold Foil Metal",
+        "element": "Metal",
+        "symbol": "✨"
+    },
+    "甲辰": {
+        "na_yin": "覆燈火",
+        "en": "Lamp Fire (Covered)",
+        "element": "Fire",
+        "symbol": "🪔"
+    },
+    "乙巳": {
+        "na_yin": "覆燈火",
+        "en": "Lamp Fire (Covered)",
+        "element": "Fire",
+        "symbol": "🪔"
+    },
+    "丙午": {
+        "na_yin": "天河水",
+        "en": "Heavenly River Water",
+        "element": "Water",
+        "symbol": "🌌"
+    },
+    "丁未": {
+        "na_yin": "天河水",
+        "en": "Heavenly River Water",
+        "element": "Water",
+        "symbol": "🌌"
+    },
+    "戊申": {
+        "na_yin": "大驛土",
+        "en": "Earth on Main Road",
+        "element": "Earth",
+        "symbol": "🛣️"
+    },
+    "己酉": {
+        "na_yin": "大驛土",
+        "en": "Earth on Main Road",
+        "element": "Earth",
+        "symbol": "🛣️"
+    },
+    "庚戌": {
+        "na_yin": "釵釧金",
+        "en": "Hairpin Metal",
+        "element": "Metal",
+        "symbol": "💍"
+    },
+    "辛亥": {
+        "na_yin": "釵釧金",
+        "en": "Hairpin Metal",
+        "element": "Metal",
+        "symbol": "💍"
+    },
+    "壬子": {
+        "na_yin": "桑柘木",
+        "en": "Mulberry Wood",
+        "element": "Wood",
+        "symbol": "🍃"
+    },
+    "癸丑": {
+        "na_yin": "桑柘木",
+        "en": "Mulberry Wood",
+        "element": "Wood",
+        "symbol": "🍃"
+    },
+    "甲寅": {
+        "na_yin": "大溪水",
+        "en": "Large Stream Water",
+        "element": "Water",
+        "symbol": "🏞️"
+    },
+    "乙卯": {
+        "na_yin": "大溪水",
+        "en": "Large Stream Water",
+        "element": "Water",
+        "symbol": "🏞️"
+    },
+    "丙辰": {
+        "na_yin": "沙中土",
+        "en": "Earth in the Sand",
+        "element": "Earth",
+        "symbol": "🏜️"
+    },
+    "丁巳": {
+        "na_yin": "沙中土",
+        "en": "Earth in the Sand",
+        "element": "Earth",
+        "symbol": "🏜️"
+    },
+    "戊午": {
+        "na_yin": "天上火",
+        "en": "Heavenly Fire (Sun)",
+        "element": "Fire",
+        "symbol": "☀️"
+    },
+    "己未": {
+        "na_yin": "天上火",
+        "en": "Heavenly Fire (Sun)",
+        "element": "Fire",
+        "symbol": "☀️"
+    },
+    "庚申": {
+        "na_yin": "石榴木",
+        "en": "Pomegranate Wood",
+        "element": "Wood",
+        "symbol": "🌰"
+    },
+    "辛酉": {
+        "na_yin": "石榴木",
+        "en": "Pomegranate Wood",
+        "element": "Wood",
+        "symbol": "🌰"
+    },
+    "壬戌": {
+        "na_yin": "大海水",
+        "en": "Sea Water",
+        "element": "Water",
+        "symbol": "🌊"
+    },
+    "癸亥": {
+        "na_yin": "大海水",
+        "en": "Sea Water",
+        "element": "Water",
+        "symbol": "🌊"
+    }
+}
