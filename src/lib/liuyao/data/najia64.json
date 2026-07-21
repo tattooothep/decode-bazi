@@ -1,0 +1,3651 @@
+[
+ {
+  "binary": "111111",
+  "name_zh": "乾為天",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "011111",
+  "name_zh": "天風姤",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "001111",
+  "name_zh": "天山遁",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "000111",
+  "name_zh": "天地否",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "000011",
+  "name_zh": "風地觀",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "000001",
+  "name_zh": "山地剝",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "000101",
+  "name_zh": "火地晉",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "111101",
+  "name_zh": "火天大有",
+  "palace": "乾",
+  "palaceElement": "金",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "110110",
+  "name_zh": "兌為澤",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "010110",
+  "name_zh": "澤水困",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false,
+    "note": "ตารางต้นทางเขียน卯木 แก้เป็น寅木ตามกฎ納甲(坎)"
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "000110",
+  "name_zh": "澤地萃",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "001110",
+  "name_zh": "澤山咸",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "001010",
+  "name_zh": "水山蹇",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "001000",
+  "name_zh": "地山謙",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "001100",
+  "name_zh": "雷山小過",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "110100",
+  "name_zh": "雷澤歸妹",
+  "palace": "兌",
+  "palaceElement": "金",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "101101",
+  "name_zh": "離為火",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "001101",
+  "name_zh": "火山旅",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "011101",
+  "name_zh": "火風鼎",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "010101",
+  "name_zh": "火水未濟",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "010001",
+  "name_zh": "山水蒙",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "010011",
+  "name_zh": "風水渙",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "010111",
+  "name_zh": "天水訟",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "101111",
+  "name_zh": "天火同人",
+  "palace": "離",
+  "palaceElement": "火",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "100100",
+  "name_zh": "震為雷",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "000100",
+  "name_zh": "雷地豫",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "010100",
+  "name_zh": "雷水解",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "011100",
+  "name_zh": "雷風恆",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "011000",
+  "name_zh": "地風升",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "011010",
+  "name_zh": "水風井",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "011110",
+  "name_zh": "澤風大過",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "100110",
+  "name_zh": "澤雷隨",
+  "palace": "震",
+  "palaceElement": "木",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "011011",
+  "name_zh": "巽為風",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "111011",
+  "name_zh": "風天小畜",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "101011",
+  "name_zh": "風火家人",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "100011",
+  "name_zh": "風雷益",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "100111",
+  "name_zh": "天雷無妄",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "100101",
+  "name_zh": "火雷噬嗑",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "100001",
+  "name_zh": "山雷頤",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "011001",
+  "name_zh": "山風蠱",
+  "palace": "巽",
+  "palaceElement": "木",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "辛丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "010010",
+  "name_zh": "坎為水",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "110010",
+  "name_zh": "水澤節",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "100010",
+  "name_zh": "水雷屯",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "101010",
+  "name_zh": "水火既濟",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "101110",
+  "name_zh": "澤火革",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "101100",
+  "name_zh": "雷火豐",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "101000",
+  "name_zh": "地火明夷",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "010000",
+  "name_zh": "地水師",
+  "palace": "坎",
+  "palaceElement": "水",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "戊寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "001001",
+  "name_zh": "艮為山",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "101001",
+  "name_zh": "山火賁",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "己卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "己丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "111001",
+  "name_zh": "山天大畜",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "110001",
+  "name_zh": "山澤損",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "110101",
+  "name_zh": "火澤睽",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "己未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "己巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "110111",
+  "name_zh": "天澤履",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "壬戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "110011",
+  "name_zh": "風澤中孚",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "001011",
+  "name_zh": "風山漸",
+  "palace": "艮",
+  "palaceElement": "土",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "丙辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丙申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "辛卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "000000",
+  "name_zh": "坤為地",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 1,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "100000",
+  "name_zh": "地雷復",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 2,
+  "lines": [
+   {
+    "stemBranch": "庚子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "110000",
+  "name_zh": "地澤臨",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 3,
+  "lines": [
+   {
+    "stemBranch": "丁巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "111000",
+  "name_zh": "地天泰",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 4,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸丑",
+    "branch": "丑",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "癸酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ },
+ {
+  "binary": "111100",
+  "name_zh": "雷天大壯",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 5,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚午",
+    "branch": "午",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "庚戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "111110",
+  "name_zh": "澤天夬",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 6,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁亥",
+    "branch": "亥",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁酉",
+    "branch": "酉",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "丁未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "111010",
+  "name_zh": "水天需",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 7,
+  "lines": [
+   {
+    "stemBranch": "甲子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   },
+   {
+    "stemBranch": "甲寅",
+    "branch": "寅",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "甲辰",
+    "branch": "辰",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": false
+   }
+  ]
+ },
+ {
+  "binary": "000010",
+  "name_zh": "水地比",
+  "palace": "坤",
+  "palaceElement": "土",
+  "position": 8,
+  "lines": [
+   {
+    "stemBranch": "乙未",
+    "branch": "未",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙巳",
+    "branch": "巳",
+    "element": "火",
+    "liuqin": "父母",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "乙卯",
+    "branch": "卯",
+    "element": "木",
+    "liuqin": "官鬼",
+    "shi": true,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊申",
+    "branch": "申",
+    "element": "金",
+    "liuqin": "子孫",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊戌",
+    "branch": "戌",
+    "element": "土",
+    "liuqin": "兄弟",
+    "shi": false,
+    "ying": false
+   },
+   {
+    "stemBranch": "戊子",
+    "branch": "子",
+    "element": "水",
+    "liuqin": "妻財",
+    "shi": false,
+    "ying": true
+   }
+  ]
+ }
+]

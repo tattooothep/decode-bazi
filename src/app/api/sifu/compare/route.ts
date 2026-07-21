@@ -73,8 +73,8 @@ const COMPARE_FALLBACK: Record<string, Record<string, string>> = {
 
 export const runtime = "nodejs";   /* Codex Phase 12 hard requirement · child_process spawn */
 
-const TIMEOUT_MS = 180_000;
-const FIRST_BYTE_TIMEOUT_MS = 20_000;   /* CLI silent > 20s → fallback OpenRouter */
+const TIMEOUT_MS = 420_000;  /* 21 ก.ค.: 180s ตัดรายงานเต็มกลางคัน (CLI เขียน ~5-6 นาที) → 420s · nginx 240s/gap รองรับ */
+const FIRST_BYTE_TIMEOUT_MS = 90_000;   /* 21 ก.ค.: 20s สั้นไปสำหรับ prompt เทียบคู่ก้อนใหญ่ (CLI first-token 30-60s) → โดน kill ทุกครั้ง · ยืดเป็น 90s */
 const CACHE_TTL_HOURS = 24;
 const MAX_BODY_SIZE = 64 * 1024;        /* 64KB · trim frontend ~3-5KB · margin */
 const RATE_LIMIT_PER_HOUR = 5;          /* per IP · cache miss เท่านั้น */

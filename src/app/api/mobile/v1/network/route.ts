@@ -172,6 +172,8 @@ export async function GET(req: Request) {
   const labels = (scorePayload as any).labels || {};
   const guidance = (scorePayload as any).guidance || {};
   const directional = (scorePayload as any).directional || {};
+  // 21 ก.ค.: เปิดของที่ engine คำนวณแล้วให้มือถือ (additive) — contexts 4 แกน + ที่มาคะแนน
+  const breakdown = (scorePayload as any).breakdown || {};
 
   const people = others.map(({ profile }) => ({
     id: profile.id,
@@ -189,6 +191,7 @@ export async function GET(req: Request) {
     reading: labels[profile.id] || null,
     guidance: guidance[profile.id] || null,
     directional: directional[profile.id] || null,
+    breakdown: breakdown[profile.id] || null,
   }));
 
   return NextResponse.json(

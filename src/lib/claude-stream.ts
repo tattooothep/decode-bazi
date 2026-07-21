@@ -50,6 +50,10 @@ export function makeJsonlParser(onText: (text: string) => void) {
         if (obj.type === "stream_event" && obj.event?.type === "content_block_delta" && obj.event.delta?.type === "text_delta") {
           onText(obj.event.delta.text);
         }
+        // debug 21 ก.ค.: จับ error จาก CLI ให้เห็นใน log (ชั่วคราว — เนื้อไม่มี secret)
+        if ((obj.type === "result" && obj.is_error) || obj.error) {
+          console.warn("[claude-stream cli-error]", JSON.stringify({ type: obj.type, error: obj.error, result: obj.result }).slice(0, 300));
+        }
         // assistant final · skip (partial ส่งครบแล้ว)
       } catch (_) {
         // not JSON line · skip
