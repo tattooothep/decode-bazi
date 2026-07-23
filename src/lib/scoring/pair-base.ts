@@ -659,6 +659,21 @@ export function modulateByTf(raw: number, tf: keyof typeof TF_WEIGHT): number {
  * เปลี่ยน day pillar (壬辰) → "person ของวัน" แล้วเรียก pairBaseScore
  * คืน score 0-100 (normalized · 50 = neutral)
  * ═══════════════════════════════════════════════════════════ */
+/* 23 ก.ค. 2026 · แยกการแปลง "คะแนนวัน 0-100 → ป้าย/ระดับ" ออกมาเป็นฟังก์ชัน
+ * เหตุผล: เส้นหาวันนัด (network/bestday) ต้องติดป้ายให้ "คะแนนเฉลี่ยสองฝั่ง"
+ * ถ้าไป copy เกณฑ์ไปไว้อีกไฟล์ = fork สูตร (ผิด AGENTS.md ข้อ 2)
+ * ⚠️ เกณฑ์ยกมาทั้งดุ้นจาก computeUserDayScore เดิม ไม่เปลี่ยนตัวเลขใด ๆ — พฤติกรรมเดิมทุกประการ */
+export function dayScoreLabelLevel(score: number): {
+  label: string;
+  level: 'best' | 'good' | 'ok' | 'caution' | 'avoid';
+} {
+  if (score >= 80) return { label: '大吉', level: 'best' };
+  if (score >= 65) return { label: '吉', level: 'good' };
+  if (score >= 45) return { label: '中和', level: 'ok' };
+  if (score >= 30) return { label: '凶', level: 'caution' };
+  return { label: '大凶', level: 'avoid' };
+}
+
 export function computeUserDayScore(
   userPillars: Pillars,
   dayPillar: string,                /* "壬辰" */
@@ -686,11 +701,6 @@ export function computeUserDayScore(
   const result = pairBaseScore(userPillars, dayPerson, yongshen, jishen, opts);
   /* normalize raw -100..+100 → 0..100 (50 = neutral) */
   const score = Math.max(0, Math.min(100, Math.round(50 + result.score * 0.5)));
-  let label = '中和'; let level: 'best'|'good'|'ok'|'caution'|'avoid' = 'ok';
-  if (score >= 80)      { label = '大吉'; level = 'best'; }
-  else if (score >= 65) { label = '吉';   level = 'good'; }
-  else if (score >= 45) { label = '中和'; level = 'ok'; }
-  else if (score >= 30) { label = '凶';   level = 'caution'; }
-  else                  { label = '大凶'; level = 'avoid'; }
+  const { label, level } = dayScoreLabelLevel(score);
   return { score, raw: result.score, label, level, tags: result.tags, flags: result.flags, breakdown: result.bd };
 }

@@ -15,6 +15,14 @@ export type TXStar = {
   deg: number; retro: boolean; status: string; statusTh: string; statusRank: number;
   shu: string; shuDeg: number;  // 宿 + 度ใน宿 (距星 system · A2)
   kind: string;
+  /* 23 ก.ค. 2569 · ค่าดาราศาสตร์จริง (additive · optional — คำนวณไม่ได้ = ไม่ส่ง field)
+   * 4 ดาวเงา (羅睺/計都/月孛/紫氣) = จุดคำนวณ ไม่ใช่วัตถุจริง → ไม่มี mag/altDeg/azDeg */
+  elat?: number;      // ละติจูดสุริยวิถี (°)
+  altDeg?: number;    // มุมเงย (°) −90..90
+  azDeg?: number;     // ทิศ (°) 0..360 · 0=เหนือ
+  mag?: number;       // ความสว่างปรากฏจริง
+  phaseFrac?: number; // สัดส่วนสว่าง 0..1 — เฉพาะจันทร์
+  ringTilt?: number;  // มุมเอียงวงแหวน (°) — เฉพาะเสาร์
 };
 export type TXDegreePoint = {
   lonTrop: number; lonSid: number; sign: number; signTh: string; signZh: string;
@@ -73,7 +81,7 @@ export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult
     const sh = shuAt(s.lonTrop, dtUTC);
     const mw = miaoWangDeg(s.key, sh.zh, sh.deg) || miaoWang(s.key, sign);
     const meta = STARS[s.key];
-    return {
+    const out: TXStar = {
       key: s.key, th: meta?.th || s.key, zh: meta?.zh || s.key,
       lonTrop: +s.lonTrop.toFixed(2), lonSid: +lonSid.toFixed(2),
       sign, signTh: SIGNS[sign].th, signZh: SIGNS[sign].zh, deg: +(lonSid % 30).toFixed(1),
@@ -81,6 +89,14 @@ export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult
       shu: sh.zh, shuDeg: sh.deg,
       kind: meta?.kind || "yu",
     };
+    // additive · ส่งเฉพาะที่ engine คำนวณได้จริง
+    if (s.elat !== undefined) out.elat = s.elat;
+    if (s.altDeg !== undefined) out.altDeg = s.altDeg;
+    if (s.azDeg !== undefined) out.azDeg = s.azDeg;
+    if (s.mag !== undefined) out.mag = s.mag;
+    if (s.phaseFrac !== undefined) out.phaseFrac = s.phaseFrac;
+    if (s.ringTilt !== undefined) out.ringTilt = s.ringTilt;
+    return out;
   });
 
   // A5 · 紫氣 (木餘 · ดาวสมมติ · 授時曆 beta) — เพิ่มเป็นดาวที่ 4 ของ四餘

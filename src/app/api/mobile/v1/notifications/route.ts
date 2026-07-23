@@ -13,7 +13,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const KINDS = new Set(["yam", "auspicious", "daily"]);
+const KINDS = new Set(["yam", "auspicious", "daily", "network"]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type PrefRow = { yam_enabled: boolean; auspicious_enabled: boolean; daily_enabled: boolean };
