@@ -6,6 +6,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { ensureOrgMember } from "@/lib/ensure-org-member";
 import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
 import { applySignupProductDefaults } from "@/lib/product-entitlement";
+import { rewardInviteOnSignup } from "@/lib/invite";
 import { createToken } from "@/lib/auth-tokens";
 import { isEmailReady, sendVerifyEmail } from "@/lib/email-service";
 
@@ -76,6 +77,14 @@ export async function POST(req: Request) {
     deviceId: body.deviceId || body.affiliateDeviceId || null,
   });
   await applySignupProductDefaults(userId);
+
+  // วงจรเชิญเพื่อน: จ่ายยามทั้งสองฝั่งตอนเพื่อนสมัครบัญชีจริง (non-throwing)
+  await rewardInviteOnSignup({
+    userId,
+    code: body.inviteCode || body.invite || null,
+    request: req,
+    deviceId: body.deviceId || body.affiliateDeviceId || null,
+  }).catch((e) => console.warn("[mobile-signup] invite reward", e instanceof Error ? e.message : String(e)));
 
   const bal = await q1<{ hour_balance: number; tier: string }>(
     `SELECT hour_balance, tier FROM users WHERE id=$1`,

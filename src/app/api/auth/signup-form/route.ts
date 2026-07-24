@@ -9,6 +9,7 @@ import { captureAffiliateAttribution } from "@/lib/affiliate";
 import { ensureOrgMember } from "@/lib/ensure-org-member";
 import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
 import { applySignupProductDefaults } from "@/lib/product-entitlement";
+import { rewardInviteOnSignup } from "@/lib/invite";
 import crypto from "node:crypto";
 
 function redirect303(url: string): Response {
@@ -63,6 +64,14 @@ export async function POST(req: Request) {
     request: req,
     channel: "form",
   }).catch((e) => console.warn("[affiliate] form attribution failed", e instanceof Error ? e.message : String(e)));
+
+  // วงจรเชิญเพื่อน: จ่ายยามทั้งสองฝั่งตอนเพื่อนสมัครบัญชีจริง (non-throwing)
+  await rewardInviteOnSignup({
+    userId,
+    code: form.get("inviteCode") || form.get("invite") || null,
+    request: req,
+    deviceId: form.get("deviceId") || form.get("affiliateDeviceId") || null,
+  }).catch((e) => console.warn("[signup-form] invite reward", e instanceof Error ? e.message : String(e)));
 
   const sv = await readSessionVersion(userId);
   const token = await signSession({ userId, email, orgId, sv });

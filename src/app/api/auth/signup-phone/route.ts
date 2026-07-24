@@ -10,6 +10,7 @@ import { captureAffiliateAttribution } from "@/lib/affiliate";
 import { ensureOrgMember } from "@/lib/ensure-org-member";
 import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
 import { applySignupProductDefaults } from "@/lib/product-entitlement";
+import { rewardInviteOnSignup } from "@/lib/invite";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -76,6 +77,14 @@ export async function POST(req: Request) {
     channel: "phone",
     deviceId: body.affiliateDeviceId || null,
   }).catch((e) => ({ ok: false, status: "error", reason: e instanceof Error ? e.message : String(e) }));
+
+  // วงจรเชิญเพื่อน: จ่ายยามทั้งสองฝั่งตอนเพื่อนสมัครบัญชีจริง (non-throwing)
+  await rewardInviteOnSignup({
+    userId,
+    code: body.inviteCode || body.invite || null,
+    request: req,
+    deviceId: body.deviceId || body.affiliateDeviceId || null,
+  }).catch((e) => console.warn("[signup-phone] invite reward", e instanceof Error ? e.message : String(e)));
 
   // สร้าง OTP + ส่ง SMS
   const code = await createOtp(phone);

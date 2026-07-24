@@ -1,15 +1,17 @@
 /**
  * invite.ts · วงจรเชิญเพื่อน (เวฟ 4 · 24 ก.ค. 2569)
  *
- * วงจร (ตามที่เจ้านายเคาะ):
+ * วงจร (ตามที่เจ้านายเคาะ · ปรับ 24 ก.ค. 2569):
  *   1. ผู้ใช้กด "เชิญเพื่อน" ในแอพ → ได้ลิงก์ + การ์ดแชร์
  *   2. เพื่อนเปิดลิงก์บนเว็บ → หน้ารับเชิญ "คุณถูกเชิญโดย ○○"
  *   3. เพื่อน **กรอกวันเกิดของตัวเอง** (คนเชิญกรอกแทนไม่ได้)
- *   4. เพื่อนได้ดวงตัวเองฟรีทันที
- *   5. ผลไหลกลับเข้าเครือข่ายของคนเชิญ (แทนที่วันเกิดที่เคยเดา · เก็บค่าเดิมไว้ย้อนได้)
- *   6. ยามฟรี "ทั้งสองฝ่าย" ออกได้ก็ต่อเมื่ออีกฝ่ายยืนยันวันเกิดตัวเองแล้วเท่านั้น
+ *   4. เพื่อนได้ดวงตัวเองฟรีทันที · ผลไหลกลับเครือข่ายคนเชิญ (เก็บค่าเดิมย้อนได้)
+ *      → เฟสนี้ **ยังไม่จ่ายยามใคร** (กันคนกรอกวันเกิดเล่นๆ หลายอุปกรณ์/หลาย IP ปั่นยาม)
+ *   5. เพื่อน **สมัครบัญชีจริง** (ผูก user id กับคำเชิญ) → ตอนนั้นถึงจ่ายยาม **ทั้งสองฝั่ง** + status='rewarded'
+ *      hook: rewardInviteOnSignup() เรียกท้ายทุกเส้น signup · หาคำเชิญจากโค้ด/อุปกรณ์
  *
- * ⚠️ ห้ามจ่ายยามตอน "สร้างลิงก์" หรือ "ส่งลิงก์" — ปั่นได้
+ * ⚠️ ห้ามจ่ายยามตอน "สร้างลิงก์" / "ส่งลิงก์" / "ยืนยันวันเกิด" — ปั่นได้
+ * ⚠️ จ่ายเฉพาะตอน "สมัครบัญชีจริง" เท่านั้น (คนที่ยอมสมัคร = คนมีค่าจริง)
  * ⚠️ ไม่มีกลไกเงินใหม่: จ่ายยามผ่าน users.hour_balance + hour_transactions ของเดิม
  *    (ตัวเดียวกับ /api/mobile/v1/checkin และ payment/credit.ts)
  *    กันจ่ายซ้ำด้วย index UNIQUE เดิม `uq_hour_tx_ref_payment` บน ref_payment_id
@@ -195,8 +197,9 @@ export type ClaimGuardVerdict =
   | { ok: false; error: "invite_not_found" | "not_confirmed" | "self_invite" | "already_claimed" | "friend_already_invited" };
 
 /**
- * ด่านตรวจก่อนจ่ายยามให้ "เพื่อน" — บริสุทธิ์
- * เงื่อนไขเหล็ก: ต้อง status='confirmed' (= เพื่อนกรอกวันเกิดตัวเองแล้ว) เท่านั้น
+ * ด่านตรวจก่อนจ่ายยาม (ตอนเพื่อน "สมัครบัญชีจริง") — บริสุทธิ์
+ * เงื่อนไขเหล็ก: ต้อง status='confirmed' (= เพื่อนกรอกวันเกิดตัวเองแล้ว) ก่อนถึงจะผูกบัญชี+จ่ายได้
+ * 'rewarded' = จ่ายไปรอบแรกแล้ว → ให้ด่านชั้นถัดไป (friend_user_id/friend_reward_hours) รายงาน already_claimed
  */
 export function evaluateClaimGuard(
   row: (InviteRowState & { friend_reward_hours: number }) | null,
@@ -205,11 +208,34 @@ export function evaluateClaimGuard(
 ): ClaimGuardVerdict {
   if (!row) return { ok: false, error: "invite_not_found" };
   if (claimerUserId === row.inviter_user_id) return { ok: false, error: "self_invite" };
-  if (row.status !== "confirmed") return { ok: false, error: "not_confirmed" };
+  if (row.status !== "confirmed" && row.status !== "rewarded") return { ok: false, error: "not_confirmed" };
   if (row.friend_user_id && row.friend_user_id !== claimerUserId) return { ok: false, error: "already_claimed" };
   if (row.friend_user_id === claimerUserId && row.friend_reward_hours > 0) return { ok: false, error: "already_claimed" };
   if (!row.friend_user_id && claimerAlreadyInvitedElsewhere) return { ok: false, error: "friend_already_invited" };
   return { ok: true };
+}
+
+/**
+ * ใครได้ยามที่ "เฟสไหน" — บริสุทธิ์ (ทดสอบตรงได้)
+ *
+ * นโยบายที่เจ้านายเคาะ (24 ก.ค.):
+ *   • เฟส "ยืนยันวันเกิด" (confirm) → เพื่อนได้ดวงฟรีทันที แต่ **ยังไม่จ่ายยามใคร**
+ *   • เฟส "สมัครบัญชีจริง" (signup) → จ่ายยาม **ทั้งสองฝั่ง**
+ * เหตุผล: คนกรอกวันเกิดเล่นๆ ไม่ควรได้ยาม · คนที่ยอมสมัครคือคนมีค่าจริง
+ */
+export type RewardTargets = { inviter: boolean; friend: boolean };
+
+/** เฟสยืนยันวันเกิด: ไม่จ่ายยามใครทั้งสิ้น */
+export function rewardsAtConfirm(): RewardTargets {
+  return { inviter: false, friend: false };
+}
+
+/**
+ * เฟสสมัครบัญชีจริง: จ่ายเพื่อนเสมอ · จ่ายคนเชิญเฉพาะเมื่อ "ไม่ได้ยืนยันด้วยอุปกรณ์เดียวกับคนเชิญ"
+ * (การจ่ายจริงยังผ่านเพดานต่อวัน/ตลอดกาล + ref_payment_id UNIQUE อีกชั้น)
+ */
+export function rewardsAtSignup(flags: string[]): RewardTargets {
+  return { inviter: !flags.includes("same_device_as_inviter"), friend: true };
 }
 
 /** วันตามเวลาไทย (ใช้สัญญาเดียวกับ checkin) */
@@ -543,16 +569,22 @@ export type AcceptInviteResult =
       ok: true;
       code: string;
       chart: FreeChartView;
-      /** ยามของเพื่อนรอรับหลังล็อกอิน (ยังไม่จ่ายตอนนี้) */
+      /** ยามของเพื่อนรอรับตอน "สมัครบัญชีจริง" (ยังไม่จ่ายตอนนี้) */
       friend_hours_pending: number;
+      /** ยามของคนเชิญรอจ่ายตอนเพื่อนสมัคร (ยังไม่จ่ายตอนนี้) */
+      inviter_hours_pending: number;
+      /** ตอนยืนยันวันเกิด ยังไม่จ่ายใคร → false เสมอ (คงไว้เพื่อความเข้ากันได้) */
       inviter_rewarded: boolean;
       flags: string[];
     }
   | { ok: false; error: string };
 
 /**
- * เพื่อนยืนยันวันเกิดตัวเอง → บันทึก → ให้ดวงฟรี → จ่ายยาม "คนเชิญ" (ครั้งเดียว)
- * ยามฝั่งเพื่อนยังไม่จ่ายที่นี่ เพราะยังไม่มีบัญชี — รอเรียก claimInviteForUser หลังล็อกอิน
+ * เพื่อนยืนยันวันเกิดตัวเอง → บันทึก → ให้ดวงฟรีทันที → backfill โปรไฟล์คนเชิญ
+ *
+ * ⚠️ เฟสนี้ **ไม่จ่ายยามใครทั้งสิ้น** (นโยบายใหม่ 24 ก.ค.)
+ *    คนกรอกวันเกิดเล่นๆ กดหลายอุปกรณ์/หลาย IP ไม่ควรได้ยาม
+ *    ยามทั้งสองฝั่งออกตอนเพื่อน "สมัครบัญชีจริง" → rewardInviteOnSignup / claimInviteForUser
  */
 export async function acceptInvite(input: {
   code: unknown;
@@ -663,38 +695,13 @@ export async function acceptInvite(input: {
     }
   }
 
-  // จ่ายยามคนเชิญ — ถึงตรงนี้ได้แปลว่า "อีกฝ่ายยืนยันวันเกิดตัวเองแล้ว" เท่านั้น
-  let inviterRewarded = false;
-  if (!flags.includes("same_device_as_inviter")) {
-    const rewardedToday = await q1<{ n: number }>(
-      `SELECT COUNT(*)::int AS n FROM invites
-        WHERE inviter_user_id=$1 AND inviter_reward_hours > 0 AND inviter_rewarded_at >= now() - interval '24 hours'`,
-      [invite.inviter_user_id]
-    );
-    const rewardedLifetime = await q1<{ n: number }>(
-      `SELECT COUNT(*)::int AS n FROM invites WHERE inviter_user_id=$1 AND inviter_reward_hours > 0`,
-      [invite.inviter_user_id]
-    );
-    const cap = evaluateRewardCap(Number(rewardedToday?.n || 0), Number(rewardedLifetime?.n || 0), settings);
-    if (cap.ok) {
-      const grant = await grantHoursOnce(
-        invite.inviter_user_id,
-        settings.inviter_hours,
-        inviterRewardRef(invite.id),
-        "invite_reward_inviter",
-        "invite · friend confirmed own birth"
-      );
-      if (grant.ok && grant.granted > 0) {
-        inviterRewarded = true;
-        await q(
-          `UPDATE invites SET inviter_reward_hours=$2, inviter_rewarded_at=now() WHERE id=$1`,
-          [invite.id, grant.granted]
-        );
-      }
-    } else {
-      flags.push(cap.reason === "lifetime_cap" ? "inviter_lifetime_cap" : "inviter_daily_cap");
-      await q(`UPDATE invites SET fraud_flags=$2::jsonb WHERE id=$1`, [invite.id, JSON.stringify(flags)]).catch(() => null);
-    }
+  // เฟสยืนยันวันเกิด: ไม่จ่ายยามใคร (จ่ายตอนเพื่อนสมัครบัญชีจริงเท่านั้น)
+  // เก็บ fraud_flags ไว้แล้วตอน UPDATE ด้านบน → ใช้ตัดสิน "ห้ามจ่ายคนเชิญ" ตอน signup
+  const payout = rewardsAtConfirm();
+  const inviterRewarded = false;
+  if (payout.inviter || payout.friend) {
+    // ไม่ถึงจุดนี้ตามนโยบายปัจจุบัน — คงโครงไว้กันวันเปลี่ยนนโยบายกลับ
+    console.warn("[invite] unexpected: rewardsAtConfirm granted a reward");
   }
 
   return {
@@ -702,6 +709,7 @@ export async function acceptInvite(input: {
     code,
     chart,
     friend_hours_pending: settings.friend_hours,
+    inviter_hours_pending: flags.includes("same_device_as_inviter") ? 0 : settings.inviter_hours,
     inviter_rewarded: inviterRewarded,
     flags,
   };
@@ -712,17 +720,26 @@ export async function acceptInvite(input: {
  * ──────────────────────────────────────────────────────────────── */
 
 export type ClaimInviteResult =
-  | { ok: true; granted: number; balance_after: number; already?: true }
+  | { ok: true; granted: number; balance_after: number; inviter_granted: number; already?: true }
   | { ok: false; error: string };
 
+/**
+ * เพื่อน "สมัครบัญชีจริง" แล้วผูกกับคำเชิญ → จ่ายยาม **ทั้งสองฝั่ง** (ครั้งเดียว) → ปิดวงจร (status='rewarded')
+ *
+ * นี่คือจุดเดียวที่ยามออก (ทั้งเว็บ action:"claim" และ hook ตอน signup เรียกฟังก์ชันนี้)
+ *   • เพื่อน: settings.friend_hours (ref = friendRewardRef · กันซ้ำ)
+ *   • คนเชิญ: settings.inviter_hours (ref = inviterRewardRef) เฉพาะเมื่อไม่ใช่อุปกรณ์เดียวกับคนเชิญ + ไม่ชนเพดาน
+ * กันปั่นเดิมครบ: เชิญตัวเองไม่ได้ · 1 บัญชีรับได้ครั้งเดียว · เพดานต่อวัน/ตลอดกาล (ฝั่งคนเชิญ)
+ */
 export async function claimInviteForUser(input: { userId: string; code: unknown }): Promise<ClaimInviteResult> {
   const code = normalizeInviteCode(input.code);
   if (!code) return { ok: false, error: "invalid_code" };
   const settings = await getInviteSettings();
   if (!settings.enabled) return { ok: false, error: "invite_disabled" };
 
-  const row = await q1<InviteRowState & { id: string; friend_reward_hours: number }>(
-    `SELECT id, status, expires_at, inviter_user_id, friend_user_id, accepted_at, friend_reward_hours
+  const row = await q1<InviteRowState & { id: string; friend_reward_hours: number; inviter_reward_hours: number; fraud_flags: unknown }>(
+    `SELECT id, status, expires_at, inviter_user_id, friend_user_id, accepted_at,
+            friend_reward_hours, inviter_reward_hours, fraud_flags
        FROM invites WHERE code=$1`,
     [code]
   );
@@ -751,20 +768,103 @@ export async function claimInviteForUser(input: { userId: string; code: unknown 
     }
   }
 
+  const flags = Array.isArray(invite.fraud_flags) ? invite.fraud_flags.map((f) => String(f)) : [];
+  const payout = rewardsAtSignup(flags);
+
+  // ── จ่ายยามเพื่อน (จ่ายเสมอตอนสมัคร) ──────────────────────────
   const grant = await grantHoursOnce(
     input.userId,
-    settings.friend_hours,
+    payout.friend ? settings.friend_hours : 0,
     friendRewardRef(invite.id),
     "invite_reward_friend",
-    "invite · confirmed own birth"
+    "invite · friend signed up"
   );
   if (!grant.ok) return { ok: false, error: grant.error };
   if (grant.granted > 0) {
     await q(`UPDATE invites SET friend_reward_hours=$2, friend_rewarded_at=now() WHERE id=$1`, [invite.id, grant.granted]);
   }
+
+  // ── จ่ายยามคนเชิญ (เฉพาะเมื่อไม่ใช่อุปกรณ์เดียวกับคนเชิญ + ยังไม่ชนเพดาน + ยังไม่เคยจ่าย) ──
+  let inviterGranted = 0;
+  if (payout.inviter && Number(invite.inviter_reward_hours || 0) <= 0) {
+    const rewardedToday = await q1<{ n: number }>(
+      `SELECT COUNT(*)::int AS n FROM invites
+        WHERE inviter_user_id=$1 AND inviter_reward_hours > 0 AND inviter_rewarded_at >= now() - interval '24 hours'`,
+      [invite.inviter_user_id]
+    );
+    const rewardedLifetime = await q1<{ n: number }>(
+      `SELECT COUNT(*)::int AS n FROM invites WHERE inviter_user_id=$1 AND inviter_reward_hours > 0`,
+      [invite.inviter_user_id]
+    );
+    const cap = evaluateRewardCap(Number(rewardedToday?.n || 0), Number(rewardedLifetime?.n || 0), settings);
+    if (cap.ok) {
+      const ig = await grantHoursOnce(
+        invite.inviter_user_id,
+        settings.inviter_hours,
+        inviterRewardRef(invite.id),
+        "invite_reward_inviter",
+        "invite · friend signed up"
+      );
+      if (ig.ok && ig.granted > 0) {
+        inviterGranted = ig.granted;
+        await q(`UPDATE invites SET inviter_reward_hours=$2, inviter_rewarded_at=now() WHERE id=$1`, [invite.id, ig.granted]);
+      }
+    } else {
+      const capFlag = cap.reason === "lifetime_cap" ? "inviter_lifetime_cap" : "inviter_daily_cap";
+      if (!flags.includes(capFlag)) {
+        flags.push(capFlag);
+        await q(`UPDATE invites SET fraud_flags=$2::jsonb WHERE id=$1`, [invite.id, JSON.stringify(flags)]).catch(() => null);
+      }
+    }
+  }
+
+  // ปิดวงจร — เพื่อนสมัครแล้วและจ่ายยามรอบแรกครบ
+  await q(`UPDATE invites SET status='rewarded' WHERE id=$1 AND status='confirmed'`, [invite.id]).catch(() => null);
+
   return "already" in grant && grant.already
-    ? { ok: true, granted: 0, balance_after: grant.balance_after, already: true }
-    : { ok: true, granted: grant.granted, balance_after: grant.balance_after };
+    ? { ok: true, granted: 0, balance_after: grant.balance_after, inviter_granted: inviterGranted, already: true }
+    : { ok: true, granted: grant.granted, balance_after: grant.balance_after, inviter_granted: inviterGranted };
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Hook ตอน "สมัครบัญชีจริง" — จ่ายยามทั้งสองฝั่ง (เรียกจากเส้น signup)
+ * ──────────────────────────────────────────────────────────────── */
+
+export type SignupInviteResult = ClaimInviteResult | { ok: false; error: "no_invite" };
+
+/**
+ * เรียกท้ายสุดหลังสร้าง user สำเร็จ (ทุกเส้น signup)
+ * หาว่า user คนนี้มาจากคำเชิญไหน แล้วจ่ายยามทั้งสองฝั่ง:
+ *   1. ใช้โค้ดเชิญที่ client ส่งมาตรงๆ ก่อน (มาจาก ?invite=CODE ของหน้ารับเชิญ)
+ *   2. ถ้าไม่มีโค้ด → จับคู่จาก "อุปกรณ์ที่ยืนยันวันเกิด" (accepted_device_hash) ที่ยังไม่มีเจ้าของ
+ *   3. หาไม่เจอ = ไม่จ่ายใคร (ไม่ error ต่อการสมัคร) — ตรงตามกฎ "ไม่มาจากลิงก์เชิญ = ไม่มีใครได้ยาม"
+ * ต้อง non-throwing เสมอ: ห้ามทำการสมัครล้มเพราะเรื่องยาม
+ */
+export async function rewardInviteOnSignup(input: {
+  userId: string;
+  code?: unknown;
+  request?: Request;
+  deviceId?: unknown;
+}): Promise<SignupInviteResult> {
+  let code = normalizeInviteCode(input.code);
+
+  // fallback: จับคู่คำเชิญจากอุปกรณ์ที่เพิ่งยืนยันวันเกิด (คนละ session กับตอนสมัครก็ยังเจอถ้าใช้อุปกรณ์เดียว)
+  if (!code && input.deviceId) {
+    const deviceHash = hashAudit(input.deviceId);
+    if (deviceHash) {
+      const found = await q1<{ code: string }>(
+        `SELECT code FROM invites
+           WHERE accepted_device_hash=$1 AND status='confirmed' AND friend_user_id IS NULL
+             AND expires_at > now()
+           ORDER BY accepted_at DESC LIMIT 1`,
+        [deviceHash]
+      ).catch(() => null);
+      if (found) code = found.code;
+    }
+  }
+
+  if (!code) return { ok: false, error: "no_invite" };
+  return claimInviteForUser({ userId: input.userId, code });
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -789,7 +889,7 @@ export async function getInviteSummary(userId: string): Promise<InviteSummary> {
   const stats = await q1<{ sent: number; accepted: number; hours_earned: number; today: number }>(
     `SELECT
        COUNT(*)::int AS sent,
-       COUNT(*) FILTER (WHERE status='confirmed')::int AS accepted,
+       COUNT(*) FILTER (WHERE status IN ('confirmed','rewarded'))::int AS accepted,
        COALESCE(SUM(inviter_reward_hours),0)::int AS hours_earned,
        COUNT(*) FILTER (WHERE created_at >= now() - interval '24 hours')::int AS today
      FROM invites WHERE inviter_user_id=$1`,

@@ -6,7 +6,7 @@
  *   1. โค้ดเดาไม่ได้ (สุ่มเข้ารหัส · ไม่ผูกกับ user id · ไม่ซ้ำ)
  *   2. เชิญตัวเองไม่ได้
  *   3. รับซ้ำไม่ได้
- *   4. ยามออกเฉพาะตอนอีกฝ่ายยืนยันวันเกิดแล้ว
+ *   4. จังหวะจ่ายยาม (ปรับ 24 ก.ค.): ยืนยันวันเกิด=ไม่จ่ายใคร · จ่ายสองฝั่งตอน "สมัครบัญชีจริง" เท่านั้น
  *   5. ชนเพดานแล้วบอกจำนวน
  *   6. ต้องกดยินยอมก่อน (ด้านกฎหมาย) + วันเกิดต้องสมเหตุสมผล
  */
@@ -23,6 +23,8 @@ import {
   inviterRewardRef,
   normalizeInviteCode,
   parseInviteBirth,
+  rewardsAtConfirm,
+  rewardsAtSignup,
   sanitizeInviterAlias,
   type InviteRowState,
   type InviteSettings,
@@ -125,23 +127,45 @@ function ok(label: string) { passed += 1; console.log(`  ✅ ${label}`); }
   ok("ยกเลิก/หมดอายุ/ไม่มีจริง ถูกปฏิเสธครบ");
 }
 
-/* ── 4. ยามออกเฉพาะตอนอีกฝ่ายยืนยันวันเกิดแล้ว ─────────────────── */
+/* ── 4. จังหวะจ่ายยาม: ยืนยันวันเกิด=ไม่จ่ายใคร · จ่ายตอน "สมัครบัญชีจริง" ── */
 {
   const base = { expires_at: future, inviter_user_id: "user-A", friend_user_id: null, accepted_at: null, friend_reward_hours: 0 };
 
-  // ยังไม่ยืนยัน = ห้ามจ่าย (นี่คือกฎเหล็กข้อ 6 ของเจ้านาย)
+  // (ก) เฟส "ยืนยันวันเกิด" ยังไม่จ่ายยามใครทั้งสิ้น — กฎใหม่ที่เจ้านายเคาะ
+  assert.deepEqual(rewardsAtConfirm(), { inviter: false, friend: false });
+  ok("เพื่อนยืนยันวันเกิดแล้ว → ยังไม่จ่ายยามใคร (คนเชิญก็ยังไม่ได้)");
+
+  // (ข) เฟส "สมัครบัญชีจริง" จ่ายทั้งสองฝั่ง
+  assert.deepEqual(rewardsAtSignup([]), { inviter: true, friend: true });
+  ok("เพื่อนสมัครบัญชีจริง → จ่ายยามทั้งสองฝั่ง");
+
+  // (ค) สมัครแต่ยืนยันด้วยอุปกรณ์เดียวกับคนเชิญ → เพื่อนได้ แต่คนเชิญไม่ได้ (กันปั่น)
+  assert.deepEqual(rewardsAtSignup(["same_device_as_inviter"]), { inviter: false, friend: true });
+  ok("อุปกรณ์เดียวกับคนเชิญ → คนเชิญไม่ได้ยาม (กันเชิญตัวเอง)");
+
+  // (ง) ด่าน claim: ต้อง confirmed ก่อน (แค่ pending/revoked จ่ายไม่ได้)
   assert.deepEqual(evaluateClaimGuard({ ...base, status: "pending" }, "user-B", false), { ok: false, error: "not_confirmed" });
-  ok("สถานะ pending (แค่ส่งลิงก์) จ่ายยามไม่ได้");
-
   assert.deepEqual(evaluateClaimGuard({ ...base, status: "revoked" }, "user-B", false), { ok: false, error: "not_confirmed" });
-  ok("สถานะ revoked จ่ายยามไม่ได้");
+  ok("แค่ส่งลิงก์/ยกเลิก (ยังไม่ยืนยันวันเกิด) จ่ายยามไม่ได้");
 
-  // ยืนยันแล้วเท่านั้นถึงผ่าน
+  // (จ) เพื่อนไม่สมัครเลย = คำเชิญค้างที่ confirmed · ไม่มี friend_user_id · ไม่มีใครได้ยาม
+  //     (ผ่านด่านได้=พร้อมจ่าย แต่จะจ่ายก็ต่อเมื่อมี user มา claim ตอน signup เท่านั้น)
   assert.deepEqual(
     evaluateClaimGuard({ ...base, status: "confirmed", accepted_at: new Date().toISOString() }, "user-B", false),
     { ok: true },
   );
-  ok("ยืนยันวันเกิดแล้วเท่านั้น ถึงจ่ายยามได้");
+  ok("ยืนยันแล้วแต่ยังไม่มีใครสมัคร = พร้อมจ่าย รอ user มา claim ตอน signup");
+
+  // (ฉ) จ่ายไปแล้ว (status=rewarded, friend ผูกแล้ว) → สมัคร/claim ซ้ำไม่ได้
+  assert.deepEqual(
+    evaluateClaimGuard(
+      { ...base, status: "rewarded", friend_user_id: "user-B", accepted_at: new Date().toISOString(), friend_reward_hours: 3 },
+      "user-B",
+      false,
+    ),
+    { ok: false, error: "already_claimed" },
+  );
+  ok("จ่ายยามไปแล้ว (rewarded) รับซ้ำไม่ได้ (idempotent)");
 
   // กุญแจกันจ่ายซ้ำระดับ DB ต้องแยกฝั่ง และผูกกับใบเชิญใบนั้น
   const id = "11111111-2222-4333-8444-555555555555";

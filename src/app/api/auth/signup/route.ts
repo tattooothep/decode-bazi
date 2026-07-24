@@ -6,6 +6,7 @@ import { captureAffiliateAttribution } from "@/lib/affiliate";
 import { ensureOrgMember } from "@/lib/ensure-org-member";
 import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
 import { applySignupProductDefaults } from "@/lib/product-entitlement";
+import { rewardInviteOnSignup } from "@/lib/invite";
 import crypto from "node:crypto";
 
 export async function POST(req: Request) {
@@ -70,6 +71,14 @@ export async function POST(req: Request) {
     channel: "email",
     deviceId: body.affiliateDeviceId || null,
   }).catch((e) => ({ ok: false, status: "error", reason: e instanceof Error ? e.message : String(e) }));
+
+  // วงจรเชิญเพื่อน: จ่ายยามทั้งสองฝั่งตอนเพื่อนสมัครบัญชีจริง (non-throwing · ไม่ทำให้สมัครล้ม)
+  await rewardInviteOnSignup({
+    userId,
+    code: body.inviteCode || body.invite || null,
+    request: req,
+    deviceId: body.deviceId || body.affiliateDeviceId || null,
+  }).catch((e) => console.warn("[signup] invite reward", e instanceof Error ? e.message : String(e)));
 
   const sv = await readSessionVersion(userId);
   const token = await signSession({ userId, email, orgId, sv });
