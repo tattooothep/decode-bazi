@@ -5,6 +5,7 @@ import { getMobileSession } from "@/lib/mobile-auth";
 import { q1 } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { analyzeName } from "@/lib/naming/engine";
+import { runNamingSystem, MULTINATIONAL_SYSTEMS } from "@/lib/naming/engines";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,12 +22,43 @@ export async function POST(req: Request) {
       { status: 429, headers: { "Retry-After": String(Math.ceil(limited.retryAfterMs / 1000)) } }
     );
   }
-  let body: { surname?: string; given?: string; profileId?: string };
+  let body: {
+    surname?: string;
+    given?: string;
+    profileId?: string;
+    system?: string;
+    name?: string;
+    birthDay?: string;
+    moonLongitude?: number;
+    nakshatra?: string | number;
+    pada?: number;
+    gender?: string;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ ok: false, error: "invalid json" }, { status: 400 });
   }
+
+  // ── ศาสตร์ตั้งชื่อหลายชาติ (additive) — ไม่ส่ง system หรือ system=chinese_wuge = พฤติกรรมเดิม (五格 จีน) ─────
+  const system = String(body.system || "").trim();
+  if (system && system !== "chinese_wuge") {
+    if (!(MULTINATIONAL_SYSTEMS as string[]).includes(system)) {
+      return NextResponse.json({ ok: false, error: "unknown_system", system }, { status: 400 });
+    }
+    const result = runNamingSystem(system, {
+      name: body.name,
+      surname: body.surname,
+      given: body.given,
+      birthDay: body.birthDay,
+      moonLongitude: body.moonLongitude,
+      nakshatra: body.nakshatra,
+      pada: body.pada,
+      gender: body.gender,
+    });
+    return NextResponse.json({ ok: result.ok, system, result }, { status: result.ok ? 200 : 422, headers: { "Cache-Control": "no-store, max-age=0" } });
+  }
+
   const surname = String(body.surname || "").trim();
   const given = String(body.given || "").trim();
   if (!surname || !given) return NextResponse.json({ ok: false, error: "missing fields" }, { status: 400 });
