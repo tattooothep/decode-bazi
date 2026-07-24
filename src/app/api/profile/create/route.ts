@@ -12,6 +12,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { normalizeNetworkGroup, normalizeNonSelfRelationship } from "@/lib/profile-groups";
 import { findMatchingSelfProfile } from "@/lib/profile-clone-guard";
 import { getProductAccess, entitlementDenied } from "@/lib/product-entitlement";
+import { parseTz } from "@/lib/birth-timezone";
 
 export async function POST(req: Request) {
   const s = await getSession();
@@ -35,6 +36,10 @@ export async function POST(req: Request) {
     dayBoundary,
     /* 19 พ.ค. Option α · birthTimeKnown=false → 3p mode (no hour pillar) */
     birthTimeKnown: birthTimeKnownRaw,
+    /* 24 ก.ค. 2569 · เขตเวลาของ "สถานที่เกิด" (IANA เช่น Asia/Taipei หรือออฟเซ็ต +08:00)
+     * ไม่ส่งมา = NULL แปลว่า "ยังไม่รู้" → ทุกเส้นศาสตร์ใช้ Asia/Bangkok เป็นค่าตั้งต้น
+     * แล้ว **ติดธงบอกผู้ใช้ตรงๆ** (ห้าม backfill เดาเอง — เดา = ยามผิด = ทั้งผังผิด) */
+    birthTz: birthTzRaw,
   } = body;
 
   if (!name || !birthDate) {
@@ -44,6 +49,10 @@ export async function POST(req: Request) {
   const birthTimeKnown = birthTimeKnownRaw !== false;        /* default true · backward compat */
   const birthTime = birthTimeKnown ? (birthTimeRaw || "12:00") : "12:00"; /* 3p ใช้ 12:00 เป็น DB anchor เท่านั้น · ไม่ใช่ pillar */
   const dayBoundaryNorm = dayBoundary === "00:00" ? "00:00" : "23:00";
+  /* ตรวจรูปเขตเวลาด้วยตัวอ่านกลางตัวเดียวกับทุกเส้นศาสตร์ (src/lib/birth-timezone.ts)
+   * รูปไม่ถูก = เก็บ NULL ดีกว่าเก็บค่าที่อ่านไม่ออกแล้วไปพังตอนคำนวณ */
+  const birthTzSpec = parseTz(typeof birthTzRaw === "string" ? birthTzRaw : null);
+  const birthTz = birthTzSpec?.label ?? null;
 
   const groupRaw = normalizeNetworkGroup(networkGroup, "general");
   const group = groupRaw === "self" ? "general" : groupRaw;
@@ -211,7 +220,7 @@ export async function POST(req: Request) {
        birth_datetime, birth_lat, birth_lng, birth_location_name, gender,
        relationship_type, network_group, network_group_label,
        day_master, day_master_strength, yongshen, bazi_pillars,
-       birth_source, birth_time_known, day_boundary, is_archived, created_at, updated_at
+       birth_source, birth_time_known, day_boundary, birth_tz, birth_tz_source, is_archived, created_at, updated_at
      )
      VALUES (
        gen_random_uuid(),
@@ -220,7 +229,7 @@ export async function POST(req: Request) {
        $7, $8, $9, $10,
        $11, $12, $13,
        $14, $15, $16::jsonb, $17::jsonb,
-       'self_reported', $18, $19, false, now(), now()
+       'self_reported', $18, $19, $20, $21, false, now(), now()
      )
      RETURNING id`,
     [
@@ -234,6 +243,8 @@ export async function POST(req: Request) {
       dayMaster, strength, yongshen, baziPillars,
       birthTimeKnown,
       dayBoundaryNorm,
+      birthTz,
+      birthTz ? "user_input" : null,
     ]
   );
   if (!row) return NextResponse.json({ error: "insert failed" }, { status: 500 });

@@ -6,13 +6,15 @@ import { publicAiPayload } from "@/lib/public-ai-response";
 import { internalAppOrigin } from "@/lib/internal-app-origin";
 import { isSifuAnswerLang } from "@/lib/sifu-answer-lang";
 import { mobileBillingOperation } from "@/lib/mobile-billing-operation";
+import { getProductAccess, PRODUCT_PAGE_ENTITLEMENTS } from "@/lib/product-entitlement";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_HISTORY_ITEMS = 6;
-const MAX_TEAM_MEMBERS = 8;
+/** เพดานแข็งของระบบ — เพดานจริงต่อผู้ใช้มาจากแพ็กเกจ (team_people · แพ็กสูงสุด 12) */
+const MAX_TEAM_MEMBERS = 12;
 
 type Pillar = { stem?: string; branch?: string } | null;
 
@@ -51,6 +53,71 @@ function cleanUuid(value: unknown): string | null {
 function cleanUuidList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return Array.from(new Set(value.map(cleanUuid).filter(Boolean) as string[])).slice(0, MAX_TEAM_MEMBERS);
+}
+
+/** ธาตุที่ยอมรับได้ — ค่านอกรายการนี้ทิ้ง (กันข้อความแปลกปลอมไหลเข้าคำสั่งซินแส) */
+const ELEMENT_WHITELIST = new Set(["wood", "fire", "earth", "metal", "water", "木", "火", "土", "金", "水"]);
+
+/** ตัดอักขระควบคุม/ขึ้นบรรทัดใหม่ — บรรทัดใหม่คือเครื่องมือหลักของการแทรกคำสั่งเข้า prompt */
+function cleanPromptText(value: unknown, max: number): string {
+  return String(typeof value === "string" ? value : "")
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001F\u007F]+/gu, " ")
+    .trim()
+    .slice(0, max);
+}
+
+function cleanElementList(value: unknown, max: number) {
+  if (!Array.isArray(value)) return undefined;
+  const list = value
+    .map((item) => {
+      const row = (item && typeof item === "object" ? item : {}) as { element?: unknown; label?: unknown };
+      const element = cleanPromptText(row.element, 16).toLowerCase();
+      if (!ELEMENT_WHITELIST.has(element)) return null;
+      return { element, label: cleanPromptText(row.label, 40) || element };
+    })
+    .filter(Boolean) as Array<{ element: string; label: string }>;
+  return list.length ? list.slice(0, max) : undefined;
+}
+
+/**
+ * กรองก้อน "งานอะไร" ที่แอพส่งมาก่อนเข้าคำสั่งซินแส
+ * เดิมส่งดิบ → ผู้ที่ยิง API ตรง (ไม่ผ่านแอพเรา) แทรกข้อความสั่งซินแสได้ทั้งก้อน
+ * ที่นี่บังคับรูปทรง: ตัดอักขระควบคุม · จำกัดความยาว/จำนวนรายการ · ธาตุต้องอยู่ใน whitelist
+ */
+function cleanActivity(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const row = value as Record<string, unknown>;
+  const id = cleanPromptText(row.id, 40);
+  const label = cleanPromptText(row.label, 80);
+  if (!id && !label) return null;
+  const priority = cleanPromptText(row.priority, 24);
+  const roles = Array.isArray(row.roles)
+    ? (row.roles
+      .map((item) => {
+        const r = (item && typeof item === "object" ? item : {}) as Record<string, unknown>;
+        const roleLabel = cleanPromptText(r.label, 60);
+        if (!roleLabel) return null;
+        const elements = Array.isArray(r.elements)
+          ? r.elements.map((e) => cleanPromptText(e, 16).toLowerCase()).filter((e) => ELEMENT_WHITELIST.has(e)).slice(0, 5)
+          : [];
+        return { label: roleLabel, elements, text: cleanPromptText(r.text, 160) };
+      })
+      .filter(Boolean) as Array<{ label: string; elements: string[]; text: string }>).slice(0, 8)
+    : undefined;
+  const manual = Array.isArray(row.manual)
+    ? row.manual.map((m) => cleanPromptText(m, 160)).filter(Boolean).slice(0, 8)
+    : undefined;
+  return {
+    id: id || undefined,
+    label: label || undefined,
+    priority: priority || undefined,
+    summary: cleanPromptText(row.summary, 240) || undefined,
+    required: cleanElementList(row.required, 5),
+    support: cleanElementList(row.support, 5),
+    roles: roles && roles.length ? roles : undefined,
+    manual: manual && manual.length ? manual : undefined,
+  };
 }
 
 function cleanHistory(value: unknown) {
@@ -186,7 +253,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "ดวงศูนย์กลางยังไม่มีเสาวัน" }, { status: 422 });
   }
 
-  const teamIds = cleanUuidList((body as { teamProfileIds?: unknown }).teamProfileIds);
+  /* เพดานสมาชิกทีมตามแพ็กเกจจริง (แพ็กสูงสุด = 12 ไม่ใช่ 8 ตายตัวแบบเดิม)
+   * และถ้าส่งเกินเพดาน ต้อง "บอกจำนวน" ไม่ใช่ตัดรายชื่อทิ้งเงียบ — ผู้ใช้จะไม่รู้เลยว่าซินแสอ่านไม่ครบทีม */
+  const teamAccess = await getProductAccess(session.userId);
+  const teamCaps = teamAccess?.pages.network || PRODUCT_PAGE_ENTITLEMENTS.free.network;
+  const teamLimit = Math.max(0, Math.min(MAX_TEAM_MEMBERS, Number(teamCaps.team_people) || 0));
+  const teamIdsRaw = cleanUuidList((body as { teamProfileIds?: unknown }).teamProfileIds);
+  if (mode === "team" && teamIdsRaw.length > teamLimit) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "team_limit_exceeded",
+        limit: teamLimit,
+        requested: teamIdsRaw.length,
+        message: `แพ็กเกจนี้ให้ซินแสอ่านทีมได้สูงสุด ${teamLimit} คน (เลือกมา ${teamIdsRaw.length} คน)`,
+      },
+      { status: 400 }
+    );
+  }
+  const teamIds = teamIdsRaw;
   const otherId = cleanUuid((body as { otherProfileId?: unknown }).otherProfileId);
   const selectedProfiles = mode === "team"
     ? teamIds
@@ -224,7 +309,7 @@ export async function POST(req: Request) {
   const firstOther = others[0];
   const sifuPayload = mode === "team"
     ? {
-      activity: (body as { activity?: unknown }).activity || null,
+      activity: cleanActivity((body as { activity?: unknown }).activity),
       members: others,
       selected_team: [centerPerson, ...others],
       self: centerPerson,

@@ -6,6 +6,7 @@ import { getMobileSession } from "@/lib/mobile-auth";
 import { q1 } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { ziweiChart, type Gender } from "@/lib/astro/ziwei/engine";
+import { birthTimezoneMeta, parseTz, resolveBirthTz, tzOffsetHoursAt, wallClockToUtc } from "@/lib/birth-timezone";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -35,18 +36,29 @@ export async function GET(req: Request) {
   const row = await q1<{
     id: string; name: string | null; nickname: string | null; birth_datetime: string | null;
     birth_lat: string | null; birth_lng: string | null; gender: string | null; birth_time_known: boolean | null;
+    birth_tz: string | null;
   }>(
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-            birth_lat, birth_lng, gender, birth_time_known
+            birth_lat, birth_lng, gender, birth_time_known, birth_tz
        FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [profileId, session.orgId]
   );
   if (!row || !row.birth_datetime) {
     return NextResponse.json({ ok: false, error: "profile not found" }, { status: 404 });
   }
-  const dtUTC = new Date(`${row.birth_datetime}+07:00`);
-  if (isNaN(dtUTC.getTime())) {
+  /* เขตเวลาเกิด: รับ ?tz= จากแอพ · ไม่ส่งมา = ใช้ +07:00 เหมือนเดิมแต่ติดธงบอกตรงๆ
+   * (DB ยังไม่มีคอลัมน์เขตเวลาเกิด — เหตุผลเต็มใน src/lib/birth-timezone.ts)
+   * เดิม route ไม่เคยส่ง gmtOffsetHours ให้ engine เลย engine จึงเดาเองจาก Math.round(lng/15)
+   * → ดวงเกิดต่างประเทศได้ยามผิด → 命宮 ผิด → ทั้งผังผิด */
+  /* ลำดับความน่าเชื่อถือ: เขตเวลาที่บันทึกในโปรไฟล์ > ที่ส่งมากับคำขอ > ค่าตั้งต้นกรุงเทพ
+   * (โปรไฟล์มาก่อน เพราะเป็นข้อมูลที่เจ้าของดวงกรอกเอง ไม่ใช่ค่าที่หน้าจอเดา) */
+  const tzFromProfile = parseTz(row.birth_tz);
+  const tzFromQuery = parseTz(url.searchParams.get("tz"));
+  const tzParam = tzFromProfile || tzFromQuery;
+  const tz = resolveBirthTz(tzParam);
+  const dtUTC = wallClockToUtc(row.birth_datetime, tz);
+  if (!dtUTC || isNaN(dtUTC.getTime())) {
     return NextResponse.json({ ok: false, error: "bad birth datetime" }, { status: 422 });
   }
   const gender: Gender = String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M";
@@ -56,12 +68,13 @@ export async function GET(req: Request) {
     Number(row.birth_lng || 100.5018),
     gender,
     row.birth_time_known !== false,
-    { refDate: new Date() }
+    { refDate: new Date(), gmtOffsetHours: tzOffsetHoursAt(tz, dtUTC) }
   );
   return NextResponse.json(
     {
       ok: true,
       profile: { id: row.id, name: row.nickname || row.name || "" },
+      timezone: birthTimezoneMeta(tzParam, !!tzFromProfile),
       chart,
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }

@@ -6,6 +6,8 @@ import { getMobileSession } from "@/lib/mobile-auth";
 import { q1 } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { tianxingReading } from "@/lib/tianxing";
+// ชั้นลึก 七政四餘 (12宮/三主/行限/流年木土/化曜) — "ต่อท่อ" engine ที่เว็บ fusion5 ใช้อยู่แล้ว (read-only)
+import { buildQizhengDeep } from "@/lib/mobile-qizheng-deep";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -85,6 +87,17 @@ function wallClockToUtc(wall: string, tz: TzSpec): Date | null {
   return new Date(ms);
 }
 
+/** อ่าน ?refDate= (YYYY-MM-DD หรือ ISO เต็ม) — ไม่ส่งมา = วันนี้ · ส่งมาผิดรูป = null (route ตอบ 400)
+ *  ใช้เป็นวันอ้างอิงของชั้นเวลา 行限/流年木土 (ชั้นลึกอยู่ใน src/lib/mobile-qizheng-deep.ts) */
+function parseRefDate(raw: string | null): { date: Date; source: "query" | "now" } | null {
+  const text = String(raw || "").trim();
+  if (!text) return { date: new Date(), source: "now" };
+  const ymd = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T12:00:00Z` : text;
+  const d = new Date(ymd);
+  if (isNaN(d.getTime())) return null;
+  return { date: d, source: "query" };
+}
+
 export async function GET(req: Request) {
   const session = await getMobileSession(req);
   if (!session) return NextResponse.json({ ok: false, error: "not logged in" }, { status: 401 });
@@ -102,12 +115,14 @@ export async function GET(req: Request) {
   let lng = 100.5018;
   let profileOut: { id: string; name: string } | null = null;
   let locationSource: "profile" | "query" | "default_bangkok" = "default_bangkok";
+  // โหมดผัง: natal = ดวงกำเนิดของโปรไฟล์ (เปิดชั้นเวลา 行限/流年ได้) · moment = ฟ้า ณ เวลาที่ถาม (ไม่มีเจ้าชะตา → ไม่มีชั้นเวลา)
+  let birthTimeKnown = true;
   const tzParam = parseTz(url.searchParams.get("tz"));
   // โหมด "ฟ้าตอนนี้/เวลาอื่น" ส่ง dtUTC เป็นเวลาสากลอยู่แล้ว → ไม่มีประเด็นเขตเวลา
   // note = 3 ภาษา (th/en/zh) ตามมาตรฐานแอพ — zh ห้ามมีไทยปน
   let timezone: {
     used: string;
-    source: "query" | "default_bangkok" | "utc_input";
+    source: "profile" | "query" | "default_bangkok" | "utc_input";
     isDefault: boolean;
     note: { th: string; en: string; zh: string };
   } = {
@@ -122,11 +137,12 @@ export async function GET(req: Request) {
   if (profileId) {
     const row = await q1<{
       id: string; name: string | null; nickname: string | null; birth_datetime: string | null;
-      birth_lat: string | null; birth_lng: string | null;
+      birth_lat: string | null; birth_lng: string | null; birth_time_known: boolean | null;
+      birth_tz: string | null;
     }>(
       `SELECT id, name, nickname,
               to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lat, birth_lng
+              birth_lat, birth_lng, birth_time_known, birth_tz
          FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
       [profileId, session.orgId]
     );
@@ -135,19 +151,29 @@ export async function GET(req: Request) {
     }
     /* เวลานาฬิกาที่บันทึกไว้ (ตีความเป็นเวลาไทยตอน INSERT เหมือนทุกเส้น) → ตีเป็นเวลาสากลตามเขตเวลาที่ระบุ
      * ไม่ระบุ ?tz= → คงพฤติกรรมเดิม +07:00 แต่ **ติดธง** ว่าเป็นค่าตั้งต้น ไม่ใช่เขตเวลาเกิดจริง */
-    const tz: TzSpec = tzParam || { label: DEFAULT_TZ, kind: "offset", offsetMin: DEFAULT_TZ_OFFSET_MIN };
+    /* 24 ก.ค. 2569 · ลำดับความน่าเชื่อถือ: เขตเวลาที่บันทึกในโปรไฟล์ > ที่ส่งมากับคำขอ > ค่าตั้งต้นกรุงเทพ
+     * (โปรไฟล์มาก่อน เพราะเป็นค่าที่เจ้าของดวงกรอกเอง ไม่ใช่ค่าที่หน้าจอเดา) */
+    const tzFromProfile = parseTz(row.birth_tz);
+    const tzUsed = tzFromProfile || tzParam;
+    const tz: TzSpec = tzUsed || { label: DEFAULT_TZ, kind: "offset", offsetMin: DEFAULT_TZ_OFFSET_MIN };
     dt = wallClockToUtc(row.birth_datetime, tz);
     if (!dt || isNaN(dt.getTime())) {
       return NextResponse.json({ ok: false, error: "bad_birth_datetime" }, { status: 400 });
     }
-    timezone = tzParam
+    timezone = tzUsed
       ? {
-          used: tzParam.label, source: "query", isDefault: false,
-          note: {
-            th: "ใช้เขตเวลาที่แอพส่งมาเป็นเขตเวลาของสถานที่เกิด",
-            en: "Birth timezone supplied by the app was used.",
-            zh: "採用應用傳入的出生地時區。",
-          },
+          used: tzUsed.label, source: tzFromProfile ? "profile" : "query", isDefault: false,
+          note: tzFromProfile
+            ? {
+                th: "ใช้เขตเวลาเกิดที่บันทึกไว้ในโปรไฟล์",
+                en: "Used the birth timezone saved on this profile.",
+                zh: "採用檔案中已存的出生時區。",
+              }
+            : {
+                th: "ใช้เขตเวลาที่แอพส่งมาเป็นเขตเวลาของสถานที่เกิด",
+                en: "Birth timezone supplied by the app was used.",
+                zh: "採用應用傳入的出生地時區。",
+              },
         }
       : {
           used: `${DEFAULT_TZ} (+07:00)`, source: "default_bangkok", isDefault: true,
@@ -162,6 +188,8 @@ export async function GET(req: Request) {
     const hasLng = row.birth_lng != null && Number.isFinite(lngRow) && lngRow >= -180 && lngRow <= 180;
     if (hasLat && hasLng) { lat = latRow; lng = lngRow; locationSource = "profile"; }
     profileOut = { id: row.id, name: row.nickname || row.name || "" };
+    // ไม่รู้เวลาเกิด = ปิด 命宮/12宮/度主/身主/行限 ตามคัมภีร์ (No-Time Mode · 10-degree-limit-specificity.md)
+    birthTimeKnown = row.birth_time_known !== false;
   } else {
     const dtRaw = String(url.searchParams.get("dtUTC") || "");
     dt = dtRaw ? new Date(dtRaw) : new Date();
@@ -177,9 +205,28 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "bad_dtUTC" }, { status: 400 });
   }
   const reading = tianxingReading(dt, lat, lng);
+
+  /* ── ต่อท่อชั้นลึก (additive · ไม่แตะของเดิมสักฟิลด์) ───────────────────
+   * houses / threeLords / xianLimit / yearTransit / huayao ประกอบใน src/lib/mobile-qizheng-deep.ts
+   * (แยกไฟล์เพื่อให้เทสยิงตรงได้โดยไม่ต้องมี session/DB) */
+  const chartKind: "natal" | "moment" = profileOut ? "natal" : "moment";
+  const ref = parseRefDate(url.searchParams.get("refDate"));
+  if (!ref) {
+    return NextResponse.json({ ok: false, error: "bad_refDate" }, { status: 400 });
+  }
+  const deep = buildQizhengDeep({
+    reading, dtUTC: dt, lat, lng, chartKind, birthTimeKnown,
+    refDate: ref.date, refDateSource: ref.source,
+  });
+
   return NextResponse.json(
     // locationSource/timezone = ธงบอกที่มาให้แอพขึ้นป้ายได้ (ห้ามเงียบว่าใช้ค่าตั้งต้น)
-    { ok: true, profile: profileOut, locationSource, timezone, reading },
+    {
+      ok: true, profile: profileOut, locationSource, timezone, reading,
+      // ── ชั้นลึกเพิ่ม 23 ก.ค. 2569 · optional ทุกก้อน (engine ไม่คืน = ไม่ส่ง field) ──
+      // deepMeta.notAvailable บอกตรงว่าก้อนไหนหายเพราะอะไร (ห้ามเงียบ)
+      ...deep,
+    },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
   );
 }

@@ -21,6 +21,9 @@
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:80;display:none;align-items:center;justify-content:center;padding:18px}.modal.show{display:flex}.modal-card{width:min(760px,100%);max-height:88vh;overflow:auto;border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow);padding:22px}.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:start}.modal-head h2{margin:0;font-family:'Noto Serif Thai','Noto Serif TC',serif}.close{width:38px;height:38px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}.guide-list{display:grid;gap:11px;margin-top:16px}.guide-item{border:1px solid rgba(255,255,255,.08);padding:13px;background:rgba(255,255,255,.025)}.guide-item b{display:block}.guide-item p{margin:5px 0 0;color:var(--soft);font-size:13px;line-height:1.7}.toast{position:fixed;right:18px;bottom:18px;z-index:90;background:var(--panel);border:1px solid var(--line);padding:10px 13px;color:var(--fg);display:none}.toast.show{display:block}
   @media(max-width:900px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:520px}.share{grid-template-columns:repeat(3,minmax(0,1fr))}.nav a{display:none}}
   @media(max-width:560px){.topbar{padding:12px 14px;align-items:flex-start}.wrap{padding:16px 14px 60px}.hero-inner{padding:58px 14px 38px}.hero h1{font-size:38px}.panel{padding:16px}.linkbox{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.lang{max-width:190px;overflow:auto}.share button{min-height:50px}}
+  .iv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.iv-f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--soft)}.iv-f input,.iv-f select{border:1px solid var(--line);background:var(--bg);color:var(--fg);height:42px;padding:0 10px}.iv-consent{display:flex;gap:9px;align-items:flex-start;margin-top:13px;font-size:12px;color:var(--soft);line-height:1.6}.iv-consent input{margin-top:3px;width:17px;height:17px}
+  .iv-pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:9px}.iv-pil{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:11px;text-align:center}.iv-pil b{display:block;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:22px;color:var(--gold)}.iv-pil span{display:block;font-size:10px;color:var(--faint);margin-top:4px}
+  .iv-line{margin-top:12px;font-size:13px;color:var(--fg);line-height:1.75}.iv-profile{margin-top:12px;display:grid;gap:9px}.iv-profile .iv-blk{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);padding:12px}.iv-profile .iv-blk b{display:block;font-size:12px;color:var(--gold)}.iv-profile .iv-blk p{margin:5px 0 0;font-size:13px;line-height:1.75;color:var(--soft)}
   </style>
 </head>
 <body>
@@ -44,6 +47,53 @@
         <button class="btn primary" id="copyHero" type="button" data-t="copyLink">คัดลอกลิงก์</button>
         <button class="btn" id="openGuide" type="button" data-t="openGuide">ดูวิธีใช้ทีละขั้น</button>
       </div>
+    </div>
+  </section>
+
+  <!-- ── โหมดรับเชิญ (?invite=CODE) · เพื่อนกรอกวันเกิดของตัวเอง แล้วได้ดวงฟรี ── -->
+  <section class="wrap" id="ivWrap" hidden>
+    <div class="grid">
+      <div class="panel">
+        <div class="kicker" id="ivKicker">invite</div>
+        <h2 id="ivTitle">-</h2>
+        <div class="muted" id="ivLead"></div>
+        <div id="ivFormBox" style="margin-top:14px">
+          <div class="iv-grid">
+            <label class="iv-f"><span id="ivLName"></span><input id="ivName" type="text" maxlength="40" autocomplete="off"/></label>
+            <label class="iv-f"><span id="ivLDate"></span><input id="ivDate" type="date" required/></label>
+            <label class="iv-f"><span id="ivLTime"></span><input id="ivTime" type="time"/></label>
+            <label class="iv-f"><span id="ivLGender"></span><select id="ivGender"><option value="">-</option><option value="M" id="ivOptM"></option><option value="F" id="ivOptF"></option></select></label>
+            <label class="iv-f"><span id="ivLPlace"></span><input id="ivPlace" type="text" maxlength="80" autocomplete="off"/></label>
+            <label class="iv-f"><span id="ivLTz"></span><input id="ivTz" type="number" step="0.5" min="-12" max="14" value="7"/></label>
+          </div>
+          <div class="muted" id="ivTimeHint" style="margin-top:6px"></div>
+          <label class="iv-consent"><input id="ivConsent" type="checkbox"/><span id="ivLConsent"></span></label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn primary" id="ivSubmit" type="button"></button>
+          </div>
+          <div class="muted" id="ivErr" style="margin-top:10px;color:var(--red)"></div>
+        </div>
+
+        <div id="ivResultBox" hidden style="margin-top:14px">
+          <div class="iv-pillars" id="ivPillars"></div>
+          <div class="iv-line" id="ivDmLine"></div>
+          <div id="ivProfile" class="iv-profile"></div>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <h2 id="ivSideTitle">-</h2>
+        <div class="how" id="ivSteps"></div>
+        <div id="ivRewardBox" hidden style="margin-top:14px">
+          <div class="status active"><i></i><span id="ivRewardLine"></span></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn good" id="ivClaim" type="button"></button>
+            <a class="btn" id="ivSignupBtn" href="/signup"></a>
+            <a class="btn" id="ivAppBtn" href="/download-app"></a>
+          </div>
+          <div class="muted" id="ivClaimMsg" style="margin-top:8px"></div>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -104,6 +154,167 @@
   <div class="toast" id="toast"></div>
 
 <script>
+/* ── วงจรเชิญเพื่อน · โหมดรับเชิญบนหน้าเดียวกัน (เวฟ 4 · 24 ก.ค. 2569) ──
+   เปิดด้วย /referral?invite=CODE เท่านั้น · ไม่มีโค้ด = หน้า affiliate เดิมทุกประการ
+   เพื่อนกรอกวันเกิด "ของตัวเอง" → ได้ดวงฟรีทันที → ยามรอรับหลังล็อกอิน
+   3 ภาษาหลัก th/en/zh(+cn) · ภาษาอื่นตกไป en (ห้ามให้ไทยโผล่ในหน้า zh) */
+(function(){
+  var params=new URLSearchParams(location.search);
+  var code=(params.get('invite')||params.get('code')||'').trim().toUpperCase().replace(/[^0-9A-Z]/g,'');
+  if(!code){return}
+  window.__HK_INVITE_MODE__=true;
+
+  var IV={
+    th:{kicker:'คำเชิญ',titleBy:function(a){return 'คุณถูกเชิญโดย '+a},titleAnon:'คุณได้รับคำเชิญ',
+      lead:'กรอกวันเกิดของคุณเอง แล้วดูดวงตัวเองได้ฟรีทันที ไม่ต้องสมัครก่อน',
+      lName:'อยากให้เรียกว่าอะไร (ไม่บังคับ)',lDate:'วันเกิด',lTime:'เวลาเกิด',lGender:'เพศ',lPlace:'จังหวัด/เมืองที่เกิด (ไม่บังคับ)',lTz:'เขตเวลาตอนเกิด (ชั่วโมง)',
+      optM:'ชาย',optF:'หญิง',timeHint:'ไม่รู้เวลาเกิดก็เว้นว่างได้ ระบบจะอ่านแบบ 3 เสาให้',
+      consent:'ยินยอมให้ส่งวันเกิดนี้ให้ผู้เชิญ เพื่อดูดวงร่วมกันในเครือข่ายของเขา',
+      submit:'ดูดวงฟรีของฉัน',sideTitle:'ทำยังไงต่อ',
+      steps:[['กรอกวันเกิดของตัวเอง','คนเชิญกรอกแทนไม่ได้ เพื่อความแม่นและเรื่องกฎหมาย'],['ได้ดวงฟรีทันที','อ่านผลได้เลยโดยไม่ต้องสมัคร'],['สมัครแล้วรับยาม','ยามฟรีเข้าทั้งสองฝ่ายเมื่อยืนยันวันเกิดแล้ว']],
+      dmLine:function(dm,st){return 'วันเกิดของคุณเป็นธาตุ '+dm+' · กำลังวันเกิด '+st},
+      pilY:'ปีเกิด',pilM:'เดือนเกิด',pilD:'วันเกิด',pilH:'ยามเกิด',pilNone:'ไม่ระบุ',
+      bCore:'แก่นนิสัย',bReal:'ในชีวิตจริง',bShadow:'จุดที่ต้องระวัง',bNeeds:'สิ่งที่ควรเติม',
+      rewardPending:function(n){return 'มี '+n+' ยามฟรีรอคุณอยู่ · เข้าสู่ระบบแล้วกดรับได้เลย'},
+      claim:'กดรับยามฟรีของฉัน',signup:'สมัคร/เข้าสู่ระบบ',getApp:'โหลดแอพ hourkey',
+      claimed:function(n){return 'รับแล้ว +'+n+' ยาม'},claimedAlready:'ยามนี้ถูกรับไปแล้ว',
+      err:{consent_required:'ต้องกดยินยอมก่อน',birth_date_required:'กรุณากรอกวันเกิด',birth_date_invalid:'วันเกิดไม่ถูกต้อง',birth_date_out_of_range:'วันเกิดอยู่นอกช่วงที่รับได้',birth_time_invalid:'เวลาเกิดไม่ถูกต้อง',invalid_code:'ลิงก์เชิญไม่ถูกต้อง',invite_not_found:'ไม่พบคำเชิญนี้',invite_expired:'คำเชิญหมดอายุแล้ว',invite_revoked:'คำเชิญถูกยกเลิกแล้ว',already_accepted:'คำเชิญนี้ถูกใช้ไปแล้ว',self_invite:'เชิญตัวเองไม่ได้',device_already_accepted:'อุปกรณ์นี้รับคำเชิญไปแล้ว',friend_already_invited:'บัญชีนี้เคยรับคำเชิญแล้ว',not_confirmed:'ยังไม่ได้ยืนยันวันเกิด',already_claimed:'ยามนี้ถูกรับไปแล้ว',rate_limited:'ลองใหม่อีกครั้งในอีกสักครู่',invite_disabled:'ระบบเชิญเพื่อนปิดอยู่ชั่วคราว',not_authorized:'กรุณาเข้าสู่ระบบก่อน'}},
+    en:{kicker:'invitation',titleBy:function(a){return 'You were invited by '+a},titleAnon:'You have an invitation',
+      lead:'Enter your own birth details and read your own chart for free right away, no signup needed.',
+      lName:'What should we call you (optional)',lDate:'Birth date',lTime:'Birth time',lGender:'Gender',lPlace:'Birth city (optional)',lTz:'Time zone at birth (hours)',
+      optM:'Male',optF:'Female',timeHint:'No birth time? Leave it blank and we read a 3-pillar chart.',
+      consent:'I agree to share this birth date with the person who invited me, for a joint reading in their network.',
+      submit:'Read my free chart',sideTitle:'What happens next',
+      steps:[['You enter your own birth date','The inviter cannot type it for you, for accuracy and for legal reasons.'],['Free chart right away','Read the result without creating an account.'],['Sign in to collect hours','Free hours go to both sides only after the birth date is confirmed.']],
+      dmLine:function(dm,st){return 'Your day master is '+dm+' · strength '+st},
+      pilY:'Year',pilM:'Month',pilD:'Day',pilH:'Hour',pilNone:'unknown',
+      bCore:'Core nature',bReal:'In real life',bShadow:'Watch out for',bNeeds:'What you need',
+      rewardPending:function(n){return n+' free hours are waiting for you · sign in and collect'},
+      claim:'Collect my free hours',signup:'Sign up / sign in',getApp:'Get the hourkey app',
+      claimed:function(n){return 'Collected +'+n+' hours'},claimedAlready:'Already collected',
+      err:{consent_required:'Please tick the consent box',birth_date_required:'Birth date is required',birth_date_invalid:'Birth date is not valid',birth_date_out_of_range:'Birth date is out of range',birth_time_invalid:'Birth time is not valid',invalid_code:'Invalid invitation link',invite_not_found:'Invitation not found',invite_expired:'Invitation has expired',invite_revoked:'Invitation was cancelled',already_accepted:'This invitation was already used',self_invite:'You cannot accept your own invitation',device_already_accepted:'This device already accepted an invitation',friend_already_invited:'This account already accepted an invitation',not_confirmed:'Birth date is not confirmed yet',already_claimed:'Already collected',rate_limited:'Please try again shortly',invite_disabled:'Invitations are temporarily closed',not_authorized:'Please sign in first'}},
+    zh:{kicker:'邀請',titleBy:function(a){return a+' 邀請你'},titleAnon:'你收到一則邀請',
+      lead:'填寫你自己的出生資料，立即免費看自己的命盤，不必先註冊。',
+      lName:'想讓我們怎麼稱呼你（可留空）',lDate:'出生日期',lTime:'出生時間',lGender:'性別',lPlace:'出生城市（可留空）',lTz:'出生地時區（小時）',
+      optM:'男',optF:'女',timeHint:'不知道出生時間可留空，系統會用三柱推算。',
+      consent:'我同意將此出生日期提供給邀請我的人，用於其網絡中的合盤解讀。',
+      submit:'看我的免費命盤',sideTitle:'接下來怎麼走',
+      steps:[['由你本人填寫出生日期','邀請人不能代填，兼顧準確與法規。'],['立即免費看命盤','不必註冊即可閱讀結果。'],['登入即可領時','雙方的免費時數，只在出生日期確認後才發放。']],
+      dmLine:function(dm,st){return '你的日主為 '+dm+' · 旺衰 '+st},
+      pilY:'年柱',pilM:'月柱',pilD:'日柱',pilH:'時柱',pilNone:'未詳',
+      bCore:'核心性情',bReal:'現實表現',bShadow:'須留意',bNeeds:'宜補之處',
+      rewardPending:function(n){return '有 '+n+' 個免費時數等你 · 登入後即可領取'},
+      claim:'領取我的免費時數',signup:'註冊 / 登入',getApp:'下載 hourkey App',
+      claimed:function(n){return '已領取 +'+n+' 時'},claimedAlready:'已領取過了',
+      err:{consent_required:'請先勾選同意',birth_date_required:'請填寫出生日期',birth_date_invalid:'出生日期不正確',birth_date_out_of_range:'出生日期超出範圍',birth_time_invalid:'出生時間不正確',invalid_code:'邀請連結不正確',invite_not_found:'找不到此邀請',invite_expired:'邀請已過期',invite_revoked:'邀請已取消',already_accepted:'此邀請已被使用',self_invite:'不能接受自己的邀請',device_already_accepted:'此裝置已接受過邀請',friend_already_invited:'此帳號已接受過邀請',not_confirmed:'尚未確認出生日期',already_claimed:'已領取過了',rate_limited:'請稍後再試',invite_disabled:'邀請功能暫時關閉',not_authorized:'請先登入'}},
+    cn:{kicker:'邀请',titleBy:function(a){return a+' 邀请你'},titleAnon:'你收到一则邀请',
+      lead:'填写你自己的出生资料，立即免费看自己的命盘，不必先注册。',
+      lName:'想让我们怎么称呼你（可留空）',lDate:'出生日期',lTime:'出生时间',lGender:'性别',lPlace:'出生城市（可留空）',lTz:'出生地时区（小时）',
+      optM:'男',optF:'女',timeHint:'不知道出生时间可留空，系统会用三柱推算。',
+      consent:'我同意将此出生日期提供给邀请我的人，用于其网络中的合盘解读。',
+      submit:'看我的免费命盘',sideTitle:'接下来怎么走',
+      steps:[['由你本人填写出生日期','邀请人不能代填，兼顾准确与法规。'],['立即免费看命盘','不必注册即可阅读结果。'],['登录即可领时','双方的免费时数，只在出生日期确认后才发放。']],
+      dmLine:function(dm,st){return '你的日主为 '+dm+' · 旺衰 '+st},
+      pilY:'年柱',pilM:'月柱',pilD:'日柱',pilH:'时柱',pilNone:'未详',
+      bCore:'核心性情',bReal:'现实表现',bShadow:'须留意',bNeeds:'宜补之处',
+      rewardPending:function(n){return '有 '+n+' 个免费时数等你 · 登录后即可领取'},
+      claim:'领取我的免费时数',signup:'注册 / 登录',getApp:'下载 hourkey App',
+      claimed:function(n){return '已领取 +'+n+' 时'},claimedAlready:'已领取过了',
+      err:{consent_required:'请先勾选同意',birth_date_required:'请填写出生日期',birth_date_invalid:'出生日期不正确',birth_date_out_of_range:'出生日期超出范围',birth_time_invalid:'出生时间不正确',invalid_code:'邀请链接不正确',invite_not_found:'找不到此邀请',invite_expired:'邀请已过期',invite_revoked:'邀请已取消',already_accepted:'此邀请已被使用',self_invite:'不能接受自己的邀请',device_already_accepted:'此设备已接受过邀请',friend_already_invited:'此账号已接受过邀请',not_confirmed:'尚未确认出生日期',already_claimed:'已领取过了',rate_limited:'请稍后再试',invite_disabled:'邀请功能暂时关闭',not_authorized:'请先登录'}}
+  };
+
+  var st={lang:'th',alias:null,pendingHours:0,chart:null,accepted:false,lastError:''};
+  /* ภาษาอื่น (vi/ja/ko/ru/es) ตกไป en เสมอ — ห้ามให้ไทยโผล่ในหน้าที่ไม่ใช่ไทย */
+  function dict(l){return IV[l]||IV.en}
+  function E(id){return document.getElementById(id)}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+  function errText(t,codeStr){return (t.err&&t.err[codeStr])||(IV.en.err[codeStr])||codeStr}
+
+  function chartText(t,lang){
+    var p=st.chart&&st.chart.profile;if(!p)return null;
+    if(lang==='th')return {label:p.label_th,core:p.core,real:p.real_life,shadow:p.shadow,needs:p.needs};
+    var tr=(p.i18n&&(lang==='zh'||lang==='cn'?p.i18n.zh:p.i18n.en))||null;
+    if(!tr)return null; /* ไม่มีคำแปล = ไม่แสดง ดีกว่าเอาไทยไปแปะ */
+    return {label:tr.label,core:tr.core,real:tr.real_life,shadow:tr.shadow,needs:tr.needs};
+  }
+
+  function render(lang){
+    st.lang=lang||st.lang;var t=dict(st.lang);
+    E('ivKicker').textContent=t.kicker;
+    E('ivTitle').textContent=st.alias?t.titleBy(st.alias):t.titleAnon;
+    E('ivLead').textContent=t.lead;
+    E('ivLName').textContent=t.lName;E('ivLDate').textContent=t.lDate;E('ivLTime').textContent=t.lTime;
+    E('ivLGender').textContent=t.lGender;E('ivLPlace').textContent=t.lPlace;E('ivLTz').textContent=t.lTz;
+    E('ivOptM').textContent=t.optM;E('ivOptF').textContent=t.optF;
+    E('ivTimeHint').textContent=t.timeHint;E('ivLConsent').textContent=t.consent;
+    E('ivSubmit').textContent=t.submit;E('ivSideTitle').textContent=t.sideTitle;
+    E('ivSteps').innerHTML=t.steps.map(function(s,i){return '<div class="step"><div class="num">'+(i+1)+'</div><div><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></div></div>'}).join('');
+    E('ivClaim').textContent=t.claim;E('ivSignupBtn').textContent=t.signup;E('ivAppBtn').textContent=t.getApp;
+    E('ivSignupBtn').href='/signup?next='+encodeURIComponent('/referral?invite='+code);
+    E('ivErr').textContent=st.lastError?errText(t,st.lastError):'';
+    if(st.accepted){
+      E('ivRewardLine').textContent=t.rewardPending(st.pendingHours);
+      var c=st.chart||{},pl=c.pillars||{};
+      E('ivPillars').innerHTML=[[t.pilY,pl.year],[t.pilM,pl.month],[t.pilD,pl.day],[t.pilH,pl.hour||t.pilNone]]
+        .map(function(x){return '<div class="iv-pil"><b>'+esc(x[1]||'-')+'</b><span>'+esc(x[0])+'</span></div>'}).join('');
+      E('ivDmLine').textContent=t.dmLine(c.dayMaster||'-',(c.strength&&c.strength.level)||'-');
+      var ct=chartText(t,st.lang);
+      E('ivProfile').innerHTML=ct?[[t.bCore,ct.core],[t.bReal,ct.real],[t.bShadow,ct.shadow],[t.bNeeds,ct.needs]]
+        .filter(function(x){return x[1]}).map(function(x){return '<div class="iv-blk"><b>'+esc(x[0])+'</b><p>'+esc(x[1])+'</p></div>'}).join(''):'';
+    }
+  }
+  window.__HK_INVITE_RENDER__=render;
+
+  function show(){
+    var hero=document.querySelector('.hero'),main=document.querySelector('main.wrap');
+    if(hero)hero.hidden=true;if(main)main.hidden=true;
+    E('ivWrap').hidden=false;
+    document.title='hourkey · invitation';
+  }
+
+  async function lookup(){
+    try{
+      var r=await fetch('/api/invite/'+encodeURIComponent(code),{credentials:'include',cache:'no-store'});
+      var j=await r.json().catch(function(){return {}});
+      if(j&&j.ok){st.alias=j.inviter_alias||null;st.pendingHours=Number(j.friend_hours||0);st.lastError=''}
+      else{st.lastError=(j&&j.error)||'invite_not_found';E('ivFormBox').hidden=true}
+    }catch(e){st.lastError='invite_not_found';E('ivFormBox').hidden=true}
+    render(st.lang);
+  }
+
+  async function submit(){
+    var t=dict(st.lang);
+    if(!E('ivConsent').checked){st.lastError='consent_required';render(st.lang);return}
+    var btn=E('ivSubmit');btn.disabled=true;st.lastError='';
+    try{
+      var body={name:E('ivName').value,birth_date:E('ivDate').value,birth_time:E('ivTime').value,
+        gender:E('ivGender').value,place:E('ivPlace').value,birth_tz_offset:Number(E('ivTz').value),consent:true};
+      var r=await fetch('/api/invite/'+encodeURIComponent(code),{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(body)});
+      var j=await r.json().catch(function(){return {}});
+      if(!j||!j.ok){st.lastError=(j&&j.error)||'invite_not_found';btn.disabled=false;render(st.lang);return}
+      st.accepted=true;st.chart=j.chart||null;st.pendingHours=Number(j.friend_hours_pending||0);
+      try{localStorage.setItem('hk_invite_code',code)}catch(_){}
+      E('ivFormBox').hidden=true;E('ivResultBox').hidden=false;E('ivRewardBox').hidden=false;
+    }catch(e){st.lastError='invite_not_found';btn.disabled=false}
+    render(st.lang);
+  }
+
+  async function claim(){
+    var t=dict(st.lang),msg=E('ivClaimMsg');msg.textContent='';
+    try{
+      var r=await fetch('/api/invite',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({action:'claim',code:code})});
+      var j=await r.json().catch(function(){return {}});
+      if(j&&j.ok){msg.textContent=j.granted>0?t.claimed(j.granted):t.claimedAlready;E('ivClaim').disabled=true}
+      else{msg.textContent=errText(t,(j&&j.error)||'not_authorized')}
+    }catch(e){msg.textContent=errText(t,'not_authorized')}
+  }
+
+  show();
+  E('ivSubmit').onclick=submit;E('ivClaim').onclick=claim;
+  lookup();
+})();
+</script>
+<script>
 (function(){
   const LANGS=['th','en','zh','cn','vi','ja','ko','ru','es'];
   const LABEL={th:'TH',en:'EN',zh:'繁',cn:'简',vi:'VI',ja:'JA',ko:'KO',ru:'RU',es:'ES'};
@@ -130,7 +341,7 @@
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
   function money(n){return '฿'+Number(n||0).toLocaleString(state.lang==='th'?'th-TH':'en-US')}
   function toast(s){const el=document.getElementById('toast');el.textContent=s;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
-  function setLang(l){state.lang=norm(l);document.documentElement.lang=state.lang==='cn'?'zh-Hans':state.lang==='zh'?'zh-Hant':state.lang;try{localStorage.setItem('hk_locale',state.lang)}catch(_){};renderLang();renderData(state.data)}
+  function setLang(l){state.lang=norm(l);document.documentElement.lang=state.lang==='cn'?'zh-Hans':state.lang==='zh'?'zh-Hant':state.lang;try{localStorage.setItem('hk_locale',state.lang)}catch(_){};renderLang();renderData(state.data);try{if(window.__HK_INVITE_RENDER__)window.__HK_INVITE_RENDER__(state.lang)}catch(_){}}
   function renderLang(){document.querySelectorAll('[data-t]').forEach(el=>el.textContent=tx(el.dataset.t));document.getElementById('guideTitle').textContent=tx('guideTitle');const box=document.getElementById('guideList');box.innerHTML=(tx('guide')||[]).map((g,i)=>`<div class="guide-item"><b>${i+1}. ${esc(g[0])}</b><p>${esc(g[1])}</p></div>`).join('');document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b.dataset.lang===state.lang))}
   function initLang(){const el=document.getElementById('lang');el.innerHTML=LANGS.map(l=>`<button type="button" data-lang="${l}">${LABEL[l]}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));let selected='th';try{selected=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_locale')||navigator.language||'th'}catch(_){};setLang(selected)}
   function refUrl(code){return location.origin+'/signup?ref='+encodeURIComponent(code||'')}
@@ -142,7 +353,7 @@
   async function nativeShareOrCopy(){if(navigator.share){try{await navigator.share({title:tx('heroTitle'),text:tx('heroLead'),url:state.link});return}catch(e){if(e&&e.name==='AbortError')return}}await copy()}
   async function share(kind){if(!state.link||!state.canShare){toast(tx('inactive'));return}const url=encodeURIComponent(state.link),text=encodeURIComponent(tx('heroTitle'));if(kind==='wechat'){await nativeShareOrCopy();return}if(kind==='kakao'&&navigator.share&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){await nativeShareOrCopy();return}const map={line:`https://social-plugins.line.me/lineit/share?url=${url}`,facebook:`https://www.facebook.com/sharer/sharer.php?u=${url}`,whatsapp:`https://api.whatsapp.com/send?text=${text}%20${url}`,telegram:`https://t.me/share/url?url=${url}&text=${text}`,x:`https://twitter.com/intent/tweet?url=${url}&text=${text}`,email:`mailto:?subject=${text}&body=${url}`,vk:`https://vk.com/share.php?url=${url}&title=${text}`,kakao:`https://story.kakao.com/share?url=${url}`};if(!map[kind]){await nativeShareOrCopy();return}window.open(map[kind],kind==='email'?'_self':'_blank','noopener')}
   document.getElementById('copyBtn').onclick=copy;document.getElementById('copyHero').onclick=copy;document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>share(b.dataset.share));document.getElementById('openGuide').onclick=document.getElementById('guideTop').onclick=()=>document.getElementById('guideModal').classList.add('show');document.getElementById('closeGuide').onclick=()=>document.getElementById('guideModal').classList.remove('show');document.getElementById('guideModal').onclick=e=>{if(e.target.id==='guideModal')e.currentTarget.classList.remove('show')};
-  initLang();load();
+  initLang();if(!window.__HK_INVITE_MODE__)load();
 })();
 </script>
 <script src="/js/hk-user-menu.js?v=24" defer></script>

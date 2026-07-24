@@ -64,7 +64,9 @@ export const PRODUCT_PAGE_ENTITLEMENTS: Record<ProductPlan, ProductPageEntitleme
     chart: { detail: "full", luck_cycles: "all", ai_summary_pdf: true },
     today: { day_window: 30, detailed_hours: 12, directions: 8, goals: "all", multi_profile: false },
     calendar: { month_window: 12, intents: "all", ranked_days: 50, full_hours_directions: true, multi_profile: false, pdf: true },
-    network: { saved_profiles: 10, visualization_profiles: 10, groups: 4, group_people: 10, pair_compare: "full", team_analysis: false, team_people: 0, pair_ai: "full", team_ai: false, bulk_ai: false },
+    /* 24 ก.ค. 2569 · เจ้านายเคาะ: เปิดจัดทีมให้พรีเมียม 8 คน (แพ็กสูงสุดยังได้ 12 + วิเคราะห์ทีมเชิงลึก)
+     * เดิม team_people = 0 → คนจ่าย ฿399 กดจัดทีมแล้วโดนปฏิเสธทันที */
+    network: { saved_profiles: 10, visualization_profiles: 10, groups: 4, group_people: 10, pair_compare: "full", team_analysis: false, team_people: 8, pair_ai: "full", team_ai: true, bulk_ai: false },
     fusion: { enabled: true, max_sciences: 4, max_profiles: 1 },
     book: { max_sciences: 3, synthesis: false },
     qimen: { time_window_days: 90, hours_per_day: 12, detail: "pro", search_days: 7, search_results: 10, compare_locations: false, sifu: true },
