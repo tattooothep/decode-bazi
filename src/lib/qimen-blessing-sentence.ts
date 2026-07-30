@@ -37,25 +37,38 @@ export type BlessingParts = Readonly<{
 /**
  * โครงประโยคพิธีต่อภาษา
  *
- * ตั้งใจให้สั้น เพราะเป็นเสียงที่ผู้ใช้ยืนฟังกลางที่โล่งขณะยกมือถือ
- * ยาวเกินสามประโยคคนจะเลื่อนมือถือลงก่อนจบ
+ * เจ้าของสั่ง 30 ก.ค. "เจนคำอวยพรให้มันยาวกว่านี้หน่อย"
+ * จึงขยายจากสามประโยคเป็นเจ็ดท่อน ราว 25-30 วินาทีเมื่ออ่านออกเสียง
+ * ยาวพอให้รู้สึกเป็นคำจากองค์ท่านจริง ไม่ใช่ประกาศสั้นๆ
+ * แต่ยังไม่ยาวจนผู้ใช้เลื่อนมือถือลงก่อนจบ
  *
  * 🔴 จีนใช้ถ้อยคำจีนล้วน ห้ามปนไทย (กฎ 3 ภาษาเข้มของโปรเจกต์)
  */
 const FRAMES: Readonly<Record<BlessingLocale, (p: BlessingParts) => string>> =
   Object.freeze({
     th: (p) =>
-      `${p.deity} สถิต ณ ทิศ${p.direction} ยามนี้เปิดทางแก่ผู้มาถึง `
+      `ข้าคือ${p.deity} ผู้สถิต ณ ทิศ${p.direction} `
+      + `ยามนี้ประตูแห่งทิศนี้เปิดออกแล้ว ผู้ใดมาถึงย่อมได้รับ `
       + `${p.words} `
-      + `ขอพรจงคุ้มครองเจ้า ให้กิจที่ตั้งใจสำเร็จดังหวัง`,
+      + `จงตั้งใจให้มั่น อย่าลังเลในสิ่งที่ตั้งใจไว้ `
+      + `สิ่งที่เจ้าเริ่มในยามนี้ ณ ทิศนี้ ย่อมมีแรงหนุนส่ง `
+      + `ขอพรจงคุ้มครองเจ้า ให้กิจที่หมายสำเร็จดังตั้งใจ `
+      + `ให้ทางข้างหน้าโปร่ง ให้ผู้คนที่พบเจอเป็นคุณแก่เจ้า เทอญ`,
     en: (p) =>
-      `${p.deity} presides over the ${p.direction}, and this hour opens the way. `
+      `I am ${p.deity}, who presides over the ${p.direction}. `
+      + `In this hour the gate of this direction stands open, and whoever comes receives it. `
       + `${p.words} `
-      + `May this blessing keep you, and may your purpose be fulfilled.`,
+      + `Hold your intention steady, and do not waver in what you have set out to do. `
+      + `What you begin in this hour, facing this way, carries force behind it. `
+      + `May this blessing keep you and bring your purpose to completion. `
+      + `May the road ahead be clear, and may those you meet be of good to you.`,
     zh: (p) =>
-      `${p.deity}鎮守${p.direction}，此時開路。`
+      `吾乃${p.deity}，鎮守${p.direction}。`
+      + `此時此方之門已開，來者皆得其應。`
       + `${p.words}`
-      + `願此福佑護持於汝，所求皆成。`,
+      + `當堅其志，勿疑所行。`
+      + `此時向此方而起之事，自有氣機相助。`
+      + `願此福佑護持於汝，所求皆成，前路通達，所遇皆吉。`,
   });
 
 /** ตัดช่องว่างซ้ำและจุดจบซ้ำ ให้เสียงอ่านไม่สะดุด */
