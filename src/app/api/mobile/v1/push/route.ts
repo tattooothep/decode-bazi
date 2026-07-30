@@ -51,6 +51,14 @@ export async function POST(req: Request) {
   const platform = String(body.platform || "").trim();
   const locale = LOCALES.has(String(body.locale || "")) ? String(body.locale) : "th";
   const appVersion = String(body.app_version || "").trim().slice(0, 40) || null;
+  /**
+   * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
+   *
+   * เดิมส่งผ่านบริการกลาง ซึ่งต้องเอากุญแจโครงการไปฝากที่นั่นอีกที
+   * เปลี่ยนมาส่งตรงเอง คุมได้ทั้งเส้น ไม่ต้องพึ่งบัญชีของใคร
+   * ยังไม่บังคับ เพราะแอพรุ่นเก่ายังส่งมาแค่กุญแจเดิม
+   */
+  const deviceToken = String(body.device_push_token || "").trim().slice(0, 4096) || null;
   if (!TOKEN_RE.test(token) || !UUID_RE.test(installationId) || !["ios", "android"].includes(platform)) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
   }
@@ -66,12 +74,13 @@ export async function POST(req: Request) {
     );
     const registered = await client.query<{ id: string }>(
       `INSERT INTO mobile_push_tokens
-         (user_id,installation_id,expo_push_token,platform,app_version,locale,enabled,
+         (user_id,installation_id,expo_push_token,device_push_token,platform,app_version,locale,enabled,
           fail_count,last_registered_at,disabled_at,updated_at)
-       VALUES($1,$2::uuid,$3,$4,$5,$6,true,0,now(),NULL,now())
+       VALUES($1,$2::uuid,$3,$7,$4,$5,$6,true,0,now(),NULL,now())
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
+         device_push_token=COALESCE(EXCLUDED.device_push_token, mobile_push_tokens.device_push_token),
          platform=EXCLUDED.platform,
          app_version=EXCLUDED.app_version,
          locale=EXCLUDED.locale,
@@ -81,7 +90,7 @@ export async function POST(req: Request) {
          disabled_at=NULL,
          updated_at=now()
        RETURNING id`,
-      [session.userId, installationId, token, platform, appVersion, locale]
+      [session.userId, installationId, token, platform, appVersion, locale, deviceToken]
     );
     row = registered.rows[0];
     await client.query("COMMIT");
