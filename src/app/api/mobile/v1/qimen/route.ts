@@ -2,9 +2,40 @@ import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { internalAppOrigin } from "@/lib/internal-app-origin";
 import { publicAiPayload } from "@/lib/public-ai-response";
+import { computeFlyingLayers } from "@/lib/fengshui-luxing";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+/**
+ * กังฉีเหมิน 1-9 คู่กับทิศตามลั่วซู
+ *
+ * ── ทำไมต้องมีตรงนี้ (30 ก.ค. 69) ───────────────────────────
+ * เจ้าของสั่งเอาดาวจื่อไป๋มาแสดงคู่องค์เทพในหน้าทิศเทพ
+ * ดาวเหินจรของเราคืนค่าเป็น **ทิศ** ส่วนฉีเหมินคิดเป็น **กัง**
+ * ทั้งสองศาสตร์เดินบนลั่วซู 9 กังชุดเดียวกัน จึงจับคู่กันได้ตรงตัว
+ *
+ * มีที่มาในคัมภีร์ของเราเอง — 奇門統宗 เขียนเทียบสองศาสตร์ไว้ว่า
+ * 「年家紫白亦陰遁，用逆。紫白之用，重在白宮…奇門之用，重在八宮，
+ *   故上元甲子一白起坎」
+ * แปลว่าตั้งต้นที่ 上元甲子 = 一白 เข้ากังข่านเหมือนกันทั้งคู่
+ * ต่างกันที่ให้น้ำหนักคนละจุด ไม่ใช่คนละกระดาน
+ *
+ * 🔴 ดาวเป็น **ชั้นข้อมูลเพิ่ม ไม่ใช่ตัวตัดสิน**
+ * เจ้าของเคาะแล้วว่า "ไม่เตือน แค่โชว์ · คำเตือนคงไว้ที่ทิศดีฉีเหมิน
+ * ผู้ใช้ตัดสินใจเอง" — ห้ามเอาดาวไปเปลี่ยนอันดับทิศของฉีเหมินเด็ดขาด
+ */
+const PALACE_TO_DIRECTION: Readonly<Record<number, string>> = Object.freeze({
+  1: "N",   // 坎
+  2: "SW",  // 坤
+  3: "E",   // 震
+  4: "SE",  // 巽
+  5: "C",   // 中宮 — ไม่มีทิศตามตำรา
+  6: "NW",  // 乾
+  7: "W",   // 兌
+  8: "NE",  // 艮
+  9: "S",   // 離
+});
 
 const SCHOOLS = new Set(["chaibu", "zhirun", "yinpan"]);
 const SYSTEM_TYPES = new Set(["hour", "day", "month", "year"]);
@@ -75,8 +106,46 @@ export async function POST(req: Request) {
     method: "POST",
   });
   const data = await upstream.json().catch(() => ({ ok: false, error: "invalid_qimen_response" }));
+
+  /**
+   * ดาวเหินจร 紫白 ต่อกัง — เพิ่มเข้ามาเฉยๆ ไม่แตะของเดิมสักช่อง
+   *
+   * คำนวณจากเวลาชุดเดียวกับที่ขอผังฉีเหมิน จึงเป็นยามเดียวกันแน่นอน
+   * ล้มแล้วต้องไม่ลากผังฉีเหมินไปด้วย — ผังคือของหลัก ดาวคือของแถม
+   */
+  let flying: Record<string, unknown> | null = null;
+  try {
+    const [yy, mm, dd] = date.split("-").map(Number);
+    const [hh, mi] = time.split(":").map(Number);
+    const layers = computeFlyingLayers(yy, mm, dd, hh, mi);
+    const byPalace: Record<number, { hour: number; day: number; month: number }> = {};
+    for (const [palace, dir] of Object.entries(PALACE_TO_DIRECTION)) {
+      const key = dir as keyof typeof layers.hour_stars.palaces;
+      byPalace[Number(palace)] = {
+        hour: layers.hour_stars.palaces[key],
+        day: layers.day_stars.palaces[key],
+        month: layers.month_stars.palaces[key],
+      };
+    }
+    flying = {
+      by_palace: byPalace,
+      hour_center: layers.hour_stars.center,
+      hour_direction: layers.hour_stars.direction,
+      day_center: layers.day_stars.center,
+      month_center: layers.month_stars.center,
+      note: layers.luxing_note,
+    };
+  } catch (error) {
+    // 🔴 ห้ามเงียบ — ดาวหายแล้วไม่มีใครรู้ว่าเพราะอะไร
+    console.error(
+      "[mobile-qimen] คำนวณดาวเหินจรไม่สำเร็จ",
+      String((error as Error)?.message ?? error),
+    );
+  }
+
   return NextResponse.json(publicAiPayload({
     ...data,
+    flying_stars: flying,
     ok: upstream.ok,
     request_context: {
       date,
