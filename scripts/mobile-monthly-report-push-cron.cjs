@@ -57,6 +57,8 @@ async function sendExpo(messages) {
   return { ok, fail };
 }
 
+const guard = require("../src/lib/push-guard.cjs");
+
 async function main() {
   const db = new Client({
     host: process.env.PGHOST || "127.0.0.1",
@@ -66,12 +68,20 @@ async function main() {
   await db.connect();
   const { rows: users } = await db.query(`
     SELECT u.id, u.email,
-           array_agg(json_build_object('token', t.expo_push_token, 'locale', COALESCE(t.locale,'th'))) AS tokens
+           array_agg(json_build_object('token', t.expo_push_token, 'locale', COALESCE(t.locale,'th'))) AS tokens,
+           np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,
+           np2.quiet_start, np2.quiet_end, np2.max_per_day,
+           COALESCE(np2.timezone, u.timezone) AS user_timezone,
+           (np2.user_id IS NOT NULL) AS has_prefs,
+           (SELECT count(*) FROM mobile_push_log l
+             WHERE l.user_id = u.id AND l.sent_at >= now() - interval '24 hours') AS sent_today
       FROM mobile_push_tokens t JOIN users u ON u.id = t.user_id
+      LEFT JOIN mobile_notification_prefs np2 ON np2.user_id = u.id
       LEFT JOIN mobile_notification_prefs p ON p.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
-       AND COALESCE(p.daily_enabled, true) = true
-     GROUP BY u.id`);
+     GROUP BY u.id, np2.user_id, np2.yam_enabled, np2.auspicious_enabled,
+              np2.daily_enabled, np2.quiet_start, np2.quiet_end,
+              np2.max_per_day, np2.timezone, u.timezone`);
 
   const thaiNow = new Date(Date.now() + 7 * 3600_000);
   const mIdx = thaiNow.getUTCMonth();
@@ -83,6 +93,27 @@ async function main() {
   const messages = [];
   for (const u of users) {
     try {
+
+      /**
+       * 🔴 ทุกใบต้องผ่านตัวคุมกลาง (30 ก.ค. 69)
+       *
+       * เดิมตัวยิงนี้เขียนเงื่อนไขเอง `COALESCE(p.daily_enabled, true)`
+       * = คนที่ไม่เคยตั้งค่าถือว่าเปิด → ได้รับโดยไม่เคยกดยินยอม
+       * และไม่มีช่วงห้ามรบกวนเลย ยิงกลางดึกได้
+       *
+       * ตัวคุมกลางบังคับครบ: ยินยอม · ช่วงห้ามรบกวนตามเขตเวลาผู้ใช้ · เพดานต่อวัน
+       */
+      const verdict = guard.mayNotify({
+        category: "daily",
+        prefs: u.has_prefs ? u : null,
+        timezone: u.user_timezone,
+        sentToday: Number(u.sent_today || 0),
+      });
+      if (!verdict.allow) {
+        skipped++;
+        if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
+        continue;
+      }
       const thMsg = buildMsg("th", mIdx, year);
       const yamKey = `monthly|${monthKey}`;
       const dup = await db.query(
