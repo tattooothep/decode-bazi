@@ -71,6 +71,8 @@ async function sendExpo(messages) {
   return { ok, fail };
 }
 
+const guard = require("../src/lib/push-guard.cjs");
+
 async function main() {
   const db = new Client({
     host: process.env.PGHOST || "127.0.0.1",
@@ -83,12 +85,18 @@ async function main() {
            array_agg(t.expo_push_token) AS tokens,
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
              AND COALESCE(p.is_archived,false)=false
-             ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id
+             ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
+           np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
+           np.quiet_start, np.quiet_end, np.max_per_day,
+           COALESCE(np.timezone, u.timezone) AS user_timezone,
+           (np.user_id IS NOT NULL) AS has_prefs,
+           (SELECT count(*) FROM mobile_push_log l
+             WHERE l.user_id = u.id AND l.created_at >= now() - interval '24 hours') AS sent_today
       FROM mobile_push_tokens t JOIN users u ON u.id = t.user_id
-      LEFT JOIN mobile_notification_prefs p ON p.user_id = u.id
+      LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
-       AND COALESCE(p.yam_enabled, true) = true
-     GROUP BY u.id`);
+     GROUP BY u.id, np.user_id, np.yam_enabled, np.auspicious_enabled,
+              np.daily_enabled, np.quiet_start, np.quiet_end, np.max_per_day, np.timezone, u.timezone`);
   console.log(`[mobile-yam-push] ${new Date().toISOString()} users=${users.length} dry=${DRY}`);
 
   const now = new Date(Date.now() + 7 * 3600_000); // เวลาไทย
@@ -101,6 +109,28 @@ async function main() {
   for (const u of users) {
     try {
       if (!u.profile_id) { skipped++; continue; }
+
+      /**
+       * 🔴 ทุกใบต้องผ่านตัวคุมกลาง (30 ก.ค. 69)
+       *
+       * เดิมตัวยิงนี้เขียนเงื่อนไขเอง `COALESCE(p.yam_enabled, true)`
+       * = คนที่ไม่เคยตั้งค่าถือว่าเปิด → ได้รับโดยไม่เคยกดยินยอม
+       * และไม่มีช่วงห้ามรบกวนเลย → วิ่งทุก 30 นาทีตลอด 24 ชั่วโมง
+       * ยิงตอนตีสามได้สบายๆ
+       *
+       * ตัวคุมกลางบังคับครบ: ยินยอม · ช่วงห้ามรบกวนตามเขตเวลาผู้ใช้ · เพดานต่อวัน
+       */
+      const verdict = guard.mayNotify({
+        category: "yam",
+        prefs: u.has_prefs ? u : null,
+        timezone: u.user_timezone,
+        sentToday: Number(u.sent_today || 0),
+      });
+      if (!verdict.allow) {
+        skipped++;
+        if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
+        continue;
+      }
       const data = await fetchHours(u, u.profile_id, dateStr);
       const hours = data && Array.isArray(data.hours) ? data.hours : [];
       // ยาม best/good ที่เริ่มภายใน LEAD_MIN นาทีข้างหน้า — field จริงคือ range "HH:MM-HH:MM"

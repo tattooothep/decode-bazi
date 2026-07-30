@@ -1,0 +1,161 @@
+/**
+ * ตัวคุมกลางก่อนส่งแจ้งเตือนทุกใบ — ตัวยิงทุกตัวต้องผ่านตัวนี้
+ *
+ * ── ทำไมต้องมีตัวกลาง (30 ก.ค. 69) ─────────────────────────
+ * ตอนนี้มีตัวยิงอัตโนมัติ 5 ตัว แต่ละตัวเขียนเงื่อนไขของตัวเอง
+ * ผลคือกฎไม่ตรงกัน และไม่มีตัวไหนมีช่วงห้ามรบกวนเลยสักตัว
+ * มีกฎกระจายอยู่หลายที่เมื่อไร วันหนึ่งมันจะไม่ตรงกันเสมอ
+ *
+ * ── กฎที่ตัวนี้บังคับ ───────────────────────────────────────
+ * ① ผู้ใช้ต้องเปิดหมวดนั้นเอง — ไม่มีแถวตั้งค่า = ยังไม่ยินยอม = ไม่ส่ง
+ * ② ห้ามส่งในช่วงห้ามรบกวน (ตามเวลาท้องถิ่นของผู้ใช้ ไม่ใช่เวลาไทย)
+ * ③ ห้ามเกินเพดานต่อวัน
+ * ④ ปิดที่ตารางไหนก็ถือว่าปิด — ฝั่งที่เข้มกว่าชนะเสมอ
+ *
+ * 🔴 ทำไมเลือก "พลาดทางไม่ส่ง" มากกว่า "พลาดทางส่งเกิน"
+ * ส่งเกินหนึ่งครั้ง = ผู้ใช้ปิดถาวร แล้วเราเสียเขาไปตลอด
+ * ไม่ส่งหนึ่งครั้ง = เขาพลาดยามดีหนึ่งยาม ซึ่งพรุ่งนี้ก็มีอีก
+ */
+
+/**
+ * ค่าเริ่มต้นเมื่อผู้ใช้ยังไม่เคยตั้งค่า
+ *
+ * 🔴 ทั้งสามหมวดเป็น **ปิด** โดยตั้งใจ
+ * ของเดิมเขียน `COALESCE(p.yam_enabled, true)` = คนที่ไม่มีแถวตั้งค่าถือว่าเปิด
+ * ผู้ใช้จึงได้รับแจ้งเตือนโดยไม่เคยกดยินยอมสักครั้ง
+ * (ฝั่งเว็บทำถูกอยู่แล้ว ค่าเริ่มต้นเป็นปิด — ฝั่งมือถือกลับกัน)
+ */
+const DEFAULTS = Object.freeze({
+  yam_enabled: false,
+  auspicious_enabled: false,
+  daily_enabled: false,
+  quiet_start: 22,
+  quiet_end: 7,
+  max_per_day: 2,
+});
+
+/** เขตเวลาที่ใช้เมื่อไม่รู้ของผู้ใช้จริงๆ */
+const FALLBACK_TZ = "Asia/Bangkok";
+
+/**
+ * ชั่วโมงปัจจุบันตามเวลาท้องถิ่นของผู้ใช้
+ *
+ * 🔴 ห้ามบวก 7 ชั่วโมงตายตัว (กับดักที่ระบบนี้เคยพลาดมาแล้ว)
+ * `users.timezone` เป็น Asia/Bangkok ทั้ง 16 แถว และตัวยิงบวก 7 ชม.ตรงๆ
+ * คนอยู่ลอนดอนจะได้ "สรุปเช้า" ตอนตีหนึ่ง
+ */
+function localHour(timezone, at = new Date()) {
+  const tz = String(timezone || "").trim() || FALLBACK_TZ;
+  try {
+    const text = new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz,
+      hour: "2-digit",
+      hour12: false,
+    }).format(at);
+    const hour = Number.parseInt(text, 10);
+    return Number.isInteger(hour) && hour >= 0 && hour <= 23 ? hour : null;
+  } catch {
+    // เขตเวลาที่ระบบไม่รู้จัก — ถอยไปใช้ค่ากลาง ดีกว่าโยนข้อผิดพลาดแล้วทั้งรอบล้ม
+    return localHour(FALLBACK_TZ, at);
+  }
+}
+
+/**
+ * อยู่ในช่วงห้ามรบกวนไหม
+ *
+ * รองรับช่วงที่คร่อมเที่ยงคืน (22:00–07:00) ซึ่งเป็นค่าเริ่มต้น
+ * เริ่ม = จบ ถือว่าไม่มีช่วงห้าม (ผู้ใช้ตั้งใจปิดตัวกันเอง)
+ */
+function inQuietHours(hour, quietStart, quietEnd) {
+  if (!Number.isInteger(hour)) return true; // ไม่รู้เวลา = ไม่ส่ง (ฝั่งปลอดภัย)
+  const start = Number.isInteger(quietStart) ? quietStart : DEFAULTS.quiet_start;
+  const end = Number.isInteger(quietEnd) ? quietEnd : DEFAULTS.quiet_end;
+  if (start === end) return false;
+  return start < end
+    ? hour >= start && hour < end        // ช่วงปกติ เช่น 01:00–06:00
+    : hour >= start || hour < end;       // คร่อมเที่ยงคืน เช่น 22:00–07:00
+}
+
+/**
+ * ตัดสินว่าส่งใบนี้ให้คนนี้ได้ไหม
+ *
+ * @param {object} input
+ * @param {string} input.category   หมวด: yam | auspicious | daily
+ * @param {object|null} input.prefs แถวจาก mobile_notification_prefs (null = ยังไม่เคยตั้ง)
+ * @param {object|null} input.webPrefs แถวจาก notification_prefs ฝั่งเว็บ (ถ้ามี)
+ * @param {string|null} input.timezone เขตเวลาผู้ใช้
+ * @param {number} input.sentToday จำนวนที่ส่งไปแล้ววันนี้
+ * @param {Date}  [input.at] เวลาที่ใช้ตัดสิน (ใส่เองได้เพื่อทดสอบ)
+ * @returns {{allow: boolean, reason: string}}
+ */
+function mayNotify(input) {
+  const { category, prefs, webPrefs, timezone, sentToday, at } = input || {};
+
+  const key = `${category}_enabled`;
+  if (!Object.prototype.hasOwnProperty.call(DEFAULTS, key)) {
+    return { allow: false, reason: `หมวดไม่รู้จัก: ${category}` };
+  }
+
+  // ① ยังไม่เคยตั้งค่า = ยังไม่ยินยอม
+  if (prefs === null || prefs === undefined) {
+    return { allow: false, reason: "ยังไม่เคยตั้งค่า ถือว่ายังไม่ยินยอม" };
+  }
+  if (prefs[key] !== true) {
+    return { allow: false, reason: `ผู้ใช้ปิดหมวด ${category}` };
+  }
+
+  // ④ ปิดที่ตารางไหนก็ถือว่าปิด — ฝั่งเข้มกว่าชนะ
+  // ฝั่งเว็บกับฝั่งแอพเก็บคนละหมวดกัน แต่ถ้าวันหน้าชื่อชนกัน ต้องไม่ส่ง
+  if (webPrefs && webPrefs[key] === false) {
+    return { allow: false, reason: `ผู้ใช้ปิดหมวด ${category} ที่ฝั่งเว็บ` };
+  }
+
+  // ③ เพดานต่อวัน
+  const cap = Number.isInteger(prefs.max_per_day)
+    ? prefs.max_per_day
+    : DEFAULTS.max_per_day;
+  const already = Number.isInteger(sentToday) ? sentToday : 0;
+  if (already >= cap) {
+    return { allow: false, reason: `ถึงเพดานวันละ ${cap} ใบแล้ว` };
+  }
+
+  // ② ช่วงห้ามรบกวน — ตามเวลาท้องถิ่นของผู้ใช้
+  const tz = prefs.timezone || timezone || FALLBACK_TZ;
+  const hour = localHour(tz, at instanceof Date ? at : new Date());
+  if (inQuietHours(hour, prefs.quiet_start, prefs.quiet_end)) {
+    return {
+      allow: false,
+      reason: `อยู่ในช่วงห้ามรบกวน (${hour}:00 เวลา ${tz})`,
+    };
+  }
+
+  return { allow: true, reason: "" };
+}
+
+/**
+ * ท่อน SQL สำหรับดึงค่าตั้งค่าพร้อมเขตเวลา
+ *
+ * ตัวยิงทุกตัวควรใช้ท่อนนี้ ไม่เขียนเงื่อนไขเอง
+ * 🔴 ไม่มีการ COALESCE เป็น true ที่นี่ — คนที่ไม่มีแถวจะได้ prefs = null
+ * แล้ว mayNotify() จะตัดออกเอง
+ */
+const PREFS_SELECT = `
+  LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
+`;
+
+const PREFS_COLUMNS = `
+  np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
+  np.quiet_start, np.quiet_end, np.max_per_day,
+  COALESCE(np.timezone, u.timezone) AS user_timezone,
+  (np.user_id IS NOT NULL) AS has_prefs
+`;
+
+module.exports = {
+  DEFAULTS,
+  FALLBACK_TZ,
+  localHour,
+  inQuietHours,
+  mayNotify,
+  PREFS_SELECT,
+  PREFS_COLUMNS,
+};
