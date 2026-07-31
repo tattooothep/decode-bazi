@@ -100,7 +100,7 @@ async function main() {
              'locale', COALESCE(t.locale, 'th')
            )) AS tokens,
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
-           np.quiet_start, np.quiet_end, np.max_per_day,
+           np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
            COALESCE(np.timezone, u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
@@ -111,7 +111,7 @@ async function main() {
      WHERE t.enabled = true AND u.deleted_at IS NULL
        ${ONLY_EMAIL ? "AND u.email = $1" : ""}
      GROUP BY u.id, np.user_id, np.yam_enabled, np.auspicious_enabled,
-              np.daily_enabled, np.quiet_start, np.quiet_end,
+              np.daily_enabled, np.quiet_start, np.quiet_end, np.paused_until,
               np.max_per_day, np.timezone, u.timezone`,
     ONLY_EMAIL ? [ONLY_EMAIL] : []);
 

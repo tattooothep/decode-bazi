@@ -32,6 +32,7 @@ const DEFAULTS = Object.freeze({
   quiet_start: 22,
   quiet_end: 7,
   max_per_day: 2,
+  paused_until: null,
 });
 
 /** เขตเวลาที่ใช้เมื่อไม่รู้ของผู้ใช้จริงๆ */
@@ -104,6 +105,20 @@ function mayNotify(input) {
     return { allow: false, reason: `ผู้ใช้ปิดหมวด ${category}` };
   }
 
+  // ①ข พักชั่วคราวอยู่ — ต้องตัดก่อนทุกข้อ ไม่ว่าหมวดไหนก็ตาม
+  //
+  // 🔴 ทำไมต้องมีทางเลือกกลาง
+  // เดิมมีแค่ "เปิด" กับ "ปิดถาวร" คนที่แค่รำคาญช่วงสอบ/ช่วงงานยุ่ง
+  // จะกดปิดถาวรแล้วไม่เคยกลับมาเปิดอีกเลย = เสียเขาไปตลอด
+  const pausedUntil = prefs.paused_until ?? null;
+  if (pausedUntil !== null && pausedUntil !== undefined) {
+    const until = pausedUntil instanceof Date ? pausedUntil : new Date(String(pausedUntil));
+    const nowMs = (at instanceof Date ? at : new Date()).valueOf();
+    if (Number.isFinite(until.valueOf()) && until.valueOf() > nowMs) {
+      return { allow: false, reason: `ผู้ใช้พักการแจ้งเตือนถึง ${until.toISOString()}` };
+    }
+  }
+
   // ④ ปิดที่ตารางไหนก็ถือว่าปิด — ฝั่งเข้มกว่าชนะ
   // ฝั่งเว็บกับฝั่งแอพเก็บคนละหมวดกัน แต่ถ้าวันหน้าชื่อชนกัน ต้องไม่ส่ง
   if (webPrefs && webPrefs[key] === false) {
@@ -145,7 +160,7 @@ const PREFS_SELECT = `
 
 const PREFS_COLUMNS = `
   np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
-  np.quiet_start, np.quiet_end, np.max_per_day,
+  np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
   COALESCE(np.timezone, u.timezone) AS user_timezone,
   (np.user_id IS NOT NULL) AS has_prefs
 `;

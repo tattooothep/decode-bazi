@@ -2,7 +2,10 @@
  * ศูนย์แจ้งเตือนในแอพ (เจ้านายสั่ง 20 ก.ค.) — กระดิ่ง + หน้ารายการ 3 หัวข้อ
  * GET  ?kind=all|yam|auspicious&limit= → รายการแจ้งเตือนย้อนหลัง + จำนวนที่ยังไม่อ่าน + ตั้งค่า
  * POST {action:"read", ids?:[]} → ทำเครื่องหมายอ่านแล้ว (ไม่ส่ง ids = อ่านทั้งหมด)
- *      {action:"prefs", yam?:bool, auspicious?:bool} → บันทึกตั้งค่ารายหมวด
+ *      {action:"prefs", yam?:bool, auspicious?:bool, daily?:bool,
+ *                        quietStart?:0-23, quietEnd?:0-23, maxPerDay?:0-10,
+ *                        pauseDays?:number, muteToday?:true, resume?:true} → บันทึกตั้งค่า
+ *        (quietStart=quietEnd คือไม่ตั้งช่วงห้ามรบกวน · pauseDays=พักกี่วัน · resume=เลิกพัก)
  * ห้ามปั้นข้อมูล: รายการมาจาก mobile_push_log ที่ตัวยิงจริงเขียนไว้เท่านั้น
  */
 import { NextResponse } from "next/server";
@@ -16,7 +19,21 @@ export const runtime = "nodejs";
 const KINDS = new Set(["yam", "auspicious", "daily", "network"]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-type PrefRow = { yam_enabled: boolean; auspicious_enabled: boolean; daily_enabled: boolean };
+type PrefRow = {
+  yam_enabled: boolean;
+  auspicious_enabled: boolean;
+  daily_enabled: boolean;
+  quiet_start: number;
+  quiet_end: number;
+  max_per_day: number;
+  paused_until: string | Date | null;
+};
+
+/** จำนวนเต็มในช่วงที่ยอมรับ — นอกช่วงถือว่าไม่ได้ส่งมา ไม่ใช่บีบให้เข้าช่วง */
+function intInRange(value: unknown, min: number, max: number): number | null {
+  if (typeof value !== "number" || !Number.isInteger(value)) return null;
+  return value >= min && value <= max ? value : null;
+}
 type LogRow = {
   id: string;
   kind: string;
@@ -37,10 +54,61 @@ async function authorize(req: Request) {
 
 async function readPrefs(userId: string): Promise<PrefRow> {
   const row = await q1<PrefRow>(
-    `SELECT yam_enabled, auspicious_enabled, daily_enabled FROM mobile_notification_prefs WHERE user_id=$1`,
+    `SELECT yam_enabled, auspicious_enabled, daily_enabled,
+            quiet_start, quiet_end, max_per_day, paused_until
+       FROM mobile_notification_prefs WHERE user_id=$1`,
     [userId],
   );
-  return row || { yam_enabled: true, auspicious_enabled: true, daily_enabled: true };
+  // 🔴 ยังไม่เคยตั้งค่า = ยังไม่ยินยอม (ค่าเริ่มต้นเป็นปิด ตรงกับตัวคุมกลาง push-guard)
+  // ของเดิมคืน true ทั้งสามหมวด ทำให้หน้าแอพโชว์สวิตช์เปิดทั้งที่เซิร์ฟเวอร์ไม่ส่งจริง
+  return row || {
+    yam_enabled: false,
+    auspicious_enabled: false,
+    daily_enabled: false,
+    quiet_start: 22,
+    quiet_end: 7,
+    max_per_day: 2,
+    paused_until: null,
+  };
+}
+
+/**
+ * สิ้นวันตามปฏิทินท้องถิ่นของผู้ใช้ (เที่ยงคืนถัดไป)
+ *
+ * ใช้กับปุ่ม "วันนี้พอ" บนใบแจ้งเตือน — เงียบถึงสิ้นวันของ**เขา**
+ * 🔴 ห้ามบวก 24 ชั่วโมงตรงๆ เพราะจะกินวันพรุ่งนี้ไปครึ่งวัน
+ * และห้ามใช้วันของเครื่องแม่ข่าย คนอยู่ต่างประเทศจะเงียบผิดวันทั้งใบ
+ */
+function endOfLocalDay(timezone: string | null, at = new Date()): Date {
+  const tz = String(timezone || "").trim() || "Asia/Bangkok";
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false,
+    }).format(at);
+    const m = /^(\d{2}):(\d{2})$/.exec(parts.trim());
+    if (!m) return new Date(at.getTime() + 6 * 3_600_000);
+    const minutesLeft = 24 * 60 - (Number(m[1]) * 60 + Number(m[2]));
+    return new Date(at.getTime() + minutesLeft * 60_000);
+  } catch {
+    return new Date(at.getTime() + 6 * 3_600_000);
+  }
+}
+
+/** รูปแบบเดียวที่ส่งให้แอพ — ใช้ทั้งตอนอ่านและตอนบันทึก จะได้ไม่มีวันไม่ตรงกัน */
+function prefsPayload(row: PrefRow) {
+  const until = row.paused_until;
+  const untilIso = until === null || until === undefined
+    ? null
+    : (until instanceof Date ? until : new Date(String(until))).toISOString();
+  return {
+    yam: row.yam_enabled,
+    auspicious: row.auspicious_enabled,
+    daily: row.daily_enabled,
+    quietStart: row.quiet_start,
+    quietEnd: row.quiet_end,
+    maxPerDay: row.max_per_day,
+    pausedUntil: untilIso,
+  };
 }
 
 export async function GET(req: Request) {
@@ -79,7 +147,7 @@ export async function GET(req: Request) {
         read: r.read_at !== null,
       })),
       unread: unread?.n || 0,
-      prefs: { yam: prefs.yam_enabled, auspicious: prefs.auspicious_enabled, daily: prefs.daily_enabled },
+      prefs: prefsPayload(prefs),
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } },
   );
@@ -116,13 +184,49 @@ export async function POST(req: Request) {
     const yam = typeof body?.yam === "boolean" ? body.yam : current.yam_enabled;
     const auspicious = typeof body?.auspicious === "boolean" ? body.auspicious : current.auspicious_enabled;
     const daily = typeof body?.daily === "boolean" ? body.daily : current.daily_enabled;
-    await q(
-      `INSERT INTO mobile_notification_prefs (user_id, yam_enabled, auspicious_enabled, daily_enabled, updated_at)
-       VALUES ($1,$2,$3,$4,now())
-       ON CONFLICT (user_id) DO UPDATE SET yam_enabled=$2, auspicious_enabled=$3, daily_enabled=$4, updated_at=now()`,
-      [session.userId, yam, auspicious, daily],
+    const quietStart = intInRange(body?.quietStart, 0, 23) ?? current.quiet_start;
+    const quietEnd = intInRange(body?.quietEnd, 0, 23) ?? current.quiet_end;
+    const maxPerDay = intInRange(body?.maxPerDay, 0, 10) ?? current.max_per_day;
+
+    // พัก/เลิกพัก — เลิกพักต้องชนะเสมอ ถ้าส่งมาพร้อมกันคนกดคือคนที่อยากกลับมารับ
+    let pausedUntil: Date | null =
+      current.paused_until === null || current.paused_until === undefined
+        ? null
+        : new Date(String(current.paused_until));
+    if (body?.resume === true) {
+      pausedUntil = null;
+    } else if (body?.muteToday === true) {
+      // ปุ่ม "วันนี้พอ" บนใบแจ้งเตือน — เงียบถึงเที่ยงคืนของเขา แล้วกลับมาเอง
+      const tzRow = await q1<{ tz: string | null }>(
+        `SELECT COALESCE(np.timezone, u.timezone) AS tz
+           FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
+          WHERE u.id = $1`,
+        [session.userId],
+      );
+      pausedUntil = endOfLocalDay(tzRow?.tz ?? null);
+    } else {
+      const days = intInRange(body?.pauseDays, 1, 90);
+      if (days !== null) pausedUntil = new Date(Date.now() + days * 86_400_000);
+    }
+
+    const saved = await q1<PrefRow>(
+      `INSERT INTO mobile_notification_prefs
+         (user_id, yam_enabled, auspicious_enabled, daily_enabled,
+          quiet_start, quiet_end, max_per_day, paused_until, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now())
+       ON CONFLICT (user_id) DO UPDATE SET
+         yam_enabled=$2, auspicious_enabled=$3, daily_enabled=$4,
+         quiet_start=$5, quiet_end=$6, max_per_day=$7, paused_until=$8, updated_at=now()
+       RETURNING yam_enabled, auspicious_enabled, daily_enabled,
+                 quiet_start, quiet_end, max_per_day, paused_until`,
+      [session.userId, yam, auspicious, daily, quietStart, quietEnd, maxPerDay, pausedUntil],
     );
-    return NextResponse.json({ ok: true, prefs: { yam, auspicious, daily } }, { headers: { "Cache-Control": "no-store" } });
+    // 🔴 ตอบด้วยค่าที่ฐานข้อมูลเก็บจริง ไม่ใช่ค่าที่เราตั้งใจจะเก็บ
+    // ถ้าข้อบังคับของตารางปัดค่าใด แอพต้องเห็นของจริง ไม่ใช่ของที่เราคิด
+    return NextResponse.json(
+      { ok: true, prefs: prefsPayload(saved || current) },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   }
 
   return NextResponse.json({ ok: false, error: "invalid_action" }, { status: 400 });

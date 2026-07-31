@@ -87,7 +87,7 @@ async function main() {
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
            np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,
-           np2.quiet_start, np2.quiet_end, np2.max_per_day,
+           np2.quiet_start, np2.quiet_end, np2.max_per_day, np2.paused_until,
            COALESCE(np2.timezone, u.timezone) AS user_timezone,
            (np2.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
@@ -97,7 +97,7 @@ async function main() {
       LEFT JOIN mobile_notification_prefs p ON p.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
      GROUP BY u.id, np2.user_id, np2.yam_enabled, np2.auspicious_enabled,
-              np2.daily_enabled, np2.quiet_start, np2.quiet_end,
+              np2.daily_enabled, np2.quiet_start, np2.quiet_end, np2.paused_until,
               np2.max_per_day, np2.timezone, u.timezone`);
   console.log(`[mobile-daily-push] ${new Date().toISOString()} slot=${SLOT} users=${users.length} dry=${DRY}`);
 

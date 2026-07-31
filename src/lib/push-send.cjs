@@ -120,7 +120,15 @@ async function sendOne(deviceToken, message) {
           message: {
             token: deviceToken,
             notification: { title: message.title, body: message.body },
-            data: message.url ? { url: String(message.url) } : {},
+            /**
+             * `categoryId` = หมวดปุ่มบนใบแจ้งเตือน (ฝั่งแอพลงทะเบียนชื่อนี้ไว้)
+             * ทำให้ใบที่เด้งขึ้นมามีปุ่ม "วันนี้พอ" กดได้จากหน้าจอล็อกเลย
+             * 🔴 ชื่อต้องตรงกับ HOURKEY_NOTIFICATION_CATEGORY ในแอพเป๊ะ ไม่งั้นปุ่มหายเงียบ
+             */
+            data: {
+              categoryId: "hourkey-daily",
+              ...(message.url ? { url: String(message.url) } : {}),
+            },
             android: {
               priority: "HIGH",
               notification: { sound: "default", channel_id: "default" },
