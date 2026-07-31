@@ -25,6 +25,29 @@
 
 export type BlessingLocale = "th" | "en" | "zh";
 
+/**
+ * ประกอบประโยคให้ครบทั้งสามภาษาจากข้อมูลกังหนึ่งช่อง
+ *
+ * 🔴 บทเรียน 31 ก.ค. — เจ้าของเจอเองว่า "เสียงยาวไม่ทุกทิศ"
+ * ของเดิมประกอบประโยคเฉพาะตอนกดฟังเสียง และใช้คำภาษาไทยชุดเดียว
+ * ยัดเข้าโครงอังกฤษกับจีนด้วย ผลคือประโยคอังกฤษมีชื่อทิศไทยโผล่กลางประโยค
+ *
+ * ตัวนี้รับคำที่ **แยกภาษามาแล้ว** ถ้าภาษาไหนขาดชิ้นส่วน จะไม่คืนประโยคภาษานั้น
+ * ดีกว่าคืนประโยคที่มีภาษาอื่นปน
+ */
+export function buildBlessingSentences(
+  parts: Readonly<Record<BlessingLocale, BlessingParts | null>>,
+): Readonly<Partial<Record<BlessingLocale, string>>> {
+  const out: Partial<Record<BlessingLocale, string>> = {};
+  for (const locale of ["th", "en", "zh"] as const) {
+    const p = parts[locale];
+    if (p === null || p === undefined) continue;
+    const sentence = buildBlessingSentence(p, locale);
+    if (sentence.length > 0) out[locale] = sentence;
+  }
+  return Object.freeze(out);
+}
+
 export type BlessingParts = Readonly<{
   /** ชื่อองค์เทพประจำกังนั้น — มาจากผัง */
   deity: string;

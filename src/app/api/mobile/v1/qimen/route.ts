@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { internalAppOrigin } from "@/lib/internal-app-origin";
 import { publicAiPayload } from "@/lib/public-ai-response";
+import { buildBlessingSentences } from "@/lib/qimen-blessing-sentence";
 import { computeFlyingLayers } from "@/lib/fengshui-luxing";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +63,119 @@ function cleanCoordinate(value: unknown, min: number, max: number): number | nul
 function cleanText(value: unknown, max: number): string | undefined {
   const text = typeof value === "string" ? value.trim() : "";
   return text ? text.slice(0, max) : undefined;
+}
+
+
+/**
+ * ชื่อช่องที่อาจใช้เก็บแต่ละชิ้นส่วน — ลองตามลำดับ เจอตัวแรกที่มีค่าใช้เลย
+ *
+ * 🔴 ทำไมต้องลองหลายชื่อ
+ * ผังต้นทางประกอบจากหลายตาราง ชื่อช่องไม่ตรงกันทุกกัง
+ * ถ้าเจาะจงชื่อเดียวแล้วกังไหนใช้ชื่ออื่น กังนั้นจะไม่มีคำอวยพรเงียบๆ
+ * ซึ่งคือสิ่งที่เจ้าของเจอเอง 31 ก.ค. ("เสียงยาวไม่ทุกทิศ")
+ */
+const BLESSING_FIELDS = {
+  deity: {
+    th: ["deity_name_th", "deity_th"],
+    en: ["deity_name_en", "deity_en"],
+    zh: ["deity_name_zh", "deity_zh", "deity"],
+  },
+  direction: {
+    th: ["direction_th", "direction_name_th", "trigram_name_th"],
+    en: ["direction_en", "direction_name_en"],
+    zh: ["direction_zh", "direction_name_zh", "trigram_zh"],
+  },
+  words: {
+    th: ["door_action_advice_th", "deity_description_th", "deity_advice_th"],
+    en: ["door_action_advice_en", "deity_description_en", "deity_advice_en"],
+    zh: ["door_action_advice_zh", "deity_description_zh", "deity_advice_zh"],
+  },
+} as const;
+
+/**
+ * ชื่อทิศ 3 ภาษาจากรหัสทิศ
+ *
+ * 🔴 ผังเก็บทิศเป็นรหัสสองตัว ("SE") ไม่มีชื่อภาษาไหนเลย
+ * ตัวประกอบประโยคจึงถอยไปอ่านแต่คำดิบ ได้ประโยคสั้น 28 ตัวอักษร
+ * แทนที่จะเป็นคำอวยพรเต็ม 325 ตัวอักษร — นี่คือสิ่งที่เจ้าของเจอ 31 ก.ค.
+ */
+const DIRECTION_NAMES: Record<string, { th: string; en: string; zh: string }> = {
+  N: { th: "เหนือ", en: "north", zh: "北方" },
+  NE: { th: "ตะวันออกเฉียงเหนือ", en: "northeast", zh: "東北方" },
+  E: { th: "ตะวันออก", en: "east", zh: "東方" },
+  SE: { th: "ตะวันออกเฉียงใต้", en: "southeast", zh: "東南方" },
+  S: { th: "ใต้", en: "south", zh: "南方" },
+  SW: { th: "ตะวันตกเฉียงใต้", en: "southwest", zh: "西南方" },
+  W: { th: "ตะวันตก", en: "west", zh: "西方" },
+  NW: { th: "ตะวันตกเฉียงเหนือ", en: "northwest", zh: "西北方" },
+  C: { th: "กังกลาง", en: "centre", zh: "中宮" },
+};
+
+function directionName(row: Record<string, unknown>, locale: "th" | "en" | "zh"): string {
+  const code = typeof row.direction === "string" ? row.direction.trim().toUpperCase() : "";
+  const known = DIRECTION_NAMES[code];
+  return known ? known[locale] : "";
+}
+
+function pickText(row: Record<string, unknown>, keys: readonly string[]): string {
+  for (const key of keys) {
+    const value = row[key];
+    if (typeof value === "string" && value.trim().length > 0) return value.trim();
+  }
+  return "";
+}
+
+/**
+ * เติมคำอวยพรฉบับเต็มลงทุกกัง — เพิ่มช่องใหม่เฉยๆ ไม่แตะของเดิมสักช่อง
+ *
+ * ทำที่นี่เพราะกฎเดิมของระบบคือ **แอพห้ามแต่งคำอวยพรเอง**
+ * เนื้อความยังมาจากผังทุกคำ เปลี่ยนแค่โครงประโยคซึ่งเป็นถ้อยคำพิธี
+ *
+ * คืนจำนวนกังที่เติมสำเร็จด้วย เพื่อให้เห็นทันทีว่ามีกังไหนตกหล่น
+ */
+function attachBlessings(data: unknown): { filled: number; total: number } {
+  /**
+   * 🔴 กับดักที่พลาดมาแล้วสองครั้ง (ดาวจื่อไป๋ 30 ก.ค. · คำอวยพร 31 ก.ค.)
+   * ผังจริงอยู่ใต้ชั้น `data` ไม่ใช่ชั้นบนสุด อ่านผิดชั้นแล้วได้ศูนย์เงียบๆ
+   * จึงลองทั้งสองชั้น และคืนจำนวนจริงออกไปให้เห็น ไม่ปล่อยให้เดา
+   */
+  const root = data as { palaces?: unknown; data?: { palaces?: unknown } };
+  const palaces = Array.isArray(root?.data?.palaces)
+    ? root.data.palaces
+    : Array.isArray(root?.palaces) ? root.palaces : null;
+  if (palaces === null) return { filled: 0, total: 0 };
+
+  let filled = 0;
+  for (const entry of palaces) {
+    if (entry === null || typeof entry !== "object") continue;
+    const row = entry as Record<string, unknown>;
+    const parts = {
+      th: null as null | { deity: string; direction: string; words: string },
+      en: null as null | { deity: string; direction: string; words: string },
+      zh: null as null | { deity: string; direction: string; words: string },
+    };
+    for (const locale of ["th", "en", "zh"] as const) {
+      const words = pickText(row, BLESSING_FIELDS.words[locale]);
+      // ไม่มีคำจากผัง = ไม่มีพร ไม่ใช่แต่งพรลอยๆ ให้
+      if (words === "") continue;
+      parts[locale] = {
+        deity: pickText(row, BLESSING_FIELDS.deity[locale]),
+        /**
+         * ใช้ชื่อทิศบนเข็มทิศก่อนเสมอ (ตะวันออกเฉียงใต้ / 東南方)
+         * ชื่อกว้า (ซวิ่น / 巽) ถูกตามตำราแต่คนทั่วไปไม่รู้ว่าอยู่ทางไหน
+         * และคำอวยพรนี้มีไว้ให้คนหันหน้าไปทางนั้นจริง ต้องบอกทางที่หันได้
+         */
+        direction: directionName(row, locale) || pickText(row, BLESSING_FIELDS.direction[locale]),
+        words,
+      };
+    }
+    const sentences = buildBlessingSentences(parts);
+    if (Object.keys(sentences).length > 0) {
+      row.blessing_sentence = sentences;
+      filled += 1;
+    }
+  }
+  return { filled, total: palaces.length };
 }
 
 export async function POST(req: Request) {
@@ -143,9 +257,16 @@ export async function POST(req: Request) {
     );
   }
 
+  /**
+   * คำอวยพรฉบับเต็มต่อกัง — ต้องมีครบทุกทิศ ไม่ใช่บางทิศ
+   * นับผลไว้ในคำตอบด้วย จะได้เห็นทันทีว่ากังไหนตกหล่น ไม่ต้องเดา
+   */
+  const blessing = attachBlessings(data);
+
   return NextResponse.json(publicAiPayload({
     ...data,
     flying_stars: flying,
+    blessing_coverage: blessing,
     ok: upstream.ok,
     request_context: {
       date,
