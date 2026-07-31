@@ -47,22 +47,27 @@ async function getJson(user, url) {
   return res.json().catch(() => null);
 }
 
-async function sendExpo(messages) {
-  if (!messages.length) return { ok: 0, fail: 0 };
-  let ok = 0, fail = 0;
-  for (let i = 0; i < messages.length; i += 90) {
-    const chunk = messages.slice(i, i + 90);
-    const res = await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(chunk),
-    }).catch(() => null);
-    const data = res ? await res.json().catch(() => null) : null;
-    const tickets = data && Array.isArray(data.data) ? data.data : [];
-    tickets.forEach((t) => (t.status === "ok" ? ok++ : fail++));
-    if (!tickets.length) fail += chunk.length;
+const push = require("../src/lib/push-send.cjs");
+
+/**
+ * ส่งทั้งชุดผ่านตัวส่งกลาง — ส่งตรงถึงกูเกิล ไม่ผ่านคนกลาง
+ *
+ * 🔴 เดิมยิงไปบริการกลางของ Expo ซึ่ง **480 รอบได้ expo_ok=0 ทุกรอบ**
+ * ไม่เคยสำเร็จเลยสักครั้ง เพราะต้องเอากุญแจโครงการไปฝากที่นั่นอีกที
+ * ท่อส่งตรงพิสูจน์แล้วว่าถึงเครื่องจริง (30 ก.ค. เจ้าของยืนยันเอง)
+ *
+ * คืนรูปเดิม {ok, fail} เพื่อไม่ต้องแก้บรรทัดรายงานผลท้ายไฟล์
+ * แต่เพิ่ม gone/noToken ให้รู้ว่าเครื่องตายกี่เครื่อง ยังไม่มีกุญแจกี่เครื่อง
+ */
+async function sendExpo(messages, db) {
+  const r = await push.sendAll(messages, { db: db ?? null, dry: DRY });
+  if (r.noToken > 0) {
+    console.log(`  ℹ️ ${r.noToken} เครื่องยังไม่มีกุญแจแบบส่งตรง (ต้องลงแอพรุ่นใหม่)`);
   }
-  return { ok, fail };
+  if (r.gone > 0) {
+    console.log(`  🗑️ ปิดกุญแจเครื่องที่ไม่รับแล้ว ${r.gone} เครื่อง`);
+  }
+  return { ok: r.sent, fail: r.failed };
 }
 
 const guard = require("../src/lib/push-guard.cjs");
@@ -77,7 +82,7 @@ async function main() {
   await db.connect();
   const { rows: users } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
-           array_agg(json_build_object('token', t.expo_push_token, 'locale', COALESCE(t.locale,'th'))) AS tokens,
+           array_agg(json_build_object('token', t.device_push_token, 'locale', COALESCE(t.locale,'th'))) AS tokens,
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
@@ -187,7 +192,7 @@ async function main() {
         const loc = entry.locale === "en" || entry.locale === "zh" ? entry.locale : "th";
         const m = build(loc);
         if (!m.body) continue;
-        messages.push({ to: entry.token, sound: "default", title: m.title, body: m.body, data: { url: "hourkey://today", daily: yamKey } });
+        messages.push({ deviceToken: entry.token, title: m.title, body: m.body, url: "hourkey://today", data: { url: "hourkey://today", daily: yamKey } });
       }
       sent++;
       if (DRY) console.log(`[DRY] ${u.email} → ${thMsg.title} | ${thMsg.body}`);
@@ -195,7 +200,7 @@ async function main() {
   }
 
   if (!DRY) {
-    const r = await sendExpo(messages);
+    const r = await sendExpo(messages, db);
     console.log(`[mobile-daily-push] slot=${SLOT} users_notified=${sent} skipped=${skipped} expo_ok=${r.ok} expo_fail=${r.fail}`);
   } else {
     console.log(`[mobile-daily-push] DRY slot=${SLOT} users_would_notify=${sent} skipped=${skipped} msgs=${messages.length}`);
