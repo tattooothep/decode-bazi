@@ -25,9 +25,20 @@ export async function GET(req: Request) {
   if (installationId && !UUID_RE.test(installationId)) {
     return NextResponse.json({ ok: false, error: "invalid_installation_id" }, { status: 400 });
   }
-  const count = await q1<{ n: number; current: boolean }>(
+  /**
+   * 🔴 "สมัครรับแล้ว" ไม่พอ ต้องดูว่า **ส่งถึงจริงได้ไหม** ด้วย (31 ก.ค. 69)
+   *
+   * เครื่องเจ้าของลงทะเบียนสำเร็จ มีกุญแจของบริการกลางครบ
+   * แต่กุญแจส่งตรงถึงกูเกิลว่าง — ซึ่งเซิร์ฟเวอร์เราส่งได้ทางเดียวคือทางตรง
+   * (ทางบริการกลางพิสูจน์แล้วว่าใช้ไม่ได้ ตอบ InvalidCredentials 480 รอบติด)
+   * ผลคือหน้าแอพขึ้นว่า "พร้อมรับแล้ว" ทั้งที่ส่งไปไม่มีวันถึง แล้วซ่อนปุ่มแก้ทิ้ง
+   */
+  const count = await q1<{ n: number; current: boolean; deliverable: boolean }>(
     `SELECT count(*)::int AS n,
-            bool_or(installation_id=$2::uuid) AS current
+            bool_or(installation_id=$2::uuid) AS current,
+            bool_or(installation_id=$2::uuid
+                    AND device_push_token IS NOT NULL
+                    AND device_push_token <> '') AS deliverable
        FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`,
     [session.userId, installationId || null]
   );
@@ -35,6 +46,8 @@ export async function GET(req: Request) {
     {
       ok: true,
       subscribed: installationId ? count?.current === true : (count?.n || 0) > 0,
+      /** ส่งถึงเครื่องนี้ได้จริงไหม — มีกุญแจส่งตรงหรือยัง */
+      deliverable: installationId ? count?.deliverable === true : null,
       active_installations: count?.n || 0,
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
