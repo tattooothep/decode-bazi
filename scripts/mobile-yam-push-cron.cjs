@@ -12,6 +12,14 @@ const fs = require("node:fs");
 const { Client } = require("pg");
 
 const DRY = process.argv.includes("--dry");
+/**
+ * แกล้งทำเป็นว่าตอนนี้เป็นเวลาอื่น — สำหรับตรวจสอบเท่านั้น (31 ก.ค. 69)
+ *
+ * 🔴 ทำไมต้องมี: ตัวยิงนี้จะทำงานก็ต่อเมื่อมียามดีเริ่มใน 45 นาทีข้างหน้า
+ * เวลาที่เหลือมันข้ามเงียบๆ ทำให้ทดสอบไม่ได้เลยว่าใบที่ส่งหน้าตาเป็นยังไง
+ * ใช้ได้เฉพาะคู่กับ --dry เพื่อกันเผลอยิงของจริงด้วยเวลาปลอม
+ */
+const FORCE_TIME = (process.argv.find((a) => a.startsWith("--force-time=")) || "").slice(13);
 const BASE = process.env.PUSH_INTERNAL_BASE || "http://127.0.0.1:3350";
 const LEAD_MIN = 60;
 
@@ -53,6 +61,111 @@ async function fetchHours(user, profileId, dateStr) {
   return res.json().catch(() => null);
 }
 
+
+/**
+ * ── ทิศมงคลกับองค์เทพประจำยาม จากผังฉีเหมินจริง (31 ก.ค. 69) ──
+ *
+ * เจ้าของสั่งเอง: "เพิ่มชื่อเทพไปหน่อยสิ ว่าฤกษ์นี้เทพอะไร รองรับทุกภาษานะ"
+ *
+ * 🔴 ก่อนหน้านี้ใบยามไม่มีฉีเหมินเลยสักบรรทัด
+ * ข้อความคือ "เหมาะลงมือเรื่องสำคัญของคุณ" ซึ่งเป็นคำตายตัว
+ * พูดกับทุกคนเหมือนกันหมดทุกใบ ไม่ได้มาจากศาสตร์ใดเลย
+ *
+ * 🔴 ข้อจำกัดที่ต้องพูดตรง: ผังฉีเหมินของยามเป็นของ **ทุกคนเหมือนกัน**
+ * ไม่ได้ผูกกับดวงผู้ใช้ ข้อความจึงห้ามเขียนให้เข้าใจว่าคำนวณจากดวงเขา
+ *
+ * ไม่มีผัง = ส่งใบแบบเดิม ไม่ใช่เดาทิศให้ — เพราะผู้ใช้จะหันหน้าไปจริง
+ */
+const QIMEN_DIRECTION_NAMES = {
+  N:  { th: "เหนือ", en: "north", zh: "北方" },
+  NE: { th: "ตะวันออกเฉียงเหนือ", en: "northeast", zh: "東北方" },
+  E:  { th: "ตะวันออก", en: "east", zh: "東方" },
+  SE: { th: "ตะวันออกเฉียงใต้", en: "southeast", zh: "東南方" },
+  S:  { th: "ใต้", en: "south", zh: "南方" },
+  SW: { th: "ตะวันตกเฉียงใต้", en: "southwest", zh: "西南方" },
+  W:  { th: "ตะวันตก", en: "west", zh: "西方" },
+  NW: { th: "ตะวันตกเฉียงเหนือ", en: "northwest", zh: "西北方" },
+};
+
+/**
+ * ขอผังฉีเหมินของยามที่กำลังจะมาถึง แล้วเลือกกังที่ดีที่สุด
+ *
+ * @returns {Promise<null | {direction: object, deity: object, advice: object}>}
+ */
+async function fetchQimenHighlight(user, dateStr, startTime, lat, lng) {
+  try {
+    const token = signSession(user);
+    const res = await fetch(`${BASE}/api/qimen`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
+      body: JSON.stringify({ date: dateStr, time: startTime, lat, lng, school: "chaibu", system_type: "hour" }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json().catch(() => null);
+    const palaces = data && data.data && Array.isArray(data.data.palaces) ? data.data.palaces : null;
+    if (!palaces || palaces.length === 0) return null;
+
+    // เลือกกังที่คะแนนสูงสุด และต้องเป็นทิศจริง ไม่ใช่กังกลาง
+    let best = null;
+    for (const p of palaces) {
+      const code = String(p.direction || "").toUpperCase();
+      if (!QIMEN_DIRECTION_NAMES[code]) continue;          // ตัดกังกลางออก
+      const score = Number(p.display_score);
+      if (!Number.isFinite(score)) continue;
+      if (best === null || score > best.score) best = { row: p, score, code };
+    }
+    /**
+     * 🔴 เกณฑ์คะแนน — ตั้งไว้ 70 ตอนแรกแล้วไม่มีทิศไหนผ่านเลยสักยาม
+     * ตรวจของจริง 3 ยามพบคะแนนสูงสุดอยู่ที่ 57-67 เท่านั้น
+     *
+     * มาตรวัดของระบบ (src/app/api/today/route.ts): L1≥80 · L2≥65 · L3≥50 · L4≥35
+     * เอา 50 ขึ้นไป (L3 ขึ้นไป) = ทิศที่ใช้ได้จริง ไม่ใช่ทิศที่ตำราว่าร้าย
+     *
+     * และเราพูดว่า "ทิศที่ดีที่สุดของยามนี้" ซึ่งเป็นการเทียบกันเองใน 8 ทิศ
+     * ไม่ได้พูดว่า "ทิศมงคล" ลอยๆ จึงไม่เกินสิ่งที่ผังบอกจริง
+     */
+    if (best === null || best.score < 50) return null;
+
+    const row = best.row;
+    const deity = {
+      th: String(row.deity_name_th || "").trim(),
+      en: String(row.deity_name_en || "").trim(),
+      zh: String(row.deity_zh || row.deity_name_zh || "").trim(),
+    };
+    if (deity.th === "" && deity.en === "" && deity.zh === "") return null;
+
+    return {
+      direction: QIMEN_DIRECTION_NAMES[best.code],
+      deity,
+      advice: {
+        th: String(row.door_action_advice_th || "").trim(),
+        en: String(row.door_action_advice_en || "").trim(),
+        zh: String(row.door_action_advice_zh || "").trim(),
+      },
+      score: best.score,
+    };
+  } catch (error) {
+    // ห้ามเงียบ — ผังหายแล้วไม่มีใครรู้ว่าเพราะอะไร
+    console.error("[mobile-yam-push] ขอผังฉีเหมินไม่สำเร็จ", String(error && error.message ? error.message : error));
+    return null;
+  }
+}
+
+/** ท่อนทิศ+องค์เทพ 3 ภาษา — ต่อท้ายเนื้อใบ */
+function qimenLine(highlight, locale) {
+  if (highlight === null) return "";
+  const dir = highlight.direction[locale] || highlight.direction.th;
+  const deity = highlight.deity[locale] || highlight.deity.th || highlight.deity.zh;
+  const advice = highlight.advice[locale] || "";
+  if (locale === "zh") {
+    return `\n🧭 此時最吉方：${dir}（${deity}值位）${advice ? ` · ${advice}` : ""}`;
+  }
+  if (locale === "en") {
+    return `\n🧭 Best direction this hour: ${dir} — ${deity} presides${advice ? ` · ${advice}` : ""}`;
+  }
+  return `\n🧭 ทิศดีสุดของยามนี้: ${dir} — องค์${deity}ประจำทิศ${advice ? ` · ${advice}` : ""}`;
+}
+
 const push = require("../src/lib/push-send.cjs");
 
 /**
@@ -87,10 +200,15 @@ async function main() {
   await db.connect();
   const { rows: users } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
-           array_agg(t.device_push_token) AS tokens,
+           array_agg(json_build_object('device', t.device_push_token,
+                                      'locale', COALESCE(t.locale,'th'))) AS tokens,
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
+           (SELECT p.birth_lat FROM profiles p WHERE p.created_by_user_id = u.id
+             AND COALESCE(p.is_archived,false)=false ORDER BY p.created_at ASC LIMIT 1) AS lat,
+           (SELECT p.birth_lng FROM profiles p WHERE p.created_by_user_id = u.id
+             AND COALESCE(p.is_archived,false)=false ORDER BY p.created_at ASC LIMIT 1) AS lng,
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
            np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
            COALESCE(np.timezone, u.timezone) AS user_timezone,
@@ -142,7 +260,11 @@ async function main() {
       }
       // วันที่และนาทีตามปฏิทินของผู้ใช้คนนี้ ไม่ใช่ของเครื่องแม่ข่าย
       const dateStr = guard.localDateStr(u.user_timezone, runAt);
-      const nowMin = guard.localMinutes(u.user_timezone, runAt);
+      let nowMin = guard.localMinutes(u.user_timezone, runAt);
+      if (DRY && /^\d{2}:\d{2}$/.test(FORCE_TIME)) {
+        nowMin = Number(FORCE_TIME.slice(0, 2)) * 60 + Number(FORCE_TIME.slice(3, 5));
+        console.log(`[DRY] แกล้งทำเป็นเวลา ${FORCE_TIME} น.`);
+      }
       if (nowMin === null) { skipped++; continue; }
 
       const data = await fetchHours(u, u.profile_id, dateStr);
@@ -161,7 +283,23 @@ async function main() {
       const yamKey = `${dateStr}|${String(upcoming.range || "")}|${u.profile_id}`;
       const word = QUAL_WORD[String(upcoming.quality)] || "ยามดี";
       const zhi = String(upcoming.branch || "");
-      const body = `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}เหมาะลงมือเรื่องสำคัญของคุณ`;
+      /**
+       * ทิศมงคลกับองค์เทพประจำยามนี้ — ขอผังของ **เวลาที่ยามเริ่ม** ไม่ใช่เวลาปัจจุบัน
+       * เพราะผังฉีเหมินเปลี่ยนทุกสองชั่วโมงตามยาม ถ้าใช้เวลาตอนยิงจะได้ผังของยามก่อนหน้า
+       */
+      const startTime = (/^(\d{2}:\d{2})/.exec(String(upcoming.range || "")) || [])[1] || null;
+      const highlight = startTime === null
+        ? null
+        : await fetchQimenHighlight(
+            u,
+            dateStr,
+            startTime,
+            Number.isFinite(Number(u.lat)) ? Number(u.lat) : 13.7563,
+            Number.isFinite(Number(u.lng)) ? Number(u.lng) : 100.5018,
+          );
+
+      const baseBody = `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}เหมาะลงมือเรื่องสำคัญของคุณ`;
+      const body = baseBody + qimenLine(highlight, "th");
       const title = `🔔 ${word}กำลังมาถึง`;
       // เก็บเนื้อหาไว้ให้ศูนย์แจ้งเตือนในแอพอ่านย้อนหลัง (kind=yam) — กันซ้ำด้วย unique(user_id,yam_key)
       const dup = await db.query(
@@ -170,12 +308,24 @@ async function main() {
          ON CONFLICT (user_id, yam_key) DO NOTHING RETURNING id`,
         [u.id, yamKey, title, body, JSON.stringify({ url: "hourkey://today", range: String(upcoming.range || ""), quality: String(upcoming.quality || "") })]);
       if (!dup.rows.length) { skipped++; continue; }
-      for (const tk of u.tokens || []) {
-        messages.push({ deviceToken: tk, title, body, url: "hourkey://today",
-          data: { url: "hourkey://today", yam: yamKey } });
+      for (const entry of u.tokens || []) {
+        const raw = entry && typeof entry === "object" ? entry : { device: entry, locale: "th" };
+        const loc = raw.locale === "en" || raw.locale === "zh" ? raw.locale : "th";
+        // ⚠️ หัวใบยังเป็นไทยอยู่ (ของเดิม) — ท่อนทิศ+องค์เทพแปลตามเครื่องแล้ว
+        messages.push({
+          deviceToken: raw.device,
+          title,
+          body: baseBody + qimenLine(highlight, loc),
+          url: "hourkey://today",
+          data: { url: "hourkey://today", yam: yamKey },
+        });
       }
       sent++;
-      if (DRY) console.log(`[DRY] ${u.email} → ${word} ${body}`);
+      if (DRY) {
+        console.log(`[DRY] ${u.email} → ${word} ${body}`);
+        if (highlight === null) console.log("       (ไม่มีทิศมงคลพอในยามนี้ จึงไม่บอกทิศ)");
+        else console.log(`       ทิศ ${highlight.direction.th} · องค์ ${highlight.deity.th} · คะแนน ${highlight.score}`);
+      }
     } catch (e) { console.error(`[mobile-yam-push] user=${u.id}`, e.message); }
   }
 
