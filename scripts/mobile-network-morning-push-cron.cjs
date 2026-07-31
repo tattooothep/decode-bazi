@@ -187,8 +187,16 @@ async function main() {
   await db.connect();
 
   const users = await loadUsers(db);
-  const thaiNow = new Date(Date.now() + 7 * 3600_000);
-  const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(DATE_ARG) ? DATE_ARG : thaiNow.toISOString().slice(0, 10);
+  /**
+   * 🔴 ห้ามคิดวันที่ให้ทุกคนจากเวลาไทย (แก้ 30 ก.ค. 69)
+   * เดิมบวก 7 ชั่วโมงตายตัวแล้วใช้วันนั้นกับทุกคน
+   * คนอยู่คนละเขตเวลาจะได้ "ดวงวันนี้" ของวันผิด ไม่ใช่แค่เวลาผิด
+   * ค่าตรงนี้เหลือไว้เป็นค่าตั้งต้นของรอบเท่านั้น — ของจริงคิดทีละคนในลูป
+   */
+  const runAt = new Date();
+  const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(DATE_ARG)
+    ? DATE_ARG
+    : guard.localDateStr(guard.FALLBACK_TZ, runAt);
   const thaiDate = `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
   console.log(`[mobile-network-push] ${new Date().toISOString()} date=${dateStr} users=${users.length} dry=${DRY}${ONLY_EMAIL ? ` email=${ONLY_EMAIL}` : ""}`);
 

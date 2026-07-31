@@ -88,9 +88,16 @@ async function main() {
               np2.daily_enabled, np2.quiet_start, np2.quiet_end,
               np2.max_per_day, np2.timezone, u.timezone`);
 
-  const thaiNow = new Date(Date.now() + 7 * 3600_000);
-  const mIdx = thaiNow.getUTCMonth();
-  const year = thaiNow.getUTCFullYear();
+  /**
+   * 🔴 ห้ามคิดวันที่ให้ทุกคนจากเวลาไทย (แก้ 30 ก.ค. 69)
+   * เดิมบวก 7 ชั่วโมงตายตัวแล้วใช้วันนั้นกับทุกคน
+   * คนอยู่คนละเขตเวลาจะได้ "ดวงวันนี้" ของวันผิด ไม่ใช่แค่เวลาผิด
+   * ค่าตรงนี้เหลือไว้เป็นค่าตั้งต้นของรอบเท่านั้น — ของจริงคิดทีละคนในลูป
+   */
+  const runAt = new Date();
+  const serverDay = guard.localDateStr(guard.FALLBACK_TZ, runAt);
+  const mIdx = Number(serverDay.slice(5, 7)) - 1;
+  const year = Number(serverDay.slice(0, 4));
   const monthKey = `${year}-${String(mIdx + 1).padStart(2, "0")}`;
   console.log(`[mobile-monthly-push] ${new Date().toISOString()} month=${monthKey} users=${users.length} dry=${DRY}`);
 

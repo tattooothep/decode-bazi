@@ -104,9 +104,13 @@ async function main() {
               np.daily_enabled, np.quiet_start, np.quiet_end, np.max_per_day, np.timezone, u.timezone`);
   console.log(`[mobile-yam-push] ${new Date().toISOString()} users=${users.length} dry=${DRY}`);
 
-  const now = new Date(Date.now() + 7 * 3600_000); // เวลาไทย
-  const dateStr = now.toISOString().slice(0, 10);
-  const nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
+  /**
+   * 🔴 ห้ามคิดวันที่/เวลาให้ทุกคนจากเวลาไทย (แก้ 30 ก.ค. 69)
+   * เดิม `new Date(Date.now() + 7 * 3600_000)` แล้วใช้ค่านั้นกับทุกคน
+   * คนอยู่คนละเขตเวลาจะได้ยามของวันผิด ไม่ใช่แค่เวลาผิด
+   * ตอนนี้คิดใหม่ทีละคนในลูป ตามเขตเวลาของเจ้าตัว
+   */
+  const runAt = new Date();
   const QUAL_WORD = { best: "ยามดีมาก", good: "ยามดี" };
   let sent = 0, skipped = 0;
   const messages = [];
@@ -136,6 +140,11 @@ async function main() {
         if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
         continue;
       }
+      // วันที่และนาทีตามปฏิทินของผู้ใช้คนนี้ ไม่ใช่ของเครื่องแม่ข่าย
+      const dateStr = guard.localDateStr(u.user_timezone, runAt);
+      const nowMin = guard.localMinutes(u.user_timezone, runAt);
+      if (nowMin === null) { skipped++; continue; }
+
       const data = await fetchHours(u, u.profile_id, dateStr);
       const hours = data && Array.isArray(data.hours) ? data.hours : [];
       // ยาม best/good ที่เริ่มภายใน LEAD_MIN นาทีข้างหน้า — field จริงคือ range "HH:MM-HH:MM"

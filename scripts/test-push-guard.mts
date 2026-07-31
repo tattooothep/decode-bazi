@@ -4,6 +4,7 @@
  * ทุกข้อในไฟล์นี้คือกฎที่ระบบเคยละเมิดจริงมาแล้ว ไม่ใช่การเดาเผื่อ
  */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const G = require("../src/lib/push-guard.cjs");
@@ -147,6 +148,48 @@ check("ทุกทางที่ไม่ส่งต้องบอกเห�
     const r = G.mayNotify(c);
     assert.equal(r.allow, false);
     assert.ok(r.reason.length > 0, `ไม่บอกเหตุผล: ${JSON.stringify(c)}`);
+  }
+});
+
+
+console.log("── วันที่ต้องเป็นของผู้ใช้ ไม่ใช่ของไทย ──");
+
+check("🔴 คนละเขตเวลาต้องได้วันที่ต่างกันเมื่อคร่อมเที่ยงคืน", () => {
+  // เวลาไทยข้ามวันแล้ว แต่ฮาวายยังเป็นเมื่อวาน
+  // ของเดิมใช้วันของไทยกับทุกคน = คนฮาวายได้ "ดวงวันนี้" ของวันพรุ่งนี้
+  const at = new Date("2026-07-31T17:30:00Z");
+  assert.equal(G.localDateStr("Asia/Bangkok", at), "2026-08-01");
+  assert.equal(G.localDateStr("Pacific/Honolulu", at), "2026-07-31");
+  assert.equal(G.localDateStr("Europe/London", at), "2026-07-31");
+});
+
+check("นาทีนับจากเที่ยงคืนต้องตรงตามเขตเวลา", () => {
+  const at = new Date("2026-07-31T17:30:00Z");
+  assert.equal(G.localMinutes("Asia/Bangkok", at), 30);        // 00:30
+  assert.equal(G.localMinutes("Europe/London", at), 18 * 60 + 30);
+});
+
+check("เขตเวลาที่ไม่รู้จักต้องถอยไปค่ากลาง ไม่ล้ม", () => {
+  assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(G.localDateStr("Mars/Olympus")));
+  assert.ok(Number.isInteger(G.localMinutes("Mars/Olympus")));
+});
+
+check("🔴 ห้ามเหลือการตรึงเวลาไทยในตัวยิงตัวไหนเลย", () => {
+  // กับดักจริงของระบบ: users.timezone เป็น Asia/Bangkok ทั้ง 16 แถว
+  // และตัวยิง 4 ตัวบวก 7 ชั่วโมงตายตัว
+  const crons = [
+    "scripts/mobile-yam-push-cron.cjs",
+    "scripts/mobile-daily-fortune-push-cron.cjs",
+    "scripts/mobile-monthly-report-push-cron.cjs",
+    "scripts/mobile-network-morning-push-cron.cjs",
+  ];
+  for (const path of crons) {
+    const src = readFileSync(path, "utf8");
+    // ยอมให้พูดถึงในหมายเหตุได้ แต่ห้ามเป็นโค้ดที่ทำงานจริง
+    assert.ok(
+      !/=\s*new Date\(Date\.now\(\) \+ 7 \* 3600_000\)/.test(src),
+      `${path}: ยังตรึงเวลาไทย`,
+    );
   }
 });
 

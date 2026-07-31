@@ -150,10 +150,57 @@ const PREFS_COLUMNS = `
   (np.user_id IS NOT NULL) AS has_prefs
 `;
 
+/**
+ * วันที่ตามปฏิทินท้องถิ่นของผู้ใช้ (YYYY-MM-DD)
+ *
+ * 🔴 ห้ามใช้วันที่ของเครื่องแม่ข่ายหรือของไทยเป็นตัวตั้ง
+ * ตัวยิงเดิมเขียน `new Date(Date.now() + 7 * 3600_000)` แล้วใช้วันนั้นกับทุกคน
+ * คนอยู่ฮาวายจะได้ "ดวงวันนี้" ของวันพรุ่งนี้ตามปฏิทินเขา
+ * ซึ่งผิดทั้งใบ ไม่ใช่แค่ผิดเวลา
+ */
+function localDateStr(timezone, at = new Date()) {
+  const tz = String(timezone || "").trim() || FALLBACK_TZ;
+  try {
+    // en-CA ให้รูปแบบ YYYY-MM-DD ตรงตัว ไม่ต้องประกอบเอง
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(at);
+  } catch {
+    return localDateStr(FALLBACK_TZ, at);
+  }
+}
+
+/**
+ * นาทีนับจากเที่ยงคืนตามเวลาท้องถิ่นของผู้ใช้
+ *
+ * ใช้เทียบกับเวลาเริ่มยาม ("HH:MM-HH:MM") ซึ่งเป็นเวลาท้องถิ่นเช่นกัน
+ */
+function localMinutes(timezone, at = new Date()) {
+  const tz = String(timezone || "").trim() || FALLBACK_TZ;
+  try {
+    const text = new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(at);
+    const m = /^(\d{2}):(\d{2})$/.exec(text.trim());
+    if (!m) return null;
+    return Number(m[1]) * 60 + Number(m[2]);
+  } catch {
+    return localMinutes(FALLBACK_TZ, at);
+  }
+}
+
 module.exports = {
   DEFAULTS,
   FALLBACK_TZ,
   localHour,
+  localDateStr,
+  localMinutes,
   inQuietHours,
   mayNotify,
   PREFS_SELECT,

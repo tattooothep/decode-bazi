@@ -102,9 +102,13 @@ async function main() {
   console.log(`[mobile-daily-push] ${new Date().toISOString()} slot=${SLOT} users=${users.length} dry=${DRY}`);
 
   // ค่ำ = ดวงพรุ่งนี้ (วันไทย +1) · เช้า = ดวงวันนี้
-  const thaiNow = new Date(Date.now() + 7 * 3600_000);
-  const dateStr = new Date(thaiNow.getTime() + (SLOT === "evening" ? 86_400_000 : 0)).toISOString().slice(0, 10);
-  const thaiDate = `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
+  /**
+   * 🔴 ห้ามคิดวันที่ให้ทุกคนจากเวลาไทย (แก้ 30 ก.ค. 69)
+   * เดิมบวก 7 ชั่วโมงตายตัวแล้วใช้วันนั้นกับทุกคน
+   * คนอยู่คนละเขตเวลาจะได้ "ดวงวันนี้" ของวันผิด ไม่ใช่แค่เวลาผิด
+   * ค่าตรงนี้เหลือไว้เป็นค่าตั้งต้นของรอบเท่านั้น — ของจริงคิดทีละคนในลูป
+   */
+  const runAt = new Date();
 
   let sent = 0, skipped = 0;
   const messages = [];
@@ -132,6 +136,13 @@ async function main() {
         continue;
       }
       if (!u.profile_id) { skipped++; continue; }
+      // วันตามปฏิทินของผู้ใช้คนนี้ — รอบค่ำชี้วันพรุ่งนี้ของเขา ไม่ใช่ของไทย
+      const baseDay = guard.localDateStr(u.user_timezone, runAt);
+      const dateStr = SLOT === "evening"
+        ? guard.localDateStr(u.user_timezone, new Date(runAt.getTime() + 86_400_000))
+        : baseDay;
+      const thaiDate = `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
+
       const today = await getJson(u, `${BASE}/api/mobile/v1/today?date=${dateStr}&profileId=${u.profile_id}`);
       if (!today || today.ok === false) { skipped++; continue; }
       // ฟิลด์จริงจาก engine เท่านั้น — ไม่มี = ไม่พูดถึง (ห้ามปั้น) · ฟันธงรายวันอยู่ใต้ verdict
