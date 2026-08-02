@@ -23,6 +23,8 @@
     "test:mobile-luopan-runtime": "node scripts/run-mobile-luopan-runtime.mjs",
     "verify:mobile-luopan": "npm run test:mobile-luopan-science && npm run audit:public-ai && tsc --noEmit && next build --webpack && npm run test:mobile-luopan-runtime",
     "test:mobile-account-p0": "node scripts/test-mobile-account-support-p0.mjs",
+    "test:shrine-shop": "tsx scripts/test-mobile-shrine-shop.mts",
+    "test:shrine-refund": "tsx scripts/test-shrine-refund-bagcap.mts",
     "test:auth-delivery-outbox": "tsx scripts/test-auth-delivery-outbox.mts",
     "test:mobile-calendar-export": "tsx scripts/test-mobile-calendar-export-evidence.mts",
     "test:mobile-chart-export": "tsx scripts/test-mobile-chart-export-boundary.mts",
