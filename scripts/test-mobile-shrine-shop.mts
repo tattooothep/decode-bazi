@@ -3,7 +3,10 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  SHRINE_BAG_CAPACITY,
+  SHRINE_CANCEL_WINDOW_SECONDS,
   SHRINE_OFFERING_CATALOG,
+  SHRINE_OFFERING_IDS,
   getShrineOfferingShop,
   offerShrineGrant,
   parseShrineOfferInput,
@@ -130,7 +133,7 @@ assert.throws(
   /shrine_shop_input_invalid/u,
 );
 
-const migration = read("migrations/20260723_shrine_offering_shop.sql");
+const migration = read("migrations/20260726_shrine_offering_shop.sql");
 for (const marker of [
   "CREATE TABLE IF NOT EXISTS shrine_offering_grants",
   "REFERENCES users(id) ON DELETE CASCADE",
@@ -140,7 +143,6 @@ for (const marker of [
   "CHECK (idempotency_key ~ '^shrine_[0-9a-f]{32}$')",
   "CHECK ((state='purchased' AND offered_at IS NULL)",
   "CREATE INDEX IF NOT EXISTS idx_shrine_offering_grants_user_state",
-  "CREATE UNIQUE INDEX IF NOT EXISTS uq_shrine_offering_grants_unoffered_item",
   "WHERE state='purchased'",
   "CREATE OR REPLACE FUNCTION enforce_shrine_offering_grant_transition()",
   "OLD.state='purchased' AND NEW.state='offered'",
@@ -318,6 +320,7 @@ mutablePoolQuery.query = async (sql: string) => {
     return {
       rows: [...purchasedInventoryRows, ...latestOfferedRows].map((grant, index) => ({
         hour_balance: 7,
+        purchased_total: purchasedInventoryRows.length,
         id: grant.id,
         item_id: grant.item_id,
         purchased_at: new Date(Date.UTC(2026, 6, 23, 0, 0, index)).toISOString(),
@@ -345,11 +348,28 @@ try {
     1,
     "balance, paid inventory, and offered restoration state must share one database snapshot",
   );
+  // 2 ส.ค. 2569: เปลี่ยนเจตนาเดิม — เดิมห้าม LIMIT เพราะกลัวของหาย
+  // แต่ของจริงคือถ้าเกิน 128 ชิ้น แอพรุ่นเดิมทิ้งทั้งก้อน = ร้านพังถาวร กู้เองไม่ได้
+  // ตอนนี้จึงส่งไม่เกินเพดานย่าม + บอกยอดรวมจริงแยกช่อง และเรียงเก่าก่อนเพื่อถวายไล่ออกได้
   assert.ok(
     inventoryQueries[0].includes("state='purchased'")
-      && !inventoryQueries[0].includes("LIMIT"),
-    "the purchased inventory query may not truncate paid grants",
+      && inventoryQueries[0].includes("LIMIT $2")
+      && inventoryQueries[0].includes("ORDER BY purchased_at ASC,id ASC"),
+    "the purchased inventory query must be bounded by the server bag capacity, oldest first",
   );
+  assert.equal(
+    inventory.bag_capacity,
+    SHRINE_BAG_CAPACITY,
+    "the shop must publish the server-owned bag capacity",
+  );
+  assert.ok(
+    SHRINE_BAG_CAPACITY + SHRINE_OFFERING_IDS.length < 128,
+    "the capacity plus bounded offered history must stay under the legacy client ceiling of 128",
+  );
+  assert.equal(inventory.bag_used, purchasedInventoryRows.length);
+  assert.equal(inventory.bag_full, false);
+  assert.equal(inventory.bag_truncated, false);
+  assert.equal(inventory.cancel_window_seconds, SHRINE_CANCEL_WINDOW_SECONDS);
   assert.ok(
     inventoryQueries[0].includes("SELECT DISTINCT ON (item_id)")
       && inventoryQueries[0].includes("state='offered'"),
@@ -482,6 +502,20 @@ function createFakeClient() {
           grant.user_id === params[0] && grant.idempotency_key === params[1]
         ));
         return { rows: (row ? [{ ...row }] : []) as T[] };
+      }
+      // ร่องรอยการคืนเงิน: กันคำสั่งซื้อค้างคิวยิงซ้ำแล้วหักยามรอบสอง
+      if (statement.includes("FROM shrine_offering_refunds")) {
+        return { rows: [] as T[] };
+      }
+      // ด่านย่ามเต็ม: นับของที่ซื้อแล้วยังไม่ถวายก่อนหักยาม
+      if (
+        statement.includes("COUNT(*)::int AS purchased_total")
+        && statement.includes("FROM shrine_offering_grants")
+      ) {
+        const purchasedTotal = fakeState.grants.filter((grant) => (
+          grant.user_id === params[0] && grant.state === "purchased"
+        )).length;
+        return { rows: [{ purchased_total: purchasedTotal }] as T[] };
       }
       if (
         statement.startsWith("UPDATE users")
