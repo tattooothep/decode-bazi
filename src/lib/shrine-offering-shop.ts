@@ -6,6 +6,12 @@ export const SHRINE_OFFERING_IDS = [
   "teaFruitOffering",
   "talisman",
   "vowFulfillment",
+  // 3 ส.ค. 2569: เพิ่ม 4 ชนิดใหม่แบบ additive (ของเดิม 4 ตัวบนห้ามขยับลำดับ/เปลี่ยนชื่อ)
+  // ⚠️ ฐานข้อมูลมี CHECK จำกัดชนิด — ต้องรัน migrations/20260803_shrine_offering_8items.sql ก่อนเปิดใช้
+  "redCandlePair",
+  "lotusFlower",
+  "luckyOranges",
+  "catFeed",
 ] as const;
 
 export type ShrineOfferingId = typeof SHRINE_OFFERING_IDS[number];

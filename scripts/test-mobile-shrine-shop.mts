@@ -58,9 +58,29 @@ for (const rejectedDatabaseName of [
 
 assert.deepEqual(
   SHRINE_OFFERING_CATALOG.items.map((item) => item.id),
-  ["auspiciousLamp", "teaFruitOffering", "talisman", "vowFulfillment"],
-  "the server catalog must own all four requested shrine offerings",
+  [
+    // 4 ชนิดเดิม — ห้ามขยับลำดับ/เปลี่ยนชื่อ (แอพรุ่นเดิมอ้างชื่อพวกนี้)
+    "auspiciousLamp", "teaFruitOffering", "talisman", "vowFulfillment",
+    // 4 ชนิดใหม่ 3 ส.ค. 2569 (ต้องรัน migration 20260803 ก่อนเปิดใช้)
+    "redCandlePair", "lotusFlower", "luckyOranges", "catFeed",
+  ],
+  "the server catalog must own all eight shrine offerings, legacy four first",
 );
+assert.ok(
+  SHRINE_OFFERING_CATALOG.items.every((item) => item.cost_yam === 1),
+  "every offering (old and new) must cost exactly 1 Yam",
+);
+// ชนิดใหม่ทุกตัวต้องผ่านตัวตรวจอินพุตซื้อ (ไม่มี enum ตกหล่นที่จุดอื่น)
+for (const [index, newItemId] of [
+  "redCandlePair", "lotusFlower", "luckyOranges", "catFeed",
+].entries()) {
+  const parsedNewItem = parseShrinePurchaseInput({
+    item_id: newItemId,
+    catalog_revision: SHRINE_OFFERING_CATALOG.catalog_revision,
+    idempotency_key: `shrine_${String(index).repeat(32).slice(0, 32)}`,
+  });
+  assert.equal(parsedNewItem.itemId, newItemId);
+}
 assert.ok(
   SHRINE_OFFERING_CATALOG.items.every((item) => (
     Number.isSafeInteger(item.cost_yam) && item.cost_yam > 0
@@ -158,6 +178,29 @@ assert.doesNotMatch(
   migration,
   /GRANT\s+SELECT,\s*INSERT,\s*UPDATE\s+ON\s+shrine_offering_grants/iu,
   "the runtime role may not rewrite ownership or accounting columns",
+);
+
+// migration ขยาย 4 → 8 ชนิด (3 ส.ค. 2569) ต้องครอบทั้งสองตารางที่มี CHECK จำกัดชนิด
+const expandMigration = read("migrations/20260803_shrine_offering_8items.sql");
+for (const marker of [
+  "ALTER TABLE shrine_offering_grants",
+  "ALTER TABLE shrine_offering_refunds",
+  "shrine_offering_grants_item_id_check",
+  "shrine_offering_refunds_item_id_check",
+]) {
+  assert.ok(expandMigration.includes(marker), `8-item migration is missing ${marker}`);
+}
+for (const itemId of SHRINE_OFFERING_IDS) {
+  assert.equal(
+    (expandMigration.match(new RegExp(`'${itemId}'`, "gu")) ?? []).length,
+    2,
+    `8-item migration must allow ${itemId} in both grants and refunds CHECKs`,
+  );
+}
+const expandRollback = read("migrations/20260803_shrine_offering_8items_rollback.sql");
+assert.ok(
+  expandRollback.includes("rollback_blocked"),
+  "the 8-item rollback must fail closed while new-item rows still exist",
 );
 
 const helperSource = read("src/lib/shrine-offering-shop.ts");
@@ -748,6 +791,34 @@ try {
   assert.equal(insufficient.error, "insufficient_yam");
   assert.equal(fakeState.hourTransactions, transactionsBeforeLedgerFailure + 1);
   assert.ok(fakeState.rollbacks >= 1);
+
+  // ── 4 ชนิดใหม่ต้องซื้อ + ถวายได้ครบวงจร ราคาชิ้นละ 1 ยามเท่าของเดิม ──
+  fakeState.balance = 8;
+  const ledgerBeforeNewItems = fakeState.hourTransactions;
+  for (const [index, newItemId] of [
+    "redCandlePair", "lotusFlower", "luckyOranges", "catFeed",
+  ].entries()) {
+    const newPurchase = await purchaseShrineOffering("user-1", parseShrinePurchaseInput({
+      item_id: newItemId,
+      catalog_revision: SHRINE_OFFERING_CATALOG.catalog_revision,
+      idempotency_key: `shrine_${String(index + 6).repeat(32).slice(0, 32)}`,
+    }));
+    assert.equal(newPurchase.ok, true, `${newItemId} must be purchasable`);
+    assert.ok(newPurchase.ok && !newPurchase.existing);
+    assert.equal(newPurchase.ok && newPurchase.charged_yam, 1, `${newItemId} must cost 1 Yam`);
+    assert.equal(newPurchase.ok && newPurchase.grant.item_id, newItemId);
+    const newOffer = await offerShrineGrant("user-1", {
+      grantId: newPurchase.ok ? newPurchase.grant.id : "",
+      itemId: newItemId as (typeof SHRINE_OFFERING_IDS)[number],
+    });
+    assert.equal(newOffer.ok, true, `${newItemId} must be offerable`);
+  }
+  assert.equal(fakeState.balance, 4, "four new-item purchases must debit exactly 4 Yam");
+  assert.equal(
+    fakeState.hourTransactions,
+    ledgerBeforeNewItems + 4,
+    "each new-item purchase must write exactly one ledger row",
+  );
 } finally {
   mutablePool.connect = originalConnect;
 }
@@ -930,4 +1001,4 @@ for (const [label, route, body] of [
 }
 
 getRedis().disconnect();
-console.log("MOBILE_SHRINE_SHOP_OK items=4 currency=yam atomic=true idempotent=true");
+console.log("MOBILE_SHRINE_SHOP_OK items=8 currency=yam atomic=true idempotent=true");

@@ -43,6 +43,23 @@ ok(
 );
 ok(SHRINE_CANCEL_WINDOW_SECONDS > 0 && SHRINE_CANCEL_WINDOW_SECONDS <= 300, "หน้าต่างยกเลิกต้องสั้น");
 
+/* ─── 8 ชนิด (4 เดิม + 4 ใหม่ 3 ส.ค. 2569) ต้องผ่านตัวตรวจอินพุตครบทุกเส้นทาง ─── */
+eq(SHRINE_OFFERING_IDS.length, 8, "ต้องมีของถวายครบ 8 ชนิด");
+for (const itemId of SHRINE_OFFERING_IDS) {
+  const parsedBuy = parseShrinePurchaseInput({
+    item_id: itemId,
+    catalog_revision: SHRINE_OFFERING_CATALOG.catalog_revision,
+    idempotency_key: "shrine_aaaabbbbccccddddeeeeffff00001111",
+  });
+  eq(parsedBuy.itemId, itemId, `ตัวตรวจซื้อต้องรู้จัก ${itemId}`);
+  const parsedCancel = parseShrineCancelInput({
+    grant_id: "550e8400-e29b-41d4-a716-446655440000",
+    item_id: itemId,
+    idempotency_key: "shrine_aaaabbbbccccddddeeeeffff00001111",
+  });
+  eq(parsedCancel.itemId, itemId, `ตัวตรวจยกเลิกต้องรู้จัก ${itemId}`);
+}
+
 /* ─── ตัวตรวจอินพุตยกเลิก ─── */
 const goodGrantId = "550e8400-e29b-41d4-a716-446655440000";
 assert.deepEqual(
@@ -549,6 +566,32 @@ try {
     "แม้กดพร้อมกันก็ห้ามล้นเพดาน",
   );
   eq(db.balances.get(USER), 500 - 1, "หักยามเฉพาะคำสั่งที่สำเร็จ");
+
+  /* ── 13. ชนิดใหม่ทั้ง 4 ต้องครบวงจร: ซื้อ → ยกเลิก → คืนยาม เท่าของเดิมทุกประการ ── */
+  for (const newItemId of ["redCandlePair", "lotusFlower", "luckyOranges", "catFeed"]) {
+    resetDb(10);
+    const newBuy = await buy(USER, newItemId);
+    ok(newBuy.ok, `ซื้อ ${newItemId} ต้องสำเร็จ`);
+    eq(newBuy.ok && newBuy.charged_yam, 1, `${newItemId} ต้องราคา 1 ยามเท่าของเดิม`);
+    eq(db.balances.get(USER), 9, `ซื้อ ${newItemId} แล้วยามลด 1`);
+    const newRefund = await cancel(USER, newBuy.ok ? newBuy.grant.id : "", newItemId, nextKey());
+    ok(newRefund.ok, `ยกเลิก ${newItemId} ในหน้าต่างเวลาต้องสำเร็จ`);
+    eq(newRefund.ok && newRefund.refunded_yam, 1, `${newItemId} ต้องคืน 1 ยาม`);
+    eq(db.balances.get(USER), 10, `ยกเลิก ${newItemId} แล้วยามกลับเท่าเดิม`);
+    eq(db.grants.length, 0, `${newItemId} ต้องถูกลบออกจากย่าม`);
+  }
+
+  /* ── 14. ชนิดใหม่ที่ถวายแล้วต้องยกเลิกไม่ได้ เหมือนของเดิม ── */
+  resetDb(10);
+  const newOfferedBuy = await buy(USER, "catFeed");
+  const newOffered = await offerShrineGrant(USER, {
+    grantId: newOfferedBuy.ok ? newOfferedBuy.grant.id : "",
+    itemId: "catFeed",
+  });
+  ok(newOffered.ok, "ถวาย catFeed สำเร็จ");
+  const newAfterOffer = await cancel(USER, newOfferedBuy.ok ? newOfferedBuy.grant.id : "", "catFeed", nextKey());
+  eq(newAfterOffer.ok, false, "catFeed ที่ถวายแล้วยกเลิกไม่ได้");
+  eq(!newAfterOffer.ok && newAfterOffer.error, "grant_already_offered", "รหัสต้องบอกว่าถวายแล้ว");
 } finally {
   mutablePool.connect = originalConnect;
 }
@@ -577,6 +620,19 @@ for (const marker of [
 const lib = read("src/lib/shrine-offering-shop.ts");
 ok(lib.includes("'refund_shrine_offering'"), "ต้องลงบัญชีด้วยเหตุผล refund_shrine_offering");
 ok(lib.includes("shrine_refund:"), "ต้องใช้ ref_payment_id แยกสำหรับการคืน");
+
+/* ─── migration ขยาย 4 → 8 ชนิด ต้องครอบตารางบันทึกการคืนด้วย ─── */
+const expandMigration = read("migrations/20260803_shrine_offering_8items.sql");
+for (const itemId of SHRINE_OFFERING_IDS) {
+  ok(
+    (expandMigration.match(new RegExp(`'${itemId}'`, "gu")) ?? []).length === 2,
+    `migration 8 ชนิดต้องอนุญาต ${itemId} ทั้งในตารางของและตารางบันทึกการคืน`,
+  );
+}
+ok(
+  expandMigration.includes("shrine_offering_refunds_item_id_check"),
+  "migration 8 ชนิดต้องขยาย CHECK ของตารางบันทึกการคืน",
+);
 
 console.log(
   `SHRINE_REFUND_BAGCAP_OK checks=${checks} capacity=${SHRINE_BAG_CAPACITY} window=${SHRINE_CANCEL_WINDOW_SECONDS}s rollbacks=${db.rollbacks} commits=${db.commits}`,
