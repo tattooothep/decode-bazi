@@ -6,7 +6,7 @@ import {
 } from "../src/lib/shrine-realtime-session.ts";
 
 const MODEL = "gpt-realtime-2.1-mini";
-const VOICE = "marin";
+const VOICE = "shimmer"; // 3 ส.ค. 69: เสียงต่อองค์ — เทสหลักใช้ temple-cat = shimmer
 const NOW_SECONDS = 1_900_000_000;
 const SERVER_KEY = "sk-server-only-must-not-leak";
 const MOBILE_BEARER = "mobile-session-secret";
@@ -82,7 +82,16 @@ function fixture(overrides: Partial<ShrineRealtimeSessionDependencies> = {}) {
     clientIp: () => "203.0.113.7",
     fetch: async (url, init) => {
       fetchCalls.push({ init, url: String(url) });
-      return Response.json(providerGrant());
+      // 3 ส.ค. 69: เสียงต่อองค์ — ตัวปลอมสะท้อนเสียงที่ handler ขอจริง
+      const requested = JSON.parse(String(init?.body))
+        ?.session?.audio?.output?.voice ?? VOICE;
+      return Response.json(providerGrant({
+        session: {
+          audio: { output: { voice: requested } },
+          model: MODEL,
+          type: "realtime",
+        },
+      }));
     },
     nowSeconds: () => NOW_SECONDS,
     openAiApiKey: () => SERVER_KEY,

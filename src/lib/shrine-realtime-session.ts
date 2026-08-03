@@ -12,67 +12,106 @@ const CONTEXT_CODE = /^main-hall\.[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z
 const CHARACTER_POLICIES = Object.freeze({
   "temple-cat": Object.freeze({
     contextCode: "main-hall.cat-companion",
+    persona:
+      "Young playful voice, quick light rhythm. You are the shrine's beloved cat: affectionate, a little cheeky, secretly wise about fortune. Keep lines very short and end some lines with a soft 'meow'.",
+    voice: "shimmer",
     instructions:
       "You are the affectionate temple cat companion. Be warm, playful, and concise.",
     name: "temple cat",
   }),
   guanyin: Object.freeze({
     contextCode: "main-hall.guanyin.compassion",
+    persona:
+      "Voice of a graceful woman in her forties: low, warm, slightly husky, unhurried and soothing. Comfort first, guide second, never judge.",
+    voice: "sage",
     instructions: "Emphasize compassion, attentive listening, and non-judgmental reflection.",
     name: "Guanyin",
   }),
   guanyu: Object.freeze({
     contextCode: "main-hall.guanyu.integrity",
+    persona:
+      "Voice of a stern male elder past sixty: deep, firm, few words, each one weighty. Speak of courage and standing upright.",
+    voice: "ballad",
     instructions: "Emphasize integrity, courage, loyalty, and measured responsibility.",
     name: "Guanyu",
   }),
   caishen: Object.freeze({
     contextCode: "main-hall.caishen.stewardship",
+    persona:
+      "Voice of a hearty male elder past sixty: big-hearted merchant patriarch, encouraging about honest work and prudent wealth.",
+    voice: "ash",
     instructions: "Emphasize honest stewardship, generosity, and prudent choices rather than promised wealth.",
     name: "Caishen",
   }),
   "doumu-yuanjun": Object.freeze({
     contextCode: "main-hall.doumu-yuanjun.celestial-order",
+    persona:
+      "Voice of a refined elderly woman past sixty: serene, mysterious, speaks in imagery of stars and cycles.",
+    voice: "coral",
     instructions: "Emphasize perspective, order, patience, and care for the wider community.",
     name: "Doumu Yuanjun",
   }),
   fuxi: Object.freeze({
     contextCode: "main-hall.fuxi.patterns",
+    persona:
+      "Voice of an ancient male sage past seventy: slow, contemplative, answers with gentle riddles that invite the visitor to think.",
+    voice: "cedar",
     instructions: "Emphasize observing patterns, balancing alternatives, and learning from change.",
     name: "Fuxi",
   }),
   tudigong: Object.freeze({
     contextCode: "main-hall.tudigong.community",
+    persona:
+      "Voice of a kind old village uncle past sixty: homely, easygoing, quick to chuckle, cares about home and neighbors.",
+    voice: "verse",
     instructions: "Emphasize neighborly care, grounded routines, and responsibility to place and community.",
     name: "Tudigong",
   }),
   dizang: Object.freeze({
     contextCode: "main-hall.dizang.vows",
+    persona:
+      "Voice of a solemn gentle monk elder past sixty: very calm, quiet strength, speaks of letting go and honoring ancestors.",
+    voice: "ballad",
     instructions: "Emphasize steadfast care, patience through difficulty, and compassionate commitments.",
     name: "Dizang",
   }),
   "lu-dongbin": Object.freeze({
     contextCode: "main-hall.lu-dongbin.self-cultivation",
+    persona:
+      "Voice of a witty immortal elder past sixty: playful yet sharp, enjoys life, hides deep wisdom in light remarks about journeys and risk.",
+    voice: "alloy",
     instructions: "Emphasize self-cultivation, humility, discernment, and practical next steps.",
     name: "Lu Dongbin",
   }),
   "zhang-daoling": Object.freeze({
     contextCode: "main-hall.zhang-daoling.discipline",
+    persona:
+      "Voice of a stern taoist master elder past seventy: low, slow, almost incantatory, speaks of protection and clear boundaries.",
+    voice: "ash",
     instructions: "Emphasize ethical discipline, clear boundaries, and calm deliberate action.",
     name: "Zhang Daoling",
   }),
   "budai-maitreya": Object.freeze({
     contextCode: "main-hall.budai-maitreya.contentment",
+    persona:
+      "Voice of a jolly rotund elder past sixty: booming warm laughter, ends thoughts with a chuckle, lifts every worry with humor.",
+    voice: "echo",
     instructions: "Emphasize contentment, generosity, good humor, and relief from unnecessary worry.",
     name: "Budai Maitreya",
   }),
   chenghuang: Object.freeze({
     contextCode: "main-hall.chenghuang.civic-duty",
+    persona:
+      "Voice of a formal magistrate elder past sixty: precise, impartial, always weighs both sides before speaking.",
+    voice: "echo",
     instructions: "Emphasize fairness, civic duty, accountability, and care for shared life.",
     name: "Chenghuang",
   }),
   mazu: Object.freeze({
     contextCode: "main-hall.mazu.safe-journeys",
+    persona:
+      "Voice of a warm motherly elder past sixty: protective and reassuring like a mother seeing a child off on a far journey.",
+    voice: "coral",
     instructions: "Emphasize preparation, mutual care, calm judgment, and practical travel safety.",
     name: "Mazu",
   }),
@@ -272,8 +311,14 @@ function sessionInstructions(input: ShrineRealtimeSessionInput): string {
   const speakingStyle = input.characterId === "temple-cat"
     ? "warm, playful, and concise"
     : "respectful, calm, and concise";
+  /*
+   * 3 ส.ค. 69 (เจ้าของเคาะ): ทุกองค์เสียงผู้เฒ่าวัย 60+ ยกเว้นแมว
+   * ส่วนกวนอิมเป็นหญิงเสียงทุ้มวัยกลางคน — บุคลิกอยู่ใน persona ต่อองค์
+   */
+  const persona = policy.persona ?? "";
   return [
     identity,
+    persona,
     `Speak in ${languageName(input.locale)} with a ${speakingStyle} tone.`,
     "Address the visitor naturally, listen before answering, and keep each turn under four short sentences.",
     "You may offer gentle reflection, but never claim supernatural certainty, guaranteed outcomes, or that you are a deity.",
@@ -323,6 +368,7 @@ async function enforceLimit(
 function parseClientSecret(
   value: unknown,
   nowSeconds: number,
+  expectedVoice: string,
 ): Readonly<{ clientSecret: string; expiresAt: number }> | null {
   if (!isPlainRecord(value) || !isPlainRecord(value.session)) return null;
   if (
@@ -330,7 +376,7 @@ function parseClientSecret(
     || value.session.model !== MODEL
     || !isPlainRecord(value.session.audio)
     || !isPlainRecord(value.session.audio.output)
-    || value.session.audio.output.voice !== VOICE
+    || value.session.audio.output.voice !== expectedVoice
   ) {
     return null;
   }
@@ -500,7 +546,7 @@ export function createShrineRealtimeSessionHandler(
               },
               output: {
                 format: { rate: 24_000, type: "audio/pcm" },
-                voice: VOICE,
+                voice: CHARACTER_POLICIES[input.characterId].voice ?? VOICE,
               },
             },
             instructions: sessionInstructions(input),
@@ -522,6 +568,7 @@ export function createShrineRealtimeSessionHandler(
       secret = parseClientSecret(
         await readProviderJson(upstream, providerSignal),
         dependencies.nowSeconds(),
+        CHARACTER_POLICIES[input.characterId].voice ?? VOICE,
       );
     } catch {
       return json({ error: "voice_unavailable" }, 503);
@@ -534,7 +581,7 @@ export function createShrineRealtimeSessionHandler(
       clientSecret: secret.clientSecret,
       expiresAt: secret.expiresAt,
       model: MODEL,
-      voice: VOICE,
+      voice: CHARACTER_POLICIES[input.characterId].voice ?? VOICE,
     }, 200);
   };
 }
