@@ -463,14 +463,13 @@ for (const grant of invalidProviderGrants) {
   assert.match(upstreamBody.session.instructions, /Thai/u);
   assert.match(upstreamBody.session.instructions, /never claim supernatural certainty/iu);
 
-  // 🔴 2 ส.ค.: เพิ่มด่านที่ 4 เพดานตั๋วต่อคนต่อวัน
-  // ของเดิมคุมแค่ต่อนาที แต่ตั๋วใบหนึ่งคุยได้ 10 นาที ขอใหม่ได้ทุกนาที
-  // คนเดียวเปิดค้างทั้งวันจึงเผาเครดิตได้ไม่จำกัด (ค่าบริการคิดตามความยาวเสียงจริง)
-  assert.equal(rateLimitKeys.length, 4);
+  // 🔴 4 ส.ค.: เจ้าของสั่งถอดเพดานรายวันออก — คุยได้อิสระต่อเนื่อง ห้ามมีอะไรขัด
+  // เหลือ 3 ด่านกันบอทเท่านั้น และตั้งสูงจนคนใช้จริงไม่มีทางชน
+  assert.equal(rateLimitKeys.length, 3);
   assert.match(rateLimitKeys[0], /:ip:/u);
   assert.match(rateLimitKeys[1], /:token:[0-9a-f]{64}$/u);
   assert.match(rateLimitKeys[2], /:user:/u);
-  assert.match(rateLimitKeys[3], /:daily:/u);
+  assert.equal(rateLimitKeys.some((key) => key.includes(":daily:")), false);
   assert.equal(rateLimitKeys.some((key) => key.includes(MOBILE_BEARER)), false);
 }
 

@@ -460,7 +460,7 @@ export function createShrineRealtimeSessionHandler(
     const ipLimit = await enforceLimit(
       dependencies,
       `mobile-shrine-realtime-session:ip:${dependencies.clientIp(request)}`,
-      30,
+      600,
     );
     if (ipLimit) return ipLimit;
 
@@ -470,7 +470,7 @@ export function createShrineRealtimeSessionHandler(
     const tokenLimit = await enforceLimit(
       dependencies,
       `mobile-shrine-realtime-session:token:${sha256(bearer)}`,
-      15,
+      600,
     );
     if (tokenLimit) return tokenLimit;
 
@@ -480,18 +480,19 @@ export function createShrineRealtimeSessionHandler(
     const userLimit = await enforceLimit(
       dependencies,
       `mobile-shrine-realtime-session:user:${session.userId}`,
-      10,
+      600,
     );
     if (userLimit) return userLimit;
 
-    // เพดานรายวัน — ด่านสุดท้ายกันเผาเครดิต ต้องอยู่หลังยืนยันตัวตนแล้ว
-    const dailyLimit = await enforceLimit(
-      dependencies,
-      `mobile-shrine-realtime-session:daily:${session.userId}`,
-      DAILY_TICKETS_PER_USER,
-      ONE_DAY_MS,
-    );
-    if (dailyLimit) return dailyLimit;
+    /*
+     * 🔴 4 ส.ค. 69 — เจ้าของสั่งถอดเพดานการคุยทั้งหมด (คำสั่งเด็ดขาด)
+     * "คุยได้อิสระ ต่อเนื่อง ห้ามมีอะไรมาขัด จุดนี้คือ retention"
+     * เพดานรายวัน 24 ใบเคยเตะเจ้าของกลางวงทั้งที่ยังไม่ได้คุยสักคำ
+     * (การลองใหม่กินโควตาหมดก่อน) จึงถอดออก
+     *
+     * เหลือเฉพาะด่านกันบอทที่คนใช้จริงไม่มีทางชน (ดูค่าด้านบน)
+     * ค่าบริการคิดตามความยาวเสียงจริง — เฝ้าดูที่รายงานการใช้แทนการกั้นผู้ใช้
+     */
 
     const mediaType = request.headers
       .get("content-type")
