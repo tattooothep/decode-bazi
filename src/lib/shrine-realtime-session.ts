@@ -581,7 +581,17 @@ export function createShrineRealtimeSessionHandler(
       clientSecret: secret.clientSecret,
       expiresAt: secret.expiresAt,
       model: MODEL,
-      voice: CHARACTER_POLICIES[input.characterId].voice ?? VOICE,
+      /*
+       * 🔴 3 ส.ค. 69 (บทเรียนราคาแพง): แอพรุ่นที่ผู้ใช้ถืออยู่ตรวจฟิลด์นี้
+       * แบบตายตัวว่าต้องเป็น "marin" เท่านั้น ถ้าส่งชื่อเสียงรายองค์มา
+       * แอพจะปัดใบอนุญาตทิ้งภายใน 1 วินาที = คุยกับองค์เทพไม่ได้ทั้งวิหาร
+       *
+       * เสียงจริงที่ผู้ใช้ได้ยินถูกกำหนดไปกับตั๋วที่ผู้ให้บริการออกแล้ว
+       * (ดูบรรทัด voice: ... ในคำขอด้านบน) ฟิลด์นี้จึงคงค่าที่ทุกรุ่นรับได้
+       * ส่วนรุ่นใหม่ให้อ่าน characterVoice แทน — ถอดออกได้เมื่อทุกเครื่องอัปเดต
+       */
+      voice: VOICE,
+      characterVoice: CHARACTER_POLICIES[input.characterId].voice ?? VOICE,
     }, 200);
   };
 }

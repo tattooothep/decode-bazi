@@ -6,7 +6,8 @@ import {
 } from "../src/lib/shrine-realtime-session.ts";
 
 const MODEL = "gpt-realtime-2.1-mini";
-const VOICE = "shimmer"; // 3 ส.ค. 69: เสียงต่อองค์ — เทสหลักใช้ temple-cat = shimmer
+const VOICE_TO_PROVIDER = "shimmer"; // เสียงจริงที่ขอจากผู้ให้บริการ (แมว)
+const VOICE = "marin"; // ฟิลด์ที่ตอบกลับแอพ — ต้องคงเดิมเพื่อรุ่นเก่า
 const NOW_SECONDS = 1_900_000_000;
 const SERVER_KEY = "sk-server-only-must-not-leak";
 const MOBILE_BEARER = "mobile-session-secret";
@@ -41,7 +42,7 @@ function providerGrant(overrides: Record<string, unknown> = {}): Record<string, 
   return {
     expires_at: NOW_SECONDS + 60,
     session: {
-      audio: { output: { voice: VOICE } },
+      audio: { output: { voice: VOICE_TO_PROVIDER } },
       model: MODEL,
       type: "realtime",
     },
@@ -418,6 +419,8 @@ for (const grant of invalidProviderGrants) {
     expiresAt: NOW_SECONDS + 60,
     model: MODEL,
     voice: VOICE,
+    // 3 ส.ค. 69: ฟิลด์ใหม่สำหรับรุ่นที่รับเสียงรายองค์ได้
+    characterVoice: VOICE_TO_PROVIDER,
   });
   const publicBody = await response.text();
   assert.doesNotMatch(publicBody, new RegExp(SERVER_KEY, "u"));
@@ -456,7 +459,7 @@ for (const grant of invalidProviderGrants) {
     rate: 24_000,
     type: "audio/pcm",
   });
-  assert.equal(upstreamBody.session.audio.output.voice, VOICE);
+  assert.equal(upstreamBody.session.audio.output.voice, VOICE_TO_PROVIDER);
   assert.match(upstreamBody.session.instructions, /Thai/u);
   assert.match(upstreamBody.session.instructions, /never claim supernatural certainty/iu);
 
