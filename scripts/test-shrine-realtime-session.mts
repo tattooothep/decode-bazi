@@ -385,7 +385,8 @@ const invalidProviderGrants: readonly unknown[] = [
   providerGrant({ value: `ek_${"x".repeat(2_100)}` }),
   providerGrant({ expires_at: NOW_SECONDS }),
   providerGrant({ expires_at: NOW_SECONDS + 10 }),
-  providerGrant({ expires_at: NOW_SECONDS + 601 }),
+  // 4 ส.ค. 69: ขอบขยายเป็น +660 (เผื่อนาฬิกาคลาด) เคสนี้จึงต้องเกิน 660
+  providerGrant({ expires_at: NOW_SECONDS + 661 }),
   providerGrant({ expires_at: NOW_SECONDS + 60.5 }),
   providerGrant({ session: null }),
   providerGrant({
