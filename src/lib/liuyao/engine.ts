@@ -6,6 +6,7 @@
  */
 import { SolarTime, type SixtyCycle } from "tyme4ts";
 import najiaRaw from "./data/najia64.json";
+import { kingWenNumberOf } from "./kingwen";
 import rulesRaw from "./data/rules.json";
 
 export type NajiaLine = {
@@ -88,8 +89,13 @@ export type LiuyaoResult = {
   ok: true;
   day: { stem: string; branch: string; ganzhi: string };
   month: { branch: string; element: string; ganzhi: string };
-  ben: { name_zh: string; palace: string; palaceElement: string; binary: string; lines: LiuyaoLineView[] };
-  bian: null | { name_zh: string; palace: string; binary: string; lines: NajiaLine[] };
+  /**
+   * no = เลขกว้าตามลำดับโจวอี้ 1-64 สร้างโดยเครื่องที่ kingwen.ts ห้ามพิมพ์มือ
+   * มีไว้ให้แอพเปิดคัมภีร์เต็มต่อได้ (/api/akg/hex-deep รับเฉพาะ 1-64)
+   * 🔴 ห้ามสับสนกับช่อง position ใน najia64.json ซึ่งเป็นลำดับในวัง 1-8
+   */
+  ben: { no: number; name_zh: string; palace: string; palaceElement: string; binary: string; lines: LiuyaoLineView[] };
+  bian: null | { no: number; name_zh: string; palace: string; binary: string; lines: NajiaLine[] };
   movingIndexes: number[];
   yongshen: {
     liuqin: string;
@@ -193,8 +199,8 @@ export function castLiuyao(input: LiuyaoInput): LiuyaoResult | LiuyaoError {
     ok: true,
     day: { stem: dayStem, branch: dayBranch, ganzhi: daySc.getName() },
     month: { branch: monthBranch, element: monthElement, ganzhi: monthSc.getName() },
-    ben: { name_zh: ben.name_zh, palace: ben.palace, palaceElement: ben.palaceElement, binary, lines },
-    bian: bian ? { name_zh: bian.name_zh, palace: bian.palace, binary: bian.binary, lines: bian.lines } : null,
+    ben: { no: kingWenNumberOf(binary), name_zh: ben.name_zh, palace: ben.palace, palaceElement: ben.palaceElement, binary, lines },
+    bian: bian ? { no: kingWenNumberOf(bian.binary), name_zh: bian.name_zh, palace: bian.palace, binary: bian.binary, lines: bian.lines } : null,
     movingIndexes,
     yongshen: {
       liuqin: topic.liuqin,
