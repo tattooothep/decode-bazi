@@ -64,3 +64,8 @@ reports/
 
 # บัญชีทดสอบ i18n gate
 .gate-account.json
+
+# ผังดวงจริงของผู้ใช้สำหรับด่านห้องเสียง — ห้ามเข้า git เด็ดขาด
+# (ตัวอย่างที่ commit ได้คือผัง "สังเคราะห์" จาก scripts/make-sifu-voice-fixture.mjs เท่านั้น)
+scripts/fixtures/*real*
+scripts/fixtures/*private*

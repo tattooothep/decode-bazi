@@ -1163,8 +1163,19 @@ function sifuTimingLog(stage: string, data: SifuTimingBase & Record<string, unkn
   );
 }
 
+/**
+ * ⚠️ 5 ส.ค. 69: ต้องถอด "[" และ "]" ออกจากชื่อด้วย
+ * chart-packet ใส่ป้าย `[<ชื่อ>·<uuid8>] ` นำหน้าบรรทัดล็อก — ถ้าชื่อผู้ใช้มี "] " ปนอยู่
+ * (เช่นชื่อเล่น "อา] ก๋ง" ที่กรอกเองได้จริง) ตัวถอดป้ายฝั่งห้องเสียงจะตัดผิดตำแหน่ง
+ * → บัตรผังพัง หมวดแกนหาย บรรทัดกติกาหายเงียบ · แทนด้วยช่องว่างแล้วยุบตามเดิม
+ */
 function promptSafe(raw: unknown, fallback = "—"): string {
-  const s = String(raw ?? "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+  const s = String(raw ?? "")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/[[\]]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
   if (!s) return fallback;
   return s
     .replace(/FACT LOCK:/gi, "FACT_LOCK:")
@@ -2631,6 +2642,22 @@ export async function POST(req: Request) {
     const pillarLockFromCtx = mode !== "intro" ? firstContextLine(ctx, "PILLAR LOCK") : null;
     if (mode !== "intro" && (ctx.startsWith("(ไม่") || !expectedDMFromCtx || !factLockFromCtx || !pillarLockFromCtx)) {
       return NextResponse.json({ error: "profile_context_unlocked" }, { status: ctx.startsWith("(ไม่") ? 404 : 500 });
+    }
+    /* 🎙 promptOnly (additive · 4 ส.ค. 69 · ห้องคุยสดซินแส): internal trusted ขอ
+     * "prompt+packet ชุดเดียวกับ Q&A เป๊ะ" ไปเป็น instructions ของ session เสียง
+     * — ใช้ buildPrompt ตัวเดียวกับด้านล่างทุกประการ · ไม่จองยาม ไม่เรียกโมเดล ไม่แตะ cache
+     * — guard เดียวกับ fusion (header+token) · ไม่มี promptOnly = ข้าม branch ทั้งก้อน (flow เดิม byte-identical) */
+    if (isFusionInternalCall && body.promptOnly === true) {
+      const promptOnlyKnowledge: KnowledgeMetaOut = {};
+      const promptOnlyText = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel), model: sifuModel, knowledgeOut: promptOnlyKnowledge });
+      return NextResponse.json({
+        expected_dm: expectedDMFromCtx,
+        knowledge: promptOnlyKnowledge.current || null,
+        model: sifuModel,
+        prompt: promptOnlyText,
+        prompt_chars: promptOnlyText.length,
+        prompt_only: true,
+      });
     }
     if (!isFusionInternalCall && session?.userId) {
       const rsv = await reserveHourForUser(session.userId, "sifu_master");

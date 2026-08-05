@@ -2,10 +2,31 @@ import { createHash } from "node:crypto";
 
 const OPENAI_REALTIME_CLIENT_SECRETS_URL =
   "https://api.openai.com/v1/realtime/client_secrets";
-const MODEL = "gpt-realtime-2.1-mini";
+const MODEL = "gpt-realtime-2.1";
+/* แอพรุ่นที่ปล่อยแล้วตรวจชื่อรุ่นแบบตรงตัว — ตอบชื่อที่แอพรู้จัก
+   ไม่งั้นแอพทิ้งตั๋วแล้ววนขอใหม่ (กินยามฟรีทุกรอบ) */
+const CLIENT_MODEL = "gpt-realtime-2.1-mini";
 const VOICE = "marin";
 const MAX_REQUEST_BYTES = 4 * 1024;
 const MAX_PROVIDER_RESPONSE_BYTES = 16 * 1024;
+/* เพดานตายตัวกันของหลุด ต่อให้คำสั่งโตผิดปกติ — คำตอบเกินนี้ = ทิ้งเสมอ */
+const MAX_PROVIDER_RESPONSE_CEILING_BYTES = 2 * 1024 * 1024;
+/**
+ * 🔴 5 ส.ค. 69 — ระเบิดลูกเดียวกับฝั่งซินแส (แก้คู่กัน)
+ *
+ * ผู้ให้บริการสะท้อน instructions ทั้งก้อนกลับมาในคำตอบ ของเดิมตรึงเพดานไว้ 16KB
+ * วันไหนคำสั่งองค์เทพยาวขึ้น คำตอบก็ทะลุ 16KB → readProviderJson โยนทิ้งเอง → 503
+ * ทั้งที่ฝั่งผู้ให้บริการตอบ 200 ปกติ
+ *
+ * วัดจริง 5 ส.ค. 69: คำตอบ = ขนาด instructions + ~1.8KB คงที่ (ทดสอบ 2KB–144KB)
+ * เผื่อ 64KB และยังมีเพดานตายตัว 2MB ปิดท้ายเสมอ
+ */
+function providerResponseBudget(instructions: string): number {
+  return Math.min(
+    Buffer.byteLength(instructions, "utf8") + 64 * 1024,
+    MAX_PROVIDER_RESPONSE_CEILING_BYTES,
+  );
+}
 const MAX_CONTEXT_CODE_LENGTH = 96;
 const CONVERSATION_ID = /^cnv_[0-9a-f]{32}$/u;
 const CONTEXT_CODE = /^main-hall\.[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*$/u;
@@ -409,13 +430,13 @@ function parseClientSecret(
   return { clientSecret, expiresAt };
 }
 
-async function readProviderJson(response: Response, signal: AbortSignal): Promise<unknown> {
+async function readProviderJson(response: Response, signal: AbortSignal, maxResponseBytes: number = MAX_PROVIDER_RESPONSE_BYTES): Promise<unknown> {
   const contentLength = response.headers.get("content-length");
   if (contentLength !== null) {
     const declaredLength = Number(contentLength);
     if (
       Number.isFinite(declaredLength)
-      && declaredLength > MAX_PROVIDER_RESPONSE_BYTES
+      && declaredLength > maxResponseBytes
     ) {
       void response.body?.cancel("provider_response_too_large").catch(() => undefined);
       throw new Error("provider_response_too_large");
@@ -442,7 +463,7 @@ async function readProviderJson(response: Response, signal: AbortSignal): Promis
       const { done, value } = await Promise.race([reader.read(), aborted]);
       if (done) break;
       bytesRead += value.byteLength;
-      if (bytesRead > MAX_PROVIDER_RESPONSE_BYTES) {
+      if (bytesRead > maxResponseBytes) {
         void reader.cancel("provider_response_too_large").catch(() => undefined);
         throw new Error("provider_response_too_large");
       }
@@ -458,6 +479,34 @@ async function readProviderJson(response: Response, signal: AbortSignal): Promis
     signal.removeEventListener("abort", abort);
     reader.releaseLock();
   }
+}
+
+/**
+ * 🔴 5 ส.ค. 69 — บันทึกแยกเหตุของเส้น 503 (ชุดเดียวกับฝั่งซินแส)
+ * บันทึกเฉพาะตัวเลขและรหัสเหตุ — ห้ามมีเนื้อคำสั่ง ห้ามมีคีย์ ห้ามมีตัวตั๋ว
+ */
+type ShrineVoiceFailureReason =
+  | "provider_rejected"
+  | "provider_response_too_large"
+  | "provider_timeout"
+  | "client_aborted"
+  | "provider_fetch_failed"
+  | "secret_malformed"
+  | "instructions_unavailable";
+
+function logShrineVoiceFailure(
+  reason: ShrineVoiceFailureReason,
+  detail: Readonly<{
+    /** hash ไม่ใช่ uuid ตรง ๆ — ตามรอยเคสได้ แต่ล็อกไม่กลายเป็นบัญชีรายชื่อผู้ใช้ */
+    user: string;
+    characterId: string;
+    instructionChars: number;
+    instructionBytes: number;
+    responseBudgetBytes: number;
+    providerStatus?: number;
+  }>,
+): void {
+  console.error("[shrine-realtime] voice_unavailable", JSON.stringify({ reason, ...detail }));
 }
 
 export function createShrineRealtimeSessionHandler(
@@ -531,6 +580,30 @@ export function createShrineRealtimeSessionHandler(
     const providerTimeoutMs = Number.isFinite(configuredTimeoutMs)
       ? Math.max(1, Math.min(30_000, Math.floor(configuredTimeoutMs)))
       : 10_000;
+    /* 5 ส.ค. 69: ประกอบคำสั่งครั้งเดียว แล้วใช้ก้อนเดียวกันทั้งตอนส่งและตอนตั้งเพดานคำตอบ
+     * (ก่อนหน้านี้บรรทัดเพดานอ้าง instructions ที่ไม่มีอยู่จริงในขอบเขตนี้)
+     * ต้องประกอบ "ก่อน" ตั้งนาฬิกาจับเวลา — ถ้าโยนตรงนี้แล้วนาฬิกาเดินอยู่ จะค้างทิ้งไว้ */
+    let instructions: string;
+    try {
+      instructions = sessionInstructions(input);
+    } catch {
+      logShrineVoiceFailure("instructions_unavailable", {
+        characterId: input.characterId,
+        instructionBytes: 0,
+        instructionChars: 0,
+        responseBudgetBytes: 0,
+        user: sha256(session.userId).slice(0, 16),
+      });
+      return json({ error: "voice_unavailable" }, 503);
+    }
+    const responseBudgetBytes = providerResponseBudget(instructions);
+    const failureDetail = {
+      characterId: input.characterId,
+      instructionBytes: Buffer.byteLength(instructions, "utf8"),
+      instructionChars: instructions.length,
+      responseBudgetBytes,
+      user: sha256(session.userId).slice(0, 16),
+    };
     const timeoutController = new AbortController();
     const timeout = setTimeout(() => timeoutController.abort(), providerTimeoutMs);
     let secret: Readonly<{ clientSecret: string; expiresAt: number }> | null;
@@ -545,16 +618,22 @@ export function createShrineRealtimeSessionHandler(
             audio: {
               input: {
                 format: { rate: 24_000, type: "audio/pcm" },
+                /* ตัวลดเสียงรบกวน/เสียงสะท้อนฝั่งผู้ให้บริการ (ทดสอบยิงจริงผ่าน 200)
+                 * แก้อาการซินแสได้ยินเสียงตัวเองย้อนเข้าไมค์แล้วตัดบทตัวเอง
+                 * โดยที่ผู้ใช้ยังพูดแทรกได้ตามปกติ */
+                noise_reduction: { type: "near_field" },
                 transcription: {
                   language: transcriptionLanguage(input.locale),
                   model: "gpt-4o-mini-transcribe",
                 },
                 turn_detection: {
                   create_response: true,
+                  /* เหตุผลเดียวกับฝั่งซินแส: กันเสียงองค์เทพย้อนเข้าไมค์
+                   * แล้วตัดบทตัวเองกลางประโยค */
                   interrupt_response: true,
                   prefix_padding_ms: 300,
-                  silence_duration_ms: 500,
-                  threshold: 0.5,
+                  silence_duration_ms: 700,
+                  threshold: 0.7,
                   type: "server_vad",
                 },
               },
@@ -563,7 +642,7 @@ export function createShrineRealtimeSessionHandler(
                 voice: CHARACTER_POLICIES[input.characterId].voice ?? VOICE,
               },
             },
-            instructions: sessionInstructions(input),
+            instructions,
             model: MODEL,
             output_modalities: ["audio"],
             type: "realtime",
@@ -578,23 +657,44 @@ export function createShrineRealtimeSessionHandler(
         method: "POST",
         signal: providerSignal,
       });
-      if (!upstream.ok) return json({ error: "voice_unavailable" }, 503);
+      if (!upstream.ok) {
+        void upstream.body?.cancel("provider_error").catch(() => undefined);
+        logShrineVoiceFailure("provider_rejected", {
+          ...failureDetail,
+          providerStatus: upstream.status,
+        });
+        return json({ error: "voice_unavailable" }, 503);
+      }
       secret = parseClientSecret(
-        await readProviderJson(upstream, providerSignal),
+        await readProviderJson(upstream, providerSignal, responseBudgetBytes),
         dependencies.nowSeconds(),
         CHARACTER_POLICIES[input.characterId].voice ?? VOICE,
       );
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      logShrineVoiceFailure(
+        message === "provider_response_too_large"
+          ? "provider_response_too_large"
+          : timeoutController.signal.aborted
+            ? "provider_timeout"
+            : request.signal.aborted
+              ? "client_aborted"
+              : "provider_fetch_failed",
+        failureDetail,
+      );
       return json({ error: "voice_unavailable" }, 503);
     } finally {
       clearTimeout(timeout);
     }
-    if (!secret) return json({ error: "voice_unavailable" }, 503);
+    if (!secret) {
+      logShrineVoiceFailure("secret_malformed", failureDetail);
+      return json({ error: "voice_unavailable" }, 503);
+    }
 
     return json({
       clientSecret: secret.clientSecret,
       expiresAt: secret.expiresAt,
-      model: MODEL,
+      model: CLIENT_MODEL,
       /*
        * 🔴 3 ส.ค. 69 (บทเรียนราคาแพง): แอพรุ่นที่ผู้ใช้ถืออยู่ตรวจฟิลด์นี้
        * แบบตายตัวว่าต้องเป็น "marin" เท่านั้น ถ้าส่งชื่อเสียงรายองค์มา
