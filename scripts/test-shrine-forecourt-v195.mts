@@ -579,6 +579,56 @@ const exactResults = await Promise.all([
 assert.deepEqual(exactResults.map((row) => row.replayed).sort(), [false, true]);
 assert.equal(exactCommitDb.commits.length, 1);
 
+// Exact transaction replays preserve their outcome identity, but their state
+// projection must be reconciled to the current cycle. A stored prior-day
+// projection must never roll today's quota/blessing state backwards.
+const priorCycleCommit = exactResults[0];
+exactCommitDb.clock = new Date(
+  new Date(priorCycleCommit.nextResetAt).getTime() + 1,
+);
+const currentCycleState = await getForecourtStateWithDatabase(exactCommitDb, U1);
+assert.notEqual(
+  currentCycleState.projection.localDate,
+  priorCycleCommit.projection.localDate,
+);
+assert.equal(currentCycleState.projection.throwsUsed, 0);
+assert.equal(currentCycleState.projection.blessingClaimed, false);
+
+const commitReplayAfterRollover = await commitForecourtThrowWithDatabase(
+  exactCommitDb,
+  U1,
+  exactInput,
+  secret,
+);
+assert.equal(commitReplayAfterRollover.replayed, true);
+assert.equal(commitReplayAfterRollover.throwId, priorCycleCommit.throwId);
+assert.equal(commitReplayAfterRollover.impactKind, priorCycleCommit.impactKind);
+assert.deepEqual(commitReplayAfterRollover.blessing, priorCycleCommit.blessing);
+assert.deepEqual(
+  commitReplayAfterRollover.projection,
+  currentCycleState.projection,
+);
+assert.equal(commitReplayAfterRollover.nextResetAt, currentCycleState.nextResetAt);
+assert.equal(exactCommitDb.commits.length, 1, "commit replay remains one durable write");
+
+const prepareReplayAfterRollover = await prepareForecourtThrowWithDatabase(
+  exactCommitDb,
+  U1,
+  parseForecourtPrepareInput(rawPrepare(41)),
+  secret,
+);
+assert.equal(prepareReplayAfterRollover.replayed, true);
+assert.equal(prepareReplayAfterRollover.throwId, exactPrepared.throwId);
+assert.equal(prepareReplayAfterRollover.ticket, exactPrepared.ticket);
+assert.equal(prepareReplayAfterRollover.ordinal, exactPrepared.ordinal);
+assert.deepEqual(prepareReplayAfterRollover.projection, currentCycleState.projection);
+assert.equal(prepareReplayAfterRollover.nextResetAt, currentCycleState.nextResetAt);
+assert.equal(
+  exactCommitDb.authorizations.length,
+  1,
+  "prepare replay remains one durable authorization",
+);
+
 // Exact committed replay remains available after ticket expiry; new expired commit is rejected.
 commitDb.clock = new Date("2026-08-09T05:00:00.000Z");
 assert.equal(

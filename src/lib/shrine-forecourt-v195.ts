@@ -756,7 +756,21 @@ export async function prepareForecourtThrowWithDatabase(
     const replay = await tx.authorizationByPrepareKey(userId, input.idempotencyKey);
     if (replay !== null) {
       if (replay.requestHash !== requestHash) throw new ForecourtIdempotencyConflict();
-      return Object.freeze({ ...replay.resultJson, replayed: true });
+      const { cycle, now } = await activeCycle(tx, userId);
+      await reconcileRecovery(tx, userId, cycle, now);
+      const currentState = stateResult(
+        cycle,
+        projection(cycle, await tx.counts(userId, cycle.id)),
+      );
+      // The transaction identity stays exact (throw/ticket/ordinal), while the
+      // state projection is always reconciled at replay time. Returning the
+      // stored projection here can roll a client back to an earlier throw or
+      // even to the previous daily cycle.
+      return Object.freeze({
+        ...replay.resultJson,
+        ...currentState,
+        replayed: true,
+      });
     }
     const { cycle, now } = await activeCycle(tx, userId);
     await reconcileRecovery(tx, userId, cycle, now);
@@ -869,7 +883,19 @@ export async function commitForecourtThrowWithDatabase(
     const replay = await tx.commitByKey(userId, input.idempotencyKey);
     if (replay !== null) {
       if (replay.requestHash !== requestHash) throw new ForecourtIdempotencyConflict();
-      return Object.freeze({ ...replay.resultJson, replayed: true });
+      const { cycle, now } = await activeCycle(tx, userId);
+      await reconcileRecovery(tx, userId, cycle, now);
+      const currentState = stateResult(
+        cycle,
+        projection(cycle, await tx.counts(userId, cycle.id)),
+      );
+      // Preserve the committed outcome/blessing, but never let an exact
+      // idempotent replay overwrite a newer authoritative projection.
+      return Object.freeze({
+        ...replay.resultJson,
+        ...currentState,
+        replayed: true,
+      });
     }
     if (await tx.commitByThrow(userId, input.throwId) !== null) {
       throw new ForecourtThrowConflict();
