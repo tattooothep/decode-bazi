@@ -5,7 +5,8 @@ import {
   type ShrineRealtimeSessionDependencies,
 } from "../src/lib/shrine-realtime-session.ts";
 
-const MODEL = "gpt-realtime-2.1-mini";
+const PROVIDER_MODEL = "gpt-realtime-2.1";
+const CLIENT_MODEL = "gpt-realtime-2.1-mini";
 const VOICE_TO_PROVIDER = "shimmer"; // เสียงจริงที่ขอจากผู้ให้บริการ (แมว)
 const VOICE = "marin"; // ฟิลด์ที่ตอบกลับแอพ — ต้องคงเดิมเพื่อรุ่นเก่า
 const NOW_SECONDS = 1_900_000_000;
@@ -43,7 +44,7 @@ function providerGrant(overrides: Record<string, unknown> = {}): Record<string, 
     expires_at: NOW_SECONDS + 60,
     session: {
       audio: { output: { voice: VOICE_TO_PROVIDER } },
-      model: MODEL,
+      model: PROVIDER_MODEL,
       type: "realtime",
     },
     value: "ek_ephemeral_client_only",
@@ -89,7 +90,7 @@ function fixture(overrides: Partial<ShrineRealtimeSessionDependencies> = {}) {
       return Response.json(providerGrant({
         session: {
           audio: { output: { voice: requested } },
-          model: MODEL,
+          model: PROVIDER_MODEL,
           type: "realtime",
         },
       }));
@@ -359,7 +360,10 @@ for (const fetcher of [
     },
     pull: (controller) => {
       pulls += 1;
-      if (pulls <= 5) {
+      // The response cap now includes 64 KiB of headroom above the
+      // server-owned instructions, so cross that computed boundary rather
+      // than the retired fixed 16 KiB limit.
+      if (pulls <= 17) {
         controller.enqueue(new Uint8Array(4_096).fill(0x61));
       } else {
         controller.close();
@@ -374,7 +378,7 @@ for (const fetcher of [
   });
   await expectJson(await handler(request()), 503, { error: "voice_unavailable" });
   assert.equal(bodyCancelled, true);
-  assert.equal(pulls, 5);
+  assert.equal(pulls, 17);
 }
 
 // Malformed, expired, over-long, wrong-model, and wrong-voice grants are rejected.
@@ -399,7 +403,7 @@ const invalidProviderGrants: readonly unknown[] = [
   providerGrant({
     session: {
       audio: { output: { voice: "alloy" } },
-      model: MODEL,
+      model: PROVIDER_MODEL,
       type: "realtime",
     },
   }),
@@ -418,7 +422,7 @@ for (const grant of invalidProviderGrants) {
   await expectJson(response.clone(), 200, {
     clientSecret: "ek_ephemeral_client_only",
     expiresAt: NOW_SECONDS + 60,
-    model: MODEL,
+    model: CLIENT_MODEL,
     voice: VOICE,
     // 3 ส.ค. 69: ฟิลด์ใหม่สำหรับรุ่นที่รับเสียงรายองค์ได้
     characterVoice: VOICE_TO_PROVIDER,
@@ -440,7 +444,7 @@ for (const grant of invalidProviderGrants) {
 
   const upstreamBody = JSON.parse(String(call.init?.body));
   assert.equal(upstreamBody.session.type, "realtime");
-  assert.equal(upstreamBody.session.model, MODEL);
+  assert.equal(upstreamBody.session.model, PROVIDER_MODEL);
   assert.deepEqual(upstreamBody.session.output_modalities, ["audio"]);
   assert.deepEqual(upstreamBody.session.audio.input.format, {
     rate: 24_000,
@@ -448,12 +452,15 @@ for (const grant of invalidProviderGrants) {
   });
   assert.equal(upstreamBody.session.audio.input.transcription.model, "gpt-4o-mini-transcribe");
   assert.equal(upstreamBody.session.audio.input.transcription.language, "th");
+  assert.deepEqual(upstreamBody.session.audio.input.noise_reduction, {
+    type: "near_field",
+  });
   assert.deepEqual(upstreamBody.session.audio.input.turn_detection, {
     create_response: true,
     interrupt_response: true,
     prefix_padding_ms: 300,
-    silence_duration_ms: 500,
-    threshold: 0.5,
+    silence_duration_ms: 700,
+    threshold: 0.7,
     type: "server_vad",
   });
   assert.deepEqual(upstreamBody.session.audio.output.format, {

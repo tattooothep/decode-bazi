@@ -11,12 +11,14 @@ import { Pool } from "pg";
 const rollback = process.argv.includes("--rollback");
 const files = rollback
   ? [
+      "20260809_shrine_jiaobei_draw_identity_rollback.sql",
       "20260809_shrine_hourkey_ritual_results_rollback.sql",
       "20260807_shrine_ritual_ledger_rollback.sql",
     ]
   : [
       "20260807_shrine_ritual_ledger.sql",
       "20260809_shrine_hourkey_ritual_results.sql",
+      "20260809_shrine_jiaobei_draw_identity.sql",
     ];
 
 const pool = new Pool({
@@ -63,6 +65,18 @@ async function main() {
     throw new Error(
       `shrine_ritual_migration_verification_failed:${actualTables.join(",")}`,
     );
+  }
+  if (!rollback) {
+    const drawIdentity = await pool.query<{ column_name: string }>(
+      `SELECT column_name
+         FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'shrine_jiaobei_casts'
+          AND column_name = 'qian_draw_id'`,
+    );
+    if (drawIdentity.rowCount !== 1) {
+      throw new Error("shrine_jiaobei_draw_identity_migration_verification_failed");
+    }
   }
   console.log(
     rollback ? "ถอนแล้ว เหลือ:" : "ลงแล้ว มีตาราง:",

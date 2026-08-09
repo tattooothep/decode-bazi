@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS shrine_jiaobei_casts (
   purpose text NOT NULL DEFAULT 'general'
     CHECK (purpose IN ('general','qian_confirm','vow')),
   qian_slip_no int CHECK (qian_slip_no BETWEEN 1 AND 60),
+  qian_draw_id varchar(39)
+    CHECK (qian_draw_id IS NULL OR qian_draw_id ~ '^ritual_[0-9a-f]{32}$'),
   attempt_no int NOT NULL CHECK (attempt_no BETWEEN 1 AND 3),
   sequence_no int NOT NULL DEFAULT 1 CHECK (sequence_no BETWEEN 1 AND 3),
   set_no int NOT NULL DEFAULT 1 CHECK (set_no BETWEEN 1 AND 5),
@@ -50,5 +52,8 @@ CREATE INDEX IF NOT EXISTS idx_jiaobei_casts_user_time
 CREATE INDEX IF NOT EXISTS idx_jiaobei_casts_qian
   ON shrine_jiaobei_casts(user_id, qian_slip_no, cast_at DESC)
   WHERE purpose = 'qian_confirm';
+CREATE INDEX IF NOT EXISTS idx_jiaobei_casts_qian_draw
+  ON shrine_jiaobei_casts(user_id, qian_draw_id, cast_at)
+  WHERE purpose = 'qian_confirm' AND qian_draw_id IS NOT NULL;
 
 REVOKE UPDATE, DELETE ON shrine_jiaobei_casts FROM PUBLIC;

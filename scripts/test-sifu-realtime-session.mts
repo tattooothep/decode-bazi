@@ -14,6 +14,7 @@ import {
 } from "../src/lib/sifu-realtime-session.ts";
 
 const MODEL = "gpt-realtime-2.1";
+const CLIENT_MODEL = "gpt-realtime-2.1-mini";
 const VOICE = "ash";
 const NOW_SECONDS = 1_900_000_000;
 const SERVER_KEY = "sk-server-only-must-not-leak";
@@ -262,7 +263,7 @@ for (const fetcher of [
   assert.equal(refundCalls.length, 1);
 }
 
-// สำเร็จ: instructions = prompt ชุดจริง + กติกาเสียงต่อท้ายเท่านั้น · ตัดยามถูกอัตรา
+// สำเร็จ: กติกาเสียงต้องนำหน้า prompt ชุดจริง · ตัดยามถูกอัตรา
 {
   const { chargeCalls, fetchCalls, handler, promptCalls, rateLimitKeys, refundCalls } = fixture();
   const response = await handler(request());
@@ -272,7 +273,9 @@ for (const fetcher of [
     expiresAt: NOW_SECONDS + 60,
     minutes: 3,
     mode: "direct",
-    model: MODEL,
+    model: CLIENT_MODEL,
+    providerModel: MODEL,
+    ratePerMinuteYam: 2,
     voice: VOICE,
     yamSpent: 6,
   });
@@ -296,11 +299,17 @@ for (const fetcher of [
   assert.deepEqual(upstreamBody.session.output_modalities, ["audio"]);
   assert.equal(upstreamBody.session.audio.output.voice, VOICE);
   assert.equal(upstreamBody.session.audio.input.transcription.language, "th");
-  // 🔴 หัวใจของงานนี้: instructions ต้องเป็น prompt ชุดจริง "ทั้งก้อน ไม่ตัดสักตัว" + กติกาเสียงต่อท้าย
+  assert.equal(upstreamBody.session.audio.input.transcription.model, "gpt-4o-transcribe");
+  assert.match(upstreamBody.session.audio.input.transcription.prompt, /ภาษาไทย/u);
+  assert.equal(upstreamBody.session.audio.input.turn_detection.interrupt_response, false);
+  assert.equal(upstreamBody.session.audio.input.turn_detection.silence_duration_ms, 1_100);
+  // กติกาความชัดเจนต้องอยู่หัว instructions และ prompt จริงต้องอยู่ครบทั้งก้อน
   assert.equal(
     upstreamBody.session.instructions,
-    REAL_PROMPT_SAMPLE + "\n" + sifuVoiceDirectives("th"),
+    sifuVoiceDirectives("th") + "\n" + REAL_PROMPT_SAMPLE,
   );
+  assert.match(upstreamBody.session.instructions, /ยังไม่ได้ถาม/u);
+  assert.match(upstreamBody.session.instructions, /ห้ามทำนาย ห้ามเดาเจตนา/u);
   assert.match(upstreamBody.session.instructions, /⟦ID⟧日干=己⟧/u);
   assert.match(upstreamBody.session.instructions, /bazi-interaction-master/u);
   assert.match(upstreamBody.session.instructions, /FACT LOCK/u);
@@ -326,8 +335,8 @@ for (const fetcher of [
   assert.match(upstreamBody.session.instructions, /Chinese/u);
 }
 
-// prompt ชุดจริงใหญ่เกินเพดานผู้ให้บริการ → โหมด relay:
-// instructions = บรรทัด lock คัดตรงจาก packet + บังคับ tool ask_sifu · ห้ามยัด prompt ที่ถูกตัด
+// prompt ชุดจริงใหญ่เกินเพดานผู้ให้บริการ → ใช้บัตรดวงย่อ แต่ต้องรายงาน direct
+// เพราะตั๋วไม่ประกาศ ask_sifu tool (ห้ามหลอกแอพให้รอ relay ที่ไม่มีอยู่จริง)
 {
   const { chargeCalls, fetchCalls, handler } = fixture({
     buildSifuVoicePrompt: async () => ({
@@ -340,23 +349,21 @@ for (const fetcher of [
   const response = await handler(request());
   assert.equal(response.status, 200);
   const body = (await response.json()) as Record<string, unknown>;
-  assert.equal(body.mode, "relay");
-  assert.deepEqual(body.relay, {
-    endpoint: "/api/mobile/v1/sifu/chat",
-    profileId: PROFILE_ID,
-    tool: "ask_sifu",
-  });
+  assert.equal(body.mode, "direct");
+  assert.equal(body.model, CLIENT_MODEL);
+  assert.equal(body.providerModel, MODEL);
+  assert.equal("relay" in body, false);
   assert.deepEqual(chargeCalls, [{ amount: 6, minutes: 3, userId: "usr_9" }]);
   const upstreamBody = JSON.parse(String(fetchCalls[0].init?.body));
   const instructions = String(upstreamBody.session.instructions);
-  assert.ok(instructions.length <= PROVIDER_INSTRUCTIONS_MAX_CHARS, "relay instructions ต้องไม่เกินเพดาน");
+  assert.ok(instructions.length <= PROVIDER_INSTRUCTIONS_MAX_CHARS, "compact instructions ต้องไม่เกินเพดาน");
   assert.match(instructions, /⟦ID⟧日干=己⟧/u);
   assert.match(instructions, /FACT LOCK: Day Master = 己/u); // บรรทัดจริงจาก packet ไม่ใช่แต่งใหม่
   assert.match(instructions, /PILLAR LOCK: 甲子 丙子 己亥 庚午/u);
-  assert.match(instructions, /ห้ามวิเคราะห์ดวงเอง/u);
-  assert.equal(upstreamBody.session.tools.length, 1);
-  assert.equal(upstreamBody.session.tools[0].name, "ask_sifu");
-  assert.equal(upstreamBody.session.tool_choice, "auto");
+  assert.match(instructions, /ยังไม่ได้ถาม/u);
+  assert.match(instructions, /ห้ามทำนายหรือเดาเจตนา/u);
+  assert.equal("tools" in upstreamBody.session, false);
+  assert.equal("tool_choice" in upstreamBody.session, false);
   assert.equal(
     instructions,
     buildRelayInstructions({ expectedDm: "己", locale: "th", prompt: OVERSIZE_PROMPT_SAMPLE }),

@@ -10,6 +10,7 @@
  */
 import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import {
   QIAN_DRAW_ALGO,
   QIAN_PERMIT_SET_CAP,
@@ -31,7 +32,11 @@ import {
   localDayString,
   parseStrikeInput,
 } from "../src/lib/shrine-ritual-strike";
-import { deriveJiaobeiOutcome } from "../src/lib/shrine-jiaobei";
+import {
+  deriveJiaobeiOutcome,
+  deriveJiaobeiReplayState,
+  parseJiaobeiCastInput,
+} from "../src/lib/shrine-jiaobei";
 
 let passed = 0;
 function ok(label: string) {
@@ -118,6 +123,26 @@ function testPermitStateMachine() {
   assert.equal(capped.capReached, true);
   assert.equal(capped.granted, false);
   ok(`ครบ ${QIAN_PERMIT_SET_CAP} ชุดแล้วมีทางลง ไม่วนไม่รู้จบ`);
+
+  const replayedThirdSheng = deriveJiaobeiReplayState({
+    attempt_no: 1,
+    outcome: "sheng",
+    purpose: "qian_confirm",
+    sequence_no: 3,
+    set_no: 2,
+  });
+  assert.equal(replayedThirdSheng.confirmed, true);
+  assert.equal(replayedThirdSheng.consecutiveSheng, 3);
+  assert.equal(replayedThirdSheng.nextSetNo, 2);
+  const replayedStanding = deriveJiaobeiReplayState({
+    attempt_no: 2,
+    outcome: "li",
+    purpose: "general",
+    sequence_no: 1,
+    set_no: 1,
+  });
+  assert.equal(replayedStanding.attemptsLeft, 2);
+  ok("ยิงซ้ำกุญแจจอกเดิมคืนสถานะยืนยัน/จำนวนครั้งครบเหมือนผลแรก");
 }
 
 /* ─────────────── ส่วน ก3: ด่านกรองข้อมูลเข้า ─────────────── */
@@ -159,6 +184,25 @@ function testInputGuards() {
   expectReject(() => parseQianDrawInput({ ...goodDraw, idempotency_key: `qianpermit_${randomBytes(16).toString("hex")}` }), "ใช้กุญแจของขั้นขออนุญาตมาจับใบ");
   ok("ขั้นจับใบใช้กุญแจข้ามขั้นไม่ได้");
 
+  const qianDrawId = `ritual_${randomBytes(16).toString("hex")}`;
+  const goodJiaobei = {
+    client_nonce: randomBytes(12).toString("hex"),
+    deity_id: "guanyin",
+    idempotency_key: `jiaobei_${randomBytes(16).toString("hex")}`,
+    purpose: "qian_confirm",
+    qian_draw_id: qianDrawId,
+    qian_slip_no: 7,
+    question: "ยืนยันใบเซียมซีที่ 7",
+    topic_key: "general",
+    tz_offset_minutes: 420,
+  };
+  assert.equal(parseJiaobeiCastInput(goodJiaobei).qianDrawId, qianDrawId);
+  expectReject(
+    () => parseJiaobeiCastInput({ ...goodJiaobei, qian_draw_id: "ritual_wrong" }),
+    "รหัสการจับใบผิดรูปแบบ",
+  );
+  ok("ยืนยันเซียมซีรับ draw identity ที่ตรวจรูปแบบแล้ว");
+
   const goodStrike = {
     ritual: "bell",
     strikes: 12,
@@ -175,6 +219,34 @@ function testInputGuards() {
   assert.equal(localDayString(new Date("2026-08-07T16:30:00Z"), 420), "2026-08-07");
   assert.equal(localDayString(new Date("2026-08-07T17:30:00Z"), 420), "2026-08-08");
   ok("วันท้องถิ่นตัดตามเขตเวลาผู้ใช้ ไม่ตัดตามเวลาเครื่อง");
+}
+
+function testJiaobeiDrawIdentityContract() {
+  const source = readFileSync(
+    new URL("../src/lib/shrine-jiaobei.ts", import.meta.url),
+    "utf8",
+  );
+  const migration = readFileSync(
+    new URL("../migrations/20260809_shrine_jiaobei_draw_identity.sql", import.meta.url),
+    "utf8",
+  );
+  const runner = readFileSync(
+    new URL("./apply-shrine-ritual-migration.mts", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /ritual_id = 'fortune-sticks'/u,
+    "backend must validate the cited draw against the authoritative ledger");
+  assert.match(source, /qian_draw_id = \$6/u,
+    "new confirmation history must be grouped by draw ID");
+  assert.match(source, /qian_draw_id IS NULL[\s\S]*qian_slip_no = \$4/u,
+    "legacy NULL draws must remain isolated from V194 draw-scoped rows");
+  assert.match(source, /jiaobei_idempotency_conflict/u,
+    "reusing one cast key across draws must fail closed");
+  assert.match(migration, /FOREIGN KEY \(user_id, qian_draw_id\)/u,
+    "draw ownership must be enforced by the database");
+  assert.match(runner, /20260809_shrine_jiaobei_draw_identity\.sql/u,
+    "the production migration runner must apply draw identity");
+  ok("ประวัติยืนยันใบแยกตาม draw ID · ตรวจเจ้าของ/เลขใบ · legacy ไม่ปน");
 }
 
 /* ─────────────── ส่วน ก4: ครบ 3 ภาษาทุกข้อความ ─────────────── */
@@ -434,6 +506,7 @@ async function main() {
   testSlipDerivation();
   testPermitStateMachine();
   testInputGuards();
+  testJiaobeiDrawIdentityContract();
   testThreeLanguages();
   testCanon();
   testFaceConsistency();
