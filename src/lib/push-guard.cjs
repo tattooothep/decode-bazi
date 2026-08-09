@@ -26,9 +26,15 @@
  * (ฝั่งเว็บทำถูกอยู่แล้ว ค่าเริ่มต้นเป็นปิด — ฝั่งมือถือกลับกัน)
  */
 const DEFAULTS = Object.freeze({
+  security_enabled: true,
+  saved_date_enabled: false,
   yam_enabled: false,
   auspicious_enabled: false,
   daily_enabled: false,
+  qimen_enabled: false,
+  shrine_enabled: false,
+  goal_enabled: false,
+  service_enabled: true,
   quiet_start: 22,
   quiet_end: 7,
   max_per_day: 2,
@@ -92,10 +98,17 @@ function inQuietHours(hour, quietStart, quietEnd) {
 function mayNotify(input) {
   const { category, prefs, webPrefs, timezone, sentToday, at } = input || {};
 
-  const key = `${category}_enabled`;
+  // Compatibility names from pre-V192 senders map to the new category model.
+  const normalized = category === "auspicious" ? "shrine" : category === "network" ? "daily" : category;
+  const transactional = normalized === "security" || normalized === "service";
+  const key = `${normalized}_enabled`;
   if (!Object.prototype.hasOwnProperty.call(DEFAULTS, key)) {
     return { allow: false, reason: `หมวดไม่รู้จัก: ${category}` };
   }
+
+  // Login/password/payment/subscription/support notifications are essential
+  // account messages. They bypass marketing consent, quiet hours, pause and cap.
+  if (transactional) return { allow: true, reason: "" };
 
   // ① ยังไม่เคยตั้งค่า = ยังไม่ยินยอม
   if (prefs === null || prefs === undefined) {
@@ -159,7 +172,10 @@ const PREFS_SELECT = `
 `;
 
 const PREFS_COLUMNS = `
+  np.security_enabled, np.saved_date_enabled,
   np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
+  np.qimen_enabled, np.shrine_enabled, np.goal_enabled, np.service_enabled,
+  np.yam_min_quality, np.yam_lead_minutes, np.daily_slot,
   np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
   COALESCE(np.timezone, u.timezone) AS user_timezone,
   (np.user_id IS NOT NULL) AS has_prefs

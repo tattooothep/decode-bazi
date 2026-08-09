@@ -18,6 +18,8 @@ function check(label: string, run: () => void): void {
 
 const OPEN = {
   yam_enabled: true, auspicious_enabled: true, daily_enabled: true,
+  saved_date_enabled: true, qimen_enabled: true, shrine_enabled: true, goal_enabled: true,
+  security_enabled: true, service_enabled: true,
   quiet_start: 22, quiet_end: 7, max_per_day: 2, timezone: null,
 };
 /** 14:00 เวลาไทย = ช่วงตื่น */
@@ -131,9 +133,16 @@ check("🔴 ฝั่งเว็บปิด ฝั่งแอพเปิด 
 
 console.log("── ค่าเริ่มต้นต้องเป็นปิด ──");
 
-check("🔴 ค่าเริ่มต้นทั้งสามหมวดต้องเป็นปิด", () => {
-  for (const k of ["yam_enabled", "auspicious_enabled", "daily_enabled"]) {
+check("🔴 หมวดคำแนะนำทั้งหกต้องปิดจนกว่าผู้ใช้ยินยอม", () => {
+  for (const k of ["saved_date_enabled", "daily_enabled", "yam_enabled", "qimen_enabled", "shrine_enabled", "goal_enabled"]) {
     assert.equal(G.DEFAULTS[k], false, `${k} ค่าเริ่มต้นเป็นเปิด`);
+  }
+});
+
+check("ความปลอดภัยและบริการเป็นข้อความธุรกรรม ไม่โดน quiet/cap ปิด", () => {
+  for (const category of ["security", "service"]) {
+    const result = G.mayNotify({ category, prefs: null, sentToday: 99, at: NIGHT });
+    assert.equal(result.allow, true, `${category} ถูกปิดด้วยกฎของข้อความคำแนะนำ`);
   }
 });
 

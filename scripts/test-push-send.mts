@@ -60,6 +60,8 @@ const CRONS = [
   "scripts/mobile-daily-fortune-push-cron.cjs",
   "scripts/mobile-monthly-report-push-cron.cjs",
   "scripts/mobile-network-morning-push-cron.cjs",
+  "scripts/mobile-auspicious-push-cron.cjs",
+  "scripts/mobile-personal-reminders-cron.cjs",
 ];
 
 await check("🔴 ห้ามเหลือการยิงไปบริการกลางในตัวยิงตัวไหนเลย", () => {
@@ -75,7 +77,7 @@ await check("🔴 ห้ามเหลือการยิงไปบริ�
 await check("🔴 ตัวยิงทุกตัวต้องเรียกตัวส่งกลาง", () => {
   for (const path of CRONS) {
     const src = readFileSync(path, "utf8");
-    assert.ok(/push-send/.test(src), `${path}: ไม่ได้เรียกตัวส่งกลาง`);
+    assert.ok(/push-send|mobile-notification-delivery/.test(src), `${path}: ไม่ได้เรียกตัวส่งกลาง`);
   }
 });
 

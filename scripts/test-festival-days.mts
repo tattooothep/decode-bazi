@@ -136,8 +136,8 @@ check("🔴 ทุกข้อความต้องบอกว่าทำ�
 
 check("🔴 ต้องผ่านตัวคุมและใช้ตัวส่งกลาง", () => {
   assert.ok(/guard\.mayNotify\(/.test(CRON), "ไม่ได้ผ่านตัวคุม");
-  assert.ok(/push\.sendAll\(/.test(CRON), "ไม่ได้ใช้ตัวส่งกลาง");
-  assert.ok(/category: "auspicious"/.test(CRON), "ใช้หมวดผิด");
+  assert.ok(/delivery\.deliver\(/.test(CRON), "ไม่ได้ใช้ตัวส่งกลาง");
+  assert.ok(/category: "shrine"/.test(CRON), "ใช้หมวดผิด");
   assert.ok(!/exp\.host/.test(CRON), "ยังยิงไปบริการกลางที่ไม่เคยสำเร็จ");
 });
 

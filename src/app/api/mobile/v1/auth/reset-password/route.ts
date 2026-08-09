@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import {hashPassword,signSession} from "@/lib/auth";
 import {pool} from "@/lib/db";
 import {clientIp,rateLimit} from "@/lib/rate-limit";
+import {enqueueNotification} from "@/lib/notification-outbox";
 
 export async function POST(req:Request) {
   const limited=await rateLimit(`mobile-reset:${clientIp(req)}`,10,60*60_000);
@@ -24,5 +25,10 @@ export async function POST(req:Request) {
   } catch(error) {await client.query("ROLLBACK").catch(()=>null);throw error;} finally {client.release();}
   const sv=Number(user.session_version)||0;
   const accessToken=await signSession({userId:user.id,email:user.email,orgId:user.current_org_id,sv});
+  await enqueueNotification({
+    eventType:"password_reset",audienceKind:"user",recipientUserId:user.id,
+    dedupeKey:`password-reset:${user.id}:${sv}`,targetUrl:"/account",
+    expiresAt:new Date(Date.now()+24*60*60_000),
+  }).catch((error)=>console.error("[mobile-reset] security notification enqueue failed",error));
   return NextResponse.json({ok:true,access_token:accessToken,token_type:"Bearer"},{headers:{"Cache-Control":"no-store, max-age=0"}});
 }

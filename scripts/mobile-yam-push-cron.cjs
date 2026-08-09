@@ -21,7 +21,6 @@ const DRY = process.argv.includes("--dry");
  */
 const FORCE_TIME = (process.argv.find((a) => a.startsWith("--force-time=")) || "").slice(13);
 const BASE = process.env.PUSH_INTERNAL_BASE || "http://127.0.0.1:3350";
-const LEAD_MIN = 60;
 
 // โหลด .env.local ของ release (AUTH_SECRET/PG*) — ไม่ log ค่า
 (function loadEnv() {
@@ -166,30 +165,8 @@ function qimenLine(highlight, locale) {
   return `\n🧭 ทิศดีสุดของยามนี้: ${dir} — องค์${deity}ประจำทิศ${advice ? ` · ${advice}` : ""}`;
 }
 
-const push = require("../src/lib/push-send.cjs");
-
-/**
- * ส่งทั้งชุดผ่านตัวส่งกลาง — ส่งตรงถึงกูเกิล ไม่ผ่านคนกลาง
- *
- * 🔴 เดิมยิงไปบริการกลางของ Expo ซึ่ง **480 รอบได้ expo_ok=0 ทุกรอบ**
- * ไม่เคยสำเร็จเลยสักครั้ง เพราะต้องเอากุญแจโครงการไปฝากที่นั่นอีกที
- * ท่อส่งตรงพิสูจน์แล้วว่าถึงเครื่องจริง (30 ก.ค. เจ้าของยืนยันเอง)
- *
- * คืนรูปเดิม {ok, fail} เพื่อไม่ต้องแก้บรรทัดรายงานผลท้ายไฟล์
- * แต่เพิ่ม gone/noToken ให้รู้ว่าเครื่องตายกี่เครื่อง ยังไม่มีกุญแจกี่เครื่อง
- */
-async function sendExpo(messages, db) {
-  const r = await push.sendAll(messages, { db: db ?? null, dry: DRY });
-  if (r.noToken > 0) {
-    console.log(`  ℹ️ ${r.noToken} เครื่องยังไม่มีกุญแจแบบส่งตรง (ต้องลงแอพรุ่นใหม่)`);
-  }
-  if (r.gone > 0) {
-    console.log(`  🗑️ ปิดกุญแจเครื่องที่ไม่รับแล้ว ${r.gone} เครื่อง`);
-  }
-  return { ok: r.sent, fail: r.failed };
-}
-
 const guard = require("../src/lib/push-guard.cjs");
+const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 
 async function main() {
   const db = new Client({
@@ -200,8 +177,11 @@ async function main() {
   await db.connect();
   const { rows: users } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
-           array_agg(json_build_object('device', t.device_push_token,
-                                      'locale', COALESCE(t.locale,'th'))) AS tokens,
+           array_agg(json_build_object(
+             'id', t.id, 'device', t.device_push_token, 'deviceType', t.device_token_type,
+             'expo', t.expo_push_token, 'platform', t.platform,
+             'locale', COALESCE(t.locale,'th')
+           )) AS tokens,
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
@@ -210,16 +190,23 @@ async function main() {
            (SELECT p.birth_lng FROM profiles p WHERE p.created_by_user_id = u.id
              AND COALESCE(p.is_archived,false)=false ORDER BY p.created_at ASC LIMIT 1) AS lng,
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
+           np.qimen_enabled, np.shrine_enabled, np.goal_enabled, np.saved_date_enabled,
+           np.yam_min_quality, np.yam_lead_minutes,
+           np.qimen_latitude, np.qimen_longitude, np.qimen_location_updated_at,
            np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
            COALESCE(np.timezone, u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.sent_at >= now() - interval '24 hours') AS sent_today
+             WHERE l.user_id = u.id AND l.delivery_status='accepted'
+               AND l.sent_at >= now() - interval '24 hours') AS sent_today
       FROM mobile_push_tokens t JOIN users u ON u.id = t.user_id
       LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
      GROUP BY u.id, np.user_id, np.yam_enabled, np.auspicious_enabled,
-              np.daily_enabled, np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until, np.timezone, u.timezone`);
+              np.daily_enabled, np.qimen_enabled, np.shrine_enabled, np.goal_enabled,
+              np.saved_date_enabled, np.yam_min_quality, np.yam_lead_minutes,
+              np.qimen_latitude, np.qimen_longitude, np.qimen_location_updated_at,
+              np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until, np.timezone, u.timezone`);
   console.log(`[mobile-yam-push] ${new Date().toISOString()} users=${users.length} dry=${DRY}`);
 
   /**
@@ -230,8 +217,7 @@ async function main() {
    */
   const runAt = new Date();
   const QUAL_WORD = { best: "ยามดีมาก", good: "ยามดี" };
-  let sent = 0, skipped = 0;
-  const messages = [];
+  let sent = 0, failed = 0, skipped = 0;
 
   for (const u of users) {
     try {
@@ -269,15 +255,17 @@ async function main() {
 
       const data = await fetchHours(u, u.profile_id, dateStr);
       const hours = data && Array.isArray(data.hours) ? data.hours : [];
-      // ยาม best/good ที่เริ่มภายใน LEAD_MIN นาทีข้างหน้า — field จริงคือ range "HH:MM-HH:MM"
+      const leadMin = [15, 30, 60].includes(Number(u.yam_lead_minutes)) ? Number(u.yam_lead_minutes) : 60;
+      const minQuality = u.yam_min_quality === "good" ? "good" : "best";
+      // ผู้ใช้เลือกได้ว่าจะรับเฉพาะ best หรือรับ good ด้วย และเตือนล่วงหน้าเท่าไร
       const upcoming = hours.find((h) => {
         const q = String(h.quality || "");
-        if (q !== "best" && q !== "good") return false;
+        if (q !== "best" && !(minQuality === "good" && q === "good")) return false;
         const m = /^(\d{2}):(\d{2})-/.exec(String(h.range || ""));
         if (!m) return false;
         const startMin = Number(m[1]) * 60 + Number(m[2]);
         const diff = startMin - nowMin;
-        return diff >= 0 && diff <= LEAD_MIN;
+        return diff >= 0 && diff <= leadMin;
       });
       if (!upcoming) { skipped++; continue; }
       const yamKey = `${dateStr}|${String(upcoming.range || "")}|${u.profile_id}`;
@@ -288,39 +276,66 @@ async function main() {
        * เพราะผังฉีเหมินเปลี่ยนทุกสองชั่วโมงตามยาม ถ้าใช้เวลาตอนยิงจะได้ผังของยามก่อนหน้า
        */
       const startTime = (/^(\d{2}:\d{2})/.exec(String(upcoming.range || "")) || [])[1] || null;
-      const highlight = startTime === null
+      const locationFresh = u.qimen_location_updated_at
+        && Date.now() - new Date(u.qimen_location_updated_at).getTime() <= 30 * 86_400_000;
+      const highlight = startTime === null || !locationFresh
+        || !Number.isFinite(Number(u.qimen_latitude)) || !Number.isFinite(Number(u.qimen_longitude))
         ? null
         : await fetchQimenHighlight(
             u,
             dateStr,
             startTime,
-            Number.isFinite(Number(u.lat)) ? Number(u.lat) : 13.7563,
-            Number.isFinite(Number(u.lng)) ? Number(u.lng) : 100.5018,
+            Number(u.qimen_latitude),
+            Number(u.qimen_longitude),
           );
 
       const baseBody = `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}เหมาะลงมือเรื่องสำคัญของคุณ`;
       const body = baseBody + qimenLine(highlight, "th");
       const title = `🔔 ${word}กำลังมาถึง`;
-      // เก็บเนื้อหาไว้ให้ศูนย์แจ้งเตือนในแอพอ่านย้อนหลัง (kind=yam) — กันซ้ำด้วย unique(user_id,yam_key)
-      const dup = await db.query(
-        `INSERT INTO mobile_push_log (user_id, yam_key, kind, title, body, payload)
-         VALUES ($1,$2,'yam',$3,$4,$5::jsonb)
-         ON CONFLICT (user_id, yam_key) DO NOTHING RETURNING id`,
-        [u.id, yamKey, title, body, JSON.stringify({ url: "hourkey://today", range: String(upcoming.range || ""), quality: String(upcoming.quality || "") })]);
-      if (!dup.rows.length) { skipped++; continue; }
+      const userMessages = [];
       for (const entry of u.tokens || []) {
         const raw = entry && typeof entry === "object" ? entry : { device: entry, locale: "th" };
-        const loc = raw.locale === "en" || raw.locale === "zh" ? raw.locale : "th";
-        // ⚠️ หัวใบยังเป็นไทยอยู่ (ของเดิม) — ท่อนทิศ+องค์เทพแปลตามเครื่องแล้ว
-        messages.push({
+        const localeValue = String(raw.locale || "th").toLowerCase();
+        const loc = localeValue === "th"
+          ? "th"
+          : localeValue === "zh" || localeValue === "cn" || localeValue.startsWith("zh-")
+            ? "zh"
+            : "en";
+        const localizedTitle = loc === "zh"
+          ? `🔔 ${upcoming.quality === "best" ? "最佳吉時" : "吉時"}即將開始`
+          : loc === "en"
+            ? `🔔 ${upcoming.quality === "best" ? "Best hour" : "Good hour"} starts soon`
+            : title;
+        const localizedBase = loc === "zh"
+          ? `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}適合處理重要事項`
+          : loc === "en"
+            ? `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}is suitable for important action`
+            : baseBody;
+        userMessages.push({
+          tokenId: raw.id,
           deviceToken: raw.device,
-          title,
-          body: baseBody + qimenLine(highlight, loc),
-          url: "hourkey://today",
-          data: { url: "hourkey://today", yam: yamKey },
+          deviceTokenType: raw.deviceType,
+          expoToken: raw.expo,
+          platform: raw.platform,
+          category: "yam",
+          title: localizedTitle,
+          body: localizedBase + qimenLine(highlight, loc),
+          url: "/today",
+          data: { url: "/today", yam: yamKey },
         });
       }
-      sent++;
+      const result = await delivery.deliver(db, {
+        userId: u.id,
+        key: yamKey,
+        kind: "yam",
+        title,
+        body,
+        payload: { url: "/today", range: String(upcoming.range || ""), quality: String(upcoming.quality || "") },
+        messages: userMessages,
+      }, { dry: DRY });
+      if (result.status === "accepted" || result.status === "dry") sent++;
+      else if (result.status === "failed") failed++;
+      else skipped++;
       if (DRY) {
         console.log(`[DRY] ${u.email} → ${word} ${body}`);
         if (highlight === null) console.log("       (ไม่มีทิศมงคลพอในยามนี้ จึงไม่บอกทิศ)");
@@ -329,12 +344,7 @@ async function main() {
     } catch (e) { console.error(`[mobile-yam-push] user=${u.id}`, e.message); }
   }
 
-  if (!DRY) {
-    const r = await sendExpo(messages, db);
-    console.log(`[mobile-yam-push] users_notified=${sent} skipped=${skipped} expo_ok=${r.ok} expo_fail=${r.fail}`);
-  } else {
-    console.log(`[mobile-yam-push] DRY users_would_notify=${sent} skipped=${skipped} msgs=${messages.length}`);
-  }
+  console.log(`[mobile-yam-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
   await db.end();
 }
 

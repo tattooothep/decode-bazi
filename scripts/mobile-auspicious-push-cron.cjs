@@ -39,7 +39,7 @@ const ONLY_EMAIL = (process.argv.find((a) => a.startsWith("--email=")) || "").sl
 })();
 
 const guard = require("../src/lib/push-guard.cjs");
-const push = require("../src/lib/push-send.cjs");
+const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const { upcomingFestival } = require("../src/lib/festival-days.cjs");
 
 /**
@@ -71,7 +71,9 @@ const COPY = {
 
 function pickLocale(raw) {
   const v = String(raw || "th").toLowerCase();
-  return v === "en" || v === "zh" ? v : "th";
+  if (v === "th") return "th";
+  if (v === "zh" || v === "cn" || v.startsWith("zh-")) return "zh";
+  return "en";
 }
 
 function buildMessage(festival, locale) {
@@ -96,37 +98,47 @@ async function main() {
   const { rows: users } = await db.query(`
     SELECT u.id, u.email,
            array_agg(json_build_object(
+             'id', t.id,
              'device', t.device_push_token,
+             'deviceType', t.device_token_type,
+             'expo', t.expo_push_token,
+             'platform', t.platform,
              'locale', COALESCE(t.locale, 'th')
            )) AS tokens,
-           np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
+           np.yam_enabled, np.auspicious_enabled, np.daily_enabled, np.shrine_enabled,
            np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
            COALESCE(np.timezone, u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.sent_at >= now() - interval '24 hours') AS sent_today
+             WHERE l.user_id = u.id AND l.delivery_status='accepted'
+               AND l.sent_at >= now() - interval '24 hours') AS sent_today
       FROM mobile_push_tokens t
       JOIN users u ON u.id = t.user_id
       LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
        ${ONLY_EMAIL ? "AND u.email = $1" : ""}
      GROUP BY u.id, np.user_id, np.yam_enabled, np.auspicious_enabled,
-              np.daily_enabled, np.quiet_start, np.quiet_end, np.paused_until,
+              np.daily_enabled, np.shrine_enabled, np.quiet_start, np.quiet_end, np.paused_until,
               np.max_per_day, np.timezone, u.timezone`,
     ONLY_EMAIL ? [ONLY_EMAIL] : []);
 
   console.log(`[mobile-auspicious-push] ${new Date().toISOString()} users=${users.length} dry=${DRY}`);
 
   const runAt = new Date();
-  const messages = [];
   let sent = 0;
+  let failed = 0;
   let skipped = 0;
 
   for (const u of users) {
     try {
+      const localNowMin = guard.localMinutes(u.user_timezone, runAt);
+      if (!DRY && (localNowMin === null || localNowMin < 18 * 60 || localNowMin >= 18 * 60 + 15)) {
+        skipped++;
+        continue;
+      }
       // ทุกใบต้องผ่านตัวคุมกลาง — ยินยอม · ช่วงห้ามรบกวน · เพดานต่อวัน
       const verdict = guard.mayNotify({
-        category: "auspicious",
+        category: "shrine",
         prefs: u.has_prefs ? u : null,
         timezone: u.user_timezone,
         sentToday: Number(u.sent_today || 0),
@@ -145,41 +157,43 @@ async function main() {
       // วันหนึ่งอาจมีหลายรายการ — เอาตัวที่สำคัญที่สุดใบเดียว ไม่ยิงซ้อน
       const festival = ahead.festivals.find((f) => f.major) || ahead.festivals[0];
 
-      // กันซ้ำ: หนึ่งคน หนึ่งเทศกาล หนึ่งใบ (ข้อบังคับ unique ในตารางบันทึก)
       const key = `festival|${ahead.date}|${festival.zh}`;
       const first = buildMessage(festival, pickLocale(u.tokens?.[0]?.locale));
-      const dup = await db.query(
-        `INSERT INTO mobile_push_log (user_id, yam_key, kind, title, body, payload)
-         VALUES ($1,$2,'auspicious',$3,$4,$5::jsonb)
-         ON CONFLICT (user_id, yam_key) DO NOTHING RETURNING id`,
-        [u.id, key, first.title, first.body,
-         JSON.stringify({ url: "hourkey://calendar", date: ahead.date, festival: festival.zh })]);
-      if (!dup.rows.length) { skipped++; continue; }
-
+      const userMessages = [];
       for (const entry of u.tokens || []) {
         const m = buildMessage(festival, pickLocale(entry?.locale));
-        messages.push({
+        userMessages.push({
+          tokenId: entry?.id,
           deviceToken: entry?.device,
+          deviceTokenType: entry?.deviceType,
+          expoToken: entry?.expo,
+          platform: entry?.platform,
+          category: "shrine",
           title: m.title,
           body: m.body,
-          url: "hourkey://calendar",
+          url: "/calendar/general",
+          data: { url: "/calendar/general", date: ahead.date },
         });
       }
-      sent++;
+      const result = await delivery.deliver(db, {
+        userId: u.id,
+        key,
+        kind: "shrine",
+        title: first.title,
+        body: first.body,
+        payload: { url: "/calendar/general", date: ahead.date, festival: festival.zh },
+        messages: userMessages,
+      }, { dry: DRY });
+      if (result.status === "accepted" || result.status === "dry") sent++;
+      else if (result.status === "failed") failed++;
+      else skipped++;
       if (DRY) console.log(`[DRY] ${u.email} → ${first.title} · ${first.body}`);
     } catch (e) {
       console.error(`[mobile-auspicious-push] user=${u.id}`, e.message);
     }
   }
 
-  if (DRY) {
-    console.log(`[mobile-auspicious-push] DRY users_would_notify=${sent} skipped=${skipped} msgs=${messages.length}`);
-  } else {
-    const r = await push.sendAll(messages, { db });
-    if (r.noToken > 0) console.log(`  ℹ️ ${r.noToken} เครื่องยังไม่มีกุญแจแบบส่งตรง`);
-    if (r.gone > 0) console.log(`  🗑️ ปิดกุญแจเครื่องที่ไม่รับแล้ว ${r.gone} เครื่อง`);
-    console.log(`[mobile-auspicious-push] users_notified=${sent} skipped=${skipped} ok=${r.sent} fail=${r.failed}`);
-  }
+  console.log(`[mobile-auspicious-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
 
   await db.end();
 }
