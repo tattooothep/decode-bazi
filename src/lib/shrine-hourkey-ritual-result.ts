@@ -1,4 +1,9 @@
 import { createHmac } from "crypto";
+import {
+  QIAN_CANON_VERSION,
+  qianCard,
+  type QianCard,
+} from "@/lib/shrine-qian-canon";
 
 /**
  * ผลพิธีภายในวัด HourKey เท่านั้น
@@ -21,6 +26,14 @@ export const HOURKEY_RITUAL_IDS = [
   "talisman",
   "vow-fulfillment",
   "guanyin-prayer",
+  "forecourt-bell",
+  "forecourt-drum",
+  "tiangong-incense",
+  "forecourt-guanyin-worship",
+  "east-garden-koi-feed",
+  "east-garden-wish-tie",
+  "east-garden-pavilion",
+  "east-garden-guanyin-worship",
 ] as const;
 
 export type HourKeyRitualId = (typeof HOURKEY_RITUAL_IDS)[number];
@@ -50,6 +63,8 @@ export type HourKeyRitualResult = Readonly<{
   ritualId: HourKeyRitualId;
   status: "authorized";
   values: Readonly<{
+    fortuneStickCard: QianCard | null;
+    fortuneStickCanonVersion: string | null;
     fortuneStickNumber: number | null;
     jiaobeiOutcome: "sheng" | "xiao" | "yin" | "li" | null;
     liuyaoLines: readonly number[] | null;
@@ -77,6 +92,40 @@ const TITLES: Readonly<Record<HourKeyRitualId, LocalizedText>> = {
   talisman: localized("รับยันต์ HourKey", "HourKey talisman", "HourKey 靈符", "HourKey 灵符", "Linh phù HourKey", "HourKey 霊符", "Талисман HourKey", "HourKey 부적", "Talismán HourKey"),
   "vow-fulfillment": localized("ตั้งใจแก้บน", "Vow fulfillment", "還願", "还愿", "Hoàn nguyện", "願ほどき", "Исполнение обета", "환원", "Cumplimiento de promesa"),
   "guanyin-prayer": localized("คำตอบจากลานเจ้าแม่กวนอิม", "Guanyin garden result", "觀音園結果", "观音园结果", "Kết quả vườn Quan Âm", "観音庭園の結果", "Ответ сада Гуаньинь", "관음 정원 결과", "Resultado del jardín de Guanyin"),
+  "forecourt-bell": localized("ตีระฆังหน้าวิหาร", "Forecourt bell", "前庭鳴鐘", "前庭鸣钟", "Thỉnh chuông sân trước", "前庭の鐘", "Колокол перед храмом", "앞마당 종 울리기", "Campana del atrio"),
+  "forecourt-drum": localized("ตีกลองหน้าวิหาร", "Forecourt drum", "前庭擊鼓", "前庭击鼓", "Đánh trống sân trước", "前庭の太鼓", "Барабан перед храмом", "앞마당 북 치기", "Tambor del atrio"),
+  "tiangong-incense": localized("ถวายธูปเทียนกง", "Tiangong incense", "天公上香", "天公上香", "Dâng hương Thiên Công", "天公への焼香", "Благовоние Тянь-гуну", "천공 분향", "Incienso a Tiangong"),
+  "forecourt-guanyin-worship": localized("ไหว้เจ้าแม่หน้าลาน", "Forecourt Guanyin worship", "前庭禮拜觀音", "前庭礼拜观音", "Lễ Quan Âm sân trước", "前庭の観音礼拝", "Поклонение Гуаньинь во дворе", "앞마당 관음 예배", "Veneración a Guanyin en el atrio"),
+  "east-garden-koi-feed": localized("ให้อาหารปลาคาร์ป", "Feed the koi", "餵錦鯉", "喂锦鲤", "Cho cá koi ăn", "鯉への餌やり", "Кормление карпов", "비단잉어 먹이 주기", "Alimentar a las carpas koi"),
+  "east-garden-wish-tie": localized("ผูกคำอธิษฐาน", "Tie a wish", "繫願箋", "系愿笺", "Buộc thẻ nguyện", "願い札を結ぶ", "Завязать пожелание", "소원 매달기", "Atar un deseo"),
+  "east-garden-pavilion": localized("พักใจที่ศาลา", "Garden pavilion", "園亭靜心", "园亭静心", "Tĩnh tâm tại đình", "庭園の東屋", "Садовый павильон", "정원 정자", "Pabellón del jardín"),
+  "east-garden-guanyin-worship": localized("ไหว้เจ้าแม่กวนอิมพันกร", "Thousand-arms Guanyin worship", "禮拜千手觀音", "礼拜千手观音", "Lễ Quan Âm Thiên Thủ", "千手観音礼拝", "Поклонение Тысячерукой Гуаньинь", "천수관음 예배", "Veneración a Guanyin de Mil Brazos"),
+};
+
+const CAMPUS_BODIES: Readonly<Partial<
+  Record<HourKeyRitualId, LocalizedText>
+>> = {
+  "forecourt-bell": localized("วัด HourKey รับการตีระฆังรอบนี้แล้ว", "The HourKey temple has accepted this bell ringing.", "HourKey 寺已接收本次鐘聲。", "HourKey 寺已接收本次钟声。", "Đền HourKey đã tiếp nhận tiếng chuông này.", "HourKey寺院が今回の鐘の音を受け取りました。", "Храм HourKey принял этот звон.", "HourKey 사원이 이번 종소리를 받았습니다.", "El templo HourKey recibió este toque de campana."),
+  "forecourt-drum": localized("วัด HourKey รับการตีกลองรอบนี้แล้ว", "The HourKey temple has accepted this drum beat.", "HourKey 寺已接收本次鼓聲。", "HourKey 寺已接收本次鼓声。", "Đền HourKey đã tiếp nhận nhịp trống này.", "HourKey寺院が今回の太鼓を受け取りました。", "Храм HourKey принял этот удар барабана.", "HourKey 사원이 이번 북소리를 받았습니다.", "El templo HourKey recibió este toque de tambor."),
+  "tiangong-incense": localized("วัด HourKey รับการถวายธูปเทียนกงรอบนี้แล้ว", "The HourKey temple has received this Tiangong incense offering.", "HourKey 寺已接收本次天公香供。", "HourKey 寺已接收本次天公香供。", "Đền HourKey đã tiếp nhận lễ dâng hương Thiên Công này.", "HourKey寺院が今回の天公への焼香を受け取りました。", "Храм HourKey принял это подношение благовоний Тянь-гуну.", "HourKey 사원이 이번 천공 분향을 받았습니다.", "El templo HourKey recibió esta ofrenda de incienso a Tiangong."),
+  "forecourt-guanyin-worship": localized("การไหว้เจ้าแม่หน้าลานรอบนี้เสร็จสมบูรณ์แล้ว", "This forecourt Guanyin worship is complete.", "本次前庭觀音禮拜已完成。", "本次前庭观音礼拜已完成。", "Lễ Quan Âm tại sân trước đã hoàn tất.", "前庭での観音礼拝が完了しました。", "Поклонение Гуаньинь во дворе завершено.", "앞마당 관음 예배를 마쳤습니다.", "La veneración a Guanyin en el atrio ha terminado."),
+  "east-garden-koi-feed": localized("วัด HourKey รับการให้อาหารปลาคาร์ปรอบนี้แล้ว", "The HourKey temple has accepted this koi feeding.", "HourKey 寺已接收本次餵錦鯉。", "HourKey 寺已接收本次喂锦鲤。", "Đền HourKey đã tiếp nhận lần cho cá koi ăn này.", "HourKey寺院が今回の鯉への餌やりを受け取りました。", "Храм HourKey принял это кормление карпов.", "HourKey 사원이 이번 비단잉어 먹이 주기를 받았습니다.", "El templo HourKey recibió esta alimentación de carpas koi."),
+  "east-garden-wish-tie": localized("คำอธิษฐานถูกผูกไว้ใน East Garden ของ HourKey แล้ว", "Your wish has been tied in HourKey's East Garden.", "願箋已繫於 HourKey 東園。", "愿笺已系于 HourKey 东园。", "Thẻ nguyện đã được buộc trong Vườn Đông HourKey.", "願い札をHourKey東庭園に結びました。", "Пожелание привязано в Восточном саду HourKey.", "소원이 HourKey 동쪽 정원에 매달렸습니다.", "Tu deseo quedó atado en el Jardín Este de HourKey."),
+  "east-garden-pavilion": localized("ช่วงพักใจที่ศาลา East Garden เสร็จสมบูรณ์แล้ว", "Your quiet pause at the East Garden pavilion is complete.", "東園亭中的靜心片刻已完成。", "东园亭中的静心片刻已完成。", "Khoảnh khắc tĩnh tâm tại đình Vườn Đông đã hoàn tất.", "東庭園の東屋での静かなひとときが完了しました。", "Тихая пауза в павильоне Восточного сада завершена.", "동쪽 정원 정자에서의 고요한 시간을 마쳤습니다.", "Tu pausa serena en el pabellón del Jardín Este ha terminado."),
+  "east-garden-guanyin-worship": localized("พิธีไหว้เจ้าแม่กวนอิมพันกรใน East Garden เสร็จสมบูรณ์แล้ว", "The Thousand-arms Guanyin worship in the East Garden is complete.", "東園千手觀音禮拜已完成。", "东园千手观音礼拜已完成。", "Lễ Quan Âm Thiên Thủ tại Vườn Đông đã hoàn tất.", "東庭園の千手観音礼拝が完了しました。", "Поклонение Тысячерукой Гуаньинь в Восточном саду завершено.", "동쪽 정원의 천수관음 예배를 마쳤습니다.", "La veneración a Guanyin de Mil Brazos en el Jardín Este ha terminado."),
+};
+
+const FIXED_RESULT_CODES: Readonly<Partial<
+  Record<HourKeyRitualId, string>
+>> = {
+  "forecourt-bell": "forecourt-bell-rung",
+  "forecourt-drum": "forecourt-drum-struck",
+  "tiangong-incense": "forecourt-tiangong-incense-lit",
+  "forecourt-guanyin-worship": "forecourt-guanyin-worship-completed",
+  "east-garden-koi-feed": "east-garden-koi-fed",
+  "east-garden-wish-tie": "east-garden-wish-tied",
+  "east-garden-pavilion": "east-garden-pavilion-visited",
+  "east-garden-guanyin-worship": "east-garden-guanyin-worship-completed",
 };
 
 const COMPLETED: LocalizedText = localized(
@@ -89,6 +138,30 @@ const COMPLETED: LocalizedText = localized(
   "Система храма HourKey приняла результат этого ритуала.",
   "HourKey 사원 시스템이 이번 의식 결과를 받았습니다.",
   "El templo HourKey ha recibido el resultado de este ritual.",
+);
+
+const QIAN_SEALED_BODY: LocalizedText = localized(
+  "ได้ใบเซียมซีแล้ว แต่ใบยังผนึกอยู่ตามธรรมเนียม ไปโยนจอกหน้าองค์เทพให้ได้ซิ่วปัว 3 ครั้งติดเพื่อยืนยันและคลี่อ่าน",
+  "Your slip is drawn but remains sealed by temple custom. Cast the moon blocks before the deity and receive three shengjiao in a row to confirm and unseal it.",
+  "籤已抽得，依例尚未開啟。請在神前擲筊，連得三聖筊後即可確認開籤。",
+  "签已抽得，依例尚未开启。请在神前掷筊，连得三圣筊后即可确认开签。",
+  "Thẻ xăm đã được rút nhưng vẫn còn niêm theo nghi thức. Hãy xin âm dương bôi trước thần và được ba thánh bôi liên tiếp để xác nhận rồi mở thẻ.",
+  "おみくじは引かれましたが、作法によりまだ封じられています。神前でポエを投げ、聖筊を3回続けて得ると確認して開けます。",
+  "Жребий вытянут, но по обычаю пока запечатан. Бросьте лунные блоки перед божеством и получите три шэн подряд, чтобы подтвердить и открыть его.",
+  "운세 제비를 뽑았지만 의식에 따라 아직 봉인되어 있습니다. 신전에서 교배를 던져 성교를 세 번 연속 받으면 확인 후 펼칠 수 있습니다.",
+  "La vara ya fue extraída, pero permanece sellada por la costumbre del templo. Lanza los bloques lunares ante la deidad y obtén tres shengjiao seguidos para confirmarla y abrirla.",
+);
+
+const QIAN_SEALED_FOOTER: LocalizedText = localized(
+  "เนื้อใบและคำแปลของ HourKey แนบมากับผลจากระบบแล้ว และจะเปิดหลังยืนยัน",
+  "The canonical Chinese slip text is attached to this server result; a full translation is not yet available in this language.",
+  "HourKey 籤文原文已隨系統結果附上，確認後開啟。",
+  "HourKey 签文原文已随系统结果附上，确认后开启。",
+  "Nguyên văn tiếng Hoa được đính kèm với kết quả hệ thống; bản dịch đầy đủ sang ngôn ngữ này chưa có.",
+  "中国語の原文はシステム結果に含まれています。この言語の完全な翻訳はまだありません。",
+  "Китайский оригинал приложен к результату системы; полного перевода на этот язык пока нет.",
+  "중국어 원문은 시스템 결과에 포함되어 있으며, 이 언어의 전체 번역은 아직 제공되지 않습니다.",
+  "El texto chino original está adjunto al resultado del sistema; aún no hay traducción completa a este idioma.",
 );
 
 const FOOTER: LocalizedText = localized(
@@ -170,6 +243,9 @@ export function parseHourKeyRitualInput(raw: unknown): HourKeyRitualInput {
   ) {
     throw new HourKeyRitualInputError("prayer_context");
   }
+  if (ritualId === "east-garden-wish-tie" && wishText === null) {
+    throw new HourKeyRitualInputError("wish_context");
+  }
   return {
     idempotencyKey,
     intentCategory,
@@ -190,12 +266,16 @@ export function resolveHourKeyRitual(
     .update(`${userId}:${input.ritualId}:${input.idempotencyKey}`)
     .digest();
   const locale = input.locale;
-  let resultCode = `${input.ritualId}-started`;
-  let body = COMPLETED[locale];
+  let resultCode = FIXED_RESULT_CODES[input.ritualId]
+    ?? `${input.ritualId}-started`;
+  let body = CAMPUS_BODIES[input.ritualId]?.[locale] ?? COMPLETED[locale];
   let fortuneStickNumber: number | null = null;
   let jiaobeiOutcome: "sheng" | "xiao" | "yin" | "li" | null = null;
   let liuyaoLines: readonly number[] | null = null;
   let meritBeat: number | null = null;
+  let fortuneStickCard: QianCard | null = null;
+  let fortuneStickCanonVersion: string | null = null;
+  let footer = FOOTER[locale];
 
   if (input.ritualId === "moktak") {
     meritBeat = 1 + (digest.readUInt16BE(0) % 108);
@@ -205,10 +285,11 @@ export function resolveHourKeyRitual(
       : `${COMPLETED[locale]} #${meritBeat}`;
   } else if (input.ritualId === "fortune-sticks") {
     fortuneStickNumber = 1 + (digest.readUInt16BE(0) % 60);
+    fortuneStickCard = qianCard(fortuneStickNumber);
+    fortuneStickCanonVersion = QIAN_CANON_VERSION;
     resultCode = `fortune-stick-${fortuneStickNumber}`;
-    body = locale === "th"
-      ? `เซียมซี HourKey ใบที่ ${fortuneStickNumber}`
-      : `${TITLES["fortune-sticks"][locale]} #${fortuneStickNumber}`;
+    body = QIAN_SEALED_BODY[locale];
+    footer = QIAN_SEALED_FOOTER[locale];
   } else if (input.ritualId === "oracle-liuyao") {
     liuyaoLines = Object.freeze(
       Array.from({ length: 6 }, (_, index) => 6 + (digest[index] % 4)),
@@ -239,7 +320,7 @@ export function resolveHourKeyRitual(
     authoritative: true,
     display: Object.freeze({
       body,
-      footer: FOOTER[locale],
+      footer,
       title: TITLES[input.ritualId][locale],
     }),
     ok: true,
@@ -247,10 +328,35 @@ export function resolveHourKeyRitual(
     ritualId: input.ritualId,
     status: "authorized",
     values: Object.freeze({
+      fortuneStickCanonVersion,
+      fortuneStickCard,
       fortuneStickNumber,
       jiaobeiOutcome,
       liuyaoLines,
       meritBeat,
     }),
   });
+}
+
+/**
+ * Keyed fingerprint of the complete semantic request. Domain separation keeps
+ * low-entropy private wishes from becoming offline-dictionary targets if the
+ * ledger is ever exposed.
+ */
+export function hashHourKeyRitualRequest(
+  input: HourKeyRitualInput,
+  secret: string,
+  userId: string,
+): string {
+  if (secret.length < 32) throw new Error("ritual_secret_required");
+  return createHmac("sha256", secret)
+    .update("hourkey:shrine:ritual-request:v1\0")
+    .update(JSON.stringify([
+      userId,
+      input.ritualId,
+      input.locale,
+      input.intentCategory,
+      input.wishText,
+    ]))
+    .digest("hex");
 }

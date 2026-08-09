@@ -4,8 +4,12 @@ import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import {
   parseHourKeyRitualInput,
-  resolveHourKeyRitual,
 } from "@/lib/shrine-hourkey-ritual-result";
+import {
+  HourKeyRitualDailyLimitExceeded,
+  HourKeyRitualIdempotencyConflict,
+  recordHourKeyRitualResult,
+} from "@/lib/shrine-hourkey-ritual-ledger";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -85,5 +89,37 @@ export async function POST(req: Request) {
       503,
     );
   }
-  return json(resolveHourKeyRitual(session.userId, input, secret));
+  try {
+    return json(await recordHourKeyRitualResult(
+      session.userId,
+      input,
+      secret,
+    ));
+  } catch (error) {
+    if (error instanceof HourKeyRitualDailyLimitExceeded) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((Date.parse(error.resetAt) - Date.now()) / 1000),
+      );
+      return NextResponse.json(
+        {
+          ok: false,
+          error: error.message,
+          limit: error.limit,
+          resetAt: error.resetAt,
+        },
+        {
+          status: 429,
+          headers: {
+            ...NO_STORE,
+            "Retry-After": String(retryAfterSeconds),
+          },
+        },
+      );
+    }
+    if (error instanceof HourKeyRitualIdempotencyConflict) {
+      return json({ ok: false, error: error.message }, 409);
+    }
+    return json({ ok: false, error: "ritual_result_unavailable" }, 503);
+  }
 }
