@@ -431,10 +431,73 @@ for (const index of [51, 52]) {
   );
 }
 assert.equal((await getForecourtStateWithDatabase(preThirdDb, U1)).projection.recoveryEarned, false);
-await prepareForecourtThrowWithDatabase(
+const thirdUnlocked = await prepareForecourtThrowWithDatabase(
   preThirdDb, U1, parseForecourtPrepareInput(rawPrepare(53)), secret,
 );
-assert.equal((await getForecourtStateWithDatabase(preThirdDb, U1)).projection.recoveryEarned, true);
+assert.equal(thirdUnlocked.ordinal, 3);
+assert.equal(
+  thirdUnlocked.projection.recoveryEarned,
+  true,
+  "throw #3 unlocks an already-earned recovery in its own response",
+);
+assert.equal(thirdUnlocked.projection.throwsUsed, 3);
+const fourthWithoutRefresh = await prepareForecourtThrowWithDatabase(
+  preThirdDb, U1, parseForecourtPrepareInput(rawPrepare(54)), secret,
+);
+assert.equal(fourthWithoutRefresh.ordinal, 4, "throw #4 is available without GET/re-enter");
+assert.equal(preThirdDb.recoveries.length, 1);
+const replayUnlockedThird = await prepareForecourtThrowWithDatabase(
+  preThirdDb, U1, parseForecourtPrepareInput(rawPrepare(53)), secret,
+);
+assert.equal(replayUnlockedThird.replayed, true);
+assert.equal(replayUnlockedThird.throwId, thirdUnlocked.throwId);
+assert.equal(replayUnlockedThird.projection.recoveryEarned, true);
+assert.equal(replayUnlockedThird.projection.throwsUsed, 4);
+assert.equal(preThirdDb.authorizations.length, 4, "replay burns no fifth ordinal");
+assert.equal(preThirdDb.recoveries.length, 1, "replay cannot duplicate recovery");
+
+// Commit is a second authoritative reconciliation point when the eligible
+// activity becomes durable after prepare #3 but before its physical outcome.
+const commitRecoveryDb = new MemoryForecourtDatabase();
+await getForecourtStateWithDatabase(commitRecoveryDb, U1);
+const commitRecoveryPrepares: ForecourtPrepareResult[] = [];
+for (const index of [61, 62, 63]) {
+  commitRecoveryPrepares.push(await prepareForecourtThrowWithDatabase(
+    commitRecoveryDb,
+    U1,
+    parseForecourtPrepareInput(rawPrepare(index)),
+    secret,
+  ));
+}
+const commitRecoveryThird = commitRecoveryPrepares[2];
+assert.equal(commitRecoveryThird.projection.recoveryEarned, false);
+commitRecoveryDb.clock = new Date(commitRecoveryDb.clock.getTime() + 1_000);
+commitRecoveryDb.rituals.push({
+  id: "00000000-0000-4000-8000-000000000204",
+  userId: U1,
+  ritualId: "forecourt-drum",
+  createdAt: commitRecoveryDb.clock,
+});
+const commitUnlocked = await commitForecourtThrowWithDatabase(
+  commitRecoveryDb,
+  U1,
+  parseForecourtCommitInput(rawCommit(63, commitRecoveryThird)),
+  secret,
+);
+assert.equal(
+  commitUnlocked.projection.recoveryEarned,
+  true,
+  "commit response exposes a recovery earned after prepare #3",
+);
+assert.equal(commitUnlocked.projection.throwsUsed, 3);
+const commitRecoveryFourth = await prepareForecourtThrowWithDatabase(
+  commitRecoveryDb,
+  U1,
+  parseForecourtPrepareInput(rawPrepare(64)),
+  secret,
+);
+assert.equal(commitRecoveryFourth.ordinal, 4);
+assert.equal(commitRecoveryDb.recoveries.length, 1);
 
 db.clock = new Date("2026-08-09T04:01:00.000Z");
 db.rituals.push(

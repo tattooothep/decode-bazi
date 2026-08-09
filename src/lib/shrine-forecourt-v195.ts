@@ -811,9 +811,23 @@ export async function prepareForecourtThrowWithDatabase(
       Math.floor((now.getTime() + FORECOURT_TICKET_TTL_MS) / 1000) * 1000,
     );
     const ticket = makeTicket(secret, userId, id, cycle.id, expiresAt);
+    const nextThrowsUsed = before.throwsUsed + 1;
+    if (!before.recoveryEarned && nextThrowsUsed >= FORECOURT_BASE_THROWS) {
+      // This authorization and the recovery award commit under the same owner
+      // lock/transaction. Querying the already-durable same-cycle activity now
+      // lets throw #3 return the unlocked +1 immediately, without a GET or
+      // re-enter, while an authorization failure rolls both writes back.
+      const source = await tx.qualifyingRecoverySource(
+        userId,
+        cycle.startedAt,
+        now,
+      );
+      if (source !== null) await tx.insertRecovery(userId, cycle.id, source);
+    }
+    const afterRecovery = await tx.counts(userId, cycle.id);
     const nextCounts: ForecourtCounts = {
-      ...before,
-      throwsUsed: before.throwsUsed + 1,
+      ...afterRecovery,
+      throwsUsed: nextThrowsUsed,
     };
     const result: ForecourtPrepareResult = Object.freeze({
       ...stateResult(cycle, projection(cycle, nextCounts)),
@@ -936,6 +950,10 @@ export async function commitForecourtThrowWithDatabase(
       throw new ForecourtThrowConflict("forecourt_throw_cycle_closed");
     }
 
+    // A qualifying bell/drum/wish may have become durable after prepare #3.
+    // Reconcile before shaping the commit response so Unity can expose throw
+    // #4 in the same session without a separate state refresh.
+    await reconcileRecovery(tx, userId, cycle, now);
     const before = await tx.counts(userId, cycle.id);
     let blessing: ForecourtBlessing | null = null;
     if (input.impactKind === "Navel" && !before.blessingClaimed) {
