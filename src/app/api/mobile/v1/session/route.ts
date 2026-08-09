@@ -11,8 +11,11 @@ import { q1 } from "@/lib/db";
 import { getMobileSession, mobileBearerToken, validateMobileBearerToken } from "@/lib/mobile-auth";
 import { userHasProfile } from "@/lib/profile-status";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { enqueueNotification } from "@/lib/notification-outbox";
+import { randomUUID } from "node:crypto";
 
 export const dynamic = "force-dynamic";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type MobileUserRow = {
   id: string;
@@ -113,6 +116,16 @@ export async function POST(req: Request) {
 
   await setAuthCookie(token);
   await q1("UPDATE users SET last_active_at=now() WHERE id=$1 RETURNING id", [user.id]);
+  await enqueueNotification({
+    eventType: "account_login",
+    audienceKind: "user",
+    recipientUserId: user.id,
+    dedupeKey: `account-login:${user.id}:${randomUUID()}`,
+    targetUrl: "/account",
+    payload: { channel: "password" },
+    availableAt: new Date(Date.now() + 2 * 60_000),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60_000),
+  }).catch((error) => console.error("[mobile-login] security notification enqueue failed", error));
 
   const hasProfile = await userHasProfile(user.id);
   return NextResponse.json(
@@ -138,6 +151,8 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   const bearer = mobileBearerToken(req);
+  const installationId = new URL(req.url).searchParams.get("installation_id");
+  const validInstallationId = installationId && UUID_RE.test(installationId) ? installationId : null;
   let revokedServerSession = false;
   if (bearer) {
     const session = await validateMobileBearerToken(bearer);
@@ -145,8 +160,10 @@ export async function DELETE(req: Request) {
       await bumpSessionVersion(session.userId);
       await q1(
         `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
-          WHERE user_id=$1 AND enabled=true RETURNING id`,
-        [session.userId]
+          WHERE user_id=$1 AND enabled=true
+            AND ($2::uuid IS NULL OR installation_id=$2::uuid)
+          RETURNING id`,
+        [session.userId, validInstallationId]
       ).catch(() => null);
       revokedServerSession = true;
     }

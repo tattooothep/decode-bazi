@@ -3,6 +3,10 @@ import nextEnv from "@next/env";
 import pg from "pg";
 import webPush from "web-push";
 import { randomUUID } from "node:crypto";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const mobilePush = require("../../src/lib/push-send.cjs");
 
 nextEnv.loadEnvConfig(process.cwd(), false, console);
 
@@ -50,6 +54,10 @@ const COPY = {
     support_user_reply: ["ผู้ใช้ตอบกลับแล้ว", "มีข้อความใหม่ใน ticket"],
     support_admin_reply: ["ทีมงานตอบกลับแล้ว", "แตะเพื่ออ่านคำตอบในศูนย์ช่วยเหลือ"],
     support_status_changed: ["สถานะปัญหาอัปเดต", "ทีมงานอัปเดตสถานะ ticket ของคุณ"],
+    account_login: ["มีการเข้าสู่ระบบบัญชี", "หากไม่ใช่คุณ ให้เปลี่ยนรหัสผ่านทันที"],
+    password_changed: ["เปลี่ยนรหัสผ่านแล้ว", "รหัสผ่านบัญชี Hourkey ของคุณถูกเปลี่ยน"],
+    password_reset: ["รีเซ็ตรหัสผ่านแล้ว", "รหัสผ่านบัญชี Hourkey ของคุณถูกรีเซ็ต"],
+    store_purchase_updated: ["อัปเดตสมาชิกหรือการชำระเงินแล้ว", "แตะเพื่อตรวจสอบสถานะและใบเสร็จ"],
     payment_exception: ["การชำระเงินผิดปกติ", "พบออเดอร์ที่ชำระแล้วแต่ดำเนินการไม่สำเร็จ"],
     refund_failed: ["คืนเงินไม่สำเร็จ", "ตรวจสอบออเดอร์และการดึงยามโดยด่วน"],
     service_unhealthy: ["ระบบบางส่วนไม่พร้อม", "Health check ล้มต่อเนื่อง แตะเพื่อตรวจสอบ"],
@@ -61,6 +69,8 @@ const COPY = {
     job_fail_spike: ["Job failure spike", "Multiple background jobs failed"],
     support_report_new: ["New issue report", "A user submitted an issue"], support_user_reply: ["User replied", "A support ticket has a new reply"],
     support_admin_reply: ["Support replied", "Open Help Center to read the response"], support_status_changed: ["Issue status updated", "Your support ticket status changed"],
+    account_login: ["Account sign-in", "If this was not you, change your password now"], password_changed: ["Password changed", "Your Hourkey account password was changed"], password_reset: ["Password reset", "Your Hourkey account password was reset"],
+    store_purchase_updated: ["Membership or payment updated", "Open the app to review status and receipt"],
     payment_exception: ["Payment exception", "A paid order could not be fulfilled"], refund_failed: ["Refund failed", "Review the order and credit clawback"],
     service_unhealthy: ["Service unhealthy", "Health checks failed repeatedly"], service_recovered: ["Service recovered", "Affected services are healthy again"],
     admin_role_changed: ["Admin access changed", "An admin role was granted or revoked"],
@@ -69,6 +79,8 @@ const COPY = {
     user_signup: ["新會員", "有新會員註冊"], order_paid: ["收到付款", "訂單付款成功"], job_fail_spike: ["任務異常", "多個背景任務失敗"],
     support_report_new: ["新的問題回報", "用戶送出新的問題"], support_user_reply: ["用戶已回覆", "支援 ticket 有新訊息"],
     support_admin_reply: ["團隊已回覆", "開啟支援中心查看回覆"], support_status_changed: ["問題狀態已更新", "你的 ticket 狀態已變更"],
+    account_login: ["帳戶已登入", "若非本人操作，請立即更改密碼"], password_changed: ["密碼已更改", "您的 Hourkey 帳戶密碼已更改"], password_reset: ["密碼已重設", "您的 Hourkey 帳戶密碼已重設"],
+    store_purchase_updated: ["會員或付款已更新", "開啟應用程式查看狀態與收據"],
     payment_exception: ["付款異常", "已付款訂單未能完成"], refund_failed: ["退款失敗", "請檢查訂單與點數回收"],
     service_unhealthy: ["系統異常", "健康檢查連續失敗"], service_recovered: ["系統已恢復", "受影響服務已恢復正常"],
     admin_role_changed: ["管理員權限變更", "管理員角色已新增或撤銷"],
@@ -77,6 +89,8 @@ const COPY = {
     user_signup: ["新会员", "有新会员注册"], order_paid: ["收到付款", "订单付款成功"], job_fail_spike: ["任务异常", "多个后台任务失败"],
     support_report_new: ["新的问题报告", "用户提交了新的问题"], support_user_reply: ["用户已回复", "支持工单有新消息"],
     support_admin_reply: ["客服团队已回复", "打开帮助中心查看回复"], support_status_changed: ["问题状态已更新", "你的支持工单状态已变更"],
+    account_login: ["账户已登录", "若非本人操作，请立即更改密码"], password_changed: ["密码已更改", "您的 Hourkey 账户密码已更改"], password_reset: ["密码已重置", "您的 Hourkey 账户密码已重置"],
+    store_purchase_updated: ["会员或付款已更新", "打开应用查看状态和收据"],
     payment_exception: ["付款异常", "已付款订单未能完成"], refund_failed: ["退款失败", "请检查订单与时数回收"],
     service_unhealthy: ["系统异常", "健康检查连续失败"], service_recovered: ["系统已恢复", "受影响的服务已恢复正常"],
     admin_role_changed: ["管理员权限变更", "管理员角色已授予或撤销"],
@@ -85,6 +99,8 @@ const COPY = {
     user_signup: ["Thành viên mới", "Có thành viên mới đăng ký"], order_paid: ["Đã nhận thanh toán", "Đơn hàng đã được thanh toán"], job_fail_spike: ["Nhiều tác vụ lỗi", "Nhiều tác vụ nền đã thất bại"],
     support_report_new: ["Báo cáo sự cố mới", "Người dùng vừa gửi một sự cố"], support_user_reply: ["Người dùng đã trả lời", "Phiếu hỗ trợ có tin nhắn mới"],
     support_admin_reply: ["Bộ phận hỗ trợ đã trả lời", "Mở Trung tâm trợ giúp để xem phản hồi"], support_status_changed: ["Trạng thái sự cố đã cập nhật", "Trạng thái phiếu hỗ trợ của bạn đã thay đổi"],
+    account_login: ["Đăng nhập tài khoản", "Nếu không phải bạn, hãy đổi mật khẩu ngay"], password_changed: ["Đã đổi mật khẩu", "Mật khẩu tài khoản Hourkey đã được đổi"], password_reset: ["Đã đặt lại mật khẩu", "Mật khẩu tài khoản Hourkey đã được đặt lại"],
+    store_purchase_updated: ["Đã cập nhật thành viên hoặc thanh toán", "Mở ứng dụng để xem trạng thái và biên lai"],
     payment_exception: ["Thanh toán bất thường", "Đơn đã thanh toán nhưng chưa thể hoàn tất"], refund_failed: ["Hoàn tiền thất bại", "Hãy kiểm tra đơn hàng và việc thu hồi giờ"],
     service_unhealthy: ["Dịch vụ gặp sự cố", "Kiểm tra tình trạng thất bại liên tiếp"], service_recovered: ["Dịch vụ đã phục hồi", "Các dịch vụ bị ảnh hưởng đã hoạt động bình thường"],
     admin_role_changed: ["Quyền quản trị đã thay đổi", "Một vai trò quản trị đã được cấp hoặc thu hồi"],
@@ -93,6 +109,8 @@ const COPY = {
     user_signup: ["新規会員", "新しい会員が登録しました"], order_paid: ["支払いを受領", "注文の支払いが完了しました"], job_fail_spike: ["ジョブ障害の増加", "複数のバックグラウンドジョブが失敗しました"],
     support_report_new: ["新しい問題報告", "ユーザーから問題が報告されました"], support_user_reply: ["ユーザーから返信", "サポートチケットに新しい返信があります"],
     support_admin_reply: ["サポートから返信", "ヘルプセンターで回答を確認してください"], support_status_changed: ["問題の状態を更新", "サポートチケットの状態が変わりました"],
+    account_login: ["アカウントにログイン", "心当たりがない場合は今すぐパスワードを変更してください"], password_changed: ["パスワードを変更", "Hourkey のパスワードが変更されました"], password_reset: ["パスワードをリセット", "Hourkey のパスワードがリセットされました"],
+    store_purchase_updated: ["会員情報または支払いを更新", "アプリで状態と領収書を確認してください"],
     payment_exception: ["支払い処理の異常", "支払い済み注文を完了できませんでした"], refund_failed: ["返金に失敗", "注文と時間の回収を確認してください"],
     service_unhealthy: ["サービスに異常", "ヘルスチェックが連続して失敗しました"], service_recovered: ["サービスが復旧", "影響を受けたサービスは正常に戻りました"],
     admin_role_changed: ["管理者権限を変更", "管理者ロールが付与または取り消されました"],
@@ -101,6 +119,8 @@ const COPY = {
     user_signup: ["Новый участник", "Зарегистрирован новый участник"], order_paid: ["Платеж получен", "Заказ успешно оплачен"], job_fail_spike: ["Сбой фоновых задач", "Несколько фоновых задач завершились с ошибкой"],
     support_report_new: ["Новое обращение", "Пользователь сообщил о проблеме"], support_user_reply: ["Ответ пользователя", "В обращении появилось новое сообщение"],
     support_admin_reply: ["Ответ поддержки", "Откройте центр помощи, чтобы прочитать ответ"], support_status_changed: ["Статус обращения обновлен", "Статус вашего обращения изменился"],
+    account_login: ["Вход в аккаунт", "Если это были не вы, немедленно смените пароль"], password_changed: ["Пароль изменен", "Пароль аккаунта Hourkey был изменен"], password_reset: ["Пароль сброшен", "Пароль аккаунта Hourkey был сброшен"],
+    store_purchase_updated: ["Статус подписки или платежа обновлен", "Откройте приложение, чтобы проверить статус и чек"],
     payment_exception: ["Ошибка платежа", "Оплаченный заказ не удалось выполнить"], refund_failed: ["Возврат не выполнен", "Проверьте заказ и списание часов"],
     service_unhealthy: ["Сервис недоступен", "Проверка состояния несколько раз завершилась ошибкой"], service_recovered: ["Сервис восстановлен", "Затронутые сервисы снова работают нормально"],
     admin_role_changed: ["Права администратора изменены", "Роль администратора назначена или отозвана"],
@@ -109,6 +129,8 @@ const COPY = {
     user_signup: ["신규 회원", "새 회원이 가입했습니다"], order_paid: ["결제 완료", "주문 결제가 완료되었습니다"], job_fail_spike: ["작업 실패 증가", "여러 백그라운드 작업이 실패했습니다"],
     support_report_new: ["새 문제 신고", "사용자가 문제를 신고했습니다"], support_user_reply: ["사용자 답변", "지원 티켓에 새 답변이 있습니다"],
     support_admin_reply: ["지원팀 답변", "도움말 센터에서 답변을 확인하세요"], support_status_changed: ["문제 상태 업데이트", "지원 티켓 상태가 변경되었습니다"],
+    account_login: ["계정 로그인", "본인이 아니라면 지금 비밀번호를 변경하세요"], password_changed: ["비밀번호 변경", "Hourkey 계정 비밀번호가 변경되었습니다"], password_reset: ["비밀번호 재설정", "Hourkey 계정 비밀번호가 재설정되었습니다"],
+    store_purchase_updated: ["멤버십 또는 결제 업데이트", "앱에서 상태와 영수증을 확인하세요"],
     payment_exception: ["결제 처리 이상", "결제된 주문을 완료하지 못했습니다"], refund_failed: ["환불 실패", "주문과 시간 회수를 확인하세요"],
     service_unhealthy: ["서비스 이상", "상태 확인이 연속으로 실패했습니다"], service_recovered: ["서비스 복구", "영향받은 서비스가 정상으로 돌아왔습니다"],
     admin_role_changed: ["관리자 권한 변경", "관리자 역할이 부여되거나 취소되었습니다"],
@@ -117,6 +139,8 @@ const COPY = {
     user_signup: ["Nuevo miembro", "Se registró un nuevo miembro"], order_paid: ["Pago recibido", "El pedido se pagó correctamente"], job_fail_spike: ["Aumento de tareas fallidas", "Fallaron varias tareas en segundo plano"],
     support_report_new: ["Nuevo reporte de problema", "Un usuario reportó un problema"], support_user_reply: ["Respuesta del usuario", "Hay una nueva respuesta en el ticket"],
     support_admin_reply: ["Respuesta de soporte", "Abre el Centro de ayuda para leer la respuesta"], support_status_changed: ["Estado del problema actualizado", "Cambió el estado de tu ticket de soporte"],
+    account_login: ["Inicio de sesión", "Si no fuiste tú, cambia tu contraseña ahora"], password_changed: ["Contraseña cambiada", "Se cambió la contraseña de tu cuenta Hourkey"], password_reset: ["Contraseña restablecida", "Se restableció la contraseña de tu cuenta Hourkey"],
+    store_purchase_updated: ["Membresía o pago actualizado", "Abre la app para revisar el estado y el recibo"],
     payment_exception: ["Excepción de pago", "No se pudo completar un pedido pagado"], refund_failed: ["Reembolso fallido", "Revisa el pedido y la recuperación de horas"],
     service_unhealthy: ["Servicio con problemas", "Las comprobaciones de estado fallaron varias veces"], service_recovered: ["Servicio recuperado", "Los servicios afectados volvieron a la normalidad"],
     admin_role_changed: ["Acceso de administrador modificado", "Se concedió o revocó un rol de administrador"],
@@ -142,57 +166,29 @@ function messageFor(eventType, locale, payload) {
 
 async function sendNativePush(userId, msg, targetUrl, tag) {
   const tokens = await db.query(
-    `SELECT id,expo_push_token,fail_count FROM mobile_push_tokens
+    `SELECT id,expo_push_token,device_push_token,device_token_type,platform,fail_count
+       FROM mobile_push_tokens
       WHERE user_id=$1 AND enabled=true ORDER BY created_at LIMIT 100`,
     [userId]
   );
   if (!tokens.rows.length) return { sent: 0, temporaryFailures: 0 };
-  const accessToken = String(process.env.EXPO_PUSH_ACCESS_TOKEN || "").trim();
-  try {
-    const response = await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      },
-      body: JSON.stringify(tokens.rows.map((token) => ({
-        to: token.expo_push_token,
-        title: String(msg.title || "Hourkey").slice(0, 120),
-        body: String(msg.body || "").slice(0, 400),
-        data: { url: String(targetUrl || "/today").slice(0, 300) },
-        sound: "default",
-        priority: "high",
-        ttl: 60 * 60 * 6,
-        tag: String(tag || "hourkey").slice(0, 80),
-      }))),
-      signal: AbortSignal.timeout(12_000),
-    });
-    if (!response.ok) throw new Error(`expo_push_http_${response.status}`);
-    const payload = await response.json();
-    const tickets = Array.isArray(payload.data) ? payload.data : payload.data ? [payload.data] : [];
-    let sent = 0, temporaryFailures = 0;
-    for (let index = 0; index < tokens.rows.length; index++) {
-      const token = tokens.rows[index];
-      const ticket = tickets[index];
-      if (ticket?.status === "ok" && ticket.id) {
-        sent++;
-        await db.query(
-          `INSERT INTO mobile_push_receipts(ticket_id,token_id) VALUES($1,$2)
-           ON CONFLICT(ticket_id) DO NOTHING`,
-          [ticket.id, token.id]
-        ).catch(() => {});
-      } else if (ticket?.details?.error === "DeviceNotRegistered") {
-        await db.query(`UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now() WHERE id=$1`, [token.id]).catch(() => {});
-      } else {
-        temporaryFailures++;
-        await db.query(`UPDATE mobile_push_tokens SET fail_count=fail_count+1,updated_at=now() WHERE id=$1`, [token.id]).catch(() => {});
-      }
-    }
-    return { sent, temporaryFailures };
-  } catch {
-    return { sent: 0, temporaryFailures: tokens.rows.length };
-  }
+  const category = /(?:login|password|security|admin_role)/i.test(String(tag || "")) ? "security" : "service";
+  const result = await mobilePush.sendAll(tokens.rows.map((token) => ({
+    tokenId: token.id,
+    expoToken: token.expo_push_token,
+    deviceToken: token.device_push_token,
+    deviceTokenType: token.device_token_type,
+    platform: token.platform,
+    category,
+    title: String(msg.title || "Hourkey").slice(0, 120),
+    body: String(msg.body || "").slice(0, 400),
+    url: targetUrl,
+    data: { url: targetUrl, event: tag },
+  })), { db });
+  return {
+    sent: result.sent,
+    temporaryFailures: result.failed,
+  };
 }
 
 async function checkNativePushReceipts() {
@@ -362,15 +358,31 @@ async function sendDelivery(delivery) {
   );
 
   if (DRY_RUN) {
-    await db.query(`UPDATE notification_deliveries SET status='sent',push_status='dry_run',sent_at=now(),updated_at=now() WHERE id=$1`, [delivery.id]);
     return;
   }
   const native = await sendNativePush(
     delivery.recipient_user_id,
     msg,
     event.target_url,
-    `event_${event.id}`
+    event.event_type
   );
+  if (native.sent > 0) {
+    const category = /(?:login|password|security|admin_role)/i.test(String(event.event_type || "")) ? "security" : "service";
+    await db.query(
+      `INSERT INTO mobile_push_log
+         (user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,accepted_at,updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,'accepted',1,now(),now())
+       ON CONFLICT (user_id,yam_key) DO NOTHING`,
+      [
+        delivery.recipient_user_id,
+        `outbox|${event.id}`,
+        category,
+        msg.title,
+        msg.body,
+        JSON.stringify({ url: event.target_url, eventType: event.event_type }),
+      ],
+    ).catch((error) => log({ event: "mobile_history_failed", error: error.message }));
+  }
   const subs = await db.query(`SELECT id,endpoint,p256dh,auth,fail_count FROM push_subscriptions WHERE user_id=$1`, [delivery.recipient_user_id]);
   if ((!subs.rows.length || !vapidReady) && !native.sent && !native.temporaryFailures) {
     await db.query(

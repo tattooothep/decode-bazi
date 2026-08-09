@@ -9,6 +9,24 @@ const TOKEN_RE = /^(?:ExponentPushToken|ExpoPushToken)\[[A-Za-z0-9_-]{10,200}\]$
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
 
+function cleanTimezone(value: unknown): string | null {
+  const timezone = typeof value === "string" ? value.trim().slice(0, 80) : "";
+  if (!timezone) return null;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone }).format(new Date());
+    return timezone;
+  } catch {
+    return null;
+  }
+}
+
+function nativeTokenValid(platform: string, type: string | null, token: string | null): boolean {
+  if (token === null && type === null) return true; // V190/V191 compatibility
+  if (!token || !type || token.length < 16 || token.length > 4096) return false;
+  if (/[\u0000-\u0020\u007f]/.test(token)) return false;
+  return (platform === "android" && type === "fcm") || (platform === "ios" && type === "apns");
+}
+
 async function authorize(req: Request) {
   const session = await getMobileSession(req);
   if (!session) return { ok: false as const, error: "not_authorized", status: 401 };
@@ -33,12 +51,15 @@ export async function GET(req: Request) {
    * (ทางบริการกลางพิสูจน์แล้วว่าใช้ไม่ได้ ตอบ InvalidCredentials 480 รอบติด)
    * ผลคือหน้าแอพขึ้นว่า "พร้อมรับแล้ว" ทั้งที่ส่งไปไม่มีวันถึง แล้วซ่อนปุ่มแก้ทิ้ง
    */
-  const count = await q1<{ n: number; current: boolean; deliverable: boolean }>(
+  const count = await q1<{ n: number; current: boolean; native_deliverable: boolean; ios_current: boolean }>(
     `SELECT count(*)::int AS n,
             bool_or(installation_id=$2::uuid) AS current,
             bool_or(installation_id=$2::uuid
+                    AND platform='android'
+                    AND device_token_type='fcm'
                     AND device_push_token IS NOT NULL
-                    AND device_push_token <> '') AS deliverable
+                    AND device_push_token <> '') AS native_deliverable,
+            bool_or(installation_id=$2::uuid AND platform='ios') AS ios_current
        FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`,
     [session.userId, installationId || null]
   );
@@ -47,7 +68,10 @@ export async function GET(req: Request) {
       ok: true,
       subscribed: installationId ? count?.current === true : (count?.n || 0) > 0,
       /** ส่งถึงเครื่องนี้ได้จริงไหม — มีกุญแจส่งตรงหรือยัง */
-      deliverable: installationId ? count?.deliverable === true : null,
+      deliverable: installationId
+        ? count?.native_deliverable === true
+          || (count?.ios_current === true && process.env.EXPO_IOS_PUSH_READY === "true")
+        : null,
       active_installations: count?.n || 0,
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
@@ -64,6 +88,7 @@ export async function POST(req: Request) {
   const platform = String(body.platform || "").trim();
   const locale = LOCALES.has(String(body.locale || "")) ? String(body.locale) : "th";
   const appVersion = String(body.app_version || "").trim().slice(0, 40) || null;
+  const timezone = cleanTimezone(body.timezone);
   /**
    * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
    *
@@ -72,7 +97,16 @@ export async function POST(req: Request) {
    * ยังไม่บังคับ เพราะแอพรุ่นเก่ายังส่งมาแค่กุญแจเดิม
    */
   const deviceToken = String(body.device_push_token || "").trim().slice(0, 4096) || null;
-  if (!TOKEN_RE.test(token) || !UUID_RE.test(installationId) || !["ios", "android"].includes(platform)) {
+  const deviceTokenType = body.device_token_type === "fcm" || body.device_token_type === "apns"
+    ? body.device_token_type
+    : null;
+  if (
+    !TOKEN_RE.test(token)
+    || !UUID_RE.test(installationId)
+    || !["ios", "android"].includes(platform)
+    || !nativeTokenValid(platform, deviceTokenType, deviceToken)
+    || (body.timezone != null && timezone === null)
+  ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
   }
 
@@ -87,23 +121,25 @@ export async function POST(req: Request) {
     );
     const registered = await client.query<{ id: string }>(
       `INSERT INTO mobile_push_tokens
-         (user_id,installation_id,expo_push_token,device_push_token,platform,app_version,locale,enabled,
+         (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,app_version,locale,timezone,enabled,
           fail_count,last_registered_at,disabled_at,updated_at)
-       VALUES($1,$2::uuid,$3,$7,$4,$5,$6,true,0,now(),NULL,now())
+       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now())
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
          device_push_token=COALESCE(EXCLUDED.device_push_token, mobile_push_tokens.device_push_token),
+         device_token_type=COALESCE(EXCLUDED.device_token_type, mobile_push_tokens.device_token_type),
          platform=EXCLUDED.platform,
          app_version=EXCLUDED.app_version,
          locale=EXCLUDED.locale,
+         timezone=COALESCE(EXCLUDED.timezone, mobile_push_tokens.timezone),
          enabled=true,
          fail_count=0,
          last_registered_at=now(),
          disabled_at=NULL,
          updated_at=now()
        RETURNING id`,
-      [session.userId, installationId, token, platform, appVersion, locale, deviceToken]
+      [session.userId, installationId, token, platform, appVersion, locale, deviceToken, deviceTokenType, timezone]
     );
     row = registered.rows[0];
     await client.query("COMMIT");
@@ -121,7 +157,10 @@ export async function POST(req: Request) {
       WHERE user_id=$1 AND installation_id=$2::uuid AND id<>$3 AND enabled=true`,
     [session.userId, installationId, row.id]
   );
-  return NextResponse.json({ ok: true, subscribed: true, registration_id: row.id });
+  const deliverable = platform === "android"
+    ? deviceTokenType === "fcm" && deviceToken !== null
+    : process.env.EXPO_IOS_PUSH_READY === "true";
+  return NextResponse.json({ ok: true, subscribed: true, deliverable, registration_id: row.id });
 }
 
 export async function DELETE(req: Request) {

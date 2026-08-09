@@ -47,30 +47,8 @@ async function getJson(user, url) {
   return res.json().catch(() => null);
 }
 
-const push = require("../src/lib/push-send.cjs");
-
-/**
- * ส่งทั้งชุดผ่านตัวส่งกลาง — ส่งตรงถึงกูเกิล ไม่ผ่านคนกลาง
- *
- * 🔴 เดิมยิงไปบริการกลางของ Expo ซึ่ง **480 รอบได้ expo_ok=0 ทุกรอบ**
- * ไม่เคยสำเร็จเลยสักครั้ง เพราะต้องเอากุญแจโครงการไปฝากที่นั่นอีกที
- * ท่อส่งตรงพิสูจน์แล้วว่าถึงเครื่องจริง (30 ก.ค. เจ้าของยืนยันเอง)
- *
- * คืนรูปเดิม {ok, fail} เพื่อไม่ต้องแก้บรรทัดรายงานผลท้ายไฟล์
- * แต่เพิ่ม gone/noToken ให้รู้ว่าเครื่องตายกี่เครื่อง ยังไม่มีกุญแจกี่เครื่อง
- */
-async function sendExpo(messages, db) {
-  const r = await push.sendAll(messages, { db: db ?? null, dry: DRY });
-  if (r.noToken > 0) {
-    console.log(`  ℹ️ ${r.noToken} เครื่องยังไม่มีกุญแจแบบส่งตรง (ต้องลงแอพรุ่นใหม่)`);
-  }
-  if (r.gone > 0) {
-    console.log(`  🗑️ ปิดกุญแจเครื่องที่ไม่รับแล้ว ${r.gone} เครื่อง`);
-  }
-  return { ok: r.sent, fail: r.failed };
-}
-
 const guard = require("../src/lib/push-guard.cjs");
+const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 
 async function main() {
   if (SLOT !== "morning" && SLOT !== "evening") throw new Error(`bad slot ${SLOT}`);
@@ -82,22 +60,27 @@ async function main() {
   await db.connect();
   const { rows: users } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
-           array_agg(json_build_object('token', t.device_push_token, 'locale', COALESCE(t.locale,'th'))) AS tokens,
+           array_agg(json_build_object(
+             'id', t.id, 'device', t.device_push_token, 'deviceType', t.device_token_type,
+             'expo', t.expo_push_token, 'platform', t.platform,
+             'locale', COALESCE(t.locale,'th')
+           )) AS tokens,
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
-           np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,
+           np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled, np2.daily_slot,
            np2.quiet_start, np2.quiet_end, np2.max_per_day, np2.paused_until,
            COALESCE(np2.timezone, u.timezone) AS user_timezone,
            (np2.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.sent_at >= now() - interval '24 hours') AS sent_today
+             WHERE l.user_id = u.id AND l.delivery_status='accepted'
+               AND l.sent_at >= now() - interval '24 hours') AS sent_today
       FROM mobile_push_tokens t JOIN users u ON u.id = t.user_id
       LEFT JOIN mobile_notification_prefs np2 ON np2.user_id = u.id
       LEFT JOIN mobile_notification_prefs p ON p.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
      GROUP BY u.id, np2.user_id, np2.yam_enabled, np2.auspicious_enabled,
-              np2.daily_enabled, np2.quiet_start, np2.quiet_end, np2.paused_until,
+              np2.daily_enabled, np2.daily_slot, np2.quiet_start, np2.quiet_end, np2.paused_until,
               np2.max_per_day, np2.timezone, u.timezone`);
   console.log(`[mobile-daily-push] ${new Date().toISOString()} slot=${SLOT} users=${users.length} dry=${DRY}`);
 
@@ -110,10 +93,17 @@ async function main() {
    */
   const runAt = new Date();
 
-  let sent = 0, skipped = 0;
-  const messages = [];
+  let sent = 0, failed = 0, skipped = 0;
   for (const u of users) {
     try {
+      const chosenSlot = u.daily_slot === "evening" || u.daily_slot === "both" ? u.daily_slot : "morning";
+      if (chosenSlot !== "both" && chosenSlot !== SLOT) { skipped++; continue; }
+      const localNowMin = guard.localMinutes(u.user_timezone, runAt);
+      const targetMin = SLOT === "morning" ? 7 * 60 : 19 * 60 + 30;
+      if (!DRY && (localNowMin === null || localNowMin < targetMin || localNowMin >= targetMin + 15)) {
+        skipped++;
+        continue;
+      }
 
       /**
        * 🔴 ทุกใบต้องผ่านตัวคุมกลาง (30 ก.ค. 69)
@@ -159,7 +149,7 @@ async function main() {
       const hoursData = hoursRes && hoursRes.ok ? await hoursRes.json().catch(() => null) : null;
       const hours = hoursData && Array.isArray(hoursData.hours) ? hoursData.hours : [];
       // เช้า = เอาเฉพาะยามที่ยังไม่ผ่าน (แจ้ง 07:00 แล้วชี้ยามตี 1 = ไร้ประโยชน์) · ค่ำชี้พรุ่งนี้ทั้งวัน
-      const nowMin = SLOT === "morning" ? thaiNow.getUTCHours() * 60 + thaiNow.getUTCMinutes() : -1;
+      const nowMin = SLOT === "morning" ? (localNowMin ?? 0) : -1;
       const usable = hours.filter((h) => {
         const m = /^(\d{2}):(\d{2})-/.exec(String(h.range || ""));
         return m ? Number(m[1]) * 60 + Number(m[2]) >= nowMin : false;
@@ -171,10 +161,10 @@ async function main() {
       const build = (loc) => {
         const parts = [];
         if (loc === "zh") {
-          if (score != null) parts.push(`日力 ${score}${label ? `（${label}）` : ""}`);
+          if (score != null) parts.push(`日力 ${score}`);
           if (golden && golden.range) parts.push(`黃金時 ${golden.range}`);
         } else if (loc === "en") {
-          if (score != null) parts.push(`Day power ${score}${label ? ` (${label})` : ""}`);
+          if (score != null) parts.push(`Day power ${score}`);
           if (golden && golden.range) parts.push(`golden hour ${golden.range}`);
         } else {
           if (score != null) parts.push(`พลังวัน ${score}${label ? ` (${label})` : ""}`);
@@ -192,30 +182,47 @@ async function main() {
       if (!thMsg.body) { skipped++; continue; }
 
       const yamKey = `daily|${SLOT}|${dateStr}|${u.profile_id}`;
-      const dup = await db.query(
-        `INSERT INTO mobile_push_log (user_id, yam_key, kind, title, body, payload)
-         VALUES ($1,$2,'daily',$3,$4,$5::jsonb)
-         ON CONFLICT (user_id, yam_key) DO NOTHING RETURNING id`,
-        [u.id, yamKey, thMsg.title, thMsg.body, JSON.stringify({ url: "hourkey://today", slot: SLOT, date: dateStr })]);
-      if (!dup.rows.length) { skipped++; continue; }
+      const userMessages = [];
       for (const tk of u.tokens || []) {
-        const entry = typeof tk === "object" && tk ? tk : { token: tk, locale: "th" };
-        const loc = entry.locale === "en" || entry.locale === "zh" ? entry.locale : "th";
+        const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
+        const localeValue = String(entry.locale || "th").toLowerCase();
+        const loc = localeValue === "th"
+          ? "th"
+          : localeValue === "zh" || localeValue === "cn" || localeValue.startsWith("zh-")
+            ? "zh"
+            : "en";
         const m = build(loc);
         if (!m.body) continue;
-        messages.push({ deviceToken: entry.token, title: m.title, body: m.body, url: "hourkey://today", data: { url: "hourkey://today", daily: yamKey } });
+        userMessages.push({
+          tokenId: entry.id,
+          deviceToken: entry.device,
+          deviceTokenType: entry.deviceType,
+          expoToken: entry.expo,
+          platform: entry.platform,
+          category: "daily",
+          title: m.title,
+          body: m.body,
+          url: "/today",
+          data: { url: "/today", daily: yamKey },
+        });
       }
-      sent++;
+      const result = await delivery.deliver(db, {
+        userId: u.id,
+        key: yamKey,
+        kind: "daily",
+        title: thMsg.title,
+        body: thMsg.body,
+        payload: { url: "/today", slot: SLOT, date: dateStr },
+        messages: userMessages,
+      }, { dry: DRY });
+      if (result.status === "accepted" || result.status === "dry") sent++;
+      else if (result.status === "failed") failed++;
+      else skipped++;
       if (DRY) console.log(`[DRY] ${u.email} → ${thMsg.title} | ${thMsg.body}`);
     } catch (e) { console.error(`[mobile-daily-push] user=${u.id}`, e.message); }
   }
 
-  if (!DRY) {
-    const r = await sendExpo(messages, db);
-    console.log(`[mobile-daily-push] slot=${SLOT} users_notified=${sent} skipped=${skipped} expo_ok=${r.ok} expo_fail=${r.fail}`);
-  } else {
-    console.log(`[mobile-daily-push] DRY slot=${SLOT} users_would_notify=${sent} skipped=${skipped} msgs=${messages.length}`);
-  }
+  console.log(`[mobile-daily-push] ${DRY ? "DRY " : ""}slot=${SLOT} accepted=${sent} failed=${failed} skipped=${skipped}`);
   await db.end();
 }
 

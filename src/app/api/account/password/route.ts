@@ -10,6 +10,7 @@ import { verifyPassword, hashPassword, signSession, setAuthCookie } from "@/lib/
 import { rateLimit } from "@/lib/rate-limit";
 import { getAccountUser, clientIpFrom } from "@/lib/account-utils";
 import { mobileBearerToken } from "@/lib/mobile-auth";
+import { enqueueNotification } from "@/lib/notification-outbox";
 
 export async function POST(req: Request) {
   const acc = await getAccountUser(req);
@@ -66,6 +67,14 @@ export async function POST(req: Request) {
     sv,
   });
   await setAuthCookie(sess);
+  await enqueueNotification({
+    eventType: "password_changed",
+    audienceKind: "user",
+    recipientUserId: acc.u.id,
+    dedupeKey: `password-changed:${acc.u.id}:${sv}`,
+    targetUrl: "/account",
+    expiresAt: new Date(Date.now() + 24 * 60 * 60_000),
+  }).catch((error) => console.error("[account-password] security notification enqueue failed", error));
   return NextResponse.json({
     ok: true,
     mode: hasPassword ? "changed" : "set",

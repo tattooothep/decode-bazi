@@ -5,6 +5,7 @@ import { applyVerifiedStorePurchase } from "@/lib/mobile-store-ledger";
 import { mobileStorePackage } from "@/lib/mobile-store-products";
 import { verifyMobileStorePurchase, type StoreVerifyInput } from "@/lib/mobile-store-verifier";
 import { getProductAccess } from "@/lib/product-entitlement";
+import { enqueueNotification } from "@/lib/notification-outbox";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -45,6 +46,17 @@ export async function POST(req: Request) {
     const result = await applyVerifiedStorePurchase(session.userId, verified);
     const access = await getProductAccess(session.userId);
     const pkg = mobileStorePackage(verified.productId);
+    if (result.status === "applied") {
+      await enqueueNotification({
+        eventType: "store_purchase_updated",
+        audienceKind: "user",
+        recipientUserId: session.userId,
+        dedupeKey: `store-update:${verified.platform}:${verified.eventRef}`,
+        targetUrl: "/store",
+        payload: { product_id: verified.productId, state: verified.state, kind: verified.eventKind },
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60_000),
+      }).catch((error) => console.error("[mobile-store] service notification enqueue failed", error));
+    }
     return NextResponse.json(
       {
         ok: true,
