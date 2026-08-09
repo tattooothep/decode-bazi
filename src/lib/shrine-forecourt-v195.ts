@@ -138,6 +138,15 @@ export class ForecourtDailyLimitReached extends Error {
   }
 }
 
+export class ForecourtPrepareReplayRejected extends Error {
+  constructor(
+    message: "forecourt_ticket_expired" | "forecourt_throw_cycle_closed",
+    readonly projection: ForecourtProjection,
+  ) {
+    super(message);
+  }
+}
+
 export class ForecourtThrowConflict extends Error {
   constructor(message = "forecourt_throw_already_committed") {
     super(message);
@@ -484,7 +493,11 @@ export type ForecourtTransaction = Readonly<{
   authorizationByPrepareKey(
     userId: string,
     idempotencyKey: string,
-  ): Promise<Readonly<{ requestHash: string; resultJson: ForecourtPrepareResult }> | null>;
+  ): Promise<Readonly<{
+    dayId: string;
+    requestHash: string;
+    resultJson: ForecourtPrepareResult;
+  }> | null>;
   authorizationById(userId: string, throwId: string): Promise<ForecourtAuthorization | null>;
   insertAuthorization(input: Readonly<{
     authorization: ForecourtAuthorization;
@@ -758,10 +771,23 @@ export async function prepareForecourtThrowWithDatabase(
       if (replay.requestHash !== requestHash) throw new ForecourtIdempotencyConflict();
       const { cycle, now } = await activeCycle(tx, userId);
       await reconcileRecovery(tx, userId, cycle, now);
-      const currentState = stateResult(
+      const currentProjection = projection(
         cycle,
-        projection(cycle, await tx.counts(userId, cycle.id)),
+        await tx.counts(userId, cycle.id),
       );
+      const currentState = stateResult(cycle, currentProjection);
+      if (replay.dayId !== cycle.id) {
+        throw new ForecourtPrepareReplayRejected(
+          "forecourt_throw_cycle_closed",
+          currentProjection,
+        );
+      }
+      if (now.getTime() > new Date(replay.resultJson.expiresAt).getTime()) {
+        throw new ForecourtPrepareReplayRejected(
+          "forecourt_ticket_expired",
+          currentProjection,
+        );
+      }
       // The transaction identity stays exact (throw/ticket/ordinal), while the
       // state projection is always reconciled at replay time. Returning the
       // stored projection here can roll a client back to an earlier throw or
@@ -1040,12 +1066,16 @@ export const productionForecourtDatabase: ForecourtDatabase = {
         },
         async authorizationByPrepareKey(id, key) {
           const result = await client.query(
-            `SELECT request_hash,result_json FROM shrine_forecourt_throw_authorizations
+            `SELECT day_id,request_hash,result_json FROM shrine_forecourt_throw_authorizations
               WHERE user_id=$1 AND idempotency_key=$2`,
             [id, key],
           );
           return result.rows[0]
-            ? { requestHash: result.rows[0].request_hash, resultJson: result.rows[0].result_json }
+            ? {
+              dayId: result.rows[0].day_id,
+              requestHash: result.rows[0].request_hash,
+              resultJson: result.rows[0].result_json,
+            }
             : null;
         },
         async authorizationById(id, throwIdentifier) {

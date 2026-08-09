@@ -8,6 +8,7 @@ import {
   ForecourtIdempotencyConflict,
   ForecourtImpactError,
   ForecourtInputError,
+  ForecourtPrepareReplayRejected,
   ForecourtThrowConflict,
   ForecourtTicketError,
   assertForecourtCapability,
@@ -87,6 +88,12 @@ export function forecourtErrorResponse(error: unknown) {
   }
   if (error instanceof ForecourtImpactError) {
     return shrineJson({ ok: false, error: error.message }, 422);
+  }
+  if (error instanceof ForecourtPrepareReplayRejected) {
+    return shrineJson(
+      { ok: false, error: error.message, projection: error.projection },
+      error.message === "forecourt_ticket_expired" ? 410 : 409,
+    );
   }
   if (error instanceof ForecourtTicketError) {
     return shrineJson(

@@ -9,6 +9,7 @@ import {
   ForecourtIdempotencyConflict,
   ForecourtImpactError,
   ForecourtInputError,
+  ForecourtPrepareReplayRejected,
   ForecourtThrowConflict,
   ForecourtTicketError,
   commitForecourtThrowWithDatabase,
@@ -162,6 +163,7 @@ class MemoryForecourtDatabase implements ForecourtDatabase {
           (item) => item.authorization.userId === userId && item.idempotencyKey === key,
         );
         return row ? {
+          dayId: row.authorization.dayId,
           requestHash: row.authorization.requestHash,
           resultJson: row.authorization.resultJson,
         } : null;
@@ -611,23 +613,49 @@ assert.deepEqual(
 assert.equal(commitReplayAfterRollover.nextResetAt, currentCycleState.nextResetAt);
 assert.equal(exactCommitDb.commits.length, 1, "commit replay remains one durable write");
 
-const prepareReplayAfterRollover = await prepareForecourtThrowWithDatabase(
-  exactCommitDb,
-  U1,
-  parseForecourtPrepareInput(rawPrepare(41)),
-  secret,
+await assert.rejects(
+  prepareForecourtThrowWithDatabase(
+    exactCommitDb,
+    U1,
+    parseForecourtPrepareInput(rawPrepare(41)),
+    secret,
+  ),
+  (error: unknown) => error instanceof ForecourtPrepareReplayRejected
+    && error.message === "forecourt_throw_cycle_closed"
+    && error.projection.localDate === currentCycleState.projection.localDate
+    && error.projection.throwsUsed === 0,
+  "a lost prior-cycle prepare ends rejected with today's projection",
 );
-assert.equal(prepareReplayAfterRollover.replayed, true);
-assert.equal(prepareReplayAfterRollover.throwId, exactPrepared.throwId);
-assert.equal(prepareReplayAfterRollover.ticket, exactPrepared.ticket);
-assert.equal(prepareReplayAfterRollover.ordinal, exactPrepared.ordinal);
-assert.deepEqual(prepareReplayAfterRollover.projection, currentCycleState.projection);
-assert.equal(prepareReplayAfterRollover.nextResetAt, currentCycleState.nextResetAt);
 assert.equal(
   exactCommitDb.authorizations.length,
   1,
   "prepare replay remains one durable authorization",
 );
+
+const expiredPrepareDb = new MemoryForecourtDatabase();
+const expiresPrepared = await prepareForecourtThrowWithDatabase(
+  expiredPrepareDb,
+  U1,
+  parseForecourtPrepareInput(rawPrepare(42)),
+  secret,
+);
+expiredPrepareDb.clock = new Date(
+  new Date(expiresPrepared.expiresAt).getTime() + 1,
+);
+await assert.rejects(
+  prepareForecourtThrowWithDatabase(
+    expiredPrepareDb,
+    U1,
+    parseForecourtPrepareInput(rawPrepare(42)),
+    secret,
+  ),
+  (error: unknown) => error instanceof ForecourtPrepareReplayRejected
+    && error.message === "forecourt_ticket_expired"
+    && error.projection.localDate === expiresPrepared.projection.localDate
+    && error.projection.throwsUsed === 1,
+  "same-cycle prepare replay after ticket TTL ends rejected without a launch",
+);
+assert.equal(expiredPrepareDb.authorizations.length, 1, "expiry burns no new ordinal");
 
 // Exact committed replay remains available after ticket expiry; new expired commit is rejected.
 commitDb.clock = new Date("2026-08-09T05:00:00.000Z");
