@@ -34,7 +34,11 @@ const omittedNativeToken = `fcm-legacy-clear-${Date.now()}`;
 const raceInstallation = crypto.randomUUID();
 const raceExpo = `ExponentPushToken[raceowner${Date.now()}]`;
 const forcedFailureExpo = "ExponentPushToken[forcedfailurefixture]";
+const forcedFunction = `notification_integrity_forced_error_${process.pid}`;
+const forcedTrigger = `notification_integrity_forced_trigger_${process.pid}`;
+const serverLogPath = process.env.NEXT_DEV_LOG_PATH || ".next/dev/logs/next-development.log";
 let checks = 0;
+let forcedFixtureCreated = false;
 
 function check(condition, message) {
   if (!condition) throw new Error(`FAIL ${message}`);
@@ -68,6 +72,18 @@ async function waitForAdvisoryWaiters(minimum) {
 
 try {
   await db.connect();
+  await db.query(`CREATE FUNCTION ${forcedFunction}() RETURNS trigger LANGUAGE plpgsql AS $$
+    BEGIN
+      IF NEW.expo_push_token='ExponentPushToken[forcedfailurefixture]' THEN
+        RAISE EXCEPTION 'forced provider token %', NEW.expo_push_token;
+      END IF;
+      RETURN NEW;
+    END;
+  $$`);
+  await db.query(`CREATE TRIGGER ${forcedTrigger}
+    BEFORE INSERT OR UPDATE OF expo_push_token ON mobile_push_tokens
+    FOR EACH ROW EXECUTE FUNCTION ${forcedFunction}()`);
+  forcedFixtureCreated = true;
   for (let index = 0; index < users.length; index += 1) {
     await db.query(
       `INSERT INTO users(id,email,name,is_active,tier,hour_balance,session_version,created_at)
@@ -157,11 +173,40 @@ try {
   rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE installation_id=$1 AND enabled=true`, [raceInstallation]);
   check(rows.rows[0].n === 0, "the queued unregister linearizes after an in-flight registration and leaves no active token");
 
+  for (const order of ["post-first", "delete-first"]) {
+    const crossInstallation = crypto.randomUUID();
+    const crossDestination = crypto.randomUUID();
+    const crossExpo = `ExponentPushToken[crossrace${order}${Date.now()}]`;
+    const crossNative = `fcm-cross-race-${order}-${Date.now()}`;
+    result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+      expo_push_token: crossExpo, installation_id: crossInstallation, platform: "android",
+      device_push_token: crossNative, device_token_type: "fcm",
+    }) });
+    check(result.response.status === 200, `${order}: account A seeds a transferable active installation`);
+    await db.query("SELECT pg_advisory_lock(hashtextextended('mobile-push-user:' || $1::text, 0))", [users[0]]);
+    const transfer = () => api("/api/mobile/v1/push", tokens[1], { method: "POST", body: JSON.stringify({
+      expo_push_token: crossExpo, installation_id: crossDestination, platform: "android",
+    }) });
+    const unregisterAll = () => api("/api/mobile/v1/push", tokens[0], { method: "DELETE", body: JSON.stringify({}) });
+    const first = order === "post-first" ? transfer() : unregisterAll();
+    await waitForAdvisoryWaiters(1);
+    const second = order === "post-first" ? unregisterAll() : transfer();
+    await waitForAdvisoryWaiters(2);
+    await db.query("SELECT pg_advisory_unlock(hashtextextended('mobile-push-user:' || $1::text, 0))", [users[0]]);
+    const [firstResult, secondResult] = await Promise.all([first, second]);
+    check(firstResult.response.status === 200 && secondResult.response.status === 200, `${order}: cross-user transfer and unregister-all complete without a deadlock or 500`);
+    rows = await db.query(`SELECT user_id::text,enabled FROM mobile_push_tokens WHERE expo_push_token=$1`, [crossExpo]);
+    check(rows.rowCount === 1 && rows.rows[0].user_id === users[1] && rows.rows[0].enabled === true, `${order}: cross-user transfer leaves account B as the valid active owner`);
+  }
+
+  const logOffset = fs.existsSync(serverLogPath) ? fs.statSync(serverLogPath).size : 0;
   result = await api("/api/mobile/v1/push", tokens[1], { method: "POST", body: JSON.stringify({
     expo_push_token: forcedFailureExpo, installation_id: crypto.randomUUID(), platform: "ios",
   }) });
+  const serverLogTail = fs.existsSync(serverLogPath) ? fs.readFileSync(serverLogPath, "utf8").slice(logOffset) : "";
   check(result.response.status === 500 && result.data.error === "push_registration_failed"
-    && !JSON.stringify(result.data).includes("forcedfailurefixture"), "database registration failures return a sanitized response without provider-token details");
+    && !JSON.stringify(result.data).includes("forcedfailurefixture")
+    && !serverLogTail.includes("forcedfailurefixture") && !serverLogTail.includes("forced provider token"), "database registration failures never surface raw provider-token details in response or server log");
 
   result = await api("/api/mobile/v1/notifications", tokens[1]);
   check(result.response.status === 200 && result.data.prefs?.privacyPreview === false && result.data.prefs?.locale === "th", "privacy-preview and locale default safely for an account without preferences");
@@ -187,6 +232,10 @@ try {
   console.log(`${checks} mobile push checks passed`);
 } finally {
   if (db._connected) {
+    if (forcedFixtureCreated) {
+      await db.query(`DROP TRIGGER IF EXISTS ${forcedTrigger} ON mobile_push_tokens`).catch(() => null);
+      await db.query(`DROP FUNCTION IF EXISTS ${forcedFunction}()`).catch(() => null);
+    }
     await db.query(`DELETE FROM mobile_push_tokens WHERE user_id=ANY($1::uuid[])`, [users]).catch(() => null);
     await db.query(`UPDATE users SET current_org_id=NULL WHERE id=ANY($1::uuid[])`, [users]).catch(() => null);
     await db.query(`DELETE FROM organizations WHERE id=$1`, [orgId]).catch(() => null);

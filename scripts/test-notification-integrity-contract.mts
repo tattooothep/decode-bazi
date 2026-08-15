@@ -32,7 +32,24 @@ assert.doesNotMatch(
 );
 
 assert.match(route, /pg_advisory_xact_lock/iu, "ownership transfers must serialize concurrent registrations");
-assert.match(route, /mobile-push-user:/iu, "registration and unregister must serialize same-account lifecycle changes");
+assert.match(route, /lockIdentitySet\(client, "user"/iu, "registration and unregister must serialize same-account lifecycle changes");
+assert.match(
+  route,
+  /await lockIdentitySet\(client, "user"[\s\S]+await lockIdentitySet\(client, "expo"[\s\S]+await lockIdentitySet\(client, "installation"[\s\S]+await lockIdentitySet\(client, "native"/u,
+  "all mutations must take identity advisory locks in one global user/expo/installation/native order",
+);
+const postStart = route.indexOf('export async function POST');
+const deleteStart = route.indexOf('export async function DELETE');
+const postRoute = route.slice(postStart, deleteStart);
+const deleteRoute = route.slice(deleteStart);
+assert.ok(
+  postRoute.indexOf("FOR UPDATE") > postRoute.indexOf("await lockPushIdentities"),
+  "POST must acquire all advisory identity locks before row locks",
+);
+assert.ok(
+  deleteRoute.indexOf("FOR UPDATE") > deleteRoute.indexOf("await lockPushIdentities"),
+  "DELETE must acquire advisory installation locks before row locks",
+);
 assert.match(
   route,
   /async function DELETE[\s\S]+UPDATE mobile_push_tokens SET enabled=false[\s\S]+return NextResponse\.json\(\{ ok: true, subscribed: false \}\)/u,

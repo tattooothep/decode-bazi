@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { PoolClient } from "pg";
 import { pool, q, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -8,6 +9,42 @@ export const dynamic = "force-dynamic";
 const TOKEN_RE = /^(?:ExponentPushToken|ExpoPushToken)\[[A-Za-z0-9_-]{10,200}\]$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
+
+type PushIdentity = {
+  user_id: string;
+  expo_push_token: string;
+  installation_id: string;
+  device_push_token: string | null;
+};
+
+function sortedValues(values: Array<string | null | undefined>): string[] {
+  return [...new Set(values.filter((value): value is string => Boolean(value)))].sort();
+}
+
+async function lockIdentitySet(client: PoolClient, kind: "user" | "expo" | "installation" | "native", values: Array<string | null | undefined>) {
+  for (const value of sortedValues(values)) {
+    await client.query(
+      `SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-${kind}:' || $1::text, 0))`,
+      [value],
+    );
+  }
+}
+
+/**
+ * Every mutation uses this order: users, Expo identities, installations, then
+ * native tokens. Discovery is deliberately unlocked; row locks only happen
+ * after the full advisory identity set is held.
+ */
+async function lockPushIdentities(
+  client: PoolClient,
+  rows: PushIdentity[],
+  requested: { userId: string; expoTokens?: string[]; installationIds?: string[]; nativeTokens?: Array<string | null> },
+) {
+  await lockIdentitySet(client, "user", [requested.userId, ...rows.map((row) => row.user_id)]);
+  await lockIdentitySet(client, "expo", [...(requested.expoTokens || []), ...rows.map((row) => row.expo_push_token)]);
+  await lockIdentitySet(client, "installation", [...(requested.installationIds || []), ...rows.map((row) => row.installation_id)]);
+  await lockIdentitySet(client, "native", [...(requested.nativeTokens || []), ...rows.map((row) => row.device_push_token)]);
+}
 
 function cleanTimezone(value: unknown): string | null {
   const timezone = typeof value === "string" ? value.trim().slice(0, 80) : "";
@@ -114,35 +151,27 @@ export async function POST(req: Request) {
   let row: { id: string } | undefined;
   try {
     await client.query("BEGIN");
-    await client.query(
-      "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:' || $1::text, 0))",
-      [session.userId]
-    );
-    // Serialize each physical identity before changing ownership. The partial
-    // unique indexes are the final guard; these locks prevent a legitimate
-    // concurrent token rotation from failing after both requests disable the
-    // previous active row.
-    await client.query(
-      "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:' || $1::text, 0))",
-      [installationId]
-    );
-    const existingNative = await client.query<{ device_push_token: string | null }>(
-      `SELECT device_push_token FROM mobile_push_tokens
+    const discovered = await client.query<PushIdentity>(
+      `SELECT user_id::text, expo_push_token, installation_id::text, device_push_token FROM mobile_push_tokens
         WHERE expo_push_token=$1
            OR (user_id=$2 AND installation_id=$3::uuid AND enabled=true)
-        FOR UPDATE`,
-      [token, session.userId, installationId]
+           OR ($4::text IS NOT NULL AND device_push_token=$4)`,
+      [token, session.userId, installationId, deviceToken],
     );
-    const nativeTokens = [...new Set([
-      deviceToken,
-      ...existingNative.rows.map((existing) => existing.device_push_token),
-    ].filter((value): value is string => value !== null))].sort();
-    for (const nativeToken of nativeTokens) {
-      await client.query(
-        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-native:' || $1::text, 0))",
-        [nativeToken]
-      );
-    }
+    await lockPushIdentities(client, discovered.rows, {
+      userId: session.userId,
+      expoTokens: [token],
+      installationIds: [installationId],
+      nativeTokens: [deviceToken],
+    });
+    await client.query(
+      `SELECT id FROM mobile_push_tokens
+        WHERE expo_push_token=$1
+           OR (user_id=$2 AND installation_id=$3::uuid AND enabled=true)
+           OR ($4::text IS NOT NULL AND device_push_token=$4)
+        FOR UPDATE`,
+      [token, session.userId, installationId, deviceToken]
+    );
     // Installation IDs and native push tokens identify a physical app install,
     // not an account. Transfer both identities before the upsert so an old
     // account can never remain enabled for the same device after account switch.
@@ -218,27 +247,32 @@ export async function DELETE(req: Request) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    await client.query(
-      "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:' || $1::text, 0))",
-      [session.userId]
-    );
+    const discovered = installationId
+      ? await client.query<PushIdentity>(
+        `SELECT user_id::text, expo_push_token, installation_id::text, device_push_token FROM mobile_push_tokens
+          WHERE installation_id=$1::uuid`,
+        [installationId],
+      )
+      : await client.query<PushIdentity>(
+        `SELECT user_id::text, expo_push_token, installation_id::text, device_push_token FROM mobile_push_tokens
+          WHERE user_id=$1 AND enabled=true`,
+        [session.userId],
+      );
+    await lockPushIdentities(client, discovered.rows, {
+      userId: session.userId,
+      installationIds: installationId ? [installationId] : [],
+    });
     if (installationId) {
       await client.query(
-        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:' || $1::text, 0))",
-        [installationId]
+        `SELECT id FROM mobile_push_tokens WHERE installation_id=$1::uuid FOR UPDATE`,
+        [installationId],
       );
     } else {
-      const installations = await client.query<{ installation_id: string }>(
-        `SELECT installation_id::text FROM mobile_push_tokens
-          WHERE user_id=$1 AND enabled=true ORDER BY installation_id FOR UPDATE`,
+      await client.query(
+        `SELECT id FROM mobile_push_tokens
+          WHERE user_id=$1 AND enabled=true FOR UPDATE`,
         [session.userId]
       );
-      for (const installation of installations.rows) {
-        await client.query(
-          "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:' || $1::text, 0))",
-          [installation.installation_id]
-        );
-      }
     }
     await client.query(
       `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
