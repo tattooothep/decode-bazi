@@ -1,10 +1,23 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, relative, resolve } from "node:path";
+import { isAbsolute, relative, resolve } from "node:path";
 
 const CONFIRM_APPLY = "DISABLE_LEGACY_QIMEN_PUSH";
 const CONFIRM_ROLLBACK = "ROLLBACK_LEGACY_QIMEN_PUSH";
+const SAFE_FAILURE_CODES = new Set([
+  "absolute_paths_required", "apply_failed_rolled_back", "apply_requires_three_approvals",
+  "backup_dir_creation_failed", "backup_dir_must_not_be_preexisting", "backup_dir_required",
+  "duplicate_patch_path", "hardcoded_vapid_private_key", "invalid_approvals", "invalid_backup_dir",
+  "invalid_environment_key", "invalid_inventory", "invalid_inventory_json", "invalid_inventory_shape",
+  "invalid_mode", "invalid_patch", "invalid_patch_list", "invalid_replacement", "invalid_root",
+  "invalid_rollback_manifest", "inventory_root_mismatch", "legacy_push_cron_enabled",
+  "legacy_route_not_denied", "legacy_route_present", "missing_argument", "patch_path_not_allowlisted",
+  "patches_required_for_apply", "replacement_not_exact", "required_file_missing", "required_file_not_regular",
+  "rollback_checksum_mismatch", "rollback_confirmation_required", "rollback_manifest_missing",
+  "root_and_inventory_required", "unexpected_target_checksum", "unknown_argument", "unsafe_inventory_path",
+  "vapid_environment_unavailable",
+]);
 
 function fail(code) {
   throw new Error(code);
@@ -88,17 +101,19 @@ function audit(root, inventory, overrides) {
   const sourceControlledFiles = [...inventory.routeFiles, ...inventory.sourceFiles, ...inventory.cronFiles];
   for (const path of sourceControlledFiles) {
     const text = fileText(root, path, overrides);
-    if (/VAPID_PRIVATE_KEY\s*(?:=|:)\s*["'`][^"'`\r\n]+["'`]/u.test(text)) fail("hardcoded_vapid_private_key");
+    if (/(?:VAPID_(?:PRIVATE|PUBLIC)_KEY|(?:vapid|private|public)(?:[_-]?key)?)\s*(?:=|:)\s*["'`][^"'`\r\n]+["'`]/iu.test(text)) fail("hardcoded_vapid_private_key");
     if (/setVapidDetails\s*\([^,]+,[^,]+,\s*["'`]/u.test(text)) fail("hardcoded_vapid_private_key");
+    if (/process\s*(?:\?\.|\.)\s*env\s*(?:(?:\?\.|\.)\s*VAPID_(?:PRIVATE|PUBLIC)_KEY|\[\s*["'`]VAPID_(?:PRIVATE|PUBLIC)_KEY["'`]\s*\])\s*(?:\|\||\?\?)/iu.test(text)) fail("hardcoded_vapid_private_key");
   }
   for (const path of [...inventory.sourceFiles, ...inventory.cronFiles]) {
     if (/["'`]\/push\/(?:test|unsubscribe)["'`]/u.test(fileText(root, path, overrides))) fail("legacy_route_present");
   }
   for (const path of inventory.cronFiles) {
     for (const line of fileText(root, path, overrides).split(/\r?\n/u)) {
-      const normalized = line.trim().toLowerCase();
-      if (!normalized || normalized.startsWith("#")) continue;
-      if (normalized.includes("qimen") && normalized.includes("push") && !normalized.includes("disabled")) fail("legacy_push_cron_enabled");
+      const trimmed = line.trimStart();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const activeEntry = trimmed.replace(/\s+#.*$/u, "").toLowerCase();
+      if (activeEntry.includes("qimen") && activeEntry.includes("push")) fail("legacy_push_cron_enabled");
     }
   }
   const environment = inventory.environmentFiles.map((path) => fileText(root, path, overrides)).join("\n");
@@ -108,8 +123,13 @@ function audit(root, inventory, overrides) {
 }
 
 function approvalCount(path) {
+  if (!existsSync(path)) fail("invalid_approvals");
+  const stat = lstatSync(path);
+  if (!stat.isFile() || stat.isSymbolicLink()) fail("invalid_approvals");
   const reviewers = new Set();
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/u)) {
+  let contents;
+  try { contents = readFileSync(path, "utf8"); } catch { fail("invalid_approvals"); }
+  for (const line of contents.split(/\r?\n/u)) {
     const match = line.match(/^([a-z0-9_-]{3,80})\s+APPROVE$/iu);
     if (match) reviewers.add(match[1].toLowerCase());
   }
@@ -124,9 +144,11 @@ function atomicWrite(path, text) {
 
 function preparePatches(root, inventory) {
   if (!Array.isArray(inventory.patches) || inventory.patches.length === 0) fail("patches_required_for_apply");
+  const approvedPaths = new Set([...inventory.routeFiles, ...inventory.sourceFiles, ...inventory.cronFiles]);
   const changes = new Map();
   for (const patch of inventory.patches) {
     if (!patch || typeof patch !== "object" || typeof patch.path !== "string" || !/^[a-f0-9]{64}$/u.test(patch.expectedSha256 || "") || !Array.isArray(patch.replacements) || patch.replacements.length === 0) fail("invalid_patch");
+    if (!approvedPaths.has(patch.path)) fail("patch_path_not_allowlisted");
     if (changes.has(patch.path)) fail("duplicate_patch_path");
     const original = fileText(root, patch.path);
     if (sha256(original) !== patch.expectedSha256) fail("unexpected_target_checksum");
@@ -142,19 +164,34 @@ function preparePatches(root, inventory) {
   return changes;
 }
 
-function validateBackupDir(root, backupDir) {
+function backupDirPath(root, backupDir) {
   const resolved = resolve(backupDir);
-  if (resolved === root || !isContained(resolve(dirname(resolved)), resolved)) fail("invalid_backup_dir");
-  if (existsSync(resolved) && (!lstatSync(resolved).isDirectory() || lstatSync(resolved).isSymbolicLink())) fail("invalid_backup_dir");
+  if (resolved === root || isContained(resolved, root)) fail("invalid_backup_dir");
+  return resolved;
+}
+
+function createExclusiveBackupDir(root, backupDir) {
+  const resolved = backupDirPath(root, backupDir);
+  try { mkdirSync(resolved, { recursive: false, mode: 0o700 }); }
+  catch { fail("backup_dir_must_not_be_preexisting"); }
+  const stat = lstatSync(resolved);
+  if (!stat.isDirectory() || stat.isSymbolicLink()) fail("backup_dir_creation_failed");
+  return resolved;
+}
+
+function existingBackupDir(root, backupDir) {
+  const resolved = backupDirPath(root, backupDir);
+  if (!existsSync(resolved)) fail("invalid_backup_dir");
+  const stat = lstatSync(resolved);
+  if (!stat.isDirectory() || stat.isSymbolicLink()) fail("invalid_backup_dir");
   return resolved;
 }
 
 function apply(options, root, inventory) {
-  if (options.confirm !== CONFIRM_APPLY || !options.approvals || !existsSync(options.approvals) || approvalCount(options.approvals) !== 3) fail("apply_requires_three_approvals");
+  if (options.confirm !== CONFIRM_APPLY || !options.approvals || approvalCount(options.approvals) !== 3) fail("apply_requires_three_approvals");
   const changes = preparePatches(root, inventory);
-  const backupDir = validateBackupDir(root, options.backupDir);
-  if (existsSync(joinPath(backupDir, "manifest.json"))) fail("backup_dir_not_empty");
-  mkdirSync(joinPath(backupDir, "files"), { recursive: true, mode: 0o700 });
+  const backupDir = createExclusiveBackupDir(root, options.backupDir);
+  mkdirSync(joinPath(backupDir, "files"), { recursive: false, mode: 0o700 });
   const manifest = { version: 1, root, files: [] };
   for (const [path, change] of changes) {
     const backupName = sha256(path);
@@ -182,7 +219,7 @@ function joinPath(...parts) {
 
 function rollback(options, root) {
   if (options.confirm !== CONFIRM_ROLLBACK) fail("rollback_confirmation_required");
-  const backupDir = validateBackupDir(root, options.backupDir);
+  const backupDir = existingBackupDir(root, options.backupDir);
   const manifestPath = joinPath(backupDir, "manifest.json");
   if (!existsSync(manifestPath)) fail("rollback_manifest_missing");
   let manifest;
@@ -206,6 +243,7 @@ try {
   } else if (options.mode === "apply") apply(options, root, inventory);
   else rollback(options, root);
 } catch (error) {
-  process.stderr.write(`LEGACY_QIMEN_CONTAINMENT_FAILED:${error instanceof Error ? error.message : "unknown"}\n`);
+  const code = error instanceof Error && SAFE_FAILURE_CODES.has(error.message) ? error.message : "unexpected_failure";
+  process.stderr.write(`LEGACY_QIMEN_CONTAINMENT_FAILED:${code}\n`);
   process.exitCode = 1;
 }

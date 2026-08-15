@@ -64,3 +64,39 @@
 - The tool intentionally does not generate, receive, print, or restore VAPID
   private values. Secret-manager rotation remains a separately reviewed
   operational step; rollback must not restore an exposed private key.
+
+## Reviewer Remediation — Containment Hardening
+
+### RED evidence
+
+- After adding the adversarial cron case,
+  `node scripts/test-legacy-qimen-containment.mjs` failed with
+  `an active legacy cron remains enabled despite a trailing disabled comment`.
+  The prior parser incorrectly treated an inline comment as a disable control.
+- The same new focused test includes pre-fix reproductions for a nonempty backup
+  directory, VAPID private/public literal fallback expressions, an unrelated
+  patch path, and a PII-bearing approvals path. Each is asserted to fail closed
+  without modifying its sentinel or echoing the supplied marker/path.
+- Adding optional-chaining and embedded-VAPID-literal cases then produced the
+  same focused-test failure until the detector covered those forms.
+
+### GREEN evidence
+
+- `node scripts/test-legacy-qimen-containment.mjs` ->
+  `LEGACY_QIMEN_CONTAINMENT_OK 37`.
+  - Apply creates the backup directory with non-recursive exclusive creation and
+    rejects every pre-existing path before it can create or overwrite files.
+  - Cron parsing ignores only leading-comment lines and strips trailing comments
+    after determining the active entry.
+  - Audit rejects direct/embedded VAPID private/public literals, literal
+    fallbacks for dot, bracket, and optional-chaining environment access, and
+    literal `setVapidDetails` input.
+  - Apply patches must exactly match an audited route/source/cron allowlist.
+  - Top-level failure output accepts only a fixed reason-code allowlist; unknown
+    filesystem exceptions become `unexpected_failure` with no path text.
+- `node scripts/test-admin-notify-recipient-rbac.mjs` ->
+  `ADMIN_NOTIFY_RECIPIENT_RBAC_OK`.
+- `node --check scripts/ops/contain-legacy-qimen-push.mjs`,
+  `node --check scripts/workers/admin-notify-watcher.mjs`, and
+  `node --check src/lib/admin-notify-recipient-rbac.mjs` passed.
+- `git diff --check` passed.

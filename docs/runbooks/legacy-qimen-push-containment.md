@@ -57,8 +57,10 @@ denials, disables the legacy cron, and changes VAPID use to environment/secret
 manager references only. Provision and rotate the actual VAPID credential in the
 approved secret manager first; this repository tool never receives the value.
 
-The operator must use an empty, access-restricted backup directory and the exact
-reviewed inventory:
+The operator must use a new, nonexistent, access-restricted backup-directory
+path (its parent must already exist) and the exact reviewed inventory. Apply
+creates that directory exclusively; it refuses every pre-existing path so an
+older backup can never be clobbered:
 
 ```bash
 node scripts/ops/contain-legacy-qimen-push.mjs --apply \

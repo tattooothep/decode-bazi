@@ -47,6 +47,15 @@ const unsafeCron = "*/5 * * * * node scripts/legacy-qimen-web-push.js\n";
 const safeCron = "# legacy qimen web push cron disabled\n";
 const safeVapid = "const privateKey = process.env.VAPID_PRIVATE_KEY;\n";
 const unsafeVapid = "const VAPID_" + "PRIVATE_KEY = 'opaque_test_material';\n";
+const activeCronWithTrailingComment = "*/5 * * * * node scripts/legacy-qimen-web-push.js # disabled\n";
+const vapidFallbackCases = [
+  { marker: "opaque_private_fallback", source: "const a = process.env.VAPID_PRIVATE_KEY || 'opaque_private_fallback';\n" },
+  { marker: "opaque_private_bracket", source: 'const b = process.env["VAPID_PRIVATE_KEY"] ?? "opaque_private_bracket";\n' },
+  { marker: "opaque_public_fallback", source: "const c = process.env.VAPID_PUBLIC_KEY || `opaque_public_fallback`;\n" },
+  { marker: "opaque_public_bracket", source: 'const d = process.env["VAPID_PUBLIC_KEY"] ?? "opaque_public_bracket";\n' },
+  { marker: "opaque_private_optional", source: "const e = process.env?.VAPID_PRIVATE_KEY ?? 'opaque_private_optional';\n" },
+  { marker: "opaque_embedded_vapid", source: "const config = { vapid: 'opaque_embedded_vapid' };\n" },
+];
 const approvals = "security-reviewer APPROVE\nbackend-reviewer APPROVE\nmobile-reviewer APPROVE\n";
 
 try {
@@ -99,10 +108,46 @@ try {
   const safeAudit = invoke("--root", temp, "--inventory", inventoryPath);
   check(safeAudit.status === 0, "audit accepts removed routes, disabled cron, and environment-only VAPID setup");
 
+  write("cron/qimen.cron", activeCronWithTrailingComment);
+  const trailingCommentAudit = invoke("--root", temp, "--inventory", inventoryPath);
+  check(trailingCommentAudit.status !== 0, "an active legacy cron remains enabled despite a trailing disabled comment");
+  write("cron/qimen.cron", safeCron);
+
+  inventory.sourceFiles.push("src/vapid-fallbacks.js");
+  write("legacy-qimen-inventory.json", `${JSON.stringify(inventory, null, 2)}\n`);
+  for (const fallback of vapidFallbackCases) {
+    write("src/vapid-fallbacks.js", fallback.source);
+    const fallbackAudit = invoke("--root", temp, "--inventory", inventoryPath);
+    check(fallbackAudit.status !== 0, "audit rejects each literal or fallback VAPID pattern");
+    check(!`${fallbackAudit.stdout}${fallbackAudit.stderr}`.includes(fallback.marker), "fallback failure is redacted");
+  }
+  write("src/vapid-fallbacks.js", "const a = process.env.VAPID_PRIVATE_KEY;\nconst b = process.env.VAPID_PUBLIC_KEY;\n");
+  const fallbackSafeAudit = invoke("--root", temp, "--inventory", inventoryPath);
+  check(fallbackSafeAudit.status === 0, "audit accepts direct environment-only VAPID values without literal fallbacks");
+
   write("src/push-routes.js", unsafeRoutes);
   write("cron/qimen.cron", unsafeCron);
   inventory.sourceFiles = ["src/push-routes.js"];
   write("legacy-qimen-inventory.json", `${JSON.stringify(inventory, null, 2)}\n`);
+  const piiPath = join(temp, "reviewer@example.test");
+  mkdirSync(piiPath);
+  const piiFailure = invoke(
+    "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--approvals", piiPath, "--backup-dir", join(temp, "pii-backups"),
+  );
+  check(piiFailure.status !== 0, "an invalid approvals target is rejected");
+  check(!`${piiFailure.stdout}${piiFailure.stderr}`.includes("reviewer@example.test"), "failures never echo a PII-bearing filesystem path");
+
+  const occupiedBackupDir = join(temp, "occupied-backups");
+  mkdirSync(occupiedBackupDir);
+  write("occupied-backups/sentinel", "preserve");
+  const occupiedBackup = invoke(
+    "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--approvals", join(temp, "approvals.txt"), "--backup-dir", occupiedBackupDir,
+  );
+  check(occupiedBackup.status !== 0, "apply rejects every pre-existing backup directory");
+  check(readFileSync(join(occupiedBackupDir, "sentinel"), "utf8") === "preserve", "refused apply never clobbers a backup sentinel");
+
   const deniedApply = invoke("--apply", "--root", temp, "--inventory", inventoryPath, "--backup-dir", backupDir);
   check(deniedApply.status !== 0, "apply requires an explicit confirmation and approvals");
   check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "refused apply changes nothing");
@@ -122,6 +167,20 @@ try {
   );
   check(rollback.status === 0, "explicit rollback restores only checksum-verified backups");
   check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes, "rollback restores the exact prior route source");
+
+  write("unrelated/sentinel.txt", "do-not-change\n");
+  inventory.patches.push({
+    path: "unrelated/sentinel.txt",
+    expectedSha256: sha256("do-not-change\n"),
+    replacements: [{ find: "do-not-change", replace: "changed" }],
+  });
+  write("legacy-qimen-inventory.json", `${JSON.stringify(inventory, null, 2)}\n`);
+  const arbitraryPatch = invoke(
+    "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--approvals", join(temp, "approvals.txt"), "--backup-dir", join(temp, "arbitrary-backups"),
+  );
+  check(arbitraryPatch.status !== 0, "apply rejects patches outside reviewed route, source, and cron files");
+  check(readFileSync(join(temp, "unrelated/sentinel.txt"), "utf8") === "do-not-change\n", "rejected arbitrary patch leaves unrelated content unchanged");
 
   const runbookText = readFileSync(runbook, "utf8");
   check(runbookText.includes("--confirm=DISABLE_LEGACY_QIMEN_PUSH"), "runbook requires explicit apply confirmation");
