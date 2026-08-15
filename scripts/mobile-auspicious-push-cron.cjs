@@ -40,6 +40,7 @@ const ONLY_EMAIL = (process.argv.find((a) => a.startsWith("--email=")) || "").sl
 
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const notificationPayload = require("../src/lib/notification-payload.cjs");
 const { upcomingFestival } = require("../src/lib/festival-days.cjs");
 
 /**
@@ -94,6 +95,8 @@ async function main() {
     database: process.env.PGDATABASE,
   });
   await db.connect();
+  const runLease = await delivery.trySchedulerRunLease(db, "auspicious");
+  if (!runLease.acquired) { console.log("[mobile-auspicious-push] overlap skipped"); await db.end(); return; }
 
   const { rows: users } = await db.query(`
     SELECT u.id, u.email,
@@ -110,8 +113,9 @@ async function main() {
            COALESCE(np.timezone, u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.delivery_status IN ('accepted','delivered')
-               AND l.sent_at >= now() - interval '24 hours') AS sent_today
+             WHERE l.user_id=u.id AND l.delivery_status IN ('accepted','delivered')
+               AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date
+                   = (now() AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date) AS sent_today
       FROM mobile_push_tokens t
       JOIN users u ON u.id = t.user_id
       LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
@@ -158,6 +162,9 @@ async function main() {
       const festival = ahead.festivals.find((f) => f.major) || ahead.festivals[0];
 
       const key = `festival|${ahead.date}|${festival.zh}`;
+      const typedPayload = notificationPayload.buildNotificationPayload("shrine", String(u.id), {
+        date: ahead.date, festival: festival.zh, url: "/shrine",
+      });
       const first = buildMessage(festival, pickLocale(u.tokens?.[0]?.locale));
       const userMessages = [];
       for (const entry of u.tokens || []) {
@@ -169,10 +176,11 @@ async function main() {
           expoToken: entry?.expo,
           platform: entry?.platform,
           category: "shrine",
+          locale: pickLocale(entry?.locale),
           title: m.title,
           body: m.body,
-          url: "/calendar/general",
-          data: { url: "/calendar/general", date: ahead.date },
+          url: "/shrine",
+          data: typedPayload,
         });
       }
       const result = await delivery.deliver(db, {
@@ -181,7 +189,8 @@ async function main() {
         kind: "shrine",
         title: first.title,
         body: first.body,
-        payload: { url: "/calendar/general", date: ahead.date, festival: festival.zh },
+        payload: typedPayload,
+        sourceFacts: { timezone: u.user_timezone, festival },
         messages: userMessages,
       }, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
@@ -195,6 +204,7 @@ async function main() {
 
   console.log(`[mobile-auspicious-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
 
+  await runLease.release();
   await db.end();
 }
 

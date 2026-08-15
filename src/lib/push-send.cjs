@@ -65,24 +65,25 @@ function channelOf(category) {
   return "hourkey-reminders";
 }
 
-function stringData(message) {
+function providerData(message, stringifyValues) {
   const data = message?.data && typeof message.data === "object" ? message.data : {};
-  const out = {
-    categoryId: "hourkey_daily",
-    category: categoryOf(message),
-    url: safeUrl(message?.url || data.url),
-  };
+  const out = {};
   const sensitiveKeyParts = [
     "token", "auth", "authorization", "secret", "credential", "password", "cookie", "session",
     "apikey", "privatekey", "accesskey", "clientsecret", "bearer",
   ];
   for (const [key, value] of Object.entries(data)) {
-    if (value === undefined || value === null || key === "url") continue;
+    if (value === undefined || value === null) continue;
     const normalizedKey = String(key).toLowerCase().replace(/[^a-z0-9]+/gu, "");
     if (normalizedKey.endsWith("key") || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) continue;
-    out[String(key).slice(0, 80)] = String(value).slice(0, 500);
+    out[String(key).slice(0, 80)] = stringifyValues ? String(value).slice(0, 500) : value;
   }
+  if (typeof out.url !== "string") out.url = safeUrl(message?.url || data.url);
   return out;
+}
+
+function stringData(message) {
+  return providerData(message, true);
 }
 
 function providerFor(item) {
@@ -104,7 +105,10 @@ function prepareMessage(item, provider = providerFor(item)) {
         title: String(item?.title || "Hourkey").slice(0, 120),
         body: String(item?.body || "").slice(0, 400),
       },
-      data: stringData(item),
+      // Expo Notifications' Android native bridge JSON-parses data.body into
+      // request.content.data. A single JSON object preserves v/lead/score
+      // number types required by the strict mobile payload parser.
+      data: { body: JSON.stringify(providerData(item, false)) },
       android: {
         priority: category === "security" || category === "service" ? "HIGH" : "NORMAL",
         ttl: category === "security" || category === "service" ? "21600s" : "86400s",
@@ -119,7 +123,7 @@ function prepareMessage(item, provider = providerFor(item)) {
     return {
       title: String(item?.title || "Hourkey").slice(0, 120),
       body: String(item?.body || "").slice(0, 400),
-      data: stringData(item),
+      data: providerData(item, false),
       sound: category === "security" || category === "service" ? "default" : null,
       priority: category === "security" || category === "service" ? "high" : "normal",
       ttl: category === "security" || category === "service" ? 21_600 : 86_400,

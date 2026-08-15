@@ -13,4 +13,5 @@ ALTER TABLE mobile_push_log
 -- would make a successful rollback unsafe while historical rows are retained.
 ALTER TABLE mobile_notification_prefs DROP COLUMN IF EXISTS privacy_preview;
 ALTER TABLE mobile_notification_prefs DROP COLUMN IF EXISTS locale;
+ALTER TABLE mobile_push_log DROP COLUMN IF EXISTS source_facts;
 COMMIT;

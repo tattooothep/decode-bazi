@@ -20,6 +20,8 @@ const BASE = process.env.PUSH_INTERNAL_BASE || "http://127.0.0.1:3350";
 
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const science = require("../src/lib/notification-science.cjs");
+const notificationPayload = require("../src/lib/notification-payload.cjs");
 
 function b64url(value) {
   return Buffer.from(value).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
@@ -74,6 +76,7 @@ function messages(tokens, category, url, data, build) {
       expoToken: token?.expo,
       platform: token?.platform,
       category,
+      locale: locale(token?.locale),
       title: copy.title,
       body: copy.body,
       url,
@@ -97,12 +100,14 @@ async function savedDateNotice(db, user, runAt, sentToday) {
   const row = await db.query(
     `SELECT id,payload
        FROM mobile_saved_dates
-      WHERE user_id=$1
-        AND (payload#>>'{datetime,start}')::timestamptz > $2::timestamptz
-        AND (payload#>>'{datetime,start}')::timestamptz <= $2::timestamptz + interval '24 hours 15 minutes'
+      WHERE user_id=$1 AND org_id=$2
+        AND (
+          (payload#>>'{datetime,start}')::timestamptz BETWEEN $3::timestamptz + interval '45 minutes' AND $3::timestamptz + interval '75 minutes'
+          OR (payload#>>'{datetime,start}')::timestamptz BETWEEN $3::timestamptz + interval '23 hours 45 minutes' AND $3::timestamptz + interval '24 hours 15 minutes'
+        )
       ORDER BY (payload#>>'{datetime,start}')::timestamptz
       LIMIT 1`,
-    [user.id, runAt.toISOString()],
+    [user.id, user.current_org_id, runAt.toISOString()],
   );
   const saved = row.rows[0];
   if (!saved) return { status: "skipped", reason: "no_saved_date_due" };
@@ -123,14 +128,26 @@ async function savedDateNotice(db, user, runAt, sentToday) {
       : { title: lead === "24h" ? "📅 พรุ่งนี้มีฤกษ์ที่บันทึกไว้" : "⏰ ฤกษ์ที่บันทึกไว้กำลังมาถึง", body: `${day}${activity ? ` · ${activity}` : ""}` };
   const th = build("th");
   const key = `saved-date|${saved.id}|${lead}`;
+  const date = guard.localDateStr(user.user_timezone, start);
+  const typedPayload = notificationPayload.buildNotificationPayload("saved_date", String(user.id), {
+    savedDateId: saved.id,
+    lead: lead === "1h" ? 60 : 1_440,
+    date,
+    url: "/datepick/saved",
+  });
   return notify(db, user, "saved_date", {
     userId: user.id,
     key,
     kind: "saved_date",
     title: th.title,
     body: th.body,
-    payload: { url: "/datepick/saved", savedDateId: saved.id, lead },
-    messages: messages(user.tokens, "saved_date", "/datepick/saved", { savedDateId: saved.id, lead }, build),
+    payload: typedPayload,
+    sourceFacts: {
+      timezone: user.user_timezone,
+      start: start.toISOString(),
+      activityType: activity || null,
+    },
+    messages: messages(user.tokens, "saved_date", "/datepick/saved", typedPayload, build),
   }, sentToday);
 }
 
@@ -151,16 +168,16 @@ async function qimenNotice(db, user, runAt, sentToday) {
   if (!fresh || !Number.isFinite(Number(user.qimen_latitude)) || !Number.isFinite(Number(user.qimen_longitude))) {
     return { status: "skipped", reason: "no_fresh_current_location" };
   }
-  const date = guard.localDateStr(user.user_timezone, runAt);
-  const timeMinutes = minute ?? 8 * 60;
-  const time = `${String(Math.floor(timeMinutes / 60)).padStart(2, "0")}:${String(timeMinutes % 60).padStart(2, "0")}`;
+  const request = science.buildQimenSchedulerRequest({
+    timezone: user.user_timezone,
+    instant: runAt,
+    latitude: user.qimen_latitude,
+    longitude: user.qimen_longitude,
+  });
+  const { date, time } = request;
   const result = await getJson(user, `${BASE}/api/qimen`, {
     method: "POST",
-    body: JSON.stringify({
-      date, time,
-      lat: Number(user.qimen_latitude), lng: Number(user.qimen_longitude),
-      school: "chaibu", system_type: "hour",
-    }),
+    body: JSON.stringify(request),
   });
   const palaces = Array.isArray(result?.data?.palaces) ? result.data.palaces
     : Array.isArray(result?.data?.data?.palaces) ? result.data.data.palaces : [];
@@ -179,14 +196,26 @@ async function qimenNotice(db, user, runAt, sentToday) {
         : `${DIRECTION[best.direction].th} · เป็นบริบทจากผังยาม ไม่ใช่คำรับประกันผล`,
   });
   const th = build("th");
+  const typedPayload = notificationPayload.buildNotificationPayload("qimen", String(user.id), {
+    date, direction: best.direction, score: best.score, url: "/qimen/board",
+  });
   return notify(db, user, "qimen", {
     userId: user.id,
     key: `qimen|${date}|08|${best.direction}`,
     kind: "qimen",
     title: th.title,
     body: th.body,
-    payload: { url: "/qimen/board", date, direction: best.direction, score: best.score },
-    messages: messages(user.tokens, "qimen", "/qimen/board", { date, direction: best.direction }, build),
+    payload: typedPayload,
+    sourceFacts: {
+      timezone: request.timezone,
+      instant: request.instant,
+      latitude: request.lat,
+      longitude: request.lng,
+      direction: best.direction,
+      score: best.score,
+      engine: "qimen-api",
+    },
+    messages: messages(user.tokens, "qimen", "/qimen/board", typedPayload, build),
   }, sentToday);
 }
 
@@ -195,7 +224,11 @@ async function goalNotice(db, user, runAt, sentToday) {
   if (!DRY && (minute === null || minute < 8 * 60 + 15 || minute >= 8 * 60 + 30)) {
     return { status: "skipped", reason: "outside_goal_window" };
   }
-  const result = await getJson(user, `${BASE}/api/mobile/v1/goals/custom${user.profile_id ? `?profileId=${user.profile_id}` : ""}`);
+  const goalQuery = new URLSearchParams({
+    timezone: user.user_timezone || guard.FALLBACK_TZ,
+    instant: runAt.toISOString(),
+  });
+  const result = await getJson(user, `${BASE}/api/mobile/v1/goals/custom?${goalQuery}`);
   const goals = Array.isArray(result?.goals) ? result.goals : [];
   const candidates = goals.filter((goal) => goal?.nextAuspicious?.date).sort((left, right) => {
     const a = `${left.nextAuspicious.date} ${left.nextAuspicious.hourRange || ""}`;
@@ -214,14 +247,23 @@ async function goalNotice(db, user, runAt, sentToday) {
       : { title: "🎯 ฤกษ์ถัดไปของเป้าหมาย", body: `${title} · ${when}` };
   const th = build("th");
   const key = `goal|${goal.id}|${next.date}|${next.hourRange || "day"}`;
+  const typedPayload = notificationPayload.buildNotificationPayload("goal", String(user.id), {
+    goalId: goal.id, date: next.date, url: "/calendar/goals",
+  });
   return notify(db, user, "goal", {
     userId: user.id,
     key,
     kind: "goal",
     title: th.title,
     body: th.body,
-    payload: { url: "/calendar/goals", goalId: goal.id, date: next.date },
-    messages: messages(user.tokens, "goal", "/calendar/goals", { goalId: goal.id, date: next.date }, build),
+    payload: typedPayload,
+    sourceFacts: {
+      profileId: goal.profileId,
+      score: next.score,
+      engine: "auspicious",
+      engineVersion: result.engineVersion || null,
+    },
+    messages: messages(user.tokens, "goal", "/calendar/goals", typedPayload, build),
   }, sentToday);
 }
 
@@ -234,10 +276,10 @@ async function main() {
     database: process.env.PGDATABASE,
   });
   await db.connect();
+  const runLease = await delivery.trySchedulerRunLease(db, "personal-reminders");
+  if (!runLease.acquired) { console.log("[mobile-personal-reminders] overlap skipped"); await db.end(); return; }
   const users = await db.query(`
     SELECT u.id,u.email,u.current_org_id,u.session_version,
-           (SELECT p.id FROM profiles p WHERE p.created_by_user_id=u.id
-             AND COALESCE(p.is_archived,false)=false ORDER BY p.created_at LIMIT 1) AS profile_id,
            array_agg(json_build_object(
              'id',t.id,'device',t.device_push_token,'deviceType',t.device_token_type,
              'expo',t.expo_push_token,'platform',t.platform,'locale',COALESCE(t.locale,'th')
@@ -248,8 +290,10 @@ async function main() {
            np.qimen_latitude,np.qimen_longitude,np.qimen_location_updated_at,
            COALESCE(np.timezone,max(t.timezone),u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
-           (SELECT count(*) FROM mobile_push_log l WHERE l.user_id=u.id
-             AND l.delivery_status IN ('accepted','delivered') AND l.sent_at>=now()-interval '24 hours') AS sent_today
+           (SELECT count(*) FROM mobile_push_log l
+             WHERE l.user_id=u.id AND l.delivery_status IN ('accepted','delivered')
+               AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date
+                   = (now() AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date) AS sent_today
       FROM users u
       JOIN mobile_push_tokens t ON t.user_id=u.id AND t.enabled=true
       LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
@@ -279,6 +323,7 @@ async function main() {
     }
   }
   console.log(`[mobile-personal-reminders] ${DRY ? "DRY " : ""}users=${users.rows.length}`, totals);
+  await runLease.release();
   await db.end();
 }
 

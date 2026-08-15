@@ -40,15 +40,17 @@ function signSession(user) {
   return `${header}.${payload}.${sig}`;
 }
 
-async function getJson(user, url) {
+async function getJson(user, url, signal) {
   const token = signSession(user);
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Cookie: `decode_auth=${token}` } });
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Cookie: `decode_auth=${token}` }, signal });
   if (!res.ok) return null;
   return res.json().catch(() => null);
 }
 
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const science = require("../src/lib/notification-science.cjs");
+const notificationPayload = require("../src/lib/notification-payload.cjs");
 
 async function main() {
   if (SLOT !== "morning" && SLOT !== "evening") throw new Error(`bad slot ${SLOT}`);
@@ -58,6 +60,8 @@ async function main() {
     user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
   });
   await db.connect();
+  const runLease = await delivery.trySchedulerRunLease(db, "daily-fortune");
+  if (!runLease.acquired) { console.log("[mobile-daily-push] overlap skipped"); await db.end(); return; }
   const { rows: users } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
            array_agg(json_build_object(
@@ -73,8 +77,9 @@ async function main() {
            COALESCE(np2.timezone, u.timezone) AS user_timezone,
            (np2.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.delivery_status IN ('accepted','delivered')
-               AND l.sent_at >= now() - interval '24 hours') AS sent_today
+             WHERE l.user_id=u.id AND l.delivery_status IN ('accepted','delivered')
+               AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE COALESCE(np2.timezone,u.timezone,'Asia/Bangkok'))::date
+                   = (now() AT TIME ZONE COALESCE(np2.timezone,u.timezone,'Asia/Bangkok'))::date) AS sent_today
       FROM mobile_push_tokens t JOIN users u ON u.id = t.user_id
       LEFT JOIN mobile_notification_prefs np2 ON np2.user_id = u.id
       LEFT JOIN mobile_notification_prefs p ON p.user_id = u.id
@@ -133,20 +138,27 @@ async function main() {
         : baseDay;
       const thaiDate = `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
 
-      const today = await getJson(u, `${BASE}/api/mobile/v1/today?date=${dateStr}&profileId=${u.profile_id}`);
+      const engine = await science.withTotalTimeout(async (signal) => {
+        const todayResult = await getJson(u, `${BASE}/api/mobile/v1/today?date=${dateStr}&profileId=${u.profile_id}`, signal);
+        if (!todayResult || todayResult.ok === false) return { today: null, hoursData: null };
+        const token = signSession(u);
+        const hoursRes = await fetch(`${BASE}/api/today/hours`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
+          body: JSON.stringify({ date: dateStr, profileId: u.profile_id }),
+          signal,
+        }).catch(() => null);
+        const hoursData = hoursRes && hoursRes.ok ? await hoursRes.json().catch(() => null) : null;
+        return { today: todayResult, hoursData };
+      }, 12_000);
+      const today = engine.today;
       if (!today || today.ok === false) { skipped++; continue; }
       // ฟิลด์จริงจาก engine เท่านั้น — ไม่มี = ไม่พูดถึง (ห้ามปั้น) · ฟันธงรายวันอยู่ใต้ verdict
       const verdict = today.verdict && typeof today.verdict === "object" ? today.verdict : {};
       const score = Number.isFinite(Number(verdict.score)) ? Number(verdict.score) : null;
       const label = typeof verdict.label === "string" && verdict.label ? verdict.label : "";
       const yi = today.tongshu && Array.isArray(today.tongshu.yi) ? today.tongshu.yi.slice(0, 2) : [];
-      const token = signSession(u);
-      const hoursRes = await fetch(`${BASE}/api/today/hours`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
-        body: JSON.stringify({ date: dateStr, profileId: u.profile_id }),
-      }).catch(() => null);
-      const hoursData = hoursRes && hoursRes.ok ? await hoursRes.json().catch(() => null) : null;
+      const hoursData = engine.hoursData;
       const hours = hoursData && Array.isArray(hoursData.hours) ? hoursData.hours : [];
       // เช้า = เอาเฉพาะยามที่ยังไม่ผ่าน (แจ้ง 07:00 แล้วชี้ยามตี 1 = ไร้ประโยชน์) · ค่ำชี้พรุ่งนี้ทั้งวัน
       const nowMin = SLOT === "morning" ? (localNowMin ?? 0) : -1;
@@ -182,6 +194,9 @@ async function main() {
       if (!thMsg.body) { skipped++; continue; }
 
       const yamKey = `daily|${SLOT}|${dateStr}|${u.profile_id}`;
+      const typedPayload = notificationPayload.buildNotificationPayload("daily", String(u.id), {
+        slot: SLOT, date: dateStr, url: "/today",
+      });
       const userMessages = [];
       for (const tk of u.tokens || []) {
         const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
@@ -200,10 +215,11 @@ async function main() {
           expoToken: entry.expo,
           platform: entry.platform,
           category: "daily",
+          locale: loc,
           title: m.title,
           body: m.body,
           url: "/today",
-          data: { url: "/today", daily: yamKey },
+          data: typedPayload,
         });
       }
       const result = await delivery.deliver(db, {
@@ -212,7 +228,15 @@ async function main() {
         kind: "daily",
         title: thMsg.title,
         body: thMsg.body,
-        payload: { url: "/today", slot: SLOT, date: dateStr },
+        payload: typedPayload,
+        sourceFacts: {
+          profileId: u.profile_id,
+          timezone: u.user_timezone,
+          score,
+          label,
+          tongshuYi: yi,
+          goldenHour: golden ? { range: golden.range, quality: golden.quality } : null,
+        },
         messages: userMessages,
       }, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
@@ -223,6 +247,7 @@ async function main() {
   }
 
   console.log(`[mobile-daily-push] ${DRY ? "DRY " : ""}slot=${SLOT} accepted=${sent} failed=${failed} skipped=${skipped}`);
+  await runLease.release();
   await db.end();
 }
 

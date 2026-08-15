@@ -230,7 +230,7 @@ async function callQimen(date: string, time: string, lng: number, lat: number, s
   const datetime = `${date}T${time}:00`;
   const profile_id = SCHOOL_TO_PROFILE[school];
   const payload: Record<string, unknown> = { datetime, longitude: lng, latitude: lat, profile_id };
-  for (const key of ["question", "use_case", "activity", "purpose", "system_type", "chart_type"]) {
+  for (const key of ["question", "use_case", "activity", "purpose", "system_type", "chart_type", "timezone", "instant"]) {
     if (context[key]) payload[key] = context[key];
   }
   const r = await fetch(target, {
@@ -256,15 +256,31 @@ async function callQimen(date: string, time: string, lng: number, lat: number, s
   return decorateQimenResponseScope(json, context.system_type);
 }
 
-function nowDateTime() {
-  const now = new Date();
+function cleanTimezone(value: unknown): string | null {
+  const timezone = String(value || "").trim() || "Asia/Bangkok";
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone }).format(new Date(0));
+    return timezone;
+  } catch {
+    return null;
+  }
+}
+
+function cleanRequestInstant(value: unknown): Date | null {
+  if (value === undefined || value === null || value === "") return new Date();
+  const instant = new Date(String(value));
+  if (!Number.isFinite(instant.valueOf())) return null;
+  return Math.abs(Date.now() - instant.valueOf()) <= 5 * 60_000 ? instant : null;
+}
+
+function nowDateTime(timezone = "Asia/Bangkok", instant = new Date()) {
   const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Bangkok",
+    timeZone: timezone,
     year: "numeric", month: "2-digit", day: "2-digit",
     hour: "2-digit", minute: "2-digit", hour12: false,
   });
   const parts = Object.fromEntries(
-    fmt.formatToParts(now).filter(p => p.type !== "literal").map(p => [p.type, p.value])
+    fmt.formatToParts(instant).filter(p => p.type !== "literal").map(p => [p.type, p.value])
   );
   return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
 }
@@ -280,7 +296,7 @@ function qimenShichen(time: string): number {
   return hour === 23 ? 0 : Math.floor((hour + 1) / 2);
 }
 
-async function gateQimenRequest(date: string, time: string): Promise<QimenGate> {
+async function gateQimenRequest(date: string, time: string, timezone: string, instant: Date): Promise<QimenGate> {
   const session = await getSession();
   if (!session?.userId) {
     return { ok: false, response: NextResponse.json(entitlementDenied("qimen_login_required"), { status: 401 }) };
@@ -290,7 +306,7 @@ async function gateQimenRequest(date: string, time: string): Promise<QimenGate> 
     return { ok: false, response: NextResponse.json(entitlementDenied("qimen_not_entitled"), { status: 403 }) };
   }
   const caps = access.pages.qimen;
-  const now = nowDateTime();
+  const now = nowDateTime(timezone, instant);
   const requestedDay = Date.parse(`${date}T00:00:00Z`);
   const today = Date.parse(`${now.date}T00:00:00Z`);
   if (!Number.isFinite(requestedDay) || !/^\d{2}:\d{2}$/.test(time)) {
@@ -364,14 +380,17 @@ function qimenProductMeta(plan: ProductPlan, caps: QimenPageCaps) {
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const dt = nowDateTime();
+  const timezone = cleanTimezone(url.searchParams.get("timezone"));
+  const instant = cleanRequestInstant(url.searchParams.get("instant"));
+  if (!timezone || !instant) return NextResponse.json({ error: "bad_timezone_or_instant" }, { status: 400 });
+  const dt = nowDateTime(timezone, instant);
   const date = url.searchParams.get("date") || dt.date;
   const time = url.searchParams.get("time") || dt.time;
   const lng = Number(url.searchParams.get("lng") || 100.5018);
   const lat = Number(url.searchParams.get("lat") || 13.7563);
   const school = resolveSchool(url.searchParams.get("school"));
   if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
-  const gate = await gateQimenRequest(date, time);
+  const gate = await gateQimenRequest(date, time, timezone, instant);
   if (!gate.ok) return gate.response;
   const context = {
     question: url.searchParams.get("question") || undefined,
@@ -379,11 +398,13 @@ export async function GET(req: Request) {
     activity: url.searchParams.get("activity") || undefined,
     purpose: url.searchParams.get("purpose") || undefined,
     system_type: url.searchParams.get("system_type") || url.searchParams.get("chart_type") || undefined,
+    timezone,
+    instant: instant.toISOString(),
   };
 
   try {
     const data = shapeQimenForPlan(await callQimen(date, time, lng, lat, school, context), gate.caps.detail);
-    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, product: qimenProductMeta(gate.plan, gate.caps), ...data });
+    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, timezone, instant: instant.toISOString(), system_type: context.system_type }, product: qimenProductMeta(gate.plan, gate.caps), ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
     if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {
@@ -395,14 +416,17 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const dt = nowDateTime();
+  const timezone = cleanTimezone(body.timezone);
+  const instant = cleanRequestInstant(body.instant);
+  if (!timezone || !instant) return NextResponse.json({ error: "bad_timezone_or_instant" }, { status: 400 });
+  const dt = nowDateTime(timezone, instant);
   const date = body.date || dt.date;
   const time = body.time || dt.time;
   const lng = Number(body.lng ?? body.longitude ?? 100.5018);
   const lat = Number(body.lat ?? body.latitude ?? 13.7563);
   const school = resolveSchool(body.school);
   if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
-  const gate = await gateQimenRequest(date, time);
+  const gate = await gateQimenRequest(date, time, timezone, instant);
   if (!gate.ok) return gate.response;
   const context = {
     question: body.question,
@@ -410,11 +434,13 @@ export async function POST(req: Request) {
     activity: body.activity,
     purpose: body.purpose,
     system_type: body.system_type || body.chart_type,
+    timezone,
+    instant: instant.toISOString(),
   };
 
   try {
     const data = shapeQimenForPlan(await callQimen(date, time, lng, lat, school, context), gate.caps.detail);
-    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, product: qimenProductMeta(gate.plan, gate.caps), ...data });
+    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, timezone, instant: instant.toISOString(), system_type: context.system_type }, product: qimenProductMeta(gate.plan, gate.caps), ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
     if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {

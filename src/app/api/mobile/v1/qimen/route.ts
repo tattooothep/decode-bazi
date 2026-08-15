@@ -207,6 +207,8 @@ export async function POST(req: Request) {
       lng: longitude,
       school,
       system_type: systemType,
+      timezone: cleanText(body.timezone, 80),
+      instant: cleanText(body.instant, 40),
       question: cleanText(body.question, 600),
       purpose: cleanText(body.purpose, 120),
       use_case: cleanText(body.use_case, 80),

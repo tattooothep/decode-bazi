@@ -1,6 +1,8 @@
 /** Durable per-installation reservation, provider delivery, and receipt state. */
 const { createHash } = require("node:crypto");
 const push = require("./push-send.cjs");
+const notificationPayload = require("./notification-payload.cjs");
+const notificationScience = require("./notification-science.cjs");
 
 const DEFAULT_MAX_ATTEMPTS = 5;
 const DEFAULT_BASE_DELAY_SECONDS = 300;
@@ -9,6 +11,14 @@ const MAX_DELAY_SECONDS = 21_600;
 
 function cleanJson(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function assertNoCredentialFacts(value) {
+  if (!value || typeof value !== "object") return;
+  for (const [key, child] of Object.entries(value)) {
+    if (/(?:token|credential|secret|password)/iu.test(key)) throw new TypeError("notification source facts contain a forbidden credential key");
+    assertNoCredentialFacts(child);
+  }
 }
 
 function stableStringify(value) {
@@ -121,13 +131,43 @@ async function reserve(db, notice, dry = false) {
     return existing.rows[0] ? null : { id: null, attemptIds: [] };
   }
   return transaction(db, async (client) => {
+    assertNoCredentialFacts(notice.sourceFacts);
+    await client.query(
+      `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
+      [notice.userId],
+    );
+    const contextResult = await client.query(
+      `SELECT COALESCE(to_jsonb(np)->>'timezone',to_jsonb(u)->>'timezone','Asia/Bangkok') AS timezone,
+              COALESCE((to_jsonb(np)->>'max_per_day')::int,2) AS max_per_day,
+              COALESCE(np.privacy_preview,false) AS privacy_preview,
+              COALESCE(np.locale,'th') AS locale,
+              np.user_id IS NOT NULL AS has_prefs
+         FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
+        WHERE u.id=$1`,
+      [notice.userId],
+    );
+    const context = contextResult.rows[0];
+    if (!context) return null;
+    if (context.has_prefs === true && notice.kind !== "security" && notice.kind !== "service") {
+      const cap = await client.query(
+        `SELECT count(*)::int AS reserved_today
+           FROM mobile_push_log l
+          WHERE l.user_id=$1
+            AND l.delivery_status IN ('pending','accepted','delivered')
+            AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE $2)::date
+                = (now() AT TIME ZONE $2)::date`,
+        [notice.userId, context.timezone],
+      );
+      if (Number(cap.rows[0]?.reserved_today || 0) >= Number(context.max_per_day)) return null;
+    }
     const parent = await client.query(
       `INSERT INTO mobile_push_log
-         (user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,
+         (user_id,yam_key,kind,title,body,payload,source_facts,delivery_status,attempt_count,
           next_retry_at,accepted_at,sent_at,last_error,updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6::jsonb,'pending',0,now(),NULL,NULL,NULL,now())
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,'pending',0,now(),NULL,NULL,NULL,now())
        ON CONFLICT (user_id,yam_key) DO NOTHING RETURNING id`,
-      [notice.userId, notice.key, notice.kind, notice.title, notice.body, JSON.stringify(notice.payload || {})],
+      [notice.userId, notice.key, notice.kind, notice.title, notice.body,
+        JSON.stringify(notice.payload || {}), JSON.stringify(notice.sourceFacts || {})],
     );
     if (!parent.rows[0]) return null;
     const attemptIds = [];
@@ -148,7 +188,13 @@ async function reserve(db, notice, dry = false) {
         platform: token.platform,
       });
       if (!provider) continue;
-      const providerMessage = cleanJson(push.prepareMessage(item, provider));
+      const providerCopy = notificationPayload.previewCopy(
+        notice.kind,
+        context.privacy_preview === true,
+        { title: item.title, body: item.body },
+        item.locale || context.locale,
+      );
+      const providerMessage = cleanJson(push.prepareMessage({ ...item, ...providerCopy }, provider));
       const inserted = await client.query(
         `INSERT INTO mobile_push_attempts
            (push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,next_retry_at,updated_at)
@@ -160,6 +206,41 @@ async function reserve(db, notice, dry = false) {
     }
     return { id: parent.rows[0].id, attemptIds };
   });
+}
+
+async function trySchedulerRunLease(db, schedulerName) {
+  const leaseKey = notificationScience.schedulerLeaseKey(schedulerName);
+  const pooled = isPool(db);
+  const client = pooled ? await db.connect() : db;
+  let held = false;
+  let released = false;
+  try {
+    const result = await client.query(
+      `SELECT pg_try_advisory_lock(hashtextextended($1::text,0)) AS locked`,
+      [leaseKey],
+    );
+    held = result.rows[0]?.locked === true;
+    if (!held && pooled) client.release();
+  } catch (error) {
+    if (pooled) client.release();
+    throw error;
+  }
+  return {
+    acquired: held,
+    async release() {
+      if (!held || released) return;
+      released = true;
+      try {
+        const result = await client.query(
+          `SELECT pg_advisory_unlock(hashtextextended($1::text,0)) AS unlocked`,
+          [leaseKey],
+        );
+        if (result.rows[0]?.unlocked !== true) throw new Error("notification_scheduler_unlock_failed");
+      } finally {
+        if (pooled) client.release();
+      }
+    },
+  };
 }
 
 function retryDelaySeconds(sendCount, baseDelaySeconds, retryAfterSeconds) {
@@ -494,5 +575,5 @@ async function deliver(db, notice, options = {}) {
 module.exports = {
   claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
   messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
-  withInstallationLock,
+  trySchedulerRunLease,withInstallationLock,
 };

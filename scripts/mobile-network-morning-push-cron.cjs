@@ -74,29 +74,6 @@ async function getJson(user, url) {
   return res.json().catch(() => null);
 }
 
-const push = require("../src/lib/push-send.cjs");
-
-/**
- * ส่งทั้งชุดผ่านตัวส่งกลาง — ส่งตรงถึงกูเกิล ไม่ผ่านคนกลาง
- *
- * 🔴 เดิมยิงไปบริการกลางของ Expo ซึ่ง **480 รอบได้ expo_ok=0 ทุกรอบ**
- * ไม่เคยสำเร็จเลยสักครั้ง เพราะต้องเอากุญแจโครงการไปฝากที่นั่นอีกที
- * ท่อส่งตรงพิสูจน์แล้วว่าถึงเครื่องจริง (30 ก.ค. เจ้าของยืนยันเอง)
- *
- * คืนรูปเดิม {ok, fail} เพื่อไม่ต้องแก้บรรทัดรายงานผลท้ายไฟล์
- * แต่เพิ่ม gone/noToken ให้รู้ว่าเครื่องตายกี่เครื่อง ยังไม่มีกุญแจกี่เครื่อง
- */
-async function sendExpo(messages, db) {
-  const r = await push.sendAll(messages, { db: db ?? null, dry: DRY });
-  if (r.noToken > 0) {
-    console.log(`  ℹ️ ${r.noToken} เครื่องยังไม่มีกุญแจแบบส่งตรง (ต้องลงแอพรุ่นใหม่)`);
-  }
-  if (r.gone > 0) {
-    console.log(`  🗑️ ปิดกุญแจเครื่องที่ไม่รับแล้ว ${r.gone} เครื่อง`);
-  }
-  return { ok: r.sent, fail: r.failed };
-}
-
 /* ---------- ถ้อยคำ: กรอบข้อความ 3 ภาษาเท่านั้น · เนื้อคำอ่านมาจาก engine ล้วน ---------- */
 const FRAME = {
   th: { title: (d) => `🤝 เครือข่ายวันนี้ (${d})`, ally: "ตัวช่วยวันนี้", risk: "ระวังวันนี้", colon: ": ", open: " (", close: ")" },
@@ -157,13 +134,18 @@ async function loadUsers(db) {
   }
   const { rows } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
-           array_agg(json_build_object('token', t.device_push_token, 'locale', COALESCE(t.locale,'th'))) AS tokens,
+           array_agg(json_build_object(
+             'id',t.id,'device',t.device_push_token,'deviceType',t.device_token_type,
+             'expo',t.expo_push_token,'platform',t.platform,'locale',COALESCE(t.locale,'th')
+           )) AS tokens,
            np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,
            np2.quiet_start, np2.quiet_end, np2.max_per_day, np2.paused_until,
            COALESCE(np2.timezone, u.timezone) AS user_timezone,
            (np2.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.sent_at >= now() - interval '24 hours') AS sent_today
+             WHERE l.user_id=u.id AND l.delivery_status IN ('accepted','delivered')
+               AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE COALESCE(np2.timezone,u.timezone,'Asia/Bangkok'))::date
+                   = (now() AT TIME ZONE COALESCE(np2.timezone,u.timezone,'Asia/Bangkok'))::date) AS sent_today
       FROM mobile_push_tokens t
       JOIN users u ON u.id = t.user_id
       LEFT JOIN mobile_notification_prefs np2 ON np2.user_id = u.id
@@ -177,6 +159,8 @@ async function loadUsers(db) {
 }
 
 const guard = require("../src/lib/push-guard.cjs");
+const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const notificationPayload = require("../src/lib/notification-payload.cjs");
 
 async function main() {
   const db = new Client({
@@ -185,6 +169,8 @@ async function main() {
     user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
   });
   await db.connect();
+  const runLease = await delivery.trySchedulerRunLease(db, "network-morning");
+  if (!runLease.acquired) { console.log("[mobile-network-push] overlap skipped"); await db.end(); return; }
 
   const users = await loadUsers(db);
   /**
@@ -197,11 +183,9 @@ async function main() {
   const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(DATE_ARG)
     ? DATE_ARG
     : guard.localDateStr(guard.FALLBACK_TZ, runAt);
-  const thaiDate = `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
   console.log(`[mobile-network-push] ${new Date().toISOString()} date=${dateStr} users=${users.length} dry=${DRY}${ONLY_EMAIL ? ` email=${ONLY_EMAIL}` : ""}`);
 
   let notified = 0, skipped = 0, failed = 0;
-  const messages = [];
   for (const u of users) {
     try {
 
@@ -225,7 +209,11 @@ async function main() {
         if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
         continue;
       }
-      const data = await getJson(u, `${BASE}/api/mobile/v1/network?date=${dateStr}`);
+      const userDate = /^\d{4}-\d{2}-\d{2}$/.test(DATE_ARG)
+        ? DATE_ARG
+        : guard.localDateStr(u.user_timezone, runAt);
+      const localDateLabel = `${userDate.slice(8, 10)}/${userDate.slice(5, 7)}`;
+      const data = await getJson(u, `${BASE}/api/mobile/v1/network?date=${userDate}`);
       if (!data || data.ok === false || !Array.isArray(data.people)) { skipped++; continue; }
       const centerId = data.active_profile && data.active_profile.id ? data.active_profile.id : null;
       if (!centerId) { skipped++; continue; }
@@ -250,7 +238,7 @@ async function main() {
       const riskPick = riskScore <= -MIN_ABS_SCORE && risk !== ally ? risk : null;
       if (!allyPick && !riskPick) { skipped++; continue; }
 
-      const thMsg = buildMessage("th", allyPick, riskPick, thaiDate);
+      const thMsg = buildMessage("th", allyPick, riskPick, localDateLabel);
       if (!thMsg.body) { skipped++; continue; }
 
       const allyId = allyPick ? allyPick.id : null;
@@ -258,20 +246,20 @@ async function main() {
       const recent = COOLDOWN_DAYS > 0
         ? await db.query(
             `SELECT 1 FROM mobile_push_log
-              WHERE user_id=$1 AND kind='network'
+              WHERE user_id=$1 AND kind='daily'
                 AND sent_at > now() - ($2 || ' days')::interval
-                AND payload->>'ally_profile_id' IS NOT DISTINCT FROM $3
-                AND payload->>'risk_profile_id' IS NOT DISTINCT FROM $4
+                AND source_facts->>'allyProfileId' IS NOT DISTINCT FROM $3
+                AND source_facts->>'riskProfileId' IS NOT DISTINCT FROM $4
               LIMIT 1`,
             [u.id, String(COOLDOWN_DAYS), allyId, riskId])
         : { rows: [] };
 
-      const yamKey = `network|morning|${dateStr}|${centerId}`;
+      const yamKey = `network|morning|${userDate}|${centerId}`;
       if (DRY) {
         const dup = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [u.id, yamKey]);
         console.log(`[DRY] ${u.email} key=${yamKey} already_sent=${dup.rows.length > 0} cooldown_hit=${recent.rows.length > 0} people=${people.length}`);
         for (const loc of ["th", "en", "zh"]) {
-          const m = buildMessage(loc, allyPick, riskPick, thaiDate);
+          const m = buildMessage(loc, allyPick, riskPick, localDateLabel);
           console.log(`[DRY][${loc}] ${m.title}\n${m.body}`);
         }
         notified++;
@@ -281,27 +269,34 @@ async function main() {
       // คู่เดิมเพิ่งยิงไปในช่วง cooldown → ข้าม (กันข้อความเดิมซ้ำทุกเช้า)
       if (recent.rows.length) { skipped++; continue; }
 
-      // กันยิงซ้ำ pattern เดียวกับ cron เดิม (unique user_id+yam_key)
-      const dup = await db.query(
-        `INSERT INTO mobile_push_log (user_id, yam_key, kind, title, body, payload)
-         VALUES ($1,$2,'network',$3,$4,$5::jsonb)
-         ON CONFLICT (user_id, yam_key) DO NOTHING RETURNING id`,
-        [u.id, yamKey, thMsg.title, thMsg.body, JSON.stringify({
-          url: "hourkey://network", date: dateStr,
-          ally_profile_id: allyId, ally_day_score: allyPick ? allyScore : null,
-          risk_profile_id: riskId, risk_day_score: riskPick ? riskScore : null,
-        })]);
-      if (!dup.rows.length) { skipped++; continue; }
-
+      const typedPayload = notificationPayload.buildNotificationPayload("daily", String(u.id), {
+        slot: "morning", date: userDate, url: "/today",
+      });
+      const userMessages = [];
       for (const tk of u.tokens || []) {
-        const entry = typeof tk === "object" && tk ? tk : { token: tk, locale: "th" };
-        if (!entry.token) continue;
+        const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
         const loc = entry.locale === "en" || entry.locale === "zh" ? entry.locale : "th";
-        const m = buildMessage(loc, allyPick, riskPick, thaiDate);
+        const m = buildMessage(loc, allyPick, riskPick, localDateLabel);
         if (!m.body) continue;
-        messages.push({ deviceToken: entry.token, title: m.title, body: m.body, url: "hourkey://network", data: { url: "hourkey://network", network: yamKey } });
+        userMessages.push({
+          tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
+          expoToken: entry.expo, platform: entry.platform, locale: loc, category: "daily",
+          title: m.title, body: m.body, url: "/today", data: typedPayload,
+        });
       }
-      notified++;
+      const result = await delivery.deliver(db, {
+        userId: u.id, key: yamKey, kind: "daily", title: thMsg.title, body: thMsg.body,
+        payload: typedPayload,
+        sourceFacts: {
+          timezone: u.user_timezone, centerProfileId: centerId,
+          allyProfileId: allyId, allyDayScore: allyPick ? allyScore : null,
+          riskProfileId: riskId, riskDayScore: riskPick ? riskScore : null,
+        },
+        messages: userMessages,
+      }, { dry: DRY });
+      if (result.status === "accepted" || result.status === "dry") notified++;
+      else if (result.status === "failed") failed++;
+      else skipped++;
     } catch (e) {
       failed++;
       console.error(`[mobile-network-push] user=${u.id} error=${e && e.message ? e.message : e}`);
@@ -309,12 +304,8 @@ async function main() {
     if (USER_GAP_MS) await new Promise((r) => setTimeout(r, USER_GAP_MS));
   }
 
-  if (DRY) {
-    console.log(`[mobile-network-push] DRY date=${dateStr} users_would_notify=${notified} skipped=${skipped} errors=${failed}`);
-  } else {
-    const r = await sendExpo(messages, db);
-    console.log(`[mobile-network-push] date=${dateStr} users_notified=${notified} skipped=${skipped} errors=${failed} expo_sent=${messages.length} expo_ok=${r.ok} expo_fail=${r.fail}`);
-  }
+  console.log(`[mobile-network-push] ${DRY ? "DRY " : ""}date=${dateStr} accepted=${notified} skipped=${skipped} errors=${failed}`);
+  await runLease.release();
   await db.end();
 }
 

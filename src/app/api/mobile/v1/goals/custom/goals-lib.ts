@@ -28,6 +28,21 @@ export function thaiDay(offsetDays = 0, nowMs = Date.now()): string {
   return new Date(nowMs + 7 * 3600_000 + offsetDays * 86_400_000).toISOString().slice(0, 10);
 }
 
+/** Local civil date for notification/API adapters; invalid zones fail closed. */
+export function localCivilDay(timezone: string, instant: Date, offsetDays = 0): string | null {
+  try {
+    const shifted = new Date(instant.valueOf() + offsetDays * 86_400_000);
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(shifted);
+  } catch {
+    return null;
+  }
+}
+
 /* ── จำแนกประเภท: map ผลจาก /api/activity-classify → activity ของ engine ── */
 
 export type ClassifyResponse = {

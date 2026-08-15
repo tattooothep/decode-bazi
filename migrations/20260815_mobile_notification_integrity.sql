@@ -48,6 +48,9 @@ ALTER TABLE mobile_notification_prefs
   ADD COLUMN IF NOT EXISTS privacy_preview boolean NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'th';
 
+ALTER TABLE mobile_push_log
+  ADD COLUMN IF NOT EXISTS source_facts jsonb NOT NULL DEFAULT '{}'::jsonb;
+
 ALTER TABLE mobile_notification_prefs
   DROP CONSTRAINT IF EXISTS mobile_notification_prefs_locale_check;
 ALTER TABLE mobile_notification_prefs
@@ -132,6 +135,7 @@ BEFORE UPDATE ON mobile_push_attempts
 FOR EACH ROW EXECUTE FUNCTION protect_mobile_push_attempt_message();
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON mobile_notification_prefs TO hourkey_app;
+GRANT SELECT, INSERT, UPDATE ON mobile_push_log TO hourkey_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON mobile_push_attempts TO hourkey_app;
 
 COMMIT;

@@ -15,9 +15,9 @@ import {
   cleanGoalTitle,
   cleanGoalUuid,
   goalCacheKey,
+  localCivilDay,
   mapClassifyToActivity,
   pickNextAuspicious,
-  thaiDay,
   todayScoreFrom,
   type GoalActivity,
   type NextAuspicious,
@@ -115,9 +115,10 @@ async function fetchAuspiciousCandidates(
 async function luckForActivity(
   req: Request,
   activityKey: string,
-  personProfileId: string | null
+  personProfileId: string | null,
+  timeContext: { timezone: string; instant: Date; today: string },
 ): Promise<LuckView> {
-  const today = thaiDay();
+  const { today } = timeContext;
   const key = goalCacheKey(activityKey, personProfileId, today);
   const cached = luckCacheGet(key);
   if (cached) return cached;
@@ -136,12 +137,14 @@ async function luckForActivity(
     activityProfileKey: profile.key,
     activeModules: DEFAULT_ACTIVE_MODULES,
     peopleIds: personProfileId ? [`hk_${personProfileId}`] : [],
+    timezone: timeContext.timezone,
+    instant: timeContext.instant.toISOString(),
   };
   const [windowCands, todayCands] = await Promise.all([
     fetchAuspiciousCandidates(origin, cookie, ip, {
       ...base,
       dateFrom: today,
-      dateTo: thaiDay(WINDOW_DAYS - 1),
+      dateTo: localCivilDay(timeContext.timezone, timeContext.instant, WINDOW_DAYS - 1),
       options: { hardModules: DEFAULT_HARD_MODULES, limit: 10, scanLimit: 240 },
     }),
     fetchAuspiciousCandidates(origin, cookie, ip, {
@@ -154,7 +157,7 @@ async function luckForActivity(
 
   const view: LuckView = {
     todayScore: todayScoreFrom(todayCands, today),
-    nextAuspicious: pickNextAuspicious(windowCands, Date.now()),
+    nextAuspicious: pickNextAuspicious(windowCands, timeContext.instant.valueOf()),
   };
   // engine ตอบไม่ได้ทั้งคู่ = อย่า cache ค่า null ทิ้งไว้ทั้งชั่วโมง (ให้ลองใหม่ request หน้า)
   if (windowCands !== null || todayCands !== null) luckCacheSet(key, view);
@@ -174,6 +177,10 @@ export async function GET(req: Request) {
   }
 
   const url = new URL(req.url);
+  const timezone = (url.searchParams.get("timezone") || "Asia/Bangkok").trim();
+  const instant = url.searchParams.get("instant") ? new Date(url.searchParams.get("instant")!) : new Date();
+  const today = Number.isFinite(instant.valueOf()) ? localCivilDay(timezone, instant) : null;
+  if (!today) return NextResponse.json({ ok: false, error: "bad_timezone_or_instant" }, { status: 400 });
   const rawProfileId = url.searchParams.get("profileId");
   let queryProfileId: string | null = null;
   if (rawProfileId) {
@@ -185,12 +192,17 @@ export async function GET(req: Request) {
   }
 
   const rows = await q<Row>(
-    `SELECT id, profile_id, title, activity_key, activity_label, created_at::text
-       FROM user_custom_goals
-      WHERE user_id=$1 AND active=true
-      ORDER BY created_at DESC
+    `SELECT g.id, g.profile_id, g.title, g.activity_key, g.activity_label, g.created_at::text
+       FROM user_custom_goals g
+      WHERE g.user_id=$1 AND g.active=true
+        AND (g.profile_id IS NULL OR EXISTS (
+          SELECT 1 FROM profiles p
+           WHERE p.id=g.profile_id AND p.org_id=$2 AND p.created_by_user_id=$1
+             AND COALESCE(p.is_archived,false)=false
+        ))
+      ORDER BY g.created_at DESC
       LIMIT ${MAX_GOALS}`,
-    [session.userId]
+    [session.userId, session.orgId]
   );
 
   // เรียก engine ครั้งเดียวต่อ (activity_key, ดวง) — เป้าหมายที่ activity ซ้ำใช้ผลร่วมกัน
@@ -204,7 +216,7 @@ export async function GET(req: Request) {
   const luckByKey = new Map<string, LuckView>();
   await Promise.all(
     [...uniq.entries()].map(async ([k, item]) => {
-      luckByKey.set(k, await luckForActivity(req, item.activityKey, item.personId));
+      luckByKey.set(k, await luckForActivity(req, item.activityKey, item.personId, { timezone, instant, today }));
     })
   );
 

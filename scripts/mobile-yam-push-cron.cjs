@@ -91,13 +91,13 @@ const QIMEN_DIRECTION_NAMES = {
  *
  * @returns {Promise<null | {direction: object, deity: object, advice: object}>}
  */
-async function fetchQimenHighlight(user, dateStr, startTime, lat, lng) {
+async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone, instant) {
   try {
     const token = signSession(user);
     const res = await fetch(`${BASE}/api/qimen`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
-      body: JSON.stringify({ date: dateStr, time: startTime, lat, lng, school: "chaibu", system_type: "hour" }),
+      body: JSON.stringify({ date: dateStr, time: startTime, lat, lng, timezone, instant: instant.toISOString(), school: "chaibu", system_type: "hour" }),
     });
     if (!res.ok) return null;
     const data = await res.json().catch(() => null);
@@ -167,6 +167,8 @@ function qimenLine(highlight, locale) {
 
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const science = require("../src/lib/notification-science.cjs");
+const notificationPayload = require("../src/lib/notification-payload.cjs");
 
 async function main() {
   const db = new Client({
@@ -175,6 +177,8 @@ async function main() {
     user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
   });
   await db.connect();
+  const runLease = await delivery.trySchedulerRunLease(db, "yam");
+  if (!runLease.acquired) { console.log("[mobile-yam-push] overlap skipped"); await db.end(); return; }
   const { rows: users } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
            array_agg(json_build_object(
@@ -192,13 +196,16 @@ async function main() {
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
            np.qimen_enabled, np.shrine_enabled, np.goal_enabled, np.saved_date_enabled,
            np.yam_min_quality, np.yam_lead_minutes,
-           np.qimen_latitude, np.qimen_longitude, np.qimen_location_updated_at,
+           CASE WHEN np.qimen_enabled=true THEN np.qimen_latitude END AS qimen_latitude,
+           CASE WHEN np.qimen_enabled=true THEN np.qimen_longitude END AS qimen_longitude,
+           CASE WHEN np.qimen_enabled=true THEN np.qimen_location_updated_at END AS qimen_location_updated_at,
            np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
            COALESCE(np.timezone, u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.delivery_status IN ('accepted','delivered')
-               AND l.sent_at >= now() - interval '24 hours') AS sent_today
+             WHERE l.user_id=u.id AND l.delivery_status IN ('accepted','delivered')
+               AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date
+                   = (now() AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date) AS sent_today
       FROM mobile_push_tokens t JOIN users u ON u.id = t.user_id
       LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
@@ -276,22 +283,25 @@ async function main() {
        * เพราะผังฉีเหมินเปลี่ยนทุกสองชั่วโมงตามยาม ถ้าใช้เวลาตอนยิงจะได้ผังของยามก่อนหน้า
        */
       const startTime = (/^(\d{2}:\d{2})/.exec(String(upcoming.range || "")) || [])[1] || null;
-      const locationFresh = u.qimen_location_updated_at
-        && Date.now() - new Date(u.qimen_location_updated_at).getTime() <= 30 * 86_400_000;
-      const highlight = startTime === null || !locationFresh
-        || !Number.isFinite(Number(u.qimen_latitude)) || !Number.isFinite(Number(u.qimen_longitude))
-        ? null
-        : await fetchQimenHighlight(
-            u,
-            dateStr,
-            startTime,
-            Number(u.qimen_latitude),
-            Number(u.qimen_longitude),
-          );
+      const highlight = startTime === null ? null : await science.yamQimenHighlight({
+        qimenEnabled: u.qimen_enabled === true,
+        location: u.qimen_enabled === true ? {
+          fresh: Boolean(u.qimen_location_updated_at)
+            && runAt.getTime() - new Date(u.qimen_location_updated_at).getTime() <= 30 * 86_400_000,
+          latitude: u.qimen_latitude,
+          longitude: u.qimen_longitude,
+        } : null,
+        fetchHighlight: (lat, lng) => fetchQimenHighlight(
+          u, dateStr, startTime, lat, lng, u.user_timezone || guard.FALLBACK_TZ, runAt,
+        ),
+      });
 
       const baseBody = `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}เหมาะลงมือเรื่องสำคัญของคุณ`;
       const body = baseBody + qimenLine(highlight, "th");
       const title = `🔔 ${word}กำลังมาถึง`;
+      const typedPayload = notificationPayload.buildNotificationPayload("yam", String(u.id), {
+        range: String(upcoming.range || ""), quality: String(upcoming.quality || ""), date: dateStr, url: "/today",
+      });
       const userMessages = [];
       for (const entry of u.tokens || []) {
         const raw = entry && typeof entry === "object" ? entry : { device: entry, locale: "th" };
@@ -318,10 +328,11 @@ async function main() {
           expoToken: raw.expo,
           platform: raw.platform,
           category: "yam",
+          locale: loc,
           title: localizedTitle,
           body: localizedBase + qimenLine(highlight, loc),
           url: "/today",
-          data: { url: "/today", yam: yamKey },
+          data: typedPayload,
         });
       }
       const result = await delivery.deliver(db, {
@@ -330,7 +341,18 @@ async function main() {
         kind: "yam",
         title,
         body,
-        payload: { url: "/today", range: String(upcoming.range || ""), quality: String(upcoming.quality || "") },
+        payload: typedPayload,
+        sourceFacts: {
+          profileId: u.profile_id,
+          timezone: u.user_timezone,
+          branch: zhi,
+          qimen: highlight ? {
+            direction: highlight.direction,
+            deity: highlight.deity,
+            advice: highlight.advice,
+            score: highlight.score,
+          } : null,
+        },
         messages: userMessages,
       }, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
@@ -345,6 +367,7 @@ async function main() {
   }
 
   console.log(`[mobile-yam-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
+  await runLease.release();
   await db.end();
 }
 

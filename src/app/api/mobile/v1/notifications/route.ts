@@ -57,6 +57,7 @@ type LogRow = {
   title: string | null;
   body: string | null;
   payload: unknown;
+  source_facts: unknown;
   delivery_status: "accepted" | "delivered";
   sent_at: string;
   read_at: string | null;
@@ -165,7 +166,7 @@ export async function GET(req: Request) {
   const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, Math.floor(limitRaw))) : 50;
 
   const rows = await q<LogRow>(
-    `SELECT id, kind, title, body, payload, delivery_status, sent_at, read_at
+    `SELECT id, kind, title, body, payload, source_facts, delivery_status, sent_at, read_at
        FROM mobile_push_log
       WHERE user_id=$1
         AND delivery_status IN ('accepted','delivered')
@@ -189,6 +190,7 @@ export async function GET(req: Request) {
         title: r.title || "",
         body: r.body || "",
         payload: r.payload ?? null,
+        source_facts: r.source_facts ?? {},
         delivery_status: r.delivery_status,
         sent_at: r.sent_at,
         read: r.read_at !== null,
