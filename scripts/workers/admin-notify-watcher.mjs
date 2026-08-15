@@ -5,6 +5,7 @@ import webPush from "web-push";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
+import { buildAdminRecipientQuery } from "../../src/lib/admin-notify-recipient-rbac.mjs";
 
 const require = createRequire(import.meta.url);
 const mobileDelivery = require("../../src/lib/mobile-notification-delivery.cjs");
@@ -20,10 +21,6 @@ const BATCH_SIZE = Math.max(1, Math.min(100, Number(process.env.ADMIN_NOTIFY_BAT
 const SPIKE_THRESHOLD = Math.max(1, Number(process.env.ADMIN_NOTIFY_FAIL_SPIKE || 3));
 const WORKER_ID = `${process.pid}:${randomUUID().slice(0, 8)}`;
 const MAX_SUB_FAIL = 5;
-const DEFAULT_ON = new Set([
-  "support_report_new", "support_user_reply", "payment_exception", "refund_failed",
-  "service_unhealthy", "service_recovered", "admin_role_changed",
-]);
 
 const db = new pg.Pool({
   host: process.env.PGHOST || "127.0.0.1",
@@ -336,25 +333,8 @@ async function enqueueObservedEvents() {
 }
 
 async function adminRecipients(event) {
-  const envEmails = (process.env.ADMIN_EMAILS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
-  const defaultOn = DEFAULT_ON.has(event.event_type);
-  const result = await db.query(
-    `SELECT DISTINCT u.id::text AS user_id,u.locale
-       FROM users u
-       LEFT JOIN admin_user_roles ur ON ur.user_id=u.id AND ur.revoked_at IS NULL
-         AND (ur.expires_at IS NULL OR ur.expires_at>now())
-       LEFT JOIN admin_roles ar ON ar.id=ur.role_id
-       LEFT JOIN admin_notify_prefs pref ON pref.user_id=u.id AND pref.event_type=$1
-      WHERE u.is_active AND u.deleted_at IS NULL
-        AND (lower(u.email)=ANY($2::text[]) OR ar.id IS NOT NULL)
-        AND COALESCE(pref.enabled,$3::boolean)
-        AND (cardinality($4::text[])=0 OR lower(u.email)=ANY($2::text[]) OR ar.is_super OR ar.key=ANY($4::text[]))
-        AND ($5::text IS NULL OR lower(u.email)=ANY($2::text[]) OR ar.is_super OR EXISTS (
-          SELECT 1 FROM admin_role_permissions rp WHERE rp.role_id=ar.id
-            AND (rp.perm_key=$5 OR rp.perm_key='admin.*' OR rp.perm_key=(split_part($5,'.',1)||'.*'))
-        ))`,
-    [event.event_type, envEmails, defaultOn, event.audience_roles || [], event.required_permission]
-  );
+  const query = buildAdminRecipientQuery(event);
+  const result = await db.query(query.text, query.values);
   return result.rows;
 }
 
