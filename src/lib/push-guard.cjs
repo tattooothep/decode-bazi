@@ -88,6 +88,7 @@ function inQuietHours(hour, quietStart, quietEnd) {
  *
  * @param {object} input
  * @param {string} input.category   หมวด: yam | auspicious | daily
+ * @param {boolean} [input.transactional] true only for requested/essential security or service notices
  * @param {object|null} input.prefs แถวจาก mobile_notification_prefs (null = ยังไม่เคยตั้ง)
  * @param {object|null} input.webPrefs แถวจาก notification_prefs ฝั่งเว็บ (ถ้ามี)
  * @param {string|null} input.timezone เขตเวลาผู้ใช้

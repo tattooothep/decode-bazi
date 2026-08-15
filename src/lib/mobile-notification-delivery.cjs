@@ -179,9 +179,9 @@ async function reserve(db, notice, dry = false) {
               COALESCE((to_jsonb(np)->>'max_per_day')::int,2) AS max_per_day,
               COALESCE(np.privacy_preview,false) AS privacy_preview,
               CASE
-                WHEN lower(COALESCE(NULLIF(btrim(np.locale),''),NULLIF(btrim(to_jsonb(u)->>'locale'),''),'th'))
+                WHEN lower(COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th'))
                   IN ('th','en','zh','cn','vi','ja','ru','ko','es')
-                THEN lower(COALESCE(NULLIF(btrim(np.locale),''),NULLIF(btrim(to_jsonb(u)->>'locale'),''),'th'))
+                THEN lower(COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th'))
                 ELSE 'th'
               END AS locale,
               np.user_id IS NOT NULL AS has_prefs
@@ -242,6 +242,7 @@ async function reserve(db, notice, dry = false) {
       const providerMessage = cleanJson(push.prepareMessage({
         ...item,
         ...providerCopy,
+        transactional: notice.transactional === true,
         data: { ...itemData, notificationId: parent.rows[0].id },
       }, provider));
       const inserted = await client.query(

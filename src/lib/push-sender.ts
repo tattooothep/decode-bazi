@@ -10,8 +10,8 @@
  *
  * เฟสถัดไป (ยังไม่ทำ): cron รายวัน day_sniper/daily_omens — ฟังก์ชันพร้อมเรียกได้เลย
  */
-import { q } from "@/lib/db";
-import { sendMobilePushToUser } from "@/lib/mobile-push";
+import { pool, q } from "@/lib/db";
+import { deliverFusionMobileNotification } from "@/lib/mobile-fusion-notification";
 
 export type PushMessage = {
   title: string;
@@ -136,16 +136,6 @@ export async function sendToUser(
       }
     }
 
-    const mobile = await sendMobilePushToUser(userId, msg).catch(() => ({
-      accepted: 0,
-      failed: 0,
-      removed: 0,
-      skipped: "no_mobile_subscription" as const,
-    }));
-    report.sent += mobile.accepted;
-    report.failed += mobile.failed;
-    report.removed += mobile.removed;
-
     const subs = await q<SubRow>(
       `SELECT id, endpoint, p256dh, auth, fail_count FROM push_subscriptions WHERE user_id=$1`,
       [userId]
@@ -200,14 +190,25 @@ export async function sendToUser(
 }
 
 /**
- * hook: fusion5 job เสร็จ → แจ้ง "คำพยากรณ์พร้อมแล้ว 🔮"
- * เรียกแบบ fire-and-forget จาก src/app/api/sifu/fusion5/route.ts (จุดเดียว หลัง status='done')
+ * hook: fusion/book เสร็จ → จอง mobile attempt แบบ durable ก่อนคืน control
+ * ส่วน web push เป็นช่องทางเสริม จึงยัง fire-and-forget แยกจาก mobile truth
  */
-export function notifyFusionDone(userId: string): void {
+export async function notifyFusionDone(userId: string, referenceId: string) {
+  let mobile: Awaited<ReturnType<typeof deliverFusionMobileNotification>>;
+  try {
+    mobile = await deliverFusionMobileNotification(pool, userId, referenceId);
+  } catch {
+    // Notification failure must not turn a completed/charged reading into a
+    // failed job or trigger a book refund. The caller still awaits this durable
+    // reservation attempt; telemetry remains fixed and contains no user data.
+    console.error(JSON.stringify({ event: "fusion_mobile_notification_reservation_failed" }));
+    mobile = { status: "error", sent: 0, failed: 1 };
+  }
   void sendToUser(userId, {
     title: "hourkey",
     body: "คำพยากรณ์พร้อมแล้ว 🔮 แตะเพื่อเปิดอ่าน",
     url: "/master-fusion",
     tag: "fusion_done",
   }).catch(() => {});
+  return mobile;
 }

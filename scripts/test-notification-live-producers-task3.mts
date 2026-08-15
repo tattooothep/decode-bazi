@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
 import pg from "pg";
 import { resolveNotificationPayload } from "../../hourkey-v197-mobile/src/navigation/notificationPayload.ts";
+import { buildFusionMobileNotice } from "../src/lib/mobile-fusion-notification.ts";
+import { notificationHistoryPayload } from "../src/lib/mobile-notification-history.ts";
 
 const require = createRequire(import.meta.url);
 const yam = require("./mobile-yam-push-cron.cjs");
@@ -61,8 +64,10 @@ assert.deepEqual(securityNotice.payload, {
   v: 1, kind: "security", accountId: "acct-live-001", event: "account_login", url: "/account",
 });
 check(securityNotice.messages[0].url === "/account", "live admin security producer preserves the account-review tap destination");
-assert.deepEqual(resolveNotificationPayload(securityNotice.payload, "security", "acct-live-001"), securityNotice.payload);
-assert.deepEqual(resolveNotificationPayload(serviceNotice.payload, "service", "acct-live-001"), serviceNotice.payload);
+const securityEnvelope = { ...securityNotice.payload, notificationId: "91000000-0000-4000-8000-000000000001" };
+const serviceEnvelope = { ...serviceNotice.payload, notificationId: "91000000-0000-4000-8000-000000000002" };
+assert.deepEqual(resolveNotificationPayload(securityEnvelope, "security", "acct-live-001"), securityEnvelope);
+assert.deepEqual(resolveNotificationPayload(serviceEnvelope, "service", "acct-live-001"), serviceEnvelope);
 
 let capturedNotice: Record<string, any> | null = null;
 const fakeNativeDb = {
@@ -125,10 +130,20 @@ const goal = {
     date: "2026-08-18", dayLabel: "วันอังคารที่ 18 สิงหาคม", hourRange: "09:00-11:00", score: 72,
   },
 };
+const fusionNotice = buildFusionMobileNotice("acct-live-001", "fusion|job|92000000-0000-4000-8000-000000000001", [{
+  id: crypto.randomUUID(), device_push_token: null, device_token_type: "apns",
+  expo_push_token: "ExponentPushToken[fusion-live]", platform: "ios", locale: "en",
+}]);
 
-const liveCases = [
+const liveCases: Array<{
+  kind: string;
+  transactional?: boolean;
+  payload: Record<string, any>;
+  copy: { title: string; body: string };
+  sourceFacts: Record<string, any>;
+}> = [
   {
-    kind: "security", payload: securityNotice.payload, copy: securityNotice.messages[0],
+    kind: "security", transactional: true, payload: securityNotice.payload, copy: securityNotice.messages[0],
     sourceFacts: securityNotice.sourceFacts,
   },
   {
@@ -181,20 +196,46 @@ const liveCases = [
     sourceFacts: { profileId: "profile-live-001", date: "2026-08-18", hourRange: "09:00-11:00", score: 72 },
   },
   {
-    kind: "service", payload: serviceNotice.payload, copy: serviceNotice.messages[0], sourceFacts: serviceNotice.sourceFacts,
+    kind: "service", transactional: true, payload: serviceNotice.payload, copy: serviceNotice.messages[0], sourceFacts: serviceNotice.sourceFacts,
+  },
+  {
+    kind: "service", transactional: true, payload: fusionNotice.payload,
+    copy: fusionNotice.messages[0], sourceFacts: fusionNotice.sourceFacts,
   },
 ];
-for (const item of liveCases) {
+for (const [index, item] of liveCases.entries()) {
+  const notificationId = `93000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`;
+  const envelope = { ...item.payload, notificationId };
   const provider = pushSender.prepareMessage({
     category: item.kind, title: item.copy.title, body: item.copy.body,
-    url: item.payload.url, data: item.payload,
+    transactional: item.transactional === true, url: item.payload.url, data: envelope,
   }, "expo");
-  assert.deepEqual(provider.data, item.payload, `${item.kind}: provider facts differ from live stored payload`);
-  assert.deepEqual(resolveNotificationPayload(item.payload, item.kind, "acct-live-001"), item.payload,
-    `${item.kind}: mobile parser rejects live producer payload`);
+  assert.deepEqual(provider.data, envelope, `${item.kind}: provider facts differ from live stored payload plus server ID`);
+  assert.deepEqual(resolveNotificationPayload(provider.data, item.kind, "acct-live-001"), envelope,
+    `${item.kind}: mobile parser rejects live provider payload`);
+  assert.deepEqual(
+    resolveNotificationPayload(notificationHistoryPayload(notificationId, item.payload), item.kind, "acct-live-001"),
+    envelope,
+    `${item.kind}: authenticated history envelope is not routable`,
+  );
+  assert.equal(provider.categoryId, item.transactional === true ? undefined : "hourkey_daily",
+    `${item.kind}: MUTE category follows transactional policy rather than the broad service kind`);
   check(item.copy.title.length >= 4 && item.copy.body.length >= 20 && Object.keys(item.sourceFacts).length > 0,
     `${item.kind}: live source facts produce bounded useful copy, stored payload, provider parity and mobile parsing`);
 }
+
+const pushSenderSource = readFileSync("src/lib/push-sender.ts", "utf8");
+const fusionRouteSource = readFileSync("src/app/api/sifu/fusion5/route.ts", "utf8");
+const bookRouteSource = readFileSync("src/app/api/book/route.ts", "utf8");
+check(!pushSenderSource.includes("sendMobilePushToUser")
+    && /export async function notifyFusionDone/u.test(pushSenderSource)
+    && /try\s*\{[\s\S]{0,180}?await deliverFusionMobileNotification\(pool, userId, referenceId\)[\s\S]{0,300}?fusion_mobile_notification_reservation_failed/u.test(pushSenderSource),
+  "live Fusion awaits durable typed mobile reservation without bypassing through legacy Expo");
+check(/await notifyFusionDone\(p\.userId, `fusion\|job\|\$\{jobId\}`\)/u.test(fusionRouteSource)
+    && /await notifyFusionDone\(userId, `fusion\|book\|\$\{bookId\}`\)/u.test(bookRouteSource),
+  "both live Fusion result producers await reservation with a stable typed UUID reference");
+check(/catch\s*\{[\s\S]{0,420}?mobile\s*=\s*\{ status: "error", sent: 0, failed: 1 \}/u.test(pushSenderSource),
+  "notification reservation failure is converted to explicit telemetry and cannot enter core job failure/refund handling");
 
 for (const locale of locales) {
   const family = payloadRuntime.normalizedLocale(locale);

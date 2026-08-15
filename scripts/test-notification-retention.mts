@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import pg from "pg";
+import { recordNotificationEngagement } from "../src/lib/mobile-notification-engagement.ts";
 
 const require = createRequire(import.meta.url);
 const database = `notification_retention_test_${process.pid}`;
@@ -67,16 +68,23 @@ try {
       ('30000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000001','corrupt-expo-id','daily','Corrupt Expo evidence','Must survive','{"kind":"daily"}','{"case":"expo-id"}','accepted',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
       ('30000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000001','corrupt-fcm-id','daily','Corrupt FCM evidence','Must survive','{"kind":"daily"}','{"case":"fcm-id"}','accepted',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
       ('30000000-0000-4000-8000-000000000012','00000000-0000-4000-8000-000000000001','corrupt-parent-status','daily','Corrupt parent evidence','Must survive','{"kind":"daily"}','{"case":"parent-status"}','failed',NULL,NULL,now()-interval '200 days',1),
-      ('30000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000001','corrupt-attempt-count','daily','Corrupt count evidence','Must survive','{"kind":"daily"}','{"case":"attempt-count"}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1);
-    INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,status,transactional,accepted_at,delivered_at,next_retry_at,updated_at,created_at)
+      ('30000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000001','corrupt-attempt-count','daily','Corrupt count evidence','Must survive','{"kind":"daily"}','{"case":"attempt-count"}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
+      ('30000000-0000-4000-8000-000000000014','00000000-0000-4000-8000-000000000001','corrupt-time-order','daily','Corrupt time order','Must survive','{"kind":"daily"}','{"case":"time-order"}','accepted',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1);
+    INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,status,transactional,accepted_at,delivered_at,send_started_at,next_retry_at,updated_at,created_at)
     SELECT id,gen_random_uuid(),'fcm','{"title":"provider-private"}',repeat('a',64),
            CASE WHEN yam_key='active-retry' THEN 'retry_due' ELSE 'delivered' END,
            kind IN ('security','service'),
            CASE WHEN yam_key='active-retry' THEN NULL ELSE updated_at END,
            CASE WHEN yam_key='active-retry' THEN NULL ELSE updated_at END,
+           CASE WHEN yam_key='active-retry' THEN NULL ELSE updated_at-interval '1 second' END,
            CASE WHEN yam_key='active-retry' THEN now()-interval '1 minute' ELSE NULL END,
            updated_at,updated_at
       FROM mobile_push_log;
+    INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,platform,enabled)
+      VALUES('10000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001',
+             '90000000-0000-4000-8000-000000000001','ExponentPushToken[retention-owned-device]','ios',true);
+    UPDATE mobile_push_attempts a SET installation_id='90000000-0000-4000-8000-000000000001'
+      FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='retain-old-daily';
     UPDATE mobile_push_attempts a SET provider='expo',status='provider_accepted',provider_ticket_id='checked-safe-ticket',
            provider_receipt_checked_at=a.updated_at,delivered_at=NULL
       FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='retain-security';
@@ -95,6 +103,11 @@ try {
     UPDATE mobile_push_attempts a SET status='provider_accepted',provider_message_id=NULL,delivered_at=NULL
       FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='corrupt-fcm-id';
     UPDATE mobile_push_log SET attempt_count=99 WHERE yam_key='corrupt-attempt-count';
+    UPDATE mobile_push_attempts a SET status='provider_accepted',delivered_at=NULL,
+           accepted_at=a.updated_at-interval '2 seconds',send_started_at=a.updated_at,
+           provider_message_id='stale-generation-message'
+      FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='corrupt-time-order';
+    UPDATE mobile_push_log SET delivery_status='accepted' WHERE yam_key='corrupt-time-order';
     INSERT INTO mobile_notification_engagements(user_id,installation_id,push_log_id,event,recorded_at) VALUES
       ('00000000-0000-4000-8000-000000000001','90000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001','opened',now()-interval '100 days'),
       ('00000000-0000-4000-8000-000000000001','90000000-0000-4000-8000-000000000002','30000000-0000-4000-8000-000000000002','opened',now()-interval '5 days');
@@ -102,7 +115,7 @@ try {
 
   const retention = require("../src/lib/notification-retention.cjs");
   const report = await retention.runRetention(pool, {
-    sourceFactsDays: 30, attemptDays: 30, historyDays: 180, securityHistoryDays: 365,
+    sourceFactsDays: 30, attemptDays: 90, engagementDays: 90, historyDays: 180, securityHistoryDays: 365,
     batchSize: 100, maxBatches: 5,
   });
   assert.equal(report.ok, true, "bounded retention completes successfully");
@@ -116,19 +129,29 @@ try {
   assert.deepEqual(retainedOld.source_facts, {}, "old source facts are redacted before history expiry");
   assert.equal(retainedOld.payload.accountId, "private-account", "typed history payload remains available until the parent history expires");
   assert.equal(retainedOld.redacted, true);
-  assert.equal(retainedOld.retired, true);
-  assert.equal(Number((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_attempts WHERE push_log_id='30000000-0000-4000-8000-000000000001'`)).rows[0].n), 0, "terminal provider attempt detail is purged after its shorter retention window");
+  assert.equal(retainedOld.retired, false);
+  assert.equal(Number((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_attempts WHERE push_log_id='30000000-0000-4000-8000-000000000001'`)).rows[0].n), 1, "installation ownership survives for the full 90-day engagement acceptance window");
+  assert.equal(await recordNotificationEngagement(pool, '00000000-0000-4000-8000-000000000001', {
+    notificationId: '30000000-0000-4000-8000-000000000001',
+    installationId: '90000000-0000-4000-8000-000000000001',
+    event: 'opened', actionId: '',
+  }), 'recorded', "an owned first open at day 40 remains authenticated and recordable");
+  assert.equal(await recordNotificationEngagement(pool, '00000000-0000-4000-8000-000000000099', {
+    notificationId: '30000000-0000-4000-8000-000000000001',
+    installationId: '90000000-0000-4000-8000-000000000001',
+    event: 'opened', actionId: '',
+  }), 'not_found', "cross-account engagement remains hidden and rejected");
 
   assert.equal((await pool.query(`SELECT 1 FROM mobile_push_log WHERE yam_key='purge-daily'`)).rowCount, 0, "ordinary parent history expires at the bounded history window");
   assert.equal((await pool.query(`SELECT 1 FROM mobile_push_log WHERE yam_key='retain-security'`)).rowCount, 1, "security history uses the longer required history window");
-  assert.equal((await pool.query(`SELECT 1 FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='retain-security'`)).rowCount, 0, "checked old Expo acceptance detail is terminal for retention and is purged");
+  assert.equal((await pool.query(`SELECT 1 FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='retain-security'`)).rowCount, 0, "checked old Expo acceptance detail expires after the 90-day engagement acceptance window");
   assert.equal((await pool.query(`SELECT 1 FROM mobile_push_log WHERE yam_key='purge-security'`)).rowCount, 0, "security history is still bounded and eventually expires");
   assert.equal((await pool.query(`SELECT 1 FROM mobile_push_log WHERE yam_key='old-parent-recent-attempt'`)).rowCount, 1, "an old parent is preserved until its recent terminal attempt finishes the shorter audit window");
   assert.equal((await pool.query(`SELECT source_facts FROM mobile_push_log WHERE yam_key='active-retry'`)).rows[0].source_facts.profileId, "active-private", "active retry source facts are never redacted mid-delivery");
   assert.equal((await pool.query(`SELECT 1 FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='active-retry'`)).rowCount, 1, "active retry attempts are never purged");
   const corruptKeys = [
     "corrupt-terminal-lease", "corrupt-delivered-time", "corrupt-expo-id",
-    "corrupt-fcm-id", "corrupt-parent-status", "corrupt-attempt-count",
+    "corrupt-fcm-id", "corrupt-parent-status", "corrupt-attempt-count", "corrupt-time-order",
   ];
   const corruptRows = await pool.query(
     `SELECT l.yam_key,l.attempts_retired_at,a.id AS attempt_id
@@ -140,7 +163,7 @@ try {
   assert.equal(corruptRows.rows.every((row) => row.attempt_id && row.attempts_retired_at === null), true, "corrupt evidence keeps its child attempt and never receives attempts_retired_at");
   const reconciliation = await require("../src/lib/notification-observability.cjs").reconcile(pool);
   assert.equal(reconciliation.ok, false, "retention cannot turn corrupt durable state into a healthy reconciliation result by deleting evidence");
-  assert.equal(reconciliation.counts.impossibleState >= 4, true, "terminal lease, timestamp, and provider-ID corruption remains visible");
+  assert.equal(reconciliation.counts.impossibleState >= 5, true, "terminal lease, missing/order timestamps, and provider-ID corruption remains visible");
   assert.equal(reconciliation.counts.parentTruthMismatch >= 1, true, "parent delivery-status corruption remains visible");
   assert.equal(reconciliation.counts.parentAttemptCountMismatch >= 1, true, "parent attempt-count corruption remains visible");
   console.log("NOTIFICATION_RETENTION_OK");

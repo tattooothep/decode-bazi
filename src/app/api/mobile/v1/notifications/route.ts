@@ -8,7 +8,8 @@
  *      {action:"prefs", savedDate?|yam?|daily?|qimen?|shrine?|goal?:bool,
  *                        yamMinQuality?, yamLeadMinutes?, dailySlot?,
  *                        quietStart?:0-23, quietEnd?:0-23, maxPerDay?:0-10,
- *                        pauseDays?:number, muteToday?:true, resume?:true} → บันทึกตั้งค่า
+ *                        pauseDays?:number, muteToday?:true, resume?:true,
+ *                        locale?:AppLocale, timezone?:IANA zone} → บันทึกตั้งค่าและบริบทบัญชี
  *        (quietStart=quietEnd คือไม่ตั้งช่วงห้ามรบกวน · pauseDays=พักกี่วัน · resume=เลิกพัก)
  * ห้ามปั้นข้อมูล: รายการมาจาก mobile_push_log ที่ตัวยิงจริงเขียนไว้เท่านั้น
  */
@@ -24,6 +25,7 @@ import {
   recordNotificationEngagement,
   type NotificationEngagementEvent,
 } from "@/lib/mobile-notification-engagement";
+import { notificationHistoryPayload } from "@/lib/mobile-notification-history";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -42,7 +44,6 @@ type LogRow = {
   title: string | null;
   body: string | null;
   payload: unknown;
-  source_facts: unknown;
   delivery_status: "accepted" | "delivered";
   sent_at: string;
   read_at: string | null;
@@ -58,16 +59,21 @@ async function authorize(req: Request) {
 
 async function readPrefs(userId: string): Promise<PrefRow> {
   const row = await q1<PrefRow>(
-    `SELECT security_enabled, saved_date_enabled, yam_enabled, auspicious_enabled, daily_enabled,
-            qimen_enabled, shrine_enabled, goal_enabled, service_enabled,
-            yam_min_quality, yam_lead_minutes, daily_slot,
-            quiet_start, quiet_end, max_per_day, paused_until, privacy_preview, locale
-       FROM mobile_notification_prefs WHERE user_id=$1`,
+    `SELECT np.security_enabled,np.saved_date_enabled,np.yam_enabled,np.auspicious_enabled,np.daily_enabled,
+            np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
+            np.yam_min_quality,np.yam_lead_minutes,np.daily_slot,
+            np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,np.privacy_preview,
+            CASE WHEN lower(COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th'))
+                       IN ('th','en','zh','cn','vi','ja','ru','ko','es')
+                 THEN lower(COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th'))
+                 ELSE 'th' END AS locale,
+            COALESCE(np.timezone,u.timezone,'Asia/Bangkok') AS timezone
+       FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id WHERE u.id=$1`,
     [userId],
   );
   // 🔴 ยังไม่เคยตั้งค่า = ยังไม่ยินยอม (ค่าเริ่มต้นเป็นปิด ตรงกับตัวคุมกลาง push-guard)
   // ของเดิมคืน true ทั้งสามหมวด ทำให้หน้าแอพโชว์สวิตช์เปิดทั้งที่เซิร์ฟเวอร์ไม่ส่งจริง
-  return row || {
+  return row?.security_enabled !== null && row?.security_enabled !== undefined ? row : {
     security_enabled: true,
     saved_date_enabled: false,
     yam_enabled: false,
@@ -85,7 +91,8 @@ async function readPrefs(userId: string): Promise<PrefRow> {
     max_per_day: 2,
     paused_until: null,
     privacy_preview: false,
-    locale: "th",
+    locale: row?.locale || "th",
+    timezone: row?.timezone || "Asia/Bangkok",
   };
 }
 
@@ -129,7 +136,7 @@ export async function GET(req: Request) {
   const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, Math.floor(limitRaw))) : 50;
 
   const rows = await q<LogRow>(
-    `SELECT id, kind, title, body, payload, source_facts, delivery_status, sent_at, read_at
+    `SELECT id, kind, title, body, payload, delivery_status, sent_at, read_at
        FROM mobile_push_log
       WHERE user_id=$1
         AND delivery_status IN ('accepted','delivered')
@@ -152,8 +159,7 @@ export async function GET(req: Request) {
         kind: r.kind,
         title: r.title || "",
         body: r.body || "",
-        payload: r.payload ?? null,
-        source_facts: r.source_facts ?? {},
+        payload: notificationHistoryPayload(r.id, r.payload),
         delivery_status: r.delivery_status,
         sent_at: r.sent_at,
         read: r.read_at !== null,
@@ -245,7 +251,10 @@ export async function POST(req: Request) {
         { ok: true, prefs: prefsPayload(saved) },
         { headers: { "Cache-Control": "no-store" } },
       );
-    } catch {
+    } catch (error) {
+      if (error instanceof TypeError) {
+        return NextResponse.json({ ok: false, error: "notification_preferences_invalid" }, { status: 400 });
+      }
       return NextResponse.json({ ok: false, error: "notification_preferences_failed" }, { status: 500 });
     }
   }

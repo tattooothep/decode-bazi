@@ -10,6 +10,7 @@ const TICKET_SAFETY_SECONDS = 300;
 const TRANSIENT_HTTP = new Set([408, 425, 429, 500, 502, 503, 504]);
 const MAX_ATTEMPTS = 3;
 const CONCURRENCY = 10;
+const ACTION_CATEGORY_ID = "hourkey_daily";
 
 let cachedKey = null;
 let cachedTicket = null;
@@ -99,6 +100,9 @@ function providerFor(item) {
 /** Exact provider body without the credential identifying the target device. */
 function prepareMessage(item, provider = providerFor(item)) {
   const category = categoryOf(item);
+  const actionCategoryId = category === "security" || item?.transactional === true
+    ? null
+    : ACTION_CATEGORY_ID;
   if (provider === "fcm") {
     return {
       notification: {
@@ -108,7 +112,10 @@ function prepareMessage(item, provider = providerFor(item)) {
       // Expo Notifications' Android native bridge JSON-parses data.body into
       // request.content.data. A single JSON object preserves v/lead/score
       // number types required by the strict mobile payload parser.
-      data: { body: JSON.stringify(providerData(item, false)) },
+      data: {
+        body: JSON.stringify(providerData(item, false)),
+        ...(actionCategoryId ? { categoryId: actionCategoryId } : {}),
+      },
       android: {
         priority: category === "security" || category === "service" ? "HIGH" : "NORMAL",
         ttl: category === "security" || category === "service" ? "21600s" : "86400s",
@@ -128,6 +135,7 @@ function prepareMessage(item, provider = providerFor(item)) {
       priority: category === "security" || category === "service" ? "high" : "normal",
       ttl: category === "security" || category === "service" ? 21_600 : 86_400,
       channelId: channelOf(category),
+      ...(actionCategoryId ? { categoryId: actionCategoryId } : {}),
     };
   }
   return null;

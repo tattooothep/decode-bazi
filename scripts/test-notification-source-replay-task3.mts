@@ -5,6 +5,11 @@ import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import pg from "pg";
 import { resolveNotificationPayload } from "../../hourkey-v197-mobile/src/navigation/notificationPayload.ts";
+import { notificationHistoryPayload } from "../src/lib/mobile-notification-history.ts";
+import {
+  buildFusionMobileNotice,
+  deliverFusionMobileNotification,
+} from "../src/lib/mobile-fusion-notification.ts";
 
 const require = createRequire(import.meta.url);
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
@@ -27,12 +32,29 @@ const user = {
   yam_min_quality: "good", yam_lead_minutes: 60,
 };
 const runAt = new Date(fixture.runAt);
+const fusionNotice = buildFusionMobileNotice(
+  fixture.accountId,
+  "fusion|job|94000000-0000-4000-8000-000000000001",
+  [{
+    id: fixture.tokenId, device_push_token: null, device_token_type: "apns",
+    expo_push_token: "ExponentPushToken[source-replay]", platform: "ios", locale: "en",
+  }],
+);
+
+const historyId = "90000000-0000-4000-8000-000000000001";
+assert.deepEqual(
+  notificationHistoryPayload(historyId, { v: 1, notificationId: "90000000-0000-4000-8000-000000000099" }),
+  { v: 1, notificationId: historyId },
+  "authenticated history must replace a colliding stored ID with its durable parent ID",
+);
+assert.equal(notificationHistoryPayload("not-a-uuid", { v: 1 }), null);
+assert.equal(notificationHistoryPayload(historyId, ["not", "a", "payload"]), null);
 
 const notices: Array<{ name: string; accountLocale: string; notice: any; parse: boolean }> = [
   { name: "yam", accountLocale: "en", notice: yam.buildYamProducer(user, fixture.yam), parse: true },
   { name: "daily", accountLocale: "zh", notice: daily.buildDailyProducer(user, fixture.daily), parse: true },
-  { name: "monthly", accountLocale: "ja", notice: monthly.buildMonthlyNotice(user, fixture.monthly.date), parse: false },
-  { name: "network", accountLocale: "cn", notice: network.buildNetworkNotice(user, fixture.network.date, fixture.network.api), parse: false },
+  { name: "monthly", accountLocale: "ja", notice: monthly.buildMonthlyNotice(user, fixture.monthly.date), parse: true },
+  { name: "network", accountLocale: "cn", notice: network.buildNetworkNotice(user, fixture.network.date, fixture.network.api), parse: true },
   { name: "saved_date", accountLocale: "en", notice: personal.buildSavedDateProducer(user, fixture.savedDate, runAt), parse: true },
   { name: "qimen", accountLocale: "zh", notice: personal.buildQimenProducer(user, fixture.qimen.request, fixture.qimen.api), parse: true },
   { name: "shrine", accountLocale: "cn", notice: shrine.buildShrineProducer(user, fixture.shrine), parse: true },
@@ -45,6 +67,7 @@ const notices: Array<{ name: string; accountLocale: string; notice: any; parse: 
     userId: user.id, eventId: fixture.service.eventId, eventType: fixture.service.eventType,
     eventPayload: fixture.service.eventPayload, msg: admin.messageFor(fixture.service.eventType, "en", fixture.service.eventPayload), tokens: [token],
   }), parse: true },
+  { name: "fusion", accountLocale: "en", notice: fusionNotice, parse: true },
 ];
 
 for (const item of notices) {
@@ -67,25 +90,30 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text);
-    CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY,timezone text,max_per_day int,privacy_preview boolean,locale text);
-    CREATE TABLE mobile_push_tokens(id uuid PRIMARY KEY,user_id uuid,installation_id uuid,device_push_token text,device_token_type text,expo_push_token text,platform text,enabled boolean);
+    CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text,deleted_at timestamptz);
+    CREATE TABLE mobile_notification_prefs(
+      user_id uuid PRIMARY KEY,timezone text,max_per_day int,privacy_preview boolean,locale text,
+      service_enabled boolean,quiet_start int,quiet_end int,paused_until timestamptz
+    );
+    CREATE TABLE mobile_push_tokens(id uuid PRIMARY KEY,user_id uuid,installation_id uuid,device_push_token text,device_token_type text,expo_push_token text,platform text,enabled boolean,locale text);
     CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid,yam_key text,kind text,title text,body text,payload jsonb,source_facts jsonb,delivery_status text,attempt_count int,next_retry_at timestamptz,accepted_at timestamptz,sent_at timestamptz,last_error text,updated_at timestamptz,delivery_model_generation smallint NOT NULL DEFAULT 0,UNIQUE(user_id,yam_key));
     CREATE TABLE mobile_push_attempts(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),push_log_id uuid,token_id uuid,installation_id uuid,provider text,provider_message jsonb,message_sha256 text,privacy_safe boolean,transactional boolean,status text,next_retry_at timestamptz,updated_at timestamptz,UNIQUE(push_log_id,installation_id));
-    INSERT INTO users VALUES('${fixture.accountId}','${fixture.timezone}','th');
-    INSERT INTO mobile_notification_prefs VALUES('${fixture.accountId}','${fixture.timezone}',100,false,'en');
-    INSERT INTO mobile_push_tokens VALUES('${fixture.tokenId}','${fixture.accountId}','${fixture.installationId}',NULL,'apns','ExponentPushToken[source-replay]','ios',true);
+    INSERT INTO users VALUES('${fixture.accountId}','${fixture.timezone}','th',NULL);
+    INSERT INTO mobile_notification_prefs VALUES('${fixture.accountId}','${fixture.timezone}',100,false,'en',true,0,0,NULL);
+    INSERT INTO mobile_push_tokens VALUES('${fixture.tokenId}','${fixture.accountId}','${fixture.installationId}',NULL,'apns','ExponentPushToken[source-replay]','ios',true,'en');
     GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
   `);
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password, max: 2 });
   for (const item of notices) {
-    await pool.query(`UPDATE mobile_notification_prefs SET locale=$2 WHERE user_id=$1`, [fixture.accountId, item.accountLocale]);
+    await pool.query(`UPDATE users SET locale=$2 WHERE id=$1`, [fixture.accountId, item.accountLocale]);
+    await pool.query(`UPDATE mobile_notification_prefs SET locale='th' WHERE user_id=$1`, [fixture.accountId]);
     const reservation = await delivery.reserve(pool, item.notice);
     assert.ok(reservation, `${item.name} live notice must use durable reservation`);
     const stored = (await pool.query(`SELECT l.title,l.body,l.payload,l.source_facts,a.provider_message
       FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id WHERE l.id=$1`, [reservation.id])).rows[0];
     const family = item.accountLocale === "th" ? "th" : ["zh", "cn"].includes(item.accountLocale) ? "zh" : "en";
-    assert.deepEqual({ title: stored.title, body: stored.body }, item.notice.historyCopies[family], `${item.name} parent history locale mismatch`);
+    assert.deepEqual({ title: stored.title, body: stored.body }, item.notice.historyCopies[family],
+      `${item.name} parent history must follow current users.locale rather than stale preference locale`);
     assert.ok(stored.title.length >= 4 && stored.body.length >= 12, `${item.name} parent history must remain useful`);
     assert.deepEqual(stored.source_facts, item.notice.sourceFacts, `${item.name} source facts changed before storage`);
     assert.deepEqual(stored.payload, item.notice.payload, `${item.name} typed payload changed before storage`);
@@ -97,17 +125,53 @@ try {
       expectedProviderData,
       `${item.name} provider facts must equal stored payload plus only the server notification ID`,
     );
+    assert.equal(
+      stored.provider_message.categoryId,
+      item.notice.transactional === true ? undefined : "hourkey_daily",
+      `${item.name} provider action category must follow transactional policy`,
+    );
     if (item.parse) {
       assert.deepEqual(
         resolveNotificationPayload(stored.provider_message.data, item.notice.kind, fixture.accountId),
         expectedProviderData,
         `${item.name} current mobile parser must accept the exact provider envelope`,
       );
+      assert.deepEqual(
+        resolveNotificationPayload(
+          notificationHistoryPayload(reservation.id, stored.payload),
+          item.notice.kind,
+          fixture.accountId,
+        ),
+        expectedProviderData,
+        `${item.name} notification-center history must expose the same exact routable envelope`,
+      );
     }
   }
+  await pool.query(`DELETE FROM mobile_notification_prefs WHERE user_id=$1`, [fixture.accountId]);
+  const liveFusionReference = "fusion|book|95000000-0000-4000-8000-000000000001";
+  const liveFusionResult = await deliverFusionMobileNotification(
+    pool, fixture.accountId, liveFusionReference, new Date(fixture.runAt),
+  );
+  assert.equal(liveFusionResult.status, "pending", "live Fusion completion reserves durable delivery without blocking its producer on provider I/O");
+  const liveFusionStored = (await pool.query(
+    `SELECT l.payload,a.provider_message,a.transactional FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id
+      WHERE l.user_id=$1 AND l.yam_key=$2`,
+    [fixture.accountId, liveFusionReference],
+  )).rows[0];
+  assert.equal(liveFusionStored.payload.event, "fusion_ready");
+  assert.equal(liveFusionStored.payload.url, "/fusion");
+  assert.equal(liveFusionStored.transactional, true, "requested Fusion completion is an immutable transactional attempt");
+  assert.equal(liveFusionStored.provider_message.categoryId, undefined, "requested Fusion completion has no routine MUTE action");
+  await pool.query(
+    `INSERT INTO mobile_notification_prefs
+       (user_id,timezone,max_per_day,privacy_preview,locale,service_enabled,quiet_start,quiet_end,paused_until)
+     VALUES ($1,$2,100,false,'th',true,0,0,NULL)`,
+    [fixture.accountId, fixture.timezone],
+  );
   const localizedPreview = { ...notices.find((item) => item.name === "daily")!.notice };
   localizedPreview.key = `${localizedPreview.key}|localized-preview`;
-  await pool.query(`UPDATE mobile_notification_prefs SET locale='zh',privacy_preview=true WHERE user_id=$1`, [fixture.accountId]);
+  await pool.query(`UPDATE users SET locale='zh' WHERE id=$1`, [fixture.accountId]);
+  await pool.query(`UPDATE mobile_notification_prefs SET locale='th',privacy_preview=true WHERE user_id=$1`, [fixture.accountId]);
   const previewReservation = await delivery.reserve(pool, localizedPreview);
   const previewStored = (await pool.query(`SELECT l.title,l.body,a.provider_message
     FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id WHERE l.id=$1`, [previewReservation.id])).rows[0];

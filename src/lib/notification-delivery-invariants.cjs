@@ -21,6 +21,12 @@ function attemptImpossibleSql(value = "a") {
     OR (${a}.status IN ('provider_accepted','delivered') AND ${a}.next_retry_at IS NOT NULL)
     OR (${a}.status='provider_accepted' AND ${a}.accepted_at IS NULL)
     OR (${a}.status='delivered' AND (${a}.delivered_at IS NULL OR ${a}.accepted_at IS NULL))
+    OR (${a}.status IN ('provider_accepted','delivered') AND ${a}.send_started_at IS NULL)
+    OR (${a}.accepted_at IS NOT NULL AND ${a}.send_started_at IS NOT NULL
+      AND ${a}.accepted_at<${a}.send_started_at)
+    OR (${a}.delivered_at IS NOT NULL AND (${a}.accepted_at IS NULL OR ${a}.delivered_at<${a}.accepted_at))
+    OR (${a}.provider_receipt_checked_at IS NOT NULL
+      AND (${a}.accepted_at IS NULL OR ${a}.provider_receipt_checked_at<${a}.accepted_at))
   )`;
 }
 

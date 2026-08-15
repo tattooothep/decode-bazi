@@ -6,7 +6,7 @@ const ROUTES = Object.freeze({
   qimen: new Set(["/qimen/board"]),
   shrine: new Set(["/shrine"]),
   goal: new Set(["/calendar/goals"]),
-  service: new Set(["/account", "/support", "/store", "/calendar", "/network"]),
+  service: new Set(["/account", "/support", "/store", "/calendar", "/network", "/fusion"]),
 });
 
 const FACT_KEYS = Object.freeze({
@@ -52,7 +52,20 @@ function buildNotificationPayload(kind, accountId, facts) {
   if (kind === "qimen" && (!cleanText(facts.direction, 1, 32) || !Number.isFinite(facts.score) || facts.score < 0 || facts.score > 100)) throw new TypeError("invalid qimen facts");
   if (kind === "shrine" && !cleanText(facts.festival, 1, 120)) throw new TypeError("invalid shrine facts");
   if (kind === "goal" && !cleanText(facts.goalId, 8, 100)) throw new TypeError("invalid goal facts");
-  if (kind === "service" && (!cleanText(facts.event, 1, 80) || !cleanText(facts.referenceId, 8, 120))) throw new TypeError("invalid service facts");
+  if (kind === "service") {
+    if (!cleanText(facts.event, 1, 80) || !cleanText(facts.referenceId, 8, 120)) {
+      throw new TypeError("invalid service facts");
+    }
+    const exactDestination = facts.url === "/calendar"
+      ? facts.event === "monthly_report_ready" && /^monthly\|\d{4}-\d{2}$/u.test(facts.referenceId)
+      : facts.url === "/network"
+        ? facts.event === "network_morning" && /^network\|\d{4}-\d{2}-\d{2}\|[^|]{1,80}$/u.test(facts.referenceId)
+        : facts.url === "/fusion"
+          ? facts.event === "fusion_ready"
+            && /^fusion\|(job|book)\|[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(facts.referenceId)
+          : true;
+    if (!exactDestination) throw new TypeError("invalid service destination facts");
+  }
   return Object.freeze({ v: 1, kind, accountId, ...facts });
 }
 

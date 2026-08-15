@@ -13,14 +13,16 @@ function integerOption(value, fallback, minimum, maximum, name) {
 function optionsFor(input = {}) {
   const config = {
     sourceFactsDays: integerOption(input.sourceFactsDays, 30, 1, 3650, "sourceFactsDays"),
-    attemptDays: integerOption(input.attemptDays, 30, 1, 3650, "attemptDays"),
+    // Installation ownership is required to authenticate late open/action
+    // callbacks. Keep that evidence for the full engagement acceptance window.
+    attemptDays: integerOption(input.attemptDays, 90, 1, 3650, "attemptDays"),
     engagementDays: integerOption(input.engagementDays, 90, 1, 3650, "engagementDays"),
     historyDays: integerOption(input.historyDays, 180, 30, 3650, "historyDays"),
     securityHistoryDays: integerOption(input.securityHistoryDays, 365, 30, 3650, "securityHistoryDays"),
     batchSize: integerOption(input.batchSize, 500, 1, 5000, "batchSize"),
     maxBatches: integerOption(input.maxBatches, 20, 1, 100, "maxBatches"),
   };
-  if (config.sourceFactsDays > config.historyDays || config.attemptDays > config.engagementDays
+  if (config.sourceFactsDays > config.historyDays || config.attemptDays < config.engagementDays
       || config.engagementDays > config.historyDays
       || config.securityHistoryDays < config.historyDays) {
     throw new TypeError("invalid notification retention window ordering");

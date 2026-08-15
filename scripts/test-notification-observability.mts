@@ -97,7 +97,8 @@ try {
     UPDATE mobile_push_attempts SET provider_ticket_id='ticket-safe', accepted_at=now()-interval '2 hours',
       send_started_at=now()-interval '2 hours'-interval '2 seconds',next_receipt_at=now()-interval '2 hours'
       WHERE id='40000000-0000-4000-8000-000000000002';
-    UPDATE mobile_push_attempts SET provider_ticket_id='old-ticket-safe', accepted_at=now()-interval '200 hours', next_receipt_at=now()-interval '200 hours'
+    UPDATE mobile_push_attempts SET provider_ticket_id='old-ticket-safe', accepted_at=now()-interval '200 hours',
+      send_started_at=now()-interval '200 hours 1 second',next_receipt_at=now()-interval '200 hours'
       WHERE id='40000000-0000-4000-8000-000000000008';
     UPDATE mobile_push_attempts SET provider_ticket_id='old-impossible-ticket', accepted_at=now()-interval '200 hours'
       WHERE id='40000000-0000-4000-8000-000000000010';
@@ -201,7 +202,7 @@ try {
   assert.equal(reconciliation.counts.orphanFailedParent, 1, "only a generation-1 accepted parent without attempts is an unhealthy orphan");
   assert.equal(reconciliation.counts.legacyParentIgnored, 1, "a preserved pre-attempt accepted legacy parent is explicitly classified and ignored");
   assert.equal(reconciliation.counts.noDeliveryParentIgnored, 1, "an explicitly failed generation-1 no-deliverable parent is informational rather than a corrupt orphan");
-  assert.equal(reconciliation.counts.impossibleState, 6, "reconciliation detects worker-semantic missing timestamps and impossible states regardless of age");
+  assert.equal(reconciliation.counts.impossibleState, 7, "reconciliation detects worker-semantic missing/order timestamps and impossible states regardless of age");
   assert.equal(reconciliation.counts.orphanReceipt, 0, "reconciliation reports a distinct aggregate for orphan receipt artifacts");
   assert.equal(JSON.stringify(reconciliation).includes("00000000-0000-4000-8000-000000000001"), false, "reconciliation is aggregate-only and never exposes user IDs");
 
@@ -275,7 +276,8 @@ try {
   assert.equal(matrixHealth.metrics.leases.staleCount - report.metrics.leases.staleCount, 9, "health counts expired/permanent leases and all unrecoverable null-token in-flight combinations");
   assert.equal(matrixHealth.metrics.receipts.stalledCount - report.metrics.receipts.stalledCount, 4, "receipt health counts only currently claimable stalled receipts and not an active future receipt lease");
   const matrixReconciliation = await observability.reconcile(pool);
-  assert.equal(matrixReconciliation.counts.impossibleState - reconciliation.counts.impossibleState, 6, "reconciliation flags permanent leases and every null-token in-flight recovery combination without flagging recoverable/active leases");
+  assert.equal(matrixReconciliation.counts.impossibleState - reconciliation.counts.impossibleState, 11,
+    "reconciliation flags permanent leases, every null-token in-flight recovery combination, and provider acceptance without a send generation");
 
   const terminalLeaseStates = leaseStates.filter((state) => state.label !== "no-lease");
   for (const status of ["dead", "delivered"] as const) {

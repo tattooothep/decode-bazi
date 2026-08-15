@@ -9,13 +9,26 @@ import {
   auspiciousQueryRange,
   parseAuspiciousTimeContext,
 } from "../src/lib/auspicious-time-context.ts";
-import { goalCacheKey, pickNextAuspicious } from "../src/app/api/mobile/v1/goals/custom/goals-lib.ts";
+import { goalCacheKey, localCivilDay, pickNextAuspicious } from "../src/app/api/mobile/v1/goals/custom/goals-lib.ts";
 
 const require = createRequire(import.meta.url);
 const yam = require("./mobile-yam-push-cron.cjs");
 const daily = require("./mobile-daily-fortune-push-cron.cjs");
 const network = require("./mobile-network-morning-push-cron.cjs");
 const personal = require("./mobile-personal-reminders-cron.cjs");
+
+const fallBackInstant = new Date("2026-11-01T04:30:00.000Z");
+assert.equal(localCivilDay("America/New_York", fallBackInstant, 0), "2026-11-01");
+assert.equal(
+  localCivilDay("America/New_York", fallBackInstant, 1),
+  "2026-11-02",
+  "goal search advances one civil date across a 25-hour fallback day",
+);
+assert.equal(
+  localCivilDay("America/New_York", fallBackInstant, 13),
+  "2026-11-14",
+  "a 14-day goal window contains 14 distinct user-local dates across DST",
+);
 
 const dstPayload = {
   activityType: "出行",

@@ -947,7 +947,7 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     if (historyId) (result.fusion5 as Record<string, unknown>).historyId = historyId;
     await q(`UPDATE fusion5_jobs SET status='done', result=$2, updated_at=now() WHERE id=$1`, [jobId, JSON.stringify(result)]);
     await q(`UPDATE hourkey_jobs SET status='succeeded',finished_at=now(),heartbeat_at=now(),updated_at=now() WHERE id=$1`, [jobId]).catch(() => {});
-    notifyFusionDone(p.userId); // r380: fire-and-forget · push-sender เคารพ prefs/quiet hours + ไม่ throw
+    await notifyFusionDone(p.userId, `fusion|job|${jobId}`); // durable mobile reservation + independent web delivery
   } catch (e) {
     // error กลางทาง · ยังไม่ settle = คืน escrow ทั้งก้อน (AI อาจวิ่งไปแล้วบางส่วน · ยอม trade-off นี้)
     if (!settled && p.reservedYam > 0) await settleFusion5Billing(jobId, p.userId, 0).catch(() => {});

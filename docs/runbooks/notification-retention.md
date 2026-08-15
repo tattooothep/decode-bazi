@@ -9,12 +9,15 @@ running on a host. Installation remains behind the release and signature gates.
 - After 30 days, `source_facts` is replaced with an empty object only for a
   terminal parent with no active retry or outstanding Expo receipt. The marker
   `source_facts_redacted_at` records the aggregate transition.
-- After 30 days, immutable provider attempts are removed only when every child
+- After 90 days, immutable provider attempts are removed only when every child
   on the locked parent is stable and passes the same provider-ID, timestamp,
   lease, and state invariants used by reconciliation. Checked Expo acceptance
   is stable; an unpolled receipt is not. The parent delivery status must equal
   derived child truth and `attempt_count` must equal the child `send_count` sum.
   Only then is `attempts_retired_at` written before the children are deleted.
+- Attempt ownership is kept for the complete 90-day engagement acceptance
+  window, so a first authenticated open/action from a still-visible history
+  item cannot become unauthenticated merely because provider detail aged out.
 - Authenticated app acknowledgement/open/action evidence is retained for 90
   days, then deleted in bounded batches. It records server receipt time only;
   `app_received` is not described or reported as OS delivery.

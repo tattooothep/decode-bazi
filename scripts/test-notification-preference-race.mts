@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import pg from "pg";
-import { updateNotificationPreferences } from "../src/lib/mobile-notification-preferences.ts";
+import {
+  findNextCivilDateBoundary,
+  nextLocalMidnight,
+  updateNotificationPreferences,
+} from "../src/lib/mobile-notification-preferences.ts";
 
 const database = `notification_preference_race_test_${process.pid}`;
 const role = `notification_preference_race_role_${process.pid}`;
@@ -10,6 +14,44 @@ const password = crypto.randomBytes(24).toString("hex");
 const userId = "00000000-0000-4000-8000-000000000001";
 
 assert.match(database, /^notification_preference_race_test_/u, "preference race test database is disposable");
+assert.equal(
+  nextLocalMidnight("America/New_York", new Date("2026-11-01T04:30:00.000Z")).toISOString(),
+  "2026-11-02T05:00:00.000Z",
+  "fall-back day stays muted until the actual next local midnight",
+);
+assert.equal(
+  nextLocalMidnight("America/New_York", new Date("2026-03-08T05:30:00.000Z")).toISOString(),
+  "2026-03-09T04:00:00.000Z",
+  "spring-forward day stays muted only until the actual next local midnight",
+);
+assert.equal(
+  nextLocalMidnight("Asia/Bangkok", new Date("2026-08-16T12:15:00.000Z")).toISOString(),
+  "2026-08-16T17:00:00.000Z",
+  "ordinary non-DST zones retain civil-midnight behavior",
+);
+assert.equal(
+  nextLocalMidnight("America/Santiago", new Date("2026-09-05T16:00:00.000Z")).toISOString(),
+  "2026-09-06T04:00:00.000Z",
+  "a skipped midnight stays muted until the first instant of the next civil date",
+);
+assert.equal(
+  nextLocalMidnight("America/Havana", new Date("2026-03-07T16:00:00.000Z")).toISOString(),
+  "2026-03-08T05:00:00.000Z",
+  "another midnight DST gap cannot end mute on the prior civil date",
+);
+let boundaryCalls = 0;
+const boundedStart = new Date("2026-09-05T16:00:00.000Z").valueOf();
+const boundedFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Santiago", year: "numeric", month: "2-digit", day: "2-digit",
+});
+assert.equal(
+  findNextCivilDateBoundary(boundedStart, (instant) => {
+    boundaryCalls += 1;
+    return boundedFormatter.format(new Date(instant));
+  }).toISOString(),
+  "2026-09-06T04:00:00.000Z",
+);
+assert.ok(boundaryCalls < 100, `civil boundary search must stay bounded; calls=${boundaryCalls}`);
 
 function psql(db: string, sql: string): string {
   return execFileSync(
@@ -38,7 +80,7 @@ let lockClient: pg.PoolClient | undefined;
 try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
-    CREATE TABLE users(id uuid PRIMARY KEY,timezone text DEFAULT 'Asia/Bangkok');
+    CREATE TABLE users(id uuid PRIMARY KEY,timezone text DEFAULT 'Asia/Bangkok',locale text DEFAULT 'th');
     CREATE TABLE mobile_notification_prefs(
       user_id uuid PRIMARY KEY REFERENCES users(id),timezone text DEFAULT 'Asia/Bangkok',
       security_enabled boolean NOT NULL DEFAULT true,saved_date_enabled boolean NOT NULL DEFAULT false,
@@ -85,6 +127,17 @@ try {
     "two API preference writes serialize and merge fields instead of losing the first update",
   );
 
+  await updateNotificationPreferences(pool, userId, { locale: "en", timezone: "America/New_York" });
+  const synchronizedContext = (await pool.query(
+    `SELECT u.locale AS user_locale,u.timezone AS user_timezone,np.locale AS pref_locale,np.timezone AS pref_timezone
+       FROM users u JOIN mobile_notification_prefs np ON np.user_id=u.id WHERE u.id=$1`,
+    [userId],
+  )).rows[0];
+  assert.deepEqual(synchronizedContext, {
+    user_locale: "en", user_timezone: "America/New_York",
+    pref_locale: "en", pref_timezone: "America/New_York",
+  }, "one committed preference context is authoritative for response, history, schedulers, quiet hours and MUTE");
+
   psql(database, `
     CREATE FUNCTION fail_notification_pref_update() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN IF NEW.locale='ru' THEN RAISE EXCEPTION 'forced private preference failure'; END IF; RETURN NEW; END $$;
@@ -100,7 +153,10 @@ try {
     `SELECT daily_enabled,locale FROM mobile_notification_prefs WHERE user_id=$1`,
     [userId],
   )).rows[0];
-  assert.deepEqual(rolledBack, { daily_enabled: false, locale: "th" }, "a failed partial update rolls back every requested field");
+  assert.deepEqual(rolledBack, { daily_enabled: false, locale: "en" }, "a failed partial update rolls back every requested field");
+  const rolledBackAccount = (await pool.query(`SELECT locale,timezone FROM users WHERE id=$1`, [userId])).rows[0];
+  assert.deepEqual(rolledBackAccount, { locale: "en", timezone: "America/New_York" },
+    "a failed preference save also rolls back its account-wide locale/timezone context");
   console.log("NOTIFICATION_PREFERENCE_RACE_OK");
 } finally {
   if (lockClient) {

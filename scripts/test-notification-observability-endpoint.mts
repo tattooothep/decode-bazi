@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 process.env.HOURKEY_INTERNAL_JOB_TOKEN = "notification-observability-internal-test";
-const { POST } = await import("../src/app/api/internal/health/notifications/route.ts");
+const { notificationHealthPost: POST } = await import("../src/app/api/internal/health/notifications/route.ts");
 
 function request(authorization?: string) {
   return new Request("http://localhost/api/internal/health/notifications", {

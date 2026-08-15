@@ -7,11 +7,13 @@ const require = createRequire(import.meta.url);
 const cli = require("./notification-retention.cjs");
 
 assert.deepEqual(cli.parseArgs([]), {
-  ok: true, sourceFactsDays: 30, attemptDays: 30, engagementDays: 90, historyDays: 180,
+  ok: true, sourceFactsDays: 30, attemptDays: 90, engagementDays: 90, historyDays: 180,
   securityHistoryDays: 365, batchSize: 500, maxBatches: 20,
 }, "retention CLI has explicit conservative bounded defaults");
 assert.equal(cli.parseArgs(["--history-days", "0"]).ok, false, "retention CLI rejects an unbounded/destructive zero-day history window");
 assert.equal(cli.parseArgs(["--batch-size", "5001"]).ok, false, "retention CLI bounds each database batch");
+assert.equal(cli.parseArgs(["--attempt-days", "30", "--engagement-days", "90"]).ok, false,
+  "retention CLI cannot delete installation ownership before the engagement acceptance window ends");
 assert.equal(cli.parseArgs(["--unknown", "private-value"]).ok, false, "retention CLI rejects unknown inputs before opening the database");
 
 const logs: string[] = [];
@@ -34,6 +36,8 @@ const serviceSource = await readFile(service, "utf8");
 assert.match(serviceSource, /^UMask=0027$/mu, "retention service creates no world-readable files");
 assert.match(serviceSource, /^LogsDirectoryMode=0750$/mu, "retention log directory is restrictive");
 assert.match(serviceSource, /notification-retention\.cjs/u, "retention service runs only the reviewed bounded runner");
+assert.match(serviceSource, /--attempt-days 90 --engagement-days 90/u,
+  "installed policy retains installation ownership throughout late engagement acceptance");
 const rotationSource = await readFile(rotation, "utf8");
 assert.match(rotationSource, /rotate 14/u, "retention logs have explicit bounded rotation");
 assert.match(rotationSource, /create 0640 root root/u, "rotated aggregate logs remain restrictive");

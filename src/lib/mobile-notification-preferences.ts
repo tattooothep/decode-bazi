@@ -19,6 +19,7 @@ export type MobileNotificationPreferenceRow = {
   paused_until: string | Date | null;
   privacy_preview: boolean;
   locale: string;
+  timezone: string;
 };
 
 export type MobileNotificationPreferenceInput = Record<string, unknown>;
@@ -44,6 +45,7 @@ const DEFAULT_PREFERENCES: MobileNotificationPreferenceRow = Object.freeze({
   paused_until: null,
   privacy_preview: false,
   locale: "th",
+  timezone: "Asia/Bangkok",
 });
 
 function intInRange(value: unknown, min: number, max: number): number | null {
@@ -51,19 +53,57 @@ function intInRange(value: unknown, min: number, max: number): number | null {
   return value >= min && value <= max ? value : null;
 }
 
-function endOfLocalDay(timezone: string | null, at: Date): Date {
-  const tz = String(timezone || "").trim() || "Asia/Bangkok";
+function validTimezone(timezone: string | null): string {
+  const candidate = String(timezone || "").trim() || "Asia/Bangkok";
   try {
-    const parts = new Intl.DateTimeFormat("en-GB", {
-      timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false,
-    }).format(at);
-    const match = /^(\d{2}):(\d{2})$/u.exec(parts.trim());
-    if (!match) return new Date(at.valueOf() + 6 * 3_600_000);
-    const minutesLeft = 24 * 60 - (Number(match[1]) * 60 + Number(match[2]));
-    return new Date(at.valueOf() + minutesLeft * 60_000);
+    new Intl.DateTimeFormat("en", { timeZone: candidate }).format(new Date(0));
+    return candidate;
   } catch {
-    return new Date(at.valueOf() + 6 * 3_600_000);
+    return "Asia/Bangkok";
   }
+}
+
+function requestedTimezone(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim() || value.length > 80) return null;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: value.trim() }).format(new Date(0));
+    return value.trim();
+  } catch {
+    return null;
+  }
+}
+
+export function findNextCivilDateBoundary(start: number, dateKeyAt: (at: number) => string): Date {
+  if (!Number.isFinite(start)) throw new TypeError("notification_time_invalid");
+  const currentDate = dateKeyAt(start);
+  const limit = start + 72 * 3_600_000;
+  let lower = start;
+  // A civil date boundary is bracketed coarsely, then located to the first
+  // millisecond. This bounds synchronous formatter work to <100 calls instead
+  // of probing every minute while the account preference transaction is held.
+  for (let probe = start + 3_600_000; probe <= limit; probe += 3_600_000) {
+    if (dateKeyAt(probe) === currentDate) {
+      lower = probe;
+      continue;
+    }
+    let upper = probe;
+    while (upper - lower > 1) {
+      const middle = lower + Math.floor((upper - lower) / 2);
+      if (dateKeyAt(middle) === currentDate) lower = middle;
+      else upper = middle;
+    }
+    return new Date(upper);
+  }
+  throw new RangeError("notification_timezone_boundary_unresolved");
+}
+
+/** Return the true next civil midnight, including a DST offset change that day. */
+export function nextLocalMidnight(timezone: string | null, at: Date): Date {
+  const tz = validTimezone(timezone);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+  });
+  return findNextCivilDateBoundary(at.valueOf(), (instant) => formatter.format(new Date(instant)));
 }
 
 async function rollback(client: PoolClient) {
@@ -88,21 +128,40 @@ export async function updateNotificationPreferences(
       `SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))`,
       [userId],
     );
-    const selected = await client.query<MobileNotificationPreferenceRow & { effective_timezone: string | null }>(
+    const selected = await client.query<MobileNotificationPreferenceRow & {
+      effective_timezone: string | null;
+      effective_locale: string | null;
+    }>(
       `SELECT np.security_enabled,np.saved_date_enabled,np.yam_enabled,np.auspicious_enabled,np.daily_enabled,
               np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
               np.yam_min_quality,np.yam_lead_minutes,np.daily_slot,np.quiet_start,np.quiet_end,np.max_per_day,
-              np.paused_until,np.privacy_preview,np.locale,COALESCE(np.timezone,u.timezone) AS effective_timezone
+              np.paused_until,np.privacy_preview,np.locale,np.timezone,
+              COALESCE(np.timezone,u.timezone,'Asia/Bangkok') AS effective_timezone,
+              COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th') AS effective_locale
          FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
         WHERE u.id=$1 FOR UPDATE OF u`,
       [userId],
     );
     if (!selected.rows[0]) throw new Error("notification_account_not_found");
     const selectedRow = selected.rows[0];
+    const effectiveLocale = LOCALES.has(String(selectedRow.effective_locale || "").toLowerCase())
+      ? String(selectedRow.effective_locale).toLowerCase()
+      : "th";
     const current: MobileNotificationPreferenceRow = selectedRow.security_enabled === null
       || selectedRow.security_enabled === undefined
-      ? { ...DEFAULT_PREFERENCES }
-      : selectedRow;
+      ? { ...DEFAULT_PREFERENCES, locale: effectiveLocale, timezone: validTimezone(selectedRow.effective_timezone) }
+      : { ...selectedRow, locale: effectiveLocale, timezone: validTimezone(selectedRow.effective_timezone) };
+
+    const localeInput = body.locale === undefined ? current.locale : String(body.locale || "").toLowerCase();
+    if (!LOCALES.has(localeInput)) throw new TypeError("notification_locale_invalid");
+    const timezoneInput = body.timezone === undefined
+      ? current.timezone
+      : requestedTimezone(body.timezone);
+    if (timezoneInput === null) throw new TypeError("notification_timezone_invalid");
+    await client.query(
+      `UPDATE users SET locale=$2,timezone=$3 WHERE id=$1`,
+      [userId, localeInput, timezoneInput],
+    );
 
     const hasLatitude = body.qimenLatitude !== undefined;
     const hasLongitude = body.qimenLongitude !== undefined;
@@ -121,7 +180,7 @@ export async function updateNotificationPreferences(
       ? null
       : new Date(String(current.paused_until));
     if (body.resume === true) pausedUntil = null;
-    else if (body.muteToday === true) pausedUntil = endOfLocalDay(selectedRow.effective_timezone, at);
+    else if (body.muteToday === true) pausedUntil = nextLocalMidnight(timezoneInput, at);
     else {
       const pauseDays = intInRange(body.pauseDays, 1, 90);
       if (pauseDays !== null) pausedUntil = new Date(at.valueOf() + pauseDays * 86_400_000);
@@ -132,9 +191,9 @@ export async function updateNotificationPreferences(
          (user_id,security_enabled,saved_date_enabled,yam_enabled,auspicious_enabled,daily_enabled,
           qimen_enabled,shrine_enabled,goal_enabled,service_enabled,yam_min_quality,yam_lead_minutes,daily_slot,
           quiet_start,quiet_end,max_per_day,paused_until,qimen_latitude,qimen_longitude,qimen_location_updated_at,
-          updated_at,privacy_preview,locale)
+          updated_at,privacy_preview,locale,timezone)
        VALUES($1,true,$2,$3,$4,$5,$6,$7,$8,true,$9,$10,$11,$12,$13,$14,$15,$16,$17,
-              CASE WHEN $16::float8 IS NULL THEN NULL ELSE $20::timestamptz END,$20::timestamptz,$18,$19)
+              CASE WHEN $16::float8 IS NULL THEN NULL ELSE $21::timestamptz END,$21::timestamptz,$18,$19,$20)
        ON CONFLICT(user_id) DO UPDATE SET
          security_enabled=true,saved_date_enabled=EXCLUDED.saved_date_enabled,yam_enabled=EXCLUDED.yam_enabled,
          auspicious_enabled=EXCLUDED.auspicious_enabled,daily_enabled=EXCLUDED.daily_enabled,
@@ -146,10 +205,10 @@ export async function updateNotificationPreferences(
          qimen_longitude=COALESCE(EXCLUDED.qimen_longitude,mobile_notification_prefs.qimen_longitude),
          qimen_location_updated_at=CASE WHEN EXCLUDED.qimen_latitude IS NULL
            THEN mobile_notification_prefs.qimen_location_updated_at ELSE EXCLUDED.qimen_location_updated_at END,
-         privacy_preview=EXCLUDED.privacy_preview,locale=EXCLUDED.locale,updated_at=EXCLUDED.updated_at
+         privacy_preview=EXCLUDED.privacy_preview,locale=EXCLUDED.locale,timezone=EXCLUDED.timezone,updated_at=EXCLUDED.updated_at
        RETURNING security_enabled,saved_date_enabled,yam_enabled,auspicious_enabled,daily_enabled,
                  qimen_enabled,shrine_enabled,goal_enabled,service_enabled,yam_min_quality,yam_lead_minutes,daily_slot,
-                 quiet_start,quiet_end,max_per_day,paused_until,privacy_preview,locale`,
+                 quiet_start,quiet_end,max_per_day,paused_until,privacy_preview,locale,timezone`,
       [
         userId,
         typeof body.savedDate === "boolean" ? body.savedDate : current.saved_date_enabled,
@@ -169,7 +228,8 @@ export async function updateNotificationPreferences(
         qimenLatitude,
         qimenLongitude,
         typeof body.privacyPreview === "boolean" ? body.privacyPreview : current.privacy_preview,
-        LOCALES.has(String(body.locale || "")) ? String(body.locale) : current.locale,
+        localeInput,
+        timezoneInput,
         at.toISOString(),
       ],
     );

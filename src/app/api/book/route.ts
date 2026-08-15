@@ -374,7 +374,7 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
       `UPDATE natal_books SET status=$2, result=$3, yam_refunded=$4, updated_at=now() WHERE id=$1`,
       [bookId, status, JSON.stringify(result), totalRefund]
     );
-    notifyFusionDone(userId); // fire-and-forget · เคารพ prefs/quiet hours + ไม่ throw
+    await notifyFusionDone(userId, `fusion|book|${bookId}`); // durable mobile reservation + independent web delivery
     if (totalRefund > 0) await refundHoursForUser(userId, totalRefund, FEATURE).catch(() => {});
   } catch (e) {
     // throw ก่อน UPDATE สำเร็จ → คืนยามเต็ม + mark error

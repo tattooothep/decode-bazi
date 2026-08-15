@@ -466,7 +466,7 @@ const missNtIds = ntIds.filter((id) => !HTML.includes(`id="${id}"`));
 ok(missNtIds.length === 0, `element การ์ดแจ้งเตือนครบ ${ntIds.length} ids`, "ขาด: " + missNtIds.join(","));
 ok(HTML.indexOf('id="card-notify"') > HTML.indexOf('id="card-devices"'), "การ์ดแจ้งเตือนอยู่หลังการ์ดอุปกรณ์");
 const fusionSrc = readFileSync("src/app/api/sifu/fusion5/route.ts", "utf8");
-ok(/notifyFusionDone\(p\.userId\)/.test(fusionSrc) && /from "@\/lib\/push-sender"/.test(fusionSrc), "fusion5 route เสียบ hook notifyFusionDone แล้ว");
+ok(/notifyFusionDone\(p\.userId, `fusion\|job\|\$\{jobId\}`\)/.test(fusionSrc) && /from "@\/lib\/push-sender"/.test(fusionSrc), "fusion5 route ส่ง durable typed reference เข้า hook แล้ว");
 ok((fusionSrc.match(/notifyFusionDone/g) || []).length === 2, "hook จุดเดียว (import + call)");
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 ok(!!pkg.dependencies["web-push"], "web-push อยู่ใน package.json dependencies จริง");

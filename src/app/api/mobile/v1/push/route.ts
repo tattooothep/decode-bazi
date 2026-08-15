@@ -123,7 +123,9 @@ export async function POST(req: Request) {
   const token = String(body.expo_push_token || "").trim();
   const installationId = String(body.installation_id || "").trim();
   const platform = String(body.platform || "").trim();
-  const locale = LOCALES.has(String(body.locale || "")) ? String(body.locale) : "th";
+  const localeProvided = body.locale !== undefined && body.locale !== null;
+  const requestedLocale = typeof body.locale === "string" ? body.locale.trim().toLowerCase() : "";
+  const locale = LOCALES.has(requestedLocale) ? requestedLocale : null;
   const appVersion = String(body.app_version || "").trim().slice(0, 40) || null;
   const timezone = cleanTimezone(body.timezone);
   /**
@@ -141,6 +143,7 @@ export async function POST(req: Request) {
     !TOKEN_RE.test(token)
     || !UUID_RE.test(installationId)
     || !["ios", "android"].includes(platform)
+    || (localeProvided && locale === null)
     || !nativeTokenValid(platform, deviceTokenType, deviceToken)
     || (body.timezone != null && timezone === null)
   ) {
@@ -172,6 +175,14 @@ export async function POST(req: Request) {
         FOR UPDATE`,
       [token, session.userId, installationId, deviceToken]
     );
+    const accountContext = await client.query<{ locale: string | null }>(
+      `SELECT locale FROM users WHERE id=$1 FOR UPDATE`,
+      [session.userId],
+    );
+    const tokenLocale = locale
+      ?? (LOCALES.has(String(accountContext.rows[0]?.locale || "").toLowerCase())
+        ? String(accountContext.rows[0]?.locale).toLowerCase()
+        : "th");
     // Installation IDs and native push tokens identify a physical app install,
     // not an account. Transfer both identities before the upsert so an old
     // account can never remain enabled for the same device after account switch.
@@ -212,9 +223,25 @@ export async function POST(req: Request) {
          disabled_at=NULL,
          updated_at=now()
        RETURNING id`,
-      [session.userId, installationId, token, platform, appVersion, locale, deviceToken, deviceTokenType, timezone]
+      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone]
     );
     row = registered.rows[0];
+    // Account notification context follows the most recently authenticated
+    // mobile installation. Per-installation locale remains on the token for
+    // lock-screen copy; account history/schedulers use this shared context.
+    await client.query(
+      `UPDATE users SET locale=COALESCE($2,locale),timezone=COALESCE($3,timezone) WHERE id=$1`,
+      [session.userId, locale, timezone],
+    );
+    // Do not create a preference/consent row merely by registering a device.
+    // If one already exists, keep its locale/timezone synchronized under the
+    // same per-user transaction lock used by registration and preference saves.
+    await client.query(
+      `UPDATE mobile_notification_prefs
+          SET locale=COALESCE($2,locale),timezone=COALESCE($3,timezone),updated_at=now()
+        WHERE user_id=$1`,
+      [session.userId, locale, timezone],
+    );
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK").catch(() => null);

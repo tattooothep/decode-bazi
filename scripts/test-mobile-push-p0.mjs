@@ -101,23 +101,45 @@ try {
   await db.query(`INSERT INTO organizations(id,owner_user_id,name,slug,created_at) VALUES($1,$2,'Push Fixture',$3,now())`, [orgId, users[0], `push-${Date.now()}`]);
   await db.query(`UPDATE users SET current_org_id=$1 WHERE id=ANY($2::uuid[])`, [orgId, users]);
   const tokens = await Promise.all(users.map((userId, index) => jwt(userId, emails[index])));
+  let rows;
 
   let result = await api("/api/mobile/v1/push", tokens[0]);
   check(result.response.status === 200 && result.data.subscribed === false, "new mobile account has no native push registration");
   result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({ expo_push_token: "bad", installation_id: installs[0], platform: "ios" }) });
   check(result.response.status === 400, "invalid native push token fails closed");
 
-  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({ expo_push_token: pushTokenA, installation_id: installs[0], platform: "ios", locale: "th", app_version: "1.0.0" }) });
+  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+    expo_push_token: pushTokenA, installation_id: installs[0], platform: "ios",
+    locale: "th", timezone: "America/New_York", app_version: "1.0.0",
+  }) });
   check(result.response.status === 200 && result.data.subscribed === true, `iOS installation registers an Expo push token (${result.response.status}/${result.data.error || "ok"})`);
+  rows = await db.query(`SELECT locale,timezone FROM users WHERE id=$1`, [users[0]]);
+  check(rows.rows[0].locale === "th" && rows.rows[0].timezone === "America/New_York",
+    "authenticated registration synchronizes account notification locale and timezone");
+  rows = await db.query(`SELECT count(*)::int n FROM mobile_notification_prefs WHERE user_id=$1`, [users[0]]);
+  check(rows.rows[0].n === 0, "registration never creates an opt-in preference row");
   result = await api("/api/mobile/v1/push", tokens[0]);
   check(result.data.active_installations === 1, "registration status counts only the current account");
   result = await api(`/api/mobile/v1/push?installation_id=${installs[0]}`, tokens[0]);
   check(result.data.subscribed === true, "registration status identifies the current installation");
 
-  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({ expo_push_token: pushTokenB, installation_id: installs[0], platform: "ios", locale: "en" }) });
+  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+    expo_push_token: pushTokenB, installation_id: installs[0], platform: "ios", locale: "en", timezone: "Europe/London",
+  }) });
   check(result.response.status === 200, "same installation rotates to a new push token");
-  let rows = await db.query(`SELECT expo_push_token,locale FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`, [users[0]]);
+  rows = await db.query(`SELECT expo_push_token,locale FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`, [users[0]]);
   check(rows.rowCount === 1 && rows.rows[0].expo_push_token === pushTokenB && rows.rows[0].locale === "en", "token rotation remains exactly once");
+  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+    expo_push_token: pushTokenB, installation_id: installs[0], platform: "ios",
+  }) });
+  check(result.response.status === 200, "legacy registration may omit locale/timezone");
+  rows = await db.query(`SELECT locale,timezone FROM users WHERE id=$1`, [users[0]]);
+  check(rows.rows[0].locale === "en" && rows.rows[0].timezone === "Europe/London",
+    "omitted legacy context preserves the existing account locale/timezone");
+  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+    expo_push_token: pushTokenB, installation_id: installs[0], platform: "ios", locale: "unsupported-private-locale",
+  }) });
+  check(result.response.status === 400, "explicit invalid registration locale fails closed");
 
   result = await api("/api/mobile/v1/push", tokens[1], { method: "POST", body: JSON.stringify({ expo_push_token: pushTokenB, installation_id: installs[1], platform: "android", locale: "vi" }) });
   check(result.response.status === 200, "device token moves to the newly authenticated account");
@@ -216,13 +238,27 @@ try {
     && !serverLogTail.includes("forcedfailurefixture") && !serverLogTail.includes("forced provider token"), "database registration failures never surface raw provider-token details in response or server log");
 
   result = await api("/api/mobile/v1/notifications", tokens[1]);
-  check(result.response.status === 200 && result.data.prefs?.privacyPreview === false && result.data.prefs?.locale === "th", "privacy-preview and locale default safely for an account without preferences");
-  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", privacyPreview: true, locale: "en" }) });
+  check(result.response.status === 200 && result.data.prefs?.privacyPreview === false && result.data.prefs?.locale === "vi", "privacy-preview defaults safely while history locale follows the authenticated account context");
+  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", privacyPreview: true, locale: "en", timezone: "Asia/Tokyo" }) });
   check(result.response.status === 200 && result.data.prefs?.privacyPreview === true && result.data.prefs?.locale === "en", "preferences persist privacy-preview opt-in and supported locale");
   result = await api("/api/mobile/v1/notifications", tokens[1]);
   check(result.response.status === 200 && result.data.prefs?.privacyPreview === true && result.data.prefs?.locale === "en", "preferences return persisted privacy-preview and locale values");
   result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", locale: "invalid" }) });
-  check(result.response.status === 200 && result.data.prefs?.locale === "en", "unsupported preference locale is rejected without replacing the stored supported value");
+  check(result.response.status === 400, "unsupported preference locale is rejected without replacing the stored supported value");
+  rows = await db.query(`SELECT locale,timezone FROM mobile_notification_prefs WHERE user_id=$1`, [users[1]]);
+  check(rows.rows[0].locale === "en" && rows.rows[0].timezone === "Asia/Tokyo", "invalid preference context rolls back without replacing locale/timezone");
+
+  const contextSyncExpo = `ExponentPushToken[contextsync${Date.now()}]`;
+  result = await api("/api/mobile/v1/push", tokens[1], { method: "POST", body: JSON.stringify({
+    expo_push_token: contextSyncExpo, installation_id: installs[1], platform: "android",
+    locale: "zh", timezone: "America/Los_Angeles",
+  }) });
+  check(result.response.status === 200, "normal registration refreshes an existing notification context");
+  rows = await db.query(`SELECT u.locale AS user_locale,u.timezone AS user_timezone,np.locale AS pref_locale,np.timezone AS pref_timezone
+      FROM users u JOIN mobile_notification_prefs np ON np.user_id=u.id WHERE u.id=$1`, [users[1]]);
+  check(rows.rows[0].user_locale === "zh" && rows.rows[0].pref_locale === "zh"
+      && rows.rows[0].user_timezone === "America/Los_Angeles" && rows.rows[0].pref_timezone === "America/Los_Angeles",
+    "registration synchronizes existing account history, scheduler, quiet-hours and MUTE context atomically");
 
   await db.query("SELECT pg_advisory_lock(hashtextextended('mobile-push-user:' || $1::text, 0))", [users[1]]);
   const racingSavedDate = api("/api/mobile/v1/notifications", tokens[1], {
@@ -254,9 +290,11 @@ try {
   result = await api("/api/mobile/v1/notifications", tokens[1], {
     method: "POST", body: JSON.stringify({ action: "prefs", daily: true, locale: "ru" }),
   });
-  rows = await db.query(`SELECT daily_enabled,locale FROM mobile_notification_prefs WHERE user_id=$1`, [users[1]]);
+  rows = await db.query(`SELECT np.daily_enabled,np.locale,u.locale AS user_locale,u.timezone AS user_timezone
+      FROM mobile_notification_prefs np JOIN users u ON u.id=np.user_id WHERE np.user_id=$1`, [users[1]]);
   check(result.response.status === 500 && result.data.error === "notification_preferences_failed"
-    && rows.rows[0].daily_enabled === false && rows.rows[0].locale === "en"
+    && rows.rows[0].daily_enabled === false && rows.rows[0].locale === "zh"
+    && rows.rows[0].user_locale === "zh" && rows.rows[0].user_timezone === "America/Los_Angeles"
     && !JSON.stringify(result.data).includes("forced private"),
   "a failed preference API transaction rolls back all fields and returns only generic error truth");
   await db.query(`DROP TRIGGER ${forcedPreferenceTrigger} ON mobile_notification_prefs`);
@@ -265,10 +303,19 @@ try {
 
   const engagementNotificationId = crypto.randomUUID();
   const engagementAttemptId = crypto.randomUUID();
+  const engagementPayload = {
+    v: 1,
+    kind: "daily",
+    accountId: users[1],
+    slot: "morning",
+    date: "2026-08-16",
+    url: "/today",
+  };
   await db.query(
-    `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,accepted_at,sent_at,updated_at)
-     VALUES($1,$2,$3,'daily','Safe','Safe','{}','accepted',1,now(),now(),now())`,
-    [engagementNotificationId, users[1], `engagement-${engagementNotificationId}`],
+    `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,title,body,payload,source_facts,delivery_status,attempt_count,accepted_at,sent_at,updated_at)
+     VALUES($1,$2,$3,'daily','Safe','Safe',$4::jsonb,$5::jsonb,'accepted',1,now(),now(),now())`,
+    [engagementNotificationId, users[1], `engagement-${engagementNotificationId}`, JSON.stringify(engagementPayload),
+      JSON.stringify({ profileId: crypto.randomUUID(), latitude: 13.7563, longitude: 100.5018 })],
   );
   const engagementToken = (await db.query(
     `SELECT id,installation_id FROM mobile_push_tokens WHERE user_id=$1 ORDER BY enabled DESC,updated_at DESC LIMIT 1`,
@@ -280,6 +327,14 @@ try {
      VALUES($1,$2,$3,$4,'fcm','{}',repeat('e',64),'provider_accepted',$5,1,now()-interval '1 second',now(),now())`,
     [engagementAttemptId, engagementNotificationId, engagementToken.id, engagementToken.installation_id, `engagement-message-${engagementAttemptId}`],
   );
+  result = await api("/api/mobile/v1/notifications", tokens[1]);
+  const engagementHistory = result.data.items?.find((item) => item.id === engagementNotificationId);
+  check(result.response.status === 200
+    && engagementHistory?.payload?.notificationId === engagementNotificationId
+    && Object.keys(engagementHistory.payload).length === Object.keys(engagementPayload).length + 1
+    && !Object.hasOwn(engagementHistory, "source_facts")
+    && !JSON.stringify(engagementHistory).includes("latitude"),
+  "notification history adds only its authoritative ID and never exposes backend audit facts or coordinates");
   const engagementBody = {
     action: "engagement", notificationId: engagementNotificationId,
     installationId: engagementToken.installation_id, event: "app_received",

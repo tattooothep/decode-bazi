@@ -31,13 +31,17 @@ export function thaiDay(offsetDays = 0, nowMs = Date.now()): string {
 /** Local civil date for notification/API adapters; invalid zones fail closed. */
 export function localCivilDay(timezone: string, instant: Date, offsetDays = 0): string | null {
   try {
-    const shifted = new Date(instant.valueOf() + offsetDays * 86_400_000);
-    return new Intl.DateTimeFormat("en-CA", {
+    if (!Number.isFinite(instant.valueOf()) || !Number.isInteger(offsetDays)) return null;
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
       timeZone: timezone,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    }).format(shifted);
+    }).formatToParts(instant).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+    const shiftedCivilDate = new Date(Date.UTC(
+      Number(parts.year), Number(parts.month) - 1, Number(parts.day) + offsetDays,
+    ));
+    return shiftedCivilDate.toISOString().slice(0, 10);
   } catch {
     return null;
   }

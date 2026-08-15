@@ -53,7 +53,7 @@ function createDb(env: NodeJS.ProcessEnv) {
   });
 }
 
-export async function POST(req: Request, dependencies: RouteDependencies = {}) {
+export async function notificationHealthPost(req: Request, dependencies: RouteDependencies = {}) {
   const env = dependencies.env || process.env;
   if (!authorized(req, env)) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   const db = dependencies.db || (dependencies.createDb || (() => createDb(env)))();
@@ -73,6 +73,11 @@ export async function POST(req: Request, dependencies: RouteDependencies = {}) {
   } finally {
     if (ownsDb) await db.end?.().catch(() => null);
   }
+}
+
+/** Next Route Handler boundary; dependency injection stays outside its signature. */
+export async function POST(req: Request) {
+  return notificationHealthPost(req);
 }
 
 export { authorized, providerReadiness, readHeartbeat };

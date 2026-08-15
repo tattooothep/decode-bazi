@@ -8,7 +8,7 @@ export type NotificationFacts = {
   qimen: { date: string; direction: string; score: number; url: "/qimen/board" };
   shrine: { date: string; festival: string; url: "/shrine" };
   goal: { goalId: string; date: string; url: "/calendar/goals" };
-  service: { event: string; referenceId: string; url: "/account" | "/support" | "/store" | "/calendar" | "/network" };
+  service: { event: string; referenceId: string; url: "/account" | "/support" | "/store" | "/calendar" | "/network" | "/fusion" };
 };
 
 export type NotificationKind = keyof NotificationFacts;
