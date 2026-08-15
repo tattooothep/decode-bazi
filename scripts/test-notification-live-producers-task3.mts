@@ -234,6 +234,11 @@ check(!pushSenderSource.includes("sendMobilePushToUser")
 check(/await notifyFusionDone\(p\.userId, `fusion\|job\|\$\{jobId\}`\)/u.test(fusionRouteSource)
     && /await notifyFusionDone\(userId, `fusion\|book\|\$\{bookId\}`\)/u.test(bookRouteSource),
   "both live Fusion result producers await reservation with a stable typed UUID reference");
+const bookRefundCall = "await refundHoursForUser(userId, totalRefund, FEATURE)";
+const bookNotificationCall = "await notifyFusionDone(userId, `fusion|book|${bookId}`)";
+check(bookRouteSource.includes(bookRefundCall)
+    && bookRouteSource.indexOf(bookRefundCall) < bookRouteSource.indexOf(bookNotificationCall),
+  "book partial-Yam refund settles before any notification I/O can stall the completed worker");
 check(/catch\s*\{[\s\S]{0,420}?mobile\s*=\s*\{ status: "error", sent: 0, failed: 1 \}/u.test(pushSenderSource),
   "notification reservation failure is converted to explicit telemetry and cannot enter core job failure/refund handling");
 
