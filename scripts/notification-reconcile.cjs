@@ -11,14 +11,23 @@ function createDb() {
   });
 }
 
+function parseArgs(args) {
+  return Array.isArray(args) && args.length === 0 ? { ok: true } : { ok: false, error: "invalid_arguments" };
+}
+
 async function main(options = {}) {
   const args = options.args || process.argv.slice(2);
-  const index = args.indexOf("--lookback-hours");
+  const parsed = parseArgs(args);
+  if (!parsed.ok) {
+    const report = { ok: false, error: parsed.error };
+    (options.log || console.log)(JSON.stringify(report));
+    return report;
+  }
   const ownsDb = !options.db;
   const db = options.db || createDb();
   try {
     if (ownsDb) await db.connect();
-    const report = await reconcile(db, { lookbackHours: index >= 0 ? args[index + 1] : undefined });
+    const report = await reconcile(db);
     (options.log || console.log)(JSON.stringify(report));
     return report;
   } catch {
@@ -38,4 +47,4 @@ async function runCli(options = {}) {
 
 if (require.main === module) runCli();
 
-module.exports = { main, runCli };
+module.exports = { main, parseArgs, runCli };

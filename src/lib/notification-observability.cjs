@@ -71,11 +71,13 @@ async function collectHealth(db, input = {}) {
   const now = input.now instanceof Date ? input.now : new Date();
   // Actionable alert predicates deliberately have no historical window. Each
   // is a direct indexed query so an old blocked row cannot become invisible.
-  const [retryResult, leaseResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
+  const [retryResult, expiredLeaseResult, permanentLeaseResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
     () => readDb.query(
       `SELECT count(*)::int AS overdue_count,
-              COALESCE(max(extract(epoch FROM now()-next_retry_at)),0)::bigint AS oldest_age_seconds
-         FROM mobile_push_attempts WHERE status='retry_due' AND next_retry_at<=now()`,
+              COALESCE(max(extract(epoch FROM now()-COALESCE(next_retry_at,to_timestamp(0)))),0)::bigint AS oldest_age_seconds
+         FROM mobile_push_attempts WHERE status='retry_due' AND send_started_at IS NULL
+          AND COALESCE(next_retry_at,to_timestamp(0))<=now()
+          AND (lease_token IS NULL OR lease_expires_at<=now())`,
     ),
     () => readDb.query(
       `SELECT count(*)::int AS stale_count FROM mobile_push_attempts
@@ -83,16 +85,22 @@ async function collectHealth(db, input = {}) {
     ),
     () => readDb.query(
       `SELECT count(*)::int AS stale_count FROM mobile_push_attempts
-        WHERE status='reserved' AND lease_token IS NULL
-          AND COALESCE(send_started_at,updated_at,created_at)<=now()-($1::text||' seconds')::interval`,
+        WHERE lease_token IS NOT NULL AND lease_expires_at IS NULL`,
+    ),
+    () => readDb.query(
+      `SELECT count(*)::int AS stale_count FROM mobile_push_attempts
+        WHERE status='reserved' AND send_started_at IS NULL AND lease_token IS NULL
+          AND COALESCE(next_retry_at,to_timestamp(0))<=now()
+          AND COALESCE(updated_at,created_at)<=now()-($1::text||' seconds')::interval`,
       [String(config.thresholds.staleAttemptSeconds)],
     ),
     () => readDb.query(
       `SELECT count(*)::int AS stalled_count,
-              COALESCE(max(extract(epoch FROM now()-accepted_at)),0)::bigint AS oldest_age_seconds
+              COALESCE(max(extract(epoch FROM now()-COALESCE(accepted_at,created_at))),0)::bigint AS oldest_age_seconds
          FROM mobile_push_attempts WHERE provider='expo' AND status='provider_accepted'
           AND provider_ticket_id IS NOT NULL AND provider_receipt_checked_at IS NULL
-          AND accepted_at<=now()-($1::text||' seconds')::interval`,
+          AND (accepted_at IS NULL OR (COALESCE(next_receipt_at,accepted_at,created_at)<=now()
+            AND accepted_at<=now()-($1::text||' seconds')::interval))`,
       [String(config.thresholds.receiptStallSeconds)],
     ),
     () => readDb.query(
@@ -133,7 +141,8 @@ async function collectHealth(db, input = {}) {
     ),
   ]));
   const retry = retryResult.rows[0] || {};
-  const lease = leaseResult.rows[0] || {};
+  const expiredLease = expiredLeaseResult.rows[0] || {};
+  const permanentLease = permanentLeaseResult.rows[0] || {};
   const reserved = reservedResult.rows[0] || {};
   const receipt = receiptResult.rows[0] || {};
   const attemptReadiness = attemptReadinessResult.rows[0] || {};
@@ -146,7 +155,7 @@ async function collectHealth(db, input = {}) {
     .filter(([provider, count]) => count > 0 && input.providerReady?.[provider] !== true).length;
   const metrics = {
     retry: { overdueCount: numeric(retry.overdue_count), oldestAgeSeconds: numeric(retry.oldest_age_seconds) },
-    leases: { staleCount: numeric(lease.stale_count) + numeric(reserved.stale_count) },
+    leases: { staleCount: numeric(expiredLease.stale_count) + numeric(permanentLease.stale_count) + numeric(reserved.stale_count) },
     receipts: { stalledCount: numeric(receipt.stalled_count), oldestAgeSeconds: numeric(receipt.oldest_age_seconds) },
     readiness: {
       tokenMismatchCount: numeric(attemptReadiness.token_mismatch_count), credentialMismatchCount,
@@ -190,9 +199,14 @@ async function reconcile(db, input = {}) {
      ), attempts AS (
        SELECT count(*) FILTER (WHERE l.id IS NULL)::int AS orphan_attempt,
               count(*) FILTER (WHERE l.id IS NULL AND a.provider='expo' AND a.provider_ticket_id IS NOT NULL)::int AS orphan_receipt,
-              count(*) FILTER (WHERE a.provider='expo' AND a.status='provider_accepted' AND a.provider_ticket_id IS NULL)::int
-                + count(*) FILTER (WHERE a.provider='fcm' AND a.provider_ticket_id IS NOT NULL)::int
-                + count(*) FILTER (WHERE a.status='delivered' AND a.delivered_at IS NULL)::int AS impossible_state
+              count(*) FILTER (WHERE
+                (a.provider='expo' AND a.status='provider_accepted' AND a.provider_ticket_id IS NULL)
+                OR (a.provider='fcm' AND a.provider_ticket_id IS NOT NULL)
+                OR (a.status='retry_due' AND a.next_retry_at IS NULL)
+                OR (a.status IN ('reserved','retry_due') AND a.lease_token IS NOT NULL AND a.lease_expires_at IS NULL)
+                OR (a.status='provider_accepted' AND a.accepted_at IS NULL)
+                OR (a.status='delivered' AND (a.delivered_at IS NULL OR a.accepted_at IS NULL))
+              )::int AS impossible_state
          FROM mobile_push_attempts a LEFT JOIN mobile_push_log l ON l.id=a.push_log_id
      ) SELECT * FROM parent_truth CROSS JOIN attempts`,
   ));

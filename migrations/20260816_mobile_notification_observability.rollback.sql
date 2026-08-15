@@ -2,8 +2,12 @@
 -- data, constraints, and Task 2/3 delivery-state invariants are preserved.
 BEGIN;
 
+DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_retry_claimable;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_reserved_stale;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_receipt_stalled;
+DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_receipt_missing_accepted;
+DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_lease_expired;
+DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_lease_missing_expiry;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_status_token;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_updated;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_parent_status;

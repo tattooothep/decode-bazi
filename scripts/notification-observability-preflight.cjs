@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-const { constants, accessSync } = require("node:fs");
+const { constants, accessSync, readFileSync } = require("node:fs");
 const { execFileSync } = require("node:child_process");
 
 function canAccess(access, target, mode) {
@@ -12,6 +12,15 @@ function rootExists(lookupUser) {
   try { return lookupUser("root") === true; } catch { return false; }
 }
 
+function hasStateDirectoryContract(readUnit) {
+  try {
+    const source = readUnit("/root/releases/current/ops/systemd/hourkey-mobile-push-retry-receipts.service", "utf8");
+    return /^User=root$/m.test(source) && /^Group=root$/m.test(source) && /^StateDirectory=hourkey-notification$/m.test(source);
+  } catch {
+    return false;
+  }
+}
+
 function inspect(options = {}) {
   const env = options.env || process.env;
   const access = options.access || accessSync;
@@ -19,16 +28,19 @@ function inspect(options = {}) {
   const lookupUser = options.lookupUser || ((name) => {
     try { execFileSync("getent", ["passwd", name], { stdio: "ignore" }); return true; } catch { return false; }
   });
+  const readUnit = options.readUnit || readFileSync;
   const runtimeRoot = uid() === 0 && rootExists(lookupUser);
   const nodeExecutable = canAccess(access, "/usr/bin/node", constants.X_OK);
   const releaseReadable = canAccess(access, "/root/releases/current/scripts/notification-health.cjs", constants.R_OK)
     && canAccess(access, "/root/releases/current/scripts/notification-retry-receipt-runner.cjs", constants.R_OK);
   const environmentReadable = canAccess(access, "/etc/hourkey/hourkey.env", constants.R_OK);
   const credentialReadable = canAccess(access, env.FCM_SERVICE_ACCOUNT_PATH || "/root/secrets/hourkey-fcm-service-account.json", constants.R_OK);
-  const stateWritable = canAccess(access, "/var/lib/hourkey-notification", constants.W_OK);
+  const stateReady = canAccess(access, "/var/lib/hourkey-notification", constants.W_OK);
+  const stateCreatable = !stateReady && runtimeRoot
+    && canAccess(access, "/var/lib", constants.W_OK) && hasStateDirectoryContract(readUnit);
   return {
-    ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable && credentialReadable && stateWritable,
-    runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, credentialReadable, stateWritable,
+    ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable && credentialReadable && (stateReady || stateCreatable),
+    runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, credentialReadable, stateReady, stateCreatable,
   };
 }
 
@@ -38,4 +50,4 @@ if (require.main === module) {
   if (!report.ok) process.exitCode = 1;
 }
 
-module.exports = { inspect };
+module.exports = { hasStateDirectoryContract, inspect };

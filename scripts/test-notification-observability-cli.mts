@@ -27,6 +27,11 @@ try {
   const passingProcess: { exitCode?: number } = {};
   await reconciliation.runCli({ execute: async () => ({ ok: true, counts: {} }), processRef: passingProcess });
   assert.equal(passingProcess.exitCode, 0, "reconciliation CLI exits zero only when every invariant count is zero");
+  assert.deepEqual(reconciliation.parseArgs(["--lookback-hours", "private-window-value"]), { ok: false, error: "invalid_arguments" }, "reconciliation rejects the obsolete no-op lookback argument without echoing it");
+  const argumentLogs: string[] = [];
+  const argumentReport = await reconciliation.main({ args: ["--unrecognized", "private-window-value"], log: (line: string) => argumentLogs.push(line) });
+  assert.deepEqual(argumentReport, { ok: false, error: "invalid_arguments" }, "reconciliation CLI fails closed before opening a database for unknown arguments");
+  assert.equal(argumentLogs.join("\n").includes("private-window-value"), false, "reconciliation CLI never echoes rejected arguments");
 
   const retryUnit = "ops/systemd/hourkey-mobile-push-retry-receipts.service";
   const receiptTimer = "ops/systemd/hourkey-mobile-push-retry-receipts.timer";
@@ -48,10 +53,18 @@ try {
   }
   assert.match(execFileSync("getent", ["passwd", "root"], { encoding: "utf8" }), /^root:/mu, "template runtime account exists on the reviewed host");
   accessSync("/usr/bin/node", constants.X_OK);
+  const stateDirectory = "/var/lib/hourkey-notification";
   const preflightReport = preflight.inspect({
-    access: () => {}, lookupUser: () => true, uid: () => 0,
+    access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
+    lookupUser: () => true, uid: () => 0,
+    readUnit: () => "User=root\nGroup=root\nStateDirectory=hourkey-notification\n",
   });
-  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, credentialReadable: true, stateWritable: true }, "preflight validates root runtime and required executable/access model without printing paths or secrets");
+  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, credentialReadable: true, stateReady: false, stateCreatable: true }, "absent StateDirectory passes first-start preflight only through validated root/systemd creation contract");
+  const unsafeStatePreflight = preflight.inspect({
+    access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
+    lookupUser: () => true, uid: () => 0, readUnit: () => "User=root\n",
+  });
+  assert.equal(unsafeStatePreflight.ok, false, "absent StateDirectory fails closed without the reviewed systemd creation contract");
   const blockedPreflight = preflight.inspect({
     access: () => { throw new Error("private-path"); }, lookupUser: () => false, uid: () => 99,
   });
@@ -63,6 +76,7 @@ try {
   assert.match(runbook, /root.*least-privilege|least-privilege.*root/isu, "runbook records the root credential-access and least-privilege tradeoff");
   assert.match(runbook, /notification-observability-preflight\.cjs/u, "runbook requires source-only executable and credential-access preflight");
   assert.match(runbook, /\/api\/internal\/health\/notifications/u, "runbook documents the authenticated internal health endpoint");
+  assert.match(runbook, /notification-reconcile\.cjs.*rejects.*--lookback-hours/isu, "runbook documents that reconciliation rejects its obsolete no-op lookback argument");
   console.log("NOTIFICATION_OBSERVABILITY_CLI_OK");
 } finally {
   await rm(directory, { recursive: true, force: true });

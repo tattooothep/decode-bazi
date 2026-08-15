@@ -68,7 +68,11 @@ try {
       ('30000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000001','old-lease','daily','pending',now()-interval '200 hours'),
       ('30000000-0000-4000-8000-000000000008','00000000-0000-4000-8000-000000000001','old-receipt','daily','accepted',now()-interval '200 hours'),
       ('30000000-0000-4000-8000-000000000009','00000000-0000-4000-8000-000000000001','old-truth','daily','accepted',now()-interval '200 hours'),
-      ('30000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000001','old-impossible','daily','accepted',now()-interval '200 hours');
+      ('30000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000001','old-impossible','daily','accepted',now()-interval '200 hours'),
+      ('30000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000001','old-retry-null','daily','pending',now()-interval '200 hours'),
+      ('30000000-0000-4000-8000-000000000012','00000000-0000-4000-8000-000000000001','old-permanent-lease','daily','pending',now()-interval '200 hours'),
+      ('30000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000001','old-receipt-null-accepted','daily','accepted',now()-interval '200 hours'),
+      ('30000000-0000-4000-8000-000000000014','00000000-0000-4000-8000-000000000001','old-delivered-null-times','daily','delivered',now()-interval '200 hours');
     INSERT INTO mobile_push_attempts
       (id,push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,next_retry_at,lease_token,lease_expires_at,created_at,updated_at,last_error)
     VALUES
@@ -81,13 +85,19 @@ try {
       ('40000000-0000-4000-8000-000000000007','30000000-0000-4000-8000-000000000007','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('1',64),'reserved',now(),NULL,now()-interval '200 hours',now()-interval '200 hours',now()-interval '200 hours',NULL),
       ('40000000-0000-4000-8000-000000000008','30000000-0000-4000-8000-000000000008','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('2',64),'provider_accepted',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours',NULL),
       ('40000000-0000-4000-8000-000000000009','30000000-0000-4000-8000-000000000009','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('3',64),'dead',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours','dead'),
-      ('40000000-0000-4000-8000-000000000010','30000000-0000-4000-8000-000000000010','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','fcm','{}',repeat('4',64),'provider_accepted',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours',NULL);
+      ('40000000-0000-4000-8000-000000000010','30000000-0000-4000-8000-000000000010','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','fcm','{}',repeat('4',64),'provider_accepted',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours',NULL),
+      ('40000000-0000-4000-8000-000000000011','30000000-0000-4000-8000-000000000011','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('5',64),'retry_due',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours','retryable'),
+      ('40000000-0000-4000-8000-000000000012','30000000-0000-4000-8000-000000000012','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('6',64),'reserved',now(),'permanent-lease',NULL,now()-interval '200 hours',now()-interval '200 hours',NULL),
+      ('40000000-0000-4000-8000-000000000013','30000000-0000-4000-8000-000000000013','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('7',64),'provider_accepted',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours',NULL),
+      ('40000000-0000-4000-8000-000000000014','30000000-0000-4000-8000-000000000014','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('8',64),'delivered',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours',NULL);
     UPDATE mobile_push_attempts SET provider_ticket_id='ticket-safe', accepted_at=now()-interval '2 hours', next_receipt_at=now()-interval '2 hours'
       WHERE id='40000000-0000-4000-8000-000000000002';
     UPDATE mobile_push_attempts SET provider_ticket_id='old-ticket-safe', accepted_at=now()-interval '200 hours', next_receipt_at=now()-interval '200 hours'
       WHERE id='40000000-0000-4000-8000-000000000008';
     UPDATE mobile_push_attempts SET provider_ticket_id='old-impossible-ticket', accepted_at=now()-interval '200 hours'
       WHERE id='40000000-0000-4000-8000-000000000010';
+    UPDATE mobile_push_attempts SET provider_ticket_id='old-missing-accepted-ticket', next_receipt_at=now()-interval '200 hours'
+      WHERE id='40000000-0000-4000-8000-000000000013';
   `);
 
   const observability = require("../src/lib/notification-observability.cjs");
@@ -98,9 +108,9 @@ try {
     providerReady: { fcm: false, expo: true },
   });
   assert.equal(report.ok, false, "health fails closed on overdue retry, stale lease, stalled receipt, readiness mismatch, and worker heartbeat loss");
-  assert.equal(report.metrics.retry.overdueCount, 2, "overdue retry backlog remains unhealthy beyond the historical metrics lookback");
-  assert.equal(report.metrics.leases.staleCount, 3, "expired leases and unleased stuck pending attempts remain unhealthy beyond the historical metrics lookback");
-  assert.equal(report.metrics.receipts.stalledCount, 2, "unprocessed Expo receipt backlog remains unhealthy beyond the historical metrics lookback");
+  assert.equal(report.metrics.retry.overdueCount, 3, "retry_due attempts with NULL retry time are actionable and unhealthy beyond the historical metrics lookback");
+  assert.equal(report.metrics.leases.staleCount, 4, "expired, unleased stuck, and permanent NULL-expiry leases remain unhealthy beyond the historical metrics lookback");
+  assert.equal(report.metrics.receipts.stalledCount, 3, "Expo provider acceptance without accepted_at is stalled and unhealthy beyond the historical metrics lookback");
   assert.equal(report.metrics.readiness.mismatchCount, 2, "actively routed provider/token and credential readiness mismatches are counted without token output");
   assert.equal(report.metrics.worker.fresh, false, "stale worker heartbeat is visible and unhealthy");
   assert.equal(JSON.stringify(report).includes("private-fixture-token"), false, "health report never exposes a raw token");
@@ -108,7 +118,7 @@ try {
   const reconciliation = await observability.reconcile(pool, { lookbackHours: 24 });
   assert.equal(reconciliation.ok, false, "reconciliation is unhealthy when any current invariant is violated");
   assert.equal(reconciliation.counts.parentTruthMismatch, 2, "reconciliation detects unresolved parent mismatch regardless of age");
-  assert.equal(reconciliation.counts.impossibleState, 2, "reconciliation detects impossible states regardless of age");
+  assert.equal(reconciliation.counts.impossibleState, 6, "reconciliation detects worker-semantic missing timestamps and impossible states regardless of age");
   assert.equal(reconciliation.counts.orphanReceipt, 0, "reconciliation reports a distinct aggregate for orphan receipt artifacts");
   assert.equal(JSON.stringify(reconciliation).includes("00000000-0000-4000-8000-000000000001"), false, "reconciliation is aggregate-only and never exposes user IDs");
 
