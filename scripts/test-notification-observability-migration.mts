@@ -47,9 +47,15 @@ try {
     );
   `);
   psql(database, integrity);
-  psql(database, forward);
   psql(database, `
     INSERT INTO users(id) VALUES ('00000000-0000-4000-8000-000000000001');
+    INSERT INTO mobile_push_log(user_id,yam_key,kind,title,body,payload,delivery_status,updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000001','preserved-legacy-parent','service','safe','safe','{}','accepted',now()-interval '400 days');
+  `);
+  psql(database, forward);
+  psql(database, `
+    INSERT INTO mobile_push_log(user_id,yam_key,kind,title,body,payload,delivery_status,delivery_model_generation)
+    VALUES ('00000000-0000-4000-8000-000000000001','new-orphan-parent','service','safe','safe','{}','accepted',1);
     WITH logs AS (
       INSERT INTO mobile_push_log(user_id,yam_key,kind,title,body,payload,delivery_status)
       SELECT '00000000-0000-4000-8000-000000000001', 'observability-plan-'||n, 'daily', 'safe', 'safe', '{}'::jsonb, 'pending'
@@ -117,7 +123,13 @@ try {
     "ix_mobile_push_attempts_observability_updated",
     "ix_mobile_push_attempts_observability_parent_status",
     "ix_mobile_push_tokens_observability_enabled",
+    "ix_mobile_push_log_retention_age",
+    "ix_mobile_push_log_source_facts_retention",
+    "ix_mobile_push_attempts_retention_age",
   ];
+  assert.equal(psql(database, `SELECT delivery_model_generation FROM mobile_push_log WHERE yam_key='preserved-legacy-parent';`), "0", "pre-attempt legacy parents retain an explicit legacy generation marker");
+  assert.equal(psql(database, `SELECT delivery_model_generation FROM mobile_push_log WHERE yam_key='new-orphan-parent';`), "1", "new durable-delivery parents carry generation 1");
+  assert.equal(psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_log' AND column_name IN ('delivery_model_generation','attempts_retired_at','source_facts_redacted_at');`), "3", "observability migration adds durable generation and retention markers");
   for (const name of indexes) assert.equal(hasIndex(name), true, `${name} is created by the forward migration`);
   assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE status='retry_due' AND send_started_at IS NULL AND COALESCE(next_retry_at,to_timestamp(0))<=now() AND lease_token IS NULL`), /ix_mobile_push_attempts_observability_retry_claimable/u, "worker-equivalent retry claim predicate has an index plan");
   assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE status='reserved' AND send_started_at IS NULL AND lease_token IS NULL AND COALESCE(next_retry_at,to_timestamp(0))<=now() AND COALESCE(updated_at,created_at)<=now()-interval '1 second'`), /ix_mobile_push_attempts_observability_reserved_stale/u, "worker-equivalent stuck unleased reservation predicate has an index plan");
@@ -131,8 +143,11 @@ try {
   psql(database, rollback);
   for (const name of indexes) assert.equal(hasIndex(name), false, `${name} is removed by schema-only rollback`);
   assert.equal(psql(database, `SELECT to_regclass('mobile_push_attempts') IS NOT NULL;`), "t", "rollback preserves Task 2 durable attempts");
+  assert.equal(psql(database, `SELECT delivery_model_generation FROM mobile_push_log WHERE yam_key='preserved-legacy-parent';`), "0", "schema-only rollback preserves the legacy generation marker");
+  assert.equal(psql(database, `SELECT delivery_model_generation FROM mobile_push_log WHERE yam_key='new-orphan-parent';`), "1", "schema-only rollback preserves the new delivery generation marker");
   psql(database, forward);
   for (const name of indexes) assert.equal(hasIndex(name), true, `${name} is restored by forward reapply`);
+  assert.equal(psql(database, `SELECT string_agg(yam_key||':'||delivery_model_generation::text,',' ORDER BY yam_key) FROM mobile_push_log WHERE yam_key IN ('new-orphan-parent','preserved-legacy-parent');`), "new-orphan-parent:1,preserved-legacy-parent:0", "forward reapply is idempotent and preserves legacy/new classification");
   console.log("NOTIFICATION_OBSERVABILITY_MIGRATION_OK");
 } finally {
   try { psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE);`); } catch {}

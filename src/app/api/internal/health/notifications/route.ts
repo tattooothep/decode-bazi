@@ -6,6 +6,9 @@ import { NextResponse } from "next/server";
 const { collectHealth: collectNotificationHealth } = require("../../../../../lib/notification-observability.cjs") as {
   collectHealth: (db: unknown, input: Record<string, unknown>) => Promise<Record<string, unknown>>;
 };
+const { readSchedulerHeartbeats } = require("../../../../../lib/notification-scheduler-heartbeat.cjs") as {
+  readSchedulerHeartbeats: (directory?: string) => Record<string, string | null>;
+};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,7 +63,7 @@ export async function POST(req: Request, dependencies: RouteDependencies = {}) {
     const report = await (dependencies.collectHealth || collectNotificationHealth)(db, {
       heartbeat: {
         workerAt: readHeartbeat(env.NOTIFICATION_WORKER_HEARTBEAT_FILE || "/var/lib/hourkey-notification/retry-receipt.heartbeat"),
-        schedulerAt: readHeartbeat(env.NOTIFICATION_SCHEDULER_HEARTBEAT_FILE || "/var/lib/hourkey-notification/scheduler.heartbeat"),
+        schedulers: readSchedulerHeartbeats(env.NOTIFICATION_SCHEDULER_HEARTBEAT_DIR),
       },
       providerReady: providerReadiness(env),
     });

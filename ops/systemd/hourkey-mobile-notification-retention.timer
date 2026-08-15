@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule Hourkey bounded mobile notification retention
+
+[Timer]
+OnCalendar=*-*-* 03:25:00
+RandomizedDelaySec=15min
+Persistent=true
+Unit=hourkey-mobile-notification-retention.service
+
+[Install]
+WantedBy=timers.target

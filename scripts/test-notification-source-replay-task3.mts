@@ -67,12 +67,12 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users(id uuid PRIMARY KEY,timezone text);
+    CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text);
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY,timezone text,max_per_day int,privacy_preview boolean,locale text);
     CREATE TABLE mobile_push_tokens(id uuid PRIMARY KEY,user_id uuid,installation_id uuid,device_push_token text,device_token_type text,expo_push_token text,platform text,enabled boolean);
-    CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid,yam_key text,kind text,title text,body text,payload jsonb,source_facts jsonb,delivery_status text,attempt_count int,next_retry_at timestamptz,accepted_at timestamptz,sent_at timestamptz,last_error text,updated_at timestamptz,UNIQUE(user_id,yam_key));
+    CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid,yam_key text,kind text,title text,body text,payload jsonb,source_facts jsonb,delivery_status text,attempt_count int,next_retry_at timestamptz,accepted_at timestamptz,sent_at timestamptz,last_error text,updated_at timestamptz,delivery_model_generation smallint NOT NULL DEFAULT 0,UNIQUE(user_id,yam_key));
     CREATE TABLE mobile_push_attempts(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),push_log_id uuid,token_id uuid,installation_id uuid,provider text,provider_message jsonb,message_sha256 text,privacy_safe boolean,transactional boolean,status text,next_retry_at timestamptz,updated_at timestamptz,UNIQUE(push_log_id,installation_id));
-    INSERT INTO users VALUES('${fixture.accountId}','${fixture.timezone}');
+    INSERT INTO users VALUES('${fixture.accountId}','${fixture.timezone}','th');
     INSERT INTO mobile_notification_prefs VALUES('${fixture.accountId}','${fixture.timezone}',100,false,'en');
     INSERT INTO mobile_push_tokens VALUES('${fixture.tokenId}','${fixture.accountId}','${fixture.installationId}',NULL,'apns','ExponentPushToken[source-replay]','ios',true);
     GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
@@ -109,6 +109,61 @@ try {
     { title: previewStored.provider_message.title, body: previewStored.provider_message.body },
     { title: localizedPreview.messages[0].title, body: localizedPreview.messages[0].body },
     "privacy-enabled provider preview keeps the individual installation locale",
+  );
+
+  // Transactional security/service notifications remain deliverable without
+  // a preference row. Their authenticated history follows the account locale,
+  // while the provider preview independently follows the installation locale.
+  await pool.query(`DELETE FROM mobile_notification_prefs WHERE user_id=$1`, [fixture.accountId]);
+  await pool.query(`UPDATE users SET locale='en' WHERE id=$1`, [fixture.accountId]);
+  const securityNoPrefs = structuredClone(notices.find((item) => item.name === "security")!.notice);
+  securityNoPrefs.key = `${securityNoPrefs.key}|no-prefs-en`;
+  securityNoPrefs.messages = securityNoPrefs.messages.map((message: any) => ({
+    ...message, locale: "zh", ...securityNoPrefs.historyCopies.zh,
+  }));
+  const securityReservation = await delivery.reserve(pool, securityNoPrefs);
+  const securityStored = (await pool.query(`SELECT l.title,l.body,a.provider_message
+    FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id WHERE l.id=$1`, [securityReservation.id])).rows[0];
+  assert.deepEqual(
+    { title: securityStored.title, body: securityStored.body },
+    securityNoPrefs.historyCopies.en,
+    "no-prefs transactional security history falls back to users.locale=en",
+  );
+  assert.deepEqual(
+    { title: securityStored.provider_message.title, body: securityStored.provider_message.body },
+    { title: "私人通知", body: "開啟 HourKey 查看詳情" },
+    "no-prefs security provider preview keeps the zh installation locale",
+  );
+
+  await pool.query(`UPDATE users SET locale='zh' WHERE id=$1`, [fixture.accountId]);
+  const serviceNoPrefs = structuredClone(notices.find((item) => item.name === "service")!.notice);
+  serviceNoPrefs.key = `${serviceNoPrefs.key}|no-prefs-zh`;
+  serviceNoPrefs.messages = serviceNoPrefs.messages.map((message: any) => ({
+    ...message, locale: "en", ...serviceNoPrefs.historyCopies.en,
+  }));
+  const serviceReservation = await delivery.reserve(pool, serviceNoPrefs);
+  const serviceStored = (await pool.query(`SELECT l.title,l.body,a.provider_message
+    FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id WHERE l.id=$1`, [serviceReservation.id])).rows[0];
+  assert.deepEqual(
+    { title: serviceStored.title, body: serviceStored.body },
+    serviceNoPrefs.historyCopies.zh,
+    "no-prefs transactional service history falls back to users.locale=zh",
+  );
+  assert.deepEqual(
+    { title: serviceStored.provider_message.title, body: serviceStored.provider_message.body },
+    { title: "Private notification", body: "Open HourKey to view details" },
+    "no-prefs service provider preview keeps the en installation locale",
+  );
+
+  await pool.query(`UPDATE users SET locale='unsupported-private-locale' WHERE id=$1`, [fixture.accountId]);
+  const invalidLocaleService = structuredClone(serviceNoPrefs);
+  invalidLocaleService.key = `${invalidLocaleService.key}|safe-th`;
+  const invalidLocaleReservation = await delivery.reserve(pool, invalidLocaleService);
+  const invalidLocaleStored = (await pool.query(`SELECT title,body FROM mobile_push_log WHERE id=$1`, [invalidLocaleReservation.id])).rows[0];
+  assert.deepEqual(
+    { title: invalidLocaleStored.title, body: invalidLocaleStored.body },
+    invalidLocaleService.historyCopies.th,
+    "an invalid no-prefs users.locale falls back deterministically to Thai",
   );
   console.log(`NOTIFICATION_SOURCE_REPLAY_TASK3_OK notices=${notices.length}`);
 } finally {

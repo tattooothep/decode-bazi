@@ -41,6 +41,7 @@ const ONLY_EMAIL = (process.argv.find((a) => a.startsWith("--email=")) || "").sl
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
+const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 const { upcomingFestival } = require("../src/lib/festival-days.cjs");
 
 /**
@@ -200,6 +201,7 @@ async function main() {
 
   await runLease.release();
   await db.end();
+  await schedulerHeartbeat.writeSchedulerHeartbeat("auspicious");
 }
 
 module.exports = { buildMessage,buildShrineProducer,main,pickLocale };

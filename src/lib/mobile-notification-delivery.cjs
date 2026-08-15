@@ -178,7 +178,12 @@ async function reserve(db, notice, dry = false) {
       `SELECT COALESCE(to_jsonb(np)->>'timezone',to_jsonb(u)->>'timezone','Asia/Bangkok') AS timezone,
               COALESCE((to_jsonb(np)->>'max_per_day')::int,2) AS max_per_day,
               COALESCE(np.privacy_preview,false) AS privacy_preview,
-              COALESCE(np.locale,'th') AS locale,
+              CASE
+                WHEN lower(COALESCE(NULLIF(btrim(np.locale),''),NULLIF(btrim(to_jsonb(u)->>'locale'),''),'th'))
+                  IN ('th','en','zh','cn','vi','ja','ru','ko','es')
+                THEN lower(COALESCE(NULLIF(btrim(np.locale),''),NULLIF(btrim(to_jsonb(u)->>'locale'),''),'th'))
+                ELSE 'th'
+              END AS locale,
               np.user_id IS NOT NULL AS has_prefs
          FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
         WHERE u.id=$1`,

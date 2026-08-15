@@ -42,6 +42,7 @@ function buildMsg(loc, mIdx, year) {
 
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
+const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 const guard = require("../src/lib/push-guard.cjs");
 
@@ -158,6 +159,7 @@ async function main() {
   console.log(`[mobile-monthly-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
   await runLease.release();
   await db.end();
+  await schedulerHeartbeat.writeSchedulerHeartbeat("monthly-report");
 }
 
 module.exports = { buildMonthlyNotice,buildMonthlyProducer,buildMsg,main };

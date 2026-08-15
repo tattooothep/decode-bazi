@@ -10,6 +10,7 @@ const database = `notification_observability_test_${process.pid}`;
 const role = `notification_observability_role_${process.pid}`;
 const password = crypto.randomBytes(24).toString("hex");
 const migration = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
+const observabilityMigration = readFileSync("migrations/20260816_mobile_notification_observability.sql", "utf8");
 
 assert.match(database, /^notification_observability_test_/u, "test database name must be disposable");
 assert.match(role, /^notification_observability_role_/u, "test role name must be disposable");
@@ -49,6 +50,7 @@ try {
     INSERT INTO users(id) VALUES ('00000000-0000-4000-8000-000000000001');
   `);
   psql(database, migration);
+  psql(database, observabilityMigration);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
 
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password });
@@ -98,13 +100,21 @@ try {
       WHERE id='40000000-0000-4000-8000-000000000010';
     UPDATE mobile_push_attempts SET provider_ticket_id='old-missing-accepted-ticket', next_receipt_at=now()-interval '200 hours'
       WHERE id='40000000-0000-4000-8000-000000000013';
+    UPDATE mobile_push_log SET delivery_model_generation=1;
+    INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at,delivery_model_generation) VALUES
+      ('30000000-0000-4000-8000-000000000015','00000000-0000-4000-8000-000000000001','legacy-accepted-no-attempt','service','accepted',now()-interval '400 days',0),
+      ('30000000-0000-4000-8000-000000000016','00000000-0000-4000-8000-000000000001','new-accepted-no-attempt','service','accepted',now()-interval '1 hour',1);
+    INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,last_error,updated_at,delivery_model_generation)
+    VALUES ('30000000-0000-4000-8000-000000000017','00000000-0000-4000-8000-000000000001','new-intentional-no-delivery','service','failed','no_deliverable_installation',now()-interval '1 hour',1);
   `);
 
   const observability = require("../src/lib/notification-observability.cjs");
+  const schedulerNames = require("../src/lib/notification-science.cjs").SCHEDULER_NAMES as string[];
+  const freshSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, new Date().toISOString()]));
   const report = await observability.collectHealth(pool, {
     lookbackHours: 24,
     thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1 },
-    heartbeat: { workerAt: new Date(Date.now() - 10_000).toISOString(), schedulerAt: new Date().toISOString() },
+    heartbeat: { workerAt: new Date(Date.now() - 10_000).toISOString(), schedulers: freshSchedulers },
     providerReady: { fcm: false, expo: true },
   });
   assert.equal(report.ok, false, "health fails closed on overdue retry, stale lease, stalled receipt, readiness mismatch, and worker heartbeat loss");
@@ -113,11 +123,37 @@ try {
   assert.equal(report.metrics.receipts.stalledCount, 3, "Expo provider acceptance without accepted_at is stalled and unhealthy beyond the historical metrics lookback");
   assert.equal(report.metrics.readiness.mismatchCount, 2, "actively routed provider/token and credential readiness mismatches are counted without token output");
   assert.equal(report.metrics.worker.fresh, false, "stale worker heartbeat is visible and unhealthy");
+  assert.equal(report.metrics.schedulers.every((entry: { fresh: boolean }) => entry.fresh), true, "all six fresh scheduler heartbeats are individually healthy");
   assert.equal(JSON.stringify(report).includes("private-fixture-token"), false, "health report never exposes a raw token");
+
+  const partialSchedulers = { ...freshSchedulers };
+  delete partialSchedulers.yam;
+  partialSchedulers["daily-fortune"] = new Date(Date.now() - 10_000).toISOString();
+  const schedulerReport = await observability.collectHealth(pool, {
+    thresholds: { schedulerHeartbeatSeconds: 1 },
+    heartbeat: { workerAt: new Date().toISOString(), schedulers: partialSchedulers },
+    providerReady: { fcm: false, expo: true },
+  });
+  assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_missing:yam"), true, "a missing named scheduler heartbeat has an actionable reason");
+  assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_stale:daily-fortune"), true, "a stale named scheduler heartbeat has an actionable reason");
+  assert.equal(schedulerReport.metrics.schedulers.length, 6, "health reports every notification scheduler rather than one generic marker");
+  const cadenceNow = new Date("2026-08-16T12:00:00.000Z");
+  const cadenceSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, cadenceNow.toISOString()]));
+  cadenceSchedulers.yam = new Date(cadenceNow.valueOf() - 2 * 3_600_000).toISOString();
+  cadenceSchedulers["monthly-report"] = new Date(cadenceNow.valueOf() - 10 * 86_400_000).toISOString();
+  const cadenceReport = await observability.collectHealth(pool, {
+    now: cadenceNow, heartbeat: { workerAt: cadenceNow.toISOString(), schedulers: cadenceSchedulers },
+    providerReady: { fcm: false, expo: true },
+  });
+  assert.equal(cadenceReport.reasons.includes("scheduler_heartbeat_stale:yam"), true, "hourly Yam freshness becomes stale after two hours");
+  assert.equal(cadenceReport.reasons.includes("scheduler_heartbeat_stale:monthly-report"), false, "monthly scheduler freshness follows its reviewed monthly cadence");
 
   const reconciliation = await observability.reconcile(pool, { lookbackHours: 24 });
   assert.equal(reconciliation.ok, false, "reconciliation is unhealthy when any current invariant is violated");
   assert.equal(reconciliation.counts.parentTruthMismatch, 2, "reconciliation detects unresolved parent mismatch regardless of age");
+  assert.equal(reconciliation.counts.orphanFailedParent, 1, "only a generation-1 accepted parent without attempts is an unhealthy orphan");
+  assert.equal(reconciliation.counts.legacyParentIgnored, 1, "a preserved pre-attempt accepted legacy parent is explicitly classified and ignored");
+  assert.equal(reconciliation.counts.noDeliveryParentIgnored, 1, "an explicitly failed generation-1 no-deliverable parent is informational rather than a corrupt orphan");
   assert.equal(reconciliation.counts.impossibleState, 6, "reconciliation detects worker-semantic missing timestamps and impossible states regardless of age");
   assert.equal(reconciliation.counts.orphanReceipt, 0, "reconciliation reports a distinct aggregate for orphan receipt artifacts");
   assert.equal(JSON.stringify(reconciliation).includes("00000000-0000-4000-8000-000000000001"), false, "reconciliation is aggregate-only and never exposes user IDs");
@@ -149,8 +185,8 @@ try {
       const leaseExpiresAt = leaseState.expiry === "past" ? past : leaseState.expiry === "future" ? future : null;
       const leaseToken = leaseState.leaseToken === "present" ? `lease-${workerState.name}-${leaseState.label}` : null;
       await pool.query(
-        `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at)
-         VALUES($1,$2,$3,'lease-matrix',$4,now())`,
+        `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at,delivery_model_generation)
+         VALUES($1,$2,$3,'lease-matrix',$4,now(),1)`,
         [logId, "00000000-0000-4000-8000-000000000001", `lease-matrix-${workerState.name}-${leaseState.label}`, workerState.deliveryStatus],
       );
       await pool.query(
@@ -185,7 +221,7 @@ try {
   const matrixHealth = await observability.collectHealth(pool, {
     lookbackHours: 24,
     thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1 },
-    heartbeat: { workerAt: new Date(matrixNow - 10_000).toISOString(), schedulerAt: new Date(matrixNow).toISOString() },
+    heartbeat: { workerAt: new Date(matrixNow - 10_000).toISOString(), schedulers: Object.fromEntries(schedulerNames.map((name) => [name, new Date(matrixNow).toISOString()])) },
     providerReady: { fcm: false, expo: true },
   });
   assert.equal(matrixHealth.metrics.retry.overdueCount - report.metrics.retry.overdueCount, 4, "claimOne's due retry lease matrix counts every reclaimable due retry but not active/permanent leases");
@@ -201,8 +237,8 @@ try {
       const leaseExpiresAt = leaseState.expiry === "past" ? past : leaseState.expiry === "future" ? future : null;
       const leaseToken = leaseState.leaseToken === "present" ? `terminal-${status}-${leaseState.label}` : null;
       await pool.query(
-        `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at)
-         VALUES($1,$2,$3,'terminal-lease',$4,now())`,
+        `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at,delivery_model_generation)
+         VALUES($1,$2,$3,'terminal-lease',$4,now(),1)`,
         [logId, "00000000-0000-4000-8000-000000000001", `terminal-${status}-${leaseState.label}`, status === "dead" ? "failed" : "delivered"],
       );
       await pool.query(

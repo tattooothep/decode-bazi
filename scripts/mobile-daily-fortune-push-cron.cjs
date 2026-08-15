@@ -51,6 +51,7 @@ const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
+const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 function buildDailyCopy({ loc, slot, dateLabel, score, label, tongshuYi, golden }) {
   const family = notificationPayload.normalizedLocale(loc);
@@ -230,6 +231,7 @@ async function main() {
   console.log(`[mobile-daily-push] ${DRY ? "DRY " : ""}slot=${SLOT} accepted=${sent} failed=${failed} skipped=${skipped}`);
   await runLease.release();
   await db.end();
+  await schedulerHeartbeat.writeSchedulerHeartbeat("daily-fortune");
 }
 
 module.exports = { buildDailyCopy,buildDailyProducer,getJson,main };

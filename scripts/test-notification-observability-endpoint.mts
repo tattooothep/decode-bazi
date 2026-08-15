@@ -25,12 +25,16 @@ const failedBody = await failure.text();
 assert.equal(failedBody.includes("private-token-must-not-escape"), false, "health dependency failure never exposes exception data");
 assert.equal(failedBody.includes("ExponentPushToken"), false, "health dependency failure never exposes a raw provider token");
 
+let healthyInput: Record<string, any> | undefined;
 const healthy = await POST(request("Bearer notification-observability-internal-test"), {
   db: testDb,
-  collectHealth: async () => ({ ok: true, reasons: [], metrics: { retry: { overdueCount: 0 } } }),
+  collectHealth: async (_db, input) => { healthyInput = input; return { ok: true, reasons: [], metrics: { retry: { overdueCount: 0 } } }; },
 });
 assert.equal(healthy.status, 200, "authenticated internal caller receives aggregate healthy state");
 assert.deepEqual(await healthy.json(), { ok: true, reasons: [], metrics: { retry: { overdueCount: 0 } } }, "endpoint preserves aggregate-only health response");
+assert.deepEqual(Object.keys(healthyInput?.heartbeat?.schedulers || {}), [
+  "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning",
+], "authenticated endpoint supplies one heartbeat slot for every notification scheduler");
 
 const unhealthy = await POST(request("Bearer notification-observability-internal-test"), {
   db: testDb,

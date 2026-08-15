@@ -202,6 +202,7 @@ const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
+const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 function buildYamProducer(user, input) {
   const hours = Array.isArray(input?.hoursApi?.hours) ? input.hoursApi.hours : [];
@@ -402,6 +403,7 @@ async function main() {
   try {
     const outcome = await delivery.withSchedulerRunLease(db, "yam", (signal) => runScheduler(db, signal), { timeoutMs: 12_000 });
     if (!outcome.acquired) console.log("[mobile-yam-push] overlap skipped");
+    else await schedulerHeartbeat.writeSchedulerHeartbeat("yam");
   } finally {
     await db.end();
   }

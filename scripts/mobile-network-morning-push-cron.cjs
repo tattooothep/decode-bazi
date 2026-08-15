@@ -166,6 +166,7 @@ async function loadUsers(db) {
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
+const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 function buildNetworkProducer(accountId, loc, userDate, centerId, allyPick, riskPick) {
   const allyScore = allyPick ? dayScore(allyPick) : null;
@@ -325,6 +326,7 @@ async function main() {
   try {
     const outcome = await delivery.withSchedulerRunLease(db, "network-morning", (signal) => runScheduler(db, signal), { timeoutMs: 12_000 });
     if (!outcome.acquired) console.log("[mobile-network-push] overlap skipped");
+    else await schedulerHeartbeat.writeSchedulerHeartbeat("network-morning");
   } finally {
     await db.end();
   }

@@ -7,6 +7,17 @@ const SCHEDULER_NAMES = Object.freeze([
   "network-morning",
 ]);
 
+// Slightly above each reviewed source cadence. Monthly work must not be judged
+// by the hourly Yam/personal-reminder threshold.
+const SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS = Object.freeze({
+  yam: 60 * 60,
+  "daily-fortune": 14 * 60 * 60,
+  auspicious: 26 * 60 * 60,
+  "personal-reminders": 60 * 60,
+  "monthly-report": 32 * 24 * 60 * 60,
+  "network-morning": 26 * 60 * 60,
+});
+
 function safeTimezone(value) {
   const timezone = String(value || "").trim() || "Asia/Bangkok";
   try {
@@ -141,6 +152,7 @@ function schedulerLeaseKey(name) {
 
 module.exports = {
   SCHEDULER_NAMES,
+  SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS,
   buildGoalScienceRequests,
   buildQimenSchedulerRequest,
   dueLead,

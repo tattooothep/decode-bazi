@@ -22,6 +22,7 @@ const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
+const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 function b64url(value) {
   return Buffer.from(value).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
@@ -354,6 +355,7 @@ async function main() {
   console.log(`[mobile-personal-reminders] ${DRY ? "DRY " : ""}users=${users.rows.length}`, totals);
   await runLease.release();
   await db.end();
+  await schedulerHeartbeat.writeSchedulerHeartbeat("personal-reminders");
 }
 
 module.exports = {

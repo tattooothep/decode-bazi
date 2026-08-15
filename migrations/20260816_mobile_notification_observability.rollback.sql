@@ -14,5 +14,12 @@ DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_status_token;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_updated;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_parent_status;
 DROP INDEX IF EXISTS ix_mobile_push_tokens_observability_enabled;
+DROP INDEX IF EXISTS ix_mobile_push_log_retention_age;
+DROP INDEX IF EXISTS ix_mobile_push_log_source_facts_retention;
+DROP INDEX IF EXISTS ix_mobile_push_attempts_retention_age;
+
+-- The three mobile_push_log metadata columns intentionally remain in place.
+-- Dropping them would erase the legacy/new cutover and retention audit markers,
+-- causing a forward reapply to misclassify already-retired generation-1 rows.
 
 COMMIT;

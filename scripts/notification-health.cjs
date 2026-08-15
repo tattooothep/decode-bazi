@@ -4,6 +4,7 @@
 const { readFileSync, statSync } = require("node:fs");
 const { Client } = require("pg");
 const { collectHealth } = require("../src/lib/notification-observability.cjs");
+const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 function argumentValue(argumentsList, name) {
   const index = argumentsList.indexOf(name);
@@ -36,7 +37,7 @@ function createDb() {
 async function main(options = {}) {
   const args = options.args || process.argv.slice(2);
   const workerFile = argumentValue(args, "--worker-heartbeat-file") || process.env.NOTIFICATION_WORKER_HEARTBEAT_FILE;
-  const schedulerFile = argumentValue(args, "--scheduler-heartbeat-file") || process.env.NOTIFICATION_SCHEDULER_HEARTBEAT_FILE;
+  const schedulerDirectory = argumentValue(args, "--scheduler-heartbeat-dir") || process.env.NOTIFICATION_SCHEDULER_HEARTBEAT_DIR;
   const lookbackHours = argumentValue(args, "--lookback-hours");
   const ownsDb = !options.db;
   const db = options.db || createDb();
@@ -44,7 +45,10 @@ async function main(options = {}) {
     if (ownsDb) await db.connect();
     const report = await collectHealth(db, {
       lookbackHours,
-      heartbeat: { workerAt: readHeartbeat(workerFile), schedulerAt: readHeartbeat(schedulerFile) },
+      heartbeat: {
+        workerAt: readHeartbeat(workerFile),
+        schedulers: schedulerHeartbeat.readSchedulerHeartbeats(schedulerDirectory),
+      },
       providerReady: providerReadiness(options.env || process.env),
     });
     (options.log || console.log)(JSON.stringify(report));

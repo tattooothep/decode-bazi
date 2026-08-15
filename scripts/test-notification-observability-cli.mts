@@ -44,6 +44,7 @@ try {
   assert.match(await readFile(retryUnit, "utf8"), /notification-retry-receipt-runner\.cjs.*--heartbeat-file/u, "retry unit routes work through the heartbeat runner");
   assert.match(await readFile(receiptTimer, "utf8"), /OnUnitActiveSec=1min/u, "retry/receipt timer has a bounded cadence");
   assert.match(await readFile(healthUnit, "utf8"), /notification-health\.cjs.*--worker-heartbeat-file/u, "health unit fails closed on the retry heartbeat input");
+  assert.match(await readFile(healthUnit, "utf8"), /--scheduler-heartbeat-dir \/var\/lib\/hourkey-notification\/schedulers/u, "health unit reads the six source-produced scheduler heartbeat files");
   assert.match(await readFile(healthTimer, "utf8"), /OnUnitActiveSec=1min/u, "health timer has a bounded cadence");
   for (const file of [retryUnit, healthUnit]) {
     const source = await readFile(file, "utf8");
@@ -65,6 +66,11 @@ try {
     lookupUser: () => true, uid: () => 0, readUnit: () => "User=root\n",
   });
   assert.equal(unsafeStatePreflight.ok, false, "absent StateDirectory fails closed without the reviewed systemd creation contract");
+  const incompleteSchedulerPreflight = preflight.inspect({
+    access: (target: string) => { if (target.endsWith("mobile-monthly-report-push-cron.cjs")) throw new Error("missing-source"); },
+    lookupUser: () => true, uid: () => 0,
+  });
+  assert.equal(incompleteSchedulerPreflight.ok, false, "preflight fails closed when any named scheduler heartbeat producer is absent from the release");
   const blockedPreflight = preflight.inspect({
     access: () => { throw new Error("private-path"); }, lookupUser: () => false, uid: () => 99,
   });
@@ -77,6 +83,7 @@ try {
   assert.match(runbook, /notification-observability-preflight\.cjs/u, "runbook requires source-only executable and credential-access preflight");
   assert.match(runbook, /\/api\/internal\/health\/notifications/u, "runbook documents the authenticated internal health endpoint");
   assert.match(runbook, /notification-reconcile\.cjs.*rejects.*--lookback-hours/isu, "runbook documents that reconciliation rejects its obsolete no-op lookback argument");
+  assert.match(runbook, /source file or template is not evidence.*installed or live/isu, "runbook does not claim scheduler liveness merely because source wiring exists");
   console.log("NOTIFICATION_OBSERVABILITY_CLI_OK");
 } finally {
   await rm(directory, { recursive: true, force: true });

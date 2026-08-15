@@ -7,13 +7,23 @@ This source-controlled package is read-only for health and reconciliation. It em
 - The additive notification-integrity and notification-observability migrations have been applied and their rollbacks have been reviewed.
 - Source-review gates have approved the exact revision.
 - The service account has only the database access needed by the existing worker and read-only health/reconciliation queries.
-- A scheduler writes its own timestamp-only heartbeat to the path passed as `--scheduler-heartbeat-file` after a successful run.
+- Each of the six source schedulers writes its own timestamp-only heartbeat
+  under the directory passed as `--scheduler-heartbeat-dir` after a successful,
+  lease-owning run. A source file or template is not evidence that its external
+  cron/timer is installed or live; missing files therefore fail health closed.
 
 ## Checks
 
 - `notification-health.cjs` exits nonzero on overdue retry age/count, expired leases, unprocessed Expo receipt backlog, actively routed provider/token or FCM credential readiness mismatches, or a missing/stale retry-worker heartbeat. These actionable predicates inspect all current attempt rows; only historical delivery metrics use the bounded 168-hour window.
-- Scheduler freshness is reported separately so idle scheduler behavior remains observable without treating an empty queue as activity.
-- `notification-reconcile.cjs` is read-only. It compares all current parent delivery truth with child attempts and counts orphan/impossible state combinations without repair or mutation. It exits nonzero whenever any invariant count is nonzero.
+- Scheduler freshness is reported separately for `yam`, `daily-fortune`,
+  `auspicious`, `personal-reminders`, `monthly-report`, and `network-morning`.
+  Missing and stale reasons include the scheduler name so an empty queue is not
+  mistaken for scheduler activity.
+- `notification-reconcile.cjs` is read-only. It compares generation-1,
+  unretired parent delivery truth with child attempts and counts
+  orphan/impossible state combinations without repair or mutation. Generation-0
+  pre-attempt history and generation-1 parents whose children were intentionally
+  retired are reported as informational aggregates, not corrupt orphans.
 - Historical health metrics use a 168-hour default; `notification-health.cjs --lookback-hours` is clamped to 1 through 744 hours. `notification-reconcile.cjs` accepts no flags and rejects `--lookback-hours` or any unknown argument with the fixed `invalid_arguments` error so no no-op scope is implied. Current reconciliation is deliberately not time-scoped.
 - `POST /api/internal/health/notifications` uses the existing internal bearer secret. It returns aggregate health only to an authenticated caller, hides unauthorized requests, and returns a generic failure on database/dependency errors.
 

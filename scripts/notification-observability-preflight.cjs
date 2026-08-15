@@ -31,8 +31,18 @@ function inspect(options = {}) {
   const readUnit = options.readUnit || readFileSync;
   const runtimeRoot = uid() === 0 && rootExists(lookupUser);
   const nodeExecutable = canAccess(access, "/usr/bin/node", constants.X_OK);
-  const releaseReadable = canAccess(access, "/root/releases/current/scripts/notification-health.cjs", constants.R_OK)
-    && canAccess(access, "/root/releases/current/scripts/notification-retry-receipt-runner.cjs", constants.R_OK);
+  const releasePaths = [
+    "/root/releases/current/scripts/notification-health.cjs",
+    "/root/releases/current/scripts/notification-retry-receipt-runner.cjs",
+    "/root/releases/current/src/lib/notification-scheduler-heartbeat.cjs",
+    "/root/releases/current/scripts/mobile-yam-push-cron.cjs",
+    "/root/releases/current/scripts/mobile-daily-fortune-push-cron.cjs",
+    "/root/releases/current/scripts/mobile-auspicious-push-cron.cjs",
+    "/root/releases/current/scripts/mobile-personal-reminders-cron.cjs",
+    "/root/releases/current/scripts/mobile-monthly-report-push-cron.cjs",
+    "/root/releases/current/scripts/mobile-network-morning-push-cron.cjs",
+  ];
+  const releaseReadable = releasePaths.every((target) => canAccess(access, target, constants.R_OK));
   const environmentReadable = canAccess(access, "/etc/hourkey/hourkey.env", constants.R_OK);
   const credentialReadable = canAccess(access, env.FCM_SERVICE_ACCOUNT_PATH || "/root/secrets/hourkey-fcm-service-account.json", constants.R_OK);
   const stateReady = canAccess(access, "/var/lib/hourkey-notification", constants.W_OK);

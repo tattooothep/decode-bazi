@@ -1,6 +1,7 @@
 "use strict";
 
 /** Read-only, aggregate-only notification health and reconciliation checks. */
+const { SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS, SCHEDULER_NAMES } = require("./notification-science.cjs");
 
 function boundedNumber(value, fallback, minimum, maximum) {
   const parsed = Number(value);
@@ -38,7 +39,9 @@ function optionsFor(input = {}) {
       maxReceiptStalledCount: boundedNumber(thresholds.maxReceiptStalledCount, 0, 0, 1_000_000),
       receiptStallSeconds: boundedNumber(thresholds.receiptStallSeconds, 900, 1, 31 * 24 * 3600),
       workerHeartbeatSeconds: boundedNumber(thresholds.workerHeartbeatSeconds, 300, 1, 24 * 3600),
-      schedulerHeartbeatSeconds: boundedNumber(thresholds.schedulerHeartbeatSeconds, 3600, 1, 24 * 3600),
+      schedulerHeartbeatSeconds: thresholds.schedulerHeartbeatSeconds === undefined
+        ? null
+        : boundedNumber(thresholds.schedulerHeartbeatSeconds, 3600, 1, 40 * 24 * 3600),
     },
   };
 }
@@ -155,7 +158,15 @@ async function collectHealth(db, input = {}) {
   const inventory = inventoryResult.rows[0] || {};
   const terminal = terminalResult.rows[0] || {};
   const worker = freshness(input.heartbeat?.workerAt, config.thresholds.workerHeartbeatSeconds, now);
-  const scheduler = freshness(input.heartbeat?.schedulerAt, config.thresholds.schedulerHeartbeatSeconds, now);
+  const schedulers = SCHEDULER_NAMES.map((name) => ({
+    name,
+    maxAgeSeconds: config.thresholds.schedulerHeartbeatSeconds || SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS[name],
+    ...freshness(
+      input.heartbeat?.schedulers?.[name],
+      config.thresholds.schedulerHeartbeatSeconds || SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS[name],
+      now,
+    ),
+  }));
   const activeProviders = { fcm: numeric(inventory.active_fcm_count), expo: numeric(inventory.active_expo_count) };
   const credentialMismatchCount = Object.entries(activeProviders)
     .filter(([provider, count]) => count > 0 && input.providerReady?.[provider] !== true).length;
@@ -169,7 +180,7 @@ async function collectHealth(db, input = {}) {
     },
     outcomes: { deadLetterCount: numeric(terminal.dead_letter_count), invalidTokenCount: numeric(terminal.invalid_token_count), uncertainCount: numeric(terminal.uncertain_count) },
     worker,
-    scheduler,
+    schedulers,
     byCategoryProviderState: aggregatesResult.rows.map((row) => ({
       category: row.kind, provider: row.provider, state: row.status, count: numeric(row.count),
       providerLatencyP50Ms: roundedMilliseconds(row.provider_latency_p50_ms),
@@ -185,22 +196,36 @@ async function collectHealth(db, input = {}) {
   if (metrics.receipts.stalledCount > config.thresholds.maxReceiptStalledCount) reasons.push("receipt_poll_stalled");
   if (metrics.readiness.mismatchCount > 0) reasons.push("provider_readiness_mismatch");
   if (!metrics.worker.fresh) reasons.push(metrics.worker.ageSeconds === null ? "worker_heartbeat_missing" : "worker_heartbeat_stale");
+  for (const scheduler of metrics.schedulers) {
+    if (!scheduler.fresh) reasons.push(`scheduler_heartbeat_${scheduler.ageSeconds === null ? "missing" : "stale"}:${scheduler.name}`);
+  }
   return { ok: reasons.length === 0, reasons, metrics, windowHours: config.lookbackHours };
 }
 
 async function reconcile(db, input = {}) {
   const result = await readOnlyBounded(db, (readDb) => readDb.query(
     `WITH parents AS (
-       SELECT l.id,l.delivery_status,
+       SELECT l.id,l.delivery_status,l.last_error,l.delivery_model_generation,l.attempts_retired_at,
+              count(a.id) AS attempt_total,
               count(a.id) FILTER (WHERE a.status='delivered') AS delivered,
               count(a.id) FILTER (WHERE a.status='provider_accepted') AS accepted,
               count(a.id) FILTER (WHERE a.status IN ('reserved','retry_due')) AS open
          FROM mobile_push_log l LEFT JOIN mobile_push_attempts a ON a.push_log_id=l.id
-        GROUP BY l.id,l.delivery_status
+        GROUP BY l.id,l.delivery_status,l.last_error,l.delivery_model_generation,l.attempts_retired_at
      ), parent_truth AS (
-       SELECT count(*) FILTER (WHERE delivery_status <> CASE WHEN delivered>0 THEN 'delivered' WHEN accepted>0 THEN 'accepted' WHEN open>0 THEN 'pending' ELSE 'failed' END)::int AS parent_truth_mismatch,
-              count(*) FILTER (WHERE delivery_status='failed' AND accepted>0)::int AS orphan_accepted_parent,
-              count(*) FILTER (WHERE delivery_status IN ('accepted','delivered') AND delivered=0 AND accepted=0 AND open=0)::int AS orphan_failed_parent
+       SELECT count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND attempt_total>0
+                AND delivery_status <> CASE WHEN delivered>0 THEN 'delivered' WHEN accepted>0 THEN 'accepted' WHEN open>0 THEN 'pending' ELSE 'failed' END)::int AS parent_truth_mismatch,
+              count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND delivery_status='failed' AND accepted>0)::int AS orphan_accepted_parent,
+              count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND attempt_total=0
+                AND delivery_status IN ('accepted','delivered'))::int AS orphan_failed_parent,
+              count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND attempt_total=0
+                AND NOT (delivery_status='failed' AND last_error='no_deliverable_installation'))::int AS orphan_new_parent,
+              count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND attempt_total=0
+                AND delivery_status='failed' AND last_error='no_deliverable_installation')::int AS no_delivery_parent_ignored,
+              count(*) FILTER (WHERE delivery_model_generation=0 AND attempt_total=0)::int AS legacy_parent_ignored,
+              count(*) FILTER (WHERE delivery_model_generation=0 AND attempt_total>0)::int AS legacy_parent_with_attempts,
+              count(*) FILTER (WHERE attempts_retired_at IS NOT NULL AND attempt_total=0)::int AS retired_parent_ignored,
+              count(*) FILTER (WHERE attempts_retired_at IS NOT NULL AND attempt_total>0)::int AS retired_parent_with_attempts
          FROM parents
      ), attempts AS (
        SELECT count(*) FILTER (WHERE l.id IS NULL)::int AS orphan_attempt,
@@ -225,9 +250,17 @@ async function reconcile(db, input = {}) {
     orphanReceipt: numeric(row.orphan_receipt),
     orphanAcceptedParent: numeric(row.orphan_accepted_parent),
     orphanFailedParent: numeric(row.orphan_failed_parent),
+    orphanNewParent: numeric(row.orphan_new_parent),
+    noDeliveryParentIgnored: numeric(row.no_delivery_parent_ignored),
+    legacyParentIgnored: numeric(row.legacy_parent_ignored),
+    legacyParentWithAttempts: numeric(row.legacy_parent_with_attempts),
+    retiredParentIgnored: numeric(row.retired_parent_ignored),
+    retiredParentWithAttempts: numeric(row.retired_parent_with_attempts),
     impossibleState: numeric(row.impossible_state),
   };
-  return { ok: Object.values(counts).every((count) => count === 0), scope: "all_current_rows", counts };
+  const informational = new Set(["legacyParentIgnored", "noDeliveryParentIgnored", "retiredParentIgnored"]);
+  const ok = Object.entries(counts).every(([name, count]) => informational.has(name) || count === 0);
+  return { ok, scope: "generation_1_unretired_and_all_attempts", counts };
 }
 
 module.exports = { collectHealth, reconcile, readOnlyBounded, serialQueryResults };

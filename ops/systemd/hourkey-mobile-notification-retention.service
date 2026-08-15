@@ -1,0 +1,27 @@
+[Unit]
+Description=Hourkey bounded mobile notification retention
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/root/releases/current
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/hourkey/hourkey.env
+UMask=0027
+LogsDirectory=hourkey
+LogsDirectoryMode=0750
+ExecStart=/usr/bin/node /root/releases/current/scripts/notification-retention.cjs --source-facts-days 30 --attempt-days 30 --history-days 180 --security-history-days 365 --batch-size 500 --max-batches 20
+StandardOutput=append:/var/log/hourkey/mobile-notification-retention.log
+StandardError=append:/var/log/hourkey/mobile-notification-retention.log
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
