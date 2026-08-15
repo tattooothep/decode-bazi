@@ -160,6 +160,14 @@ check("ทุกทางที่ไม่ส่งต้องบอกเห�
   }
 });
 
+check("🔴 เส้นทางลงทะเบียนห้ามพิมพ์ provider token ลง log", () => {
+  const route = readFileSync("src/app/api/mobile/v1/push/route.ts", "utf8");
+  assert.doesNotMatch(
+    route,
+    /console\.(?:log|info|warn|error)[\s\S]{0,160}(?:expo_push_token|device_push_token|deviceToken|token)/iu,
+  );
+});
+
 
 console.log("── วันที่ต้องเป็นของผู้ใช้ ไม่ใช่ของไทย ──");
 

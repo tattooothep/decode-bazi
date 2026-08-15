@@ -1,9 +1,11 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 
-for (const line of fs.readFileSync(".env.local", "utf8").split("\n")) {
-  const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
-  if (match && !process.env[match[1]]) process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+if (fs.existsSync(".env.local")) {
+  for (const line of fs.readFileSync(".env.local", "utf8").split("\n")) {
+    const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (match && !process.env[match[1]]) process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+  }
 }
 
 const { pool } = await import("../src/lib/db.ts");
@@ -11,7 +13,9 @@ const { checkMobilePushReceipts, sendMobilePushToUser } = await import("../src/l
 
 const userId = crypto.randomUUID();
 const installationId = crypto.randomUUID();
+const disabledInstallationId = crypto.randomUUID();
 const tokenId = crypto.randomUUID();
+const disabledTokenId = crypto.randomUUID();
 const ticketId = crypto.randomUUID();
 const email = `mobile-push-delivery-${Date.now()}@example.test`;
 const originalFetch = globalThis.fetch;
@@ -34,6 +38,11 @@ try {
      VALUES($1,$2,$3,'ExponentPushToken[deliveryabcdefghijkl]','android','th')`,
     [tokenId, userId, installationId]
   );
+  await pool.query(
+    `INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,platform,locale,enabled,disabled_at)
+     VALUES($1,$2,$3,'ExponentPushToken[disabledabcdefghijkl]','android','th',false,now())`,
+    [disabledTokenId, userId, disabledInstallationId]
+  );
 
   let sentBody: unknown = null;
   globalThis.fetch = async (_input, init) => {
@@ -51,6 +60,7 @@ try {
   });
   check(sent.accepted === 1 && sent.failed === 0, "Expo transport accepts one native notification");
   const messages = sentBody as Array<{ data?: { url?: string } }>;
+  check(messages.length === 1, "disabled historical tokens are excluded from mobile delivery");
   check(messages[0]?.data?.url === "/today", "unsafe notification targets are replaced with an in-app route");
   let row = await pool.query(`SELECT status FROM mobile_push_receipts WHERE ticket_id=$1`, [ticketId]);
   check(row.rows[0]?.status === "pending", "accepted ticket is queued for a delivery receipt check");

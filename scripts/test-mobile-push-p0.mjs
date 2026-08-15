@@ -4,9 +4,14 @@ import { SignJWT } from "jose";
 import pg from "pg";
 
 const env = {};
-for (const line of fs.readFileSync(".env.local", "utf8").split("\n")) {
-  const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
-  if (match) env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+if (fs.existsSync(".env.local")) {
+  for (const line of fs.readFileSync(".env.local", "utf8").split("\n")) {
+    const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (match) env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+  }
+}
+for (const key of ["AUTH_SECRET", "PGHOST", "PGPORT", "PGDATABASE", "PGUSER", "PGPASSWORD"]) {
+  if (!env[key] && process.env[key]) env[key] = process.env[key];
 }
 const base = process.env.BASE_URL || "http://127.0.0.1:3370";
 const db = new pg.Client({ host: env.PGHOST, port: Number(env.PGPORT), database: env.PGDATABASE, user: env.PGUSER, password: env.PGPASSWORD });
@@ -16,6 +21,10 @@ const emails = users.map((_, index) => `mobile-push-${Date.now()}-${index}@examp
 const installs = [crypto.randomUUID(), crypto.randomUUID()];
 const pushTokenA = "ExponentPushToken[abcdefghijklmnopqrstuv]";
 const pushTokenB = "ExponentPushToken[zyxwvutsrqponmlkjihgfe]";
+const transferInstallation = crypto.randomUUID();
+const transferExpoA = `ExponentPushToken[nativeownera${Date.now()}]`;
+const transferExpoB = `ExponentPushToken[nativeownerb${Date.now()}]`;
+const nativeToken = `fcm-native-owner-${Date.now()}`;
 let checks = 0;
 
 function check(condition, message) {
@@ -57,7 +66,7 @@ try {
   check(result.response.status === 400, "invalid native push token fails closed");
 
   result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({ expo_push_token: pushTokenA, installation_id: installs[0], platform: "ios", locale: "th", app_version: "1.0.0" }) });
-  check(result.response.status === 200 && result.data.subscribed === true, "iOS installation registers an Expo push token");
+  check(result.response.status === 200 && result.data.subscribed === true, `iOS installation registers an Expo push token (${result.response.status}/${result.data.error || "ok"})`);
   result = await api("/api/mobile/v1/push", tokens[0]);
   check(result.data.active_installations === 1, "registration status counts only the current account");
   result = await api(`/api/mobile/v1/push?installation_id=${installs[0]}`, tokens[0]);
@@ -72,6 +81,37 @@ try {
   check(result.response.status === 200, "device token moves to the newly authenticated account");
   rows = await db.query(`SELECT user_id::text,platform FROM mobile_push_tokens WHERE expo_push_token=$1`, [pushTokenB]);
   check(rows.rowCount === 1 && rows.rows[0].user_id === users[1] && rows.rows[0].platform === "android", "one Expo token can never remain linked to two accounts");
+
+  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+    expo_push_token: transferExpoA, installation_id: transferInstallation, platform: "android",
+    device_push_token: nativeToken, device_token_type: "fcm",
+  }) });
+  check(result.response.status === 200, "first account registers a native installation identity");
+  result = await api("/api/mobile/v1/push", tokens[1], { method: "POST", body: JSON.stringify({
+    expo_push_token: transferExpoB, installation_id: transferInstallation, platform: "android",
+    device_push_token: nativeToken, device_token_type: "fcm",
+  }) });
+  check(result.response.status === 200, "second account atomically takes over the same native installation");
+  rows = await db.query(
+    `SELECT user_id::text,enabled FROM mobile_push_tokens
+      WHERE installation_id=$1 OR device_push_token=$2 ORDER BY created_at`,
+    [transferInstallation, nativeToken],
+  );
+  check(rows.rows.filter((row) => row.enabled).length === 1 && rows.rows.find((row) => row.enabled)?.user_id === users[1], "only the new account remains active for the shared installation/native token");
+
+  result = await api("/api/mobile/v1/push", tokens[1], { method: "DELETE", body: JSON.stringify({ installation_id: transferInstallation }) });
+  check(result.response.status === 200 && result.data.subscribed === false, "unregister disables the current installation");
+  result = await api("/api/mobile/v1/push", tokens[1], { method: "DELETE", body: JSON.stringify({ installation_id: transferInstallation }) });
+  check(result.response.status === 200 && result.data.subscribed === false, "a repeated unregister is idempotent");
+  rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE installation_id=$1 AND enabled=true`, [transferInstallation]);
+  check(rows.rows[0].n === 0, "unregister leaves no active token for the installation");
+
+  result = await api("/api/mobile/v1/notifications", tokens[1]);
+  check(result.response.status === 200 && result.data.prefs?.privacyPreview === false, "privacy-preview defaults safely for an account without preferences");
+  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", privacyPreview: true }) });
+  check(result.response.status === 200 && result.data.prefs?.privacyPreview === true, "preferences persist privacy-preview opt-in");
+  result = await api("/api/mobile/v1/notifications", tokens[1]);
+  check(result.response.status === 200 && result.data.prefs?.privacyPreview === true, "preferences return the persisted privacy-preview value");
 
   result = await api("/api/mobile/v1/session", tokens[1], { method: "DELETE" });
   check(result.response.status === 200 && result.data.revoked_server_session === true, "logout revokes the mobile session");

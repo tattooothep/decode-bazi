@@ -114,10 +114,39 @@ export async function POST(req: Request) {
   let row: { id: string } | undefined;
   try {
     await client.query("BEGIN");
+    // Serialize each physical identity before changing ownership. The partial
+    // unique indexes are the final guard; these locks prevent a legitimate
+    // concurrent token rotation from failing after both requests disable the
+    // previous active row.
     await client.query(
-      `DELETE FROM mobile_push_tokens
-        WHERE user_id=$1 AND installation_id=$2::uuid AND expo_push_token<>$3`,
-      [session.userId, installationId, token]
+      "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:' || $1::text, 0))",
+      [installationId]
+    );
+    if (deviceToken) {
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-native:' || $1::text, 0))",
+        [deviceToken]
+      );
+    }
+    // Installation IDs and native push tokens identify a physical app install,
+    // not an account. Transfer both identities before the upsert so an old
+    // account can never remain enabled for the same device after account switch.
+    await client.query(
+      `UPDATE mobile_push_tokens
+          SET enabled=false,disabled_at=now(),updated_at=now()
+        WHERE enabled=true
+          AND user_id<>$1
+          AND (installation_id=$2::uuid OR ($3::text IS NOT NULL AND device_push_token=$3))`,
+      [session.userId, installationId, deviceToken]
+    );
+    await client.query(
+      `UPDATE mobile_push_tokens
+          SET enabled=false,disabled_at=now(),updated_at=now()
+        WHERE enabled=true
+          AND user_id=$1
+          AND expo_push_token<>$3
+          AND (installation_id=$2::uuid OR ($4::text IS NOT NULL AND device_push_token=$4))`,
+      [session.userId, installationId, token, deviceToken]
     );
     const registered = await client.query<{ id: string }>(
       `INSERT INTO mobile_push_tokens
@@ -150,13 +179,6 @@ export async function POST(req: Request) {
     client.release();
   }
   if (!row) return NextResponse.json({ ok: false, error: "push_registration_failed" }, { status: 500 });
-
-  // A reinstall can create a new Expo token for the same installation. Keep one active row.
-  await q(
-    `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
-      WHERE user_id=$1 AND installation_id=$2::uuid AND id<>$3 AND enabled=true`,
-    [session.userId, installationId, row.id]
-  );
   const deliverable = platform === "android"
     ? deviceTokenType === "fcm" && deviceToken !== null
     : process.env.EXPO_IOS_PUSH_READY === "true";
