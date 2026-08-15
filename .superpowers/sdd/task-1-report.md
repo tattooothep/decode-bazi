@@ -91,3 +91,57 @@ the new registration route, as with any schema rollback.
 ## Commit
 
 Implementation and tests: `5347dbd68cb9076e8dfe3a6a2e6d940afc5fe702`
+
+## Review-fix addendum
+
+This addendum supersedes the earlier rollback description: rollback now retains
+both global partial active-owner indexes. It only removes Task 1 preference
+columns, so it cannot complete without database ownership enforcement.
+
+### Additional RED evidence
+
+- The strengthened contract failed because the migration had no preference
+  locale and rollback dropped both active-owner indexes.
+- The migration test initially codified that unsafe rollback; it was changed to
+  prove duplicate active installation and native-token inserts still fail after
+  rollback.
+- The real API route test added a queued POST/DELETE case, native omission on
+  Expo ownership transfer, forced database error sanitization, locale round
+  trip, invalid-locale retention, and unregister-all coverage before their
+  implementation changes.
+
+### Additional GREEN verification
+
+- `npx tsx scripts/test-notification-integrity-contract.mts` → pass.
+- `npx tsx scripts/test-notification-integrity-migration.mts` → pass; forward,
+  rollback twice, duplicate enforcement after rollback, and reapply are proven
+  in a `notification_integrity_test_*` disposable DB.
+- Isolated route server + schema-only disposable DB:
+  `BASE_URL=http://127.0.0.1:3437 node scripts/test-mobile-push-p0.mjs`
+  → `30 mobile push checks passed`.
+  - It holds the same advisory user lock while a POST and DELETE enter the real
+    route, releases it only after both wait, and proves the queued DELETE leaves
+    no enabled row.
+  - It proves legacy omitted-native registration clears the transferred native
+    token/type, forced database errors return only a generic error, and locale
+    defaults/persists/rejects invalid values.
+- `npx tsx scripts/test-mobile-push-delivery.mts` → `6` checks passed.
+- `npx tsx scripts/test-push-guard.mts` → `22` checks passed.
+- `npx tsc --noEmit` and `git diff --check` → exit 0.
+
+### Review-fix implementation notes
+
+- POST and DELETE now take transaction-scoped user locks before deterministic
+  installation/native locks. Unregister-all locks every currently enabled
+  installation in sorted query order.
+- Existing native identities are selected and locked before upsert. A legacy
+  request writes `NULL` native token/type rather than coalescing stale values.
+- PostgreSQL failures are rolled back and mapped to sanitized 409/500 responses;
+  no database error is rethrown or logged by the route.
+- `mobile_notification_prefs.locale` is a validated supported server preference
+  with `th` default and API read/write contract.
+- Both DB-mutating integration scripts now refuse names outside an explicit
+  `notification_integrity_*_test` disposable prefix. Temporary DBs/roles were
+  removed after every run; cleanup checks returned `f|f`.
+
+Review-fix implementation: `0a8aed8d0da874d9411ddbec736a1f559001d387`
