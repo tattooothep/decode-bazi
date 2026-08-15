@@ -96,8 +96,22 @@ each rename; the backup manifest records the original metadata. Target mtime and
 ctime are intentionally not contractual because an atomic replacement creates a
 new file. It validates every target checksum before writing, validates the
 candidate configuration before writing, and restores already-written files if a
-post-write validation fails. A process interruption still requires the rollback
-procedure below; do not reload a service before the post-apply audit succeeds.
+post-write validation fails. Compensation is policy-aware: a successfully
+written VAPID transition stays at its verified environment-only applied bytes
+and metadata, while already-written non-VAPID targets return to their original
+bytes and metadata. This prevents a later target failure from reintroducing an
+exposed credential.
+
+`LEGACY_QIMEN_CONTAINMENT_FAILED:apply_failed_rolled_back` means every target
+matches its pre-apply bytes and metadata. `apply_failed_safe_selective` means one
+or more VAPID targets remain safely applied while every non-VAPID target matches
+its original state. It is a recovery state, **not** successful containment: do
+not reload a service or cron. The same unchanged manifest can be passed to the
+guarded rollback command below, which recognizes checksum-verified original
+non-VAPID targets as already restored while retaining environment-only VAPID
+targets. `apply_compensation_failed` is a stop condition requiring read-only
+incident audit. A process interruption also requires the rollback procedure;
+do not reload a service before the post-apply audit succeeds.
 
 After backups are written, apply re-resolves and rereads **every** target and
 compares its approved-before bytes, checksum, device, inode, mode, size, and
@@ -119,15 +133,25 @@ reviewed file checksums—not secret values or request data.
 
 ## Rollback
 
-Rollback is an explicit recovery operation. It first requires the whole current
-inventory to pass the contained-state audit, then verifies every current target
-checksum against the apply manifest before changing any file. It atomically
-restores only manifest files whose machine-derived policy is
+Rollback is an explicit recovery operation. For a fully applied manifest it
+first requires the whole current inventory to pass the contained-state audit.
+For the exact selective state described above it requires the narrower recovery
+safety boundary documented below. In both cases it verifies every current
+target checksum and metadata against the apply manifest before changing any
+file. It atomically restores only manifest files whose machine-derived policy is
 `restore_original`. A checksum-valid VAPID-bearing backup is never restored: the
 target stays at its verified contained, environment-only bytes under
 `retain_applied`. The policy is recomputed from the original backup and applied
 target before any write. Version 1 manifests receive the same dynamic decision,
 so an older manifest cannot bypass this rule.
+
+For recovery from `apply_failed_safe_selective`, rollback also accepts a
+non-VAPID target that already matches its manifest original checksum and
+metadata. It still requires exact proxy denials, environment-only VAPID
+dataflow, and required environment declarations before proceeding; a
+VAPID-bearing target is accepted only at the applied checksum. Thus the command
+can verify and complete recovery without ever writing the credential-bearing
+backup.
 
 ```bash
 node scripts/ops/contain-legacy-qimen-push.mjs --rollback \

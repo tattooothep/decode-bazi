@@ -283,3 +283,9 @@ artifact signatures are also `APPROVE`.
   mode, uid and gid, retains the reusable manifest, and emits only a fixed
   failure code. Any failed compensation blocks service/cron reload and requires
   read-only incident audit.
+- Apply compensation follows the same credential boundary. If a later target
+  fails after an environment-only VAPID replacement was written, that safe
+  replacement and its metadata are retained; written non-VAPID targets return
+  to originals. The fixed selective-failure code blocks reload, and guarded
+  rollback accepts that exact checksum-verified recovery state without ever
+  writing the VAPID-bearing backup.

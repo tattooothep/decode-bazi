@@ -97,18 +97,18 @@ async function invokeWithExternalPostBackupPause(args, target) {
   return completion;
 }
 
-function invokeWithExternalRollbackWriteFailure(args, target) {
-  const wrapper = join(temp, "external-rollback-write-failure.cjs");
+function invokeWithExternalTargetWriteFailure(args, target) {
+  const wrapper = join(temp, "external-target-write-failure.cjs");
   writeFileSync(wrapper, [
     "const fs = require('node:fs');",
     "const path = require('node:path');",
     "const { syncBuiltinESMExports } = require('node:module');",
     "const originalRename = fs.renameSync;",
     "let failed = false;",
-    "fs.renameSync = function legacyContainmentRollbackFailure(from, to) {",
-    "  if (!failed && path.resolve(to) === path.resolve(process.env.CONTAINMENT_ROLLBACK_FAIL_TARGET)) {",
+    "fs.renameSync = function legacyContainmentTargetFailure(from, to) {",
+    "  if (!failed && path.resolve(to) === path.resolve(process.env.CONTAINMENT_FAIL_TARGET)) {",
     "    failed = true;",
-    "    throw new Error('external_rollback_write_failure');",
+    "    throw new Error('external_target_write_failure');",
     "  }",
     "  return originalRename(from, to);",
     "};",
@@ -121,7 +121,7 @@ function invokeWithExternalRollbackWriteFailure(args, target) {
     env: {
       ...process.env,
       NO_COLOR: "1",
-      CONTAINMENT_ROLLBACK_FAIL_TARGET: target,
+      CONTAINMENT_FAIL_TARGET: target,
     },
   });
 }
@@ -296,11 +296,12 @@ try {
   write("cron/qimen.cron", unsafeCron);
   write("src/vapid.js", exposedVapidOriginal);
   inventory.sourceFiles = ["src/push-routes.js", "src/vapid.js"];
-  inventory.patches.push({
+  const vapidPatch = {
     path: "src/vapid.js",
     expectedSha256: sha256(exposedVapidOriginal),
     replacements: [{ find: exposedVapidOriginal, replace: safeVapid }],
-  });
+  };
+  inventory.patches = [vapidPatch, ...inventory.patches];
   write("legacy-qimen-inventory.json", `${JSON.stringify(inventory, null, 2)}\n`);
   const piiPath = join(temp, "reviewer@example.test");
   mkdirSync(piiPath);
@@ -337,14 +338,52 @@ try {
   write("src/push-routes.js", unsafeRoutes);
 
   const metadataTarget = join(temp, "src/push-routes.js");
+  const vapidMetadataTarget = join(temp, "src/vapid.js");
   const originalMetadata = lstatSync(metadataTarget);
+  const originalVapidMetadata = lstatSync(vapidMetadataTarget);
   chmodSync(metadataTarget, 0o640);
+  chmodSync(vapidMetadataTarget, 0o600);
   chownSync(metadataTarget, originalMetadata.uid, originalMetadata.gid);
+  chownSync(vapidMetadataTarget, originalVapidMetadata.uid, originalVapidMetadata.gid);
   const expectedMetadata = {
     mode: lstatSync(metadataTarget).mode & 0o7777,
     uid: lstatSync(metadataTarget).uid,
     gid: lstatSync(metadataTarget).gid,
   };
+  const expectedVapidMetadata = {
+    mode: lstatSync(vapidMetadataTarget).mode & 0o7777,
+    uid: lstatSync(vapidMetadataTarget).uid,
+    gid: lstatSync(vapidMetadataTarget).gid,
+  };
+
+  const selectiveApplyBackupDir = join(temp, "selective-apply-backups");
+  const selectiveApplyFailure = invokeWithExternalTargetWriteFailure([
+    "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--approvals", join(temp, "approvals.txt"),
+    "--backup-dir", selectiveApplyBackupDir,
+  ], join(temp, "cron/qimen.cron"));
+  check(selectiveApplyFailure.status !== 0, "a later apply target write failure aborts after the VAPID replacement");
+  check(`${selectiveApplyFailure.stdout}${selectiveApplyFailure.stderr}`.includes("apply_failed_safe_selective"), "partial apply reports a fixed safe-selective result code");
+  check(!`${selectiveApplyFailure.stdout}${selectiveApplyFailure.stderr}`.includes(exposedVapidMarker), "partial apply failure output never exposes VAPID material");
+  check(readFileSync(join(temp, "src/vapid.js"), "utf8") === safeVapid, "apply compensation never reintroduces an exposed VAPID original");
+  const selectiveVapidMetadata = lstatSync(vapidMetadataTarget);
+  check((selectiveVapidMetadata.mode & 0o7777) === expectedVapidMetadata.mode && selectiveVapidMetadata.uid === expectedVapidMetadata.uid && selectiveVapidMetadata.gid === expectedVapidMetadata.gid, "safe-selective apply failure retains VAPID target mode and ownership");
+  check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes, "apply compensation restores a written non-sensitive route source to original bytes");
+  check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "failed later apply target remains at original bytes");
+  const selectiveApplyMetadata = lstatSync(metadataTarget);
+  check((selectiveApplyMetadata.mode & 0o7777) === expectedMetadata.mode && selectiveApplyMetadata.uid === expectedMetadata.uid && selectiveApplyMetadata.gid === expectedMetadata.gid, "apply compensation restores non-sensitive target mode and ownership");
+  const selectiveApplyManifestText = readFileSync(join(selectiveApplyBackupDir, "manifest.json"), "utf8");
+  check(!selectiveApplyManifestText.includes(exposedVapidMarker), "recoverable partial-apply manifest contains no VAPID material");
+  const selectiveApplyManifest = JSON.parse(selectiveApplyManifestText);
+  check(selectiveApplyManifest.files.find((file) => file.path === "src/vapid.js")?.rollbackPolicy === "retain_applied", "partial-apply manifest truthfully records retained VAPID state");
+  const selectiveRecovery = invoke(
+    "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--backup-dir", selectiveApplyBackupDir,
+  );
+  check(selectiveRecovery.status === 0, "safe-selective partial apply remains recoverable through the guarded rollback command");
+  check(selectiveRecovery.stdout.includes("LEGACY_QIMEN_CONTAINMENT_ROLLBACK_SAFE_SELECTIVE_OK"), "partial-apply recovery truthfully reports retained VAPID state");
+  check(readFileSync(join(temp, "src/vapid.js"), "utf8") === safeVapid && readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes && readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "partial-apply recovery preserves the coherent safe-selective state");
+  write("src/vapid.js", exposedVapidOriginal);
 
   const apply = invoke(
     "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
@@ -364,7 +403,7 @@ try {
   check(readFileSync(join(backupDir, "files", vapidManifest.backupName), "utf8") === exposedVapidOriginal, "VAPID rollback policy covers the actual checksum-verified exposed original backup");
   check(!readFileSync(join(backupDir, "manifest.json"), "utf8").includes(exposedVapidMarker), "rollback manifest never contains exposed VAPID material");
 
-  const rollbackFailure = invokeWithExternalRollbackWriteFailure([
+  const rollbackFailure = invokeWithExternalTargetWriteFailure([
     "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
     "--inventory", inventoryPath, "--backup-dir", backupDir,
   ], join(temp, "cron/qimen.cron"));
@@ -417,6 +456,8 @@ try {
   check(runbookText.includes("never print"), "runbook prohibits secret output");
   check(runbookText.includes("retain_applied"), "runbook documents machine-enforced selective rollback for unsafe originals");
   check(runbookText.includes("compensat"), "runbook documents all-target rollback compensation");
+  check(runbookText.includes("apply_failed_safe_selective"), "runbook distinguishes a safe-selective apply recovery state from success");
+  check(runbookText.includes("apply_compensation_failed"), "runbook makes uncertain apply compensation an operational stop condition");
   const operationalTool = readFileSync(tool, "utf8");
   check(!/TEST_AFTER_BACKUP_MUTATION|LEGACY_CONTAINMENT_TEST_HOOK|runTestAfterBackupHook|NODE_ENV\s*!==?\s*["']test/u.test(operationalTool), "operational tool contains no mutation test hook or test-environment branch");
 

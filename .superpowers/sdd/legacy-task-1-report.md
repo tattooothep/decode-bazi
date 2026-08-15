@@ -258,17 +258,41 @@
   the original or applied target references VAPID, it retains the
   already-verified environment-only applied bytes. Version 1 manifests receive
   the same dynamic safety decision.
-- Before writes, rollback requires the entire inventory to pass the contained
-  audit and checksum-validates every manifest target. If a later write fails,
-  it compensates already-restored targets in reverse order and verifies all
-  manifest targets against captured pre-rollback content plus mode/uid/gid.
-  Successful compensation emits only `rollback_failed_compensated`; an
-  incomplete compensation emits only `rollback_compensation_failed` and blocks
-  further operational action.
+- Before writes, a normal rollback requires the entire inventory to pass the
+  contained audit and checksum-validates every manifest target. The exact
+  safe-selective apply recovery state uses a narrower credential/proxy boundary
+  and requires every target to match either its permitted applied or original
+  checksum and metadata. If a later write fails, rollback compensates
+  already-restored targets in reverse order and verifies all manifest targets
+  against captured pre-rollback content plus mode/uid/gid. Successful
+  compensation emits only `rollback_failed_compensated`; an incomplete
+  compensation emits only `rollback_compensation_failed` and blocks further
+  operational action.
 - The external one-shot later-target failure leaves route, cron, and VAPID source
   consistently contained. A subsequent rollback using the same backup proves
   the manifest is recoverable while the exposed VAPID original remains skipped.
 - `node scripts/test-legacy-qimen-containment.mjs` ->
-  `LEGACY_QIMEN_CONTAINMENT_OK 74`.
+  `LEGACY_QIMEN_CONTAINMENT_OK 89`.
 - The runbook and integrity design now describe selective rollback, compensation,
   fixed result codes, legacy-manifest behavior, and the reload stop condition.
+
+### Re-review remediation — apply compensation
+
+- Reviewer reproduction showed that the original apply catch restored
+  `before.text` for every previously written target. If a VAPID patch was first
+  and a later cron rename failed, this reintroduced the exposed original even
+  though rollback itself was safe.
+- RED reordered the real fixture so the VAPID transition writes first, injected
+  a one-shot failure at the later cron rename, and required environment-only
+  VAPID bytes plus mode/uid/gid to remain applied while the written route and
+  unwritten cron match originals. It also required fixed redacted output, a
+  secret-free manifest, and successful guarded recovery with that same manifest.
+- Apply compensation is now rollback-policy aware. It retains written VAPID
+  transitions, reverse-compensates written non-VAPID targets, and verifies every
+  target's expected checksum/mode/uid/gid before emitting
+  `apply_failed_safe_selective`. Compensation uncertainty emits
+  `apply_compensation_failed` instead.
+- Guarded rollback recognizes that exact recovery state: non-VAPID targets may
+  already equal manifest originals, while VAPID targets must equal their applied
+  checksums and pass canonical credential dataflow checks. It performs no unsafe
+  credential restore and keeps the manifest reusable.

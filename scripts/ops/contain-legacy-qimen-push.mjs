@@ -6,7 +6,8 @@ import { dirname, isAbsolute, join, parse, relative, resolve, sep } from "node:p
 const CONFIRM_APPLY = "DISABLE_LEGACY_QIMEN_PUSH";
 const CONFIRM_ROLLBACK = "ROLLBACK_LEGACY_QIMEN_PUSH";
 const SAFE_FAILURE_CODES = new Set([
-  "absolute_paths_required", "apply_failed_rolled_back", "apply_requires_three_approvals",
+  "absolute_paths_required", "apply_compensation_failed", "apply_failed_rolled_back",
+  "apply_failed_safe_selective", "apply_requires_three_approvals",
   "backup_dir_creation_failed", "backup_dir_must_not_be_preexisting", "backup_dir_required",
   "duplicate_patch_path", "hardcoded_vapid_private_key", "invalid_approvals", "invalid_backup_dir",
   "invalid_environment_key", "invalid_inventory", "invalid_inventory_json", "invalid_inventory_shape",
@@ -240,7 +241,7 @@ function verifyAllTargetSnapshots(root, changes) {
   for (const [path, change] of changes) verifyTargetSnapshot(root, path, change.before);
 }
 
-function audit(root, inventory, overrides) {
+function auditRecoveryBoundary(root, inventory, overrides) {
   const routeConfig = inventory.routeFiles.map((path) => fileText(root, path, overrides)).join("\n");
   for (const route of ["/push/test", "/push/unsubscribe"]) {
     if (!containsDeniedRoute(routeConfig, route)) fail("legacy_route_not_denied");
@@ -250,6 +251,14 @@ function audit(root, inventory, overrides) {
     const text = fileText(root, path, overrides);
     if (!hasOnlyCanonicalVapidDataflow(text)) fail("hardcoded_vapid_private_key");
   }
+  const environment = inventory.environmentFiles.map((path) => fileText(root, path, overrides)).join("\n");
+  for (const key of inventory.requiredEnvironmentKeys) {
+    if (!new RegExp(`^${key}=\\S+`, "mu").test(environment)) fail("vapid_environment_unavailable");
+  }
+}
+
+function audit(root, inventory, overrides) {
+  auditRecoveryBoundary(root, inventory, overrides);
   for (const path of [...inventory.sourceFiles, ...inventory.cronFiles]) {
     if (/["'`]\/push\/(?:test|unsubscribe)["'`]/u.test(fileText(root, path, overrides))) fail("legacy_route_present");
   }
@@ -260,10 +269,6 @@ function audit(root, inventory, overrides) {
       const activeEntry = trimmed.replace(/\s+#.*$/u, "").toLowerCase();
       if (activeEntry.includes("qimen") && activeEntry.includes("push")) fail("legacy_push_cron_enabled");
     }
-  }
-  const environment = inventory.environmentFiles.map((path) => fileText(root, path, overrides)).join("\n");
-  for (const key of inventory.requiredEnvironmentKeys) {
-    if (!new RegExp(`^${key}=\\S+`, "mu").test(environment)) fail("vapid_environment_unavailable");
   }
 }
 
@@ -439,15 +444,39 @@ function apply(options, root, inventory) {
   try {
     for (const [path, change] of changes) {
       atomicWriteTarget(root, path, change.replacement, change.before);
-      written.push(path);
+      written.push({ path, change });
     }
     audit(root, inventory);
   } catch {
-    for (const path of written.reverse()) {
-      const current = targetSnapshot(root, path);
-      if (current.sha256 !== sha256(changes.get(path).replacement)) fail("apply_failed_rolled_back");
-      atomicWriteTarget(root, path, changes.get(path).before.text, current, metadataFromSnapshot(changes.get(path).before));
+    let compensationFailed = false;
+    for (const { path, change } of written.slice().reverse()) {
+      if (rollbackPolicyForTransition(change.before.text, change.replacement) === "retain_applied") continue;
+      try {
+        const current = targetSnapshot(root, path);
+        if (current.sha256 !== sha256(change.replacement)) fail("apply_compensation_failed");
+        atomicWriteTarget(root, path, change.before.text, current, metadataFromSnapshot(change.before));
+      } catch {
+        compensationFailed = true;
+      }
     }
+    const writtenPaths = new Set(written.map(({ path }) => path));
+    let retainedApplied = false;
+    for (const [path, change] of changes) {
+      try {
+        const retainApplied = writtenPaths.has(path)
+          && rollbackPolicyForTransition(change.before.text, change.replacement) === "retain_applied";
+        retainedApplied ||= retainApplied;
+        const expectedSha256 = retainApplied ? sha256(change.replacement) : change.before.sha256;
+        const current = targetSnapshot(root, path);
+        if (current.sha256 !== expectedSha256) compensationFailed = true;
+        const expected = metadataFromSnapshot(change.before);
+        if ((current.mode & 0o7777) !== expected.mode || current.uid !== expected.uid || current.gid !== expected.gid) compensationFailed = true;
+      } catch {
+        compensationFailed = true;
+      }
+    }
+    if (compensationFailed) fail("apply_compensation_failed");
+    if (retainedApplied) fail("apply_failed_safe_selective");
     fail("apply_failed_rolled_back");
   }
   process.stdout.write("LEGACY_QIMEN_CONTAINMENT_APPLY_OK\n");
@@ -467,6 +496,7 @@ function rollback(options, root, inventory) {
   const approvedPaths = new Set([...inventory.routeFiles, ...inventory.sourceFiles, ...inventory.cronFiles]);
   const seenPaths = new Set();
   const changes = [];
+  let fullyApplied = true;
   for (const file of manifest.files) {
     if (!file || typeof file.path !== "string" || !/^[a-f0-9]{64}$/u.test(file.backupName || "") || !/^[a-f0-9]{64}$/u.test(file.originalSha256 || "") || !/^[a-f0-9]{64}$/u.test(file.appliedSha256 || "")) fail("invalid_rollback_manifest");
     if (!approvedPaths.has(file.path)) fail("patch_path_not_allowlisted");
@@ -475,17 +505,26 @@ function rollback(options, root, inventory) {
     validMetadata(file.originalMetadata, "invalid_rollback_manifest");
     const original = readFileSync(backupFile(backupDir, file.backupName), "utf8");
     const target = targetSnapshot(root, file.path);
-    if (sha256(original) !== file.originalSha256 || target.sha256 !== file.appliedSha256) fail("rollback_checksum_mismatch");
+    if (sha256(original) !== file.originalSha256) fail("rollback_checksum_mismatch");
     const rollbackPolicy = rollbackPolicyForTransition(original, target.text);
     if (manifest.version === 2 && file.rollbackPolicy !== rollbackPolicy) fail("invalid_rollback_manifest");
-    changes.push({ file, original, target, rollbackPolicy });
+    const targetState = target.sha256 === file.appliedSha256
+      ? "applied"
+      : rollbackPolicy === "restore_original" && target.sha256 === file.originalSha256
+        ? "original"
+        : fail("rollback_checksum_mismatch");
+    const expectedMetadata = validMetadata(file.originalMetadata, "invalid_rollback_manifest");
+    if ((target.mode & 0o7777) !== expectedMetadata.mode || target.uid !== expectedMetadata.uid || target.gid !== expectedMetadata.gid) fail("rollback_checksum_mismatch");
+    fullyApplied &&= targetState === "applied";
+    changes.push({ file, original, target, targetState, rollbackPolicy });
   }
-  audit(root, inventory);
+  if (fullyApplied) audit(root, inventory);
+  else auditRecoveryBoundary(root, inventory);
   for (const change of changes) verifyTargetSnapshot(root, change.file.path, change.target);
   const written = [];
   try {
     for (const change of changes) {
-      if (change.rollbackPolicy === "retain_applied") continue;
+      if (change.rollbackPolicy === "retain_applied" || change.targetState === "original") continue;
       atomicWriteTarget(root, change.file.path, change.original, change.target, change.file.originalMetadata);
       written.push(change);
     }
