@@ -71,7 +71,7 @@ async function collectHealth(db, input = {}) {
   const now = input.now instanceof Date ? input.now : new Date();
   // Actionable alert predicates deliberately have no historical window. Each
   // is a direct indexed query so an old blocked row cannot become invisible.
-  const [retryResult, expiredLeaseResult, permanentLeaseResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
+  const [retryResult, expiredLeaseResult, permanentLeaseResult, unrecoverableInFlightResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
     () => readDb.query(
       `SELECT count(*)::int AS overdue_count,
               COALESCE(max(extract(epoch FROM now()-COALESCE(next_retry_at,to_timestamp(0)))),0)::bigint AS oldest_age_seconds
@@ -89,6 +89,10 @@ async function collectHealth(db, input = {}) {
     ),
     () => readDb.query(
       `SELECT count(*)::int AS stale_count FROM mobile_push_attempts
+        WHERE status IN ('reserved','retry_due') AND send_started_at IS NOT NULL AND lease_token IS NULL`,
+    ),
+    () => readDb.query(
+      `SELECT count(*)::int AS stale_count FROM mobile_push_attempts
         WHERE status='reserved' AND send_started_at IS NULL AND lease_token IS NULL
           AND COALESCE(next_retry_at,to_timestamp(0))<=now()
           AND COALESCE(updated_at,created_at)<=now()-($1::text||' seconds')::interval`,
@@ -99,6 +103,7 @@ async function collectHealth(db, input = {}) {
               COALESCE(max(extract(epoch FROM now()-COALESCE(accepted_at,created_at))),0)::bigint AS oldest_age_seconds
          FROM mobile_push_attempts WHERE provider='expo' AND status='provider_accepted'
           AND provider_ticket_id IS NOT NULL AND provider_receipt_checked_at IS NULL
+          AND (lease_token IS NULL OR lease_expires_at<=now())
           AND (accepted_at IS NULL OR (COALESCE(next_receipt_at,accepted_at,created_at)<=now()
             AND accepted_at<=now()-($1::text||' seconds')::interval))`,
       [String(config.thresholds.receiptStallSeconds)],
@@ -143,6 +148,7 @@ async function collectHealth(db, input = {}) {
   const retry = retryResult.rows[0] || {};
   const expiredLease = expiredLeaseResult.rows[0] || {};
   const permanentLease = permanentLeaseResult.rows[0] || {};
+  const unrecoverableInFlight = unrecoverableInFlightResult.rows[0] || {};
   const reserved = reservedResult.rows[0] || {};
   const receipt = receiptResult.rows[0] || {};
   const attemptReadiness = attemptReadinessResult.rows[0] || {};
@@ -155,7 +161,7 @@ async function collectHealth(db, input = {}) {
     .filter(([provider, count]) => count > 0 && input.providerReady?.[provider] !== true).length;
   const metrics = {
     retry: { overdueCount: numeric(retry.overdue_count), oldestAgeSeconds: numeric(retry.oldest_age_seconds) },
-    leases: { staleCount: numeric(expiredLease.stale_count) + numeric(permanentLease.stale_count) + numeric(reserved.stale_count) },
+    leases: { staleCount: numeric(expiredLease.stale_count) + numeric(permanentLease.stale_count) + numeric(unrecoverableInFlight.stale_count) + numeric(reserved.stale_count) },
     receipts: { stalledCount: numeric(receipt.stalled_count), oldestAgeSeconds: numeric(receipt.oldest_age_seconds) },
     readiness: {
       tokenMismatchCount: numeric(attemptReadiness.token_mismatch_count), credentialMismatchCount,
@@ -203,7 +209,9 @@ async function reconcile(db, input = {}) {
                 (a.provider='expo' AND a.status='provider_accepted' AND a.provider_ticket_id IS NULL)
                 OR (a.provider='fcm' AND a.provider_ticket_id IS NOT NULL)
                 OR (a.status='retry_due' AND a.next_retry_at IS NULL)
-                OR (a.status IN ('reserved','retry_due') AND a.lease_token IS NOT NULL AND a.lease_expires_at IS NULL)
+                OR (a.lease_token IS NOT NULL AND a.lease_expires_at IS NULL)
+                OR (a.status IN ('reserved','retry_due') AND a.send_started_at IS NOT NULL AND a.lease_token IS NULL)
+                OR (a.status IN ('dead','delivered') AND (a.lease_token IS NOT NULL OR a.lease_expires_at IS NOT NULL))
                 OR (a.status='provider_accepted' AND a.accepted_at IS NULL)
                 OR (a.status='delivered' AND (a.delivered_at IS NULL OR a.accepted_at IS NULL))
               )::int AS impossible_state

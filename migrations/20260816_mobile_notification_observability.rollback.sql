@@ -8,6 +8,8 @@ DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_receipt_stalled;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_receipt_missing_accepted;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_lease_expired;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_lease_missing_expiry;
+DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_unrecoverable_inflight;
+DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_terminal_lease;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_status_token;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_updated;
 DROP INDEX IF EXISTS ix_mobile_push_attempts_observability_parent_status;

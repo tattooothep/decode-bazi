@@ -89,6 +89,18 @@ try {
       RETURNING id
     ) INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,status,lease_token,next_retry_at)
       SELECT id,gen_random_uuid(),'expo','{}',repeat('e',64),'reserved','permanent',now() FROM log;
+    WITH log AS (
+      INSERT INTO mobile_push_log(user_id,yam_key,kind,title,body,payload,delivery_status)
+      VALUES ('00000000-0000-4000-8000-000000000001','observability-null-token-inflight','daily','safe','safe','{}','pending')
+      RETURNING id
+    ) INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,status,next_retry_at,send_started_at,lease_expires_at)
+      SELECT id,gen_random_uuid(),'expo','{}',repeat('f',64),'retry_due',now()-interval '1 second',now()-interval '1 hour',now()-interval '1 second' FROM log;
+    WITH log AS (
+      INSERT INTO mobile_push_log(user_id,yam_key,kind,title,body,payload,delivery_status)
+      VALUES ('00000000-0000-4000-8000-000000000001','observability-terminal-lease','daily','safe','safe','{}','failed')
+      RETURNING id
+    ) INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,status,lease_expires_at)
+      SELECT id,gen_random_uuid(),'expo','{}',repeat('0',64),'dead',now()+interval '1 hour' FROM log;
     ANALYZE mobile_push_attempts;
   `);
 
@@ -99,6 +111,8 @@ try {
     "ix_mobile_push_attempts_observability_receipt_missing_accepted",
     "ix_mobile_push_attempts_observability_lease_expired",
     "ix_mobile_push_attempts_observability_lease_missing_expiry",
+    "ix_mobile_push_attempts_observability_unrecoverable_inflight",
+    "ix_mobile_push_attempts_observability_terminal_lease",
     "ix_mobile_push_attempts_observability_status_token",
     "ix_mobile_push_attempts_observability_updated",
     "ix_mobile_push_attempts_observability_parent_status",
@@ -110,6 +124,8 @@ try {
   assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE provider='expo' AND status='provider_accepted' AND provider_ticket_id IS NOT NULL AND provider_receipt_checked_at IS NULL AND accepted_at IS NULL`), /ix_mobile_push_attempts_observability_receipt_missing_accepted/u, "missing provider acceptance timestamp has an index plan");
   assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE lease_token IS NOT NULL AND lease_expires_at<=now()`), /ix_mobile_push_attempts_observability_lease_expired/u, "expired lease predicate has an index plan");
   assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE lease_token IS NOT NULL AND lease_expires_at IS NULL`), /ix_mobile_push_attempts_observability_lease_missing_expiry/u, "permanent lease predicate has an index plan");
+  assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE status IN ('reserved','retry_due') AND send_started_at IS NOT NULL AND lease_token IS NULL`), /ix_mobile_push_attempts_observability_unrecoverable_inflight/u, "null-token in-flight recovery predicate has an index plan");
+  assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE status IN ('dead','delivered') AND (lease_token IS NOT NULL OR lease_expires_at IS NOT NULL)`), /ix_mobile_push_attempts_observability_terminal_lease/u, "terminal retained-lease predicate has an index plan");
   assert.match(plan(`SELECT id FROM mobile_push_attempts WHERE updated_at>=now()-interval '168 hours'`), /ix_mobile_push_attempts_observability_updated/u, "bounded historical metrics predicate has an index plan");
 
   psql(database, rollback);

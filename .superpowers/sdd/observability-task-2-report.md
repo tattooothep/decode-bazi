@@ -125,3 +125,20 @@ The all-current expired-lease health predicate also needs an explicit bounded ac
 ### Final source-only verification
 
 After the expired-lease index change, the complete required suite passed again: observability behavior; CLI, preflight, argument rejection, and `systemd-analyze verify`; authenticated endpoint; observability forward/rollback/reapply plus all `EXPLAIN` assertions; integrity migration; all 58 retry-worker checks; Task 3 privacy scan; CJS syntax checks; TypeScript no-emit; and `git diff --check`. The temporary ignored dependency symlink was removed immediately after the run. No live service, deployment file, database, provider, credential, or push operation was invoked.
+
+## Third reviewer remediation addendum
+
+### Worker lease-state matrix audit
+
+The audit was performed against the actual current-schema predicates in `claimOne`, `recoverUncertainOne`, and `claimReceiptOne`. Claim and receipt can proceed with a NULL token regardless of expiry, or a non-NULL token only after expiry; recovery first selects only a started attempt with expired lease, then requires token equality to update it. That second equality means an expired started attempt whose token is NULL is selected but can never be recovered. A started row with both token and expiry NULL is likewise unrecoverable; a NULL-token future expiry has no real owner and will fail recovery when it expires. Only a non-NULL future expiry is a legitimate active lease.
+
+### Red/green evidence
+
+1. RED: the table-driven disposable worker matrix (three worker paths times all six NULL/past/future expiry and NULL/present-token combinations) failed health with `6 !== 9`; health counted expired/permanent leases but not the three NULL-token in-flight recovery states.
+2. GREEN: health adds the all-current `reserved`/`retry_due`, `send_started_at IS NOT NULL`, `lease_token IS NULL` unhealthy predicate. Receipt health now also requires the receipt worker's exact reclaimable lease condition, so a legitimate non-NULL future receipt lease is not called stalled.
+3. RED: the migration test failed because the new unrecoverable-in-flight access path was absent.
+4. GREEN: the migration adds and rollback removes partial indexes for unrecoverable in-flight rows and terminal rows retaining either lease field; disposable forward/rollback/reapply with `EXPLAIN` validates each exact predicate.
+5. The matrix directly proves the recovery hole: a disposable `retry_due` started row with NULL token and expired lease matches the worker's candidate SELECT, has zero rows for the subsequent token-equality SELECT, and `recoverUncertainOne` returns `null` without mutation. Health and reconciliation both surface it as an aggregate failure.
+6. Reconciliation now treats non-NULL token/NULL expiry as impossible regardless of status (including a leased Expo receipt), all NULL-token started open rows as impossible, and delivered/dead rows retaining either lease field as impossible. The terminal matrix keeps no-lease terminal rows valid and verifies legitimate non-NULL future active leases are not flagged.
+
+No production database, filesystem path, release, service/timer state, credential, or provider was changed; no push was sent. The disposable test database and role remain cleaned in `finally` blocks.

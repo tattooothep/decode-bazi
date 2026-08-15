@@ -122,6 +122,102 @@ try {
   assert.equal(reconciliation.counts.orphanReceipt, 0, "reconciliation reports a distinct aggregate for orphan receipt artifacts");
   assert.equal(JSON.stringify(reconciliation).includes("00000000-0000-4000-8000-000000000001"), false, "reconciliation is aggregate-only and never exposes user IDs");
 
+  // Each worker has a different lease predicate. Exercise all nullable token /
+  // expiry combinations against its current-schema state rather than assuming
+  // a lease shape that the worker cannot actually recover.
+  const leaseStates = [
+    { label: "no-lease", leaseToken: null, expiry: "none" },
+    { label: "orphan-expired", leaseToken: null, expiry: "past" },
+    { label: "orphan-future", leaseToken: null, expiry: "future" },
+    { label: "permanent", leaseToken: "present", expiry: "none" },
+    { label: "expired", leaseToken: "present", expiry: "past" },
+    { label: "active", leaseToken: "present", expiry: "future" },
+  ] as const;
+  const workerStates = [
+    { name: "claim", status: "retry_due", deliveryStatus: "pending", sendStarted: false, provider: "expo" },
+    { name: "recover", status: "retry_due", deliveryStatus: "pending", sendStarted: true, provider: "expo" },
+    { name: "receipt", status: "provider_accepted", deliveryStatus: "accepted", sendStarted: false, provider: "expo" },
+  ] as const;
+  const matrixNow = Date.now();
+  const past = new Date(matrixNow - 7_200_000).toISOString();
+  const future = new Date(matrixNow + 7_200_000).toISOString();
+  let nullTokenExpiredRecoveryId = "";
+  for (const workerState of workerStates) {
+    for (const leaseState of leaseStates) {
+      const logId = crypto.randomUUID();
+      const attemptId = crypto.randomUUID();
+      const leaseExpiresAt = leaseState.expiry === "past" ? past : leaseState.expiry === "future" ? future : null;
+      const leaseToken = leaseState.leaseToken === "present" ? `lease-${workerState.name}-${leaseState.label}` : null;
+      await pool.query(
+        `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at)
+         VALUES($1,$2,$3,'lease-matrix',$4,now())`,
+        [logId, "00000000-0000-4000-8000-000000000001", `lease-matrix-${workerState.name}-${leaseState.label}`, workerState.deliveryStatus],
+      );
+      await pool.query(
+        `INSERT INTO mobile_push_attempts
+           (id,push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,
+            provider_ticket_id,next_retry_at,next_receipt_at,accepted_at,send_started_at,lease_token,lease_expires_at,created_at,updated_at)
+         VALUES($1,$2,$3,$4,$5,'{}',repeat('9',64),$6,$7,$8,$9,$10,$11,$12,$13,$14,$14)`,
+        [attemptId, logId, "10000000-0000-4000-8000-000000000001", crypto.randomUUID(), workerState.provider,
+          workerState.status, workerState.name === "receipt" ? `ticket-${leaseState.label}` : null,
+          workerState.name === "receipt" ? null : past, workerState.name === "receipt" ? past : null,
+          workerState.name === "receipt" ? past : null, workerState.sendStarted ? past : null, leaseToken, leaseExpiresAt, past],
+      );
+      if (workerState.name === "recover" && leaseState.label === "orphan-expired") nullTokenExpiredRecoveryId = attemptId;
+    }
+  }
+  assert.notEqual(nullTokenExpiredRecoveryId, "", "matrix contains the null-token expired recovery fixture");
+  const recoveryCandidate = await pool.query(
+    `SELECT id FROM mobile_push_attempts
+      WHERE id=$1 AND status IN ('reserved','retry_due') AND send_started_at IS NOT NULL AND lease_expires_at<=now()`,
+    [nullTokenExpiredRecoveryId],
+  );
+  const recoveryCurrentMatch = await pool.query(
+    `SELECT id FROM mobile_push_attempts
+      WHERE id=$1 AND lease_token=$2 AND status IN ('reserved','retry_due') AND send_started_at IS NOT NULL AND lease_expires_at<=now()`,
+    [nullTokenExpiredRecoveryId, null],
+  );
+  assert.equal(recoveryCandidate.rowCount, 1, "the null-token expired row is selected by recoverUncertainOne's candidate predicate");
+  assert.equal(recoveryCurrentMatch.rowCount, 0, "the same row has no recoverUncertainOne current-row lease-token match");
+  const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+  assert.equal(await delivery.recoverUncertainOne(pool, { attemptIds: [nullTokenExpiredRecoveryId] }), null, "worker recovery leaves the null-token candidate permanently stuck");
+
+  const matrixHealth = await observability.collectHealth(pool, {
+    lookbackHours: 24,
+    thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1 },
+    heartbeat: { workerAt: new Date(matrixNow - 10_000).toISOString(), schedulerAt: new Date(matrixNow).toISOString() },
+    providerReady: { fcm: false, expo: true },
+  });
+  assert.equal(matrixHealth.metrics.retry.overdueCount - report.metrics.retry.overdueCount, 4, "claimOne's due retry lease matrix counts every reclaimable due retry but not active/permanent leases");
+  assert.equal(matrixHealth.metrics.leases.staleCount - report.metrics.leases.staleCount, 9, "health counts expired/permanent leases and all unrecoverable null-token in-flight combinations");
+  assert.equal(matrixHealth.metrics.receipts.stalledCount - report.metrics.receipts.stalledCount, 4, "receipt health counts only currently claimable stalled receipts and not an active future receipt lease");
+  const matrixReconciliation = await observability.reconcile(pool);
+  assert.equal(matrixReconciliation.counts.impossibleState - reconciliation.counts.impossibleState, 6, "reconciliation flags permanent leases and every null-token in-flight recovery combination without flagging recoverable/active leases");
+
+  const terminalLeaseStates = leaseStates.filter((state) => state.label !== "no-lease");
+  for (const status of ["dead", "delivered"] as const) {
+    for (const leaseState of [...leaseStates]) {
+      const logId = crypto.randomUUID();
+      const leaseExpiresAt = leaseState.expiry === "past" ? past : leaseState.expiry === "future" ? future : null;
+      const leaseToken = leaseState.leaseToken === "present" ? `terminal-${status}-${leaseState.label}` : null;
+      await pool.query(
+        `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at)
+         VALUES($1,$2,$3,'terminal-lease',$4,now())`,
+        [logId, "00000000-0000-4000-8000-000000000001", `terminal-${status}-${leaseState.label}`, status === "dead" ? "failed" : "delivered"],
+      );
+      await pool.query(
+        `INSERT INTO mobile_push_attempts
+           (id,push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,
+            accepted_at,delivered_at,send_started_at,lease_token,lease_expires_at,created_at,updated_at)
+         VALUES($1,$2,$3,$4,'fcm','{}',repeat('8',64),$5,$6,$7,$6,$8,$9,$6,$6)`,
+        [crypto.randomUUID(), logId, "10000000-0000-4000-8000-000000000001", crypto.randomUUID(), status,
+          past, status === "delivered" ? past : null, leaseToken, leaseExpiresAt],
+      );
+    }
+  }
+  const terminalReconciliation = await observability.reconcile(pool);
+  assert.equal(terminalReconciliation.counts.impossibleState - matrixReconciliation.counts.impossibleState, terminalLeaseStates.length * 2, "dead or delivered rows retaining either lease field are impossible while no-lease terminals remain valid");
+
   await pool.query(`UPDATE mobile_push_attempts SET status='dead',updated_at=now() WHERE id='40000000-0000-4000-8000-000000000001'`);
   const inventoryReadiness = await observability.collectHealth(pool, {
     lookbackHours: 24, heartbeat: { workerAt: new Date().toISOString() }, providerReady: { fcm: false, expo: true },

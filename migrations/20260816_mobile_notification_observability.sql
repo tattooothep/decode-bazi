@@ -29,6 +29,14 @@ CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_observability_lease_missing_e
   ON mobile_push_attempts(status,id)
   WHERE lease_token IS NOT NULL AND lease_expires_at IS NULL;
 
+CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_observability_unrecoverable_inflight
+  ON mobile_push_attempts(status,id)
+  WHERE status IN ('reserved','retry_due') AND send_started_at IS NOT NULL AND lease_token IS NULL;
+
+CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_observability_terminal_lease
+  ON mobile_push_attempts(status,id)
+  WHERE status IN ('dead','delivered') AND (lease_token IS NOT NULL OR lease_expires_at IS NOT NULL);
+
 CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_observability_status_token
   ON mobile_push_attempts(status,token_id)
   WHERE status IN ('reserved','retry_due');
