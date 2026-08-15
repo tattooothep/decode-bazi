@@ -357,7 +357,7 @@ function writeTargetOnce(root, relativePath, text, before, metadata) {
   return target;
 }
 
-function atomicWriteTarget(root, relativePath, text, before, metadata = metadataFromSnapshot(before)) {
+function atomicWriteTarget(root, relativePath, text, before, metadata = metadataFromSnapshot(before), postWriteRecovery = "restore_before") {
   let renamed = false;
   try {
     writeTargetOnce(root, relativePath, text, before, metadata);
@@ -368,11 +368,14 @@ function atomicWriteTarget(root, relativePath, text, before, metadata = metadata
       try {
         const current = targetSnapshot(root, relativePath);
         if (current.sha256 !== sha256(text)) fail("target_state_changed_before_write");
-        writeTargetOnce(root, relativePath, before.text, current, metadataFromSnapshot(before));
-        verifyWrittenTarget(root, relativePath, before.text, metadataFromSnapshot(before));
+        const recoveryText = postWriteRecovery === "retain_written" ? text : before.text;
+        const recoveryMetadata = postWriteRecovery === "retain_written" ? metadata : metadataFromSnapshot(before);
+        writeTargetOnce(root, relativePath, recoveryText, current, recoveryMetadata);
+        verifyWrittenTarget(root, relativePath, recoveryText, recoveryMetadata);
       } catch {
         fail("target_metadata_not_preserved");
       }
+      if (postWriteRecovery === "retain_written") return;
     }
     throw error;
   }
@@ -443,7 +446,10 @@ function apply(options, root, inventory) {
   const written = [];
   try {
     for (const [path, change] of changes) {
-      atomicWriteTarget(root, path, change.replacement, change.before);
+      const postWriteRecovery = rollbackPolicyForTransition(change.before.text, change.replacement) === "retain_applied"
+        ? "retain_written"
+        : "restore_before";
+      atomicWriteTarget(root, path, change.replacement, change.before, metadataFromSnapshot(change.before), postWriteRecovery);
       written.push({ path, change });
     }
     audit(root, inventory);
@@ -486,6 +492,21 @@ function joinPath(...parts) {
   return resolve(...parts);
 }
 
+function manifestAppliedText(inventory, file, original) {
+  const patches = (inventory.patches || []).filter((patch) => patch?.path === file.path);
+  if (patches.length !== 1) fail("invalid_rollback_manifest");
+  const [patch] = patches;
+  if (!/^[a-f0-9]{64}$/u.test(patch.expectedSha256 || "") || patch.expectedSha256 !== file.originalSha256 || !Array.isArray(patch.replacements) || patch.replacements.length === 0) fail("invalid_rollback_manifest");
+  let applied = original;
+  for (const edit of patch.replacements) {
+    if (!edit || typeof edit.find !== "string" || !edit.find || typeof edit.replace !== "string") fail("invalid_rollback_manifest");
+    if (applied.split(edit.find).length - 1 !== 1) fail("invalid_rollback_manifest");
+    applied = applied.replace(edit.find, edit.replace);
+  }
+  if (sha256(applied) !== file.appliedSha256) fail("invalid_rollback_manifest");
+  return applied;
+}
+
 function rollback(options, root, inventory) {
   if (options.confirm !== CONFIRM_ROLLBACK) fail("rollback_confirmation_required");
   const backupDir = existingBackupDir(root, options.backupDir);
@@ -506,7 +527,8 @@ function rollback(options, root, inventory) {
     const original = readFileSync(backupFile(backupDir, file.backupName), "utf8");
     const target = targetSnapshot(root, file.path);
     if (sha256(original) !== file.originalSha256) fail("rollback_checksum_mismatch");
-    const rollbackPolicy = rollbackPolicyForTransition(original, target.text);
+    const applied = manifestAppliedText(inventory, file, original);
+    const rollbackPolicy = rollbackPolicyForTransition(original, applied);
     if (manifest.version === 2 && file.rollbackPolicy !== rollbackPolicy) fail("invalid_rollback_manifest");
     const targetState = target.sha256 === file.appliedSha256
       ? "applied"
@@ -516,10 +538,10 @@ function rollback(options, root, inventory) {
     const expectedMetadata = validMetadata(file.originalMetadata, "invalid_rollback_manifest");
     if ((target.mode & 0o7777) !== expectedMetadata.mode || target.uid !== expectedMetadata.uid || target.gid !== expectedMetadata.gid) fail("rollback_checksum_mismatch");
     fullyApplied &&= targetState === "applied";
-    changes.push({ file, original, target, targetState, rollbackPolicy });
+    changes.push({ file, original, applied, target, targetState, rollbackPolicy });
   }
   if (fullyApplied) audit(root, inventory);
-  else auditRecoveryBoundary(root, inventory);
+  else audit(root, inventory, new Map(changes.map((change) => [change.file.path, change.applied])));
   for (const change of changes) verifyTargetSnapshot(root, change.file.path, change.target);
   const written = [];
   try {

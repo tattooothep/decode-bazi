@@ -289,3 +289,9 @@ artifact signatures are also `APPROVE`.
   to originals. The fixed selective-failure code blocks reload, and guarded
   rollback accepts that exact checksum-verified recovery state without ever
   writing the VAPID-bearing backup.
+- The atomic file primitive also receives the credential policy. A post-rename
+  VAPID metadata-verification failure may repair only the safe replacement and
+  reviewed metadata, never the exposed original. Selective recovery reconstructs
+  and fully audits the reviewed applied candidate while requiring every live
+  target to match its permitted manifest state, so original pre-denial proxy
+  bytes are recoverable but drift, symlinks, or credential rollback are not.

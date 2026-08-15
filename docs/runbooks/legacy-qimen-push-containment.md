@@ -100,7 +100,10 @@ post-write validation fails. Compensation is policy-aware: a successfully
 written VAPID transition stays at its verified environment-only applied bytes
 and metadata, while already-written non-VAPID targets return to their original
 bytes and metadata. This prevents a later target failure from reintroducing an
-exposed credential.
+exposed credential. The atomic target primitive receives this policy too: if a
+post-rename content/metadata check fails on a VAPID target, it can repair only
+the environment-only replacement and reviewed metadata; it has no path that
+writes the credential-bearing original.
 
 `LEGACY_QIMEN_CONTAINMENT_FAILED:apply_failed_rolled_back` means every target
 matches its pre-apply bytes and metadata. `apply_failed_safe_selective` means one
@@ -147,11 +150,16 @@ so an older manifest cannot bypass this rule.
 
 For recovery from `apply_failed_safe_selective`, rollback also accepts a
 non-VAPID target that already matches its manifest original checksum and
-metadata. It still requires exact proxy denials, environment-only VAPID
-dataflow, and required environment declarations before proceeding; a
-VAPID-bearing target is accepted only at the applied checksum. Thus the command
-can verify and complete recovery without ever writing the credential-bearing
-backup.
+metadata, including an original proxy file that predates the denial patch. It
+reconstructs every reviewed applied candidate from the manifest backups and
+exact inventory replacements, verifies the applied hashes, and runs the full
+containment audit against that candidate before proceeding. Every live manifest
+target must independently equal its permitted original/applied checksum and
+metadata; a VAPID-bearing target is accepted only at the applied checksum.
+Arbitrary drift, a symlink, an unreviewed replacement, or credential-bearing
+live content therefore fails closed. This lets recovery verify the exact
+selective state without writing either the proxy candidate or the
+credential-bearing backup.
 
 ```bash
 node scripts/ops/contain-legacy-qimen-push.mjs --rollback \

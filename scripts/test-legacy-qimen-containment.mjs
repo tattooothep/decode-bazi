@@ -126,6 +126,35 @@ function invokeWithExternalTargetWriteFailure(args, target) {
   });
 }
 
+function invokeWithExternalPostRenameMetadataMutation(args, target) {
+  const wrapper = join(temp, "external-post-rename-metadata-mutation.cjs");
+  writeFileSync(wrapper, [
+    "const fs = require('node:fs');",
+    "const path = require('node:path');",
+    "const { syncBuiltinESMExports } = require('node:module');",
+    "const originalRename = fs.renameSync;",
+    "let mutated = false;",
+    "fs.renameSync = function legacyContainmentMetadataMutation(from, to) {",
+    "  originalRename(from, to);",
+    "  if (!mutated && path.resolve(to) === path.resolve(process.env.CONTAINMENT_METADATA_TARGET)) {",
+    "    mutated = true;",
+    "    fs.chmodSync(to, 0o777);",
+    "  }",
+    "};",
+    "syncBuiltinESMExports();",
+    "",
+  ].join("\n"), "utf8");
+  return spawnSync(process.execPath, ["--require", wrapper, tool, ...args], {
+    cwd: root,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      NO_COLOR: "1",
+      CONTAINMENT_METADATA_TARGET: target,
+    },
+  });
+}
+
 function check(condition, message) {
   assert.equal(condition, true, message);
   checks += 1;
@@ -134,6 +163,10 @@ function check(condition, message) {
 const routeConfig = [
   "location = /push/test { return 404; }",
   "location = /push/unsubscribe { return 404; }",
+  "location / { proxy_pass http://127.0.0.1:4090; }",
+  "",
+].join("\n");
+const unsafeRouteConfig = [
   "location / { proxy_pass http://127.0.0.1:4090; }",
   "",
 ].join("\n");
@@ -295,13 +328,19 @@ try {
   write("src/push-routes.js", unsafeRoutes);
   write("cron/qimen.cron", unsafeCron);
   write("src/vapid.js", exposedVapidOriginal);
+  write("nginx/qimen.conf", unsafeRouteConfig);
   inventory.sourceFiles = ["src/push-routes.js", "src/vapid.js"];
   const vapidPatch = {
     path: "src/vapid.js",
     expectedSha256: sha256(exposedVapidOriginal),
     replacements: [{ find: exposedVapidOriginal, replace: safeVapid }],
   };
-  inventory.patches = [vapidPatch, ...inventory.patches];
+  const nginxPatch = {
+    path: "nginx/qimen.conf",
+    expectedSha256: sha256(unsafeRouteConfig),
+    replacements: [{ find: unsafeRouteConfig, replace: routeConfig }],
+  };
+  inventory.patches = [vapidPatch, nginxPatch, ...inventory.patches];
   write("legacy-qimen-inventory.json", `${JSON.stringify(inventory, null, 2)}\n`);
   const piiPath = join(temp, "reviewer@example.test");
   mkdirSync(piiPath);
@@ -356,6 +395,22 @@ try {
     gid: lstatSync(vapidMetadataTarget).gid,
   };
 
+  const metadataRecoveryBackupDir = join(temp, "metadata-recovery-backups");
+  const metadataRecoveryApply = invokeWithExternalPostRenameMetadataMutation([
+    "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--approvals", join(temp, "approvals.txt"),
+    "--backup-dir", metadataRecoveryBackupDir,
+  ], vapidMetadataTarget);
+  check(metadataRecoveryApply.status === 0, "post-rename VAPID metadata failure is safely repaired without restoring exposed bytes");
+  check(readFileSync(vapidMetadataTarget, "utf8") === safeVapid, "inner atomic recovery retains environment-only VAPID bytes");
+  check(!readFileSync(vapidMetadataTarget, "utf8").includes(exposedVapidMarker), "inner atomic recovery never reintroduces exposed VAPID material");
+  const recoveredVapidMetadata = lstatSync(vapidMetadataTarget);
+  check((recoveredVapidMetadata.mode & 0o7777) === expectedVapidMetadata.mode && recoveredVapidMetadata.uid === expectedVapidMetadata.uid && recoveredVapidMetadata.gid === expectedVapidMetadata.gid, "inner atomic recovery restores reviewed VAPID mode and ownership");
+  write("src/vapid.js", exposedVapidOriginal);
+  write("nginx/qimen.conf", unsafeRouteConfig);
+  write("src/push-routes.js", unsafeRoutes);
+  write("cron/qimen.cron", unsafeCron);
+
   const selectiveApplyBackupDir = join(temp, "selective-apply-backups");
   const selectiveApplyFailure = invokeWithExternalTargetWriteFailure([
     "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
@@ -369,6 +424,7 @@ try {
   const selectiveVapidMetadata = lstatSync(vapidMetadataTarget);
   check((selectiveVapidMetadata.mode & 0o7777) === expectedVapidMetadata.mode && selectiveVapidMetadata.uid === expectedVapidMetadata.uid && selectiveVapidMetadata.gid === expectedVapidMetadata.gid, "safe-selective apply failure retains VAPID target mode and ownership");
   check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes, "apply compensation restores a written non-sensitive route source to original bytes");
+  check(readFileSync(join(temp, "nginx/qimen.conf"), "utf8") === unsafeRouteConfig, "apply compensation restores the written non-sensitive proxy route to original bytes");
   check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "failed later apply target remains at original bytes");
   const selectiveApplyMetadata = lstatSync(metadataTarget);
   check((selectiveApplyMetadata.mode & 0o7777) === expectedMetadata.mode && selectiveApplyMetadata.uid === expectedMetadata.uid && selectiveApplyMetadata.gid === expectedMetadata.gid, "apply compensation restores non-sensitive target mode and ownership");
@@ -376,13 +432,46 @@ try {
   check(!selectiveApplyManifestText.includes(exposedVapidMarker), "recoverable partial-apply manifest contains no VAPID material");
   const selectiveApplyManifest = JSON.parse(selectiveApplyManifestText);
   check(selectiveApplyManifest.files.find((file) => file.path === "src/vapid.js")?.rollbackPolicy === "retain_applied", "partial-apply manifest truthfully records retained VAPID state");
+
+  write("nginx/qimen.conf", "# arbitrary partial-state drift\n");
+  const driftedRecovery = invoke(
+    "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--backup-dir", selectiveApplyBackupDir,
+  );
+  check(driftedRecovery.status !== 0, "partial-apply recovery rejects arbitrary target drift");
+  check(readFileSync(vapidMetadataTarget, "utf8") === safeVapid, "rejected arbitrary drift never changes retained VAPID bytes");
+  write("nginx/qimen.conf", unsafeRouteConfig);
+
+  write("src/vapid.js", exposedVapidOriginal);
+  const credentialDriftRecovery = invoke(
+    "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--backup-dir", selectiveApplyBackupDir,
+  );
+  check(credentialDriftRecovery.status !== 0, "partial-apply recovery rejects credential-bearing target drift");
+  check(!`${credentialDriftRecovery.stdout}${credentialDriftRecovery.stderr}`.includes(exposedVapidMarker), "credential-drift recovery failure remains redacted");
+  write("src/vapid.js", safeVapid);
+
+  const nginxMetadata = lstatSync(join(temp, "nginx/qimen.conf"));
+  unlinkSync(join(temp, "nginx/qimen.conf"));
+  symlinkSync(outsideRoute, join(temp, "nginx/qimen.conf"), "file");
+  const symlinkedRecovery = invoke(
+    "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--backup-dir", selectiveApplyBackupDir,
+  );
+  check(symlinkedRecovery.status !== 0, "partial-apply recovery rejects a symlinked manifest target");
+  check(readFileSync(outsideRoute, "utf8") === outsideOriginal, "rejected partial-recovery symlink leaves its external target unchanged");
+  unlinkSync(join(temp, "nginx/qimen.conf"));
+  write("nginx/qimen.conf", unsafeRouteConfig);
+  chmodSync(join(temp, "nginx/qimen.conf"), nginxMetadata.mode & 0o7777);
+  chownSync(join(temp, "nginx/qimen.conf"), nginxMetadata.uid, nginxMetadata.gid);
+
   const selectiveRecovery = invoke(
     "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
     "--inventory", inventoryPath, "--backup-dir", selectiveApplyBackupDir,
   );
   check(selectiveRecovery.status === 0, "safe-selective partial apply remains recoverable through the guarded rollback command");
   check(selectiveRecovery.stdout.includes("LEGACY_QIMEN_CONTAINMENT_ROLLBACK_SAFE_SELECTIVE_OK"), "partial-apply recovery truthfully reports retained VAPID state");
-  check(readFileSync(join(temp, "src/vapid.js"), "utf8") === safeVapid && readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes && readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "partial-apply recovery preserves the coherent safe-selective state");
+  check(readFileSync(join(temp, "src/vapid.js"), "utf8") === safeVapid && readFileSync(join(temp, "nginx/qimen.conf"), "utf8") === unsafeRouteConfig && readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes && readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "partial-apply recovery accepts only the manifest-defined safe-selective state, including an original proxy route");
   write("src/vapid.js", exposedVapidOriginal);
 
   const apply = invoke(
@@ -437,6 +526,7 @@ try {
   check((rolledBackMetadata.mode & 0o7777) === expectedMetadata.mode && rolledBackMetadata.uid === expectedMetadata.uid && rolledBackMetadata.gid === expectedMetadata.gid, "rollback restores manifest-recorded target mode and ownership");
 
   write("unrelated/sentinel.txt", "do-not-change\n");
+  write("src/vapid.js", exposedVapidOriginal);
   inventory.patches.push({
     path: "unrelated/sentinel.txt",
     expectedSha256: sha256("do-not-change\n"),

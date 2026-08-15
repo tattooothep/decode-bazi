@@ -260,9 +260,10 @@
   the same dynamic safety decision.
 - Before writes, a normal rollback requires the entire inventory to pass the
   contained audit and checksum-validates every manifest target. The exact
-  safe-selective apply recovery state uses a narrower credential/proxy boundary
-  and requires every target to match either its permitted applied or original
-  checksum and metadata. If a later write fails, rollback compensates
+  safe-selective apply recovery state requires every target to match either its
+  permitted applied or original checksum and metadata, reconstructs the reviewed
+  applied candidate from backups plus inventory patches, and runs the full audit
+  against that candidate. If a later write fails, rollback compensates
   already-restored targets in reverse order and verifies all manifest targets
   against captured pre-rollback content plus mode/uid/gid. Successful
   compensation emits only `rollback_failed_compensated`; an incomplete
@@ -272,7 +273,7 @@
   consistently contained. A subsequent rollback using the same backup proves
   the manifest is recoverable while the exposed VAPID original remains skipped.
 - `node scripts/test-legacy-qimen-containment.mjs` ->
-  `LEGACY_QIMEN_CONTAINMENT_OK 89`.
+  `LEGACY_QIMEN_CONTAINMENT_OK 100`.
 - The runbook and integrity design now describe selective rollback, compensation,
   fixed result codes, legacy-manifest behavior, and the reload stop condition.
 
@@ -296,3 +297,27 @@
   already equal manifest originals, while VAPID targets must equal their applied
   checksums and pass canonical credential dataflow checks. It performs no unsafe
   credential restore and keeps the manifest reusable.
+
+### Second re-review remediation — atomic and proxy recovery boundaries
+
+- Reviewer reproduction changed VAPID target metadata after atomic rename. The
+  former inner catch restored `before.text` before the outer apply policy could
+  run, reintroducing the exposed credential. RED now injects that exact
+  post-rename mode mutation and requires a successful environment-only repair
+  with the reviewed mode/uid/gid.
+- The atomic primitive now receives `retain_written` explicitly for every VAPID
+  transition. Its post-rename recovery can rewrite only the safe replacement
+  and expected metadata; failure becomes a fixed stop condition and has no
+  sensitive path back to original bytes.
+- A second RED added the proxy denial as a reviewed patch whose original lacks
+  both exact denial locations, then injected the later cron failure. The former
+  partial-recovery audit rejected the honestly compensated original proxy even
+  though every live target matched its manifest state.
+- Partial recovery now reconstructs each applied file from the checksum-verified
+  backup and exact inventory edits, checks the manifest applied hash, and runs
+  the full containment audit against that reviewed candidate. Independently,
+  every live target must match the only policy-permitted original/applied bytes
+  and metadata, and every VAPID transition must be applied. Focused fixtures
+  prove original proxy recovery succeeds while arbitrary bytes, a symlink, and
+  credential-bearing drift all fail closed without changing external data or
+  emitting the credential marker.
