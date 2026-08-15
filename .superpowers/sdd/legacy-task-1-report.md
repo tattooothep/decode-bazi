@@ -38,6 +38,43 @@
   changed watcher.
 - `git diff --check` passed.
 
+## Second Reviewer Remediation — Path and Parser Hardening
+
+### RED evidence
+
+- `node scripts/test-legacy-qimen-containment.mjs` failed after the exact proxy
+  exploit was added: `commented proxy denial directives never satisfy endpoint
+  containment`. The former regular expression counted `# return 404` and
+  `# deny all` as effective directives.
+- The same RED test extension added exact fixtures for an intermediate symlink
+  escaping the audited root (including apply and external-file preservation),
+  optional-bracket and parenthesized VAPID environment fallbacks, and commented
+  location blocks. These fixtures were added before the path/parser changes.
+
+### GREEN evidence
+
+- `node scripts/test-legacy-qimen-containment.mjs` ->
+  `LEGACY_QIMEN_CONTAINMENT_OK 45`.
+  - Every configured target file is resolved component-by-component from a
+    non-symlink root; symlinked/non-directory components and realpath changes or
+    escapes fail closed during audit, apply, and rollback target access.
+  - Target writes revalidate the path immediately before temporary-file creation
+    and again before rename. Temporary files use exclusive no-follow creation.
+  - Backup/approval/inventory paths also reject symlinked components and backup
+    contents are read and written through checked regular files.
+  - Proxy denial detection strips comments, finds the balanced exact-endpoint
+    location block, and accepts only an uncommented terminating `return` or
+    `deny all` directive in that block.
+  - VAPID fallback analysis recognizes dot, optional, bracket, whitespace, and
+    parenthesized environment expressions; it still emits only fixed reason
+    codes.
+  - The outside-root symlink fixture fails audit and apply while its external
+    target stays byte-for-byte unchanged.
+- `node scripts/test-admin-notify-recipient-rbac.mjs` ->
+  `ADMIN_NOTIFY_RECIPIENT_RBAC_OK`.
+- Syntax checks for containment, watcher, and RBAC helper plus `git diff --check`
+  passed.
+
 ## Delivered source changes
 
 - `scripts/ops/contain-legacy-qimen-push.mjs`: default dry audit plus guarded

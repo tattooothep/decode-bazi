@@ -29,10 +29,11 @@ inventory JSON with:
 - for an apply, each exact target file checksum and a single reviewed textual
   replacement.
 
-The tool rejects path traversal, symlinks, missing files, unexpected checksums,
-missing VAPID environment declarations, non-denied legacy routes, enabled legacy
-cron entries, and literal VAPID private key material. The replacements must make
-the post-change audit pass before any file is written.
+The tool rejects path traversal, any symlink/non-directory component, realpath
+escape, missing files, unexpected checksums, missing VAPID environment
+declarations, non-denied legacy routes, enabled legacy cron entries, and literal
+VAPID private key material. Target paths are rechecked immediately around writes.
+The replacements must make the post-change audit pass before any file is written.
 
 ## Audit (default, read-only)
 

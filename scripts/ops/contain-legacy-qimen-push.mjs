@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { isAbsolute, relative, resolve } from "node:path";
+import { closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, join, parse, relative, resolve, sep } from "node:path";
 
 const CONFIRM_APPLY = "DISABLE_LEGACY_QIMEN_PUSH";
 const CONFIRM_ROLLBACK = "ROLLBACK_LEGACY_QIMEN_PUSH";
@@ -13,6 +13,7 @@ const SAFE_FAILURE_CODES = new Set([
   "invalid_mode", "invalid_patch", "invalid_patch_list", "invalid_replacement", "invalid_root",
   "invalid_rollback_manifest", "inventory_root_mismatch", "legacy_push_cron_enabled",
   "legacy_route_not_denied", "legacy_route_present", "missing_argument", "patch_path_not_allowlisted",
+  "path_component_not_directory", "path_component_symlink", "path_realpath_escape",
   "patches_required_for_apply", "replacement_not_exact", "required_file_missing", "required_file_not_regular",
   "rollback_checksum_mismatch", "rollback_confirmation_required", "rollback_manifest_missing",
   "root_and_inventory_required", "unexpected_target_checksum", "unknown_argument", "unsafe_inventory_path",
@@ -53,23 +54,56 @@ function isContained(root, candidate) {
 }
 
 function safeRelativePath(value) {
-  if (typeof value !== "string" || !value || isAbsolute(value) || value.split(/[\\/]/u).includes("..")) fail("unsafe_inventory_path");
+  if (typeof value !== "string" || !value || isAbsolute(value) || value.split(/[\\/]/u).some((part) => !part || part === "." || part === "..")) fail("unsafe_inventory_path");
   return value;
 }
 
+function secureAbsoluteDirectory(path, failureCode) {
+  const resolved = resolve(path);
+  const root = parse(resolved).root;
+  let current = root;
+  for (const component of relative(root, resolved).split(sep).filter(Boolean)) {
+    current = join(current, component);
+    if (!existsSync(current)) fail(failureCode);
+    const stat = lstatSync(current);
+    if (stat.isSymbolicLink()) fail("path_component_symlink");
+    if (!stat.isDirectory()) fail("path_component_not_directory");
+    if (realpathSync(current) !== current) fail("path_realpath_escape");
+  }
+  return resolved;
+}
+
+function secureAbsoluteFile(path, failureCode) {
+  const resolved = resolve(path);
+  secureAbsoluteDirectory(dirname(resolved), failureCode);
+  if (!existsSync(resolved)) fail(failureCode);
+  const stat = lstatSync(resolved);
+  if (stat.isSymbolicLink()) fail("path_component_symlink");
+  if (!stat.isFile()) fail(failureCode);
+  if (realpathSync(resolved) !== resolved) fail("path_realpath_escape");
+  return resolved;
+}
+
 function regularFile(root, relativePath) {
-  const target = resolve(root, safeRelativePath(relativePath));
-  if (!isContained(root, target) || !existsSync(target)) fail("required_file_missing");
-  const stat = lstatSync(target);
-  if (!stat.isFile() || stat.isSymbolicLink()) fail("required_file_not_regular");
-  return target;
+  secureAbsoluteDirectory(root, "invalid_root");
+  let current = root;
+  const components = safeRelativePath(relativePath).split(/[\\/]/u);
+  for (let index = 0; index < components.length; index += 1) {
+    current = join(current, components[index]);
+    if (!isContained(root, current) || !existsSync(current)) fail("required_file_missing");
+    const stat = lstatSync(current);
+    if (stat.isSymbolicLink()) fail("path_component_symlink");
+    if (index < components.length - 1 && !stat.isDirectory()) fail("path_component_not_directory");
+    if (index === components.length - 1 && !stat.isFile()) fail("required_file_not_regular");
+    const actual = realpathSync(current);
+    if (!isContained(root, actual) || actual !== current) fail("path_realpath_escape");
+  }
+  return current;
 }
 
 function loadInventory(options) {
-  const root = resolve(options.root);
-  if (!existsSync(root) || !lstatSync(root).isDirectory() || lstatSync(root).isSymbolicLink()) fail("invalid_root");
-  const inventoryPath = resolve(options.inventory);
-  if (!existsSync(inventoryPath) || !lstatSync(inventoryPath).isFile() || lstatSync(inventoryPath).isSymbolicLink()) fail("invalid_inventory");
+  const root = secureAbsoluteDirectory(options.root, "invalid_root");
+  const inventoryPath = secureAbsoluteFile(options.inventory, "invalid_inventory");
   let inventory;
   try { inventory = JSON.parse(readFileSync(inventoryPath, "utf8")); } catch { fail("invalid_inventory_json"); }
   if (!inventory || inventory.version !== 1 || inventory.root !== root) fail("inventory_root_mismatch");
@@ -88,9 +122,56 @@ function fileText(root, relativePath, overrides) {
   return overrides?.get(relativePath) ?? readFileSync(regularFile(root, relativePath), "utf8");
 }
 
-function containsDeniedRoute(text, route) {
+function stripNginxComments(text) {
+  let output = "";
+  let quote = null;
+  let escaped = false;
+  let inComment = false;
+  for (const character of text) {
+    if (inComment) {
+      if (character === "\n") { inComment = false; output += character; }
+      continue;
+    }
+    if (quote) {
+      output += character;
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === quote) quote = null;
+      continue;
+    }
+    if (character === "#") { inComment = true; continue; }
+    if (character === "\"" || character === "'") quote = character;
+    output += character;
+  }
+  return output;
+}
+
+function exactLocationBody(text, route) {
   const escaped = route.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-  return new RegExp(`location\\s*=\\s*${escaped}\\s*\\{[^}]*\\b(?:return\\s+(?:403|404|410)|deny\\s+all)`, "iu").test(text);
+  const config = stripNginxComments(text);
+  const match = new RegExp(`\\blocation\\s*=\\s*${escaped}\\s*\\{`, "iu").exec(config);
+  if (!match) return null;
+  let depth = 1;
+  for (let index = match.index + match[0].length; index < config.length; index += 1) {
+    if (config[index] === "{") depth += 1;
+    else if (config[index] === "}" && --depth === 0) return config.slice(match.index + match[0].length, index);
+  }
+  return null;
+}
+
+function containsDeniedRoute(text, route) {
+  const body = exactLocationBody(text, route);
+  return body !== null && /(?:^|[;\s])(?:return\s+(?:403|404|410)|deny\s+all)\s*;/iu.test(body);
+}
+
+function hasVapidEnvironmentFallback(text) {
+  const reference = /process\s*(?:\?\s*\.\s*|\.\s*)env\s*(?:(?:\?\s*\.\s*|\.\s*)VAPID_(?:PRIVATE|PUBLIC)_KEY|(?:\?\s*\.\s*)?\[\s*["'`]VAPID_(?:PRIVATE|PUBLIC)_KEY["'`]\s*\])/giu;
+  for (const match of text.matchAll(reference)) {
+    let index = match.index + match[0].length;
+    while (/[\s)]/u.test(text[index] || "")) index += 1;
+    if (text.startsWith("||", index) || text.startsWith("??", index)) return true;
+  }
+  return false;
 }
 
 function audit(root, inventory, overrides) {
@@ -103,7 +184,7 @@ function audit(root, inventory, overrides) {
     const text = fileText(root, path, overrides);
     if (/(?:VAPID_(?:PRIVATE|PUBLIC)_KEY|(?:vapid|private|public)(?:[_-]?key)?)\s*(?:=|:)\s*["'`][^"'`\r\n]+["'`]/iu.test(text)) fail("hardcoded_vapid_private_key");
     if (/setVapidDetails\s*\([^,]+,[^,]+,\s*["'`]/u.test(text)) fail("hardcoded_vapid_private_key");
-    if (/process\s*(?:\?\.|\.)\s*env\s*(?:(?:\?\.|\.)\s*VAPID_(?:PRIVATE|PUBLIC)_KEY|\[\s*["'`]VAPID_(?:PRIVATE|PUBLIC)_KEY["'`]\s*\])\s*(?:\|\||\?\?)/iu.test(text)) fail("hardcoded_vapid_private_key");
+    if (hasVapidEnvironmentFallback(text)) fail("hardcoded_vapid_private_key");
   }
   for (const path of [...inventory.sourceFiles, ...inventory.cronFiles]) {
     if (/["'`]\/push\/(?:test|unsubscribe)["'`]/u.test(fileText(root, path, overrides))) fail("legacy_route_present");
@@ -123,12 +204,9 @@ function audit(root, inventory, overrides) {
 }
 
 function approvalCount(path) {
-  if (!existsSync(path)) fail("invalid_approvals");
-  const stat = lstatSync(path);
-  if (!stat.isFile() || stat.isSymbolicLink()) fail("invalid_approvals");
   const reviewers = new Set();
   let contents;
-  try { contents = readFileSync(path, "utf8"); } catch { fail("invalid_approvals"); }
+  try { contents = readFileSync(secureAbsoluteFile(path, "invalid_approvals"), "utf8"); } catch { fail("invalid_approvals"); }
   for (const line of contents.split(/\r?\n/u)) {
     const match = line.match(/^([a-z0-9_-]{3,80})\s+APPROVE$/iu);
     if (match) reviewers.add(match[1].toLowerCase());
@@ -136,10 +214,48 @@ function approvalCount(path) {
   return reviewers.size;
 }
 
-function atomicWrite(path, text) {
-  const temporary = `${path}.legacy-containment-${process.pid}-${Date.now()}`;
-  writeFileSync(temporary, text, { encoding: "utf8", mode: 0o600 });
-  renameSync(temporary, path);
+function writeNewTemporary(path, text) {
+  const descriptor = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+  try { writeFileSync(descriptor, text, "utf8"); }
+  finally { closeSync(descriptor); }
+}
+
+function atomicWriteBackup(backupDir, name, text) {
+  const parent = name === "manifest.json" ? backupDir : join(backupDir, "files");
+  if (name !== "manifest.json" && !/^[a-f0-9]{64}$/u.test(name)) fail("invalid_rollback_manifest");
+  secureAbsoluteDirectory(parent, "backup_dir_creation_failed");
+  const target = join(parent, name);
+  if (existsSync(target)) fail("backup_dir_must_not_be_preexisting");
+  const temporary = `${target}.legacy-containment-${process.pid}-${Date.now()}`;
+  try {
+    secureAbsoluteDirectory(parent, "backup_dir_creation_failed");
+    writeNewTemporary(temporary, text);
+    secureAbsoluteDirectory(parent, "backup_dir_creation_failed");
+    renameSync(temporary, target);
+  } catch (error) {
+    if (existsSync(temporary) && !lstatSync(temporary).isSymbolicLink()) unlinkSync(temporary);
+    throw error;
+  }
+}
+
+function backupFile(backupDir, name) {
+  if (!/^[a-f0-9]{64}$/u.test(name)) fail("invalid_rollback_manifest");
+  return secureAbsoluteFile(join(backupDir, "files", name), "invalid_rollback_manifest");
+}
+
+function atomicWriteTarget(root, relativePath, text) {
+  const target = regularFile(root, relativePath);
+  if (regularFile(root, relativePath) !== target) fail("path_realpath_escape");
+  const temporary = `${target}.legacy-containment-${process.pid}-${Date.now()}`;
+  try {
+    if (regularFile(root, relativePath) !== target) fail("path_realpath_escape");
+    writeNewTemporary(temporary, text);
+    if (regularFile(root, relativePath) !== target) fail("path_realpath_escape");
+    renameSync(temporary, target);
+  } catch (error) {
+    if (existsSync(temporary) && !lstatSync(temporary).isSymbolicLink()) unlinkSync(temporary);
+    throw error;
+  }
 }
 
 function preparePatches(root, inventory) {
@@ -172,19 +288,15 @@ function backupDirPath(root, backupDir) {
 
 function createExclusiveBackupDir(root, backupDir) {
   const resolved = backupDirPath(root, backupDir);
+  secureAbsoluteDirectory(dirname(resolved), "invalid_backup_dir");
   try { mkdirSync(resolved, { recursive: false, mode: 0o700 }); }
   catch { fail("backup_dir_must_not_be_preexisting"); }
-  const stat = lstatSync(resolved);
-  if (!stat.isDirectory() || stat.isSymbolicLink()) fail("backup_dir_creation_failed");
-  return resolved;
+  return secureAbsoluteDirectory(resolved, "backup_dir_creation_failed");
 }
 
 function existingBackupDir(root, backupDir) {
   const resolved = backupDirPath(root, backupDir);
-  if (!existsSync(resolved)) fail("invalid_backup_dir");
-  const stat = lstatSync(resolved);
-  if (!stat.isDirectory() || stat.isSymbolicLink()) fail("invalid_backup_dir");
-  return resolved;
+  return secureAbsoluteDirectory(resolved, "invalid_backup_dir");
 }
 
 function apply(options, root, inventory) {
@@ -195,19 +307,19 @@ function apply(options, root, inventory) {
   const manifest = { version: 1, root, files: [] };
   for (const [path, change] of changes) {
     const backupName = sha256(path);
-    atomicWrite(joinPath(backupDir, "files", backupName), change.original);
+    atomicWriteBackup(backupDir, backupName, change.original);
     manifest.files.push({ path, backupName, originalSha256: sha256(change.original), appliedSha256: sha256(change.replacement) });
   }
-  atomicWrite(joinPath(backupDir, "manifest.json"), `${JSON.stringify(manifest)}\n`);
+  atomicWriteBackup(backupDir, "manifest.json", `${JSON.stringify(manifest)}\n`);
   const written = [];
   try {
     for (const [path, change] of changes) {
-      atomicWrite(regularFile(root, path), change.replacement);
+      atomicWriteTarget(root, path, change.replacement);
       written.push(path);
     }
     audit(root, inventory);
   } catch {
-    for (const path of written.reverse()) atomicWrite(regularFile(root, path), changes.get(path).original);
+    for (const path of written.reverse()) atomicWriteTarget(root, path, changes.get(path).original);
     fail("apply_failed_rolled_back");
   }
   process.stdout.write("LEGACY_QIMEN_CONTAINMENT_APPLY_OK\n");
@@ -220,17 +332,16 @@ function joinPath(...parts) {
 function rollback(options, root) {
   if (options.confirm !== CONFIRM_ROLLBACK) fail("rollback_confirmation_required");
   const backupDir = existingBackupDir(root, options.backupDir);
-  const manifestPath = joinPath(backupDir, "manifest.json");
-  if (!existsSync(manifestPath)) fail("rollback_manifest_missing");
+  const manifestPath = secureAbsoluteFile(joinPath(backupDir, "manifest.json"), "rollback_manifest_missing");
   let manifest;
   try { manifest = JSON.parse(readFileSync(manifestPath, "utf8")); } catch { fail("invalid_rollback_manifest"); }
   if (!manifest || manifest.version !== 1 || manifest.root !== root || !Array.isArray(manifest.files) || manifest.files.length === 0) fail("invalid_rollback_manifest");
   for (const file of manifest.files) {
     if (!file || typeof file.path !== "string" || !/^[a-f0-9]{64}$/u.test(file.backupName || "")) fail("invalid_rollback_manifest");
-    const original = readFileSync(joinPath(backupDir, "files", file.backupName), "utf8");
+    const original = readFileSync(backupFile(backupDir, file.backupName), "utf8");
     if (sha256(original) !== file.originalSha256 || sha256(fileText(root, file.path)) !== file.appliedSha256) fail("rollback_checksum_mismatch");
   }
-  for (const file of manifest.files) atomicWrite(regularFile(root, file.path), readFileSync(joinPath(backupDir, "files", file.backupName), "utf8"));
+  for (const file of manifest.files) atomicWriteTarget(root, file.path, readFileSync(backupFile(backupDir, file.backupName), "utf8"));
   process.stdout.write("LEGACY_QIMEN_CONTAINMENT_ROLLBACK_OK\n");
 }
 
