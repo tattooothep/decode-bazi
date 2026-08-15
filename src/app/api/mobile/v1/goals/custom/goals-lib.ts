@@ -115,14 +115,20 @@ export function formatThaiDayLabel(date: string): string | null {
   return `${TH_WEEKDAYS[d.getUTCDay()]} ${d.getUTCDate()} ${TH_MONTHS[d.getUTCMonth()]}`;
 }
 
-/** "YYYY-MM-DD HH:MM:SS" (Asia/Bangkok · จาก aj_ephemeris_cache) → epoch ms · เพี้ยน = null */
-export function parseBangkokDatetime(value: unknown): number | null {
+/** Candidate instant from the engine. Zoned values keep their supplied offset;
+ * legacy cache values without a zone retain the historical Bangkok meaning. */
+export function parseCandidateDatetime(value: unknown): number | null {
   const text = typeof value === "string" ? value.trim() : "";
-  const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::\d{2})?/.exec(text);
-  if (!m) return null;
-  const ms = Date.parse(`${m[1]}T${m[2]}:00+07:00`);
+  if (!/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/u.test(text)) return null;
+  const normalized = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/iu.test(text)
+    ? text.replace(" ", "T")
+    : `${text.replace(" ", "T")}+07:00`;
+  const ms = Date.parse(normalized);
   return Number.isFinite(ms) ? ms : null;
 }
+
+/** Backward-compatible export for older callers and tests. */
+export const parseBangkokDatetime = parseCandidateDatetime;
 
 function hhmm(value: unknown): string | null {
   const m = /[T ](\d{2}:\d{2})/.exec(typeof value === "string" ? value : "");
@@ -146,7 +152,7 @@ export function pickNextAuspicious(candidates: unknown, nowMs: number): NextAusp
   let best: { startMs: number; out: NextAuspicious } | null = null;
   for (const raw of candidates as EngineCandidate[]) {
     if (!raw || typeof raw !== "object") continue;
-    const startMs = parseBangkokDatetime(raw.datetime?.start);
+    const startMs = parseCandidateDatetime(raw.datetime?.start);
     if (startMs == null || startMs < nowMs) continue;
     const score = Number(raw.scoring?.finalScore);
     if (!Number.isFinite(score)) continue; // ไม่มีคะแนนจริงจาก engine = ไม่เอา
@@ -190,7 +196,19 @@ export function todayScoreFrom(candidates: unknown, today: string): number | nul
   return best;
 }
 
-/** key cache ใน memory · ตามสเปค: activity + profile + วัน (TTL 1 ชม. จัดการที่ route) */
-export function goalCacheKey(activityKey: string, profileId: string | null, day: string): string {
-  return `${activityKey}|${profileId || "universal"}|${day}`;
+/** Cache by activity/profile/local day plus timezone and 15-minute scheduler instant.
+ * The time dimensions prevent travel or a now-past window from reusing stale science. */
+export function goalCacheKey(
+  activityKey: string,
+  profileId: string | null,
+  day: string,
+  timezone?: string,
+  instant?: Date,
+): string {
+  const base = `${activityKey}|${profileId || "universal"}|${day}`;
+  if (!timezone && !instant) return base;
+  const bucket = instant && Number.isFinite(instant.valueOf())
+    ? Math.floor(instant.valueOf() / (15 * 60_000))
+    : "none";
+  return `${base}|${timezone || "Asia/Bangkok"}|${bucket}`;
 }

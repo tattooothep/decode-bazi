@@ -156,7 +156,9 @@ async function loadUsers(db) {
       LEFT JOIN mobile_notification_prefs np2 ON np2.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
        AND (SELECT count(*) FROM profiles pr
-             WHERE pr.created_by_user_id = u.id AND COALESCE(pr.is_archived,false) = false) >= 3
+             WHERE pr.created_by_user_id = u.id
+               AND pr.org_id = u.current_org_id
+               AND COALESCE(pr.is_archived,false) = false) >= 3
      GROUP BY u.id, np2.user_id, np2.yam_enabled, np2.auspicious_enabled,
               np2.daily_enabled,np2.service_enabled, np2.quiet_start, np2.quiet_end, np2.paused_until,
               np2.max_per_day, np2.timezone, u.timezone`);

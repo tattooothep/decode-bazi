@@ -304,19 +304,19 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE TABLE users(id uuid PRIMARY KEY,email text,current_org_id uuid,session_version int,timezone text,deleted_at timestamptz);
-    CREATE TABLE profiles(id uuid PRIMARY KEY,created_by_user_id uuid,is_archived boolean,relationship_type text,created_at timestamptz,birth_lat numeric,birth_lng numeric);
+    CREATE TABLE profiles(id uuid PRIMARY KEY,org_id uuid NOT NULL,created_by_user_id uuid,is_archived boolean,relationship_type text,created_at timestamptz,birth_lat numeric,birth_lng numeric);
     CREATE TABLE mobile_push_tokens(id uuid PRIMARY KEY,user_id uuid,device_push_token text,device_token_type text,expo_push_token text,platform text,locale text,enabled boolean,timezone text);
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY,security_enabled boolean,yam_enabled boolean,auspicious_enabled boolean,daily_enabled boolean,qimen_enabled boolean,shrine_enabled boolean,goal_enabled boolean,saved_date_enabled boolean,service_enabled boolean,yam_min_quality text,yam_lead_minutes int,qimen_latitude numeric,qimen_longitude numeric,qimen_location_updated_at timestamptz,quiet_start int,quiet_end int,max_per_day int,paused_until timestamptz,timezone text);
     CREATE TABLE mobile_push_log(user_id uuid,delivery_status text,sent_at timestamptz,accepted_at timestamptz,updated_at timestamptz);
-    INSERT INTO users VALUES('00000000-0000-4000-8000-000000000901','yam@example.test',NULL,0,'Asia/Bangkok',NULL);
-    INSERT INTO profiles VALUES('30000000-0000-4000-8000-000000000901','00000000-0000-4000-8000-000000000901',false,'self',now(),13.75,100.5);
+    INSERT INTO users VALUES('00000000-0000-4000-8000-000000000901','yam@example.test','90000000-0000-4000-8000-000000000901',0,'Asia/Bangkok',NULL);
+    INSERT INTO profiles VALUES('30000000-0000-4000-8000-000000000901','90000000-0000-4000-8000-000000000901','00000000-0000-4000-8000-000000000901',false,'self',now(),13.75,100.5);
     INSERT INTO mobile_push_tokens VALUES('10000000-0000-4000-8000-000000000901','00000000-0000-4000-8000-000000000901',NULL,NULL,'ExponentPushToken[yam-live]','ios','en',true,'Asia/Bangkok');
     INSERT INTO mobile_notification_prefs
       (user_id,security_enabled,yam_enabled,auspicious_enabled,daily_enabled,qimen_enabled,shrine_enabled,goal_enabled,saved_date_enabled,service_enabled,yam_min_quality,yam_lead_minutes,qimen_latitude,qimen_longitude,qimen_location_updated_at,quiet_start,quiet_end,max_per_day,paused_until,timezone)
     VALUES('00000000-0000-4000-8000-000000000901',true,true,false,false,false,false,false,false,true,'best',60,13.8,100.6,now(),0,0,10,NULL,'Asia/Bangkok');
     GRANT USAGE ON SCHEMA public TO ${role};
     GRANT SELECT ON users,mobile_push_tokens,mobile_notification_prefs,mobile_push_log TO ${role};
-    GRANT SELECT(id,created_by_user_id,is_archived,relationship_type,created_at) ON profiles TO ${role};
+    GRANT SELECT(id,org_id,created_by_user_id,is_archived,relationship_type,created_at) ON profiles TO ${role};
   `);
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password, max: 2 });
   const users = await yam.loadYamUsers(pool);

@@ -113,27 +113,31 @@ function buildSavedDateCopy(lead, day, activity, loc) {
 }
 
 function buildSavedDateProducer(user, saved, runAt) {
-  const start = new Date(saved?.payload?.datetime?.start);
-  if (!user?.id || !saved?.id || !Number.isFinite(start.valueOf())) return null;
+  const context = science.savedDateSourceContext(saved?.payload);
+  if (!user?.id || !saved?.id || !context) return null;
+  const { start } = context;
   const remaining = start.valueOf() - runAt.valueOf();
   const lead = remaining >= 45 * 60_000 && remaining <= 75 * 60_000 ? "1h"
     : remaining >= 23.75 * 3_600_000 && remaining <= 24.25 * 3_600_000 ? "24h" : null;
   if (!lead) return null;
   const activity = String(saved.payload?.activityType || "").slice(0, 32);
-  const day = new Intl.DateTimeFormat("en-GB", {
-    timeZone: user.user_timezone || "Asia/Bangkok",
-    day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
-  }).format(start);
+  const day = context.displayDay;
   const build = (locale) => buildSavedDateCopy(lead, day, activity, locale);
   const historyCopies = delivery.localizedHistoryCopies(build);
-  const date = guard.localDateStr(user.user_timezone, start);
+  const date = context.localDate;
   const payload = notificationPayload.buildNotificationPayload("saved_date", String(user.id), {
     savedDateId: saved.id, lead: lead === "1h" ? 60 : 1_440, date, url: "/datepick/saved",
   });
   return {
     userId: user.id, key: `saved-date|${saved.id}|${lead}`, kind: "saved_date",
     ...historyCopies.th, historyCopies, payload,
-    sourceFacts: { timezone: user.user_timezone, start: start.toISOString(), activityType: activity || null },
+    sourceFacts: {
+      timezone: context.timezone,
+      utcOffsetMinutes: context.utcOffsetMinutes,
+      sourceStart: context.sourceStart,
+      start: start.toISOString(),
+      activityType: activity || null,
+    },
     messages: messages(user.tokens, "saved_date", "/datepick/saved", payload, build),
   };
 }

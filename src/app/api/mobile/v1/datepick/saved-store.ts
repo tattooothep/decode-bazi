@@ -5,7 +5,12 @@ export const MAX_SAVED_DATE_BODY_BYTES = 64 * 1024;
 export type SavedDatePayload = {
   candidateId?: string;
   activityType: string;
-  datetime: { start: string; end: string };
+  datetime: {
+    start: string;
+    end: string;
+    timezone?: string;
+    utcOffsetMinutes: number;
+  };
   pillars: Record<string, string | { stem?: string; branch?: string }>;
   summary: string;
 };
@@ -35,6 +40,44 @@ function cleanDateTime(value: unknown): string | null {
     || !Number.isFinite(Date.parse(text))
   ) return null;
   return text;
+}
+
+function cleanTimezone(value: unknown): string | null {
+  const timezone = cleanText(value, 80);
+  if (!timezone) return null;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone }).format(new Date(0));
+    return timezone;
+  } catch {
+    return null;
+  }
+}
+
+function timestampOffsetMinutes(value: string): number | null {
+  if (/Z$/iu.test(value)) return 0;
+  const match = /([+-])(\d{2}):(\d{2})$/u.exec(value);
+  if (!match) return null;
+  const minutes = Number(match[2]) * 60 + Number(match[3]);
+  if (!Number.isInteger(minutes) || minutes > 14 * 60) return null;
+  return match[1] === "-" ? -minutes : minutes;
+}
+
+function timezoneOffsetMinutesAt(timezone: string, instant: Date): number {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(instant).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  const localAsUtc = Date.UTC(
+    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
+    Number(parts.hour), Number(parts.minute), Number(parts.second),
+  );
+  return Math.round((localAsUtc - Math.floor(instant.valueOf() / 1_000) * 1_000) / 60_000);
 }
 
 function cleanPillars(value: unknown): SavedDatePayload["pillars"] | null {
@@ -85,6 +128,21 @@ export function parseSavedDatePayload(
   const start = cleanDateTime(datetime?.start);
   const end = cleanDateTime(datetime?.end);
   if (!start || !end || Date.parse(end) < Date.parse(start)) return { error: "datetime_invalid" };
+  const timezone = datetime?.timezone === undefined ? null : cleanTimezone(datetime.timezone);
+  if (datetime?.timezone !== undefined && !timezone) return { error: "datetime_timezone_invalid" };
+  const utcOffsetMinutes = timestampOffsetMinutes(start);
+  const endUtcOffsetMinutes = timestampOffsetMinutes(end);
+  if (utcOffsetMinutes === null || endUtcOffsetMinutes === null) return { error: "datetime_invalid" };
+  if (timezone && (
+    timezoneOffsetMinutesAt(timezone, new Date(start)) !== utcOffsetMinutes
+    || timezoneOffsetMinutesAt(timezone, new Date(end)) !== endUtcOffsetMinutes
+  )) {
+    return { error: "datetime_timezone_offset_mismatch" };
+  }
+  if (
+    datetime?.utcOffsetMinutes !== undefined
+    && (!Number.isInteger(datetime.utcOffsetMinutes) || Number(datetime.utcOffsetMinutes) !== utcOffsetMinutes)
+  ) return { error: "datetime_offset_mismatch" };
 
   const pillars = cleanPillars(body.pillars);
   if (!pillars) return { error: "pillars_required" };
@@ -97,7 +155,7 @@ export function parseSavedDatePayload(
     payload: {
       ...(candidateId ? { candidateId } : {}),
       activityType,
-      datetime: { start, end },
+      datetime: { start, end, ...(timezone ? { timezone } : {}), utcOffsetMinutes },
       pillars,
       summary,
     },

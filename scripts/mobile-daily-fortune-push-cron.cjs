@@ -118,17 +118,7 @@ function buildDailyProducer(user, input) {
   };
 }
 
-async function main() {
-  if (SLOT !== "morning" && SLOT !== "evening") throw new Error(`bad slot ${SLOT}`);
-  const db = new Client({
-    host: process.env.PGHOST || "127.0.0.1",
-    port: Number(process.env.PGPORT || 5432),
-    user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
-  });
-  await db.connect();
-  const runLease = await delivery.trySchedulerRunLease(db, "daily-fortune");
-  if (!runLease.acquired) { console.log("[mobile-daily-push] overlap skipped"); await db.end(); return; }
-  const { rows: users } = await db.query(`
+const DAILY_USERS_SQL = `
     SELECT u.id, u.email, u.current_org_id, u.session_version,
            array_agg(json_build_object(
              'id', t.id, 'device', t.device_push_token, 'deviceType', t.device_token_type,
@@ -136,6 +126,7 @@ async function main() {
              'locale', COALESCE(t.locale,'th')
            )) AS tokens,
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
+             AND p.org_id = u.current_org_id
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
            np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled, np2.daily_slot,
@@ -152,7 +143,24 @@ async function main() {
      WHERE t.enabled = true AND u.deleted_at IS NULL
      GROUP BY u.id, np2.user_id, np2.yam_enabled, np2.auspicious_enabled,
               np2.daily_enabled, np2.daily_slot, np2.quiet_start, np2.quiet_end, np2.paused_until,
-              np2.max_per_day, np2.timezone, u.timezone`);
+              np2.max_per_day, np2.timezone, u.timezone`;
+
+async function loadDailyUsers(db) {
+  const result = await db.query(DAILY_USERS_SQL);
+  return result.rows;
+}
+
+async function main() {
+  if (SLOT !== "morning" && SLOT !== "evening") throw new Error(`bad slot ${SLOT}`);
+  const db = new Client({
+    host: process.env.PGHOST || "127.0.0.1",
+    port: Number(process.env.PGPORT || 5432),
+    user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
+  });
+  await db.connect();
+  const runLease = await delivery.trySchedulerRunLease(db, "daily-fortune");
+  if (!runLease.acquired) { console.log("[mobile-daily-push] overlap skipped"); await db.end(); return; }
+  const users = await loadDailyUsers(db);
   console.log(`[mobile-daily-push] ${new Date().toISOString()} slot=${SLOT} users=${users.length} dry=${DRY}`);
 
   // ค่ำ = ดวงพรุ่งนี้ (วันไทย +1) · เช้า = ดวงวันนี้
@@ -234,6 +242,6 @@ async function main() {
   await schedulerHeartbeat.writeSchedulerHeartbeat("daily-fortune");
 }
 
-module.exports = { buildDailyCopy,buildDailyProducer,getJson,main };
+module.exports = { DAILY_USERS_SQL,buildDailyCopy,buildDailyProducer,getJson,loadDailyUsers,main };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-daily-push] category=daily error_code=scheduler_failed"); process.exit(1); });

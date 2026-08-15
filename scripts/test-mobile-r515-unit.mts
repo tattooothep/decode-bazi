@@ -59,7 +59,11 @@ test("saved date parser keeps only the bounded candidate snapshot contract", () 
     payload: {
       activityType: "開市",
       candidateId: "candidate-1",
-      datetime: { start: "2026-07-20T09:00:00+07:00", end: "2026-07-20T11:00:00+07:00" },
+      datetime: {
+        start: "2026-07-20T09:00:00+07:00",
+        end: "2026-07-20T11:00:00+07:00",
+        utcOffsetMinutes: 420,
+      },
       pillars: { year: { stem: "丙", branch: "午" }, month: "乙未" },
       summary: "ฤกษ์เปิดกิจการ",
     },

@@ -45,6 +45,62 @@ function zonedClock(timezone, instant = new Date()) {
   };
 }
 
+function validTimezone(value) {
+  const timezone = typeof value === "string" ? value.trim() : "";
+  if (!timezone) return null;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone }).format(new Date(0));
+    return timezone;
+  } catch {
+    return null;
+  }
+}
+
+function timestampOffsetMinutes(value) {
+  const text = typeof value === "string" ? value.trim() : "";
+  if (/Z$/iu.test(text)) return 0;
+  const match = /([+-])(\d{2}):(\d{2})$/u.exec(text);
+  if (!match) return null;
+  const minutes = Number(match[2]) * 60 + Number(match[3]);
+  if (!Number.isInteger(minutes) || minutes > 14 * 60) return null;
+  return match[1] === "-" ? -minutes : minutes;
+}
+
+function savedDateSourceContext(payload) {
+  const datetime = payload?.datetime;
+  const sourceStart = typeof datetime?.start === "string" ? datetime.start.trim() : "";
+  const start = new Date(sourceStart);
+  if (!sourceStart || !Number.isFinite(start.valueOf())) return null;
+  const timezone = validTimezone(datetime?.timezone);
+  const storedOffset = Number(datetime?.utcOffsetMinutes);
+  const utcOffsetMinutes = Number.isInteger(storedOffset) && storedOffset >= -14 * 60 && storedOffset <= 14 * 60
+    ? storedOffset
+    : timestampOffsetMinutes(sourceStart);
+  if (utcOffsetMinutes === null) return null;
+
+  const displayZone = timezone || "UTC";
+  const displayInstant = timezone ? start : new Date(start.valueOf() + utcOffsetMinutes * 60_000);
+  const localDate = timezone
+    ? zonedClock(timezone, start).date
+    : displayInstant.toISOString().slice(0, 10);
+  const displayDay = new Intl.DateTimeFormat("en-GB", {
+    timeZone: displayZone,
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(displayInstant);
+  return {
+    start,
+    sourceStart,
+    timezone,
+    utcOffsetMinutes,
+    localDate,
+    displayDay,
+  };
+}
+
 function buildQimenSchedulerRequest(input) {
   const timezone = safeTimezone(input?.timezone);
   const instant = input?.instant instanceof Date ? input.instant : new Date(input?.instant || Date.now());
@@ -158,6 +214,7 @@ module.exports = {
   dueLead,
   qimenGateClock,
   safeTimezone,
+  savedDateSourceContext,
   schedulerLeaseKey,
   selectDueSavedDate,
   withFencedTotalTimeout,

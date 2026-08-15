@@ -45,6 +45,12 @@ import { SolarDay } from "tyme4ts";
 import { KING_WEN } from "@/lib/heluo-astrology";
 import { evaluateMonthDaySha } from "@/lib/luopan/month-day-sha";
 import type { Dir8 } from "@/lib/luopan/mountains";
+import {
+  applyAuspiciousTimeContext,
+  auspiciousQueryRange,
+  filterAuspiciousTimeContext,
+  parseAuspiciousTimeContext,
+} from "@/lib/auspicious-time-context";
 
 const ZODIAC_CLASH_MAP: Record<string, string> = {
   "子":"午","丑":"未","寅":"申","卯":"酉","辰":"戌","巳":"亥",
@@ -169,6 +175,9 @@ function cacheKey(body: any, planKey: string = "guest"): string {
     p: body.peopleIds || [], m: (body.activeModules || []).slice().sort(),
     o: options,
     td: options.targetDirection || options.target_direction || body.targetDirection || body.target_direction || "",
+    ...(body.timezone !== undefined || body.instant !== undefined
+      ? { tz: body.timezone || "", at: body.instant || "" }
+      : {}),
   });
 }
 
@@ -196,6 +205,11 @@ export async function POST(req: NextRequest) {
     if (!activityType || !dateFrom || !dateTo || !Array.isArray(activeModules)) {
       return NextResponse.json({ error: "Missing required: activityType, dateFrom, dateTo, activeModules[]" }, { status: 400 });
     }
+    const timeContextResult = parseAuspiciousTimeContext(body);
+    if (!timeContextResult.context) {
+      return NextResponse.json({ error: timeContextResult.error }, { status: 400 });
+    }
+    const timeContext = timeContextResult.context;
     const profileKeyInput = typeof body.activityProfileKey === "string" ? body.activityProfileKey.trim() : "";
     const activityProfile = getActivityProfile(profileKeyInput);
     if (profileKeyInput && !activityProfile) {
@@ -364,9 +378,17 @@ export async function POST(req: NextRequest) {
     const hardModules = qimenHardFilterModulesForDatepick(mergedHardModules);
     const sqlHardModules = hardModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
     const applyPersonHard = hardModules.includes("ba_zi");
-    const baseTotal = await countEphemerisBase(dateFrom, dateTo);
+    const queryRange = auspiciousQueryRange(dateFrom, dateTo, timeContext);
+    const baseTotal = await countEphemerisBase(queryRange.dateFrom, queryRange.dateTo);
     const personalAvoidZodiacs = applyPersonHard ? avoidZodiacs : [];
-    let candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, sqlHardModules, options.scanLimit ?? 360);
+    let candidates = await queryEphemerisCandidates(
+      queryRange.dateFrom,
+      queryRange.dateTo,
+      personalAvoidZodiacs,
+      sqlHardModules,
+      options.scanLimit ?? 360,
+    );
+    candidates = filterAuspiciousTimeContext(candidates, dateFrom, dateTo, timeContext);
 
     /* r413 · TONGSHU_LIVE=1 (kill switch): override 4 module 通書 (建除/黃黑道/28宿/紫白)
        ด้วยค่าคำนวณสดจาก tyme4ts แทนค่า cache ที่ผิด (audit 2 รอบ: 黃黑道ผิด 83% · 建除ขาด疊建 ·
@@ -377,7 +399,7 @@ export async function POST(req: NextRequest) {
     }
 
     // STEP 3: Funnel stats
-    const funnelStats = await buildFunnelStats(dateFrom, dateTo, personalAvoidZodiacs);
+    const funnelStats = await buildFunnelStats(queryRange.dateFrom, queryRange.dateTo, personalAvoidZodiacs);
     funnelStats.finalCount = candidates.length;
     (funnelStats as any).baseTotal = baseTotal || funnelStats.total;
     (funnelStats as any).personCut = Math.max(0, (baseTotal || funnelStats.total) - funnelStats.total);
@@ -471,10 +493,12 @@ export async function POST(req: NextRequest) {
       );
     } catch { /* audit table อาจจะยังไม่มี · ignore */ }
 
+    const responseCandidates = applyAuspiciousTimeContext(enriched, dateFrom, dateTo, timeContext);
+    const responseCutSlots = applyAuspiciousTimeContext(cutSlots, dateFrom, dateTo, timeContext);
     const response: SearchResponse = {
-      candidates: enriched,
+      candidates: responseCandidates,
       /* r417: slot ที่โดน veto (ทงซู破日/黑道·ตงกง大凶/忌·ฉีเหมิน avoidDoors) — ไม่เข้า list แนะนำ */
-      cutSlots,
+      cutSlots: responseCutSlots,
       allCut,
       funnelStats,
       meta: {
@@ -503,6 +527,13 @@ export async function POST(req: NextRequest) {
         mergedHardModules,
         /* r417: ผ่อนเกณฑ์ประตูฉีเหมิน avoidDoors หรือไม่ (default false = veto ตามมาตรฐานใหม่) */
         relaxDoors,
+        ...(timeContext.enabled ? {
+          timeContext: {
+            timezone: timeContext.timezone,
+            instant: timeContext.instant?.toISOString() || null,
+            candidateDates: "user_local",
+          },
+        } : {}),
         /* product entitlement · trial~30% modules */
         entitlement: {
           plan: productPlan,

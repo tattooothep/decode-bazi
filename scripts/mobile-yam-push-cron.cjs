@@ -261,6 +261,7 @@ const YAM_USERS_SQL = `
              'locale', COALESCE(t.locale,'th')
            )) AS tokens,
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
+             AND p.org_id = u.current_org_id
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,

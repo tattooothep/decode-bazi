@@ -119,7 +119,7 @@ async function luckForActivity(
   timeContext: { timezone: string; instant: Date; today: string },
 ): Promise<LuckView> {
   const { today } = timeContext;
-  const key = goalCacheKey(activityKey, personProfileId, today);
+  const key = goalCacheKey(activityKey, personProfileId, today, timeContext.timezone, timeContext.instant);
   const cached = luckCacheGet(key);
   if (cached) return cached;
 
