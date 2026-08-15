@@ -5,6 +5,7 @@ const { readFileSync } = require("node:fs");
 const KEY_PATH = process.env.FCM_SERVICE_ACCOUNT_PATH
   ?? "/root/secrets/hourkey-fcm-service-account.json";
 const EXPO_SEND_URL = "https://exp.host/--/api/v2/push/send";
+const EXPO_RECEIPT_URL = "https://exp.host/--/api/v2/push/getReceipts";
 const TICKET_SAFETY_SECONDS = 300;
 const TRANSIENT_HTTP = new Set([408, 425, 429, 500, 502, 503, 504]);
 const MAX_ATTEMPTS = 3;
@@ -35,6 +36,14 @@ function isReady() {
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseRetryAfterSeconds(raw, nowMs = Date.now()) {
+  const value = String(raw || "").trim();
+  if (!value) return null;
+  if (/^\d+$/u.test(value)) return Math.max(0, Number(value));
+  const dateMs = Date.parse(value);
+  return Number.isFinite(dateMs) ? Math.max(0, Math.ceil((dateMs - nowMs) / 1000)) : null;
 }
 
 function safeUrl(raw) {
@@ -68,6 +77,50 @@ function stringData(message) {
     out[String(key).slice(0, 80)] = String(value).slice(0, 500);
   }
   return out;
+}
+
+function providerFor(item) {
+  const platform = String(item?.platform || "");
+  const nativeType = String(item?.deviceTokenType || "");
+  const device = String(item?.deviceToken || "").trim();
+  const expo = String(item?.expoToken || "").trim();
+  if (device && platform !== "ios" && nativeType !== "apns") return "fcm";
+  if (expo) return "expo";
+  return null;
+}
+
+/** Exact provider body without the credential identifying the target device. */
+function prepareMessage(item, provider = providerFor(item)) {
+  const category = categoryOf(item);
+  if (provider === "fcm") {
+    return {
+      notification: {
+        title: String(item?.title || "Hourkey").slice(0, 120),
+        body: String(item?.body || "").slice(0, 400),
+      },
+      data: stringData(item),
+      android: {
+        priority: category === "security" || category === "service" ? "HIGH" : "NORMAL",
+        ttl: category === "security" || category === "service" ? "21600s" : "86400s",
+        notification: {
+          sound: category === "security" || category === "service" ? "default" : undefined,
+          channel_id: channelOf(category),
+        },
+      },
+    };
+  }
+  if (provider === "expo") {
+    return {
+      title: String(item?.title || "Hourkey").slice(0, 120),
+      body: String(item?.body || "").slice(0, 400),
+      data: stringData(item),
+      sound: category === "security" || category === "service" ? "default" : null,
+      priority: category === "security" || category === "service" ? "high" : "normal",
+      ttl: category === "security" || category === "service" ? 21_600 : 86_400,
+      channelId: channelOf(category),
+    };
+  }
+  return null;
 }
 
 async function getTicket() {
@@ -113,12 +166,11 @@ async function getTicket() {
   }
 }
 
-async function sendFcmOnce(deviceToken, message) {
+async function sendPreparedFcmOnce(deviceToken, providerMessage) {
   const key = loadKey();
   if (key === null) return { kind: "failed", reason: "no_service_account", retryable: true };
   const ticket = await getTicket();
   if (ticket === null) return { kind: "failed", reason: "no_ticket", retryable: true };
-  const category = categoryOf(message);
   try {
     const response = await fetch(
       `https://fcm.googleapis.com/v1/projects/${key.project_id}/messages:send`,
@@ -128,35 +180,36 @@ async function sendFcmOnce(deviceToken, message) {
         body: JSON.stringify({
           message: {
             token: deviceToken,
-            notification: {
-              title: String(message?.title || "Hourkey").slice(0, 120),
-              body: String(message?.body || "").slice(0, 400),
-            },
-            data: stringData(message),
-            android: {
-              priority: category === "security" || category === "service" ? "HIGH" : "NORMAL",
-              ttl: category === "security" || category === "service" ? "21600s" : "86400s",
-              notification: {
-                sound: category === "security" || category === "service" ? "default" : undefined,
-                channel_id: channelOf(category),
-              },
-            },
+            ...providerMessage,
           },
         }),
         signal: AbortSignal.timeout(12_000),
       },
     );
-    if (response.ok) return { kind: "sent", provider: "fcm" };
+    if (response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      return {
+        kind: "provider_accepted",
+        provider: "fcm",
+        providerMessageId: typeof payload.name === "string" ? payload.name : null,
+      };
+    }
     const detail = (await response.text()).slice(0, 500);
     const gone = response.status === 404 || detail.includes("UNREGISTERED");
     const retryable = TRANSIENT_HTTP.has(response.status);
-    console.error(`[push-send] FCM ${response.status}`, detail);
+    const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get("retry-after"));
+    console.error(`[push-send] FCM ${response.status}`);
     return gone
       ? { kind: "gone", provider: "fcm", reason: String(response.status), retryable: false }
-      : { kind: "failed", provider: "fcm", reason: `fcm_${response.status}`, retryable };
+      : { kind: "failed", provider: "fcm", reason: `fcm_${response.status}`, retryable, retryAfterSeconds };
   } catch (error) {
     return { kind: "failed", provider: "fcm", reason: String(error?.message ?? error), retryable: true };
   }
+}
+
+async function sendFcmOnce(deviceToken, message) {
+  const outcome = await sendPreparedFcmOnce(deviceToken, prepareMessage(message, "fcm"));
+  return outcome.kind === "provider_accepted" ? { ...outcome, kind: "sent" } : outcome;
 }
 
 async function sendOne(deviceToken, message) {
@@ -178,39 +231,30 @@ function expoHeaders() {
   };
 }
 
-async function sendExpoOnce(expoToken, message, db, tokenId) {
-  const category = categoryOf(message);
+async function sendPreparedExpoOnce(expoToken, providerMessage) {
   try {
     const response = await fetch(EXPO_SEND_URL, {
       method: "POST",
       headers: expoHeaders(),
       body: JSON.stringify({
         to: expoToken,
-        title: String(message?.title || "Hourkey").slice(0, 120),
-        body: String(message?.body || "").slice(0, 400),
-        data: stringData(message),
-        sound: category === "security" || category === "service" ? "default" : null,
-        priority: category === "security" || category === "service" ? "high" : "normal",
-        ttl: category === "security" || category === "service" ? 21_600 : 86_400,
-        channelId: channelOf(category),
+        ...providerMessage,
       }),
       signal: AbortSignal.timeout(12_000),
     });
     if (!response.ok) {
-      const detail = (await response.text()).slice(0, 500);
-      return { kind: "failed", provider: "expo", reason: `expo_${response.status}:${detail}`, retryable: TRANSIENT_HTTP.has(response.status) };
+      return {
+        kind: "failed",
+        provider: "expo",
+        reason: `expo_${response.status}`,
+        retryable: TRANSIENT_HTTP.has(response.status),
+        retryAfterSeconds: parseRetryAfterSeconds(response.headers.get("retry-after")),
+      };
     }
     const payload = await response.json().catch(() => ({}));
     const ticket = Array.isArray(payload.data) ? payload.data[0] : payload.data;
     if (ticket?.status === "ok" && typeof ticket.id === "string") {
-      if (db && tokenId) {
-        await db.query(
-          `INSERT INTO mobile_push_receipts(ticket_id,token_id) VALUES($1,$2)
-           ON CONFLICT(ticket_id) DO NOTHING`,
-          [ticket.id, tokenId],
-        ).catch((error) => console.error("[push-send] เก็บ Expo receipt ไม่สำเร็จ", error.message));
-      }
-      return { kind: "sent", provider: "expo", ticketId: ticket.id };
+      return { kind: "provider_accepted", provider: "expo", providerTicketId: ticket.id };
     }
     const code = String(ticket?.details?.error || "");
     if (code === "DeviceNotRegistered") return { kind: "gone", provider: "expo", reason: code, retryable: false };
@@ -218,6 +262,63 @@ async function sendExpoOnce(expoToken, message, db, tokenId) {
   } catch (error) {
     return { kind: "failed", provider: "expo", reason: String(error?.message ?? error), retryable: true };
   }
+}
+
+async function sendExpoOnce(expoToken, message, db, tokenId) {
+  const outcome = await sendPreparedExpoOnce(expoToken, prepareMessage(message, "expo"));
+  if (outcome.kind === "provider_accepted") {
+    if (db && tokenId && outcome.providerTicketId) {
+      await db.query(
+        `INSERT INTO mobile_push_receipts(ticket_id,token_id) VALUES($1,$2)
+         ON CONFLICT(ticket_id) DO NOTHING`,
+        [outcome.providerTicketId, tokenId],
+      ).catch(() => console.error("[push-send] เก็บ Expo receipt ไม่สำเร็จ"));
+    }
+    return { ...outcome, kind: "sent", ticketId: outcome.providerTicketId };
+  }
+  return outcome;
+}
+
+async function sendPrepared(target) {
+  if (target?.provider === "fcm") {
+    const deviceToken = String(target?.deviceToken || "").trim();
+    if (!deviceToken) return { kind: "gone", provider: "fcm", reason: "target_unavailable", retryable: false };
+    return sendPreparedFcmOnce(deviceToken, target.providerMessage);
+  }
+  if (target?.provider === "expo") {
+    const expoToken = String(target?.expoToken || "").trim();
+    if (!expoToken) return { kind: "gone", provider: "expo", reason: "target_unavailable", retryable: false };
+    return sendPreparedExpoOnce(expoToken, target.providerMessage);
+  }
+  return { kind: "gone", provider: "none", reason: "target_unavailable", retryable: false };
+}
+
+async function pollExpoReceipts(ticketIds) {
+  const ids = [...new Set((ticketIds || []).map(String).filter(Boolean))];
+  if (ids.length === 0) return {};
+  const response = await fetch(EXPO_RECEIPT_URL, {
+    method: "POST",
+    headers: expoHeaders(),
+    body: JSON.stringify({ ids }),
+    signal: AbortSignal.timeout(12_000),
+  });
+  if (!response.ok) throw new Error(`expo_receipt_http_${response.status}`);
+  const payload = await response.json().catch(() => ({}));
+  const normalized = {};
+  for (const id of ids) {
+    const receipt = payload?.data?.[id];
+    if (!receipt) continue;
+    if (receipt.status === "ok") normalized[id] = { kind: "delivered" };
+    else {
+      const reason = String(receipt?.details?.error || receipt?.message || "expo_receipt_error").slice(0, 300);
+      normalized[id] = {
+        kind: "error",
+        reason,
+        retryable: reason !== "DeviceNotRegistered" && reason !== "InvalidCredentials",
+      };
+    }
+  }
+  return normalized;
 }
 
 async function sendExpo(expoToken, message, db, tokenId) {
@@ -298,13 +399,19 @@ async function sendAll(items, options) {
 }
 
 module.exports = {
+  EXPO_RECEIPT_URL,
   EXPO_SEND_URL,
   KEY_PATH,
   categoryOf,
   isReady,
+  pollExpoReceipts,
+  parseRetryAfterSeconds,
+  prepareMessage,
+  providerFor,
   safeUrl,
   sendAll,
   sendExpo,
   sendOne,
+  sendPrepared,
   stringData,
 };

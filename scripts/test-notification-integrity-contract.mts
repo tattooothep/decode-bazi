@@ -80,5 +80,20 @@ assert.match(notificationsRoute, /locale:\s*row\.locale/iu,
   "preference responses must expose the persisted locale");
 assert.match(notificationsRoute, /body\?\.locale/iu,
   "preference updates must accept locale");
+assert.match(notificationsRoute, /delivery_status\s+IN\s*\('accepted','delivered'\)/iu,
+  "provider-accepted and receipt-delivered notifications must both remain visible");
+assert.match(notificationsRoute, /delivery_status:\s*r\.delivery_status/iu,
+  "notification history must expose provider acceptance versus receipt delivery");
+
+for (const cronPath of [
+  "scripts/mobile-yam-push-cron.cjs",
+  "scripts/mobile-daily-fortune-push-cron.cjs",
+  "scripts/mobile-auspicious-push-cron.cjs",
+  "scripts/mobile-personal-reminders-cron.cjs",
+]) {
+  const cron = readFileSync(cronPath, "utf8");
+  assert.match(cron, /delivery_status\s+IN\s*\('accepted','delivered'\)/iu,
+    `${cronPath} must count accepted and delivered parents toward notification caps`);
+}
 
 console.log("NOTIFICATION_INTEGRITY_CONTRACT_OK");

@@ -53,6 +53,65 @@ await check("โหมดไม่ส่งจริงต้องไม่ย�
   assert.equal(r.failed, 0, "โหมดทดสอบไม่ควรยิงจริงแล้วล้ม");
 });
 
+await check("provider adapter เก็บ message ID/ticket และไม่เรียก HTTP success ว่า delivered", async () => {
+  const originalFetch = globalThis.fetch;
+  const requests: Array<{ url: string; body: unknown }> = [];
+  try {
+    globalThis.fetch = async (input, init) => {
+      const url = String(input);
+      let requestBody: unknown = null;
+      if (init?.body) {
+        try { requestBody = JSON.parse(String(init.body)); }
+        catch { requestBody = String(init.body); }
+      }
+      requests.push({ url, body: requestBody });
+      if (url.includes("/messages:send")) {
+        return new Response(JSON.stringify({ name: "projects/test/messages/provider-id" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      if (url.includes("getReceipts")) {
+        return new Response(JSON.stringify({ data: { "expo-provider-ticket": { status: "ok" } } }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      if (url.includes("exp.host")) {
+        return new Response(JSON.stringify({ data: { status: "ok", id: "expo-provider-ticket" } }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ access_token: "fake-access", expires_in: 3600 }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    const fcmMessage = S.prepareMessage({ title: "Exact", body: "FCM", category: "daily", url: "/today" }, "fcm");
+    const fcm = await S.sendPrepared({ provider: "fcm", deviceToken: "credential-only-at-send", providerMessage: fcmMessage });
+    assert.equal(fcm.kind, "provider_accepted");
+    assert.equal(fcm.providerMessageId, "projects/test/messages/provider-id");
+    assert.equal(JSON.stringify(fcmMessage).includes("credential-only-at-send"), false);
+
+    const expoMessage = S.prepareMessage({ title: "Exact", body: "Expo", category: "daily", url: "/today" }, "expo");
+    const expo = await S.sendPrepared({ provider: "expo", expoToken: "ExponentPushToken[credential-only-at-send]", providerMessage: expoMessage });
+    assert.equal(expo.kind, "provider_accepted");
+    assert.equal(expo.providerTicketId, "expo-provider-ticket");
+    const receipts = await S.pollExpoReceipts(["expo-provider-ticket"]);
+    assert.equal(receipts["expo-provider-ticket"].kind, "delivered");
+    assert.ok(requests.some((request) => request.url.includes("/messages:send")));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+await check("Retry-After จาก provider ถูกแปลงเป็นวินาทีสำหรับ durable backoff", () => {
+  assert.equal(S.parseRetryAfterSeconds("17"), 17);
+  assert.equal(S.parseRetryAfterSeconds("invalid"), null);
+});
+
 console.log("── ตัวยิงต้องเลิกใช้คนกลาง ──");
 
 const CRONS = [

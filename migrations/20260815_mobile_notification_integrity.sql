@@ -54,6 +54,65 @@ ALTER TABLE mobile_notification_prefs
   ADD CONSTRAINT mobile_notification_prefs_locale_check
   CHECK (locale IN ('th', 'en', 'zh', 'cn', 'vi', 'ja', 'ru', 'ko', 'es'));
 
+-- One immutable provider payload per logical notification/installation. Raw
+-- provider credentials remain on mobile_push_tokens and are never copied here.
+ALTER TABLE mobile_push_log
+  DROP CONSTRAINT IF EXISTS mobile_push_log_delivery_status_check;
+ALTER TABLE mobile_push_log
+  ADD CONSTRAINT mobile_push_log_delivery_status_check
+  CHECK (delivery_status IN ('pending', 'accepted', 'delivered', 'failed'));
+
+CREATE TABLE IF NOT EXISTS mobile_push_attempts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  push_log_id uuid NOT NULL REFERENCES mobile_push_log(id) ON DELETE CASCADE,
+  token_id uuid REFERENCES mobile_push_tokens(id) ON DELETE SET NULL,
+  installation_id uuid NOT NULL,
+  provider text NOT NULL CHECK (provider IN ('fcm', 'expo')),
+  provider_message jsonb NOT NULL,
+  message_sha256 text NOT NULL CHECK (message_sha256 ~ '^[0-9a-f]{64}$'),
+  status text NOT NULL DEFAULT 'reserved'
+    CHECK (status IN ('reserved', 'provider_accepted', 'delivered', 'retry_due', 'dead')),
+  send_count integer NOT NULL DEFAULT 0 CHECK (send_count >= 0),
+  next_retry_at timestamptz,
+  lease_token text,
+  lease_expires_at timestamptz,
+  provider_message_id text,
+  provider_ticket_id text,
+  last_error text,
+  accepted_at timestamptz,
+  delivered_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(push_log_id, installation_id)
+);
+
+CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_due
+  ON mobile_push_attempts(next_retry_at, created_at)
+  WHERE status IN ('reserved', 'retry_due');
+CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_stale_lease
+  ON mobile_push_attempts(lease_expires_at)
+  WHERE lease_token IS NOT NULL;
+CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_expo_receipt
+  ON mobile_push_attempts(accepted_at)
+  WHERE status='provider_accepted' AND provider='expo' AND provider_ticket_id IS NOT NULL;
+
+CREATE OR REPLACE FUNCTION protect_mobile_push_attempt_message()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.provider_message IS DISTINCT FROM OLD.provider_message
+     OR NEW.message_sha256 IS DISTINCT FROM OLD.message_sha256 THEN
+    RAISE EXCEPTION 'mobile push attempt message is immutable';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mobile_push_attempt_message_immutable ON mobile_push_attempts;
+CREATE TRIGGER mobile_push_attempt_message_immutable
+BEFORE UPDATE ON mobile_push_attempts
+FOR EACH ROW EXECUTE FUNCTION protect_mobile_push_attempt_message();
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON mobile_notification_prefs TO hourkey_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON mobile_push_attempts TO hourkey_app;
 
 COMMIT;

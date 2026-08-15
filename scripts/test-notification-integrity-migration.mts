@@ -97,6 +97,16 @@ try {
     "th",
     "notification preference locale defaults safely to Thai",
   );
+  assert.equal(
+    psql(database, `SELECT to_regclass('mobile_push_attempts') IS NOT NULL;`),
+    "t",
+    "forward migration creates durable per-installation attempts",
+  );
+  assert.equal(
+    psql(database, `SELECT count(*) FROM pg_indexes WHERE tablename='mobile_push_attempts' AND indexdef ILIKE '%UNIQUE%push_log_id%installation_id%';`),
+    "1",
+    "database enforces one attempt per logical push and installation",
+  );
   psql(database, `INSERT INTO mobile_push_tokens(user_id,installation_id,expo_push_token,platform,enabled)
     VALUES('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','ExponentPushToken[fixture-rotated-history]','android',false);`);
   assert.equal(
@@ -108,6 +118,7 @@ try {
   psql(database, rollback);
   assert.equal(psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_notification_prefs' AND column_name='privacy_preview';`), "0", "rollback removes only the new preference column");
   assert.equal(psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_notification_prefs' AND column_name='locale';`), "0", "rollback removes the new locale column");
+  assert.equal(psql(database, `SELECT to_regclass('mobile_push_attempts') IS NULL;`), "t", "rollback removes the Task 2 attempt table");
   assert.equal(psql(database, `SELECT to_regclass('ux_mobile_push_tokens_active_installation') IS NOT NULL;`), "t", "rollback retains active-installation enforcement");
   expectSqlFailure(
     `INSERT INTO mobile_push_tokens(user_id,installation_id,expo_push_token,platform,enabled)
@@ -126,6 +137,7 @@ try {
 
   psql(database, forward);
   assert.equal(psql(database, `SELECT to_regclass('ux_mobile_push_tokens_active_native') IS NOT NULL;`), "t", "forward migration reapplies after rollback");
+  assert.equal(psql(database, `SELECT to_regclass('mobile_push_attempts') IS NOT NULL;`), "t", "attempt schema reapplies after rollback");
   assert.equal(psql(database, `SELECT privacy_preview::text FROM mobile_notification_prefs WHERE user_id='00000000-0000-4000-8000-000000000001';`), "false", "reapplied migration preserves the safe preference default");
   console.log("NOTIFICATION_INTEGRITY_MIGRATION_OK");
 } finally {

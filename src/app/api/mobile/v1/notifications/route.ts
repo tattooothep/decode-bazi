@@ -57,6 +57,7 @@ type LogRow = {
   title: string | null;
   body: string | null;
   payload: unknown;
+  delivery_status: "accepted" | "delivered";
   sent_at: string;
   read_at: string | null;
 };
@@ -164,10 +165,10 @@ export async function GET(req: Request) {
   const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, Math.floor(limitRaw))) : 50;
 
   const rows = await q<LogRow>(
-    `SELECT id, kind, title, body, payload, sent_at, read_at
+    `SELECT id, kind, title, body, payload, delivery_status, sent_at, read_at
        FROM mobile_push_log
       WHERE user_id=$1
-        AND delivery_status='accepted'
+        AND delivery_status IN ('accepted','delivered')
         AND ($2::text IS NULL OR kind=$2)
       ORDER BY sent_at DESC
       LIMIT $3`,
@@ -175,7 +176,7 @@ export async function GET(req: Request) {
   );
   const unread = await q1<{ n: number }>(
     `SELECT count(*)::int AS n FROM mobile_push_log
-      WHERE user_id=$1 AND delivery_status='accepted' AND read_at IS NULL`,
+      WHERE user_id=$1 AND delivery_status IN ('accepted','delivered') AND read_at IS NULL`,
     [session.userId],
   );
   const prefs = await readPrefs(session.userId);
@@ -188,6 +189,7 @@ export async function GET(req: Request) {
         title: r.title || "",
         body: r.body || "",
         payload: r.payload ?? null,
+        delivery_status: r.delivery_status,
         sent_at: r.sent_at,
         read: r.read_at !== null,
       })),
@@ -211,18 +213,18 @@ export async function POST(req: Request) {
       const ids = raw.filter((v): v is string => typeof v === "string" && UUID_RE.test(v)).slice(0, 200);
       if (!ids.length) return NextResponse.json({ ok: false, error: "invalid_ids" }, { status: 400 });
       await q(`UPDATE mobile_push_log SET read_at=now()
-                WHERE user_id=$1 AND delivery_status='accepted'
+                WHERE user_id=$1 AND delivery_status IN ('accepted','delivered')
                   AND id = ANY($2::uuid[]) AND read_at IS NULL`, [
         session.userId,
         ids,
       ]);
     } else {
       await q(`UPDATE mobile_push_log SET read_at=now()
-                WHERE user_id=$1 AND delivery_status='accepted' AND read_at IS NULL`, [session.userId]);
+                WHERE user_id=$1 AND delivery_status IN ('accepted','delivered') AND read_at IS NULL`, [session.userId]);
     }
     const unread = await q1<{ n: number }>(
       `SELECT count(*)::int AS n FROM mobile_push_log
-        WHERE user_id=$1 AND delivery_status='accepted' AND read_at IS NULL`,
+        WHERE user_id=$1 AND delivery_status IN ('accepted','delivered') AND read_at IS NULL`,
       [session.userId],
     );
     return NextResponse.json({ ok: true, unread: unread?.n || 0 }, { headers: { "Cache-Control": "no-store" } });

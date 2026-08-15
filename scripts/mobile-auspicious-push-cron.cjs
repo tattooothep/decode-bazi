@@ -110,7 +110,7 @@ async function main() {
            COALESCE(np.timezone, u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id = u.id AND l.delivery_status='accepted'
+             WHERE l.user_id = u.id AND l.delivery_status IN ('accepted','delivered')
                AND l.sent_at >= now() - interval '24 hours') AS sent_today
       FROM mobile_push_tokens t
       JOIN users u ON u.id = t.user_id
