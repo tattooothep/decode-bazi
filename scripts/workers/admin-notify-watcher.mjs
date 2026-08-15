@@ -44,8 +44,8 @@ try {
     );
     vapidReady = true;
   }
-} catch (error) {
-  console.error(JSON.stringify({ event: "vapid_error", error: error.message }));
+} catch {
+  console.error(JSON.stringify({ event: "vapid_error", error_code: "vapid_setup_failed" }));
 }
 
 const COPY = {
@@ -187,13 +187,16 @@ function mobileDestination(tag) {
   return "/account";
 }
 
-function buildAdminMobileNotice({ userId, eventId, eventType, msg, tokens }) {
+function buildAdminMobileNotice({ userId, eventId, eventType, msg, tokens, eventPayload = {} }) {
   const category = categoryForEvent(eventType);
   const url = mobileDestination(eventType);
   const facts = category === "security"
     ? { event: String(eventType).slice(0, 80), url }
     : { event: String(eventType).slice(0, 80), referenceId: String(eventId), url };
   const typed = notificationPayload.buildNotificationPayload(category, String(userId), facts);
+  const historyCopies = mobileDelivery.localizedHistoryCopies(
+    (locale) => messageFor(eventType, locale, eventPayload, url),
+  );
   return {
     userId,
     key: `outbox|${eventId}`,
@@ -201,9 +204,12 @@ function buildAdminMobileNotice({ userId, eventId, eventType, msg, tokens }) {
     transactional: true,
     title: String(msg.title || "Hourkey").slice(0, 120),
     body: String(msg.body || "").slice(0, 400),
+    historyCopies,
     payload: typed,
     sourceFacts: { eventType: String(eventType), referenceId: String(eventId), destination: url },
-    messages: tokens.map((token) => ({
+    messages: tokens.map((token) => {
+      const copy = messageFor(eventType, token.locale, eventPayload, url);
+      return {
       tokenId: token.id,
       expoToken: token.expo_push_token,
       deviceToken: token.device_push_token,
@@ -211,11 +217,12 @@ function buildAdminMobileNotice({ userId, eventId, eventType, msg, tokens }) {
       platform: token.platform,
       category,
       locale: notificationPayload.normalizedLocale(token.locale),
-      title: String(msg.title || "Hourkey").slice(0, 120),
-      body: String(msg.body || "").slice(0, 400),
+      title: String(copy.title || "Hourkey").slice(0, 120),
+      body: String(copy.body || "").slice(0, 400),
       url,
       data: typed,
-    })),
+      };
+    }),
   };
 }
 
@@ -230,7 +237,10 @@ async function sendNativePush(userId, msg, targetUrl, tag, referenceId, dependen
     [userId]
   );
   if (!tokens.rows.length) return { sent: 0, temporaryFailures: 0, permanentFailures: 0, attempted: 0 };
-  const notice = buildAdminMobileNotice({ userId, eventId: referenceId, eventType: tag, msg, tokens: tokens.rows });
+  const notice = buildAdminMobileNotice({
+    userId, eventId: referenceId, eventType: tag, msg, tokens: tokens.rows,
+    eventPayload: dependencies.eventPayload || {},
+  });
   const result = await durable.deliver(database, notice);
   if (result.status === "duplicate") {
     const existing = await database.query(
@@ -431,7 +441,7 @@ async function sendDelivery(delivery, dependencies = {}) {
     event.target_url,
     event.event_type,
     event.id,
-    { db: database, delivery: dependencies.delivery || mobileDelivery },
+    { db: database, delivery: dependencies.delivery || mobileDelivery, eventPayload: payload },
   );
   const subs = await database.query(`SELECT id,endpoint,p256dh,auth,fail_count FROM push_subscriptions WHERE user_id=$1`, [delivery.recipient_user_id]);
   if ((!subs.rows.length || !vapidReady) && !native.sent && !native.temporaryFailures && !native.permanentFailures) {
@@ -521,8 +531,8 @@ async function tick() {
     }
     await finishEvents();
     await checkNativePushReceipts();
-  } catch (error) {
-    console.error(JSON.stringify({ event: "tick_failed", error: String(error?.message || error) }));
+  } catch {
+    console.error(JSON.stringify({ event: "tick_failed", error_code: "worker_tick_failed" }));
   }
 }
 
@@ -546,8 +556,8 @@ export {
 };
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await runWorker().catch(async (error) => {
-    console.error(JSON.stringify({ event: "worker_failed", error: String(error?.message || error) }));
+  await runWorker().catch(async () => {
+    console.error(JSON.stringify({ event: "worker_failed", error_code: "worker_start_failed" }));
     await db.end().catch(() => {});
     process.exitCode = 1;
   });

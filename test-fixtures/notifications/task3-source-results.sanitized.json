@@ -1,0 +1,112 @@
+{
+  "accountId": "00000000-0000-4000-8000-000000000701",
+  "tokenId": "10000000-0000-4000-8000-000000000701",
+  "installationId": "20000000-0000-4000-8000-000000000701",
+  "profileId": "30000000-0000-4000-8000-000000000701",
+  "timezone": "Asia/Bangkok",
+  "runAt": "2026-08-15T01:05:00.000Z",
+  "security": {
+    "eventId": "40000000-0000-4000-8000-000000000701",
+    "eventType": "account_login",
+    "eventPayload": {}
+  },
+  "service": {
+    "eventId": "40000000-0000-4000-8000-000000000702",
+    "eventType": "support_admin_reply",
+    "eventPayload": {}
+  },
+  "savedDate": {
+    "id": "50000000-0000-4000-8000-000000000701",
+    "payload": {
+      "datetime": { "start": "2026-08-15T02:05:00.000Z" },
+      "activityType": "launch"
+    }
+  },
+  "daily": {
+    "slot": "morning",
+    "date": "2026-08-15",
+    "todayApi": {
+      "ok": true,
+      "verdict": { "score": 72, "label": "good" },
+      "tongshu": { "yi": ["เริ่มงาน", "เจรจา"] }
+    },
+    "hoursApi": {
+      "hours": [
+        { "range": "09:00-11:00", "quality": "best", "branch": "巳" },
+        { "range": "13:00-15:00", "quality": "good", "branch": "未" }
+      ]
+    }
+  },
+  "yam": {
+    "date": "2026-08-15",
+    "nowMinutes": 495,
+    "hoursApi": {
+      "hours": [
+        { "range": "09:00-11:00", "quality": "best", "branch": "巳" },
+        { "range": "13:00-15:00", "quality": "good", "branch": "未" }
+      ]
+    }
+  },
+  "qimen": {
+    "request": {
+      "date": "2026-08-15",
+      "time": "08:05",
+      "timezone": "Asia/Bangkok",
+      "instant": "2026-08-15T01:05:00.000Z",
+      "lat": 13.7563,
+      "lng": 100.5018,
+      "school": "chaibu",
+      "system_type": "hour"
+    },
+    "api": {
+      "data": {
+        "palaces": [
+          { "direction": "SE", "display_score": 67 },
+          { "direction": "N", "display_score": 54 },
+          { "direction": "CENTER", "display_score": 99 }
+        ]
+      }
+    }
+  },
+  "shrine": {
+    "date": "2026-08-16",
+    "festivals": [
+      { "th": "เทศกาลจงหยวน", "en": "Ghost Festival", "zh": "中元節", "kind": "festival", "major": true }
+    ]
+  },
+  "goal": {
+    "engineVersion": "auspicious-fixture-v1",
+    "goals": [
+      {
+        "id": "60000000-0000-4000-8000-000000000701",
+        "profileId": "30000000-0000-4000-8000-000000000701",
+        "title": "Launch",
+        "nextAuspicious": { "date": "2026-08-18", "dayLabel": "วันอังคารที่ 18 สิงหาคม", "hourRange": "09:00-11:00", "score": 72 }
+      }
+    ]
+  },
+  "network": {
+    "date": "2026-08-15",
+    "api": {
+      "ok": true,
+      "active_profile": { "id": "30000000-0000-4000-8000-000000000701" },
+      "people": [
+        {
+          "id": "30000000-0000-4000-8000-000000000702",
+          "name": "Contact A",
+          "scores": { "day": 42 },
+          "reading": { "th": "เกื้อหนุน", "en": "supportive", "zh": "助力" },
+          "guidance": { "primary_i18n": { "th": "ประสานงาน", "en": "coordinate", "zh": "協調" } }
+        },
+        {
+          "id": "30000000-0000-4000-8000-000000000703",
+          "name": "Contact B",
+          "scores": { "day": -31 },
+          "reading": { "th": "ขัดแย้ง", "en": "friction", "zh": "摩擦" },
+          "guidance": { "primary_i18n": { "th": "ตั้งขอบเขต", "en": "set boundaries", "zh": "設定界線" } }
+        }
+      ]
+    }
+  },
+  "monthly": { "date": "2026-08-01" }
+}

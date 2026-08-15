@@ -77,6 +77,46 @@ function buildDailyCopy({ loc, slot, dateLabel, score, label, tongshuYi, golden 
   return { title, body: parts.join(" · ") };
 }
 
+function buildDailyProducer(user, input) {
+  const today = input?.todayApi;
+  if (!today || today.ok === false || !user?.id || !user?.profile_id) return null;
+  const slot = input?.slot === "evening" ? "evening" : "morning";
+  const date = String(input?.date || "");
+  const dateLabel = `${date.slice(8, 10)}/${date.slice(5, 7)}`;
+  const verdict = today.verdict && typeof today.verdict === "object" ? today.verdict : {};
+  const score = Number.isFinite(Number(verdict.score)) ? Number(verdict.score) : null;
+  const label = typeof verdict.label === "string" ? verdict.label : "";
+  const tongshuYi = Array.isArray(today?.tongshu?.yi) ? today.tongshu.yi.slice(0, 2) : [];
+  const hours = Array.isArray(input?.hoursApi?.hours) ? input.hoursApi.hours : [];
+  const nowMinutes = slot === "morning" && Number.isFinite(Number(input?.nowMinutes)) ? Number(input.nowMinutes) : -1;
+  const usable = hours.filter((hour) => {
+    const match = /^(\d{2}):(\d{2})-/u.exec(String(hour?.range || ""));
+    return match ? Number(match[1]) * 60 + Number(match[2]) >= nowMinutes : false;
+  });
+  const golden = usable.find((hour) => String(hour.quality || "") === "best")
+    || usable.find((hour) => String(hour.quality || "") === "good") || null;
+  const build = (locale) => buildDailyCopy({ loc: locale, slot, dateLabel, score, label, tongshuYi, golden });
+  const historyCopies = delivery.localizedHistoryCopies(build);
+  const payload = notificationPayload.buildNotificationPayload("daily", String(user.id), { slot, date, url: "/today" });
+  return {
+    userId: user.id, key: `daily|${slot}|${date}|${user.profile_id}`, kind: "daily",
+    ...historyCopies.th, historyCopies, payload,
+    sourceFacts: {
+      profileId: user.profile_id, timezone: user.user_timezone, score, label, tongshuYi,
+      goldenHour: golden ? { range: golden.range, quality: golden.quality } : null,
+    },
+    messages: (user.tokens || []).map((token) => {
+      const entry = typeof token === "object" && token ? token : { device: token, locale: "th" };
+      const locale = notificationPayload.normalizedLocale(entry.locale);
+      return {
+        tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
+        expoToken: entry.expo, platform: entry.platform, category: "daily", locale,
+        ...build(locale), url: "/today", data: payload,
+      };
+    }),
+  };
+}
+
 async function main() {
   if (SLOT !== "morning" && SLOT !== "evening") throw new Error(`bad slot ${SLOT}`);
   const db = new Client({
@@ -152,7 +192,7 @@ async function main() {
       });
       if (!guardVerdict.allow) {
         skipped++;
-        if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${guardVerdict.reason}`);
+        if (DRY) console.log(`[mobile-daily-push] category=daily dry_skip=1 error_code=${guardVerdict.reason}`);
         continue;
       }
       if (!u.profile_id) { skipped++; continue; }
@@ -161,8 +201,6 @@ async function main() {
       const dateStr = SLOT === "evening"
         ? guard.localDateStr(u.user_timezone, new Date(runAt.getTime() + 86_400_000))
         : baseDay;
-      const thaiDate = `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
-
       const engine = await science.withTotalTimeout(async (signal) => {
         const todayResult = await getJson(u, `${BASE}/api/mobile/v1/today?date=${dateStr}&profileId=${u.profile_id}`, signal);
         if (!todayResult || todayResult.ok === false) return { today: null, hoursData: null };
@@ -176,80 +214,17 @@ async function main() {
         const hoursData = hoursRes && hoursRes.ok ? await hoursRes.json().catch(() => null) : null;
         return { today: todayResult, hoursData };
       }, 12_000);
-      const today = engine.today;
-      if (!today || today.ok === false) { skipped++; continue; }
-      // ฟิลด์จริงจาก engine เท่านั้น — ไม่มี = ไม่พูดถึง (ห้ามปั้น) · ฟันธงรายวันอยู่ใต้ verdict
-      const verdict = today.verdict && typeof today.verdict === "object" ? today.verdict : {};
-      const score = Number.isFinite(Number(verdict.score)) ? Number(verdict.score) : null;
-      const label = typeof verdict.label === "string" && verdict.label ? verdict.label : "";
-      const yi = today.tongshu && Array.isArray(today.tongshu.yi) ? today.tongshu.yi.slice(0, 2) : [];
-      const hoursData = engine.hoursData;
-      const hours = hoursData && Array.isArray(hoursData.hours) ? hoursData.hours : [];
-      // เช้า = เอาเฉพาะยามที่ยังไม่ผ่าน (แจ้ง 07:00 แล้วชี้ยามตี 1 = ไร้ประโยชน์) · ค่ำชี้พรุ่งนี้ทั้งวัน
-      const nowMin = SLOT === "morning" ? (localNowMin ?? 0) : -1;
-      const usable = hours.filter((h) => {
-        const m = /^(\d{2}):(\d{2})-/.exec(String(h.range || ""));
-        return m ? Number(m[1]) * 60 + Number(m[2]) >= nowMin : false;
+      const notice = buildDailyProducer(u, {
+        slot: SLOT, date: dateStr, todayApi: engine.today, hoursApi: engine.hoursData,
+        nowMinutes: SLOT === "morning" ? (localNowMin ?? 0) : -1,
       });
-      const golden = usable.find((h) => String(h.quality || "") === "best") || usable.find((h) => String(h.quality || "") === "good");
-
-      // เนื้อหา 3 ภาษาตาม locale ของเครื่อง (กฎ zh ห้ามไทยปน) — yi จาก engine ใส่เฉพาะ th
-      // (yi อาจเป็นข้อความไทย → ห้ามหลุดเข้า en/zh)
-      const build = (loc) => buildDailyCopy({ loc, slot: SLOT, dateLabel: thaiDate, score, label, tongshuYi: yi, golden });
-      const thMsg = build("th");
-      if (!thMsg.body) { skipped++; continue; }
-
-      const yamKey = `daily|${SLOT}|${dateStr}|${u.profile_id}`;
-      const typedPayload = notificationPayload.buildNotificationPayload("daily", String(u.id), {
-        slot: SLOT, date: dateStr, url: "/today",
-      });
-      const userMessages = [];
-      for (const tk of u.tokens || []) {
-        const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
-        const localeValue = String(entry.locale || "th").toLowerCase();
-        const loc = localeValue === "th"
-          ? "th"
-          : localeValue === "zh" || localeValue === "cn" || localeValue.startsWith("zh-")
-            ? "zh"
-            : "en";
-        const m = build(loc);
-        if (!m.body) continue;
-        userMessages.push({
-          tokenId: entry.id,
-          deviceToken: entry.device,
-          deviceTokenType: entry.deviceType,
-          expoToken: entry.expo,
-          platform: entry.platform,
-          category: "daily",
-          locale: loc,
-          title: m.title,
-          body: m.body,
-          url: "/today",
-          data: typedPayload,
-        });
-      }
-      const result = await delivery.deliver(db, {
-        userId: u.id,
-        key: yamKey,
-        kind: "daily",
-        title: thMsg.title,
-        body: thMsg.body,
-        payload: typedPayload,
-        sourceFacts: {
-          profileId: u.profile_id,
-          timezone: u.user_timezone,
-          score,
-          label,
-          tongshuYi: yi,
-          goldenHour: golden ? { range: golden.range, quality: golden.quality } : null,
-        },
-        messages: userMessages,
-      }, { dry: DRY });
+      if (!notice) { skipped++; continue; }
+      const result = await delivery.deliver(db, notice, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
       else if (result.status === "failed") failed++;
       else skipped++;
-      if (DRY) console.log(`[DRY] ${u.email} → ${thMsg.title} | ${thMsg.body}`);
-    } catch (e) { console.error(`[mobile-daily-push] user=${u.id}`, e.message); }
+      if (DRY) console.log("[mobile-daily-push] category=daily dry_candidate=1");
+    } catch { console.error("[mobile-daily-push] category=daily error_code=user_failed"); }
   }
 
   console.log(`[mobile-daily-push] ${DRY ? "DRY " : ""}slot=${SLOT} accepted=${sent} failed=${failed} skipped=${skipped}`);
@@ -257,6 +232,6 @@ async function main() {
   await db.end();
 }
 
-module.exports = { buildDailyCopy,getJson,main };
+module.exports = { buildDailyCopy,buildDailyProducer,getJson,main };
 
-if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
+if (require.main === module) main().catch(() => { console.error("[mobile-daily-push] category=daily error_code=scheduler_failed"); process.exit(1); });

@@ -36,6 +36,30 @@ for (const forbidden of ["authorization", "auth", "cookie", "session", "apiKey",
   );
 }
 
+await assert.rejects(
+  delivery.reserve({ async query() { throw new Error("transactional validation ran too late"); } }, {
+    userId: "acct-policy", key: "invalid-transactional", kind: "daily", transactional: true,
+    title: "Daily", body: "Daily body", payload: {}, sourceFacts: {}, messages: [],
+  }, true),
+  /transactional.*security.*service/iu,
+  "reservation rejects a raw transactional bypass for advisory/science categories before any query",
+);
+const untrustedTransactional = delivery.currentPolicyDecision(
+  { kind: "daily", transactional: true, privacy_safe: true, created_at: new Date().toISOString() },
+  { privacy_preview: true, has_prefs: false, timezone: "UTC", now_at: new Date(), prefs: null },
+  0,
+);
+assert.equal(untrustedTransactional.allow, false, "retry policy does not trust a raw transactional flag on a daily parent");
+assert.equal(
+  delivery.currentPolicyDecision(
+    { kind: "security", transactional: true, privacy_safe: true, created_at: new Date().toISOString() },
+    { privacy_preview: true, has_prefs: false, timezone: "UTC", now_at: new Date(), prefs: null },
+    0,
+  ).allow,
+  true,
+  "validated transactional security remains eligible for its explicit bypass",
+);
+
 let releaseArgument: unknown = undefined;
 const pooledDb = {
   totalCount: 1,
@@ -71,12 +95,23 @@ const timeoutDb = {
     return { rows: [] };
   },
 };
-await assert.rejects(
-  delivery.withSchedulerRunLease(timeoutDb, "yam", async () => new Promise(() => {}), { timeoutMs: 20 }),
-  /notification_internal_timeout/u,
-);
-assert.equal(releases, 1, "a total-timeout abort releases the scheduler lease");
+let settleIgnoredCallback!: () => void;
+let observedAbort = false;
+const ignoredCallback = new Promise<void>((resolve) => { settleIgnoredCallback = resolve; });
+const timedOutRun = delivery.withSchedulerRunLease(timeoutDb, "yam", async (signal: AbortSignal) => {
+  signal.addEventListener("abort", () => { observedAbort = true; }, { once: true });
+  await ignoredCallback;
+  return "late-result";
+}, { timeoutMs: 20 });
+await new Promise((resolve) => setTimeout(resolve, 40));
+assert.equal(observedAbort, true, "the shared scheduler signal is aborted at the total deadline");
+assert.equal(releases, 0, "the scheduler lease stays fenced while an abort-ignoring callback is unsettled");
+const overlappingRun = await delivery.withSchedulerRunLease(timeoutDb, "yam", async () => "overlap", { timeoutMs: 20 });
+assert.deepEqual(overlappingRun, { acquired: false, result: null }, "a next run cannot acquire while the old callback is unsettled");
+settleIgnoredCallback();
+await assert.rejects(timedOutRun, /notification_internal_timeout/u);
+assert.equal(releases, 1, "the timed-out scheduler unlocks only after its callback settles");
 const nextRun = await delivery.withSchedulerRunLease(timeoutDb, "yam", async () => "next", { timeoutMs: 20 });
-assert.deepEqual(nextRun, { acquired: true, result: "next" }, "the next scheduler run can acquire after a timed-out fetch");
+assert.deepEqual(nextRun, { acquired: true, result: "next" }, "the next scheduler run can acquire after the old callback settles");
 
 console.log("NOTIFICATION_ATOMICITY_TASK3_OK");

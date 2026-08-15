@@ -88,6 +88,13 @@ try {
     [tokenId, userId],
   );
   const privateNotice = notice("private-preview");
+  privateNotice.title = "ประวัติภาษาไทย";
+  privateNotice.body = "รายละเอียดภาษาไทย";
+  privateNotice.historyCopies = {
+    th: { title: privateNotice.title, body: privateNotice.body },
+    en: { title: "English account history", body: "Full useful facts for the authenticated account history" },
+    zh: { title: "中文帳戶記錄", body: "完整且有用的已驗證帳戶通知內容" },
+  };
   privateNotice.sourceFacts = { score: 72, profileId: "profile-synthetic" };
   privateNotice.messages = [{
     tokenId, expoToken: "ExponentPushToken[synthetic-cap-test]", platform: "android",
@@ -100,7 +107,8 @@ try {
     `SELECT l.title,l.body,l.payload,l.source_facts,a.provider_message
        FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id WHERE l.yam_key='private-preview'`,
   );
-  assert.equal(privacy.rows[0].title, "history", "authenticated history keeps full copy");
+  assert.equal(privacy.rows[0].title, "English account history", "authenticated history uses the account preference locale");
+  assert.equal(privacy.rows[0].body, "Full useful facts for the authenticated account history", "authenticated history keeps useful full localized copy");
   assert.deepEqual(privacy.rows[0].source_facts, privateNotice.sourceFacts, "authenticated history keeps sanitized source facts");
   assert.deepEqual(privacy.rows[0].payload, privateNotice.payload, "stored typed payload keeps exact server facts");
   assert.equal(privacy.rows[0].provider_message.title, "Private notification", "privacy-off provider title is redacted");

@@ -54,6 +54,7 @@ try {
     CREATE TABLE mobile_push_log (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES users(id),
+      kind text NOT NULL DEFAULT 'daily',
       delivery_status text NOT NULL DEFAULT 'accepted'
         CHECK (delivery_status IN ('pending', 'accepted', 'failed'))
     );
@@ -121,6 +122,26 @@ try {
     psql(database, `SELECT count(*) FROM pg_indexes WHERE tablename='mobile_push_attempts' AND indexdef ILIKE '%UNIQUE%push_log_id%installation_id%';`),
     "1",
     "database enforces one attempt per logical push and installation",
+  );
+  const dailyParent = psql(database, `INSERT INTO mobile_push_log(user_id,kind)
+    VALUES('00000000-0000-4000-8000-000000000001','daily') RETURNING id;`);
+  expectSqlFailure(
+    `INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,transactional)
+       VALUES('${dailyParent}','20000000-0000-4000-8000-000000000099','expo','{}','${"a".repeat(64)}',true);`,
+    "database rejects direct transactional attempts whose parent kind is not security/service",
+  );
+  const serviceParent = psql(database, `INSERT INTO mobile_push_log(user_id,kind)
+    VALUES('00000000-0000-4000-8000-000000000001','service') RETURNING id;`);
+  psql(database, `INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,transactional)
+    VALUES('${serviceParent}','20000000-0000-4000-8000-000000000098','expo','{}','${"b".repeat(64)}',true);`);
+  assert.equal(
+    psql(database, `SELECT transactional::text FROM mobile_push_attempts WHERE push_log_id='${serviceParent}';`),
+    "true",
+    "database permits explicitly transactional security/service attempts",
+  );
+  expectSqlFailure(
+    `UPDATE mobile_push_log SET kind='daily' WHERE id='${serviceParent}';`,
+    "database prevents changing a transactional attempt parent into an advisory/science kind",
   );
   assert.equal(
     psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_attempts' AND column_name='send_started_at';`),

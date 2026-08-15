@@ -150,6 +150,47 @@ CREATE TRIGGER mobile_push_attempt_message_immutable
 BEFORE UPDATE ON mobile_push_attempts
 FOR EACH ROW EXECUTE FUNCTION protect_mobile_push_attempt_message();
 
+CREATE OR REPLACE FUNCTION enforce_mobile_push_attempt_transactional_kind()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  parent_kind text;
+BEGIN
+  IF NEW.transactional = true THEN
+    SELECT kind INTO parent_kind FROM mobile_push_log WHERE id=NEW.push_log_id;
+    IF parent_kind IS NULL OR parent_kind NOT IN ('security','service') THEN
+      RAISE EXCEPTION 'transactional mobile push requires security or service parent kind'
+        USING ERRCODE='23514';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mobile_push_attempt_transactional_kind ON mobile_push_attempts;
+CREATE TRIGGER mobile_push_attempt_transactional_kind
+BEFORE INSERT OR UPDATE OF transactional,push_log_id ON mobile_push_attempts
+FOR EACH ROW EXECUTE FUNCTION enforce_mobile_push_attempt_transactional_kind();
+
+CREATE OR REPLACE FUNCTION enforce_mobile_push_log_transactional_kind()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.kind NOT IN ('security','service')
+     AND EXISTS (
+       SELECT 1 FROM mobile_push_attempts
+        WHERE push_log_id=NEW.id AND transactional=true
+     ) THEN
+    RAISE EXCEPTION 'transactional mobile push parent kind must remain security or service'
+      USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mobile_push_log_transactional_kind ON mobile_push_log;
+CREATE TRIGGER mobile_push_log_transactional_kind
+BEFORE UPDATE OF kind ON mobile_push_log
+FOR EACH ROW EXECUTE FUNCTION enforce_mobile_push_log_transactional_kind();
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON mobile_notification_prefs TO hourkey_app;
 GRANT SELECT, INSERT, UPDATE ON mobile_push_log TO hourkey_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON mobile_push_attempts TO hourkey_app;

@@ -87,6 +87,31 @@ function buildMessage(festival, locale) {
   };
 }
 
+function buildShrineProducer(user, source) {
+  const festivals = Array.isArray(source?.festivals) ? source.festivals : [];
+  const festival = festivals.find((item) => item?.major) || festivals[0];
+  if (!user?.id || !festival || !source?.date) return null;
+  const build = (locale) => buildMessage(festival, locale);
+  const historyCopies = delivery.localizedHistoryCopies(build);
+  const payload = notificationPayload.buildNotificationPayload("shrine", String(user.id), {
+    date: source.date, festival: festival.zh, url: "/shrine",
+  });
+  return {
+    userId: user.id, key: `festival|${source.date}|${festival.zh}`, kind: "shrine",
+    ...historyCopies.th, historyCopies, payload,
+    sourceFacts: { timezone: user.user_timezone, festival },
+    messages: (user.tokens || []).map((token) => {
+      const entry = token && typeof token === "object" ? token : { device: token, locale: "th" };
+      const locale = pickLocale(entry.locale);
+      return {
+        tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
+        expoToken: entry.expo, platform: entry.platform, category: "shrine", locale,
+        ...build(locale), url: "/shrine", data: payload,
+      };
+    }),
+  };
+}
+
 async function main() {
   const db = new Client({
     host: process.env.PGHOST || "127.0.0.1",
@@ -150,7 +175,7 @@ async function main() {
       });
       if (!verdict.allow) {
         skipped++;
-        if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
+        if (DRY) console.log(`[mobile-auspicious-push] category=shrine dry_skip=1 error_code=${verdict.reason}`);
         continue;
       }
 
@@ -159,47 +184,15 @@ async function main() {
       const ahead = upcomingFestival(today, 1);
       if (ahead === null) { skipped++; continue; }
 
-      // วันหนึ่งอาจมีหลายรายการ — เอาตัวที่สำคัญที่สุดใบเดียว ไม่ยิงซ้อน
-      const festival = ahead.festivals.find((f) => f.major) || ahead.festivals[0];
-
-      const key = `festival|${ahead.date}|${festival.zh}`;
-      const typedPayload = notificationPayload.buildNotificationPayload("shrine", String(u.id), {
-        date: ahead.date, festival: festival.zh, url: "/shrine",
-      });
-      const first = buildMessage(festival, pickLocale(u.tokens?.[0]?.locale));
-      const userMessages = [];
-      for (const entry of u.tokens || []) {
-        const m = buildMessage(festival, pickLocale(entry?.locale));
-        userMessages.push({
-          tokenId: entry?.id,
-          deviceToken: entry?.device,
-          deviceTokenType: entry?.deviceType,
-          expoToken: entry?.expo,
-          platform: entry?.platform,
-          category: "shrine",
-          locale: pickLocale(entry?.locale),
-          title: m.title,
-          body: m.body,
-          url: "/shrine",
-          data: typedPayload,
-        });
-      }
-      const result = await delivery.deliver(db, {
-        userId: u.id,
-        key,
-        kind: "shrine",
-        title: first.title,
-        body: first.body,
-        payload: typedPayload,
-        sourceFacts: { timezone: u.user_timezone, festival },
-        messages: userMessages,
-      }, { dry: DRY });
+      const notice = buildShrineProducer(u, ahead);
+      if (!notice) { skipped++; continue; }
+      const result = await delivery.deliver(db, notice, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
       else if (result.status === "failed") failed++;
       else skipped++;
-      if (DRY) console.log(`[DRY] ${u.email} → ${first.title} · ${first.body}`);
-    } catch (e) {
-      console.error(`[mobile-auspicious-push] user=${u.id}`, e.message);
+      if (DRY) console.log("[mobile-auspicious-push] category=shrine dry_candidate=1");
+    } catch {
+      console.error("[mobile-auspicious-push] category=shrine error_code=user_failed");
     }
   }
 
@@ -209,6 +202,6 @@ async function main() {
   await db.end();
 }
 
-module.exports = { buildMessage,main,pickLocale };
+module.exports = { buildMessage,buildShrineProducer,main,pickLocale };
 
-if (require.main === module) main().catch((e) => { console.error("[mobile-auspicious-push]", e); process.exit(1); });
+if (require.main === module) main().catch(() => { console.error("[mobile-auspicious-push] category=shrine error_code=scheduler_failed"); process.exit(1); });

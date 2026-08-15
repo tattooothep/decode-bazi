@@ -28,6 +28,36 @@ function assertNoCredentialFacts(value) {
   }
 }
 
+function isTransactionalKind(kind) {
+  return kind === "security" || kind === "service";
+}
+
+function assertTransactionalKind(notice) {
+  if (notice?.transactional === true && !isTransactionalKind(notice?.kind)) {
+    throw new TypeError("transactional notifications require kind security or service");
+  }
+}
+
+function localizedHistoryCopies(build) {
+  if (typeof build !== "function") throw new TypeError("notification history copy builder is required");
+  return Object.fromEntries(["th", "en", "zh"].map((locale) => {
+    const copy = build(locale);
+    const title = String(copy?.title || "").slice(0, 120);
+    const body = String(copy?.body || "").slice(0, 400);
+    if (!title || !body) throw new TypeError(`notification history copy is incomplete for ${locale}`);
+    return [locale, { title, body }];
+  }));
+}
+
+function historyCopyFor(notice, locale) {
+  const family = notificationPayload.normalizedLocale(locale);
+  const copy = notice?.historyCopies?.[family];
+  return {
+    title: String(copy?.title || notice?.title || "").slice(0, 120),
+    body: String(copy?.body || notice?.body || "").slice(0, 400),
+  };
+}
+
 function stableStringify(value) {
   if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
   if (value && typeof value === "object") {
@@ -133,6 +163,7 @@ async function deriveParent(db, pushLogId) {
 }
 
 async function reserve(db, notice, dry = false) {
+  assertTransactionalKind(notice);
   if (dry) {
     const existing = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [notice.userId, notice.key]);
     return existing.rows[0] ? null : { id: null, attemptIds: [] };
@@ -155,6 +186,7 @@ async function reserve(db, notice, dry = false) {
     );
     const context = contextResult.rows[0];
     if (!context) return null;
+    const historyCopy = historyCopyFor(notice, context.locale);
     if (context.has_prefs === true && notice.transactional !== true) {
       const cap = await client.query(
         `SELECT count(*)::int AS reserved_today
@@ -173,7 +205,7 @@ async function reserve(db, notice, dry = false) {
           next_retry_at,accepted_at,sent_at,last_error,updated_at)
        VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,'pending',0,now(),NULL,NULL,NULL,now())
        ON CONFLICT (user_id,yam_key) DO NOTHING RETURNING id`,
-      [notice.userId, notice.key, notice.kind, notice.title, notice.body,
+      [notice.userId, notice.key, notice.kind, historyCopy.title, historyCopy.body,
         JSON.stringify(notice.payload || {}), JSON.stringify(notice.sourceFacts || {})],
     );
     if (!parent.rows[0]) return null;
@@ -260,7 +292,7 @@ async function withSchedulerRunLease(db, schedulerName, run, options = {}) {
   const lease = await trySchedulerRunLease(db, schedulerName);
   if (!lease.acquired) return { acquired: false, result: null };
   try {
-    const result = await notificationScience.withTotalTimeout(
+    const result = await notificationScience.withFencedTotalTimeout(
       (signal) => run(signal),
       Math.max(1, Number(options.timeoutMs || 12_000)),
     );
@@ -440,6 +472,9 @@ function currentPolicyDecision(row, context, capCount) {
   if (context.privacy_preview !== true && row.privacy_safe !== true) {
     return { allow: false, terminal: true, reason: "policy_privacy_changed" };
   }
+  if (row.transactional === true && !isTransactionalKind(row.kind)) {
+    return { allow: false, terminal: true, reason: "policy_invalid_transactional_kind" };
+  }
   if (row.transactional === true) return { allow: true };
   const now = new Date(context.now_at);
   const timezone = notificationScience.safeTimezone(context.timezone);
@@ -485,7 +520,7 @@ async function applyCurrentPolicyLocked(tx, row) {
     timezone: "Asia/Bangkok", privacy_preview: false, has_prefs: false, prefs: null, now_at: new Date(),
   };
   let capCount = 0;
-  if (row.transactional !== true) {
+  if (!(row.transactional === true && isTransactionalKind(row.kind))) {
     const cap = await tx.query(
       `SELECT count(*)::int AS reserved_today
          FROM mobile_push_log l
@@ -702,8 +737,8 @@ async function deliver(db, notice, options = {}) {
 }
 
 module.exports = {
-  assertNoCredentialFacts,
+  assertNoCredentialFacts,assertTransactionalKind,
   claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
   messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
-  currentPolicyDecision,trySchedulerRunLease,withInstallationLock,withSchedulerRunLease,
+  currentPolicyDecision,historyCopyFor,localizedHistoryCopies,trySchedulerRunLease,withInstallationLock,withSchedulerRunLease,
 };

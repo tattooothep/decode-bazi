@@ -47,6 +47,9 @@ assert.deepEqual(serviceNotice.payload, {
 });
 check(serviceNotice.transactional === true && serviceNotice.messages[0].data === serviceNotice.payload,
   "live admin service producer uses one strict immutable payload for storage and provider data");
+check(serviceNotice.historyCopies.en.title === serviceNotice.messages[0].title
+    && !thai.test(`${serviceNotice.historyCopies.en.title}${serviceNotice.historyCopies.en.body}`),
+  "live admin producer supplies full English account-history copy independently of device privacy preview");
 check(!JSON.stringify(serviceNotice.payload).includes("transport-only") && !JSON.stringify(serviceNotice.sourceFacts).includes("transport-only"),
   "live admin producer keeps raw transport credentials out of payload and source facts");
 
@@ -101,7 +104,8 @@ for (const locale of locales) {
   const family = payloadRuntime.normalizedLocale(locale);
   const monthlyProducer = monthly.buildMonthlyProducer("acct-live-001", locale, 7, 2026, "2026-08-01");
   check(monthlyProducer.payload.kind === "service" && monthlyProducer.payload.url === "/calendar"
-      && monthlyProducer.payload.event === "monthly_report_ready" && monthlyProducer.copy.body.length >= 35,
+      && monthlyProducer.payload.event === "monthly_report_ready" && monthlyProducer.copy.body.length >= 35
+      && monthlyProducer.historyCopies.en.body.includes("open Calendar"),
     `monthly live producer is actionable strict service copy for ${locale}`);
   if (locale !== "th") check(!thai.test(`${monthlyProducer.copy.title}${monthlyProducer.copy.body}`), `monthly ${locale} never falls back to Thai`);
 
@@ -110,6 +114,7 @@ for (const locale of locales) {
   const networkProducer = network.buildNetworkProducer("acct-live-001", locale, "2026-08-15", "profile-center", ally, risk);
   check(networkProducer.payload.kind === "service" && networkProducer.payload.url === "/network"
       && networkProducer.payload.referenceId === "network|2026-08-15|profile-center"
+      && networkProducer.historyCopies.en.body.includes("Open Network")
       && networkProducer.copy.body.includes(family === "th" ? "เปิดเครือข่าย" : family === "zh" ? "開啟人脈" : "Open Network"),
     `network live producer preserves server scores and tap action for ${locale}`);
   if (locale !== "th") check(!thai.test(`${networkProducer.copy.title}${networkProducer.copy.body}`), `network ${locale} never falls back to Thai`);
@@ -235,6 +240,54 @@ try {
     "live personal Qimen scheduler checks consent before reading coordinates or fetching the API");
 } finally {
   globalThis.fetch = originalFetch;
+}
+
+process.env.AUTH_SECRET = process.env.AUTH_SECRET || "task3-abort-test-secret";
+const aborted = new AbortController();
+aborted.abort();
+let abortedFetches = 0;
+globalThis.fetch = async (_input: any, init?: RequestInit) => {
+  abortedFetches += 1;
+  init?.signal?.throwIfAborted();
+  throw new Error("aborted scheduler unexpectedly fetched");
+};
+const abortUser = {
+  id: "acct-abort-001", email: "private@example.test", current_org_id: null, session_version: 0,
+  profile_id: "profile-abort-001", has_prefs: true, yam_enabled: true, service_enabled: true,
+  qimen_enabled: false, user_timezone: "Asia/Bangkok", sent_today: 0, quiet_start: 0,
+  quiet_end: 0, max_per_day: 10, paused_until: null, yam_min_quality: "best", yam_lead_minutes: 60,
+  tokens: [],
+};
+const abortDb = { async query() { return { rows: [abortUser] }; } };
+try {
+  await assert.rejects(yam.runScheduler(abortDb, aborted.signal), /abort/u,
+    "Yam must surface scheduler abort instead of catch-and-continuing");
+  check(abortedFetches === 0, "Yam checks the shared abort before starting per-user work");
+  await assert.rejects(network.runScheduler(abortDb, aborted.signal), /abort/u,
+    "network must surface scheduler abort instead of catch-and-continuing");
+  check(abortedFetches === 0, "network checks the shared abort before starting per-user work");
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+for (const [name, scheduler] of [["Yam", yam.runScheduler], ["network", network.runScheduler]] as const) {
+  const duringBody = new AbortController();
+  let bodyReads = 0;
+  globalThis.fetch = async () => ({
+    ok: true,
+    async json() {
+      bodyReads += 1;
+      duringBody.abort();
+      throw new Error("body read interrupted after scheduler abort");
+    },
+  } as Response);
+  try {
+    await assert.rejects(scheduler(abortDb, duringBody.signal), /abort/u,
+      `${name} must not convert an abort during response parsing into a normal skip`);
+    check(bodyReads === 1, `${name} rethrows a shared abort raised during response parsing`);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 }
 
 const database = `notification_live_producer_test_${process.pid}`;

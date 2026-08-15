@@ -104,12 +104,31 @@ async function withTotalTimeout(run, timeoutMs = 12_000) {
   let timer;
   const timeout = new Promise((_, reject) => {
     timer = setTimeout(() => {
-      controller.abort();
+      controller.abort(new Error("notification_internal_timeout"));
       reject(new Error("notification_internal_timeout"));
     }, timeoutMs);
   });
   try {
     return await Promise.race([Promise.resolve().then(() => run(controller.signal)), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function withFencedTotalTimeout(run, timeoutMs = 12_000) {
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort(new Error("notification_internal_timeout"));
+  }, timeoutMs);
+  try {
+    const result = await Promise.resolve().then(() => run(controller.signal));
+    if (timedOut) throw new Error("notification_internal_timeout");
+    return result;
+  } catch (error) {
+    if (timedOut) throw new Error("notification_internal_timeout");
+    throw error;
   } finally {
     clearTimeout(timer);
   }
@@ -129,6 +148,7 @@ module.exports = {
   safeTimezone,
   schedulerLeaseKey,
   selectDueSavedDate,
+  withFencedTotalTimeout,
   withTotalTimeout,
   yamQimenHighlight,
   zonedClock,

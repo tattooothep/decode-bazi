@@ -50,10 +50,32 @@ function buildMonthlyProducer(accountId, loc, mIdx, year, userDay) {
   return {
     key: `monthly|${monthKey}`,
     copy: buildMsg(loc, mIdx, year),
+    historyCopies: delivery.localizedHistoryCopies((locale) => buildMsg(locale, mIdx, year)),
     payload: notificationPayload.buildNotificationPayload("service", String(accountId), {
       event: "monthly_report_ready", referenceId: `monthly|${monthKey}`, url: "/calendar",
     }),
     sourceFacts: { month: monthKey, date: userDay, destination: "/calendar" },
+  };
+}
+
+function buildMonthlyNotice(user, userDay) {
+  const mIdx = Number(String(userDay).slice(5, 7)) - 1;
+  const year = Number(String(userDay).slice(0, 4));
+  if (!user?.id || !Number.isInteger(mIdx) || mIdx < 0 || mIdx > 11 || !Number.isInteger(year)) return null;
+  const producer = buildMonthlyProducer(user.id, "th", mIdx, year, userDay);
+  return {
+    userId: user.id, key: producer.key, kind: "service", ...producer.historyCopies.th,
+    historyCopies: producer.historyCopies, payload: producer.payload,
+    sourceFacts: { ...producer.sourceFacts, timezone: user.user_timezone },
+    messages: (user.tokens || []).map((token) => {
+      const entry = typeof token === "object" && token ? token : { device: token, locale: "th" };
+      const locale = notificationPayload.normalizedLocale(entry.locale);
+      return {
+        tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
+        expoToken: entry.expo, platform: entry.platform, locale, category: "service",
+        ...buildMsg(locale, mIdx, year), url: "/calendar", data: producer.payload,
+      };
+    }),
   };
 }
 
@@ -119,37 +141,18 @@ async function main() {
       });
       if (!verdict.allow) {
         skipped++;
-        if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
+        if (DRY) console.log(`[mobile-monthly-push] category=service dry_skip=1 error_code=${verdict.reason}`);
         continue;
       }
       const userDay = guard.localDateStr(u.user_timezone, runAt);
-      const mIdx = Number(userDay.slice(5, 7)) - 1;
-      const year = Number(userDay.slice(0, 4));
-      const monthKey = `${year}-${String(mIdx + 1).padStart(2, "0")}`;
-      const producer = buildMonthlyProducer(u.id, "th", mIdx, year, userDay);
-      const thMsg = producer.copy;
-      const yamKey = producer.key;
-      const typedPayload = producer.payload;
-      const userMessages = [];
-      for (const tk of u.tokens || []) {
-        const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
-        const loc = notificationPayload.normalizedLocale(entry.locale);
-        const m = buildMsg(loc, mIdx, year);
-        userMessages.push({
-          tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
-          expoToken: entry.expo, platform: entry.platform, locale: loc, category: "service",
-          title: m.title, body: m.body, url: "/calendar", data: typedPayload,
-        });
-      }
-      const result = await delivery.deliver(db, {
-        userId: u.id, key: yamKey, kind: "service", title: thMsg.title, body: thMsg.body,
-        payload: typedPayload, sourceFacts: { ...producer.sourceFacts, timezone: u.user_timezone }, messages: userMessages,
-      }, { dry: DRY });
+      const notice = buildMonthlyNotice(u, userDay);
+      if (!notice) { skipped++; continue; }
+      const result = await delivery.deliver(db, notice, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
       else if (result.status === "failed") failed++;
       else skipped++;
-      if (DRY) console.log(`[DRY] ${u.email} → ${thMsg.title}`);
-    } catch (e) { console.error(`[mobile-monthly-push] user=${u.id}`, e.message); }
+      if (DRY) console.log("[mobile-monthly-push] category=service dry_candidate=1");
+    } catch { console.error("[mobile-monthly-push] category=service error_code=user_failed"); }
   }
 
   console.log(`[mobile-monthly-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
@@ -157,6 +160,6 @@ async function main() {
   await db.end();
 }
 
-module.exports = { buildMonthlyProducer,buildMsg,main };
+module.exports = { buildMonthlyNotice,buildMonthlyProducer,buildMsg,main };
 
-if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
+if (require.main === module) main().catch(() => { console.error("[mobile-monthly-push] category=service error_code=scheduler_failed"); process.exit(1); });

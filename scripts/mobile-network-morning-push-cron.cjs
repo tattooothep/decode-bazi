@@ -66,12 +66,27 @@ function signSession(user) {
 
 async function getJson(user, url, signal) {
   const token = signSession(user);
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, Cookie: `decode_auth=${token}` },
-    signal,
-  }).catch(() => null);
+  signal?.throwIfAborted();
+  let res;
+  try {
+    res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, Cookie: `decode_auth=${token}` },
+      signal,
+    });
+  } catch {
+    signal?.throwIfAborted();
+    return null;
+  }
+  signal?.throwIfAborted();
   if (!res || !res.ok) return null;
-  return res.json().catch(() => null);
+  try {
+    const data = await res.json();
+    signal?.throwIfAborted();
+    return data;
+  } catch {
+    signal?.throwIfAborted();
+    return null;
+  }
 }
 
 /* ---------- ถ้อยคำ: กรอบข้อความ 3 ภาษาเท่านั้น · เนื้อคำอ่านมาจาก engine ล้วน ---------- */
@@ -159,6 +174,7 @@ function buildNetworkProducer(accountId, loc, userDate, centerId, allyPick, risk
   return {
     key: `network|morning|${userDate}|${centerId}`,
     copy: buildMessage(notificationPayload.normalizedLocale(loc), allyPick, riskPick, label),
+    historyCopies: delivery.localizedHistoryCopies((locale) => buildMessage(locale, allyPick, riskPick, label)),
     payload: notificationPayload.buildNotificationPayload("service", String(accountId), {
       event: "network_morning", referenceId: `network|${userDate}|${centerId}`, url: "/network",
     }),
@@ -171,8 +187,49 @@ function buildNetworkProducer(accountId, loc, userDate, centerId, allyPick, risk
   };
 }
 
+function buildNetworkNotice(user, userDate, apiResult) {
+  const centerId = apiResult?.active_profile?.id || null;
+  if (!user?.id || !centerId || !Array.isArray(apiResult?.people)) return null;
+  const scored = apiResult.people.filter((person) => dayScore(person) !== null);
+  const pool = POOL_MODE === "listorder"
+    ? scored
+    : scored.slice().sort((left, right) => Math.abs(dayScore(right)) - Math.abs(dayScore(left)));
+  const people = pool.slice(0, MAX_PEOPLE);
+  if (people.length < 2) return null;
+  let ally = people[0];
+  let risk = people[0];
+  for (const person of people) {
+    if (dayScore(person) > dayScore(ally)) ally = person;
+    if (dayScore(person) < dayScore(risk)) risk = person;
+  }
+  const allyScore = dayScore(ally);
+  const riskScore = dayScore(risk);
+  if (allyScore < MIN_ABS_SCORE && riskScore > -MIN_ABS_SCORE) return null;
+  const allyPick = allyScore >= MIN_ABS_SCORE ? ally : null;
+  const riskPick = riskScore <= -MIN_ABS_SCORE && risk !== ally ? risk : null;
+  if (!allyPick && !riskPick) return null;
+  const producer = buildNetworkProducer(user.id, "th", userDate, centerId, allyPick, riskPick);
+  return {
+    userId: user.id, key: producer.key, kind: "service", ...producer.historyCopies.th,
+    historyCopies: producer.historyCopies, payload: producer.payload,
+    sourceFacts: { ...producer.sourceFacts, timezone: user.user_timezone },
+    messages: (user.tokens || []).map((token) => {
+      const entry = typeof token === "object" && token ? token : { device: token, locale: "th" };
+      const locale = notificationPayload.normalizedLocale(entry.locale);
+      return {
+        tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
+        expoToken: entry.expo, platform: entry.platform, locale, category: "service",
+        ...buildMessage(locale, allyPick, riskPick, `${userDate.slice(8, 10)}/${userDate.slice(5, 7)}`),
+        url: "/network", data: producer.payload,
+      };
+    }),
+  };
+}
+
 async function runScheduler(db, schedulerSignal) {
+  schedulerSignal.throwIfAborted();
   const users = await loadUsers(db);
+  schedulerSignal.throwIfAborted();
   /**
    * 🔴 ห้ามคิดวันที่ให้ทุกคนจากเวลาไทย (แก้ 30 ก.ค. 69)
    * เดิมบวก 7 ชั่วโมงตายตัวแล้วใช้วันนั้นกับทุกคน
@@ -187,6 +244,7 @@ async function runScheduler(db, schedulerSignal) {
 
   let notified = 0, skipped = 0, failed = 0;
   for (const u of users) {
+    schedulerSignal.throwIfAborted();
     try {
 
       /**
@@ -206,43 +264,18 @@ async function runScheduler(db, schedulerSignal) {
       });
       if (!verdict.allow) {
         skipped++;
-        if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
+        if (DRY) console.log(`[mobile-network-push] category=service dry_skip=1 error_code=${verdict.reason}`);
         continue;
       }
       const userDate = /^\d{4}-\d{2}-\d{2}$/.test(DATE_ARG)
         ? DATE_ARG
         : guard.localDateStr(u.user_timezone, runAt);
-      const localDateLabel = `${userDate.slice(8, 10)}/${userDate.slice(5, 7)}`;
       const data = await getJson(u, `${BASE}/api/mobile/v1/network?date=${userDate}`, schedulerSignal);
       if (!data || data.ok === false || !Array.isArray(data.people)) { skipped++; continue; }
-      const centerId = data.active_profile && data.active_profile.id ? data.active_profile.id : null;
-      if (!centerId) { skipped++; continue; }
-
-      // ต้องมีคะแนนวันจาก engine จริง + จำกัดผู้เข้าชิง 8 คนต่อ user
-      const scored = data.people.filter((p) => dayScore(p) !== null);
-      const pool = POOL_MODE === "listorder"
-        ? scored
-        : scored.slice().sort((a, b) => Math.abs(dayScore(b)) - Math.abs(dayScore(a)));
-      const people = pool.slice(0, MAX_PEOPLE);
-      if (people.length < 2) { skipped++; continue; }
-
-      let ally = people[0], risk = people[0];
-      for (const p of people) {
-        if (dayScore(p) > dayScore(ally)) ally = p;
-        if (dayScore(p) < dayScore(risk)) risk = p;
-      }
-      const allyScore = dayScore(ally), riskScore = dayScore(risk);
-      // ห้ามยิงข้อความจืด: ต้องมีอย่างน้อยหนึ่งฝั่งที่แรงพอ
-      if (allyScore < MIN_ABS_SCORE && riskScore > -MIN_ABS_SCORE) { skipped++; continue; }
-      const allyPick = allyScore >= MIN_ABS_SCORE ? ally : null;
-      const riskPick = riskScore <= -MIN_ABS_SCORE && risk !== ally ? risk : null;
-      if (!allyPick && !riskPick) { skipped++; continue; }
-
-      const thMsg = buildMessage("th", allyPick, riskPick, localDateLabel);
-      if (!thMsg.body) { skipped++; continue; }
-
-      const allyId = allyPick ? allyPick.id : null;
-      const riskId = riskPick ? riskPick.id : null;
+      const notice = buildNetworkNotice(u, userDate, data);
+      if (!notice) { skipped++; continue; }
+      const allyId = notice.sourceFacts.allyProfileId;
+      const riskId = notice.sourceFacts.riskProfileId;
       const recent = COOLDOWN_DAYS > 0
         ? await db.query(
             `SELECT 1 FROM mobile_push_log
@@ -254,14 +287,9 @@ async function runScheduler(db, schedulerSignal) {
             [u.id, String(COOLDOWN_DAYS), allyId, riskId])
         : { rows: [] };
 
-      const yamKey = `network|morning|${userDate}|${centerId}`;
       if (DRY) {
-        const dup = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [u.id, yamKey]);
-        console.log(`[DRY] ${u.email} key=${yamKey} already_sent=${dup.rows.length > 0} cooldown_hit=${recent.rows.length > 0} people=${people.length}`);
-        for (const loc of ["th", "en", "zh"]) {
-          const m = buildMessage(loc, allyPick, riskPick, localDateLabel);
-          console.log(`[DRY][${loc}] ${m.title}\n${m.body}`);
-        }
+        const dup = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [u.id, notice.key]);
+        console.log(`[mobile-network-push] category=service dry_candidate=1 duplicate=${dup.rows.length > 0} cooldown=${recent.rows.length > 0} people=${data.people.length}`);
         notified++;
         continue;
       }
@@ -269,36 +297,18 @@ async function runScheduler(db, schedulerSignal) {
       // คู่เดิมเพิ่งยิงไปในช่วง cooldown → ข้าม (กันข้อความเดิมซ้ำทุกเช้า)
       if (recent.rows.length) { skipped++; continue; }
 
-      const producer = buildNetworkProducer(u.id, "th", userDate, centerId, allyPick, riskPick);
-      const typedPayload = producer.payload;
-      const userMessages = [];
-      for (const tk of u.tokens || []) {
-        const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
-        const loc = notificationPayload.normalizedLocale(entry.locale);
-        const m = buildMessage(loc, allyPick, riskPick, localDateLabel);
-        if (!m.body) continue;
-        userMessages.push({
-          tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
-          expoToken: entry.expo, platform: entry.platform, locale: loc, category: "service",
-          title: m.title, body: m.body, url: "/network", data: typedPayload,
-        });
-      }
-      const result = await delivery.deliver(db, {
-        userId: u.id, key: yamKey, kind: "service", title: thMsg.title, body: thMsg.body,
-        payload: typedPayload,
-        sourceFacts: {
-          ...producer.sourceFacts, timezone: u.user_timezone,
-        },
-        messages: userMessages,
-      }, { dry: DRY });
+      const result = await delivery.deliver(db, notice, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") notified++;
       else if (result.status === "failed") failed++;
       else skipped++;
     } catch (e) {
+      schedulerSignal.throwIfAborted();
       failed++;
-      console.error(`[mobile-network-push] user=${u.id} error=${e && e.message ? e.message : e}`);
+      console.error("[mobile-network-push] category=service error_code=user_failed");
     }
+    schedulerSignal.throwIfAborted();
     if (USER_GAP_MS) await new Promise((r) => setTimeout(r, USER_GAP_MS));
+    schedulerSignal.throwIfAborted();
   }
 
   console.log(`[mobile-network-push] ${DRY ? "DRY " : ""}date=${dateStr} accepted=${notified} skipped=${skipped} errors=${failed}`);
@@ -320,6 +330,6 @@ async function main() {
   }
 }
 
-module.exports = { buildMessage,buildNetworkProducer,getJson,loadUsers,main,runScheduler };
+module.exports = { buildMessage,buildNetworkNotice,buildNetworkProducer,getJson,loadUsers,main,runScheduler };
 
-if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
+if (require.main === module) main().catch(() => { console.error("[mobile-network-push] category=service error_code=scheduler_failed"); process.exit(1); });

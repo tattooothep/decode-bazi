@@ -80,7 +80,7 @@ function messages(tokens, category, url, data, build) {
       title: copy.title,
       body: copy.body,
       url,
-      data: { ...data, url },
+      data,
     };
   });
 }
@@ -111,6 +111,32 @@ function buildSavedDateCopy(lead, day, activity, loc) {
   };
 }
 
+function buildSavedDateProducer(user, saved, runAt) {
+  const start = new Date(saved?.payload?.datetime?.start);
+  if (!user?.id || !saved?.id || !Number.isFinite(start.valueOf())) return null;
+  const remaining = start.valueOf() - runAt.valueOf();
+  const lead = remaining >= 45 * 60_000 && remaining <= 75 * 60_000 ? "1h"
+    : remaining >= 23.75 * 3_600_000 && remaining <= 24.25 * 3_600_000 ? "24h" : null;
+  if (!lead) return null;
+  const activity = String(saved.payload?.activityType || "").slice(0, 32);
+  const day = new Intl.DateTimeFormat("en-GB", {
+    timeZone: user.user_timezone || "Asia/Bangkok",
+    day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+  }).format(start);
+  const build = (locale) => buildSavedDateCopy(lead, day, activity, locale);
+  const historyCopies = delivery.localizedHistoryCopies(build);
+  const date = guard.localDateStr(user.user_timezone, start);
+  const payload = notificationPayload.buildNotificationPayload("saved_date", String(user.id), {
+    savedDateId: saved.id, lead: lead === "1h" ? 60 : 1_440, date, url: "/datepick/saved",
+  });
+  return {
+    userId: user.id, key: `saved-date|${saved.id}|${lead}`, kind: "saved_date",
+    ...historyCopies.th, historyCopies, payload,
+    sourceFacts: { timezone: user.user_timezone, start: start.toISOString(), activityType: activity || null },
+    messages: messages(user.tokens, "saved_date", "/datepick/saved", payload, build),
+  };
+}
+
 async function savedDateNotice(db, user, runAt, sentToday) {
   const row = await db.query(
     `SELECT id,payload
@@ -126,40 +152,9 @@ async function savedDateNotice(db, user, runAt, sentToday) {
   );
   const saved = row.rows[0];
   if (!saved) return { status: "skipped", reason: "no_saved_date_due" };
-  const start = new Date(saved.payload?.datetime?.start);
-  if (!Number.isFinite(start.getTime())) return { status: "skipped", reason: "bad_saved_date" };
-  const remaining = start.getTime() - runAt.getTime();
-  const lead = remaining <= 75 * 60_000 ? "1h" : remaining >= 23.75 * 3_600_000 ? "24h" : null;
-  if (!lead) return { status: "skipped", reason: "outside_saved_date_window" };
-  const activity = String(saved.payload?.activityType || "").slice(0, 32);
-  const day = new Intl.DateTimeFormat("en-GB", {
-    timeZone: user.user_timezone || "Asia/Bangkok",
-    day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
-  }).format(start);
-  const build = (loc) => buildSavedDateCopy(lead, day, activity, loc);
-  const th = build("th");
-  const key = `saved-date|${saved.id}|${lead}`;
-  const date = guard.localDateStr(user.user_timezone, start);
-  const typedPayload = notificationPayload.buildNotificationPayload("saved_date", String(user.id), {
-    savedDateId: saved.id,
-    lead: lead === "1h" ? 60 : 1_440,
-    date,
-    url: "/datepick/saved",
-  });
-  return notify(db, user, "saved_date", {
-    userId: user.id,
-    key,
-    kind: "saved_date",
-    title: th.title,
-    body: th.body,
-    payload: typedPayload,
-    sourceFacts: {
-      timezone: user.user_timezone,
-      start: start.toISOString(),
-      activityType: activity || null,
-    },
-    messages: messages(user.tokens, "saved_date", "/datepick/saved", typedPayload, build),
-  }, sentToday);
+  const notice = buildSavedDateProducer(user, saved, runAt);
+  if (!notice) return { status: "skipped", reason: "outside_saved_date_window" };
+  return notify(db, user, "saved_date", notice, sentToday);
 }
 
 const DIRECTION = {
@@ -177,6 +172,30 @@ function buildQimenCopy(best, loc) {
       : loc === "en"
         ? `${DIRECTION[best.direction].en} · score ${best.score} · Open the Qimen board for hour-chart context; outcomes are not guaranteed`
         : `${DIRECTION[best.direction].th} · คะแนน ${best.score} · เปิดผังฉีเหมินเพื่อดูบริบทของยาม ไม่ใช่คำรับประกันผล`,
+  };
+}
+
+function buildQimenProducer(user, request, result) {
+  const palaces = Array.isArray(result?.data?.palaces) ? result.data.palaces
+    : Array.isArray(result?.data?.data?.palaces) ? result.data.data.palaces : [];
+  const ranked = palaces.map((palace) => ({
+    direction: String(palace?.direction || "").toUpperCase(), score: Number(palace?.display_score),
+  })).filter((row) => DIRECTION[row.direction] && Number.isFinite(row.score)).sort((left, right) => right.score - left.score);
+  const best = ranked[0];
+  if (!user?.id || !best || best.score < 50) return null;
+  const build = (locale) => buildQimenCopy(best, locale);
+  const historyCopies = delivery.localizedHistoryCopies(build);
+  const payload = notificationPayload.buildNotificationPayload("qimen", String(user.id), {
+    date: request.date, direction: best.direction, score: best.score, url: "/qimen/board",
+  });
+  return {
+    userId: user.id, key: `qimen|${request.date}|${String(request.time || "").slice(0, 2)}|${best.direction}`,
+    kind: "qimen", ...historyCopies.th, historyCopies, payload,
+    sourceFacts: {
+      timezone: request.timezone, instant: request.instant, latitude: request.lat, longitude: request.lng,
+      direction: best.direction, score: best.score, engine: "qimen-api",
+    },
+    messages: messages(user.tokens, "qimen", "/qimen/board", payload, build),
   };
 }
 
@@ -202,37 +221,9 @@ async function qimenNotice(db, user, runAt, sentToday) {
     method: "POST",
     body: JSON.stringify(request),
   });
-  const palaces = Array.isArray(result?.data?.palaces) ? result.data.palaces
-    : Array.isArray(result?.data?.data?.palaces) ? result.data.data.palaces : [];
-  const ranked = palaces.map((palace) => ({
-    direction: String(palace?.direction || "").toUpperCase(),
-    score: Number(palace?.display_score),
-  })).filter((row) => DIRECTION[row.direction] && Number.isFinite(row.score)).sort((a, b) => b.score - a.score);
-  const best = ranked[0];
-  if (!best || best.score < 50) return { status: "skipped", reason: "no_qimen_context_highlight" };
-  const build = (loc) => buildQimenCopy(best, loc);
-  const th = build("th");
-  const typedPayload = notificationPayload.buildNotificationPayload("qimen", String(user.id), {
-    date, direction: best.direction, score: best.score, url: "/qimen/board",
-  });
-  return notify(db, user, "qimen", {
-    userId: user.id,
-    key: `qimen|${date}|08|${best.direction}`,
-    kind: "qimen",
-    title: th.title,
-    body: th.body,
-    payload: typedPayload,
-    sourceFacts: {
-      timezone: request.timezone,
-      instant: request.instant,
-      latitude: request.lat,
-      longitude: request.lng,
-      direction: best.direction,
-      score: best.score,
-      engine: "qimen-api",
-    },
-    messages: messages(user.tokens, "qimen", "/qimen/board", typedPayload, build),
-  }, sentToday);
+  const notice = buildQimenProducer(user, request, result);
+  if (!notice) return { status: "skipped", reason: "no_qimen_context_highlight" };
+  return notify(db, user, "qimen", notice, sentToday);
 }
 
 function formatGoalDayLabel(date, loc) {
@@ -254,6 +245,32 @@ function buildGoalCopy(goal, loc) {
   return { title: "🎯 ฤกษ์ถัดไปของเป้าหมาย", body: `${title} · ${when} · เปิดเป้าหมายเพื่อดูคำแนะนำ` };
 }
 
+function buildGoalProducer(user, result) {
+  const goals = Array.isArray(result?.goals) ? result.goals : [];
+  const candidates = goals.filter((goal) => goal?.nextAuspicious?.date).sort((left, right) => {
+    const a = `${left.nextAuspicious.date} ${left.nextAuspicious.hourRange || ""}`;
+    const b = `${right.nextAuspicious.date} ${right.nextAuspicious.hourRange || ""}`;
+    return a.localeCompare(b);
+  });
+  const goal = candidates[0];
+  if (!user?.id || !goal) return null;
+  const next = goal.nextAuspicious;
+  const build = (locale) => buildGoalCopy(goal, locale);
+  const historyCopies = delivery.localizedHistoryCopies(build);
+  const payload = notificationPayload.buildNotificationPayload("goal", String(user.id), {
+    goalId: goal.id, date: next.date, url: "/calendar/goals",
+  });
+  return {
+    userId: user.id, key: `goal|${goal.id}|${next.date}|${next.hourRange || "day"}`, kind: "goal",
+    ...historyCopies.th, historyCopies, payload,
+    sourceFacts: {
+      profileId: goal.profileId, date: next.date, hourRange: next.hourRange || null,
+      score: next.score, engine: "auspicious", engineVersion: result.engineVersion || null,
+    },
+    messages: messages(user.tokens, "goal", "/calendar/goals", payload, build),
+  };
+}
+
 async function goalNotice(db, user, runAt, sentToday) {
   const minute = guard.localMinutes(user.user_timezone, runAt);
   if (!DRY && (minute === null || minute < 8 * 60 + 15 || minute >= 8 * 60 + 30)) {
@@ -264,38 +281,9 @@ async function goalNotice(db, user, runAt, sentToday) {
     instant: runAt.toISOString(),
   });
   const result = await getJson(user, `${BASE}/api/mobile/v1/goals/custom?${goalQuery}`);
-  const goals = Array.isArray(result?.goals) ? result.goals : [];
-  const candidates = goals.filter((goal) => goal?.nextAuspicious?.date).sort((left, right) => {
-    const a = `${left.nextAuspicious.date} ${left.nextAuspicious.hourRange || ""}`;
-    const b = `${right.nextAuspicious.date} ${right.nextAuspicious.hourRange || ""}`;
-    return a.localeCompare(b);
-  });
-  const goal = candidates[0];
-  if (!goal) return { status: "skipped", reason: "no_goal_hour" };
-  const next = goal.nextAuspicious;
-  const build = (loc) => buildGoalCopy(goal, loc);
-  const th = build("th");
-  const key = `goal|${goal.id}|${next.date}|${next.hourRange || "day"}`;
-  const typedPayload = notificationPayload.buildNotificationPayload("goal", String(user.id), {
-    goalId: goal.id, date: next.date, url: "/calendar/goals",
-  });
-  return notify(db, user, "goal", {
-    userId: user.id,
-    key,
-    kind: "goal",
-    title: th.title,
-    body: th.body,
-    payload: typedPayload,
-    sourceFacts: {
-      profileId: goal.profileId,
-      date: next.date,
-      hourRange: next.hourRange || null,
-      score: next.score,
-      engine: "auspicious",
-      engineVersion: result.engineVersion || null,
-    },
-    messages: messages(user.tokens, "goal", "/calendar/goals", typedPayload, build),
-  }, sentToday);
+  const notice = buildGoalProducer(user, result);
+  if (!notice) return { status: "skipped", reason: "no_goal_hour" };
+  return notify(db, user, "goal", notice, sentToday);
 }
 
 function personalUsersSql(onlyEmail = false) {
@@ -359,7 +347,7 @@ async function main() {
         else totals.skipped += 1;
       } catch (error) {
         totals.failed += 1;
-        console.error(`[mobile-personal-reminders] user=${user.id}`, error.message);
+        console.error("[mobile-personal-reminders] category=personal error_code=task_failed");
       }
     }
   }
@@ -369,8 +357,8 @@ async function main() {
 }
 
 module.exports = {
-  buildGoalCopy,buildQimenCopy,buildSavedDateCopy,formatGoalDayLabel,getJson,
+  buildGoalCopy,buildGoalProducer,buildQimenCopy,buildQimenProducer,buildSavedDateCopy,buildSavedDateProducer,formatGoalDayLabel,getJson,
   goalNotice,loadPersonalUsers,main,personalUsersSql,qimenNotice,savedDateNotice,
 };
 
-if (require.main === module) main().catch((error) => { console.error("[mobile-personal-reminders]", error); process.exit(1); });
+if (require.main === module) main().catch(() => { console.error("[mobile-personal-reminders] category=personal error_code=scheduler_failed"); process.exit(1); });

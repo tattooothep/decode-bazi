@@ -3,6 +3,8 @@
 BEGIN;
 DROP TABLE IF EXISTS mobile_push_attempts;
 DROP FUNCTION IF EXISTS protect_mobile_push_attempt_message();
+DROP FUNCTION IF EXISTS enforce_mobile_push_attempt_transactional_kind();
+DROP FUNCTION IF EXISTS enforce_mobile_push_log_transactional_kind() CASCADE;
 UPDATE mobile_push_log SET delivery_status='accepted' WHERE delivery_status='delivered';
 ALTER TABLE mobile_push_log
   DROP CONSTRAINT IF EXISTS mobile_push_log_delivery_status_check;

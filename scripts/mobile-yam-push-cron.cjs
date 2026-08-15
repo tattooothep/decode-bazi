@@ -50,6 +50,7 @@ function signSession(user) {
 }
 
 async function fetchHours(user, profileId, dateStr, signal) {
+  signal?.throwIfAborted();
   const token = signSession(user);
   const res = await fetch(`${BASE}/api/today/hours`, {
     method: "POST",
@@ -57,8 +58,16 @@ async function fetchHours(user, profileId, dateStr, signal) {
     body: JSON.stringify({ date: dateStr, profileId }),
     signal,
   });
+  signal?.throwIfAborted();
   if (!res.ok) return null;
-  return res.json().catch(() => null);
+  try {
+    const data = await res.json();
+    signal?.throwIfAborted();
+    return data;
+  } catch {
+    signal?.throwIfAborted();
+    return null;
+  }
 }
 
 
@@ -94,6 +103,7 @@ const QIMEN_DIRECTION_NAMES = {
  */
 async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone, instant, signal) {
   try {
+    signal?.throwIfAborted();
     const token = signSession(user);
     const res = await fetch(`${BASE}/api/qimen`, {
       method: "POST",
@@ -103,6 +113,7 @@ async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone,
     });
     if (!res.ok) return null;
     const data = await res.json().catch(() => null);
+    signal?.throwIfAborted();
     const palaces = data && data.data && Array.isArray(data.data.palaces) ? data.data.palaces : null;
     if (!palaces || palaces.length === 0) return null;
 
@@ -146,8 +157,9 @@ async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone,
       score: best.score,
     };
   } catch (error) {
+    signal?.throwIfAborted();
     // ห้ามเงียบ — ผังหายแล้วไม่มีใครรู้ว่าเพราะอะไร
-    console.error("[mobile-yam-push] ขอผังฉีเหมินไม่สำเร็จ", String(error && error.message ? error.message : error));
+    console.error("[mobile-yam-push] ขอผังฉีเหมินไม่สำเร็จ category=yam error_code=qimen_fetch_failed");
     return null;
   }
 }
@@ -191,6 +203,55 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 
+function buildYamProducer(user, input) {
+  const hours = Array.isArray(input?.hoursApi?.hours) ? input.hoursApi.hours : [];
+  const nowMinutes = Number(input?.nowMinutes);
+  const leadMinutes = [15, 30, 60].includes(Number(user?.yam_lead_minutes)) ? Number(user.yam_lead_minutes) : 60;
+  const minQuality = user?.yam_min_quality === "good" ? "good" : "best";
+  const upcoming = input?.upcoming || hours.find((hour) => {
+    const quality = String(hour?.quality || "");
+    if (quality !== "best" && !(minQuality === "good" && quality === "good")) return false;
+    const match = /^(\d{2}):(\d{2})-/u.exec(String(hour?.range || ""));
+    if (!match || !Number.isFinite(nowMinutes)) return false;
+    const diff = Number(match[1]) * 60 + Number(match[2]) - nowMinutes;
+    return diff >= 0 && diff <= leadMinutes;
+  });
+  if (!upcoming || !user?.id || !user?.profile_id) return null;
+  const date = String(input?.date || "");
+  const branch = String(upcoming.branch || "");
+  const highlight = input?.highlight || null;
+  const build = (locale) => buildYamCopy(upcoming, branch, highlight, locale);
+  const historyCopies = delivery.localizedHistoryCopies(build);
+  const payload = notificationPayload.buildNotificationPayload("yam", String(user.id), {
+    range: String(upcoming.range || ""), quality: String(upcoming.quality || ""), date, url: "/today",
+  });
+  return {
+    userId: user.id,
+    key: `${date}|${String(upcoming.range || "")}|${user.profile_id}`,
+    kind: "yam",
+    ...historyCopies.th,
+    historyCopies,
+    payload,
+    sourceFacts: {
+      profileId: user.profile_id,
+      timezone: user.user_timezone,
+      branch,
+      qimen: highlight ? {
+        direction: highlight.direction, deity: highlight.deity, advice: highlight.advice, score: highlight.score,
+      } : null,
+    },
+    messages: (user.tokens || []).map((entry) => {
+      const raw = entry && typeof entry === "object" ? entry : { device: entry, locale: "th" };
+      const locale = notificationPayload.normalizedLocale(raw.locale);
+      return {
+        tokenId: raw.id, deviceToken: raw.device, deviceTokenType: raw.deviceType,
+        expoToken: raw.expo, platform: raw.platform, category: "yam", locale,
+        ...build(locale), url: "/today", data: payload,
+      };
+    }),
+  };
+}
+
 const YAM_USERS_SQL = `
     SELECT u.id, u.email, u.current_org_id, u.session_version,
            array_agg(json_build_object(
@@ -229,7 +290,9 @@ async function loadYamUsers(db) {
 }
 
 async function runScheduler(db, schedulerSignal) {
+  schedulerSignal.throwIfAborted();
   const users = await loadYamUsers(db);
+  schedulerSignal.throwIfAborted();
   console.log(`[mobile-yam-push] ${new Date().toISOString()} users=${users.length} dry=${DRY}`);
 
   /**
@@ -239,10 +302,10 @@ async function runScheduler(db, schedulerSignal) {
    * ตอนนี้คิดใหม่ทีละคนในลูป ตามเขตเวลาของเจ้าตัว
    */
   const runAt = new Date();
-  const QUAL_WORD = { best: "ยามดีมาก", good: "ยามดี" };
   let sent = 0, failed = 0, skipped = 0;
 
   for (const u of users) {
+    schedulerSignal.throwIfAborted();
     try {
       if (!u.profile_id) { skipped++; continue; }
 
@@ -264,7 +327,7 @@ async function runScheduler(db, schedulerSignal) {
       });
       if (!verdict.allow) {
         skipped++;
-        if (DRY) console.log(`[DRY] ข้าม ${u.email}: ${verdict.reason}`);
+        if (DRY) console.log(`[mobile-yam-push] category=yam dry_skip=1 error_code=${verdict.reason}`);
         continue;
       }
       // วันที่และนาทีตามปฏิทินของผู้ใช้คนนี้ ไม่ใช่ของเครื่องแม่ข่าย
@@ -291,9 +354,6 @@ async function runScheduler(db, schedulerSignal) {
         return diff >= 0 && diff <= leadMin;
       });
       if (!upcoming) { skipped++; continue; }
-      const yamKey = `${dateStr}|${String(upcoming.range || "")}|${u.profile_id}`;
-      const word = QUAL_WORD[String(upcoming.quality)] || "ยามดี";
-      const zhi = String(upcoming.branch || "");
       /**
        * ทิศมงคลกับองค์เทพประจำยามนี้ — ขอผังของ **เวลาที่ยามเริ่ม** ไม่ใช่เวลาปัจจุบัน
        * เพราะผังฉีเหมินเปลี่ยนทุกสองชั่วโมงตามยาม ถ้าใช้เวลาตอนยิงจะได้ผังของยามก่อนหน้า
@@ -312,65 +372,20 @@ async function runScheduler(db, schedulerSignal) {
         ),
       });
 
-      const thCopy = buildYamCopy(upcoming, zhi, highlight, "th");
-      const body = thCopy.body;
-      const title = thCopy.title;
-      const typedPayload = notificationPayload.buildNotificationPayload("yam", String(u.id), {
-        range: String(upcoming.range || ""), quality: String(upcoming.quality || ""), date: dateStr, url: "/today",
+      const notice = buildYamProducer(u, {
+        date: dateStr, nowMinutes: nowMin, hoursApi: data, upcoming, highlight,
       });
-      const userMessages = [];
-      for (const entry of u.tokens || []) {
-        const raw = entry && typeof entry === "object" ? entry : { device: entry, locale: "th" };
-        const localeValue = String(raw.locale || "th").toLowerCase();
-        const loc = localeValue === "th"
-          ? "th"
-          : localeValue === "zh" || localeValue === "cn" || localeValue.startsWith("zh-")
-            ? "zh"
-            : "en";
-        const copy = buildYamCopy(upcoming, zhi, highlight, loc);
-        userMessages.push({
-          tokenId: raw.id,
-          deviceToken: raw.device,
-          deviceTokenType: raw.deviceType,
-          expoToken: raw.expo,
-          platform: raw.platform,
-          category: "yam",
-          locale: loc,
-          title: copy.title,
-          body: copy.body,
-          url: "/today",
-          data: typedPayload,
-        });
-      }
-      const result = await delivery.deliver(db, {
-        userId: u.id,
-        key: yamKey,
-        kind: "yam",
-        title,
-        body,
-        payload: typedPayload,
-        sourceFacts: {
-          profileId: u.profile_id,
-          timezone: u.user_timezone,
-          branch: zhi,
-          qimen: highlight ? {
-            direction: highlight.direction,
-            deity: highlight.deity,
-            advice: highlight.advice,
-            score: highlight.score,
-          } : null,
-        },
-        messages: userMessages,
-      }, { dry: DRY });
+      if (!notice) { skipped++; continue; }
+      const result = await delivery.deliver(db, notice, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
       else if (result.status === "failed") failed++;
       else skipped++;
-      if (DRY) {
-        console.log(`[DRY] ${u.email} → ${word} ${body}`);
-        if (highlight === null) console.log("       (ไม่มีทิศมงคลพอในยามนี้ จึงไม่บอกทิศ)");
-        else console.log(`       ทิศ ${highlight.direction.th} · องค์ ${highlight.deity.th} · คะแนน ${highlight.score}`);
-      }
-    } catch (e) { console.error(`[mobile-yam-push] user=${u.id}`, e.message); }
+      if (DRY) console.log(`[mobile-yam-push] category=yam dry_candidate=1 qimen=${highlight !== null}`);
+      schedulerSignal.throwIfAborted();
+    } catch (e) {
+      schedulerSignal.throwIfAborted();
+      console.error("[mobile-yam-push] category=yam error_code=user_failed");
+    }
   }
 
   console.log(`[mobile-yam-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
@@ -392,6 +407,6 @@ async function main() {
   }
 }
 
-module.exports = { YAM_USERS_SQL,buildYamCopy,fetchHours,fetchQimenHighlight,loadYamUsers,main,runScheduler };
+module.exports = { YAM_USERS_SQL,buildYamCopy,buildYamProducer,fetchHours,fetchQimenHighlight,loadYamUsers,main,runScheduler };
 
-if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
+if (require.main === module) main().catch(() => { console.error("[mobile-yam-push] category=yam error_code=scheduler_failed"); process.exit(1); });
