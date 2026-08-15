@@ -387,6 +387,26 @@ try {
   check(crashedAfter && startedCrash.send_started_at !== null && uncertainResends === 0, "an expired unknown provider result is never resent");
   check(uncertain.status === "dead" && uncertain.last_error === "uncertain_provider_result" && uncertain.delivery_status === "failed", "unknown provider outcome recovers deterministically to dead");
 
+  await delivery.deliver(pool, notice("adapter-uncertain", [fcmMessage]), { defer: true });
+  let ambiguousProviderSends = 0;
+  const ambiguousFirst = await worker.runRetryBatch(pool, {
+    sender: { async sendPrepared() { ambiguousProviderSends += 1; return { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false }; } },
+    limit: 1,
+  });
+  const ambiguousSecond = await worker.runRetryBatch(pool, {
+    sender: { async sendPrepared() { ambiguousProviderSends += 1; return { kind: "provider_accepted", providerMessageId: "must-not-resend-ambiguous" }; } },
+    limit: 1,
+  });
+  const ambiguousAttempt = await row(
+    `SELECT a.status,a.last_error,a.send_started_at,l.delivery_status
+       FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='adapter-uncertain'`,
+  );
+  check(ambiguousFirst.dead === 1 && ambiguousSecond.claimed === 0 && ambiguousProviderSends === 1,
+    "an adapter response-lost outcome is attempted exactly once across worker runs");
+  check(ambiguousAttempt.status === "dead" && ambiguousAttempt.last_error === "uncertain_provider_result"
+    && ambiguousAttempt.send_started_at !== null && ambiguousAttempt.delivery_status === "failed",
+  "an explicit uncertain outcome preserves the send boundary and becomes terminal");
+
   const secondTokenId = "10000000-0000-4000-8000-000000000005";
   const secondInstallation = "20000000-0000-4000-8000-000000000005";
   await pool.query(
@@ -449,6 +469,95 @@ try {
   check(receiptClaimA.lease_token !== receiptClaimB.lease_token, "receipt recovery receives a fresh random lease token");
   check(staleReceiptFinished === false && receiptBeforeCurrent.status === "provider_accepted" && currentReceiptFinished === true,
     "a stale receipt worker cannot clear or finalize a replacement lease");
+
+  const receiptBackoffTokenA = "10000000-0000-4000-8000-000000000008";
+  const receiptBackoffTokenB = "10000000-0000-4000-8000-000000000009";
+  await pool.query(
+    `INSERT INTO mobile_push_tokens
+       (id,user_id,installation_id,expo_push_token,device_token_type,platform,locale,last_registered_at)
+     VALUES
+       ($1,$3,'20000000-0000-4000-8000-000000000008','ExponentPushToken[receipt-backoff-a]','apns','ios','th',now()),
+       ($2,$3,'20000000-0000-4000-8000-000000000009','ExponentPushToken[receipt-backoff-b]','apns','ios','th',now())`,
+    [receiptBackoffTokenA, receiptBackoffTokenB, userId],
+  );
+  await delivery.deliver(pool, notice("receipt-backoff", [
+    { ...expoMessage, tokenId: receiptBackoffTokenA },
+    { ...expoMessage, tokenId: receiptBackoffTokenB },
+  ]), { defer: true });
+  await pool.query(
+    `UPDATE mobile_push_attempts SET status='provider_accepted',accepted_at=now(),next_receipt_at=now(),
+       provider_ticket_id=CASE installation_id
+         WHEN '20000000-0000-4000-8000-000000000008' THEN 'receipt-backoff-a'
+         ELSE 'receipt-backoff-b' END
+      WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-backoff')`,
+  );
+  let receiptBackoffCalls = 0;
+  const receiptBackoff = await worker.pollReceiptBatch(pool, {
+    limit: 2,
+    receiptBaseDelaySeconds: 30,
+    sender: { async pollExpoReceipts(ids: string[]) {
+      receiptBackoffCalls += 1;
+      return receiptBackoffCalls === 1 ? {} : { [ids[0]]: { kind: "delivered" } };
+    } },
+  });
+  const receiptBackoffRows = (await pool.query(
+    `SELECT status,receipt_poll_count,next_receipt_at>now() AS backed_off
+       FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+      WHERE l.yam_key='receipt-backoff' ORDER BY status`,
+  )).rows;
+  check(receiptBackoff.claimed === 2 && receiptBackoff.delivered === 1 && receiptBackoff.pending === 1 && receiptBackoffCalls === 2,
+    "a missing first Expo receipt is backed off without starving a later ready receipt in the same batch");
+  check(receiptBackoffRows.every((attempt) => Number(attempt.receipt_poll_count) === 1)
+    && receiptBackoffRows.some((attempt) => attempt.status === "provider_accepted" && attempt.backed_off === true),
+  "receipt misses durably advance poll count and next-receipt schedule");
+  const receiptImmediate = await worker.pollReceiptBatch(pool, {
+    limit: 2,
+    sender: { async pollExpoReceipts() { throw new Error("backed-off receipt must not be polled immediately"); } },
+  });
+  check(receiptImmediate.claimed === 0, "a backed-off receipt is not reclaimed again in an immediate worker run");
+  await pool.query(
+    `UPDATE mobile_push_attempts SET next_receipt_at=now()-interval '1 second'
+      WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-backoff') AND status='provider_accepted'`,
+  );
+  const receiptRepeated = await worker.pollReceiptBatch(pool, {
+    limit: 2,
+    sender: { async pollExpoReceipts(ids: string[]) { return { [ids[0]]: { kind: "delivered" } }; } },
+  });
+  check(receiptRepeated.delivered === 1, "a later worker run resumes a due receipt after durable backoff");
+
+  const receiptErrorTokenA = "10000000-0000-4000-8000-000000000010";
+  const receiptErrorTokenB = "10000000-0000-4000-8000-000000000011";
+  await pool.query(
+    `INSERT INTO mobile_push_tokens
+       (id,user_id,installation_id,expo_push_token,device_token_type,platform,locale,last_registered_at)
+     VALUES
+       ($1,$3,'20000000-0000-4000-8000-000000000010','ExponentPushToken[receipt-error-a]','apns','ios','th',now()),
+       ($2,$3,'20000000-0000-4000-8000-000000000011','ExponentPushToken[receipt-error-b]','apns','ios','th',now())`,
+    [receiptErrorTokenA, receiptErrorTokenB, userId],
+  );
+  await delivery.deliver(pool, notice("receipt-provider-error", [
+    { ...expoMessage, tokenId: receiptErrorTokenA },
+    { ...expoMessage, tokenId: receiptErrorTokenB },
+  ]), { defer: true });
+  await pool.query(
+    `UPDATE mobile_push_attempts SET status='provider_accepted',accepted_at=now(),next_receipt_at=now(),
+       provider_ticket_id='receipt-provider-error-'||installation_id::text
+      WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-provider-error')`,
+  );
+  const providerReceiptError = await worker.pollReceiptBatch(pool, {
+    limit: 2,
+    receiptBaseDelaySeconds: 30,
+    sender: { async pollExpoReceipts() { throw new Error("fixture provider unavailable"); } },
+  });
+  const providerErrorRows = (await pool.query(
+    `SELECT receipt_poll_count,next_receipt_at>now() AS backed_off
+       FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+      WHERE l.yam_key='receipt-provider-error' ORDER BY receipt_poll_count DESC`,
+  )).rows;
+  check(providerReceiptError.claimed === 1 && providerReceiptError.providerErrors === 1
+    && Number(providerErrorRows[0].receipt_poll_count) === 1 && providerErrorRows[0].backed_off === true
+    && Number(providerErrorRows[1].receipt_poll_count) === 0,
+  "a provider-wide receipt error backs off the claimed ticket and stops that batch");
 
   await delivery.deliver(pool, notice("concurrent-all-dead", [fcmMessage, secondFcmMessage]), { defer: true });
   let siblingEntered = 0;
@@ -528,18 +637,46 @@ try {
   "duplicate provider identifiers fail generically without corrupting parent truth");
 
   const cliEvents: string[] = [];
+  let injectedConnects = 0;
+  let injectedReleases = 0;
+  let injectedEnds = 0;
+  let cliReport = "";
+  const injectedPool = {
+    totalCount: 1,
+    async connect() { injectedConnects += 1; return { release() { injectedReleases += 1; } }; },
+    async end() { injectedEnds += 1; },
+  };
   await worker.main({
-    db: { async connect() { cliEvents.push("connect"); }, async end() { cliEvents.push("end"); } },
-    async runRetryBatch() { cliEvents.push("retry"); return { claimed: 0, accepted: 0, retryDue: 0, dead: 0 }; },
-    async pollReceiptBatch() { cliEvents.push("receipt"); return { claimed: 0, delivered: 0, errors: 0 }; },
-    log() { cliEvents.push("report"); },
+    db: injectedPool,
+    async runRetryBatch(db: unknown) { assert.equal(db, injectedPool); cliEvents.push("retry"); return { claimed: 0, accepted: 0, retryDue: 0, dead: 0 }; },
+    async pollReceiptBatch(db: unknown) { assert.equal(db, injectedPool); cliEvents.push("receipt"); return { claimed: 0, delivered: 0, errors: 0 }; },
+    log(value: unknown) { cliReport = String(value); cliEvents.push("report"); },
   });
-  check(cliEvents.join(",") === "connect,retry,receipt,report,end", "CLI main runs retry then receipts, reports once, and always closes its connection");
+  check(cliEvents.join(",") === "retry,receipt,report" && injectedConnects === 0 && injectedReleases === 0 && injectedEnds === 0,
+    "CLI main uses an injected Pool without leaking a connect handle or ending caller-owned state");
+  check(cliReport.includes("receipt_pending=0") && cliReport.includes("receipt_provider_errors=0"),
+    "CLI aggregate report includes receipt backoff and provider-wide error counts");
+  const ownedPoolEvents: string[] = [];
+  await worker.main({
+    createDb() {
+      return {
+        totalCount: 0,
+        async query() { return { rows: [] }; },
+        async connect() { ownedPoolEvents.push("connect"); return { release() { ownedPoolEvents.push("release"); } }; },
+        async end() { ownedPoolEvents.push("end"); },
+      };
+    },
+    async runRetryBatch() { ownedPoolEvents.push("retry"); return { claimed: 0, accepted: 0, retryDue: 0, dead: 0 }; },
+    async pollReceiptBatch() { ownedPoolEvents.push("receipt"); return { claimed: 0, delivered: 0, errors: 0 }; },
+    log() { ownedPoolEvents.push("report"); },
+  });
+  check(ownedPoolEvents.join(",") === "retry,receipt,report,end",
+    "CLI main does not acquire an unused handle from an internally-owned Pool and ends only that owned Pool");
   const cliFailureEvents: string[] = [];
   let cliFailed = false;
   try {
     await worker.main({
-      db: { async connect() { cliFailureEvents.push("connect"); }, async end() { cliFailureEvents.push("end"); } },
+      db: injectedPool,
       async runRetryBatch() { cliFailureEvents.push("retry"); throw new Error("fixture-worker-failure"); },
       async pollReceiptBatch() { cliFailureEvents.push("receipt"); return { claimed: 0, delivered: 0, errors: 0 }; },
       log() { cliFailureEvents.push("report"); },
@@ -547,7 +684,26 @@ try {
   } catch {
     cliFailed = true;
   }
-  check(cliFailed && cliFailureEvents.join(",") === "connect,retry,end", "CLI main exits through its error path without polling/reporting and still closes the connection");
+  check(cliFailed && cliFailureEvents.join(",") === "retry" && injectedConnects === 0 && injectedReleases === 0 && injectedEnds === 0,
+    "CLI main exposes injected-worker failure without polling, reporting, or closing caller-owned state");
+
+  const unlockEvents: Array<string | boolean> = [];
+  const unlockClient = {
+    async query(sql: string) {
+      if (sql.includes("pg_advisory_unlock")) throw new Error("fixture advisory unlock failed");
+      return { rows: [{ pg_advisory_lock: null }] };
+    },
+    release(destroy: boolean) { unlockEvents.push(destroy); },
+  };
+  const unlockPool = {
+    totalCount: 1,
+    async connect() { unlockEvents.push("connect"); return unlockClient; },
+  };
+  await assert.rejects(
+    delivery.withInstallationLock(unlockPool, fcmInstallation, async () => "finished"),
+    /advisory unlock failed/u,
+  );
+  check(unlockEvents.join(",") === "connect,true", "an advisory unlock failure is surfaced and destroys the pooled client instead of reusing it");
 
   await delivery.deliver(pool, notice("same-owner-rotation", [fcmMessage]), { defer: true });
   const exactBeforeRotation = await row(

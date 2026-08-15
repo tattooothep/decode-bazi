@@ -1,183 +1,114 @@
-# Task 2 — Durable per-installation attempts and receipts
+# Task 2 — Durable per-installation notification delivery
 
-## Delivered scope
+## Final implementation
 
-- Extended the Task 1 forward migration with rerunnable
-  `mobile_push_attempts` storage, one-attempt-per-logical-push/installation
-  uniqueness, due/stale-lease/receipt indexes, immutable provider-message and
-  SHA-256 fields, provider IDs/tickets, retry/lease timestamps, and explicit
-  child states. The rollback removes Task 2 state, safely maps delivered
-  parents back to accepted, retains Task 1 ownership constraints, and reapplies
-  cleanly.
-- Replaced logical-row retry with transactional parent + per-installation
-  reservation. The exact normalized localized FCM/Expo message is committed
-  before any provider call; provider credentials remain only in the token
-  table and are never copied into attempts.
-- Added deterministic leases and `FOR UPDATE SKIP LOCKED` claims, stale-lease
-  recovery, bounded exponential backoff, provider `Retry-After`, maximum
-  attempts/dead-letter state, and atomic child-completion + parent derivation.
-- Partial failures retry only the failed installation without rerunning a
-  scheduler. Same-account token rotation resolves the current active transport
-  by user + installation while keeping the immutable message; an installation
-  transferred to another account is never sent the prior owner's message.
-- FCM HTTP success is recorded only as `provider_accepted`, with the FCM
-  message name when returned. Expo tickets are persisted and receipt polling
-  normalizes confirmation to `delivered` and errors to retry/dead. No FCM path
-  claims device delivery without receipt/device evidence.
-- Parent `mobile_push_log` truth is derived from child states. Any delivered
-  child yields delivered, provider acceptance yields accepted, retryable-only
-  children remain pending, and all-dead children yield failed with accepted and
-  sent timestamps cleared.
-- Added the independent one-shot `scripts/mobile-push-retry-worker.cjs` entry
-  point. It logs aggregate counts only—never tokens, provider payloads, titles,
-  bodies, or PII.
-- Notification history/read APIs now retain both accepted and delivered rows
-  and expose `delivery_status`. The four scheduler query sites covering all
-  eight v2 categories count both accepted and delivered parents toward caps.
-- `src/lib/fcm-direct.ts` was intentionally not changed: repository-wide usage
-  search found no callers. The active scheduled provider adapter is
-  `src/lib/push-send.cjs`, which now owns exact message preparation, provider
-  ID/ticket normalization, receipt polling, and sanitized provider failures.
+- `mobile_push_attempts` stores one immutable, SHA-256-verified exact provider
+  message per logical push and installation before any external send. Target
+  credentials stay in `mobile_push_tokens`; credential-shaped data keys are
+  normalized and removed before persistence.
+- Each worker claims and processes one attempt at a time with
+  `FOR UPDATE SKIP LOCKED` and a fresh database-random UUID lease. A stale
+  reservation that has not crossed `send_started_at` can be reclaimed. Once
+  the committed send boundary is crossed, an expired or otherwise ambiguous
+  provider result becomes dead with `uncertain_provider_result` and is never
+  resent.
+- Provider transport exceptions, socket/abort timeouts, malformed FCM 2xx
+  acknowledgements, and successful Expo responses without a valid ticket are
+  explicit terminal `uncertain` outcomes. Known pre-send configuration/auth
+  failures and explicit retryable provider HTTP responses retain bounded
+  exponential retry and `Retry-After` handling.
+- FCM acceptance persists the provider message name and remains
+  `provider_accepted`, never delivered without device evidence. Expo acceptance
+  persists a unique ticket; receipt confirmation is the evidence that advances
+  it to delivered. Both `src/lib/push-send.cjs` and the direct FCM compatibility
+  adapter implement the same acceptance/uncertainty contract without logging
+  raw provider responses.
+- Expo receipt work has durable `next_receipt_at` and `receipt_poll_count`
+  fields plus a partial due index. Missing receipts are fenced, released, and
+  exponentially backed off before the loop continues, so one absent receipt
+  cannot starve later tickets. Provider-wide polling failures back off the
+  claimed row and stop that batch.
+- Provider ticket and message IDs have partial unique indexes. Receipt and send
+  finalization are lease-fenced; stale workers cannot finalize a replacement
+  lease. Identifier conflicts fail generically without retaining provider
+  detail.
+- An installation-scoped session advisory lock, using Task 1's lock key, spans
+  active-token revalidation, provider send, and finalization. Account transfer
+  cannot change ownership during a send, and old content is never sent after a
+  completed transfer. Advisory unlock failure is surfaced and the checked-out
+  pool client is destroyed with `release(true)` rather than reused.
+- Every child finalization locks the parent `mobile_push_log` first and derives
+  parent truth in the same transaction. Concurrent all-dead siblings produce a
+  failed parent with accepted/sent timestamps cleared.
+- The independent one-shot retry worker accepts an injected database without
+  connecting or ending caller-owned state. It avoids unused `Pool.connect()`
+  handles, connects a worker-owned `Client`, ends only internally-owned
+  dependencies, and reports aggregate non-sensitive counts.
+- Notification history and category-cap behavior from the original Task 2 work
+  remain compatible across all eight callers. FCM is accepted-only; Expo can
+  advance to delivered through receipts.
+
+## Migration and rollback
+
+The forward migration is additive and rerunnable. It creates or upgrades the
+attempt table, send boundary, receipt schedule/count, due/stale/receipt indexes,
+partial unique provider-ID indexes, immutable-message trigger, and grants. The
+schema rollback drops Task 2 attempt state, maps delivered parents back to the
+older accepted state, retains Task 1's active ownership constraints, and can be
+followed by a clean forward reapply.
 
 ## TDD evidence
 
-Meaningful REDs observed before the corresponding implementation/fix:
+Meaningful RED results observed before their fixes included:
 
-1. Disposable migration test failed because `mobile_push_attempts` did not
-   exist; it now proves forward creation, per-installation uniqueness,
-   rollback, repeated rollback, and forward reapply.
-2. Retry suite initially failed because the independent worker did not exist.
-   Subsequent slices exercised mixed FCM/Expo partial results, immutable exact
-   retry messages, stale leases, concurrent workers, IDs/receipts, bounded
-   exhaustion, and all-dead parent truth.
-3. Contract test failed because delivered parents disappeared from history and
-   category caps; API and all eight-category scheduler query paths now treat
-   accepted and delivered as visible/counted success states.
-4. A forced parent-update database error proved attempt completion could commit
-   before parent derivation. Both now roll back atomically.
-5. Sender test failed on the missing `Retry-After` normalization helper; both
-   FCM and Expo HTTP failures now propagate a bounded provider delay.
-6. A reserved attempt failed after same-owner token rotation because it followed
-   the disabled row ID. Claims now select the active transport scoped to the
-   original user + installation + provider, with a separate cross-account
-   takeover test proving the prior owner's content is not sent.
+1. The active sender and direct FCM adapter returned malformed FCM 2xx results
+   as retryable failures instead of terminal uncertainty.
+2. The receipt migration check found zero of the two required durable polling
+   columns, and the retry suite then stopped at the missing
+   `next_receipt_at` boundary.
+3. The internally-owned Pool fixture recorded an unnecessary `connect`, proving
+   the unused-handle lifecycle bug.
+4. Separator-free and mixed-form credential keys were retained; the additional
+   encryption-key fixture also demonstrated the generic `*key` gap.
+5. The direct FCM adapter lacked an abort signal on its provider send.
+6. The CLI aggregate omitted receipt-backoff and provider-wide polling-error
+   counts even though those states were durable.
 
-All retry tests use dependency-injected fake providers. No real push was sent.
+The resulting focused suite covers response-lost send ambiguity across two
+worker runs, exact one-send behavior, receipt limit/starvation/backoff and
+provider-wide errors, random receipt leases and stale-worker fencing, advisory
+unlock client destruction, caller-owned/internally-owned database lifecycle,
+cross-account transfer blocking, concurrent sibling truth, immutable messages,
+provider IDs, partial failures, and retry exhaustion. All provider calls in
+tests are dependency-injected or HTTP-mocked; no real notification was sent.
 
-## Fresh verification
+## Fresh final verification
 
-- `npx tsx scripts/test-mobile-push-retry-worker.mts` → 26 checks passed.
-- `npx tsx scripts/test-push-send.mts` → 11 checks passed, including actual
-  adapter message-ID/ticket/receipt normalization with mocked HTTP.
-- `npx tsx scripts/test-push-guard.mts` → 22 checks passed.
-- `npx tsx scripts/test-notification-integrity-contract.mts` →
+- `npx tsx scripts/test-mobile-push-retry-worker.mts` — 49 checks passed.
+- `npx tsx scripts/test-push-send.mts` — 13 checks passed.
+- `npx tsx scripts/test-fcm-direct.mts` — `FCM_DIRECT_OK`.
+- `npx tsx scripts/test-push-guard.mts` — 22 checks passed.
+- `npx tsx scripts/test-notification-integrity-contract.mts` —
   `NOTIFICATION_INTEGRITY_CONTRACT_OK`.
-- `npx tsx scripts/test-notification-integrity-migration.mts` →
-  `NOTIFICATION_INTEGRITY_MIGRATION_OK`.
-- Existing `npx tsx scripts/test-mobile-push-delivery.mts` → 6 checks passed on
-  a fresh schema-only clone named
-  `notification_integrity_delivery_test_task2_final_4200` with its own
-  disposable login and mocked Expo responses.
-- `npx tsc --noEmit` → exit 0.
-- CJS syntax checks and `git diff --check` → exit 0.
-- Final catalog query found neither the disposable delivery database nor role.
-  The retry/migration tests also use hard-guarded unique disposable names and
-  cleanup in `finally`.
+- `npx tsx scripts/test-notification-integrity-migration.mts` —
+  `NOTIFICATION_INTEGRITY_MIGRATION_OK`, including rollback and forward reapply.
+- `npx tsx scripts/test-mobile-push-delivery.mts` — 6 checks passed against
+  hard-guarded disposable database
+  `notification_integrity_delivery_test_task2_review2_6201` with mocked Expo.
+- `npx tsc --noEmit`, all three changed CJS syntax checks, and
+  `git diff --check` exited successfully.
+- Final catalog checks confirmed that the disposable delivery database and its
+  login role were both removed.
 
-## Changed files
+## Scope and remaining operational concern
 
-- `migrations/20260815_mobile_notification_integrity.sql`
-- `migrations/20260815_mobile_notification_integrity.rollback.sql`
-- `src/lib/mobile-notification-delivery.cjs`
-- `src/lib/push-send.cjs`
-- `src/app/api/mobile/v1/notifications/route.ts`
-- `scripts/mobile-push-retry-worker.cjs`
-- `scripts/test-mobile-push-retry-worker.mts`
-- `scripts/test-notification-integrity-migration.mts`
-- `scripts/test-notification-integrity-contract.mts`
-- `scripts/test-push-send.mts`
-- `scripts/mobile-yam-push-cron.cjs`
-- `scripts/mobile-daily-fortune-push-cron.cjs`
-- `scripts/mobile-auspicious-push-cron.cjs`
-- `scripts/mobile-personal-reminders-cron.cjs`
+No production data or service was mutated, no real send occurred, and no
+science, legacy delivery, build, deploy, release, or credential file changed.
+The Task 1 test-harness minor remains ledgered because that harness was not
+touched. The one-shot retry worker still needs production scheduling in a
+separate authorized deployment task; no known Task 2 source correctness issue
+remains in the requested scope.
 
-No science algorithms, production/release directories, build/deploy settings,
-legacy delivery, credentials, or release identity were changed.
-
-## Self-review, ledger, and concerns
-
-- `scripts/test-mobile-push-p0.mjs` was not touched. Per the Task 1 review note,
-  its Buffer byte-offset log-tail improvement and direct opposite-transfer
-  fixture remain ledgered for the next change that edits that harness.
-- The worker is an independent one-shot process; installing its recurring
-  production schedule is intentionally outside this source-only task.
-- Expo receipts provide the delivery evidence modeled here. FCM remains
-  provider-accepted unless a future real receipt/device-ack integration supplies
-  stronger evidence.
-- No known Task 2 correctness concern remains within the requested source
-  scope. Production mutation, deployment, real sends, load testing, and Task 3
-  science/scheduler atomicity were not performed.
-
-## Commit
-
-- Implementation: `fc878da62618c6000365e62bf22eb809df32157b`
-
-## Review remediation (supersedes the original lease design)
-
-The post-implementation review identified concurrency and ambiguity windows in
-the original deterministic, batch-claim design. The remediation replaces that
-design as follows:
-
-- Workers claim and process one attempt at a time with a fresh database-random
-  UUID lease on every claim or recovery. They never reserve a batch that can
-  age while earlier sends are in flight.
-- `send_started_at` is committed before the provider call. An expired claim
-  that never crossed that boundary is reclaimable; one that did cross it is
-  finalized as dead with `uncertain_provider_result` and is never resent.
-- A session advisory lock using the same installation key as Task 1 is held
-  from active-token revalidation through the provider call and finalization.
-  Registration transfer therefore cannot change ownership mid-send, and a
-  claimed attempt is not sent after an already-completed transfer.
-- Child finalization locks the parent `mobile_push_log` first, then updates the
-  child and derives parent truth in the same transaction. Concurrent sibling
-  completion cannot leave an accepted/sent parent when all children are dead.
-- Receipt claims also use fresh random leases; finalization is fenced by the
-  current lease, so a stale poller cannot clear or finalize a replacement
-  claim.
-- Partial unique indexes protect non-null Expo ticket IDs and provider message
-  IDs. Provider-identifier conflicts are handled without exposing provider
-  details.
-- Both active FCM adapters now require a nonempty provider message name for a
-  2xx response. Success is `provider_accepted`, never delivered, and raw
-  provider responses are not logged.
-- Credential-shaped keys are removed from durable notification data before the
-  immutable exact message and its SHA-256 are stored.
-- The one-shot worker main path is dependency-injectable and tested for retry,
-  receipt, reporting, cleanup, and failure ordering.
-
-Additional meaningful REDs preceded these changes: missing `send_started_at`
-and unique indexes, malformed FCM 2xx accepted as success, credentials retained
-in the durable message, stale pre-send claims not reclaimed, missing random
-receipt claims/fencing, and the unused direct FCM adapter returning `sent`.
-
-### Fresh review-fix verification
-
-- `npx tsx scripts/test-mobile-push-retry-worker.mts` → 39 checks passed,
-  including slow-provider/two-worker exclusion, pre/post-send crash boundaries,
-  unknown-result no-resend, concurrent all-dead sibling derivation, transfer
-  blocking, receipt fencing, provider-ID conflicts, and CLI ordering.
-- `npx tsx scripts/test-push-send.mts` → 12 checks passed.
-- `npx tsx scripts/test-fcm-direct.mts` → `FCM_DIRECT_OK`.
-- `npx tsx scripts/test-push-guard.mts` → 22 checks passed.
-- Notification integrity contract and migration tests both passed, including
-  rollback/reapply and the new partial unique indexes.
-- Existing mobile push delivery suite → 6 checks passed on disposable
-  database `notification_integrity_delivery_test_task2_review_4300`.
-- `npx tsc --noEmit`, CJS syntax checks, and `git diff --check` all passed.
-- The final catalog check confirmed that both the disposable database and its
-  login role had been removed.
-
-No known correctness concern remains in Task 2's requested source scope. The
-independent worker still requires production scheduling in a later authorized
-deployment task; no production mutation, deployment, real send, science code,
-legacy delivery, or build/release setting was touched.
+Prior Task 2 commits: `fc878da62618c6000365e62bf22eb809df32157b`,
+`ec4f17546ce93b065e6f5a946c8e18d2b22e3ae0`, and
+`d8b5dab0c04bb93717c2bc04fe7cd9f108d851a2`.

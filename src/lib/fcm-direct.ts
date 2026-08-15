@@ -102,6 +102,7 @@ async function getTicket(): Promise<string | null> {
         grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
         assertion: `${header}.${claim}.${signature}`,
       }),
+      signal: AbortSignal.timeout(12_000),
     });
     const data = (await response.json()) as {
       access_token?: string;
@@ -126,6 +127,7 @@ async function getTicket(): Promise<string | null> {
 
 export type FcmSendResult =
   | { kind: "provider_accepted"; provider: "fcm"; providerMessageId: string }
+  | { kind: "uncertain"; provider: "fcm"; reason: "uncertain_provider_result"; retryable: false }
   /** เครื่องนี้ไม่รับแล้ว (ถอนแอพ/กุญแจหมดอายุ) — ตัวเรียกควรลบทิ้ง */
   | { kind: "gone"; provider: "fcm"; reason: string; retryable: false }
   | { kind: "failed"; provider: "fcm"; reason: string; retryable: true };
@@ -168,6 +170,7 @@ export async function sendFcmToDevice(
           },
         },
       }),
+      signal: AbortSignal.timeout(12_000),
     });
 
     if (response.ok) {
@@ -175,7 +178,7 @@ export async function sendFcmToDevice(
       const providerMessageId = typeof payload.name === "string" ? payload.name.trim() : "";
       return providerMessageId
         ? { kind: "provider_accepted", provider: "fcm", providerMessageId }
-        : { kind: "failed", provider: "fcm", reason: "fcm_missing_message_name", retryable: true };
+        : { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false };
     }
 
     const detail = (await response.text()).slice(0, 300);
@@ -187,9 +190,9 @@ export async function sendFcmToDevice(
     return gone
       ? { kind: "gone", provider: "fcm", reason: `fcm_${response.status}`, retryable: false }
       : { kind: "failed", provider: "fcm", reason: `fcm_${response.status}`, retryable: true };
-  } catch (error) {
+  } catch {
     return {
-      kind: "failed", provider: "fcm", reason: "fcm_transport_error", retryable: true,
+      kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false,
     };
   }
 }

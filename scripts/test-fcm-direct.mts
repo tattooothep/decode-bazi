@@ -4,11 +4,12 @@ const fcm = await import("../src/lib/fcm-direct.ts");
 const originalFetch = globalThis.fetch;
 const originalError = console.error;
 const logs: string[] = [];
-let responseMode: "valid" | "malformed" | "error" = "valid";
+let responseMode: "valid" | "malformed" | "error" | "transport" = "valid";
+let sendSignal: AbortSignal | null = null;
 
 try {
   console.error = (...values: unknown[]) => { logs.push(values.map(String).join(" ")); };
-  globalThis.fetch = async (input) => {
+  globalThis.fetch = async (input, init) => {
     const url = String(input);
     if (!url.includes("/messages:send")) {
       return new Response(JSON.stringify({ access_token: "fake-access", expires_in: 3600 }), {
@@ -16,6 +17,8 @@ try {
         headers: { "content-type": "application/json" },
       });
     }
+    sendSignal = init?.signal instanceof AbortSignal ? init.signal : null;
+    if (responseMode === "transport") throw new DOMException("fixture response lost", "AbortError");
     if (responseMode === "valid") {
       return new Response(JSON.stringify({ name: "projects/test/messages/direct-1" }), {
         status: 200,
@@ -34,10 +37,15 @@ try {
     provider: "fcm",
     providerMessageId: "projects/test/messages/direct-1",
   });
+  assert.ok(sendSignal, "direct FCM provider calls must have an abort timeout");
 
   responseMode = "malformed";
   const malformed = await fcm.sendFcmToDevice("fixture-device", { title: "Title", body: "Body" });
-  assert.deepEqual(malformed, { kind: "failed", provider: "fcm", reason: "fcm_missing_message_name", retryable: true });
+  assert.deepEqual(malformed, { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false });
+
+  responseMode = "transport";
+  const uncertain = await fcm.sendFcmToDevice("fixture-device", { title: "Title", body: "Body" });
+  assert.deepEqual(uncertain, { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false });
 
   responseMode = "error";
   const gone = await fcm.sendFcmToDevice("fixture-device", { title: "Title", body: "Body" });

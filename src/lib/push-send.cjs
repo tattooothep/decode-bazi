@@ -72,13 +72,14 @@ function stringData(message) {
     category: categoryOf(message),
     url: safeUrl(message?.url || data.url),
   };
+  const sensitiveKeyParts = [
+    "token", "auth", "authorization", "secret", "credential", "password", "cookie", "session",
+    "apikey", "privatekey", "accesskey", "clientsecret", "bearer",
+  ];
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined || value === null || key === "url") continue;
-    const keyParts = String(key).replace(/([a-z0-9])([A-Z])/gu, "$1_$2").toLowerCase().split(/[^a-z0-9]+/u);
-    if (keyParts.some((part) => [
-      "token", "auth", "authorization", "secret", "key", "credential", "password", "cookie", "session",
-      "apikey", "privatekey", "accesskey", "clientsecret", "bearer",
-    ].includes(part))) continue;
+    const normalizedKey = String(key).toLowerCase().replace(/[^a-z0-9]+/gu, "");
+    if (normalizedKey.endsWith("key") || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) continue;
     out[String(key).slice(0, 80)] = String(value).slice(0, 500);
   }
   return out;
@@ -195,7 +196,7 @@ async function sendPreparedFcmOnce(deviceToken, providerMessage) {
       const payload = await response.json().catch(() => ({}));
       const providerMessageId = typeof payload.name === "string" ? payload.name.trim() : "";
       if (!providerMessageId) {
-        return { kind: "failed", provider: "fcm", reason: "fcm_missing_message_name", retryable: true };
+        return { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false };
       }
       return {
         kind: "provider_accepted",
@@ -211,8 +212,8 @@ async function sendPreparedFcmOnce(deviceToken, providerMessage) {
     return gone
       ? { kind: "gone", provider: "fcm", reason: String(response.status), retryable: false }
       : { kind: "failed", provider: "fcm", reason: `fcm_${response.status}`, retryable, retryAfterSeconds };
-  } catch (error) {
-    return { kind: "failed", provider: "fcm", reason: String(error?.message ?? error), retryable: true };
+  } catch {
+    return { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false };
   }
 }
 
@@ -262,14 +263,20 @@ async function sendPreparedExpoOnce(expoToken, providerMessage) {
     }
     const payload = await response.json().catch(() => ({}));
     const ticket = Array.isArray(payload.data) ? payload.data[0] : payload.data;
-    if (ticket?.status === "ok" && typeof ticket.id === "string") {
-      return { kind: "provider_accepted", provider: "expo", providerTicketId: ticket.id };
+    if (ticket?.status === "ok") {
+      const providerTicketId = typeof ticket.id === "string" ? ticket.id.trim() : "";
+      return providerTicketId
+        ? { kind: "provider_accepted", provider: "expo", providerTicketId }
+        : { kind: "uncertain", provider: "expo", reason: "uncertain_provider_result", retryable: false };
     }
     const code = String(ticket?.details?.error || "");
     if (code === "DeviceNotRegistered") return { kind: "gone", provider: "expo", reason: code, retryable: false };
-    return { kind: "failed", provider: "expo", reason: code || String(ticket?.message || "expo_rejected"), retryable: code !== "InvalidCredentials" };
-  } catch (error) {
-    return { kind: "failed", provider: "expo", reason: String(error?.message ?? error), retryable: true };
+    if (ticket?.status === "error") {
+      return { kind: "failed", provider: "expo", reason: code || String(ticket?.message || "expo_rejected"), retryable: code !== "InvalidCredentials" };
+    }
+    return { kind: "uncertain", provider: "expo", reason: "uncertain_provider_result", retryable: false };
+  } catch {
+    return { kind: "uncertain", provider: "expo", reason: "uncertain_provider_result", retryable: false };
   }
 }
 

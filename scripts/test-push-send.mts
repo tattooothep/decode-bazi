@@ -57,6 +57,7 @@ await check("provider adapter เก็บ message ID/ticket และไม่�
   const originalFetch = globalThis.fetch;
   const requests: Array<{ url: string; body: unknown }> = [];
   let malformedFcm = false;
+  let malformedExpo = false;
   try {
     globalThis.fetch = async (input, init) => {
       const url = String(input);
@@ -79,7 +80,9 @@ await check("provider adapter เก็บ message ID/ticket และไม่�
         });
       }
       if (url.includes("exp.host")) {
-        return new Response(JSON.stringify({ data: { status: "ok", id: "expo-provider-ticket" } }), {
+        return new Response(JSON.stringify({ data: malformedExpo
+          ? { status: "ok" }
+          : { status: "ok", id: "expo-provider-ticket" } }), {
           status: 200,
           headers: { "content-type": "application/json" },
         });
@@ -97,17 +100,41 @@ await check("provider adapter เก็บ message ID/ticket และไม่�
     assert.equal(JSON.stringify(fcmMessage).includes("credential-only-at-send"), false);
     malformedFcm = true;
     const malformed = await S.sendPrepared({ provider: "fcm", deviceToken: "credential-only-at-send", providerMessage: fcmMessage });
-    assert.equal(malformed.kind, "failed");
-    assert.equal(malformed.reason, "fcm_missing_message_name");
-    assert.equal(malformed.retryable, true);
+    assert.deepEqual(malformed, { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false });
+    malformedFcm = false;
 
     const expoMessage = S.prepareMessage({ title: "Exact", body: "Expo", category: "daily", url: "/today" }, "expo");
     const expo = await S.sendPrepared({ provider: "expo", expoToken: "ExponentPushToken[credential-only-at-send]", providerMessage: expoMessage });
     assert.equal(expo.kind, "provider_accepted");
     assert.equal(expo.providerTicketId, "expo-provider-ticket");
+    malformedExpo = true;
+    const malformedTicket = await S.sendPrepared({ provider: "expo", expoToken: "ExponentPushToken[credential-only-at-send]", providerMessage: expoMessage });
+    assert.deepEqual(malformedTicket, { kind: "uncertain", provider: "expo", reason: "uncertain_provider_result", retryable: false });
+    malformedExpo = false;
     const receipts = await S.pollExpoReceipts(["expo-provider-ticket"]);
     assert.equal(receipts["expo-provider-ticket"].kind, "delivered");
     assert.ok(requests.some((request) => request.url.includes("/messages:send")));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+await check("response-lost transport errors are uncertain and never retryable", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => { throw new DOMException("fixture response lost", "AbortError"); };
+    const fcm = await S.sendPrepared({
+      provider: "fcm",
+      deviceToken: "fixture-device",
+      providerMessage: S.prepareMessage({ title: "Exact", body: "FCM" }, "fcm"),
+    });
+    const expo = await S.sendPrepared({
+      provider: "expo",
+      expoToken: "ExponentPushToken[fixture]",
+      providerMessage: S.prepareMessage({ title: "Exact", body: "Expo" }, "expo"),
+    });
+    assert.deepEqual(fcm, { kind: "uncertain", provider: "fcm", reason: "uncertain_provider_result", retryable: false });
+    assert.deepEqual(expo, { kind: "uncertain", provider: "expo", reason: "uncertain_provider_result", retryable: false });
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -125,6 +152,11 @@ await check("durable provider data ตัด credential-like keys ออกก�
       authSecret: "raw-secret",
       deviceCredential: "raw-credential",
       cookie: "raw-cookie",
+      accesstoken: "raw-access-token",
+      refresh_token: "raw-refresh-token",
+      "private-key": "raw-private-key",
+      encryptionKey: "raw-encryption-key",
+      AUTHORIZATION: "raw-authorization",
     },
   }, "expo");
   assert.equal(prepared.data.goalId, "goal-1");
@@ -132,6 +164,11 @@ await check("durable provider data ตัด credential-like keys ออกก�
   assert.equal(JSON.stringify(prepared).includes("raw-secret"), false);
   assert.equal(JSON.stringify(prepared).includes("raw-credential"), false);
   assert.equal(JSON.stringify(prepared).includes("raw-cookie"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-access-token"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-refresh-token"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-private-key"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-encryption-key"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-authorization"), false);
 });
 
 await check("Retry-After จาก provider ถูกแปลงเป็นวินาทีสำหรับ durable backoff", () => {

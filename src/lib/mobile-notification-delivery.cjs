@@ -44,10 +44,14 @@ function isPool(db) {
 async function withClient(db, run) {
   const pooled = isPool(db);
   const client = pooled ? await db.connect() : db;
+  const lifecycle = {
+    destroy: false,
+    discard() { this.destroy = true; },
+  };
   try {
-    return await run(client);
+    return await run(client, lifecycle);
   } finally {
-    if (pooled) client.release();
+    if (pooled) client.release(lifecycle.destroy);
   }
 }
 
@@ -213,10 +217,27 @@ async function acquireInstallationLock(client, installationId) {
 }
 
 async function releaseInstallationLock(client, installationId) {
-  await client.query(
-    `SELECT pg_advisory_unlock(hashtextextended('mobile-push-installation:'||$1::text,0))`,
+  const result = await client.query(
+    `SELECT pg_advisory_unlock(hashtextextended('mobile-push-installation:'||$1::text,0)) AS unlocked`,
     [installationId],
-  ).catch(() => null);
+  );
+  if (result.rows[0]?.unlocked !== true) throw new Error("mobile_push_advisory_unlock_failed");
+}
+
+async function withInstallationLock(db, installationId, run) {
+  return withClient(db, async (client, lifecycle) => {
+    await acquireInstallationLock(client, installationId);
+    try {
+      return await run(client);
+    } finally {
+      try {
+        await releaseInstallationLock(client, installationId);
+      } catch (error) {
+        lifecycle.discard();
+        throw error;
+      }
+    }
+  });
 }
 
 async function recoverUncertainOne(db, options = {}) {
@@ -270,7 +291,8 @@ async function finishAttempt(db, attempt, outcome, options = {}) {
   const baseDelaySeconds = Math.max(1, Math.min(3600, Number(options.baseDelaySeconds || DEFAULT_BASE_DELAY_SECONDS)));
   const accepted = outcome?.kind === "provider_accepted";
   const delivered = outcome?.kind === "delivered";
-  const terminal = outcome?.kind === "gone" || outcome?.retryable === false || Number(attempt.send_count) >= maxAttempts;
+  const uncertain = outcome?.kind === "uncertain";
+  const terminal = uncertain || outcome?.kind === "gone" || outcome?.retryable === false || Number(attempt.send_count) >= maxAttempts;
   const status = delivered ? "delivered" : accepted ? "provider_accepted" : terminal ? "dead" : "retry_due";
   const delay = status === "retry_due" ? retryDelaySeconds(Number(attempt.send_count), baseDelaySeconds, outcome?.retryAfterSeconds) : null;
   try {
@@ -282,11 +304,15 @@ async function finishAttempt(db, attempt, outcome, options = {}) {
            lease_token=NULL,lease_expires_at=NULL,
            send_started_at=CASE WHEN $3='retry_due' THEN NULL ELSE send_started_at END,
            provider_message_id=COALESCE($5,provider_message_id),provider_ticket_id=COALESCE($6,provider_ticket_id),
-           last_error=CASE WHEN $3 IN ('provider_accepted','delivered') THEN NULL ELSE $7 END,
+           next_receipt_at=CASE
+             WHEN $3='provider_accepted' AND $6::text IS NOT NULL THEN now()
+             WHEN $3 IN ('delivered','dead') THEN NULL ELSE next_receipt_at END,
+           last_error=CASE WHEN $3 IN ('provider_accepted','delivered') THEN NULL
+                           WHEN $8::boolean THEN 'uncertain_provider_result' ELSE $7 END,
            accepted_at=CASE WHEN $3 IN ('provider_accepted','delivered') THEN COALESCE(accepted_at,now()) ELSE accepted_at END,
            delivered_at=CASE WHEN $3='delivered' THEN COALESCE(delivered_at,now()) ELSE delivered_at END,updated_at=now()
          WHERE id=$1 AND lease_token=$2 RETURNING push_log_id,token_id`,
-        [attempt.id, attempt.lease_token, status, delay, outcome?.providerMessageId || null, outcome?.providerTicketId || null, safeReason(outcome)],
+        [attempt.id, attempt.lease_token, status, delay, outcome?.providerMessageId || null, outcome?.providerTicketId || null, safeReason(outcome), uncertain],
       );
       const row = updated.rows[0];
       if (!row) return null;
@@ -304,9 +330,7 @@ async function finishAttempt(db, attempt, outcome, options = {}) {
 
 async function processClaim(db, attempt, options = {}) {
   const sender = options.sender || push;
-  return withClient(db, async (client) => {
-    await acquireInstallationLock(client, attempt.installation_id);
-    try {
+  return withInstallationLock(db, attempt.installation_id, async (client) => {
       if (options.hooks?.afterClaim) await options.hooks.afterClaim(attempt);
       const started = await transactionOn(client, async (tx) => {
         const current = await tx.query(
@@ -350,13 +374,10 @@ async function processClaim(db, attempt, options = {}) {
           deviceToken: started.device_push_token,expoToken: started.expo_push_token,
         });
       } catch {
-        outcome = { kind: "failed", provider: started.provider, reason: "uncertain_provider_result", retryable: false };
+        outcome = { kind: "uncertain", provider: started.provider, reason: "uncertain_provider_result", retryable: false };
       }
       const status = await finishAttempt(client, started, outcome, options);
       return { status, outcome };
-    } finally {
-      await releaseInstallationLock(client, attempt.installation_id);
-    }
   });
 }
 
@@ -391,15 +412,29 @@ async function claimReceiptOne(db, options = {}) {
       `WITH candidate AS (
          SELECT id FROM mobile_push_attempts
           WHERE provider='expo' AND status='provider_accepted' AND provider_ticket_id IS NOT NULL
+            AND COALESCE(next_receipt_at,accepted_at,created_at)<=now()
             AND (lease_token IS NULL OR lease_expires_at<=now())
-          ORDER BY accepted_at,id FOR UPDATE SKIP LOCKED LIMIT 1
+          ORDER BY COALESCE(next_receipt_at,accepted_at,created_at),id FOR UPDATE SKIP LOCKED LIMIT 1
        ) UPDATE mobile_push_attempts a SET lease_token=gen_random_uuid()::text,
-           lease_expires_at=now()+($1::text||' seconds')::interval,updated_at=now()
+           lease_expires_at=now()+($1::text||' seconds')::interval,
+           receipt_poll_count=receipt_poll_count+1,updated_at=now()
           FROM candidate c WHERE a.id=c.id RETURNING a.*`,
       [String(leaseSeconds)],
     );
     return result.rows[0] || null;
   });
+}
+
+async function scheduleReceiptRetry(db, attempt, options = {}) {
+  const baseDelaySeconds = Math.max(1, Math.min(3600, Number(options.receiptBaseDelaySeconds || DEFAULT_BASE_DELAY_SECONDS)));
+  const delay = retryDelaySeconds(Number(attempt.receipt_poll_count || 1), baseDelaySeconds, null);
+  const result = await db.query(
+    `UPDATE mobile_push_attempts SET lease_token=NULL,lease_expires_at=NULL,
+       next_receipt_at=now()+($3::text||' seconds')::interval,updated_at=now()
+      WHERE id=$1 AND lease_token=$2 AND status='provider_accepted' RETURNING id`,
+    [attempt.id, attempt.lease_token, String(delay)],
+  );
+  return result.rowCount === 1;
 }
 
 async function finishReceipt(db, attempt, receipt, options = {}) {
@@ -413,17 +448,22 @@ async function finishReceipt(db, attempt, receipt, options = {}) {
 async function pollReceiptBatch(db, options = {}) {
   const sender = options.sender || push;
   const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
-  const report = { claimed: 0, delivered: 0, errors: 0, pending: 0 };
+  const report = { claimed: 0, delivered: 0, errors: 0, pending: 0, providerErrors: 0 };
   for (let count = 0; count < limit; count += 1) {
     const attempt = await claimReceiptOne(db, options);
     if (!attempt) break;
     report.claimed += 1;
     let receipts;
     try { receipts = await sender.pollExpoReceipts([attempt.provider_ticket_id]); }
-    catch { receipts = {}; }
+    catch {
+      await scheduleReceiptRetry(db, attempt, options);
+      report.pending += 1;
+      report.providerErrors += 1;
+      break;
+    }
     const receipt = receipts?.[attempt.provider_ticket_id];
     if (!receipt) {
-      await db.query(`UPDATE mobile_push_attempts SET lease_token=NULL,lease_expires_at=NULL,updated_at=now() WHERE id=$1 AND lease_token=$2`, [attempt.id, attempt.lease_token]);
+      await scheduleReceiptRetry(db, attempt, options);
       report.pending += 1;
       continue;
     }
@@ -454,4 +494,5 @@ async function deliver(db, notice, options = {}) {
 module.exports = {
   claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
   messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
+  withInstallationLock,
 };

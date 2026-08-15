@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS mobile_push_attempts (
   send_started_at timestamptz,
   provider_message_id text,
   provider_ticket_id text,
+  next_receipt_at timestamptz,
+  receipt_poll_count integer NOT NULL DEFAULT 0 CHECK (receipt_poll_count >= 0),
   last_error text,
   accepted_at timestamptz,
   delivered_at timestamptz,
@@ -90,7 +92,13 @@ CREATE TABLE IF NOT EXISTS mobile_push_attempts (
 -- Keep the migration upgrade-safe when an earlier Task 2 draft created the
 -- table before the committed external-send boundary was added.
 ALTER TABLE mobile_push_attempts
-  ADD COLUMN IF NOT EXISTS send_started_at timestamptz;
+  ADD COLUMN IF NOT EXISTS send_started_at timestamptz,
+  ADD COLUMN IF NOT EXISTS next_receipt_at timestamptz,
+  ADD COLUMN IF NOT EXISTS receipt_poll_count integer NOT NULL DEFAULT 0;
+ALTER TABLE mobile_push_attempts
+  DROP CONSTRAINT IF EXISTS mobile_push_attempts_receipt_poll_count_check;
+ALTER TABLE mobile_push_attempts
+  ADD CONSTRAINT mobile_push_attempts_receipt_poll_count_check CHECK (receipt_poll_count >= 0);
 
 CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_due
   ON mobile_push_attempts(next_retry_at, created_at)
@@ -98,8 +106,9 @@ CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_due
 CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_stale_lease
   ON mobile_push_attempts(lease_expires_at)
   WHERE lease_token IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_expo_receipt
-  ON mobile_push_attempts(accepted_at)
+DROP INDEX IF EXISTS ix_mobile_push_attempts_expo_receipt;
+CREATE INDEX ix_mobile_push_attempts_expo_receipt
+  ON mobile_push_attempts(next_receipt_at, accepted_at)
   WHERE status='provider_accepted' AND provider='expo' AND provider_ticket_id IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_attempts_provider_ticket
   ON mobile_push_attempts(provider_ticket_id) WHERE provider_ticket_id IS NOT NULL;

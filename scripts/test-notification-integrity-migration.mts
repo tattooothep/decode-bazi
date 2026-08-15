@@ -113,6 +113,16 @@ try {
     "attempt schema records the committed external-send boundary",
   );
   assert.equal(
+    psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_attempts' AND column_name IN ('next_receipt_at','receipt_poll_count');`),
+    "2",
+    "attempt schema persists receipt polling schedule and count",
+  );
+  assert.equal(
+    psql(database, `SELECT count(*) FROM pg_indexes WHERE tablename='mobile_push_attempts' AND indexdef ILIKE '%next_receipt_at%' AND indexdef ILIKE '%provider_accepted%';`),
+    "1",
+    "due Expo receipt polling has a partial schedule index",
+  );
+  assert.equal(
     psql(database, `SELECT count(*) FROM pg_indexes WHERE tablename='mobile_push_attempts' AND indexdef ILIKE '%UNIQUE%provider_ticket_id%' AND indexdef ILIKE '%provider_ticket_id IS NOT NULL%';`),
     "1",
     "Expo ticket IDs are unique when present",
@@ -122,12 +132,17 @@ try {
     "1",
     "FCM provider message IDs are unique when present",
   );
-  psql(database, `ALTER TABLE mobile_push_attempts DROP COLUMN send_started_at;`);
+  psql(database, `ALTER TABLE mobile_push_attempts DROP COLUMN send_started_at, DROP COLUMN next_receipt_at, DROP COLUMN receipt_poll_count;`);
   psql(database, forward);
   assert.equal(
     psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_attempts' AND column_name='send_started_at';`),
     "1",
     "rerunning forward migration upgrades an already-created Task 2 attempt table",
+  );
+  assert.equal(
+    psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_attempts' AND column_name IN ('next_receipt_at','receipt_poll_count');`),
+    "2",
+    "rerunning forward migration restores receipt polling durability fields",
   );
   psql(database, `INSERT INTO mobile_push_tokens(user_id,installation_id,expo_push_token,platform,enabled)
     VALUES('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','ExponentPushToken[fixture-rotated-history]','android',false);`);
