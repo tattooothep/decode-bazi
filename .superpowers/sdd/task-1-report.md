@@ -1,52 +1,75 @@
-# Task 1 — Token ownership and privacy contract
+# Task 1 — Notification token ownership and privacy contract
 
-## Scope delivered
+## Delivered scope
 
-- Added a rerunnable ownership/privacy migration and schema-only rollback.
-- Enforced one active global owner per installation and native token with partial
-  unique indexes, deterministic historical deduplication, and preserved disabled
-  token audit rows.
-- Registration serializes installation/native ownership with transaction-scoped
-  advisory locks, disables stale rows before upsert, and contains no raw-token
-  logging.
-- Kept unregister idempotent.
-- Added `privacyPreview` to the authenticated mobile notification preferences
-  read/write contract; its database and absent-row defaults are `false`.
-- Added executable migration/rollback/reapply, API contract, route integration,
-  delivery, and no-raw-token guard coverage. Delivery/retry implementation was
-  intentionally not changed.
+- The rerunnable forward migration deduplicates historical active ownership and
+  enforces one global enabled owner for each installation and native device
+  token with partial unique indexes.
+- The rollback is intentionally schema-only for preference fields: it retains
+  both partial owner indexes, is rerunnable, and therefore cannot report a
+  successful rollback while leaving active ownership unprotected.
+- Push registration transfers stale installation/native owners before its
+  upsert, and a legacy request that omits a native identity writes `NULL` for
+  both native fields instead of reviving a stored token.
+- POST, installation DELETE, and unregister-all use one transaction protocol:
+  discover candidates without row locks; acquire sorted transaction advisory
+  locks in global `user → expo → installation → native` order; then re-read
+  candidates with `FOR UPDATE` before mutation. Including Expo identity in the
+  same order serializes its unique upsert as well. This prevents a row-lock to
+  advisory-lock cycle, including A unregister-all racing B transfer and two
+  opposite-direction transfers.
+- Unregister remains idempotent. Database failures are rolled back and mapped
+  to generic 409/500 responses without logging raw PostgreSQL/token detail.
+- Notification preferences expose server-owned `privacyPreview` (default
+  `false`) and validated `locale` (default `th`) read/write fields.
+
+Delivery/retry, science, legacy, production/release, build, and deployment
+code were not changed.
 
 ## RED evidence
 
-1. `npx tsx scripts/test-notification-integrity-contract.mts`
-   - Failed before the change: `ownership transfers must serialize concurrent registrations` because the starter route had no advisory lock.
-2. Isolated `BASE_URL=http://127.0.0.1:3437 node scripts/test-mobile-push-p0.mjs`
-   - Failed on the first valid registration with `500`; Next diagnostic log showed `could not determine data type of parameter $3`. The starter transaction used non-contiguous PostgreSQL placeholders.
-3. The same isolated route test then failed token rotation with `duplicate key value violates unique constraint mobile_push_tokens_user_id_installation_id_key`.
-4. `npx tsx scripts/test-notification-integrity-migration.mts`
-   - Failed before the migration constraint replacement when inserting disabled same-installation rotation history, reproducing the legacy unique-constraint conflict.
+1. `npx tsx scripts/test-notification-integrity-contract.mts` initially failed
+   with `POST must acquire all advisory identity locks before row locks`: the
+   starter transaction took `FOR UPDATE` and only then acquired native advisory
+   locks.
+2. Earlier executable migration coverage failed when rollback removed the two
+   active-owner indexes; its rollback/reapply test now requires duplicate active
+   installation and native writes to keep failing after rollback.
+3. Route integration additions were introduced before the corresponding fixes:
+   native omission after an Expo transfer, queued POST/DELETE, cross-user
+   transfer versus unregister-all, locale persistence, and a forced database
+   error all exercised the missing contract behavior.
 
 ## GREEN verification
 
-- `npx tsx scripts/test-notification-integrity-contract.mts` → `NOTIFICATION_INTEGRITY_CONTRACT_OK`
-- `npx tsx scripts/test-notification-integrity-migration.mts` → `NOTIFICATION_INTEGRITY_MIGRATION_OK`
-  - Creates a uniquely named disposable PostgreSQL database.
-  - Applies the migration, proves both active-owner constraints reject duplicates,
-    verifies default `privacy_preview=false`, rolls back twice, and reapplies.
-  - Drops its database in `finally`.
-- Isolated schema-only disposable DB + dedicated non-superuser test role:
-  `BASE_URL=http://127.0.0.1:3437 node scripts/test-mobile-push-p0.mjs` → `21 mobile push checks passed`
-  - Covers A→B native installation ownership transfer, duplicate unregister,
-    no active token after unregister, and privacy preference default/persistence.
-- `npx tsx scripts/test-mobile-push-delivery.mts` → `6 mobile push delivery checks passed`
-  - Includes disabled historical-token exclusion.
-- `npx tsx scripts/test-push-guard.mts` → `22` checks passed, including no raw provider-token logging in registration.
+- `npx tsx scripts/test-notification-integrity-contract.mts` →
+  `NOTIFICATION_INTEGRITY_CONTRACT_OK`.
+- `npx tsx scripts/test-notification-integrity-migration.mts` →
+  `NOTIFICATION_INTEGRITY_MIGRATION_OK`.
+  - Creates a uniquely named `notification_integrity_test_*` disposable DB;
+    proves forward ownership enforcement, rollback twice, retained constraints
+    after rollback, and forward reapply; drops the DB in `finally`.
+- Disposable API route integration with a dedicated non-superuser role:
+  `BASE_URL=http://127.0.0.1:3437 NEXT_DEV_LOG_PATH=.next/dev/logs/next-development.log node scripts/test-mobile-push-p0.mjs`
+  → `36 mobile push checks passed`.
+  - Runs the real route against `notification_integrity_api_test` only.
+  - Deterministically queues POST and DELETE under an advisory user lock.
+  - Runs cross-user B transfer versus A unregister-all in both `post-first` and
+    `delete-first` schedules; both return 200 and leave B the enabled Expo
+    owner, with no deadlock/500.
+  - Creates the forced-error trigger/function inside the test and drops both in
+    `finally`; it verifies response and new server-log bytes contain neither
+    the raw Expo token nor PostgreSQL error detail.
+- `npx tsx scripts/test-mobile-push-delivery.mts` →
+  `6 mobile push delivery checks passed`.
+- `npx tsx scripts/test-push-guard.mts` → `22` checks passed.
 - `npx tsc --noEmit` → exit 0.
 - `git diff --check` → exit 0.
 
-The temporary API DB/role and delivery DB/role were dropped after their tests;
-post-cleanup checks returned `f|f` for database/role existence. No production DB
-was migrated or changed.
+Both DB-mutating route and delivery tests reject non-disposable database names.
+The route DB/role and delivery DB/role were dropped after verification; cleanup
+query returned `false|false` for their database/role existence. No production
+database was touched.
 
 ## Changed files
 
@@ -60,88 +83,20 @@ was migrated or changed.
 - `scripts/test-mobile-push-delivery.mts`
 - `scripts/test-push-guard.mts`
 
-## Migration and rollback proof
+## Self-review and concerns
 
-The forward migration first disables historical duplicate active ownership,
-replaces the legacy per-account installation uniqueness constraint with global
-active-owner partial indexes, and adds `privacy_preview` with `false` default.
-It is rerunnable (`IF EXISTS` / `IF NOT EXISTS`). The rollback drops only the
-new indexes and preference column, never re-enables ambiguous ownership, and
-restores the legacy constraint only if doing so cannot discard or invalidate
-preserved audit history. It is safe to execute twice and the forward migration
-reapplies after it.
+The partial indexes are the final database invariant; advisory locks make the
+route sequencing deterministic but do not replace that invariant. Candidate
+discovery is deliberately unlocked and every mutation revalidates with row
+locks only after the complete identity lock set, so it avoids the prior
+row-lock/advisory-lock inversion. The forced database-error test is fully
+self-contained and cleanup-protected.
 
-## Self-review
+No known Task 1 concerns remain. The retained owner indexes are deliberate:
+rolling back preference columns does not make an active device shareable.
 
-- One active global owner: DB indexes prove installation/native uniqueness among enabled rows.
-- Transfer ordering: stale identities are disabled inside the same transaction before upsert.
-- Concurrency: advisory locks serialize competing installation/native changes; indexes remain the final DB guard.
-- Unregister: repeat DELETE returns the same unsubscribed result and cannot reactivate a row.
-- Privacy: absent rows, migration default, write, and response all use `false` unless explicitly enabled.
-- Privacy/logging: no raw provider token is logged by the registration route.
-- Scope: no retry/delivery worker, science, legacy, release, or deployment code changed.
+## Commits
 
-## Concern
-
-Rollback deliberately does not recreate the obsolete `(user_id, installation_id)`
-constraint when preserved disabled rotation rows would violate it. This is the
-safe data-preserving behavior; it should be used only together with reverting
-the new registration route, as with any schema rollback.
-
-## Commit
-
-Implementation and tests: `5347dbd68cb9076e8dfe3a6a2e6d940afc5fe702`
-
-## Review-fix addendum
-
-This addendum supersedes the earlier rollback description: rollback now retains
-both global partial active-owner indexes. It only removes Task 1 preference
-columns, so it cannot complete without database ownership enforcement.
-
-### Additional RED evidence
-
-- The strengthened contract failed because the migration had no preference
-  locale and rollback dropped both active-owner indexes.
-- The migration test initially codified that unsafe rollback; it was changed to
-  prove duplicate active installation and native-token inserts still fail after
-  rollback.
-- The real API route test added a queued POST/DELETE case, native omission on
-  Expo ownership transfer, forced database error sanitization, locale round
-  trip, invalid-locale retention, and unregister-all coverage before their
-  implementation changes.
-
-### Additional GREEN verification
-
-- `npx tsx scripts/test-notification-integrity-contract.mts` → pass.
-- `npx tsx scripts/test-notification-integrity-migration.mts` → pass; forward,
-  rollback twice, duplicate enforcement after rollback, and reapply are proven
-  in a `notification_integrity_test_*` disposable DB.
-- Isolated route server + schema-only disposable DB:
-  `BASE_URL=http://127.0.0.1:3437 node scripts/test-mobile-push-p0.mjs`
-  → `30 mobile push checks passed`.
-  - It holds the same advisory user lock while a POST and DELETE enter the real
-    route, releases it only after both wait, and proves the queued DELETE leaves
-    no enabled row.
-  - It proves legacy omitted-native registration clears the transferred native
-    token/type, forced database errors return only a generic error, and locale
-    defaults/persists/rejects invalid values.
-- `npx tsx scripts/test-mobile-push-delivery.mts` → `6` checks passed.
-- `npx tsx scripts/test-push-guard.mts` → `22` checks passed.
-- `npx tsc --noEmit` and `git diff --check` → exit 0.
-
-### Review-fix implementation notes
-
-- POST and DELETE now take transaction-scoped user locks before deterministic
-  installation/native locks. Unregister-all locks every currently enabled
-  installation in sorted query order.
-- Existing native identities are selected and locked before upsert. A legacy
-  request writes `NULL` native token/type rather than coalescing stale values.
-- PostgreSQL failures are rolled back and mapped to sanitized 409/500 responses;
-  no database error is rethrown or logged by the route.
-- `mobile_notification_prefs.locale` is a validated supported server preference
-  with `th` default and API read/write contract.
-- Both DB-mutating integration scripts now refuse names outside an explicit
-  `notification_integrity_*_test` disposable prefix. Temporary DBs/roles were
-  removed after every run; cleanup checks returned `f|f`.
-
-Review-fix implementation: `0a8aed8d0da874d9411ddbec736a1f559001d387`
+- Initial implementation: `5347dbd68cb9076e8dfe3a6a2e6d940afc5fe702`
+- Second review fixes: `0a8aed8d0da874d9411ddbec736a1f559001d387`
+- This lock-order/test review cycle: `e6cacb673f7a65cfa4d7a2a3fe88f5c729289cd2`
