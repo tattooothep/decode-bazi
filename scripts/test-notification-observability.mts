@@ -251,6 +251,10 @@ try {
       );
     }
   }
+  await pool.query(
+    `UPDATE mobile_push_attempts a SET provider_message_id='terminal-message-'||a.id::text
+       FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.kind='terminal-lease' AND a.status='delivered'`,
+  );
   const terminalReconciliation = await observability.reconcile(pool);
   assert.equal(terminalReconciliation.counts.impossibleState - matrixReconciliation.counts.impossibleState, terminalLeaseStates.length * 2, "dead or delivered rows retaining either lease field are impossible while no-lease terminals remain valid");
 

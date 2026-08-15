@@ -10,12 +10,16 @@ running on a host. Installation remains behind the release and signature gates.
   terminal parent with no active retry or outstanding Expo receipt. The marker
   `source_facts_redacted_at` records the aggregate transition.
 - After 30 days, immutable provider attempts are removed only when every child
-  on the locked parent is stable (`dead`, `delivered`, or FCM accepted). The
-  parent stays as useful authenticated history and `attempts_retired_at` keeps
-  reconciliation from mistaking the intentional retirement for an orphan.
+  on the locked parent is stable and passes the same provider-ID, timestamp,
+  lease, and state invariants used by reconciliation. Checked Expo acceptance
+  is stable; an unpolled receipt is not. The parent delivery status must equal
+  derived child truth and `attempt_count` must equal the child `send_count` sum.
+  Only then is `attempts_retired_at` written before the children are deleted.
 - Ordinary notification history is retained for 180 days. Security and service
-  history uses a longer 365-day window. Deleting the parent also deletes any
-  remaining child rows through the existing foreign key.
+  history uses a longer 365-day window. History deletion requires no remaining
+  children and either a valid retirement marker, an explicit legacy generation,
+  or the reviewed no-deliverable terminal state; it cannot cascade-delete
+  corrupt attempt evidence.
 - Active reservations, retries, and outstanding Expo receipts are never
   redacted or deleted, regardless of age. Health checks continue to alert on
   those stale rows.

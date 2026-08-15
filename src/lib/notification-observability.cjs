@@ -2,6 +2,7 @@
 
 /** Read-only, aggregate-only notification health and reconciliation checks. */
 const { SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS, SCHEDULER_NAMES } = require("./notification-science.cjs");
+const { attemptImpossibleSql, derivedParentStatusSql } = require("./notification-delivery-invariants.cjs");
 
 function boundedNumber(value, fallback, minimum, maximum) {
   const parsed = Number(value);
@@ -203,18 +204,24 @@ async function collectHealth(db, input = {}) {
 }
 
 async function reconcile(db, input = {}) {
+  const derivedParentStatus = derivedParentStatusSql({
+    delivered: "delivered", accepted: "accepted", open: "open",
+  });
   const result = await readOnlyBounded(db, (readDb) => readDb.query(
     `WITH parents AS (
-       SELECT l.id,l.delivery_status,l.last_error,l.delivery_model_generation,l.attempts_retired_at,
+       SELECT l.id,l.delivery_status,l.attempt_count,l.last_error,l.delivery_model_generation,l.attempts_retired_at,
               count(a.id) AS attempt_total,
               count(a.id) FILTER (WHERE a.status='delivered') AS delivered,
               count(a.id) FILTER (WHERE a.status='provider_accepted') AS accepted,
-              count(a.id) FILTER (WHERE a.status IN ('reserved','retry_due')) AS open
+              count(a.id) FILTER (WHERE a.status IN ('reserved','retry_due')) AS open,
+              COALESCE(sum(a.send_count),0) AS sends
          FROM mobile_push_log l LEFT JOIN mobile_push_attempts a ON a.push_log_id=l.id
-        GROUP BY l.id,l.delivery_status,l.last_error,l.delivery_model_generation,l.attempts_retired_at
+        GROUP BY l.id,l.delivery_status,l.attempt_count,l.last_error,l.delivery_model_generation,l.attempts_retired_at
      ), parent_truth AS (
        SELECT count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND attempt_total>0
-                AND delivery_status <> CASE WHEN delivered>0 THEN 'delivered' WHEN accepted>0 THEN 'accepted' WHEN open>0 THEN 'pending' ELSE 'failed' END)::int AS parent_truth_mismatch,
+                AND delivery_status <> ${derivedParentStatus})::int AS parent_truth_mismatch,
+              count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND attempt_total>0
+                AND attempt_count<>sends)::int AS parent_attempt_count_mismatch,
               count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND delivery_status='failed' AND accepted>0)::int AS orphan_accepted_parent,
               count(*) FILTER (WHERE delivery_model_generation=1 AND attempts_retired_at IS NULL AND attempt_total=0
                 AND delivery_status IN ('accepted','delivered'))::int AS orphan_failed_parent,
@@ -230,22 +237,14 @@ async function reconcile(db, input = {}) {
      ), attempts AS (
        SELECT count(*) FILTER (WHERE l.id IS NULL)::int AS orphan_attempt,
               count(*) FILTER (WHERE l.id IS NULL AND a.provider='expo' AND a.provider_ticket_id IS NOT NULL)::int AS orphan_receipt,
-              count(*) FILTER (WHERE
-                (a.provider='expo' AND a.status='provider_accepted' AND a.provider_ticket_id IS NULL)
-                OR (a.provider='fcm' AND a.provider_ticket_id IS NOT NULL)
-                OR (a.status='retry_due' AND a.next_retry_at IS NULL)
-                OR (a.lease_token IS NOT NULL AND a.lease_expires_at IS NULL)
-                OR (a.status IN ('reserved','retry_due') AND a.send_started_at IS NOT NULL AND a.lease_token IS NULL)
-                OR (a.status IN ('dead','delivered') AND (a.lease_token IS NOT NULL OR a.lease_expires_at IS NOT NULL))
-                OR (a.status='provider_accepted' AND a.accepted_at IS NULL)
-                OR (a.status='delivered' AND (a.delivered_at IS NULL OR a.accepted_at IS NULL))
-              )::int AS impossible_state
+              count(*) FILTER (WHERE ${attemptImpossibleSql("a")})::int AS impossible_state
          FROM mobile_push_attempts a LEFT JOIN mobile_push_log l ON l.id=a.push_log_id
      ) SELECT * FROM parent_truth CROSS JOIN attempts`,
   ));
   const row = result.rows[0] || {};
   const counts = {
     parentTruthMismatch: numeric(row.parent_truth_mismatch),
+    parentAttemptCountMismatch: numeric(row.parent_attempt_count_mismatch),
     orphanAttempt: numeric(row.orphan_attempt),
     orphanReceipt: numeric(row.orphan_receipt),
     orphanAcceptedParent: numeric(row.orphan_accepted_parent),

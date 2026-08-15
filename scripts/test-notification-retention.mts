@@ -59,7 +59,13 @@ try {
       ('30000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000001','retain-security','security','Security history','Review Account','{"kind":"security"}','{"event":"login"}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
       ('30000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000001','purge-security','security','Expired security history','Old detail','{"kind":"security"}','{"event":"old-login"}','delivered',now()-interval '400 days',now()-interval '400 days',now()-interval '400 days',1),
       ('30000000-0000-4000-8000-000000000006','00000000-0000-4000-8000-000000000001','active-retry','daily','Active retry history','Must survive','{"kind":"daily"}','{"profileId":"active-private"}','pending',NULL,NULL,now()-interval '400 days',1),
-      ('30000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000001','old-parent-recent-attempt','daily','Recent delivery audit','Must survive until attempt expiry','{"kind":"daily"}','{"score":68}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1);
+      ('30000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000001','old-parent-recent-attempt','daily','Recent delivery audit','Must survive until attempt expiry','{"kind":"daily"}','{"score":68}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
+      ('30000000-0000-4000-8000-000000000008','00000000-0000-4000-8000-000000000001','corrupt-terminal-lease','daily','Corrupt lease evidence','Must survive','{"kind":"daily"}','{"case":"lease"}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
+      ('30000000-0000-4000-8000-000000000009','00000000-0000-4000-8000-000000000001','corrupt-delivered-time','daily','Corrupt timestamp evidence','Must survive','{"kind":"daily"}','{"case":"timestamp"}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
+      ('30000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000001','corrupt-expo-id','daily','Corrupt Expo evidence','Must survive','{"kind":"daily"}','{"case":"expo-id"}','accepted',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
+      ('30000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000001','corrupt-fcm-id','daily','Corrupt FCM evidence','Must survive','{"kind":"daily"}','{"case":"fcm-id"}','accepted',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1),
+      ('30000000-0000-4000-8000-000000000012','00000000-0000-4000-8000-000000000001','corrupt-parent-status','daily','Corrupt parent evidence','Must survive','{"kind":"daily"}','{"case":"parent-status"}','failed',NULL,NULL,now()-interval '200 days',1),
+      ('30000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000001','corrupt-attempt-count','daily','Corrupt count evidence','Must survive','{"kind":"daily"}','{"case":"attempt-count"}','delivered',now()-interval '200 days',now()-interval '200 days',now()-interval '200 days',1);
     INSERT INTO mobile_push_attempts(push_log_id,installation_id,provider,provider_message,message_sha256,status,transactional,accepted_at,delivered_at,next_retry_at,updated_at,created_at)
     SELECT id,gen_random_uuid(),'fcm','{"title":"provider-private"}',repeat('a',64),
            CASE WHEN yam_key='active-retry' THEN 'retry_due' ELSE 'delivered' END,
@@ -73,8 +79,20 @@ try {
            provider_receipt_checked_at=a.updated_at,delivered_at=NULL
       FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='retain-security';
     UPDATE mobile_push_log SET delivery_status='accepted' WHERE yam_key='retain-security';
+    UPDATE mobile_push_attempts a SET provider_message_id='message-'||a.id::text
+      FROM mobile_push_log l WHERE l.id=a.push_log_id AND a.provider='fcm' AND l.yam_key<>'active-retry';
     UPDATE mobile_push_attempts a SET updated_at=now()-interval '5 days'
       FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='old-parent-recent-attempt';
+    UPDATE mobile_push_attempts a SET lease_token='corrupt-lease',lease_expires_at=now()+interval '1 day'
+      FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='corrupt-terminal-lease';
+    UPDATE mobile_push_attempts a SET delivered_at=NULL
+      FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='corrupt-delivered-time';
+    UPDATE mobile_push_attempts a SET provider='expo',status='provider_accepted',provider_message_id=NULL,
+           provider_ticket_id=NULL,provider_receipt_checked_at=a.updated_at,delivered_at=NULL
+      FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='corrupt-expo-id';
+    UPDATE mobile_push_attempts a SET status='provider_accepted',provider_message_id=NULL,delivered_at=NULL
+      FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='corrupt-fcm-id';
+    UPDATE mobile_push_log SET attempt_count=99 WHERE yam_key='corrupt-attempt-count';
   `);
 
   const retention = require("../src/lib/notification-retention.cjs");
@@ -101,6 +119,23 @@ try {
   assert.equal((await pool.query(`SELECT 1 FROM mobile_push_log WHERE yam_key='old-parent-recent-attempt'`)).rowCount, 1, "an old parent is preserved until its recent terminal attempt finishes the shorter audit window");
   assert.equal((await pool.query(`SELECT source_facts FROM mobile_push_log WHERE yam_key='active-retry'`)).rows[0].source_facts.profileId, "active-private", "active retry source facts are never redacted mid-delivery");
   assert.equal((await pool.query(`SELECT 1 FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='active-retry'`)).rowCount, 1, "active retry attempts are never purged");
+  const corruptKeys = [
+    "corrupt-terminal-lease", "corrupt-delivered-time", "corrupt-expo-id",
+    "corrupt-fcm-id", "corrupt-parent-status", "corrupt-attempt-count",
+  ];
+  const corruptRows = await pool.query(
+    `SELECT l.yam_key,l.attempts_retired_at,a.id AS attempt_id
+       FROM mobile_push_log l LEFT JOIN mobile_push_attempts a ON a.push_log_id=l.id
+      WHERE l.yam_key=ANY($1::text[]) ORDER BY l.yam_key`,
+    [corruptKeys],
+  );
+  assert.equal(corruptRows.rowCount, corruptKeys.length, "corrupt or parent-mismatched old rows survive both attempt and history retention");
+  assert.equal(corruptRows.rows.every((row) => row.attempt_id && row.attempts_retired_at === null), true, "corrupt evidence keeps its child attempt and never receives attempts_retired_at");
+  const reconciliation = await require("../src/lib/notification-observability.cjs").reconcile(pool);
+  assert.equal(reconciliation.ok, false, "retention cannot turn corrupt durable state into a healthy reconciliation result by deleting evidence");
+  assert.equal(reconciliation.counts.impossibleState >= 4, true, "terminal lease, timestamp, and provider-ID corruption remains visible");
+  assert.equal(reconciliation.counts.parentTruthMismatch >= 1, true, "parent delivery-status corruption remains visible");
+  assert.equal(reconciliation.counts.parentAttemptCountMismatch >= 1, true, "parent attempt-count corruption remains visible");
   console.log("NOTIFICATION_RETENTION_OK");
 } finally {
   await pool?.end().catch(() => null);
