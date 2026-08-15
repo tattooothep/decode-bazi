@@ -15,7 +15,8 @@ const SAFE_FAILURE_CODES = new Set([
   "legacy_route_not_denied", "legacy_route_present", "missing_argument", "patch_path_not_allowlisted",
   "path_component_not_directory", "path_component_symlink", "path_realpath_escape",
   "patches_required_for_apply", "replacement_not_exact", "required_file_missing", "required_file_not_regular",
-  "rollback_checksum_mismatch", "rollback_confirmation_required", "rollback_manifest_missing",
+  "rollback_checksum_mismatch", "rollback_compensation_failed", "rollback_confirmation_required",
+  "rollback_failed_compensated", "rollback_manifest_missing",
   "root_and_inventory_required", "unexpected_target_checksum", "unknown_argument", "unsafe_inventory_path",
   "vapid_environment_unavailable", "invalid_target_encoding", "target_state_changed_before_write",
   "target_metadata_not_preserved",
@@ -195,6 +196,16 @@ function hasOnlyCanonicalVapidDataflow(text) {
   return !seen || (calls === 1 && bindings.size === canonicalBindings.size);
 }
 
+function containsVapidSignal(text) {
+  return /(?:vapid|setVapidDetails)/iu.test(text);
+}
+
+function rollbackPolicyForTransition(original, applied) {
+  return containsVapidSignal(original) || containsVapidSignal(applied)
+    ? "retain_applied"
+    : "restore_original";
+}
+
 function targetSnapshot(root, relativePath) {
   const target = regularFile(root, relativePath);
   const stat = lstatSync(target);
@@ -319,6 +330,13 @@ function verifyWrittenTarget(root, relativePath, text, metadata) {
   return current;
 }
 
+function hasSnapshotContentAndMetadata(current, expected) {
+  return current.sha256 === expected.sha256
+    && (current.mode & 0o7777) === (expected.mode & 0o7777)
+    && current.uid === expected.uid
+    && current.gid === expected.gid;
+}
+
 function writeTargetOnce(root, relativePath, text, before, metadata) {
   const target = verifyTargetSnapshot(root, relativePath, before).target;
   const temporary = `${target}.legacy-containment-${process.pid}-${Date.now()}`;
@@ -401,7 +419,7 @@ function apply(options, root, inventory) {
   const changes = preparePatches(root, inventory);
   const backupDir = createExclusiveBackupDir(root, options.backupDir);
   mkdirSync(joinPath(backupDir, "files"), { recursive: false, mode: 0o700 });
-  const manifest = { version: 1, root, files: [] };
+  const manifest = { version: 2, root, files: [] };
   verifyAllTargetSnapshots(root, changes);
   for (const [path, change] of changes) {
     const backupName = sha256(path);
@@ -412,6 +430,7 @@ function apply(options, root, inventory) {
       originalSha256: change.before.sha256,
       appliedSha256: sha256(change.replacement),
       originalMetadata: metadataFromSnapshot(change.before),
+      rollbackPolicy: rollbackPolicyForTransition(change.before.text, change.replacement),
     });
   }
   atomicWriteBackup(backupDir, "manifest.json", `${JSON.stringify(manifest)}\n`);
@@ -438,24 +457,76 @@ function joinPath(...parts) {
   return resolve(...parts);
 }
 
-function rollback(options, root) {
+function rollback(options, root, inventory) {
   if (options.confirm !== CONFIRM_ROLLBACK) fail("rollback_confirmation_required");
   const backupDir = existingBackupDir(root, options.backupDir);
   const manifestPath = secureAbsoluteFile(joinPath(backupDir, "manifest.json"), "rollback_manifest_missing");
   let manifest;
   try { manifest = JSON.parse(readFileSync(manifestPath, "utf8")); } catch { fail("invalid_rollback_manifest"); }
-  if (!manifest || manifest.version !== 1 || manifest.root !== root || !Array.isArray(manifest.files) || manifest.files.length === 0) fail("invalid_rollback_manifest");
-  const before = new Map();
+  if (!manifest || ![1, 2].includes(manifest.version) || manifest.root !== root || !Array.isArray(manifest.files) || manifest.files.length === 0) fail("invalid_rollback_manifest");
+  const approvedPaths = new Set([...inventory.routeFiles, ...inventory.sourceFiles, ...inventory.cronFiles]);
+  const seenPaths = new Set();
+  const changes = [];
   for (const file of manifest.files) {
-    if (!file || typeof file.path !== "string" || !/^[a-f0-9]{64}$/u.test(file.backupName || "")) fail("invalid_rollback_manifest");
+    if (!file || typeof file.path !== "string" || !/^[a-f0-9]{64}$/u.test(file.backupName || "") || !/^[a-f0-9]{64}$/u.test(file.originalSha256 || "") || !/^[a-f0-9]{64}$/u.test(file.appliedSha256 || "")) fail("invalid_rollback_manifest");
+    if (!approvedPaths.has(file.path)) fail("patch_path_not_allowlisted");
+    if (seenPaths.has(file.path)) fail("invalid_rollback_manifest");
+    seenPaths.add(file.path);
     validMetadata(file.originalMetadata, "invalid_rollback_manifest");
     const original = readFileSync(backupFile(backupDir, file.backupName), "utf8");
     const target = targetSnapshot(root, file.path);
     if (sha256(original) !== file.originalSha256 || target.sha256 !== file.appliedSha256) fail("rollback_checksum_mismatch");
-    before.set(file.path, target);
+    const rollbackPolicy = rollbackPolicyForTransition(original, target.text);
+    if (manifest.version === 2 && file.rollbackPolicy !== rollbackPolicy) fail("invalid_rollback_manifest");
+    changes.push({ file, original, target, rollbackPolicy });
   }
-  for (const file of manifest.files) atomicWriteTarget(root, file.path, readFileSync(backupFile(backupDir, file.backupName), "utf8"), before.get(file.path), file.originalMetadata);
-  process.stdout.write("LEGACY_QIMEN_CONTAINMENT_ROLLBACK_OK\n");
+  audit(root, inventory);
+  for (const change of changes) verifyTargetSnapshot(root, change.file.path, change.target);
+  const written = [];
+  try {
+    for (const change of changes) {
+      if (change.rollbackPolicy === "retain_applied") continue;
+      atomicWriteTarget(root, change.file.path, change.original, change.target, change.file.originalMetadata);
+      written.push(change);
+    }
+    for (const change of changes) {
+      const current = targetSnapshot(root, change.file.path);
+      const expectedMetadata = change.rollbackPolicy === "retain_applied"
+        ? metadataFromSnapshot(change.target)
+        : change.file.originalMetadata;
+      const expectedSha256 = change.rollbackPolicy === "retain_applied"
+        ? change.target.sha256
+        : change.file.originalSha256;
+      if (current.sha256 !== expectedSha256
+        || (current.mode & 0o7777) !== expectedMetadata.mode
+        || current.uid !== expectedMetadata.uid
+        || current.gid !== expectedMetadata.gid) fail("rollback_compensation_failed");
+    }
+  } catch {
+    let compensationFailed = false;
+    for (const change of written.reverse()) {
+      try {
+        const current = targetSnapshot(root, change.file.path);
+        if (current.sha256 !== change.file.originalSha256) fail("rollback_compensation_failed");
+        atomicWriteTarget(root, change.file.path, change.target.text, current, metadataFromSnapshot(change.target));
+      } catch {
+        compensationFailed = true;
+      }
+    }
+    for (const change of changes) {
+      try {
+        if (!hasSnapshotContentAndMetadata(targetSnapshot(root, change.file.path), change.target)) compensationFailed = true;
+      } catch {
+        compensationFailed = true;
+      }
+    }
+    if (compensationFailed) fail("rollback_compensation_failed");
+    fail("rollback_failed_compensated");
+  }
+  const selective = changes.some((change) => change.rollbackPolicy === "retain_applied");
+  process.stdout.write(selective
+    ? "LEGACY_QIMEN_CONTAINMENT_ROLLBACK_SAFE_SELECTIVE_OK\n"
+    : "LEGACY_QIMEN_CONTAINMENT_ROLLBACK_OK\n");
 }
 
 try {
@@ -465,7 +536,7 @@ try {
     audit(root, inventory);
     process.stdout.write("LEGACY_QIMEN_CONTAINMENT_AUDIT_OK\n");
   } else if (options.mode === "apply") apply(options, root, inventory);
-  else rollback(options, root);
+  else rollback(options, root, inventory);
 } catch (error) {
   const code = error instanceof Error && SAFE_FAILURE_CODES.has(error.message) ? error.message : "unexpected_failure";
   process.stderr.write(`LEGACY_QIMEN_CONTAINMENT_FAILED:${code}\n`);

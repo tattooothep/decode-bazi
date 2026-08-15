@@ -228,3 +228,47 @@
   workspace. No package installation was attempted because the root filesystem
   is nearly full; the scoped implementation is JavaScript and passed its syntax
   checks.
+
+## Final Source-Gate Remediation — Safe, Compensating Rollback
+
+### Scope and isolation
+
+- Created `/root/worktrees/notify-legacy-rollback-final` on branch
+  `codex/notify-legacy-rollback-final` from integrated backend commit
+  `3bacbaa2ac1124e6ad484e72593c42b4ad15d3f1`.
+- No live `/root/qimen-api` file, production database, service, cron, provider,
+  build, credential, or deployment was read or changed.
+
+### RED evidence
+
+- Added an actual source fixture whose original VAPID private-key binding has a
+  literal fallback, applied its reviewed environment-only replacement, and
+  asserted the generated manifest must machine-mark the original as
+  `retain_applied`. The pre-fix focused suite failed at that new assertion.
+- The same pre-implementation extension added a Node preload that fails the
+  later cron-target rename after an earlier route target has been restored. It
+  requires the route to be compensated to exact contained bytes/mode/uid/gid,
+  every other target to remain contained, output to stay secret-free, and the
+  manifest to remain reusable.
+
+### GREEN evidence
+
+- Apply now writes manifest version 2 with a non-secret, recomputed rollback
+  policy per target. Rollback never writes any VAPID-bearing backup: if either
+  the original or applied target references VAPID, it retains the
+  already-verified environment-only applied bytes. Version 1 manifests receive
+  the same dynamic safety decision.
+- Before writes, rollback requires the entire inventory to pass the contained
+  audit and checksum-validates every manifest target. If a later write fails,
+  it compensates already-restored targets in reverse order and verifies all
+  manifest targets against captured pre-rollback content plus mode/uid/gid.
+  Successful compensation emits only `rollback_failed_compensated`; an
+  incomplete compensation emits only `rollback_compensation_failed` and blocks
+  further operational action.
+- The external one-shot later-target failure leaves route, cron, and VAPID source
+  consistently contained. A subsequent rollback using the same backup proves
+  the manifest is recoverable while the exposed VAPID original remains skipped.
+- `node scripts/test-legacy-qimen-containment.mjs` ->
+  `LEGACY_QIMEN_CONTAINMENT_OK 74`.
+- The runbook and integrity design now describe selective rollback, compensation,
+  fixed result codes, legacy-manifest behavior, and the reload stop condition.

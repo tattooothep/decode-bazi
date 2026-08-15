@@ -97,6 +97,35 @@ async function invokeWithExternalPostBackupPause(args, target) {
   return completion;
 }
 
+function invokeWithExternalRollbackWriteFailure(args, target) {
+  const wrapper = join(temp, "external-rollback-write-failure.cjs");
+  writeFileSync(wrapper, [
+    "const fs = require('node:fs');",
+    "const path = require('node:path');",
+    "const { syncBuiltinESMExports } = require('node:module');",
+    "const originalRename = fs.renameSync;",
+    "let failed = false;",
+    "fs.renameSync = function legacyContainmentRollbackFailure(from, to) {",
+    "  if (!failed && path.resolve(to) === path.resolve(process.env.CONTAINMENT_ROLLBACK_FAIL_TARGET)) {",
+    "    failed = true;",
+    "    throw new Error('external_rollback_write_failure');",
+    "  }",
+    "  return originalRename(from, to);",
+    "};",
+    "syncBuiltinESMExports();",
+    "",
+  ].join("\n"), "utf8");
+  return spawnSync(process.execPath, ["--require", wrapper, tool, ...args], {
+    cwd: root,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      NO_COLOR: "1",
+      CONTAINMENT_ROLLBACK_FAIL_TARGET: target,
+    },
+  });
+}
+
 function check(condition, message) {
   assert.equal(condition, true, message);
   checks += 1;
@@ -136,6 +165,14 @@ const safeVapid = [
   "",
 ].join("\n");
 const unsafeVapid = "const VAPID_" + "PRIVATE_KEY = 'opaque_test_material';\n";
+const exposedVapidMarker = "opaque_exposed_rollback_material";
+const exposedVapidOriginal = [
+  "const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;",
+  `const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '${exposedVapidMarker}';`,
+  "const VAPID_SUBJECT = process.env.VAPID_SUBJECT;",
+  "webPush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);",
+  "",
+].join("\n");
 const activeCronWithTrailingComment = "*/5 * * * * node scripts/legacy-qimen-web-push.js # disabled\n";
 const vapidFallbackCases = [
   { marker: "opaque_private_fallback", source: "const a = process.env.VAPID_PRIVATE_KEY || 'opaque_private_fallback';\n" },
@@ -257,7 +294,13 @@ try {
 
   write("src/push-routes.js", unsafeRoutes);
   write("cron/qimen.cron", unsafeCron);
-  inventory.sourceFiles = ["src/push-routes.js"];
+  write("src/vapid.js", exposedVapidOriginal);
+  inventory.sourceFiles = ["src/push-routes.js", "src/vapid.js"];
+  inventory.patches.push({
+    path: "src/vapid.js",
+    expectedSha256: sha256(exposedVapidOriginal),
+    replacements: [{ find: exposedVapidOriginal, replace: safeVapid }],
+  });
   write("legacy-qimen-inventory.json", `${JSON.stringify(inventory, null, 2)}\n`);
   const piiPath = join(temp, "reviewer@example.test");
   mkdirSync(piiPath);
@@ -316,6 +359,31 @@ try {
   const backupManifest = JSON.parse(readFileSync(join(backupDir, "manifest.json"), "utf8"));
   const routeManifest = backupManifest.files.find((file) => file.path === "src/push-routes.js");
   check(routeManifest && routeManifest.originalMetadata.mode === expectedMetadata.mode && routeManifest.originalMetadata.uid === expectedMetadata.uid && routeManifest.originalMetadata.gid === expectedMetadata.gid, "backup manifest records reviewed target mode and ownership");
+  const vapidManifest = backupManifest.files.find((file) => file.path === "src/vapid.js");
+  check(vapidManifest?.rollbackPolicy === "retain_applied", "manifest machine-marks an exposed VAPID original as non-restorable");
+  check(readFileSync(join(backupDir, "files", vapidManifest.backupName), "utf8") === exposedVapidOriginal, "VAPID rollback policy covers the actual checksum-verified exposed original backup");
+  check(!readFileSync(join(backupDir, "manifest.json"), "utf8").includes(exposedVapidMarker), "rollback manifest never contains exposed VAPID material");
+
+  const rollbackFailure = invokeWithExternalRollbackWriteFailure([
+    "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--backup-dir", backupDir,
+  ], join(temp, "cron/qimen.cron"));
+  check(rollbackFailure.status !== 0, "a later rollback target write failure aborts the multi-file rollback");
+  check(`${rollbackFailure.stdout}${rollbackFailure.stderr}`.includes("rollback_failed_compensated"), "rollback reports a fixed compensated-failure result code");
+  check(!`${rollbackFailure.stdout}${rollbackFailure.stderr}`.includes(exposedVapidMarker), "failed rollback output never exposes VAPID material");
+  check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === safeRoutes, "compensation restores an already-rolled-back route to exact contained bytes");
+  check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === safeCron, "the failed later cron target remains in its contained state");
+  check(readFileSync(join(temp, "src/vapid.js"), "utf8") === safeVapid, "failed rollback leaves VAPID source environment-only");
+  const compensatedMetadata = lstatSync(metadataTarget);
+  check((compensatedMetadata.mode & 0o7777) === expectedMetadata.mode && compensatedMetadata.uid === expectedMetadata.uid && compensatedMetadata.gid === expectedMetadata.gid, "compensation restores contained target mode and ownership");
+  check(JSON.stringify(JSON.parse(readFileSync(join(backupDir, "manifest.json"), "utf8"))) === JSON.stringify(backupManifest), "failed rollback leaves the manifest intact and recoverable");
+
+  const versionOneManifest = {
+    ...backupManifest,
+    version: 1,
+    files: backupManifest.files.map(({ rollbackPolicy: _rollbackPolicy, ...file }) => file),
+  };
+  writeFileSync(join(backupDir, "manifest.json"), `${JSON.stringify(versionOneManifest)}\n`, "utf8");
 
   const rollback = invoke(
     "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
@@ -323,6 +391,9 @@ try {
   );
   check(rollback.status === 0, "explicit rollback restores only checksum-verified backups");
   check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes, "rollback restores the exact prior route source");
+  check(readFileSync(join(temp, "src/vapid.js"), "utf8") === safeVapid, "rollback never restores an exposed VAPID credential from a checksum-valid backup");
+  check(!readFileSync(join(temp, "src/vapid.js"), "utf8").includes(exposedVapidMarker), "version 1 manifest rollback also retains environment-only VAPID source");
+  check(rollback.stdout.includes("LEGACY_QIMEN_CONTAINMENT_ROLLBACK_SAFE_SELECTIVE_OK"), "rollback reports that unsafe credential-bearing originals stayed contained");
   const rolledBackMetadata = lstatSync(metadataTarget);
   check((rolledBackMetadata.mode & 0o7777) === expectedMetadata.mode && rolledBackMetadata.uid === expectedMetadata.uid && rolledBackMetadata.gid === expectedMetadata.gid, "rollback restores manifest-recorded target mode and ownership");
 
@@ -344,6 +415,8 @@ try {
   check(runbookText.includes("--confirm=DISABLE_LEGACY_QIMEN_PUSH"), "runbook requires explicit apply confirmation");
   check(runbookText.includes("--confirm=ROLLBACK_LEGACY_QIMEN_PUSH"), "runbook records explicit rollback confirmation");
   check(runbookText.includes("never print"), "runbook prohibits secret output");
+  check(runbookText.includes("retain_applied"), "runbook documents machine-enforced selective rollback for unsafe originals");
+  check(runbookText.includes("compensat"), "runbook documents all-target rollback compensation");
   const operationalTool = readFileSync(tool, "utf8");
   check(!/TEST_AFTER_BACKUP_MUTATION|LEGACY_CONTAINMENT_TEST_HOOK|runTestAfterBackupHook|NODE_ENV\s*!==?\s*["']test/u.test(operationalTool), "operational tool contains no mutation test hook or test-environment branch");
 

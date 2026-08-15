@@ -85,8 +85,13 @@ node scripts/ops/contain-legacy-qimen-push.mjs --apply \
 ```
 
 Apply stores checksummed, mode-0600 backups and writes each reviewed target via
-atomic rename. It captures and preserves each target's exact Unix permission
-mode, uid, and gid through apply and rollback, then verifies those fields after
+atomic rename. Manifest version 2 records a non-secret `rollbackPolicy` for each
+target: `restore_original` for a non-VAPID target or `retain_applied` whenever
+either the original backup or applied target contains a VAPID binding or
+`setVapidDetails` call. The rollback path never writes a VAPID-bearing backup,
+even when that backup appears canonical. It captures and
+preserves each target's exact Unix permission mode, uid, and gid through apply
+and rollback, then verifies those fields after
 each rename; the backup manifest records the original metadata. Target mtime and
 ctime are intentionally not contractual because an atomic replacement creates a
 new file. It validates every target checksum before writing, validates the
@@ -114,9 +119,15 @@ reviewed file checksums—not secret values or request data.
 
 ## Rollback
 
-Rollback is an explicit recovery operation. It verifies the current target
-checksums against the apply manifest before atomically restoring only the files
-listed in that manifest:
+Rollback is an explicit recovery operation. It first requires the whole current
+inventory to pass the contained-state audit, then verifies every current target
+checksum against the apply manifest before changing any file. It atomically
+restores only manifest files whose machine-derived policy is
+`restore_original`. A checksum-valid VAPID-bearing backup is never restored: the
+target stays at its verified contained, environment-only bytes under
+`retain_applied`. The policy is recomputed from the original backup and applied
+target before any write. Version 1 manifests receive the same dynamic decision,
+so an older manifest cannot bypass this rule.
 
 ```bash
 node scripts/ops/contain-legacy-qimen-push.mjs --rollback \
@@ -126,7 +137,23 @@ node scripts/ops/contain-legacy-qimen-push.mjs --rollback \
   --backup-dir /exact/protected/legacy-qimen-backup
 ```
 
-Do not restore an exposed VAPID private key. If a credential was rotated, keep
-the new secret-manager reference and recover only route/cron configuration using
-a newly reviewed replacement. Re-audit after rollback and retain the backup
-manifest for the incident record without copying file contents into logs.
+`LEGACY_QIMEN_CONTAINMENT_ROLLBACK_OK` means every original was safe to restore.
+`LEGACY_QIMEN_CONTAINMENT_ROLLBACK_SAFE_SELECTIVE_OK` means at least one unsafe
+VAPID-bearing original was deliberately retained in its contained form. Neither
+result authorizes a service reload; review the selective result and re-audit the
+intended runtime configuration first.
+
+Rollback is compensating across the complete manifest. If a later target write
+fails, every earlier restored target is atomically returned to its exact
+pre-rollback bytes, mode, uid, and gid. The unchanged manifest remains reusable.
+`LEGACY_QIMEN_CONTAINMENT_FAILED:rollback_failed_compensated` confirms that all
+manifest targets match their captured contained state after compensation; fix
+the external cause and retry with the same reviewed manifest. A
+`rollback_compensation_failed` result is a stop condition: do not reload any
+service or cron, preserve host exclusivity, and perform a read-only audit and
+incident review. The tool never logs file contents or secret values.
+
+Do not manually restore an exposed VAPID private key. If a credential was
+rotated, keep the new secret-manager reference. Re-audit after rollback and
+retain the backup manifest for the incident record without copying file
+contents into logs.

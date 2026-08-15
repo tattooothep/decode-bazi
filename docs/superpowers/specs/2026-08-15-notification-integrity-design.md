@@ -272,5 +272,14 @@ artifact signatures are also `APPROVE`.
   columns.
 - Schema rollback drops only new indexes/columns/tables after confirming no new
   worker uses them; no existing notification history is deleted.
-- Legacy push disable has an exact service/cron/nginx rollback, but the exposed
-  private key is never restored after rotation.
+- Legacy push disable has an exact service/cron/nginx rollback where the backed
+  up original is not VAPID-bearing. The rollback manifest machine-marks every
+  transition whose original or applied target references VAPID as
+  `retain_applied`; rollback recomputes that policy before writes and never
+  writes a VAPID-bearing backup, so even an older manifest cannot reintroduce
+  the credential after rotation.
+- Legacy rollback is compensating across its complete file set. A later target
+  failure returns every already-restored target to its captured contained bytes,
+  mode, uid and gid, retains the reusable manifest, and emits only a fixed
+  failure code. Any failed compensation blocks service/cron reload and requires
+  read-only incident audit.
