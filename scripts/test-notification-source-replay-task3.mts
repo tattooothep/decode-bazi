@@ -91,10 +91,19 @@ try {
     assert.deepEqual(stored.payload, item.notice.payload, `${item.name} typed payload changed before storage`);
     assert.equal(stored.provider_message.title, "Private notification", `${item.name} privacy-off lock screen title must be redacted`);
     assert.equal(stored.provider_message.body, "Open HourKey to view details", `${item.name} privacy-off lock screen body must be redacted`);
-    const { notificationId, ...providerFacts } = stored.provider_message.data;
-    assert.equal(notificationId, reservation.id, `${item.name} provider envelope must identify its exact durable parent`);
-    assert.deepEqual(providerFacts, stored.payload, `${item.name} provider facts must equal stored payload plus only the server notification ID`);
-    if (item.parse) assert.deepEqual(resolveNotificationPayload(providerFacts, item.notice.kind, fixture.accountId), stored.payload);
+    const expectedProviderData = { ...stored.payload, notificationId: reservation.id };
+    assert.deepEqual(
+      stored.provider_message.data,
+      expectedProviderData,
+      `${item.name} provider facts must equal stored payload plus only the server notification ID`,
+    );
+    if (item.parse) {
+      assert.deepEqual(
+        resolveNotificationPayload(stored.provider_message.data, item.notice.kind, fixture.accountId),
+        expectedProviderData,
+        `${item.name} current mobile parser must accept the exact provider envelope`,
+      );
+    }
   }
   const localizedPreview = { ...notices.find((item) => item.name === "daily")!.notice };
   localizedPreview.key = `${localizedPreview.key}|localized-preview`;
