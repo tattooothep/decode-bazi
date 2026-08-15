@@ -7,6 +7,9 @@ if (fs.existsSync(".env.local")) {
     if (match && !process.env[match[1]]) process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
   }
 }
+if (!/^notification_integrity_(?:delivery_)?test(?:_|$)/.test(String(process.env.PGDATABASE || ""))) {
+  throw new Error("REFUSE non-disposable database: test-mobile-push-delivery requires notification_integrity_*_test");
+}
 
 const { pool } = await import("../src/lib/db.ts");
 const { checkMobilePushReceipts, sendMobilePushToUser } = await import("../src/lib/mobile-push.ts");

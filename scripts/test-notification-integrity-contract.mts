@@ -13,7 +13,12 @@ const notificationsRoute = readFileSync("src/app/api/mobile/v1/notifications/rou
 assert.match(migration, /CREATE UNIQUE INDEX[^;]+mobile_push_tokens[^;]+installation_id[^;]+WHERE enabled=true/isu);
 assert.match(migration, /CREATE UNIQUE INDEX[^;]+mobile_push_tokens[^;]+device_push_token[^;]+WHERE enabled=true[^;]+device_push_token IS NOT NULL/isu);
 assert.match(migration, /privacy_preview\s+boolean\s+NOT NULL\s+DEFAULT false/iu);
+assert.match(migration, /locale\s+text\s+NOT NULL\s+DEFAULT 'th'/iu);
+assert.match(migration, /mobile_notification_prefs_locale_check/iu);
 assert.match(rollback, /DROP COLUMN IF EXISTS privacy_preview/iu);
+assert.match(rollback, /DROP COLUMN IF EXISTS locale/iu);
+assert.doesNotMatch(rollback, /DROP INDEX IF EXISTS ux_mobile_push_tokens_active_/iu,
+  "rollback must retain active-owner enforcement");
 
 assert.match(
   route,
@@ -27,6 +32,7 @@ assert.doesNotMatch(
 );
 
 assert.match(route, /pg_advisory_xact_lock/iu, "ownership transfers must serialize concurrent registrations");
+assert.match(route, /mobile-push-user:/iu, "registration and unregister must serialize same-account lifecycle changes");
 assert.match(
   route,
   /async function DELETE[\s\S]+UPDATE mobile_push_tokens SET enabled=false[\s\S]+return NextResponse\.json\(\{ ok: true, subscribed: false \}\)/u,
@@ -34,6 +40,10 @@ assert.match(
 );
 assert.doesNotMatch(route, /console\.(?:log|info|warn|error)[\s\S]{0,160}(?:expo_push_token|device_push_token|deviceToken|token)/iu,
   "push route must never log a raw provider token");
+assert.doesNotMatch(route, /device_push_token=COALESCE\(EXCLUDED\.device_push_token/iu,
+  "legacy registrations must clear rather than resurrect a stored native token");
+assert.match(route, /push_registration_conflict|push_registration_failed/iu,
+  "database failures must return a sanitized registration error");
 
 assert.match(notificationsRoute, /privacy_preview:\s*boolean/iu,
   "notification preferences must read the privacy-preview column");
@@ -45,5 +55,13 @@ assert.match(notificationsRoute, /body\?\.privacyPreview/iu,
   "preference updates must accept privacyPreview");
 assert.match(notificationsRoute, /privacy_preview[\s\S]+\$18/iu,
   "preference upserts must persist privacy-preview values");
+assert.match(notificationsRoute, /locale:\s*string/iu,
+  "notification preferences must read the server locale");
+assert.match(notificationsRoute, /locale:\s*"th"/iu,
+  "missing preference rows must default locale safely");
+assert.match(notificationsRoute, /locale:\s*row\.locale/iu,
+  "preference responses must expose the persisted locale");
+assert.match(notificationsRoute, /body\?\.locale/iu,
+  "preference updates must accept locale");
 
 console.log("NOTIFICATION_INTEGRITY_CONTRACT_OK");

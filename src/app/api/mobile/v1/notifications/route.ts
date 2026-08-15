@@ -23,6 +23,7 @@ const KINDS = new Set([
   "auspicious", "network",
 ]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
 
 type PrefRow = {
   security_enabled: boolean;
@@ -42,6 +43,7 @@ type PrefRow = {
   max_per_day: number;
   paused_until: string | Date | null;
   privacy_preview: boolean;
+  locale: string;
 };
 
 /** จำนวนเต็มในช่วงที่ยอมรับ — นอกช่วงถือว่าไม่ได้ส่งมา ไม่ใช่บีบให้เข้าช่วง */
@@ -72,7 +74,7 @@ async function readPrefs(userId: string): Promise<PrefRow> {
     `SELECT security_enabled, saved_date_enabled, yam_enabled, auspicious_enabled, daily_enabled,
             qimen_enabled, shrine_enabled, goal_enabled, service_enabled,
             yam_min_quality, yam_lead_minutes, daily_slot,
-            quiet_start, quiet_end, max_per_day, paused_until, privacy_preview
+            quiet_start, quiet_end, max_per_day, paused_until, privacy_preview, locale
        FROM mobile_notification_prefs WHERE user_id=$1`,
     [userId],
   );
@@ -96,6 +98,7 @@ async function readPrefs(userId: string): Promise<PrefRow> {
     max_per_day: 2,
     paused_until: null,
     privacy_preview: false,
+    locale: "th",
   };
 }
 
@@ -146,6 +149,7 @@ function prefsPayload(row: PrefRow) {
     maxPerDay: row.max_per_day,
     pausedUntil: untilIso,
     privacyPreview: row.privacy_preview,
+    locale: row.locale,
   };
 }
 
@@ -265,6 +269,7 @@ export async function POST(req: Request) {
     const privacyPreview = typeof body?.privacyPreview === "boolean"
       ? body.privacyPreview
       : current.privacy_preview;
+    const locale = LOCALES.has(String(body?.locale || "")) ? String(body?.locale) : current.locale;
 
     // พัก/เลิกพัก — เลิกพักต้องชนะเสมอ ถ้าส่งมาพร้อมกันคนกดคือคนที่อยากกลับมารับ
     let pausedUntil: Date | null =
@@ -293,9 +298,9 @@ export async function POST(req: Request) {
           daily_enabled, qimen_enabled, shrine_enabled, goal_enabled, service_enabled,
           yam_min_quality, yam_lead_minutes, daily_slot,
           quiet_start, quiet_end, max_per_day, paused_until,
-          qimen_latitude,qimen_longitude,qimen_location_updated_at,updated_at,privacy_preview)
+          qimen_latitude,qimen_longitude,qimen_location_updated_at,updated_at,privacy_preview,locale)
        VALUES ($1,true,$2,$3,$4,$5,$6,$7,$8,true,$9,$10,$11,$12,$13,$14,$15,$16,$17,
-               CASE WHEN $16::float8 IS NULL THEN NULL ELSE now() END,now(),$18)
+               CASE WHEN $16::float8 IS NULL THEN NULL ELSE now() END,now(),$18,$19)
        ON CONFLICT (user_id) DO UPDATE SET
          security_enabled=true, saved_date_enabled=$2, yam_enabled=$3,
          auspicious_enabled=$4, daily_enabled=$5, qimen_enabled=$6,
@@ -307,16 +312,18 @@ export async function POST(req: Request) {
          ,qimen_location_updated_at=CASE WHEN $16::float8 IS NULL
            THEN mobile_notification_prefs.qimen_location_updated_at ELSE now() END
          ,privacy_preview=$18
+         ,locale=$19
        RETURNING security_enabled, saved_date_enabled, yam_enabled, auspicious_enabled,
                  daily_enabled, qimen_enabled, shrine_enabled, goal_enabled, service_enabled,
                  yam_min_quality, yam_lead_minutes, daily_slot,
-                 quiet_start, quiet_end, max_per_day, paused_until, privacy_preview`,
+                 quiet_start, quiet_end, max_per_day, paused_until, privacy_preview, locale`,
       [
         session.userId, savedDate, yam, shrine, daily, qimen, shrine, goal,
         yamMinQuality, yamLeadMinutes, dailySlot,
         quietStart, quietEnd, maxPerDay, pausedUntil,
         qimenLatitude, qimenLongitude,
         privacyPreview,
+        locale,
       ],
     );
     // 🔴 ตอบด้วยค่าที่ฐานข้อมูลเก็บจริง ไม่ใช่ค่าที่เราตั้งใจจะเก็บ

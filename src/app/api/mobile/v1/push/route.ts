@@ -114,6 +114,10 @@ export async function POST(req: Request) {
   let row: { id: string } | undefined;
   try {
     await client.query("BEGIN");
+    await client.query(
+      "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:' || $1::text, 0))",
+      [session.userId]
+    );
     // Serialize each physical identity before changing ownership. The partial
     // unique indexes are the final guard; these locks prevent a legitimate
     // concurrent token rotation from failing after both requests disable the
@@ -122,10 +126,21 @@ export async function POST(req: Request) {
       "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:' || $1::text, 0))",
       [installationId]
     );
-    if (deviceToken) {
+    const existingNative = await client.query<{ device_push_token: string | null }>(
+      `SELECT device_push_token FROM mobile_push_tokens
+        WHERE expo_push_token=$1
+           OR (user_id=$2 AND installation_id=$3::uuid AND enabled=true)
+        FOR UPDATE`,
+      [token, session.userId, installationId]
+    );
+    const nativeTokens = [...new Set([
+      deviceToken,
+      ...existingNative.rows.map((existing) => existing.device_push_token),
+    ].filter((value): value is string => value !== null))].sort();
+    for (const nativeToken of nativeTokens) {
       await client.query(
         "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-native:' || $1::text, 0))",
-        [deviceToken]
+        [nativeToken]
       );
     }
     // Installation IDs and native push tokens identify a physical app install,
@@ -156,8 +171,8 @@ export async function POST(req: Request) {
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
-         device_push_token=COALESCE(EXCLUDED.device_push_token, mobile_push_tokens.device_push_token),
-         device_token_type=COALESCE(EXCLUDED.device_token_type, mobile_push_tokens.device_token_type),
+         device_push_token=EXCLUDED.device_push_token,
+         device_token_type=EXCLUDED.device_token_type,
          platform=EXCLUDED.platform,
          app_version=EXCLUDED.app_version,
          locale=EXCLUDED.locale,
@@ -174,7 +189,13 @@ export async function POST(req: Request) {
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK").catch(() => null);
-    throw error;
+    const code = typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : "";
+    return NextResponse.json(
+      { ok: false, error: code === "23505" ? "push_registration_conflict" : "push_registration_failed" },
+      { status: code === "23505" ? 409 : 500 },
+    );
   } finally {
     client.release();
   }
@@ -194,11 +215,43 @@ export async function DELETE(req: Request) {
   if (installationId && !UUID_RE.test(installationId)) {
     return NextResponse.json({ ok: false, error: "invalid_installation_id" }, { status: 400 });
   }
-  await q(
-    `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
-      WHERE user_id=$1 AND enabled=true
-        AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
-    [session.userId, installationId || null]
-  );
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:' || $1::text, 0))",
+      [session.userId]
+    );
+    if (installationId) {
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:' || $1::text, 0))",
+        [installationId]
+      );
+    } else {
+      const installations = await client.query<{ installation_id: string }>(
+        `SELECT installation_id::text FROM mobile_push_tokens
+          WHERE user_id=$1 AND enabled=true ORDER BY installation_id FOR UPDATE`,
+        [session.userId]
+      );
+      for (const installation of installations.rows) {
+        await client.query(
+          "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:' || $1::text, 0))",
+          [installation.installation_id]
+        );
+      }
+    }
+    await client.query(
+      `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+        WHERE user_id=$1 AND enabled=true
+          AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
+      [session.userId, installationId || null]
+    );
+    await client.query("COMMIT");
+  } catch {
+    await client.query("ROLLBACK").catch(() => null);
+    return NextResponse.json({ ok: false, error: "push_unregistration_failed" }, { status: 500 });
+  } finally {
+    client.release();
+  }
   return NextResponse.json({ ok: true, subscribed: false });
 }

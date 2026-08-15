@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 const database = `notification_integrity_test_${process.pid}`;
+assert.match(database, /^notification_integrity_test_/u, "migration tests may only create an explicitly disposable database");
 const forward = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
 const rollback = readFileSync("migrations/20260815_mobile_notification_integrity.rollback.sql", "utf8");
 
@@ -91,6 +92,11 @@ try {
     "false",
     "privacy-preview defaults safely to false",
   );
+  assert.equal(
+    psql(database, `SELECT locale FROM mobile_notification_prefs WHERE user_id='00000000-0000-4000-8000-000000000001';`),
+    "th",
+    "notification preference locale defaults safely to Thai",
+  );
   psql(database, `INSERT INTO mobile_push_tokens(user_id,installation_id,expo_push_token,platform,enabled)
     VALUES('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','ExponentPushToken[fixture-rotated-history]','android',false);`);
   assert.equal(
@@ -101,13 +107,20 @@ try {
 
   psql(database, rollback);
   assert.equal(psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_notification_prefs' AND column_name='privacy_preview';`), "0", "rollback removes only the new preference column");
-  assert.equal(psql(database, `SELECT to_regclass('ux_mobile_push_tokens_active_installation') IS NULL;`), "t", "rollback removes active-installation index");
-  assert.equal(psql(database, `SELECT count(*) FROM mobile_push_tokens;`), "4", "rollback preserves token audit history");
-  assert.equal(
-    psql(database, `SELECT count(*) FROM information_schema.table_constraints WHERE table_name='mobile_push_tokens' AND constraint_name='mobile_push_tokens_user_id_installation_id_key';`),
-    "0",
-    "rollback remains safe when audit history prevents restoring the legacy uniqueness constraint",
+  assert.equal(psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_notification_prefs' AND column_name='locale';`), "0", "rollback removes the new locale column");
+  assert.equal(psql(database, `SELECT to_regclass('ux_mobile_push_tokens_active_installation') IS NOT NULL;`), "t", "rollback retains active-installation enforcement");
+  expectSqlFailure(
+    `INSERT INTO mobile_push_tokens(user_id,installation_id,expo_push_token,platform,enabled)
+       VALUES('00000000-0000-4000-8000-000000000004','20000000-0000-4000-8000-000000000001','ExponentPushToken[fixture-rollback-conflict]','android',true);`,
+    "rollback must not leave active installation ownership unenforced",
   );
+  assert.equal(psql(database, `SELECT to_regclass('ux_mobile_push_tokens_active_native') IS NOT NULL;`), "t", "rollback retains active-native enforcement");
+  expectSqlFailure(
+    `INSERT INTO mobile_push_tokens(user_id,installation_id,expo_push_token,device_push_token,platform,enabled)
+       VALUES('00000000-0000-4000-8000-000000000004','20000000-0000-4000-8000-000000000004','ExponentPushToken[fixture-rollback-native-conflict]','native-owner-a','android',true);`,
+    "rollback must not leave active native ownership unenforced",
+  );
+  assert.equal(psql(database, `SELECT count(*) FROM mobile_push_tokens;`), "4", "rollback preserves token audit history");
   psql(database, rollback);
   assert.equal(psql(database, `SELECT count(*) FROM mobile_push_tokens;`), "4", "rollback remains rerunnable while preserving token audit history");
 

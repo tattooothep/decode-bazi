@@ -13,6 +13,9 @@ if (fs.existsSync(".env.local")) {
 for (const key of ["AUTH_SECRET", "PGHOST", "PGPORT", "PGDATABASE", "PGUSER", "PGPASSWORD"]) {
   if (!env[key] && process.env[key]) env[key] = process.env[key];
 }
+if (!/^notification_integrity_(?:api_)?test(?:_|$)/.test(String(env.PGDATABASE || ""))) {
+  throw new Error("REFUSE non-disposable database: test-mobile-push-p0 requires notification_integrity_*_test");
+}
 const base = process.env.BASE_URL || "http://127.0.0.1:3370";
 const db = new pg.Client({ host: env.PGHOST, port: Number(env.PGPORT), database: env.PGDATABASE, user: env.PGUSER, password: env.PGPASSWORD });
 const orgId = crypto.randomUUID();
@@ -25,6 +28,12 @@ const transferInstallation = crypto.randomUUID();
 const transferExpoA = `ExponentPushToken[nativeownera${Date.now()}]`;
 const transferExpoB = `ExponentPushToken[nativeownerb${Date.now()}]`;
 const nativeToken = `fcm-native-owner-${Date.now()}`;
+const omittedNativeInstallation = crypto.randomUUID();
+const omittedNativeExpo = `ExponentPushToken[legacyclear${Date.now()}]`;
+const omittedNativeToken = `fcm-legacy-clear-${Date.now()}`;
+const raceInstallation = crypto.randomUUID();
+const raceExpo = `ExponentPushToken[raceowner${Date.now()}]`;
+const forcedFailureExpo = "ExponentPushToken[forcedfailurefixture]";
 let checks = 0;
 
 function check(condition, message) {
@@ -45,6 +54,16 @@ async function api(path, token, options = {}) {
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json", ...(options.headers || {}) },
   });
   return { response, data: await response.json().catch(() => ({})) };
+}
+
+async function waitForAdvisoryWaiters(minimum) {
+  const deadline = Date.now() + 10_000;
+  while (Date.now() < deadline) {
+    const result = await db.query(`SELECT count(*)::int n FROM pg_locks WHERE locktype='advisory' AND NOT granted`);
+    if (result.rows[0].n >= minimum) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  throw new Error(`FAIL expected ${minimum} waiting advisory locks`);
 }
 
 try {
@@ -99,6 +118,25 @@ try {
   );
   check(rows.rows.filter((row) => row.enabled).length === 1 && rows.rows.find((row) => row.enabled)?.user_id === users[1], "only the new account remains active for the shared installation/native token");
 
+  result = await api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+    expo_push_token: omittedNativeExpo, installation_id: transferInstallation, platform: "android",
+    device_push_token: omittedNativeToken, device_token_type: "fcm",
+  }) });
+  check(result.response.status === 200, "first account can register an Expo/native pair for legacy-clear coverage");
+  result = await api("/api/mobile/v1/push", tokens[1], { method: "POST", body: JSON.stringify({
+    expo_push_token: omittedNativeExpo, installation_id: omittedNativeInstallation, platform: "android",
+  }) });
+  check(result.response.status === 200, "same Expo token can transfer through a legacy registration without a native token");
+  rows = await db.query(
+    `SELECT user_id::text,installation_id::text,device_push_token,device_token_type,enabled
+       FROM mobile_push_tokens WHERE expo_push_token=$1`,
+    [omittedNativeExpo],
+  );
+  check(rows.rowCount === 1 && rows.rows[0].user_id === users[1]
+    && rows.rows[0].installation_id === omittedNativeInstallation
+    && rows.rows[0].device_push_token === null && rows.rows[0].device_token_type === null
+    && rows.rows[0].enabled === true, "legacy registration clears a transferred stored native identity instead of resurrecting it");
+
   result = await api("/api/mobile/v1/push", tokens[1], { method: "DELETE", body: JSON.stringify({ installation_id: transferInstallation }) });
   check(result.response.status === 200 && result.data.subscribed === false, "unregister disables the current installation");
   result = await api("/api/mobile/v1/push", tokens[1], { method: "DELETE", body: JSON.stringify({ installation_id: transferInstallation }) });
@@ -106,12 +144,38 @@ try {
   rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE installation_id=$1 AND enabled=true`, [transferInstallation]);
   check(rows.rows[0].n === 0, "unregister leaves no active token for the installation");
 
+  await db.query("SELECT pg_advisory_lock(hashtextextended('mobile-push-user:' || $1::text, 0))", [users[0]]);
+  const racingPost = api("/api/mobile/v1/push", tokens[0], { method: "POST", body: JSON.stringify({
+    expo_push_token: raceExpo, installation_id: raceInstallation, platform: "ios",
+  }) });
+  await waitForAdvisoryWaiters(1);
+  const racingDelete = api("/api/mobile/v1/push", tokens[0], { method: "DELETE", body: JSON.stringify({ installation_id: raceInstallation }) });
+  await waitForAdvisoryWaiters(2);
+  await db.query("SELECT pg_advisory_unlock(hashtextextended('mobile-push-user:' || $1::text, 0))", [users[0]]);
+  const [racingPostResult, racingDeleteResult] = await Promise.all([racingPost, racingDelete]);
+  check(racingPostResult.response.status === 200 && racingDeleteResult.response.status === 200, "concurrent registration and unregister both complete through shared transaction locks");
+  rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE installation_id=$1 AND enabled=true`, [raceInstallation]);
+  check(rows.rows[0].n === 0, "the queued unregister linearizes after an in-flight registration and leaves no active token");
+
+  result = await api("/api/mobile/v1/push", tokens[1], { method: "POST", body: JSON.stringify({
+    expo_push_token: forcedFailureExpo, installation_id: crypto.randomUUID(), platform: "ios",
+  }) });
+  check(result.response.status === 500 && result.data.error === "push_registration_failed"
+    && !JSON.stringify(result.data).includes("forcedfailurefixture"), "database registration failures return a sanitized response without provider-token details");
+
   result = await api("/api/mobile/v1/notifications", tokens[1]);
-  check(result.response.status === 200 && result.data.prefs?.privacyPreview === false, "privacy-preview defaults safely for an account without preferences");
-  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", privacyPreview: true }) });
-  check(result.response.status === 200 && result.data.prefs?.privacyPreview === true, "preferences persist privacy-preview opt-in");
+  check(result.response.status === 200 && result.data.prefs?.privacyPreview === false && result.data.prefs?.locale === "th", "privacy-preview and locale default safely for an account without preferences");
+  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", privacyPreview: true, locale: "en" }) });
+  check(result.response.status === 200 && result.data.prefs?.privacyPreview === true && result.data.prefs?.locale === "en", "preferences persist privacy-preview opt-in and supported locale");
   result = await api("/api/mobile/v1/notifications", tokens[1]);
-  check(result.response.status === 200 && result.data.prefs?.privacyPreview === true, "preferences return the persisted privacy-preview value");
+  check(result.response.status === 200 && result.data.prefs?.privacyPreview === true && result.data.prefs?.locale === "en", "preferences return persisted privacy-preview and locale values");
+  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", locale: "invalid" }) });
+  check(result.response.status === 200 && result.data.prefs?.locale === "en", "unsupported preference locale is rejected without replacing the stored supported value");
+
+  result = await api("/api/mobile/v1/push", tokens[1], { method: "DELETE", body: JSON.stringify({}) });
+  check(result.response.status === 200 && result.data.subscribed === false, `unregister-all serializes and completes without a SQL grouping error (${result.response.status}/${result.data.error || "ok"})`);
+  rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`, [users[1]]);
+  check(rows.rows[0].n === 0, "unregister-all leaves no active token for its account");
 
   result = await api("/api/mobile/v1/session", tokens[1], { method: "DELETE" });
   check(result.response.status === 200 && result.data.revoked_server_session === true, "logout revokes the mobile session");

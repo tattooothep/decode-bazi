@@ -45,7 +45,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_tokens_active_native
   ON mobile_push_tokens(device_push_token) WHERE enabled=true AND device_push_token IS NOT NULL;
 
 ALTER TABLE mobile_notification_prefs
-  ADD COLUMN IF NOT EXISTS privacy_preview boolean NOT NULL DEFAULT false;
+  ADD COLUMN IF NOT EXISTS privacy_preview boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'th';
+
+ALTER TABLE mobile_notification_prefs
+  DROP CONSTRAINT IF EXISTS mobile_notification_prefs_locale_check;
+ALTER TABLE mobile_notification_prefs
+  ADD CONSTRAINT mobile_notification_prefs_locale_check
+  CHECK (locale IN ('th', 'en', 'zh', 'cn', 'vi', 'ja', 'ru', 'ko', 'es'));
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON mobile_notification_prefs TO hourkey_app;
 
