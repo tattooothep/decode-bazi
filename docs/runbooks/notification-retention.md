@@ -15,6 +15,9 @@ running on a host. Installation remains behind the release and signature gates.
   is stable; an unpolled receipt is not. The parent delivery status must equal
   derived child truth and `attempt_count` must equal the child `send_count` sum.
   Only then is `attempts_retired_at` written before the children are deleted.
+- Authenticated app acknowledgement/open/action evidence is retained for 90
+  days, then deleted in bounded batches. It records server receipt time only;
+  `app_received` is not described or reported as OS delivery.
 - Ordinary notification history is retained for 180 days. Security and service
   history uses a longer 365-day window. History deletion requires no remaining
   children and either a valid retirement marker, an explicit legacy generation,

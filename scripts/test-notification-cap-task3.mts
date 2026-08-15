@@ -113,7 +113,9 @@ try {
   assert.deepEqual(privacy.rows[0].payload, privateNotice.payload, "stored typed payload keeps exact server facts");
   assert.equal(privacy.rows[0].provider_message.title, "Private notification", "privacy-off provider title is redacted");
   assert.equal(privacy.rows[0].provider_message.body, "Open HourKey to view details", "privacy-off provider body is redacted");
-  assert.deepEqual(privacy.rows[0].provider_message.data, privateNotice.payload, "provider data equals stored typed facts");
+  const { notificationId, ...providerFacts } = privacy.rows[0].provider_message.data;
+  assert.equal(notificationId, privateReservation.id, "provider envelope identifies the exact durable parent notification");
+  assert.deepEqual(providerFacts, privateNotice.payload, "provider data equals stored typed facts plus only the server notification ID");
   console.log("NOTIFICATION_CAP_TASK3_OK concurrent=8 admitted=1 local_day=pass privacy=pass");
 } finally {
   await pool?.end().catch(() => null);

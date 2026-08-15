@@ -11,7 +11,7 @@ if (fs.existsSync(".env.local")) {
   }
 }
 for (const key of ["AUTH_SECRET", "PGHOST", "PGPORT", "PGDATABASE", "PGUSER", "PGPASSWORD"]) {
-  if (!env[key] && process.env[key]) env[key] = process.env[key];
+  if (process.env[key]) env[key] = process.env[key];
 }
 if (!/^notification_integrity_(?:api_)?test(?:_|$)/.test(String(env.PGDATABASE || ""))) {
   throw new Error("REFUSE non-disposable database: test-mobile-push-p0 requires notification_integrity_*_test");
@@ -36,9 +36,12 @@ const raceExpo = `ExponentPushToken[raceowner${Date.now()}]`;
 const forcedFailureExpo = "ExponentPushToken[forcedfailurefixture]";
 const forcedFunction = `notification_integrity_forced_error_${process.pid}`;
 const forcedTrigger = `notification_integrity_forced_trigger_${process.pid}`;
+const forcedPreferenceFunction = `notification_preference_forced_error_${process.pid}`;
+const forcedPreferenceTrigger = `notification_preference_forced_trigger_${process.pid}`;
 const serverLogPath = process.env.NEXT_DEV_LOG_PATH || ".next/dev/logs/next-development.log";
 let checks = 0;
 let forcedFixtureCreated = false;
+let forcedPreferenceFixtureCreated = false;
 
 function check(condition, message) {
   if (!condition) throw new Error(`FAIL ${message}`);
@@ -63,7 +66,11 @@ async function api(path, token, options = {}) {
 async function waitForAdvisoryWaiters(minimum) {
   const deadline = Date.now() + 10_000;
   while (Date.now() < deadline) {
-    const result = await db.query(`SELECT count(*)::int n FROM pg_locks WHERE locktype='advisory' AND NOT granted`);
+    const result = await db.query(
+      `SELECT count(*)::int n FROM pg_locks
+        WHERE locktype='advisory' AND NOT granted
+          AND database=(SELECT oid FROM pg_database WHERE datname=current_database())`,
+    );
     if (result.rows[0].n >= minimum) return;
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
@@ -217,6 +224,75 @@ try {
   result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ action: "prefs", locale: "invalid" }) });
   check(result.response.status === 200 && result.data.prefs?.locale === "en", "unsupported preference locale is rejected without replacing the stored supported value");
 
+  await db.query("SELECT pg_advisory_lock(hashtextextended('mobile-push-user:' || $1::text, 0))", [users[1]]);
+  const racingSavedDate = api("/api/mobile/v1/notifications", tokens[1], {
+    method: "POST", body: JSON.stringify({ action: "prefs", savedDate: true }),
+  });
+  await waitForAdvisoryWaiters(1);
+  const racingQimen = api("/api/mobile/v1/notifications", tokens[1], {
+    method: "POST", body: JSON.stringify({
+      action: "prefs", qimen: true, qimenLatitude: 13.7563, qimenLongitude: 100.5018,
+    }),
+  });
+  await waitForAdvisoryWaiters(2);
+  await db.query("SELECT pg_advisory_unlock(hashtextextended('mobile-push-user:' || $1::text, 0))", [users[1]]);
+  const [savedDateRaceResult, qimenRaceResult] = await Promise.all([racingSavedDate, racingQimen]);
+  result = await api("/api/mobile/v1/notifications", tokens[1]);
+  check(savedDateRaceResult.response.status === 200 && qimenRaceResult.response.status === 200
+    && result.data.prefs?.savedDate === true && result.data.prefs?.qimen === true,
+  "two concurrent partial preference API writes serialize and merge without lost fields");
+  rows = await db.query(`SELECT qimen_latitude,qimen_longitude FROM mobile_notification_prefs WHERE user_id=$1`, [users[1]]);
+  check(Number(rows.rows[0]?.qimen_latitude) === 13.7563 && Number(rows.rows[0]?.qimen_longitude) === 100.5018,
+    "the serialized Qimen preference write preserves its complete coordinate pair");
+
+  await db.query(`CREATE FUNCTION ${forcedPreferenceFunction}() RETURNS trigger LANGUAGE plpgsql AS $$
+    BEGIN IF NEW.locale='ru' THEN RAISE EXCEPTION 'forced private preference failure'; END IF; RETURN NEW; END;
+  $$`);
+  await db.query(`CREATE TRIGGER ${forcedPreferenceTrigger}
+    BEFORE INSERT OR UPDATE ON mobile_notification_prefs FOR EACH ROW EXECUTE FUNCTION ${forcedPreferenceFunction}()`);
+  forcedPreferenceFixtureCreated = true;
+  result = await api("/api/mobile/v1/notifications", tokens[1], {
+    method: "POST", body: JSON.stringify({ action: "prefs", daily: true, locale: "ru" }),
+  });
+  rows = await db.query(`SELECT daily_enabled,locale FROM mobile_notification_prefs WHERE user_id=$1`, [users[1]]);
+  check(result.response.status === 500 && result.data.error === "notification_preferences_failed"
+    && rows.rows[0].daily_enabled === false && rows.rows[0].locale === "en"
+    && !JSON.stringify(result.data).includes("forced private"),
+  "a failed preference API transaction rolls back all fields and returns only generic error truth");
+  await db.query(`DROP TRIGGER ${forcedPreferenceTrigger} ON mobile_notification_prefs`);
+  await db.query(`DROP FUNCTION ${forcedPreferenceFunction}()`);
+  forcedPreferenceFixtureCreated = false;
+
+  const engagementNotificationId = crypto.randomUUID();
+  const engagementAttemptId = crypto.randomUUID();
+  await db.query(
+    `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,accepted_at,sent_at,updated_at)
+     VALUES($1,$2,$3,'daily','Safe','Safe','{}','accepted',1,now(),now(),now())`,
+    [engagementNotificationId, users[1], `engagement-${engagementNotificationId}`],
+  );
+  const engagementToken = (await db.query(
+    `SELECT id,installation_id FROM mobile_push_tokens WHERE user_id=$1 ORDER BY enabled DESC,updated_at DESC LIMIT 1`,
+    [users[1]],
+  )).rows[0];
+  await db.query(
+    `INSERT INTO mobile_push_attempts(id,push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,
+       provider_message_id,send_count,send_started_at,accepted_at,updated_at)
+     VALUES($1,$2,$3,$4,'fcm','{}',repeat('e',64),'provider_accepted',$5,1,now()-interval '1 second',now(),now())`,
+    [engagementAttemptId, engagementNotificationId, engagementToken.id, engagementToken.installation_id, `engagement-message-${engagementAttemptId}`],
+  );
+  const engagementBody = {
+    action: "engagement", notificationId: engagementNotificationId,
+    installationId: engagementToken.installation_id, event: "app_received",
+  };
+  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify(engagementBody) });
+  check(result.response.status === 200 && result.data.recorded === true, "authenticated app_received evidence is recorded without claiming OS delivery");
+  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify(engagementBody) });
+  check(result.response.status === 200 && result.data.recorded === false, "replayed engagement evidence is idempotent");
+  result = await api("/api/mobile/v1/notifications", tokens[0], { method: "POST", body: JSON.stringify(engagementBody) });
+  check(result.response.status === 404 && result.data.error === "notification_not_found", "cross-account engagement fails without an ownership oracle");
+  result = await api("/api/mobile/v1/notifications", tokens[1], { method: "POST", body: JSON.stringify({ ...engagementBody, event: "action" }) });
+  check(result.response.status === 400 && result.data.error === "invalid_engagement", "action engagement requires one bounded stable action identifier");
+
   result = await api("/api/mobile/v1/push", tokens[1], { method: "DELETE", body: JSON.stringify({}) });
   check(result.response.status === 200 && result.data.subscribed === false, `unregister-all serializes and completes without a SQL grouping error (${result.response.status}/${result.data.error || "ok"})`);
   rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`, [users[1]]);
@@ -236,6 +312,13 @@ try {
       await db.query(`DROP TRIGGER IF EXISTS ${forcedTrigger} ON mobile_push_tokens`).catch(() => null);
       await db.query(`DROP FUNCTION IF EXISTS ${forcedFunction}()`).catch(() => null);
     }
+    if (forcedPreferenceFixtureCreated) {
+      await db.query(`DROP TRIGGER IF EXISTS ${forcedPreferenceTrigger} ON mobile_notification_prefs`).catch(() => null);
+      await db.query(`DROP FUNCTION IF EXISTS ${forcedPreferenceFunction}()`).catch(() => null);
+    }
+    await db.query(`DELETE FROM mobile_notification_engagements WHERE user_id=ANY($1::uuid[])`, [users]).catch(() => null);
+    await db.query(`DELETE FROM mobile_push_attempts WHERE push_log_id IN (SELECT id FROM mobile_push_log WHERE user_id=ANY($1::uuid[]))`, [users]).catch(() => null);
+    await db.query(`DELETE FROM mobile_push_log WHERE user_id=ANY($1::uuid[])`, [users]).catch(() => null);
     await db.query(`DELETE FROM mobile_push_tokens WHERE user_id=ANY($1::uuid[])`, [users]).catch(() => null);
     await db.query(`UPDATE users SET current_org_id=NULL WHERE id=ANY($1::uuid[])`, [users]).catch(() => null);
     await db.query(`DELETE FROM organizations WHERE id=$1`, [orgId]).catch(() => null);

@@ -199,6 +199,11 @@ try {
   check(attempts.find((attempt) => attempt.provider === "fcm")?.status === "provider_accepted", "FCM HTTP acceptance remains provider_accepted, not delivered");
   check(attempts.find((attempt) => attempt.provider === "fcm")?.provider_message_id === "projects/test/messages/fcm-1", "FCM provider message name is persisted");
   check(attempts.find((attempt) => attempt.provider === "expo")?.status === "retry_due", "only the failed Expo installation becomes retry-due");
+  const mixedNotificationId = (await row(`SELECT id::text FROM mobile_push_log WHERE yam_key='mixed'`)).id;
+  const fcmEnvelope = JSON.parse(attempts.find((attempt) => attempt.provider === "fcm")!.provider_message.data.body);
+  const expoEnvelope = attempts.find((attempt) => attempt.provider === "expo")!.provider_message.data;
+  check(fcmEnvelope.notificationId === mixedNotificationId && expoEnvelope.notificationId === mixedNotificationId,
+    "every provider envelope carries the exact durable notification UUID required by the mobile parser");
   const exactExpo = attempts.find((attempt) => attempt.provider === "expo")!.provider_message;
 
   let immutableRejected = false;
@@ -245,6 +250,53 @@ try {
   check(receiptError.errors === 1, "Expo receipt errors are normalized separately from delivery confirmations");
   parent = await row(`SELECT delivery_status,sent_at,accepted_at FROM mobile_push_log WHERE yam_key='receipt-error'`);
   check(parent.delivery_status === "failed" && parent.sent_at === null && parent.accepted_at === null, "an all-dead parent is failed and never accepted/sent");
+
+  const reacceptTokenId = "10000000-0000-4000-8000-000000000020";
+  await pool.query(
+    `INSERT INTO mobile_push_tokens
+       (id,user_id,installation_id,expo_push_token,device_token_type,platform,locale,last_registered_at)
+     VALUES($1,$2,'20000000-0000-4000-8000-000000000020','ExponentPushToken[receipt-reaccept]','apns','ios','th',now())`,
+    [reacceptTokenId, userId],
+  );
+  await delivery.deliver(pool, notice("receipt-reaccept", [{ ...expoMessage, tokenId: reacceptTokenId,
+    expoToken: "ExponentPushToken[receipt-reaccept]" }]), { defer: true });
+  await pool.query(
+    `UPDATE mobile_push_attempts SET status='provider_accepted',send_count=1,provider_ticket_id='expo-ticket-reaccept-old',
+       accepted_at=now()-interval '1 day',send_started_at=now()-interval '1 day'-interval '2 seconds',next_receipt_at=now()
+      WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-reaccept')`,
+  );
+  const retryableReceiptError = await worker.pollReceiptBatch(pool, {
+    sender: { async pollExpoReceipts() { return { "expo-ticket-reaccept-old": { kind: "error", reason: "MessageRateExceeded", retryable: true } }; } },
+    baseDelaySeconds: 1,
+  });
+  const clearedGeneration = await row(
+    `SELECT status,accepted_at,provider_ticket_id,provider_receipt_checked_at,send_started_at
+       FROM mobile_push_attempts WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-reaccept')`,
+  );
+  check(retryableReceiptError.errors === 1 && clearedGeneration.status === "retry_due"
+    && clearedGeneration.accepted_at === null && clearedGeneration.provider_ticket_id === null
+    && clearedGeneration.provider_receipt_checked_at === null && clearedGeneration.send_started_at === null,
+  "a receipt-triggered resend clears every provider timestamp and identifier from the prior send generation");
+  await pool.query(
+    `UPDATE mobile_push_attempts SET next_retry_at=now()-interval '1 second'
+      WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-reaccept')`,
+  );
+  const reaccepted = await worker.runRetryBatch(pool, {
+    sender: { async sendPrepared() { return { kind: "provider_accepted", provider: "expo", providerTicketId: "expo-ticket-reaccept-new" }; } },
+    limit: 1,
+  });
+  const currentGeneration = await row(
+    `SELECT status,provider_ticket_id,accepted_at>=send_started_at AS nonnegative
+       FROM mobile_push_attempts WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-reaccept')`,
+  );
+  check(reaccepted.accepted === 1 && currentGeneration.status === "provider_accepted"
+    && currentGeneration.provider_ticket_id === "expo-ticket-reaccept-new" && currentGeneration.nonnegative === true,
+  "retry acceptance timestamps and identifiers belong only to the current send generation");
+  const reacceptedReceipt = await worker.pollReceiptBatch(pool, {
+    limit: 1,
+    sender: { async pollExpoReceipts() { return { "expo-ticket-reaccept-new": { kind: "provider_receipt_ok" } }; } },
+  });
+  check(reacceptedReceipt.accepted === 1, "the new send generation owns and completes its own receipt lifecycle");
 
   await delivery.deliver(pool, notice("stale", [fcmMessage]), { defer: true });
   await pool.query(

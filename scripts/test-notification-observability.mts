@@ -11,6 +11,7 @@ const role = `notification_observability_role_${process.pid}`;
 const password = crypto.randomBytes(24).toString("hex");
 const migration = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
 const observabilityMigration = readFileSync("migrations/20260816_mobile_notification_observability.sql", "utf8");
+const engagementMigration = readFileSync("migrations/20260816_mobile_notification_engagement.sql", "utf8");
 
 assert.match(database, /^notification_observability_test_/u, "test database name must be disposable");
 assert.match(role, /^notification_observability_role_/u, "test role name must be disposable");
@@ -51,6 +52,7 @@ try {
   `);
   psql(database, migration);
   psql(database, observabilityMigration);
+  psql(database, engagementMigration);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
 
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password });
@@ -92,7 +94,8 @@ try {
       ('40000000-0000-4000-8000-000000000012','30000000-0000-4000-8000-000000000012','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('6',64),'reserved',now(),'permanent-lease',NULL,now()-interval '200 hours',now()-interval '200 hours',NULL),
       ('40000000-0000-4000-8000-000000000013','30000000-0000-4000-8000-000000000013','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('7',64),'provider_accepted',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours',NULL),
       ('40000000-0000-4000-8000-000000000014','30000000-0000-4000-8000-000000000014','10000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','expo','{}',repeat('8',64),'delivered',NULL,NULL,NULL,now()-interval '200 hours',now()-interval '200 hours',NULL);
-    UPDATE mobile_push_attempts SET provider_ticket_id='ticket-safe', accepted_at=now()-interval '2 hours', next_receipt_at=now()-interval '2 hours'
+    UPDATE mobile_push_attempts SET provider_ticket_id='ticket-safe', accepted_at=now()-interval '2 hours',
+      send_started_at=now()-interval '2 hours'-interval '2 seconds',next_receipt_at=now()-interval '2 hours'
       WHERE id='40000000-0000-4000-8000-000000000002';
     UPDATE mobile_push_attempts SET provider_ticket_id='old-ticket-safe', accepted_at=now()-interval '200 hours', next_receipt_at=now()-interval '200 hours'
       WHERE id='40000000-0000-4000-8000-000000000008';
@@ -101,6 +104,21 @@ try {
     UPDATE mobile_push_attempts SET provider_ticket_id='old-missing-accepted-ticket', next_receipt_at=now()-interval '200 hours'
       WHERE id='40000000-0000-4000-8000-000000000013';
     UPDATE mobile_push_log SET delivery_model_generation=1;
+    INSERT INTO mobile_notification_engagements(user_id,installation_id,push_log_id,event,action_id) VALUES
+      ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000002','app_received',''),
+      ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000002','opened',''),
+      ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000002','action','mute');
+    INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at,delivery_model_generation) VALUES
+      ('30000000-0000-4000-8000-000000000018','00000000-0000-4000-8000-000000000001','latency-valid','latency-regression','accepted',now(),1),
+      ('30000000-0000-4000-8000-000000000019','00000000-0000-4000-8000-000000000001','latency-stale','latency-regression','accepted',now(),1);
+    INSERT INTO mobile_push_attempts
+      (id,push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,
+       provider_message_id,accepted_at,send_started_at,created_at,updated_at)
+    VALUES
+      ('40000000-0000-4000-8000-000000000018','30000000-0000-4000-8000-000000000018','10000000-0000-4000-8000-000000000002',
+       '20000000-0000-4000-8000-000000000018','fcm','{}',repeat('a',64),'provider_accepted','latency-valid-message',now(),now()-interval '2 seconds',now(),now()),
+      ('40000000-0000-4000-8000-000000000019','30000000-0000-4000-8000-000000000019','10000000-0000-4000-8000-000000000002',
+       '20000000-0000-4000-8000-000000000019','fcm','{}',repeat('b',64),'provider_accepted','latency-stale-message',now()-interval '1 hour',now(),now(),now());
     INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,updated_at,delivery_model_generation) VALUES
       ('30000000-0000-4000-8000-000000000015','00000000-0000-4000-8000-000000000001','legacy-accepted-no-attempt','service','accepted',now()-interval '400 days',0),
       ('30000000-0000-4000-8000-000000000016','00000000-0000-4000-8000-000000000001','new-accepted-no-attempt','service','accepted',now()-interval '1 hour',1);
@@ -124,6 +142,13 @@ try {
   assert.equal(report.metrics.readiness.mismatchCount, 2, "actively routed provider/token and credential readiness mismatches are counted without token output");
   assert.equal(report.metrics.worker.fresh, false, "stale worker heartbeat is visible and unhealthy");
   assert.equal(report.metrics.schedulers.every((entry: { fresh: boolean }) => entry.fresh), true, "all six fresh scheduler heartbeats are individually healthy");
+  assert.deepEqual(report.metrics.engagement, {
+    targetedCount: 2, appReceivedCount: 1, openedCount: 1, actionCount: 1,
+    ackRate: 0.5, openRate: 0.5, actionRate: 0.5,
+  }, "health exposes aggregate app acknowledgement/open/action rates with explicit honest denominators");
+  const latency = report.metrics.byCategoryProviderState.find((entry: { category: string }) => entry.category === "latency-regression");
+  assert.ok(latency.providerLatencyP50Ms >= 1_500 && latency.providerLatencyP50Ms <= 3_000,
+    "provider latency excludes an impossible stale acceptance generation and preserves the valid send percentile");
   assert.equal(JSON.stringify(report).includes("private-fixture-token"), false, "health report never exposes a raw token");
 
   const partialSchedulers = { ...freshSchedulers };
@@ -147,6 +172,28 @@ try {
   });
   assert.equal(cadenceReport.reasons.includes("scheduler_heartbeat_stale:yam"), true, "hourly Yam freshness becomes stale after two hours");
   assert.equal(cadenceReport.reasons.includes("scheduler_heartbeat_stale:monthly-report"), false, "monthly scheduler freshness follows its reviewed monthly cadence");
+
+  const futureNow = new Date("2026-08-16T12:00:00.000Z");
+  const futureSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, futureNow.toISOString()]));
+  futureSchedulers.yam = new Date("2027-08-16T12:00:00.000Z").toISOString();
+  const futureReport = await observability.collectHealth(pool, {
+    now: futureNow,
+    thresholds: { heartbeatFutureSkewSeconds: 60 },
+    heartbeat: { workerAt: new Date(futureNow.valueOf() + 365 * 86_400_000).toISOString(), schedulers: futureSchedulers },
+    providerReady: { fcm: false, expo: true },
+  });
+  assert.equal(futureReport.reasons.includes("worker_heartbeat_future"), true, "a worker heartbeat one year in the future is unhealthy with a named reason");
+  assert.equal(futureReport.reasons.includes("scheduler_heartbeat_future:yam"), true, "a scheduler heartbeat beyond the explicit small skew is unhealthy with its name");
+  const toleratedSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, futureNow.toISOString()]));
+  toleratedSchedulers.yam = new Date(futureNow.valueOf() + 30_000).toISOString();
+  const toleratedReport = await observability.collectHealth(pool, {
+    now: futureNow,
+    thresholds: { heartbeatFutureSkewSeconds: 60 },
+    heartbeat: { workerAt: new Date(futureNow.valueOf() + 30_000).toISOString(), schedulers: toleratedSchedulers },
+    providerReady: { fcm: false, expo: true },
+  });
+  assert.equal(toleratedReport.reasons.includes("worker_heartbeat_future"), false, "documented 60-second clock skew is tolerated");
+  assert.equal(toleratedReport.reasons.includes("scheduler_heartbeat_future:yam"), false, "the same small scheduler clock skew is tolerated");
 
   const reconciliation = await observability.reconcile(pool, { lookbackHours: 24 });
   assert.equal(reconciliation.ok, false, "reconciliation is unhealthy when any current invariant is violated");

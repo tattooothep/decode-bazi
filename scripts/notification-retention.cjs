@@ -7,6 +7,7 @@ const retention = require("../src/lib/notification-retention.cjs");
 const ARGUMENTS = Object.freeze({
   "--source-facts-days": "sourceFactsDays",
   "--attempt-days": "attemptDays",
+  "--engagement-days": "engagementDays",
   "--history-days": "historyDays",
   "--security-history-days": "securityHistoryDays",
   "--batch-size": "batchSize",

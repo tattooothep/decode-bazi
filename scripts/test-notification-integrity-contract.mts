@@ -9,6 +9,8 @@ const migration = readFileSync(migrationPath, "utf8");
 const rollback = readFileSync(rollbackPath, "utf8");
 const route = readFileSync("src/app/api/mobile/v1/push/route.ts", "utf8");
 const notificationsRoute = readFileSync("src/app/api/mobile/v1/notifications/route.ts", "utf8");
+const notificationPreferences = readFileSync("src/lib/mobile-notification-preferences.ts", "utf8");
+const notificationPreferenceSources = `${notificationsRoute}\n${notificationPreferences}`;
 
 assert.match(migration, /CREATE UNIQUE INDEX[^;]+mobile_push_tokens[^;]+installation_id[^;]+WHERE enabled=true/isu);
 assert.match(migration, /CREATE UNIQUE INDEX[^;]+mobile_push_tokens[^;]+device_push_token[^;]+WHERE enabled=true[^;]+device_push_token IS NOT NULL/isu);
@@ -62,23 +64,23 @@ assert.doesNotMatch(route, /device_push_token=COALESCE\(EXCLUDED\.device_push_to
 assert.match(route, /push_registration_conflict|push_registration_failed/iu,
   "database failures must return a sanitized registration error");
 
-assert.match(notificationsRoute, /privacy_preview:\s*boolean/iu,
+assert.match(notificationPreferenceSources, /privacy_preview:\s*boolean/iu,
   "notification preferences must read the privacy-preview column");
 assert.match(notificationsRoute, /privacyPreview:\s*row\.privacy_preview/iu,
   "preference responses must expose the persisted privacy-preview value");
-assert.match(notificationsRoute, /privacy_preview:\s*false/iu,
+assert.match(notificationPreferenceSources, /privacy_preview:\s*false/iu,
   "missing preference rows must default privacy preview to false");
-assert.match(notificationsRoute, /body\?\.privacyPreview/iu,
+assert.match(notificationPreferenceSources, /body\??\.privacyPreview/iu,
   "preference updates must accept privacyPreview");
-assert.match(notificationsRoute, /privacy_preview[\s\S]+\$18/iu,
+assert.match(notificationPreferences, /privacy_preview[\s\S]+\$18/iu,
   "preference upserts must persist privacy-preview values");
-assert.match(notificationsRoute, /locale:\s*string/iu,
+assert.match(notificationPreferenceSources, /locale:\s*string/iu,
   "notification preferences must read the server locale");
-assert.match(notificationsRoute, /locale:\s*"th"/iu,
+assert.match(notificationPreferenceSources, /locale:\s*"th"/iu,
   "missing preference rows must default locale safely");
 assert.match(notificationsRoute, /locale:\s*row\.locale/iu,
   "preference responses must expose the persisted locale");
-assert.match(notificationsRoute, /body\?\.locale/iu,
+assert.match(notificationPreferenceSources, /body\??\.locale/iu,
   "preference updates must accept locale");
 assert.match(notificationsRoute, /delivery_status\s+IN\s*\('accepted','delivered'\)/iu,
   "provider-accepted and receipt-delivered notifications must both remain visible");

@@ -4,7 +4,9 @@ This source-controlled package is read-only for health and reconciliation. It em
 
 ## Preconditions
 
-- The additive notification-integrity and notification-observability migrations have been applied and their rollbacks have been reviewed.
+- The additive notification-integrity, notification-observability, and
+  notification-engagement migrations have been applied and their rollbacks
+  have been reviewed.
 - Source-review gates have approved the exact revision.
 - The service account has only the database access needed by the existing worker and read-only health/reconciliation queries.
 - Each of the six source schedulers writes its own timestamp-only heartbeat
@@ -17,8 +19,15 @@ This source-controlled package is read-only for health and reconciliation. It em
 - `notification-health.cjs` exits nonzero on overdue retry age/count, expired leases, unprocessed Expo receipt backlog, actively routed provider/token or FCM credential readiness mismatches, or a missing/stale retry-worker heartbeat. These actionable predicates inspect all current attempt rows; only historical delivery metrics use the bounded 168-hour window.
 - Scheduler freshness is reported separately for `yam`, `daily-fortune`,
   `auspicious`, `personal-reminders`, `monthly-report`, and `network-morning`.
-  Missing and stale reasons include the scheduler name so an empty queue is not
-  mistaken for scheduler activity.
+  Missing, stale, and future-timestamp reasons include the scheduler name so an
+  empty queue or a bad host clock is not mistaken for scheduler activity. The
+  worker and scheduler checks tolerate at most 60 seconds of future clock skew.
+- Engagement rates use distinct accepted notification/installation targets as
+  their denominator. `ackRate` means an authenticated `app_received` callback;
+  it is not evidence that the OS displayed a notification. `openRate` and
+  `actionRate` use authenticated app callbacks for the same owned target. Only
+  aggregate counts/rates are returned; account, installation, and notification
+  identifiers are never included in health output.
 - `notification-reconcile.cjs` is read-only. It compares generation-1,
   unretired parent delivery truth with child attempts and counts
   orphan/impossible state combinations without repair or mutation. Generation-0

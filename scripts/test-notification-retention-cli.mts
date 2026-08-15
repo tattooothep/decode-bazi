@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const cli = require("./notification-retention.cjs");
 
 assert.deepEqual(cli.parseArgs([]), {
-  ok: true, sourceFactsDays: 30, attemptDays: 30, historyDays: 180,
+  ok: true, sourceFactsDays: 30, attemptDays: 30, engagementDays: 90, historyDays: 180,
   securityHistoryDays: 365, batchSize: 500, maxBatches: 20,
 }, "retention CLI has explicit conservative bounded defaults");
 assert.equal(cli.parseArgs(["--history-days", "0"]).ok, false, "retention CLI rejects an unbounded/destructive zero-day history window");

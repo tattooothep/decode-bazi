@@ -238,7 +238,12 @@ async function reserve(db, notice, dry = false) {
         { title: item.title, body: item.body },
         item.locale || context.locale,
       );
-      const providerMessage = cleanJson(push.prepareMessage({ ...item, ...providerCopy }, provider));
+      const itemData = item.data && typeof item.data === "object" && !Array.isArray(item.data) ? item.data : {};
+      const providerMessage = cleanJson(push.prepareMessage({
+        ...item,
+        ...providerCopy,
+        data: { ...itemData, notificationId: parent.rows[0].id },
+      }, provider));
       const inserted = await client.query(
         `INSERT INTO mobile_push_attempts
            (push_log_id,token_id,installation_id,provider,provider_message,message_sha256,
@@ -448,14 +453,19 @@ async function finishAttempt(db, attempt, outcome, options = {}) {
            next_retry_at=CASE WHEN $4::integer IS NULL THEN NULL ELSE now()+($4::text||' seconds')::interval END,
            lease_token=NULL,lease_expires_at=NULL,
            send_started_at=CASE WHEN $3='retry_due' THEN NULL ELSE send_started_at END,
-           provider_message_id=COALESCE($5,provider_message_id),provider_ticket_id=COALESCE($6,provider_ticket_id),
+           provider_message_id=CASE WHEN $3='retry_due' THEN NULL ELSE COALESCE($5,provider_message_id) END,
+           provider_ticket_id=CASE WHEN $3='retry_due' THEN NULL ELSE COALESCE($6,provider_ticket_id) END,
            next_receipt_at=CASE
              WHEN $3='provider_accepted' AND $6::text IS NOT NULL THEN now()
-             WHEN $3 IN ('delivered','dead') THEN NULL ELSE next_receipt_at END,
+             WHEN $3 IN ('retry_due','delivered','dead') THEN NULL ELSE next_receipt_at END,
+           provider_receipt_checked_at=CASE WHEN $3='retry_due' THEN NULL ELSE provider_receipt_checked_at END,
+           receipt_poll_count=CASE WHEN $3='retry_due' THEN 0 ELSE receipt_poll_count END,
            last_error=CASE WHEN $3 IN ('provider_accepted','delivered') THEN NULL
                            WHEN $8::boolean THEN 'uncertain_provider_result' ELSE $7 END,
-           accepted_at=CASE WHEN $3 IN ('provider_accepted','delivered') THEN COALESCE(accepted_at,now()) ELSE accepted_at END,
-           delivered_at=CASE WHEN $3='delivered' THEN COALESCE(delivered_at,now()) ELSE delivered_at END,updated_at=now()
+           accepted_at=CASE WHEN $3 IN ('provider_accepted','delivered') THEN now()
+                            WHEN $3='retry_due' THEN NULL ELSE accepted_at END,
+           delivered_at=CASE WHEN $3='delivered' THEN now() WHEN $3='retry_due' THEN NULL ELSE delivered_at END,
+           updated_at=now()
          WHERE id=$1 AND lease_token=$2 RETURNING push_log_id,token_id`,
         [attempt.id, attempt.lease_token, status, delay, outcome?.providerMessageId || null, outcome?.providerTicketId || null, safeReason(outcome), uncertain],
       );
@@ -580,7 +590,9 @@ async function processClaim(db, attempt, options = {}) {
         );
         if (!token.rows[0]) return { ...row, targetUnavailable: true };
         const marked = await tx.query(
-          `UPDATE mobile_push_attempts SET token_id=$3,send_count=send_count+1,send_started_at=now(),updated_at=now()
+          `UPDATE mobile_push_attempts SET token_id=$3,send_count=send_count+1,send_started_at=now(),
+             accepted_at=NULL,delivered_at=NULL,provider_message_id=NULL,provider_ticket_id=NULL,
+             provider_receipt_checked_at=NULL,next_receipt_at=NULL,receipt_poll_count=0,updated_at=now()
             WHERE id=$1 AND lease_token=$2 RETURNING *`,
           [row.id, row.lease_token, token.rows[0].id],
         );

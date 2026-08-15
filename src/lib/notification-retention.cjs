@@ -14,12 +14,14 @@ function optionsFor(input = {}) {
   const config = {
     sourceFactsDays: integerOption(input.sourceFactsDays, 30, 1, 3650, "sourceFactsDays"),
     attemptDays: integerOption(input.attemptDays, 30, 1, 3650, "attemptDays"),
+    engagementDays: integerOption(input.engagementDays, 90, 1, 3650, "engagementDays"),
     historyDays: integerOption(input.historyDays, 180, 30, 3650, "historyDays"),
     securityHistoryDays: integerOption(input.securityHistoryDays, 365, 30, 3650, "securityHistoryDays"),
     batchSize: integerOption(input.batchSize, 500, 1, 5000, "batchSize"),
     maxBatches: integerOption(input.maxBatches, 20, 1, 100, "maxBatches"),
   };
-  if (config.sourceFactsDays > config.historyDays || config.attemptDays > config.historyDays
+  if (config.sourceFactsDays > config.historyDays || config.attemptDays > config.engagementDays
+      || config.engagementDays > config.historyDays
       || config.securityHistoryDays < config.historyDays) {
     throw new TypeError("invalid notification retention window ordering");
   }
@@ -128,6 +130,24 @@ async function purgeAttemptsBatch(client, config) {
   });
 }
 
+async function purgeEngagementsBatch(client, config) {
+  return transaction(client, async (tx) => {
+    const result = await tx.query(
+      `WITH candidates AS (
+         SELECT user_id,installation_id,push_log_id,event,action_id
+           FROM mobile_notification_engagements
+          WHERE recorded_at<now()-($1::text||' days')::interval
+          ORDER BY recorded_at,push_log_id LIMIT $2 FOR UPDATE SKIP LOCKED
+       ) DELETE FROM mobile_notification_engagements e USING candidates c
+          WHERE e.user_id=c.user_id AND e.installation_id=c.installation_id
+            AND e.push_log_id=c.push_log_id AND e.event=c.event AND e.action_id=c.action_id
+        RETURNING e.push_log_id`,
+      [String(config.engagementDays), config.batchSize],
+    );
+    return result.rowCount || 0;
+  });
+}
+
 async function purgeHistoryBatch(client, config) {
   return transaction(client, async (tx) => {
     const result = await tx.query(
@@ -175,12 +195,13 @@ async function runRetention(db, input = {}) {
     );
     locked = lock.rows[0]?.locked === true;
     if (!locked) {
-      return { ok: true, status: "overlap_skipped", sourceFactsRedacted: 0, attemptsPurged: 0, historyPurged: 0 };
+      return { ok: true, status: "overlap_skipped", sourceFactsRedacted: 0, engagementPurged: 0, attemptsPurged: 0, historyPurged: 0 };
     }
     const sourceFactsRedacted = await runPhase(client, config, redactSourceFactsBatch);
+    const engagementPurged = await runPhase(client, config, purgeEngagementsBatch);
     const attemptsPurged = await runPhase(client, config, purgeAttemptsBatch);
     const historyPurged = await runPhase(client, config, purgeHistoryBatch);
-    return { ok: true, status: "completed", sourceFactsRedacted, attemptsPurged, historyPurged };
+    return { ok: true, status: "completed", sourceFactsRedacted, engagementPurged, attemptsPurged, historyPurged };
   } finally {
     if (locked) {
       await client.query(
@@ -191,4 +212,4 @@ async function runRetention(db, input = {}) {
   }
 }
 
-module.exports = { optionsFor,purgeAttemptsBatch,purgeHistoryBatch,redactSourceFactsBatch,runRetention };
+module.exports = { optionsFor,purgeAttemptsBatch,purgeEngagementsBatch,purgeHistoryBatch,redactSourceFactsBatch,runRetention };

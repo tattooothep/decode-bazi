@@ -11,6 +11,7 @@ const role = `notification_retention_role_${process.pid}`;
 const password = crypto.randomBytes(24).toString("hex");
 const integrity = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
 const observability = readFileSync("migrations/20260816_mobile_notification_observability.sql", "utf8");
+const engagement = readFileSync("migrations/20260816_mobile_notification_engagement.sql", "utf8");
 
 assert.match(database, /^notification_retention_test_/u, "retention test database is disposable");
 
@@ -47,6 +48,7 @@ try {
   `);
   psql(database, integrity);
   psql(database, observability);
+  psql(database, engagement);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password, max: 2 });
 
@@ -93,6 +95,9 @@ try {
     UPDATE mobile_push_attempts a SET status='provider_accepted',provider_message_id=NULL,delivered_at=NULL
       FROM mobile_push_log l WHERE l.id=a.push_log_id AND l.yam_key='corrupt-fcm-id';
     UPDATE mobile_push_log SET attempt_count=99 WHERE yam_key='corrupt-attempt-count';
+    INSERT INTO mobile_notification_engagements(user_id,installation_id,push_log_id,event,recorded_at) VALUES
+      ('00000000-0000-4000-8000-000000000001','90000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001','opened',now()-interval '100 days'),
+      ('00000000-0000-4000-8000-000000000001','90000000-0000-4000-8000-000000000002','30000000-0000-4000-8000-000000000002','opened',now()-interval '5 days');
   `);
 
   const retention = require("../src/lib/notification-retention.cjs");
@@ -101,7 +106,9 @@ try {
     batchSize: 100, maxBatches: 5,
   });
   assert.equal(report.ok, true, "bounded retention completes successfully");
-  assert.deepEqual(Object.keys(report).sort(), ["attemptsPurged", "historyPurged", "ok", "sourceFactsRedacted", "status"], "retention reports aggregate counts and run status only");
+  assert.deepEqual(Object.keys(report).sort(), ["attemptsPurged", "engagementPurged", "historyPurged", "ok", "sourceFactsRedacted", "status"], "retention reports aggregate counts and run status only");
+  assert.equal(report.engagementPurged, 1, "old app engagement evidence expires on its explicit shorter retention window");
+  assert.equal(Number((await pool.query(`SELECT count(*)::int AS n FROM mobile_notification_engagements`)).rows[0].n), 1, "recent aggregate engagement evidence remains available");
   assert.equal(JSON.stringify(report).includes("private"), false, "retention output contains no user, payload, source-fact, or provider content");
 
   const retainedOld = (await pool.query(`SELECT title,body,payload,source_facts,source_facts_redacted_at IS NOT NULL AS redacted,attempts_retired_at IS NOT NULL AS retired FROM mobile_push_log WHERE yam_key='retain-old-daily'`)).rows[0];

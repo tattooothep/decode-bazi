@@ -9,15 +9,20 @@ function boundedNumber(value, fallback, minimum, maximum) {
   return Number.isFinite(parsed) ? Math.max(minimum, Math.min(maximum, parsed)) : fallback;
 }
 
-function ageSeconds(value, now) {
+function heartbeatTiming(value, maxAgeSeconds, maxFutureSkewSeconds, now) {
   const timestamp = Date.parse(String(value || ""));
-  if (!Number.isFinite(timestamp)) return null;
-  return Math.max(0, Math.round((now.valueOf() - timestamp) / 1000));
-}
-
-function freshness(value, maxAgeSeconds, now) {
-  const age = ageSeconds(value, now);
-  return { fresh: age !== null && age <= maxAgeSeconds, ageSeconds: age };
+  if (!Number.isFinite(timestamp)) {
+    return { fresh: false, ageSeconds: null, future: false, futureSkewSeconds: null };
+  }
+  const signedAgeSeconds = Math.round((now.valueOf() - timestamp) / 1000);
+  const futureSkewSeconds = Math.max(0, -signedAgeSeconds);
+  const future = futureSkewSeconds > maxFutureSkewSeconds;
+  return {
+    fresh: !future && signedAgeSeconds <= maxAgeSeconds,
+    ageSeconds: Math.max(0, signedAgeSeconds),
+    future,
+    futureSkewSeconds,
+  };
 }
 
 function numeric(value) {
@@ -26,6 +31,12 @@ function numeric(value) {
 
 function roundedMilliseconds(value) {
   return value === null || value === undefined || !Number.isFinite(Number(value)) ? null : Math.round(Number(value));
+}
+
+function ratio(numerator, denominator) {
+  const total = numeric(denominator);
+  if (total <= 0) return null;
+  return Math.round((numeric(numerator) / total) * 10_000) / 10_000;
 }
 
 function optionsFor(input = {}) {
@@ -40,6 +51,7 @@ function optionsFor(input = {}) {
       maxReceiptStalledCount: boundedNumber(thresholds.maxReceiptStalledCount, 0, 0, 1_000_000),
       receiptStallSeconds: boundedNumber(thresholds.receiptStallSeconds, 900, 1, 31 * 24 * 3600),
       workerHeartbeatSeconds: boundedNumber(thresholds.workerHeartbeatSeconds, 300, 1, 24 * 3600),
+      heartbeatFutureSkewSeconds: boundedNumber(thresholds.heartbeatFutureSkewSeconds, 60, 0, 300),
       schedulerHeartbeatSeconds: thresholds.schedulerHeartbeatSeconds === undefined
         ? null
         : boundedNumber(thresholds.schedulerHeartbeatSeconds, 3600, 1, 40 * 24 * 3600),
@@ -75,7 +87,7 @@ async function collectHealth(db, input = {}) {
   const now = input.now instanceof Date ? input.now : new Date();
   // Actionable alert predicates deliberately have no historical window. Each
   // is a direct indexed query so an old blocked row cannot become invisible.
-  const [retryResult, expiredLeaseResult, permanentLeaseResult, unrecoverableInFlightResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
+  const [retryResult, expiredLeaseResult, permanentLeaseResult, unrecoverableInFlightResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult, engagementResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
     () => readDb.query(
       `SELECT count(*)::int AS overdue_count,
               COALESCE(max(extract(epoch FROM now()-COALESCE(next_retry_at,to_timestamp(0)))),0)::bigint AS oldest_age_seconds
@@ -136,16 +148,39 @@ async function collectHealth(db, input = {}) {
     () => readDb.query(
       `SELECT l.kind,a.provider,a.status,count(*)::int AS count,
               percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch FROM (a.accepted_at-a.send_started_at))*1000)
-                FILTER (WHERE a.accepted_at IS NOT NULL AND a.send_started_at IS NOT NULL) AS provider_latency_p50_ms,
+                FILTER (WHERE a.accepted_at IS NOT NULL AND a.send_started_at IS NOT NULL
+                  AND a.accepted_at>=a.send_started_at) AS provider_latency_p50_ms,
               percentile_cont(0.95) WITHIN GROUP (ORDER BY extract(epoch FROM (a.accepted_at-a.send_started_at))*1000)
-                FILTER (WHERE a.accepted_at IS NOT NULL AND a.send_started_at IS NOT NULL) AS provider_latency_p95_ms,
+                FILTER (WHERE a.accepted_at IS NOT NULL AND a.send_started_at IS NOT NULL
+                  AND a.accepted_at>=a.send_started_at) AS provider_latency_p95_ms,
               percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch FROM (a.provider_receipt_checked_at-a.accepted_at))*1000)
-                FILTER (WHERE a.provider_receipt_checked_at IS NOT NULL AND a.accepted_at IS NOT NULL) AS receipt_lag_p50_ms,
+                FILTER (WHERE a.provider_receipt_checked_at IS NOT NULL AND a.accepted_at IS NOT NULL
+                  AND a.provider_receipt_checked_at>=a.accepted_at) AS receipt_lag_p50_ms,
               percentile_cont(0.95) WITHIN GROUP (ORDER BY extract(epoch FROM (a.provider_receipt_checked_at-a.accepted_at))*1000)
-                FILTER (WHERE a.provider_receipt_checked_at IS NOT NULL AND a.accepted_at IS NOT NULL) AS receipt_lag_p95_ms
+                FILTER (WHERE a.provider_receipt_checked_at IS NOT NULL AND a.accepted_at IS NOT NULL
+                  AND a.provider_receipt_checked_at>=a.accepted_at) AS receipt_lag_p95_ms
          FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
         WHERE a.updated_at >= now()-($1::text||' hours')::interval
         GROUP BY l.kind,a.provider,a.status ORDER BY l.kind,a.provider,a.status LIMIT 100`,
+      [String(config.lookbackHours)],
+    ),
+    () => readDb.query(
+      `WITH targeted AS (
+         SELECT DISTINCT l.id AS push_log_id,a.installation_id
+           FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+          WHERE a.status IN ('provider_accepted','delivered')
+            AND a.accepted_at>=now()-($1::text||' hours')::interval
+            AND a.accepted_at<=now() AND a.send_started_at IS NOT NULL
+            AND a.accepted_at>=a.send_started_at
+       ), evidence AS (
+         SELECT e.event,e.push_log_id,e.installation_id
+           FROM mobile_notification_engagements e JOIN targeted t
+             ON t.push_log_id=e.push_log_id AND t.installation_id=e.installation_id
+       ) SELECT (SELECT count(*)::int FROM targeted) AS targeted_count,
+              count(DISTINCT (push_log_id,installation_id)) FILTER (WHERE event='app_received')::int AS app_received_count,
+              count(DISTINCT (push_log_id,installation_id)) FILTER (WHERE event='opened')::int AS opened_count,
+              count(DISTINCT (push_log_id,installation_id)) FILTER (WHERE event='action')::int AS action_count
+         FROM evidence`,
       [String(config.lookbackHours)],
     ),
   ]));
@@ -158,13 +193,20 @@ async function collectHealth(db, input = {}) {
   const attemptReadiness = attemptReadinessResult.rows[0] || {};
   const inventory = inventoryResult.rows[0] || {};
   const terminal = terminalResult.rows[0] || {};
-  const worker = freshness(input.heartbeat?.workerAt, config.thresholds.workerHeartbeatSeconds, now);
+  const engagement = engagementResult.rows[0] || {};
+  const worker = heartbeatTiming(
+    input.heartbeat?.workerAt,
+    config.thresholds.workerHeartbeatSeconds,
+    config.thresholds.heartbeatFutureSkewSeconds,
+    now,
+  );
   const schedulers = SCHEDULER_NAMES.map((name) => ({
     name,
     maxAgeSeconds: config.thresholds.schedulerHeartbeatSeconds || SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS[name],
-    ...freshness(
+    ...heartbeatTiming(
       input.heartbeat?.schedulers?.[name],
       config.thresholds.schedulerHeartbeatSeconds || SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS[name],
+      config.thresholds.heartbeatFutureSkewSeconds,
       now,
     ),
   }));
@@ -182,6 +224,15 @@ async function collectHealth(db, input = {}) {
     outcomes: { deadLetterCount: numeric(terminal.dead_letter_count), invalidTokenCount: numeric(terminal.invalid_token_count), uncertainCount: numeric(terminal.uncertain_count) },
     worker,
     schedulers,
+    engagement: {
+      targetedCount: numeric(engagement.targeted_count),
+      appReceivedCount: numeric(engagement.app_received_count),
+      openedCount: numeric(engagement.opened_count),
+      actionCount: numeric(engagement.action_count),
+      ackRate: ratio(engagement.app_received_count, engagement.targeted_count),
+      openRate: ratio(engagement.opened_count, engagement.targeted_count),
+      actionRate: ratio(engagement.action_count, engagement.targeted_count),
+    },
     byCategoryProviderState: aggregatesResult.rows.map((row) => ({
       category: row.kind, provider: row.provider, state: row.status, count: numeric(row.count),
       providerLatencyP50Ms: roundedMilliseconds(row.provider_latency_p50_ms),
@@ -196,9 +247,11 @@ async function collectHealth(db, input = {}) {
   if (metrics.leases.staleCount > config.thresholds.maxStaleLeaseCount) reasons.push("stale_lease");
   if (metrics.receipts.stalledCount > config.thresholds.maxReceiptStalledCount) reasons.push("receipt_poll_stalled");
   if (metrics.readiness.mismatchCount > 0) reasons.push("provider_readiness_mismatch");
-  if (!metrics.worker.fresh) reasons.push(metrics.worker.ageSeconds === null ? "worker_heartbeat_missing" : "worker_heartbeat_stale");
+  if (!metrics.worker.fresh) reasons.push(metrics.worker.ageSeconds === null
+    ? "worker_heartbeat_missing" : metrics.worker.future ? "worker_heartbeat_future" : "worker_heartbeat_stale");
   for (const scheduler of metrics.schedulers) {
-    if (!scheduler.fresh) reasons.push(`scheduler_heartbeat_${scheduler.ageSeconds === null ? "missing" : "stale"}:${scheduler.name}`);
+    if (!scheduler.fresh) reasons.push(`scheduler_heartbeat_${scheduler.ageSeconds === null
+      ? "missing" : scheduler.future ? "future" : "stale"}:${scheduler.name}`);
   }
   return { ok: reasons.length === 0, reasons, metrics, windowHours: config.lookbackHours };
 }
