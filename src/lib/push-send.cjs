@@ -176,7 +176,7 @@ async function getTicket() {
   }
 }
 
-async function sendPreparedFcmOnce(deviceToken, providerMessage) {
+async function sendPreparedFcmOnce(deviceToken, providerMessage, retryAuth = true) {
   const key = loadKey();
   if (key === null) return { kind: "failed", reason: "no_service_account", retryable: true };
   const ticket = await getTicket();
@@ -209,7 +209,13 @@ async function sendPreparedFcmOnce(deviceToken, providerMessage) {
       };
     }
     const detail = (await response.text()).slice(0, 500);
-    const gone = response.status === 404 || detail.includes("UNREGISTERED");
+    if (retryAuth && (response.status === 401 || response.status === 403)) {
+      cachedTicket = null;
+      return sendPreparedFcmOnce(deviceToken, providerMessage, false);
+    }
+    const invalidRegistration = response.status === 400
+      && /(?:registration token (?:is )?not valid|invalid registration token|not a valid fcm registration token)/iu.test(detail);
+    const gone = response.status === 404 || detail.includes("UNREGISTERED") || invalidRegistration;
     const retryable = TRANSIENT_HTTP.has(response.status);
     const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get("retry-after"));
     console.error(`[push-send] FCM ${response.status}`);
@@ -328,7 +334,7 @@ async function pollExpoReceipts(ticketIds) {
   for (const id of ids) {
     const receipt = payload?.data?.[id];
     if (!receipt) continue;
-    if (receipt.status === "ok") normalized[id] = { kind: "delivered" };
+    if (receipt.status === "ok") normalized[id] = { kind: "provider_receipt_ok" };
     else {
       const reason = String(receipt?.details?.error || receipt?.message || "expo_receipt_error").slice(0, 300);
       normalized[id] = {

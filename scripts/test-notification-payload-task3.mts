@@ -41,14 +41,23 @@ for (const fixture of fixtures.cases) {
   assert.equal(JSON.stringify(fixture).match(/token|credential|secret|password/iu), null, `${fixture.kind}: raw credential-shaped key`);
 }
 
-for (const kind of ["saved_date", "daily", "yam", "qimen", "shrine", "goal"]) {
+for (const kind of ["security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service"]) {
   const fixture = fixtures.cases.find((item: any) => item.kind === kind);
   assert.deepEqual(runtime.previewCopy(kind, false, fixture.fullCopy, fixture.locale), fixture.redactedCopy);
   assert.deepEqual(runtime.previewCopy(kind, true, fixture.fullCopy, fixture.locale), fixture.fullCopy);
 }
-for (const kind of ["security", "service"]) {
-  const fixture = fixtures.cases.find((item: any) => item.kind === kind);
-  assert.deepEqual(runtime.previewCopy(kind, false, fixture.fullCopy, fixture.locale), fixture.fullCopy);
-}
+
+assert.deepEqual(runtime.buildNotificationPayload("service", "acct-synthetic-001", {
+  event: "monthly_report_ready", referenceId: "monthly|2026-08", url: "/calendar",
+}), {
+  v: 1, kind: "service", accountId: "acct-synthetic-001",
+  event: "monthly_report_ready", referenceId: "monthly|2026-08", url: "/calendar",
+});
+assert.deepEqual(runtime.buildNotificationPayload("service", "acct-synthetic-001", {
+  event: "network_morning", referenceId: "network|2026-08-15|profile-1", url: "/network",
+}), {
+  v: 1, kind: "service", accountId: "acct-synthetic-001",
+  event: "network_morning", referenceId: "network|2026-08-15|profile-1", url: "/network",
+});
 
 console.log("NOTIFICATION_PAYLOAD_TASK3_OK cases=8");

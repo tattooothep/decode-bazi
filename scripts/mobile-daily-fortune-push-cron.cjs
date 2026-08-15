@@ -52,6 +52,31 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 
+function buildDailyCopy({ loc, slot, dateLabel, score, label, tongshuYi, golden }) {
+  const family = notificationPayload.normalizedLocale(loc);
+  const parts = [];
+  if (family === "zh") {
+    if (score != null) parts.push(`日力 ${score}`);
+    if (golden?.range) parts.push(`黃金時 ${golden.range}`);
+    parts.push("開啟今日運勢查看建議");
+  } else if (family === "en") {
+    if (score != null) parts.push(`Day power ${score}`);
+    if (golden?.range) parts.push(`golden hour ${golden.range}`);
+    parts.push("Open Today to review the recommendation");
+  } else {
+    if (score != null) parts.push(`พลังวัน ${score}${label ? ` (${label})` : ""}`);
+    if (Array.isArray(tongshuYi) && tongshuYi.length) parts.push(`เหมาะ: ${tongshuYi.join(" · ")}`);
+    if (golden?.range) parts.push(`ยามทอง ${golden.range}`);
+    parts.push("เปิดดวงวันนี้เพื่อดูคำแนะนำ");
+  }
+  const title = family === "zh"
+    ? (slot === "morning" ? `☀️ 今日運勢（${dateLabel}）` : `🌙 明日運勢（${dateLabel}）搶先規劃`)
+    : family === "en"
+      ? (slot === "morning" ? `☀️ Your fortune today (${dateLabel})` : `🌙 Tomorrow's fortune (${dateLabel}) — plan ahead`)
+      : (slot === "morning" ? `☀️ ดวงวันนี้ของคุณ (${dateLabel})` : `🌙 ดวงพรุ่งนี้ (${dateLabel}) — วางแผนก่อนใคร`);
+  return { title, body: parts.join(" · ") };
+}
+
 async function main() {
   if (SLOT !== "morning" && SLOT !== "evening") throw new Error(`bad slot ${SLOT}`);
   const db = new Client({
@@ -170,26 +195,7 @@ async function main() {
 
       // เนื้อหา 3 ภาษาตาม locale ของเครื่อง (กฎ zh ห้ามไทยปน) — yi จาก engine ใส่เฉพาะ th
       // (yi อาจเป็นข้อความไทย → ห้ามหลุดเข้า en/zh)
-      const build = (loc) => {
-        const parts = [];
-        if (loc === "zh") {
-          if (score != null) parts.push(`日力 ${score}`);
-          if (golden && golden.range) parts.push(`黃金時 ${golden.range}`);
-        } else if (loc === "en") {
-          if (score != null) parts.push(`Day power ${score}`);
-          if (golden && golden.range) parts.push(`golden hour ${golden.range}`);
-        } else {
-          if (score != null) parts.push(`พลังวัน ${score}${label ? ` (${label})` : ""}`);
-          if (yi.length) parts.push(`เหมาะ: ${yi.join(" · ")}`);
-          if (golden && golden.range) parts.push(`ยามทอง ${golden.range}`);
-        }
-        const title = loc === "zh"
-          ? (SLOT === "morning" ? `☀️ 今日運勢（${thaiDate}）` : `🌙 明日運勢（${thaiDate}）搶先規劃`)
-          : loc === "en"
-            ? (SLOT === "morning" ? `☀️ Your fortune today (${thaiDate})` : `🌙 Tomorrow's fortune (${thaiDate}) — plan ahead`)
-            : (SLOT === "morning" ? `☀️ ดวงวันนี้ของคุณ (${thaiDate})` : `🌙 ดวงพรุ่งนี้ (${thaiDate}) — วางแผนก่อนใคร`);
-        return { title, body: parts.join(" · ") };
-      };
+      const build = (loc) => buildDailyCopy({ loc, slot: SLOT, dateLabel: thaiDate, score, label, tongshuYi: yi, golden });
       const thMsg = build("th");
       if (!thMsg.body) { skipped++; continue; }
 
@@ -251,4 +257,6 @@ async function main() {
   await db.end();
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { buildDailyCopy,getJson,main };
+
+if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });

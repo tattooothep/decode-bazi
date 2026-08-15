@@ -96,7 +96,7 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${databaseRole}; CREATE ROLE ${databaseRole} LOGIN PASSWORD '${databasePassword}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users (id uuid PRIMARY KEY);
+    CREATE TABLE users (id uuid PRIMARY KEY, timezone text DEFAULT 'Asia/Bangkok');
     CREATE TABLE mobile_push_tokens (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES users(id),
@@ -117,7 +117,15 @@ try {
       updated_at timestamptz NOT NULL DEFAULT now(),
       CONSTRAINT mobile_push_tokens_user_id_installation_id_key UNIQUE(user_id, installation_id)
     );
-    CREATE TABLE mobile_notification_prefs (user_id uuid PRIMARY KEY REFERENCES users(id));
+    CREATE TABLE mobile_notification_prefs (
+      user_id uuid PRIMARY KEY REFERENCES users(id), timezone text DEFAULT 'Asia/Bangkok',
+      security_enabled boolean NOT NULL DEFAULT true, saved_date_enabled boolean NOT NULL DEFAULT false,
+      daily_enabled boolean NOT NULL DEFAULT true, yam_enabled boolean NOT NULL DEFAULT false,
+      qimen_enabled boolean NOT NULL DEFAULT false, shrine_enabled boolean NOT NULL DEFAULT false,
+      goal_enabled boolean NOT NULL DEFAULT false, service_enabled boolean NOT NULL DEFAULT true,
+      quiet_start int NOT NULL DEFAULT 0, quiet_end int NOT NULL DEFAULT 0,
+      max_per_day int NOT NULL DEFAULT 100, paused_until timestamptz
+    );
     CREATE TABLE mobile_push_log (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES users(id),
@@ -137,6 +145,7 @@ try {
       UNIQUE(user_id, yam_key)
     );
     INSERT INTO users(id) VALUES('${userId}');
+    INSERT INTO mobile_notification_prefs(user_id) VALUES('${userId}');
     INSERT INTO mobile_push_tokens
       (id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,last_registered_at)
     VALUES
@@ -213,11 +222,11 @@ try {
   check(attempts.find((attempt) => attempt.provider === "expo")?.provider_ticket_id === "expo-ticket-1", "Expo ticket ID is persisted after retry acceptance");
 
   const receipt = await worker.pollReceiptBatch(pool, {
-    sender: { async pollExpoReceipts() { return { "expo-ticket-1": { kind: "delivered" } }; } },
+    sender: { async pollExpoReceipts() { return { "expo-ticket-1": { kind: "provider_receipt_ok" } }; } },
   });
-  check(receipt.delivered === 1, "Expo receipt confirmation moves the child to delivered");
+  check(receipt.accepted === 1 && receipt.delivered === 0, "Expo receipt success confirms provider handoff without claiming device delivery");
   let parent = await row(`SELECT delivery_status,sent_at IS NOT NULL AS sent FROM mobile_push_log WHERE yam_key='mixed'`);
-  check(parent.delivery_status === "delivered" && parent.sent === true, "parent state is derived from a delivered child");
+  check(parent.delivery_status === "accepted" && parent.sent === true, "parent remains provider accepted without device evidence");
 
   let duplicateCalls = 0;
   const duplicate = await delivery.deliver(pool, notice("mixed", [fcmMessage, expoMessage]), {
@@ -463,9 +472,9 @@ try {
   const receiptClaimA = await worker.claimReceiptOne(pool, { leaseSeconds: 5 });
   await pool.query(`UPDATE mobile_push_attempts SET lease_expires_at=now()-interval '1 second' WHERE id=$1`, [receiptClaimA.id]);
   const receiptClaimB = await worker.claimReceiptOne(pool, { leaseSeconds: 5 });
-  const staleReceiptFinished = await worker.finishReceipt(pool, receiptClaimA, { kind: "delivered" });
+  const staleReceiptFinished = await worker.finishReceipt(pool, receiptClaimA, { kind: "provider_receipt_ok" });
   const receiptBeforeCurrent = await row(`SELECT status FROM mobile_push_attempts WHERE id=$1`, [receiptClaimA.id]);
-  const currentReceiptFinished = await worker.finishReceipt(pool, receiptClaimB, { kind: "delivered" });
+  const currentReceiptFinished = await worker.finishReceipt(pool, receiptClaimB, { kind: "provider_receipt_ok" });
   check(receiptClaimA.lease_token !== receiptClaimB.lease_token, "receipt recovery receives a fresh random lease token");
   check(staleReceiptFinished === false && receiptBeforeCurrent.status === "provider_accepted" && currentReceiptFinished === true,
     "a stale receipt worker cannot clear or finalize a replacement lease");
@@ -497,7 +506,7 @@ try {
     receiptBaseDelaySeconds: 30,
     sender: { async pollExpoReceipts(ids: string[]) {
       receiptBackoffCalls += 1;
-      return receiptBackoffCalls === 1 ? {} : { [ids[0]]: { kind: "delivered" } };
+      return receiptBackoffCalls === 1 ? {} : { [ids[0]]: { kind: "provider_receipt_ok" } };
     } },
   });
   const receiptBackoffRows = (await pool.query(
@@ -505,7 +514,7 @@ try {
        FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
       WHERE l.yam_key='receipt-backoff' ORDER BY status`,
   )).rows;
-  check(receiptBackoff.claimed === 2 && receiptBackoff.delivered === 1 && receiptBackoff.pending === 1 && receiptBackoffCalls === 2,
+  check(receiptBackoff.claimed === 2 && receiptBackoff.accepted === 1 && receiptBackoff.delivered === 0 && receiptBackoff.pending === 1 && receiptBackoffCalls === 2,
     "a missing first Expo receipt is backed off without starving a later ready receipt in the same batch");
   check(receiptBackoffRows.every((attempt) => Number(attempt.receipt_poll_count) === 1)
     && receiptBackoffRows.some((attempt) => attempt.status === "provider_accepted" && attempt.backed_off === true),
@@ -521,9 +530,9 @@ try {
   );
   const receiptRepeated = await worker.pollReceiptBatch(pool, {
     limit: 2,
-    sender: { async pollExpoReceipts(ids: string[]) { return { [ids[0]]: { kind: "delivered" } }; } },
+    sender: { async pollExpoReceipts(ids: string[]) { return { [ids[0]]: { kind: "provider_receipt_ok" } }; } },
   });
-  check(receiptRepeated.delivered === 1, "a later worker run resumes a due receipt after durable backoff");
+  check(receiptRepeated.accepted === 1 && receiptRepeated.delivered === 0, "a later worker run resumes a due receipt without claiming device delivery");
 
   const receiptErrorTokenA = "10000000-0000-4000-8000-000000000010";
   const receiptErrorTokenB = "10000000-0000-4000-8000-000000000011";
@@ -654,7 +663,7 @@ try {
   });
   check(cliEvents.join(",") === "retry,receipt,report" && injectedConnects === 0 && injectedReleases === 0 && injectedEnds === 0,
     "CLI main uses an injected Pool without leaking a connect handle or ending caller-owned state");
-  check(cliReport.includes("receipt_pending=0") && cliReport.includes("receipt_provider_errors=0"),
+  check(cliReport.includes("receipt_accepted=0") && cliReport.includes("receipt_pending=0") && cliReport.includes("receipt_provider_errors=0"),
     "CLI aggregate report includes receipt backoff and provider-wide error counts");
   const ownedPoolEvents: string[] = [];
   await worker.main({
@@ -741,6 +750,94 @@ try {
     limit: 1,
   });
   check(takeover.dead === 1 && takeoverSends === 0, "an installation transferred to another account never receives the prior owner's reserved message");
+
+  async function reservePolicyAttempt(key: string, options: { privacy?: boolean; transactional?: boolean; kind?: "daily" | "service" } = {}) {
+    const tokenId = crypto.randomUUID();
+    const installationId = crypto.randomUUID();
+    const kind = options.kind || "daily";
+    await pool!.query(
+      `UPDATE mobile_notification_prefs SET daily_enabled=true,service_enabled=true,paused_until=NULL,
+         quiet_start=0,quiet_end=0,max_per_day=100,privacy_preview=$2 WHERE user_id=$1`,
+      [userId, options.privacy === true],
+    );
+    await pool!.query(
+      `INSERT INTO mobile_push_tokens
+         (id,user_id,installation_id,expo_push_token,device_token_type,platform,locale,last_registered_at)
+       VALUES($1,$2,$3,$4,'apns','ios','en',now())`,
+      [tokenId, userId, installationId, `ExponentPushToken[policy-${tokenId}]`],
+    );
+    const payload = kind === "service"
+      ? { v: 1, kind, accountId: userId, event: "support_reply", referenceId: `case-${key}`, url: "/support" }
+      : { v: 1, kind, accountId: userId, slot: "morning", date: new Date().toISOString().slice(0, 10), url: "/today" };
+    const reservation = await delivery.reserve(pool, {
+      userId, key, kind, transactional: options.transactional === true,
+      title: "Authenticated history detail", body: "Sensitive immutable detail", payload,
+      messages: [{ tokenId, expoToken: `ExponentPushToken[policy-${tokenId}]`, platform: "ios", locale: "en",
+        category: kind, title: "Detailed preview", body: "Sensitive preview", url: payload.url, data: payload }],
+    });
+    assert.ok(reservation?.attemptIds?.[0]);
+    return reservation.attemptIds;
+  }
+
+  async function assertPolicyBlocked(
+    key: string,
+    mutate: () => Promise<unknown>,
+    expected: string,
+    options: { privacy?: boolean } = {},
+  ) {
+    const attemptIds = await reservePolicyAttempt(key, options);
+    await mutate();
+    let calls = 0;
+    await worker.runRetryBatch(pool, {
+      attemptIds, limit: 1,
+      sender: { async sendPrepared() { calls += 1; return { kind: "provider_accepted" }; } },
+    });
+    const attempt = await row(`SELECT status,last_error FROM mobile_push_attempts WHERE id=$1`, [attemptIds[0]]);
+    check(calls === 0 && attempt.last_error === expected, `${key}: current policy is re-read and blocks provider delivery (${expected})`);
+    return attempt;
+  }
+
+  await assertPolicyBlocked("policy-revoked", async () => {
+    await pool!.query(`UPDATE mobile_notification_prefs SET daily_enabled=false WHERE user_id=$1`, [userId]);
+  }, "policy_consent_revoked");
+  const paused = await assertPolicyBlocked("policy-paused", async () => {
+    await pool!.query(`UPDATE mobile_notification_prefs SET paused_until=now()+interval '1 hour' WHERE user_id=$1`, [userId]);
+  }, "policy_paused");
+  check(paused.status === "retry_due", "pause defers the immutable attempt durably");
+  const nowHour = new Date().getUTCHours();
+  const quiet = await assertPolicyBlocked("policy-quiet", async () => {
+    await pool!.query(
+      `UPDATE mobile_notification_prefs SET timezone='UTC',quiet_start=$2,quiet_end=$3 WHERE user_id=$1`,
+      [userId, nowHour, (nowHour + 1) % 24],
+    );
+  }, "policy_quiet_hours");
+  check(quiet.status === "retry_due", "quiet hours back off the immutable attempt durably");
+  await assertPolicyBlocked("policy-privacy", async () => {
+    await pool!.query(`UPDATE mobile_notification_prefs SET privacy_preview=false WHERE user_id=$1`, [userId]);
+  }, "policy_privacy_changed", { privacy: true });
+  await assertPolicyBlocked("policy-cap", async () => {
+    await pool!.query(`UPDATE mobile_notification_prefs SET max_per_day=0 WHERE user_id=$1`, [userId]);
+  }, "policy_cap_reached");
+  await assertPolicyBlocked("policy-expired-day", async () => {
+    await pool!.query(
+      `UPDATE mobile_push_attempts SET created_at=now()-interval '1 day'
+        WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='policy-expired-day')`,
+    );
+  }, "policy_expired_local_day");
+
+  const transactionalIds = await reservePolicyAttempt("policy-transactional", { transactional: true, kind: "service" });
+  await pool.query(
+    `UPDATE mobile_notification_prefs SET service_enabled=false,paused_until=now()+interval '1 hour',
+       max_per_day=0,quiet_start=0,quiet_end=23,privacy_preview=false WHERE user_id=$1`,
+    [userId],
+  );
+  let transactionalCalls = 0;
+  const transactionalResult = await worker.runRetryBatch(pool, {
+    attemptIds: transactionalIds, limit: 1,
+    sender: { async sendPrepared() { transactionalCalls += 1; return { kind: "provider_accepted", providerTicketId: "transactional-ticket" }; } },
+  });
+  check(transactionalCalls === 1 && transactionalResult.accepted === 1,
+    "an explicitly transactional safe-preview service attempt bypasses consent, pause, quiet hours and cap");
 
   console.log(`${checks} mobile push retry checks passed`);
 } finally {

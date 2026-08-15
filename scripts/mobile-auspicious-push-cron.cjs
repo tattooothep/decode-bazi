@@ -54,19 +54,19 @@ const COPY = {
     tomorrow: (name) => `🙏 พรุ่งนี้${name}`,
     ancestor: "วันไหว้บรรพบุรุษ — เตรียมของไหว้วันนี้ได้",
     worship: "วันไหว้เจ้า — เตรียมของไหว้วันนี้ได้",
-    festival: "เทศกาลจีน — ดูรายละเอียดในแอพ",
+    festival: "เทศกาลจีน — เปิดศาลเจ้าเพื่อดูรายละเอียดและเตรียมตัว",
   },
   en: {
     tomorrow: (name) => `🙏 Tomorrow: ${name}`,
     ancestor: "Ancestor offering day — you can prepare today",
     worship: "Temple offering day — you can prepare today",
-    festival: "Chinese festival — see details in the app",
+    festival: "Chinese festival — open Shrine to review details and prepare",
   },
   zh: {
     tomorrow: (name) => `🙏 明日${name}`,
     ancestor: "祭祖之日 — 今日可先備供品",
     worship: "拜神之日 — 今日可先備供品",
-    festival: "華人節慶 — 詳見應用內",
+    festival: "華人節慶 — 開啟神壇查看詳情並準備",
   },
 };
 
@@ -78,8 +78,9 @@ function pickLocale(raw) {
 }
 
 function buildMessage(festival, locale) {
-  const c = COPY[locale] || COPY.th;
-  const name = locale === "zh" ? festival.zh : locale === "en" ? festival.en : festival.th;
+  const family = pickLocale(locale);
+  const c = COPY[family] || COPY.en;
+  const name = family === "zh" ? festival.zh : family === "en" ? festival.en : festival.th;
   return {
     title: c.tomorrow(name),
     body: c[festival.kind] || c.festival,
@@ -208,4 +209,6 @@ async function main() {
   await db.end();
 }
 
-main().catch((e) => { console.error("[mobile-auspicious-push]", e); process.exit(1); });
+module.exports = { buildMessage,main,pickLocale };
+
+if (require.main === module) main().catch((e) => { console.error("[mobile-auspicious-push]", e); process.exit(1); });

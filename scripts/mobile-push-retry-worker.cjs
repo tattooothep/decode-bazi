@@ -25,7 +25,7 @@ async function main(options = {}) {
     const retry = await runRetry(db);
     const receipts = await pollReceipts(db);
     log(
-      `[mobile-push-retry] claimed=${retry.claimed} accepted=${retry.accepted} retry_due=${retry.retryDue} dead=${retry.dead} receipt_checked=${receipts.claimed} delivered=${receipts.delivered} receipt_errors=${receipts.errors} receipt_pending=${receipts.pending || 0} receipt_provider_errors=${receipts.providerErrors || 0}`,
+      `[mobile-push-retry] claimed=${retry.claimed} accepted=${retry.accepted} retry_due=${retry.retryDue} dead=${retry.dead} receipt_checked=${receipts.claimed} receipt_accepted=${receipts.accepted || 0} delivered=${receipts.delivered} receipt_errors=${receipts.errors} receipt_pending=${receipts.pending || 0} receipt_provider_errors=${receipts.providerErrors || 0}`,
     );
   } finally {
     if (ownsDb) await db.end();

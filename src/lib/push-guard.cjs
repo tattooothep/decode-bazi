@@ -100,7 +100,8 @@ function mayNotify(input) {
 
   // Compatibility names from pre-V192 senders map to the new category model.
   const normalized = category === "auspicious" ? "shrine" : category === "network" ? "daily" : category;
-  const transactional = normalized === "security" || normalized === "service";
+  const transactional = input?.transactional === true
+    && (normalized === "security" || normalized === "service");
   const key = `${normalized}_enabled`;
   if (!Object.prototype.hasOwnProperty.call(DEFAULTS, key)) {
     return { allow: false, reason: `หมวดไม่รู้จัก: ${category}` };

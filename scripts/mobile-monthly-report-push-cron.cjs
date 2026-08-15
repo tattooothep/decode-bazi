@@ -25,17 +25,18 @@ const MONTH_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค
 const MONTH_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function buildMsg(loc, mIdx, year) {
-  if (loc === "zh") return {
+  const family = String(loc || "").toLowerCase();
+  if (family === "zh" || family === "cn" || family.startsWith("zh-")) return {
     title: `📔 ${year}年${mIdx + 1}月運勢月報已就緒`,
-    body: "本月吉日、注意日與黃金時辰 — 開啟命理日曆即可查看並存成 PDF",
+    body: "本月吉日、注意日與黃金時辰已整理完成 — 開啟命理日曆查看並儲存 PDF",
   };
-  if (loc === "en") return {
+  if (family !== "th") return {
     title: `📔 Your ${MONTH_EN[mIdx]} ${year} fortune report is ready`,
-    body: "Good days, caution days and golden hours — open the calendar and save as PDF",
+    body: "Good days, caution days and golden hours are ready — open Calendar to review and save the PDF",
   };
   return {
     title: `📔 รายงานดวงเดือน ${MONTH_TH[mIdx]} ${year + 543} พร้อมแล้ว`,
-    body: "วันดี วันระวัง ยามทองทั้งเดือนของคุณ — เปิดปฏิทินดวงแล้วกดบันทึก PDF ได้เลย",
+    body: "วันดี วันระวัง และยามทองทั้งเดือนพร้อมแล้ว — เปิดปฏิทินดวงเพื่อตรวจและบันทึก PDF",
   };
 }
 
@@ -43,6 +44,18 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 
 const guard = require("../src/lib/push-guard.cjs");
+
+function buildMonthlyProducer(accountId, loc, mIdx, year, userDay) {
+  const monthKey = `${year}-${String(mIdx + 1).padStart(2, "0")}`;
+  return {
+    key: `monthly|${monthKey}`,
+    copy: buildMsg(loc, mIdx, year),
+    payload: notificationPayload.buildNotificationPayload("service", String(accountId), {
+      event: "monthly_report_ready", referenceId: `monthly|${monthKey}`, url: "/calendar",
+    }),
+    sourceFacts: { month: monthKey, date: userDay, destination: "/calendar" },
+  };
+}
 
 async function main() {
   const db = new Client({
@@ -59,7 +72,7 @@ async function main() {
              'id',t.id,'device',t.device_push_token,'deviceType',t.device_token_type,
              'expo',t.expo_push_token,'platform',t.platform,'locale',COALESCE(t.locale,'th')
            )) AS tokens,
-           np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,
+           np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,np2.service_enabled,
            np2.quiet_start, np2.quiet_end, np2.max_per_day, np2.paused_until,
            COALESCE(np2.timezone, u.timezone) AS user_timezone,
            (np2.user_id IS NOT NULL) AS has_prefs,
@@ -72,7 +85,7 @@ async function main() {
       LEFT JOIN mobile_notification_prefs p ON p.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
      GROUP BY u.id, np2.user_id, np2.yam_enabled, np2.auspicious_enabled,
-              np2.daily_enabled, np2.quiet_start, np2.quiet_end, np2.paused_until,
+              np2.daily_enabled,np2.service_enabled, np2.quiet_start, np2.quiet_end, np2.paused_until,
               np2.max_per_day, np2.timezone, u.timezone`);
 
   /**
@@ -99,7 +112,7 @@ async function main() {
        * ตัวคุมกลางบังคับครบ: ยินยอม · ช่วงห้ามรบกวนตามเขตเวลาผู้ใช้ · เพดานต่อวัน
        */
       const verdict = guard.mayNotify({
-        category: "daily",
+        category: "service",
         prefs: u.has_prefs ? u : null,
         timezone: u.user_timezone,
         sentToday: Number(u.sent_today || 0),
@@ -113,25 +126,24 @@ async function main() {
       const mIdx = Number(userDay.slice(5, 7)) - 1;
       const year = Number(userDay.slice(0, 4));
       const monthKey = `${year}-${String(mIdx + 1).padStart(2, "0")}`;
-      const thMsg = buildMsg("th", mIdx, year);
-      const yamKey = `monthly|${monthKey}`;
-      const typedPayload = notificationPayload.buildNotificationPayload("daily", String(u.id), {
-        slot: "morning", date: userDay, url: "/today",
-      });
+      const producer = buildMonthlyProducer(u.id, "th", mIdx, year, userDay);
+      const thMsg = producer.copy;
+      const yamKey = producer.key;
+      const typedPayload = producer.payload;
       const userMessages = [];
       for (const tk of u.tokens || []) {
         const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
-        const loc = entry.locale === "en" || entry.locale === "zh" ? entry.locale : "th";
+        const loc = notificationPayload.normalizedLocale(entry.locale);
         const m = buildMsg(loc, mIdx, year);
         userMessages.push({
           tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
-          expoToken: entry.expo, platform: entry.platform, locale: loc, category: "daily",
-          title: m.title, body: m.body, url: "/today", data: typedPayload,
+          expoToken: entry.expo, platform: entry.platform, locale: loc, category: "service",
+          title: m.title, body: m.body, url: "/calendar", data: typedPayload,
         });
       }
       const result = await delivery.deliver(db, {
-        userId: u.id, key: yamKey, kind: "daily", title: thMsg.title, body: thMsg.body,
-        payload: typedPayload, sourceFacts: { timezone: u.user_timezone, month: monthKey }, messages: userMessages,
+        userId: u.id, key: yamKey, kind: "service", title: thMsg.title, body: thMsg.body,
+        payload: typedPayload, sourceFacts: { ...producer.sourceFacts, timezone: u.user_timezone }, messages: userMessages,
       }, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
       else if (result.status === "failed") failed++;
@@ -145,4 +157,6 @@ async function main() {
   await db.end();
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { buildMonthlyProducer,buildMsg,main };
+
+if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });

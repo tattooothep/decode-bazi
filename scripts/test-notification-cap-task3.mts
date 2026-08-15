@@ -43,6 +43,7 @@ try {
     CREATE TABLE mobile_push_attempts (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(), push_log_id uuid, token_id uuid,
       installation_id uuid, provider text, provider_message jsonb, message_sha256 text,
+      privacy_safe boolean NOT NULL DEFAULT false, transactional boolean NOT NULL DEFAULT false,
       status text, next_retry_at timestamptz, updated_at timestamptz,
       UNIQUE(push_log_id,installation_id)
     );
@@ -57,6 +58,15 @@ try {
     payload: { v: 1, kind: "daily", accountId: userId, slot: "morning", date: "2026-08-15", url: "/today" },
     messages: [],
   });
+  await assert.rejects(
+    delivery.reserve(pool, { ...notice("credential-rejected"), sourceFacts: { nested: { api_key: "must-not-store" } } }),
+    /forbidden credential key/u,
+  );
+  assert.equal(
+    Number((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_log WHERE yam_key='credential-rejected'`)).rows[0].n),
+    0,
+    "actual reservation rejects normalized credential keys before storing parent history",
+  );
   const concurrent = await Promise.all(Array.from({ length: 8 }, (_, index) => delivery.reserve(pool, notice(`atomic-${index}`))));
   assert.equal(concurrent.filter(Boolean).length, 1, "concurrent cap reservations must admit exactly one logical notification");
 

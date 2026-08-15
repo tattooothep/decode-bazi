@@ -49,12 +49,13 @@ function signSession(user) {
   return `${header}.${payload}.${sig}`;
 }
 
-async function fetchHours(user, profileId, dateStr) {
+async function fetchHours(user, profileId, dateStr, signal) {
   const token = signSession(user);
   const res = await fetch(`${BASE}/api/today/hours`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
     body: JSON.stringify({ date: dateStr, profileId }),
+    signal,
   });
   if (!res.ok) return null;
   return res.json().catch(() => null);
@@ -91,13 +92,14 @@ const QIMEN_DIRECTION_NAMES = {
  *
  * @returns {Promise<null | {direction: object, deity: object, advice: object}>}
  */
-async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone, instant) {
+async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone, instant, signal) {
   try {
     const token = signSession(user);
     const res = await fetch(`${BASE}/api/qimen`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
       body: JSON.stringify({ date: dateStr, time: startTime, lat, lng, timezone, instant: instant.toISOString(), school: "chaibu", system_type: "hour" }),
+      signal,
     });
     if (!res.ok) return null;
     const data = await res.json().catch(() => null);
@@ -165,21 +167,31 @@ function qimenLine(highlight, locale) {
   return `\n🧭 ทิศดีสุดของยามนี้: ${dir} — องค์${deity}ประจำทิศ${advice ? ` · ${advice}` : ""}`;
 }
 
+function buildYamCopy(upcoming, branch, highlight, locale) {
+  const raw = String(locale || "th").toLowerCase();
+  const loc = raw === "th" ? "th" : raw === "zh" || raw === "cn" || raw.startsWith("zh-") ? "zh" : "en";
+  const range = String(upcoming?.range || "");
+  const best = upcoming?.quality === "best";
+  if (loc === "zh") return {
+    title: `🔔 ${best ? "最佳吉時" : "吉時"}即將開始`,
+    body: `${range} ${branch ? `(${branch}) ` : ""}適合處理重要事項 · 開啟今日運勢查看完整時段${qimenLine(highlight, loc)}`,
+  };
+  if (loc === "en") return {
+    title: `🔔 ${best ? "Best hour" : "Good hour"} starts soon`,
+    body: `${range} ${branch ? `(${branch}) ` : ""}is suitable for important action · Open Today to review the full window${qimenLine(highlight, loc)}`,
+  };
+  return {
+    title: `🔔 ${best ? "ยามดีมาก" : "ยามดี"}กำลังมาถึง`,
+    body: `${range} ${branch ? `(${branch}) ` : ""}เหมาะลงมือเรื่องสำคัญ · เปิดดวงวันนี้เพื่อดูช่วงเวลาเต็ม${qimenLine(highlight, loc)}`,
+  };
+}
+
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 
-async function main() {
-  const db = new Client({
-    host: process.env.PGHOST || "127.0.0.1",
-    port: Number(process.env.PGPORT || 5432),
-    user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
-  });
-  await db.connect();
-  const runLease = await delivery.trySchedulerRunLease(db, "yam");
-  if (!runLease.acquired) { console.log("[mobile-yam-push] overlap skipped"); await db.end(); return; }
-  const { rows: users } = await db.query(`
+const YAM_USERS_SQL = `
     SELECT u.id, u.email, u.current_org_id, u.session_version,
            array_agg(json_build_object(
              'id', t.id, 'device', t.device_push_token, 'deviceType', t.device_token_type,
@@ -189,10 +201,6 @@ async function main() {
            (SELECT p.id FROM profiles p WHERE p.created_by_user_id = u.id
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
-           (SELECT p.birth_lat FROM profiles p WHERE p.created_by_user_id = u.id
-             AND COALESCE(p.is_archived,false)=false ORDER BY p.created_at ASC LIMIT 1) AS lat,
-           (SELECT p.birth_lng FROM profiles p WHERE p.created_by_user_id = u.id
-             AND COALESCE(p.is_archived,false)=false ORDER BY p.created_at ASC LIMIT 1) AS lng,
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
            np.qimen_enabled, np.shrine_enabled, np.goal_enabled, np.saved_date_enabled,
            np.yam_min_quality, np.yam_lead_minutes,
@@ -213,7 +221,15 @@ async function main() {
               np.daily_enabled, np.qimen_enabled, np.shrine_enabled, np.goal_enabled,
               np.saved_date_enabled, np.yam_min_quality, np.yam_lead_minutes,
               np.qimen_latitude, np.qimen_longitude, np.qimen_location_updated_at,
-              np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until, np.timezone, u.timezone`);
+              np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until, np.timezone, u.timezone`;
+
+async function loadYamUsers(db) {
+  const result = await db.query(YAM_USERS_SQL);
+  return result.rows;
+}
+
+async function runScheduler(db, schedulerSignal) {
+  const users = await loadYamUsers(db);
   console.log(`[mobile-yam-push] ${new Date().toISOString()} users=${users.length} dry=${DRY}`);
 
   /**
@@ -260,7 +276,7 @@ async function main() {
       }
       if (nowMin === null) { skipped++; continue; }
 
-      const data = await fetchHours(u, u.profile_id, dateStr);
+      const data = await fetchHours(u, u.profile_id, dateStr, schedulerSignal);
       const hours = data && Array.isArray(data.hours) ? data.hours : [];
       const leadMin = [15, 30, 60].includes(Number(u.yam_lead_minutes)) ? Number(u.yam_lead_minutes) : 60;
       const minQuality = u.yam_min_quality === "good" ? "good" : "best";
@@ -292,13 +308,13 @@ async function main() {
           longitude: u.qimen_longitude,
         } : null,
         fetchHighlight: (lat, lng) => fetchQimenHighlight(
-          u, dateStr, startTime, lat, lng, u.user_timezone || guard.FALLBACK_TZ, runAt,
+          u, dateStr, startTime, lat, lng, u.user_timezone || guard.FALLBACK_TZ, runAt, schedulerSignal,
         ),
       });
 
-      const baseBody = `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}เหมาะลงมือเรื่องสำคัญของคุณ`;
-      const body = baseBody + qimenLine(highlight, "th");
-      const title = `🔔 ${word}กำลังมาถึง`;
+      const thCopy = buildYamCopy(upcoming, zhi, highlight, "th");
+      const body = thCopy.body;
+      const title = thCopy.title;
       const typedPayload = notificationPayload.buildNotificationPayload("yam", String(u.id), {
         range: String(upcoming.range || ""), quality: String(upcoming.quality || ""), date: dateStr, url: "/today",
       });
@@ -311,16 +327,7 @@ async function main() {
           : localeValue === "zh" || localeValue === "cn" || localeValue.startsWith("zh-")
             ? "zh"
             : "en";
-        const localizedTitle = loc === "zh"
-          ? `🔔 ${upcoming.quality === "best" ? "最佳吉時" : "吉時"}即將開始`
-          : loc === "en"
-            ? `🔔 ${upcoming.quality === "best" ? "Best hour" : "Good hour"} starts soon`
-            : title;
-        const localizedBase = loc === "zh"
-          ? `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}適合處理重要事項`
-          : loc === "en"
-            ? `${String(upcoming.range || "")} ${zhi ? `(${zhi}) ` : ""}is suitable for important action`
-            : baseBody;
+        const copy = buildYamCopy(upcoming, zhi, highlight, loc);
         userMessages.push({
           tokenId: raw.id,
           deviceToken: raw.device,
@@ -329,8 +336,8 @@ async function main() {
           platform: raw.platform,
           category: "yam",
           locale: loc,
-          title: localizedTitle,
-          body: localizedBase + qimenLine(highlight, loc),
+          title: copy.title,
+          body: copy.body,
           url: "/today",
           data: typedPayload,
         });
@@ -367,8 +374,24 @@ async function main() {
   }
 
   console.log(`[mobile-yam-push] ${DRY ? "DRY " : ""}accepted=${sent} failed=${failed} skipped=${skipped}`);
-  await runLease.release();
-  await db.end();
+  return { sent, failed, skipped };
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+async function main() {
+  const db = new Client({
+    host: process.env.PGHOST || "127.0.0.1",
+    port: Number(process.env.PGPORT || 5432),
+    user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
+  });
+  await db.connect();
+  try {
+    const outcome = await delivery.withSchedulerRunLease(db, "yam", (signal) => runScheduler(db, signal), { timeoutMs: 12_000 });
+    if (!outcome.acquired) console.log("[mobile-yam-push] overlap skipped");
+  } finally {
+    await db.end();
+  }
+}
+
+module.exports = { YAM_USERS_SQL,buildYamCopy,fetchHours,fetchQimenHighlight,loadYamUsers,main,runScheduler };
+
+if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });

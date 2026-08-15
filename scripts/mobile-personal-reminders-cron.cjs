@@ -96,6 +96,21 @@ async function notify(db, user, category, notice, sentToday) {
   return delivery.deliver(db, notice, { dry: DRY });
 }
 
+function buildSavedDateCopy(lead, day, activity, loc) {
+  if (loc === "zh") return {
+    title: lead === "24h" ? "📅 明日有已儲存的吉時" : "⏰ 已儲存的吉時將至",
+    body: `${day}${activity ? ` · ${activity}` : ""} · 開啟已儲存日期查看詳情`,
+  };
+  if (loc === "en") return {
+    title: lead === "24h" ? "📅 Saved date tomorrow" : "⏰ Saved time starts soon",
+    body: `${day}${activity ? ` · ${activity}` : ""} · Open Saved Dates to review`,
+  };
+  return {
+    title: lead === "24h" ? "📅 พรุ่งนี้มีฤกษ์ที่บันทึกไว้" : "⏰ ฤกษ์ที่บันทึกไว้กำลังมาถึง",
+    body: `${day}${activity ? ` · ${activity}` : ""} · เปิดวันที่บันทึกเพื่อดูรายละเอียด`,
+  };
+}
+
 async function savedDateNotice(db, user, runAt, sentToday) {
   const row = await db.query(
     `SELECT id,payload
@@ -121,11 +136,7 @@ async function savedDateNotice(db, user, runAt, sentToday) {
     timeZone: user.user_timezone || "Asia/Bangkok",
     day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
   }).format(start);
-  const build = (loc) => loc === "zh"
-    ? { title: lead === "24h" ? "📅 明日有已儲存的吉時" : "⏰ 已儲存的吉時將至", body: `${day}${activity ? ` · ${activity}` : ""}` }
-    : loc === "en"
-      ? { title: lead === "24h" ? "📅 Saved date tomorrow" : "⏰ Saved time starts soon", body: `${day}${activity ? ` · ${activity}` : ""}` }
-      : { title: lead === "24h" ? "📅 พรุ่งนี้มีฤกษ์ที่บันทึกไว้" : "⏰ ฤกษ์ที่บันทึกไว้กำลังมาถึง", body: `${day}${activity ? ` · ${activity}` : ""}` };
+  const build = (loc) => buildSavedDateCopy(lead, day, activity, loc);
   const th = build("th");
   const key = `saved-date|${saved.id}|${lead}`;
   const date = guard.localDateStr(user.user_timezone, start);
@@ -158,7 +169,19 @@ const DIRECTION = {
   W: { th: "ตะวันตก", en: "west", zh: "西方" }, NW: { th: "ตะวันตกเฉียงเหนือ", en: "northwest", zh: "西北方" },
 };
 
+function buildQimenCopy(best, loc) {
+  return {
+    title: loc === "zh" ? "🧭 今日奇門方位" : loc === "en" ? "🧭 Today's Qimen direction" : "🧭 ทิศเด่นจากผังฉีเหมินวันนี้",
+    body: loc === "zh"
+      ? `${DIRECTION[best.direction].zh} · 分數 ${best.score} · 開啟奇門盤查看時盤背景；並非結果保證`
+      : loc === "en"
+        ? `${DIRECTION[best.direction].en} · score ${best.score} · Open the Qimen board for hour-chart context; outcomes are not guaranteed`
+        : `${DIRECTION[best.direction].th} · คะแนน ${best.score} · เปิดผังฉีเหมินเพื่อดูบริบทของยาม ไม่ใช่คำรับประกันผล`,
+  };
+}
+
 async function qimenNotice(db, user, runAt, sentToday) {
+  if (user.qimen_enabled !== true) return { status: "skipped", reason: "qimen_disabled" };
   const minute = guard.localMinutes(user.user_timezone, runAt);
   if (!DRY && (minute === null || minute < 8 * 60 || minute >= 8 * 60 + 15)) {
     return { status: "skipped", reason: "outside_qimen_window" };
@@ -187,14 +210,7 @@ async function qimenNotice(db, user, runAt, sentToday) {
   })).filter((row) => DIRECTION[row.direction] && Number.isFinite(row.score)).sort((a, b) => b.score - a.score);
   const best = ranked[0];
   if (!best || best.score < 50) return { status: "skipped", reason: "no_qimen_context_highlight" };
-  const build = (loc) => ({
-    title: loc === "zh" ? "🧭 今日奇門方位" : loc === "en" ? "🧭 Today's Qimen direction" : "🧭 ทิศเด่นจากผังฉีเหมินวันนี้",
-    body: loc === "zh"
-      ? `${DIRECTION[best.direction].zh} · 此為時盤背景，並非結果保證`
-      : loc === "en"
-        ? `${DIRECTION[best.direction].en} · Hour-chart context, not a guaranteed outcome`
-        : `${DIRECTION[best.direction].th} · เป็นบริบทจากผังยาม ไม่ใช่คำรับประกันผล`,
-  });
+  const build = (loc) => buildQimenCopy(best, loc);
   const th = build("th");
   const typedPayload = notificationPayload.buildNotificationPayload("qimen", String(user.id), {
     date, direction: best.direction, score: best.score, url: "/qimen/board",
@@ -219,6 +235,25 @@ async function qimenNotice(db, user, runAt, sentToday) {
   }, sentToday);
 }
 
+function formatGoalDayLabel(date, loc) {
+  const parsed = new Date(`${date}T12:00:00.000Z`);
+  if (!Number.isFinite(parsed.valueOf())) return String(date || "");
+  const localeName = loc === "zh" ? "zh-TW" : loc === "th" ? "th-TH" : "en-GB";
+  return new Intl.DateTimeFormat(localeName, {
+    timeZone: "UTC", weekday: "short", day: "2-digit", month: "short", year: "numeric",
+  }).format(parsed);
+}
+
+function buildGoalCopy(goal, loc) {
+  const next = goal.nextAuspicious;
+  const title = String(goal.title || "").slice(0, 60);
+  const day = formatGoalDayLabel(next.date, loc);
+  const when = `${day}${next.hourRange ? ` · ${next.hourRange}` : ""}`;
+  if (loc === "zh") return { title: "🎯 目標的下一吉時", body: `${title} · ${when} · 開啟目標查看建議` };
+  if (loc === "en") return { title: "🎯 Next auspicious time for your goal", body: `${title} · ${when} · Open Goals to review the recommendation` };
+  return { title: "🎯 ฤกษ์ถัดไปของเป้าหมาย", body: `${title} · ${when} · เปิดเป้าหมายเพื่อดูคำแนะนำ` };
+}
+
 async function goalNotice(db, user, runAt, sentToday) {
   const minute = guard.localMinutes(user.user_timezone, runAt);
   if (!DRY && (minute === null || minute < 8 * 60 + 15 || minute >= 8 * 60 + 30)) {
@@ -238,13 +273,7 @@ async function goalNotice(db, user, runAt, sentToday) {
   const goal = candidates[0];
   if (!goal) return { status: "skipped", reason: "no_goal_hour" };
   const next = goal.nextAuspicious;
-  const title = String(goal.title || "").slice(0, 60);
-  const when = `${next.dayLabel || next.date}${next.hourRange ? ` · ${next.hourRange}` : ""}`;
-  const build = (loc) => loc === "zh"
-    ? { title: "🎯 目標的下一吉時", body: `${title} · ${when}` }
-    : loc === "en"
-      ? { title: "🎯 Next auspicious time for your goal", body: `${title} · ${when}` }
-      : { title: "🎯 ฤกษ์ถัดไปของเป้าหมาย", body: `${title} · ${when}` };
+  const build = (loc) => buildGoalCopy(goal, loc);
   const th = build("th");
   const key = `goal|${goal.id}|${next.date}|${next.hourRange || "day"}`;
   const typedPayload = notificationPayload.buildNotificationPayload("goal", String(user.id), {
@@ -259,12 +288,48 @@ async function goalNotice(db, user, runAt, sentToday) {
     payload: typedPayload,
     sourceFacts: {
       profileId: goal.profileId,
+      date: next.date,
+      hourRange: next.hourRange || null,
       score: next.score,
       engine: "auspicious",
       engineVersion: result.engineVersion || null,
     },
     messages: messages(user.tokens, "goal", "/calendar/goals", typedPayload, build),
   }, sentToday);
+}
+
+function personalUsersSql(onlyEmail = false) {
+  return `
+    SELECT u.id,u.email,u.current_org_id,u.session_version,
+           array_agg(json_build_object(
+             'id',t.id,'device',t.device_push_token,'deviceType',t.device_token_type,
+             'expo',t.expo_push_token,'platform',t.platform,'locale',COALESCE(t.locale,'th')
+           )) AS tokens,
+           np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
+           np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
+           np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
+           CASE WHEN np.qimen_enabled=true THEN np.qimen_latitude END AS qimen_latitude,
+           CASE WHEN np.qimen_enabled=true THEN np.qimen_longitude END AS qimen_longitude,
+           CASE WHEN np.qimen_enabled=true THEN np.qimen_location_updated_at END AS qimen_location_updated_at,
+           COALESCE(np.timezone,max(t.timezone),u.timezone) AS user_timezone,
+           (np.user_id IS NOT NULL) AS has_prefs,
+           (SELECT count(*) FROM mobile_push_log l
+             WHERE l.user_id=u.id AND l.delivery_status IN ('accepted','delivered')
+               AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date
+                   = (now() AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date) AS sent_today
+      FROM users u
+      JOIN mobile_push_tokens t ON t.user_id=u.id AND t.enabled=true
+      LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
+     WHERE u.deleted_at IS NULL ${onlyEmail ? "AND u.email=$1" : ""}
+     GROUP BY u.id,np.user_id,np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
+              np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
+              np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
+              np.qimen_latitude,np.qimen_longitude,np.qimen_location_updated_at,
+              np.timezone,u.timezone`;
+}
+
+async function loadPersonalUsers(db, onlyEmail = "") {
+  return db.query(personalUsersSql(Boolean(onlyEmail)), onlyEmail ? [onlyEmail] : []);
 }
 
 async function main() {
@@ -278,31 +343,7 @@ async function main() {
   await db.connect();
   const runLease = await delivery.trySchedulerRunLease(db, "personal-reminders");
   if (!runLease.acquired) { console.log("[mobile-personal-reminders] overlap skipped"); await db.end(); return; }
-  const users = await db.query(`
-    SELECT u.id,u.email,u.current_org_id,u.session_version,
-           array_agg(json_build_object(
-             'id',t.id,'device',t.device_push_token,'deviceType',t.device_token_type,
-             'expo',t.expo_push_token,'platform',t.platform,'locale',COALESCE(t.locale,'th')
-           )) AS tokens,
-           np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
-           np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
-           np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
-           np.qimen_latitude,np.qimen_longitude,np.qimen_location_updated_at,
-           COALESCE(np.timezone,max(t.timezone),u.timezone) AS user_timezone,
-           (np.user_id IS NOT NULL) AS has_prefs,
-           (SELECT count(*) FROM mobile_push_log l
-             WHERE l.user_id=u.id AND l.delivery_status IN ('accepted','delivered')
-               AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date
-                   = (now() AT TIME ZONE COALESCE(np.timezone,u.timezone,'Asia/Bangkok'))::date) AS sent_today
-      FROM users u
-      JOIN mobile_push_tokens t ON t.user_id=u.id AND t.enabled=true
-      LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
-     WHERE u.deleted_at IS NULL ${ONLY_EMAIL ? "AND u.email=$1" : ""}
-     GROUP BY u.id,np.user_id,np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
-              np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
-              np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
-              np.qimen_latitude,np.qimen_longitude,np.qimen_location_updated_at,
-              np.timezone,u.timezone`, ONLY_EMAIL ? [ONLY_EMAIL] : []);
+  const users = await loadPersonalUsers(db, ONLY_EMAIL);
   const runAt = new Date();
   const totals = { accepted: 0, failed: 0, skipped: 0, duplicate: 0 };
   for (const user of users.rows) {
@@ -327,4 +368,9 @@ async function main() {
   await db.end();
 }
 
-main().catch((error) => { console.error("[mobile-personal-reminders]", error); process.exit(1); });
+module.exports = {
+  buildGoalCopy,buildQimenCopy,buildSavedDateCopy,formatGoalDayLabel,getJson,
+  goalNotice,loadPersonalUsers,main,personalUsersSql,qimenNotice,savedDateNotice,
+};
+
+if (require.main === module) main().catch((error) => { console.error("[mobile-personal-reminders]", error); process.exit(1); });

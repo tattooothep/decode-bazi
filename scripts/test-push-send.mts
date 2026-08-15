@@ -112,8 +112,64 @@ await check("provider adapter เก็บ message ID/ticket และไม่�
     assert.deepEqual(malformedTicket, { kind: "uncertain", provider: "expo", reason: "uncertain_provider_result", retryable: false });
     malformedExpo = false;
     const receipts = await S.pollExpoReceipts(["expo-provider-ticket"]);
-    assert.equal(receipts["expo-provider-ticket"].kind, "delivered");
+    assert.equal(receipts["expo-provider-ticket"].kind, "provider_receipt_ok");
     assert.ok(requests.some((request) => request.url.includes("/messages:send")));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+await check("FCM auth rejection invalidates the cached OAuth ticket and retries once", async () => {
+  const originalFetch = globalThis.fetch;
+  let sends = 0;
+  let tickets = 0;
+  try {
+    globalThis.fetch = async (input) => {
+      const url = String(input);
+      if (url.includes("/messages:send")) {
+        sends += 1;
+        if (sends === 1) return new Response("expired", { status: 401 });
+        return new Response(JSON.stringify({ name: "projects/test/messages/refreshed" }), {
+          status: 200, headers: { "content-type": "application/json" },
+        });
+      }
+      tickets += 1;
+      return new Response(JSON.stringify({ access_token: `refreshed-${tickets}`, expires_in: 3600 }), {
+        status: 200, headers: { "content-type": "application/json" },
+      });
+    };
+    const outcome = await S.sendPrepared({
+      provider: "fcm", deviceToken: "fixture-device",
+      providerMessage: S.prepareMessage({ title: "Exact", body: "FCM" }, "fcm"),
+    });
+    assert.equal(outcome.kind, "provider_accepted");
+    assert.equal(sends, 2, "the same immutable provider message is retried once after auth refresh");
+    assert.equal(tickets, 1, "the rejected cached OAuth ticket is replaced exactly once");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+await check("generic INVALID_ARGUMENT does not disable a valid installation", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async (input) => {
+      const url = String(input);
+      if (url.includes("/messages:send")) {
+        return new Response(JSON.stringify({ error: { status: "INVALID_ARGUMENT", message: "invalid payload field" } }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ access_token: "fixture", expires_in: 3600 }), {
+        status: 200, headers: { "content-type": "application/json" },
+      });
+    };
+    const outcome = await S.sendPrepared({
+      provider: "fcm", deviceToken: "fixture-device",
+      providerMessage: S.prepareMessage({ title: "Exact", body: "FCM" }, "fcm"),
+    });
+    assert.equal(outcome.kind, "failed");
+    assert.equal(outcome.retryable, false);
   } finally {
     globalThis.fetch = originalFetch;
   }

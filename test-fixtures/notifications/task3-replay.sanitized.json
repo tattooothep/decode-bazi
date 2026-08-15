@@ -7,9 +7,9 @@
       "locale": "en",
       "facts": { "event": "new_sign_in", "url": "/account" },
       "storedPayload": { "v": 1, "kind": "security", "accountId": "acct-synthetic-001", "event": "new_sign_in", "url": "/account" },
-      "fullCopy": { "title": "New sign-in", "body": "Review recent account activity" },
-      "redactedCopy": { "title": "New sign-in", "body": "Review recent account activity" },
-      "providerMessage": { "title": "New sign-in", "body": "Review recent account activity", "data": { "v": 1, "kind": "security", "accountId": "acct-synthetic-001", "event": "new_sign_in", "url": "/account" } }
+      "fullCopy": { "title": "New sign-in", "body": "A new account sign-in occurred · Open Account to review it now" },
+      "redactedCopy": { "title": "Private notification", "body": "Open HourKey to view details" },
+      "providerMessage": { "title": "Private notification", "body": "Open HourKey to view details", "data": { "v": 1, "kind": "security", "accountId": "acct-synthetic-001", "event": "new_sign_in", "url": "/account" } }
     },
     {
       "kind": "saved_date",
@@ -17,7 +17,7 @@
       "locale": "en",
       "facts": { "savedDateId": "saved-synthetic-001", "lead": 60, "date": "2026-08-16", "url": "/datepick/saved" },
       "storedPayload": { "v": 1, "kind": "saved_date", "accountId": "acct-synthetic-001", "savedDateId": "saved-synthetic-001", "lead": 60, "date": "2026-08-16", "url": "/datepick/saved" },
-      "fullCopy": { "title": "Saved time starts soon", "body": "16/08, 08:00 · launch" },
+      "fullCopy": { "title": "Saved time starts soon", "body": "16/08, 08:00 · launch · Open Saved Dates to review" },
       "redactedCopy": { "title": "Private notification", "body": "Open HourKey to view details" },
       "providerMessage": { "title": "Private notification", "body": "Open HourKey to view details", "data": { "v": 1, "kind": "saved_date", "accountId": "acct-synthetic-001", "savedDateId": "saved-synthetic-001", "lead": 60, "date": "2026-08-16", "url": "/datepick/saved" } }
     },
@@ -27,7 +27,7 @@
       "locale": "th",
       "facts": { "slot": "morning", "date": "2026-08-15", "url": "/today" },
       "storedPayload": { "v": 1, "kind": "daily", "accountId": "acct-synthetic-001", "slot": "morning", "date": "2026-08-15", "url": "/today" },
-      "fullCopy": { "title": "☀️ ดวงวันนี้ 15/08", "body": "พลังวัน 72 · ยามทอง 09:00-11:00" },
+      "fullCopy": { "title": "☀️ ดวงวันนี้ 15/08", "body": "พลังวัน 72 · ยามทอง 09:00-11:00 · เปิดดวงวันนี้เพื่อดูคำแนะนำ" },
       "redactedCopy": { "title": "การแจ้งเตือนส่วนตัว", "body": "เปิด HourKey เพื่อดูรายละเอียด" },
       "providerMessage": { "title": "การแจ้งเตือนส่วนตัว", "body": "เปิด HourKey เพื่อดูรายละเอียด", "data": { "v": 1, "kind": "daily", "accountId": "acct-synthetic-001", "slot": "morning", "date": "2026-08-15", "url": "/today" } }
     },
@@ -37,7 +37,7 @@
       "locale": "zh",
       "facts": { "range": "09:00-11:00", "quality": "best", "date": "2026-08-15", "url": "/today" },
       "storedPayload": { "v": 1, "kind": "yam", "accountId": "acct-synthetic-001", "range": "09:00-11:00", "quality": "best", "date": "2026-08-15", "url": "/today" },
-      "fullCopy": { "title": "🔔 最佳吉時即將開始", "body": "09:00-11:00 適合處理重要事項" },
+      "fullCopy": { "title": "🔔 最佳吉時即將開始", "body": "09:00-11:00 適合處理重要事項 · 開啟今日運勢查看完整時段" },
       "redactedCopy": { "title": "私人通知", "body": "開啟 HourKey 查看詳情" },
       "providerMessage": { "title": "私人通知", "body": "開啟 HourKey 查看詳情", "data": { "v": 1, "kind": "yam", "accountId": "acct-synthetic-001", "range": "09:00-11:00", "quality": "best", "date": "2026-08-15", "url": "/today" } }
     },
@@ -47,7 +47,7 @@
       "locale": "en",
       "facts": { "date": "2026-08-15", "direction": "SE", "score": 67, "url": "/qimen/board" },
       "storedPayload": { "v": 1, "kind": "qimen", "accountId": "acct-synthetic-001", "date": "2026-08-15", "direction": "SE", "score": 67, "url": "/qimen/board" },
-      "fullCopy": { "title": "🧭 Today's Qimen direction", "body": "southeast · Hour-chart context, not a guaranteed outcome" },
+      "fullCopy": { "title": "🧭 Today's Qimen direction", "body": "southeast · score 67 · Open the Qimen board for hour-chart context; outcomes are not guaranteed" },
       "redactedCopy": { "title": "Private notification", "body": "Open HourKey to view details" },
       "providerMessage": { "title": "Private notification", "body": "Open HourKey to view details", "data": { "v": 1, "kind": "qimen", "accountId": "acct-synthetic-001", "date": "2026-08-15", "direction": "SE", "score": 67, "url": "/qimen/board" } }
     },
@@ -57,7 +57,7 @@
       "locale": "th",
       "facts": { "date": "2026-08-16", "festival": "中元節", "url": "/shrine" },
       "storedPayload": { "v": 1, "kind": "shrine", "accountId": "acct-synthetic-001", "date": "2026-08-16", "festival": "中元節", "url": "/shrine" },
-      "fullCopy": { "title": "🙏 พรุ่งนี้เทศกาลจงหยวน", "body": "เทศกาลจีน — ดูรายละเอียดในแอพ" },
+      "fullCopy": { "title": "🙏 พรุ่งนี้เทศกาลจงหยวน", "body": "เทศกาลจีน — เปิดศาลเจ้าเพื่อดูรายละเอียดและเตรียมตัว" },
       "redactedCopy": { "title": "การแจ้งเตือนส่วนตัว", "body": "เปิด HourKey เพื่อดูรายละเอียด" },
       "providerMessage": { "title": "การแจ้งเตือนส่วนตัว", "body": "เปิด HourKey เพื่อดูรายละเอียด", "data": { "v": 1, "kind": "shrine", "accountId": "acct-synthetic-001", "date": "2026-08-16", "festival": "中元節", "url": "/shrine" } }
     },
@@ -67,7 +67,7 @@
       "locale": "en",
       "facts": { "goalId": "goal-synthetic-001", "date": "2026-08-18", "url": "/calendar/goals" },
       "storedPayload": { "v": 1, "kind": "goal", "accountId": "acct-synthetic-001", "goalId": "goal-synthetic-001", "date": "2026-08-18", "url": "/calendar/goals" },
-      "fullCopy": { "title": "🎯 Next auspicious time for your goal", "body": "Synthetic launch · 09:00-11:00" },
+      "fullCopy": { "title": "🎯 Next auspicious time for your goal", "body": "Synthetic launch · Tue, 18 Aug 2026 · 09:00-11:00 · Open Goals to review the recommendation" },
       "redactedCopy": { "title": "Private notification", "body": "Open HourKey to view details" },
       "providerMessage": { "title": "Private notification", "body": "Open HourKey to view details", "data": { "v": 1, "kind": "goal", "accountId": "acct-synthetic-001", "goalId": "goal-synthetic-001", "date": "2026-08-18", "url": "/calendar/goals" } }
     },
@@ -77,9 +77,9 @@
       "locale": "en",
       "facts": { "event": "support_reply", "referenceId": "case-synthetic-001", "url": "/support" },
       "storedPayload": { "v": 1, "kind": "service", "accountId": "acct-synthetic-001", "event": "support_reply", "referenceId": "case-synthetic-001", "url": "/support" },
-      "fullCopy": { "title": "Support replied", "body": "Your support case has an update" },
-      "redactedCopy": { "title": "Support replied", "body": "Your support case has an update" },
-      "providerMessage": { "title": "Support replied", "body": "Your support case has an update", "data": { "v": 1, "kind": "service", "accountId": "acct-synthetic-001", "event": "support_reply", "referenceId": "case-synthetic-001", "url": "/support" } }
+      "fullCopy": { "title": "Support replied", "body": "Your support case has an update · Open Support to read the reply" },
+      "redactedCopy": { "title": "Private notification", "body": "Open HourKey to view details" },
+      "providerMessage": { "title": "Private notification", "body": "Open HourKey to view details", "data": { "v": 1, "kind": "service", "accountId": "acct-synthetic-001", "event": "support_reply", "referenceId": "case-synthetic-001", "url": "/support" } }
     }
   ]
 }

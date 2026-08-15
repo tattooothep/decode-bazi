@@ -16,7 +16,14 @@ function cleanJson(value) {
 function assertNoCredentialFacts(value) {
   if (!value || typeof value !== "object") return;
   for (const [key, child] of Object.entries(value)) {
-    if (/(?:token|credential|secret|password)/iu.test(key)) throw new TypeError("notification source facts contain a forbidden credential key");
+    const normalizedKey = String(key).toLowerCase().replace(/[^a-z0-9]+/gu, "");
+    const sensitiveKeyParts = [
+      "token", "auth", "authorization", "secret", "credential", "password", "cookie", "session",
+      "apikey", "privatekey", "accesskey", "clientsecret", "bearer",
+    ];
+    if (normalizedKey.endsWith("key") || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) {
+      throw new TypeError("notification source facts contain a forbidden credential key");
+    }
     assertNoCredentialFacts(child);
   }
 }
@@ -148,7 +155,7 @@ async function reserve(db, notice, dry = false) {
     );
     const context = contextResult.rows[0];
     if (!context) return null;
-    if (context.has_prefs === true && notice.kind !== "security" && notice.kind !== "service") {
+    if (context.has_prefs === true && notice.transactional !== true) {
       const cap = await client.query(
         `SELECT count(*)::int AS reserved_today
            FROM mobile_push_log l
@@ -197,10 +204,12 @@ async function reserve(db, notice, dry = false) {
       const providerMessage = cleanJson(push.prepareMessage({ ...item, ...providerCopy }, provider));
       const inserted = await client.query(
         `INSERT INTO mobile_push_attempts
-           (push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,next_retry_at,updated_at)
-         VALUES($1,$2,$3,$4,$5::jsonb,$6,'reserved',now(),now())
+           (push_log_id,token_id,installation_id,provider,provider_message,message_sha256,
+            privacy_safe,transactional,status,next_retry_at,updated_at)
+         VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,'reserved',now(),now())
          ON CONFLICT(push_log_id,installation_id) DO NOTHING RETURNING id`,
-        [parent.rows[0].id, token.id, token.installation_id, provider, JSON.stringify(providerMessage), messageSha256(providerMessage)],
+        [parent.rows[0].id, token.id, token.installation_id, provider, JSON.stringify(providerMessage),
+          messageSha256(providerMessage), context.privacy_preview !== true, notice.transactional === true],
       );
       if (inserted.rows[0]) attemptIds.push(inserted.rows[0].id);
     }
@@ -230,17 +239,35 @@ async function trySchedulerRunLease(db, schedulerName) {
     async release() {
       if (!held || released) return;
       released = true;
+      let destroy = false;
       try {
         const result = await client.query(
           `SELECT pg_advisory_unlock(hashtextextended($1::text,0)) AS unlocked`,
           [leaseKey],
         );
         if (result.rows[0]?.unlocked !== true) throw new Error("notification_scheduler_unlock_failed");
+      } catch (error) {
+        destroy = true;
+        throw error;
       } finally {
-        if (pooled) client.release();
+        if (pooled) client.release(destroy);
       }
     },
   };
+}
+
+async function withSchedulerRunLease(db, schedulerName, run, options = {}) {
+  const lease = await trySchedulerRunLease(db, schedulerName);
+  if (!lease.acquired) return { acquired: false, result: null };
+  try {
+    const result = await notificationScience.withTotalTimeout(
+      (signal) => run(signal),
+      Math.max(1, Number(options.timeoutMs || 12_000)),
+    );
+    return { acquired: true, result };
+  } finally {
+    await lease.release();
+  }
 }
 
 function retryDelaySeconds(sendCount, baseDelaySeconds, retryAfterSeconds) {
@@ -409,19 +436,100 @@ async function finishAttempt(db, attempt, outcome, options = {}) {
   }
 }
 
+function currentPolicyDecision(row, context, capCount) {
+  if (context.privacy_preview !== true && row.privacy_safe !== true) {
+    return { allow: false, terminal: true, reason: "policy_privacy_changed" };
+  }
+  if (row.transactional === true) return { allow: true };
+  const now = new Date(context.now_at);
+  const timezone = notificationScience.safeTimezone(context.timezone);
+  if (notificationScience.zonedClock(timezone, new Date(row.created_at)).date
+      !== notificationScience.zonedClock(timezone, now).date) {
+    return { allow: false, terminal: true, reason: "policy_expired_local_day" };
+  }
+  if (context.has_prefs !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
+  const enabled = context.prefs?.[`${row.kind}_enabled`];
+  if (enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
+  const pausedUntil = context.prefs?.paused_until ? new Date(context.prefs.paused_until) : null;
+  if (pausedUntil && Number.isFinite(pausedUntil.valueOf()) && pausedUntil > now) {
+    return { allow: false, terminal: false, reason: "policy_paused", retryAt: pausedUntil };
+  }
+  const maxPerDay = Number.isInteger(Number(context.prefs?.max_per_day))
+    ? Number(context.prefs.max_per_day) : 2;
+  if (Number(capCount || 0) > maxPerDay) {
+    return { allow: false, terminal: true, reason: "policy_cap_reached" };
+  }
+  const quietStart = Number.isInteger(Number(context.prefs?.quiet_start)) ? Number(context.prefs.quiet_start) : 22;
+  const quietEnd = Number.isInteger(Number(context.prefs?.quiet_end)) ? Number(context.prefs.quiet_end) : 7;
+  const hour = Number(notificationScience.zonedClock(timezone, now).time.slice(0, 2));
+  const quiet = quietStart === quietEnd ? false
+    : quietStart < quietEnd ? hour >= quietStart && hour < quietEnd : hour >= quietStart || hour < quietEnd;
+  if (quiet) return { allow: false, terminal: false, reason: "policy_quiet_hours" };
+  return { allow: true };
+}
+
+async function applyCurrentPolicyLocked(tx, row) {
+  await tx.query(
+    `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
+    [row.user_id],
+  );
+  const contextResult = await tx.query(
+    `SELECT COALESCE(to_jsonb(np)->>'timezone',to_jsonb(u)->>'timezone','Asia/Bangkok') AS timezone,
+            COALESCE((to_jsonb(np)->>'privacy_preview')::boolean,false) AS privacy_preview,
+            np.user_id IS NOT NULL AS has_prefs,to_jsonb(np) AS prefs,now() AS now_at
+       FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
+      WHERE u.id=$1`,
+    [row.user_id],
+  );
+  const context = contextResult.rows[0] || {
+    timezone: "Asia/Bangkok", privacy_preview: false, has_prefs: false, prefs: null, now_at: new Date(),
+  };
+  let capCount = 0;
+  if (row.transactional !== true) {
+    const cap = await tx.query(
+      `SELECT count(*)::int AS reserved_today
+         FROM mobile_push_log l
+        WHERE l.user_id=$1
+          AND l.delivery_status IN ('pending','accepted','delivered')
+          AND (COALESCE(l.sent_at,l.accepted_at,l.updated_at) AT TIME ZONE $2)::date
+              = (now() AT TIME ZONE $2)::date`,
+      [row.user_id, notificationScience.safeTimezone(context.timezone)],
+    );
+    capCount = Number(cap.rows[0]?.reserved_today || 0);
+  }
+  const decision = currentPolicyDecision(row, context, capCount);
+  if (decision.allow) return null;
+  if (!await lockParent(tx, row.push_log_id)) return { status: null, reason: decision.reason };
+  const status = decision.terminal ? "dead" : "retry_due";
+  const retryAt = decision.retryAt instanceof Date
+    ? decision.retryAt
+    : new Date(new Date(context.now_at).valueOf() + 15 * 60_000);
+  const updated = await tx.query(
+    `UPDATE mobile_push_attempts SET status=$3,
+       next_retry_at=CASE WHEN $3='retry_due' THEN $4::timestamptz ELSE NULL END,
+       lease_token=NULL,lease_expires_at=NULL,last_error=$5,updated_at=now()
+      WHERE id=$1 AND lease_token=$2 AND send_started_at IS NULL RETURNING push_log_id`,
+    [row.id, row.lease_token, status, retryAt.toISOString(), decision.reason],
+  );
+  if (updated.rows[0]) await deriveParentLocked(tx, row.push_log_id);
+  return { status, reason: decision.reason };
+}
+
 async function processClaim(db, attempt, options = {}) {
   const sender = options.sender || push;
   return withInstallationLock(db, attempt.installation_id, async (client) => {
       if (options.hooks?.afterClaim) await options.hooks.afterClaim(attempt);
       const started = await transactionOn(client, async (tx) => {
         const current = await tx.query(
-          `SELECT a.*,l.user_id FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+          `SELECT a.*,l.user_id,l.kind FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
             WHERE a.id=$1 AND a.lease_token=$2 AND a.status IN ('reserved','retry_due') AND a.send_started_at IS NULL
             FOR UPDATE OF a`,
           [attempt.id, attempt.lease_token],
         );
         const row = current.rows[0];
         if (!row) return null;
+        const policy = await applyCurrentPolicyLocked(tx, row);
+        if (policy) return { ...row, policyBlocked: true, policy };
         const token = await tx.query(
           `SELECT id,device_push_token,expo_push_token FROM mobile_push_tokens
             WHERE user_id=$1 AND installation_id=$2 AND enabled=true
@@ -443,6 +551,12 @@ async function processClaim(db, attempt, options = {}) {
         };
       });
       if (!started) return null;
+      if (started.policyBlocked) {
+        return {
+          status: started.policy.status,
+          outcome: { kind: "policy_blocked", reason: started.policy.reason, retryable: started.policy.status !== "dead" },
+        };
+      }
       if (started.targetUnavailable) {
         const status = await finishAttempt(client, started, { kind: "gone", reason: "target_unavailable", retryable: false }, options);
         return { status, outcome: { kind: "gone", reason: "target_unavailable", retryable: false } };
@@ -493,6 +607,7 @@ async function claimReceiptOne(db, options = {}) {
       `WITH candidate AS (
          SELECT id FROM mobile_push_attempts
           WHERE provider='expo' AND status='provider_accepted' AND provider_ticket_id IS NOT NULL
+            AND provider_receipt_checked_at IS NULL
             AND COALESCE(next_receipt_at,accepted_at,created_at)<=now()
             AND (lease_token IS NULL OR lease_expires_at<=now())
           ORDER BY COALESCE(next_receipt_at,accepted_at,created_at),id FOR UPDATE SKIP LOCKED LIMIT 1
@@ -519,9 +634,22 @@ async function scheduleReceiptRetry(db, attempt, options = {}) {
 }
 
 async function finishReceipt(db, attempt, receipt, options = {}) {
-  const outcome = receipt?.kind === "delivered"
-    ? { kind: "delivered" }
-    : { kind: "failed", reason: receipt?.reason || "expo_receipt_error", retryable: receipt?.retryable !== false };
+  if (receipt?.kind === "provider_receipt_ok") {
+    const result = await transaction(db, async (client) => {
+      if (!await lockParent(client, attempt.push_log_id)) return false;
+      const updated = await client.query(
+        `UPDATE mobile_push_attempts SET provider_receipt_checked_at=now(),next_receipt_at=NULL,
+           lease_token=NULL,lease_expires_at=NULL,last_error=NULL,updated_at=now()
+          WHERE id=$1 AND lease_token=$2 AND status='provider_accepted' RETURNING push_log_id`,
+        [attempt.id, attempt.lease_token],
+      );
+      if (!updated.rows[0]) return false;
+      await deriveParentLocked(client, attempt.push_log_id);
+      return true;
+    });
+    return result;
+  }
+  const outcome = { kind: "failed", reason: receipt?.reason || "expo_receipt_error", retryable: receipt?.retryable !== false };
   const status = await finishAttempt(db, attempt, outcome, options);
   return status !== null;
 }
@@ -529,7 +657,7 @@ async function finishReceipt(db, attempt, receipt, options = {}) {
 async function pollReceiptBatch(db, options = {}) {
   const sender = options.sender || push;
   const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
-  const report = { claimed: 0, delivered: 0, errors: 0, pending: 0, providerErrors: 0 };
+  const report = { claimed: 0, accepted: 0, delivered: 0, errors: 0, pending: 0, providerErrors: 0 };
   for (let count = 0; count < limit; count += 1) {
     const attempt = await claimReceiptOne(db, options);
     if (!attempt) break;
@@ -550,7 +678,8 @@ async function pollReceiptBatch(db, options = {}) {
     }
     const finished = await finishReceipt(db, attempt, receipt, options);
     if (!finished) continue;
-    if (receipt.kind === "delivered") report.delivered += 1;
+    if (receipt.kind === "provider_receipt_ok") report.accepted += 1;
+    else if (receipt.kind === "delivered") report.delivered += 1;
     else report.errors += 1;
   }
   return report;
@@ -573,7 +702,8 @@ async function deliver(db, notice, options = {}) {
 }
 
 module.exports = {
+  assertNoCredentialFacts,
   claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
   messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
-  trySchedulerRunLease,withInstallationLock,
+  currentPolicyDecision,trySchedulerRunLease,withInstallationLock,withSchedulerRunLease,
 };

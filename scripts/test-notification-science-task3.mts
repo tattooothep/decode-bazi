@@ -97,7 +97,7 @@ await check("all six scheduler entrypoints acquire their named DB run lease", ()
     "network-morning": "scripts/mobile-network-morning-push-cron.cjs",
   };
   for (const [name, file] of Object.entries(files)) {
-    assert.match(readFileSync(file, "utf8"), new RegExp(`trySchedulerRunLease\\(db, ["']${name}["']\\)`));
+    assert.match(readFileSync(file, "utf8"), new RegExp(`(?:try|with)SchedulerRunLease\\(db, ["']${name}["']`));
   }
 });
 

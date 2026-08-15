@@ -68,9 +68,24 @@ try {
       ('10000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','ExponentPushToken[fixture-owner-a]','native-owner-a','android',now(),true),
       ('10000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','ExponentPushToken[fixture-owner-b]','native-owner-b','android',now()-interval '1 minute',true),
       ('10000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000003','20000000-0000-4000-8000-000000000003','ExponentPushToken[fixture-native-b]','native-owner-a','android',now()-interval '2 minutes',true);
+    INSERT INTO mobile_push_tokens
+      (id,user_id,installation_id,expo_push_token,device_push_token,platform,last_registered_at,enabled)
+    VALUES
+      ('10000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000011','ExponentPushToken[fixture-blank-a]','   ','android',now(),true),
+      ('10000000-0000-4000-8000-000000000012','00000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000012','ExponentPushToken[fixture-blank-b]',E'\t','android',now(),true);
   `);
 
   psql(database, forward);
+  assert.equal(
+    psql(database, `SELECT count(*) FROM mobile_push_tokens WHERE id IN ('10000000-0000-4000-8000-000000000011','10000000-0000-4000-8000-000000000012') AND enabled=true AND device_push_token IS NULL;`),
+    "2",
+    "unrelated blank native tokens are normalized to NULL without disabling either installation",
+  );
+  assert.equal(
+    psql(database, `SELECT count(*) FROM pg_indexes WHERE indexname='ux_mobile_push_tokens_active_native' AND indexdef ILIKE '%device_push_token ~%space%';`),
+    "1",
+    "active native-token ownership index explicitly excludes blank/whitespace values",
+  );
   assert.equal(
     psql(database, `SELECT count(*) FROM mobile_push_tokens WHERE enabled=true AND (installation_id='20000000-0000-4000-8000-000000000001' OR device_push_token='native-owner-a');`),
     "1",
@@ -168,9 +183,9 @@ try {
        VALUES('00000000-0000-4000-8000-000000000004','20000000-0000-4000-8000-000000000004','ExponentPushToken[fixture-rollback-native-conflict]','native-owner-a','android',true);`,
     "rollback must not leave active native ownership unenforced",
   );
-  assert.equal(psql(database, `SELECT count(*) FROM mobile_push_tokens;`), "4", "rollback preserves token audit history");
+  assert.equal(psql(database, `SELECT count(*) FROM mobile_push_tokens;`), "6", "rollback preserves token audit history");
   psql(database, rollback);
-  assert.equal(psql(database, `SELECT count(*) FROM mobile_push_tokens;`), "4", "rollback remains rerunnable while preserving token audit history");
+  assert.equal(psql(database, `SELECT count(*) FROM mobile_push_tokens;`), "6", "rollback remains rerunnable while preserving token audit history");
 
   psql(database, forward);
   assert.equal(psql(database, `SELECT to_regclass('ux_mobile_push_tokens_active_native') IS NOT NULL;`), "t", "forward migration reapplies after rollback");

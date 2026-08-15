@@ -139,9 +139,11 @@ check("🔴 หมวดคำแนะนำทั้งหกต้องป�
   }
 });
 
-check("ความปลอดภัยและบริการเป็นข้อความธุรกรรม ไม่โดน quiet/cap ปิด", () => {
+check("เฉพาะความปลอดภัย/บริการที่ประกาศเป็นธุรกรรมจึงข้าม quiet/cap", () => {
   for (const category of ["security", "service"]) {
-    const result = G.mayNotify({ category, prefs: null, sentToday: 99, at: NIGHT });
+    const ordinary = G.mayNotify({ category, prefs: null, sentToday: 99, at: NIGHT });
+    assert.equal(ordinary.allow, false, `${category} ที่ไม่ประกาศธุรกรรมข้ามกฎผู้ใช้`);
+    const result = G.mayNotify({ category, transactional: true, prefs: null, sentToday: 99, at: NIGHT });
     assert.equal(result.allow, true, `${category} ถูกปิดด้วยกฎของข้อความคำแนะนำ`);
   }
 });

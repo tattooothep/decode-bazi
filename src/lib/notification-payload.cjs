@@ -6,7 +6,7 @@ const ROUTES = Object.freeze({
   qimen: new Set(["/qimen/board"]),
   shrine: new Set(["/shrine"]),
   goal: new Set(["/calendar/goals"]),
-  service: new Set(["/account", "/support", "/store"]),
+  service: new Set(["/account", "/support", "/store", "/calendar", "/network"]),
 });
 
 const FACT_KEYS = Object.freeze({
@@ -70,7 +70,7 @@ function normalizedLocale(value) {
 }
 
 function previewCopy(kind, privacyPreview, fullCopy, locale) {
-  if (privacyPreview === true || kind === "security" || kind === "service") return Object.freeze({ ...fullCopy });
+  if (privacyPreview === true) return Object.freeze({ ...fullCopy });
   return REDACTED[normalizedLocale(locale)];
 }
 

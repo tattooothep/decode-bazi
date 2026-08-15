@@ -7,7 +7,7 @@
  * → ถ้าทั้งคู่ |คะแนนวัน| < 20 ให้ข้าม (ไม่ยิงข้อความจืด) → ยิง 1 ข้อความต่อ user ตาม locale ของเครื่อง
  * ข้อความใช้ถ้อยคำจาก engine เท่านั้น: reading (label 3 ภาษา) + guidance.primary_i18n
  * กันซ้ำด้วย mobile_push_log unique(user_id, yam_key) แบบเดียวกับ cron เดิม
- * Usage: node scripts/mobile-network-morning-push-cron.cjs [--dry] [--email=someone@x.com]
+ * Usage: node scripts/mobile-network-morning-push-cron.cjs [--dry]
  *        [--date=YYYY-MM-DD] [--max=8] [--pool=strongest|listorder]
  *
  * หมายเหตุการจำกัด 8 คน: engine ให้คะแนนทุกคนมาใน request เดียวอยู่แล้ว (ไม่มีค่าใช้จ่ายเพิ่มต่อคน)
@@ -21,7 +21,6 @@ const fs = require("node:fs");
 const { Client } = require("pg");
 
 const DRY = process.argv.includes("--dry");
-const ONLY_EMAIL = (process.argv.find((a) => a.startsWith("--email=")) || "").slice(8).trim().toLowerCase();
 const DATE_ARG = (process.argv.find((a) => a.startsWith("--date=")) || "").slice(7).trim();
 const BASE = process.env.PUSH_INTERNAL_BASE || "http://127.0.0.1:3350";
 const MAX_RAW = Number((process.argv.find((a) => a.startsWith("--max=")) || "").slice(6));
@@ -65,10 +64,11 @@ function signSession(user) {
   return `${header}.${payload}.${sig}`;
 }
 
-async function getJson(user, url) {
+async function getJson(user, url, signal) {
   const token = signSession(user);
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, Cookie: `decode_auth=${token}` },
+    signal,
   }).catch(() => null);
   if (!res || !res.ok) return null;
   return res.json().catch(() => null);
@@ -113,32 +113,22 @@ function lineFor(p, loc, f, headWord) {
   return advice ? `${head} — ${advice}` : head;
 }
 function buildMessage(loc, ally, risk, thaiDate) {
-  const f = FRAME[loc] || FRAME.th;
+  const f = FRAME[loc] || FRAME.en;
   const lines = [];
   if (ally) lines.push(lineFor(ally, loc, f, f.ally));
   if (risk) lines.push(lineFor(risk, loc, f, f.risk));
-  return { title: f.title(thaiDate), body: lines.join("\n") };
+  const action = loc === "th" ? "เปิดเครือข่ายเพื่อดูรายละเอียด" : loc === "zh" ? "開啟人脈查看詳情" : "Open Network to review details";
+  return { title: f.title(thaiDate), body: `${lines.join("\n")} · ${action}` };
 }
 
 async function loadUsers(db) {
-  if (ONLY_EMAIL) {
-    // โหมดทดสอบ/dry เจาะบัญชีเดียว — ไม่บังคับว่าต้องมี token (ใช้ดูข้อความที่จะยิงเท่านั้น)
-    const { rows } = await db.query(
-      `SELECT u.id, u.email, u.current_org_id, u.session_version,
-              COALESCE((SELECT array_agg(json_build_object('token', t.device_push_token, 'locale', COALESCE(t.locale,'th')))
-                          FROM mobile_push_tokens t WHERE t.user_id=u.id AND t.enabled=true), '{}') AS tokens
-         FROM users u
-        WHERE lower(u.email)=$1 AND u.deleted_at IS NULL`,
-      [ONLY_EMAIL]);
-    return rows;
-  }
   const { rows } = await db.query(`
     SELECT u.id, u.email, u.current_org_id, u.session_version,
            array_agg(json_build_object(
              'id',t.id,'device',t.device_push_token,'deviceType',t.device_token_type,
              'expo',t.expo_push_token,'platform',t.platform,'locale',COALESCE(t.locale,'th')
            )) AS tokens,
-           np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,
+           np2.yam_enabled, np2.auspicious_enabled, np2.daily_enabled,np2.service_enabled,
            np2.quiet_start, np2.quiet_end, np2.max_per_day, np2.paused_until,
            COALESCE(np2.timezone, u.timezone) AS user_timezone,
            (np2.user_id IS NOT NULL) AS has_prefs,
@@ -153,7 +143,7 @@ async function loadUsers(db) {
        AND (SELECT count(*) FROM profiles pr
              WHERE pr.created_by_user_id = u.id AND COALESCE(pr.is_archived,false) = false) >= 3
      GROUP BY u.id, np2.user_id, np2.yam_enabled, np2.auspicious_enabled,
-              np2.daily_enabled, np2.quiet_start, np2.quiet_end, np2.paused_until,
+              np2.daily_enabled,np2.service_enabled, np2.quiet_start, np2.quiet_end, np2.paused_until,
               np2.max_per_day, np2.timezone, u.timezone`);
   return rows;
 }
@@ -162,16 +152,26 @@ const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 
-async function main() {
-  const db = new Client({
-    host: process.env.PGHOST || "127.0.0.1",
-    port: Number(process.env.PGPORT || 5432),
-    user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
-  });
-  await db.connect();
-  const runLease = await delivery.trySchedulerRunLease(db, "network-morning");
-  if (!runLease.acquired) { console.log("[mobile-network-push] overlap skipped"); await db.end(); return; }
+function buildNetworkProducer(accountId, loc, userDate, centerId, allyPick, riskPick) {
+  const allyScore = allyPick ? dayScore(allyPick) : null;
+  const riskScore = riskPick ? dayScore(riskPick) : null;
+  const label = `${userDate.slice(8, 10)}/${userDate.slice(5, 7)}`;
+  return {
+    key: `network|morning|${userDate}|${centerId}`,
+    copy: buildMessage(notificationPayload.normalizedLocale(loc), allyPick, riskPick, label),
+    payload: notificationPayload.buildNotificationPayload("service", String(accountId), {
+      event: "network_morning", referenceId: `network|${userDate}|${centerId}`, url: "/network",
+    }),
+    sourceFacts: {
+      date: userDate, centerProfileId: centerId,
+      allyProfileId: allyPick?.id || null, allyDayScore: allyScore,
+      riskProfileId: riskPick?.id || null, riskDayScore: riskScore,
+      destination: "/network",
+    },
+  };
+}
 
+async function runScheduler(db, schedulerSignal) {
   const users = await loadUsers(db);
   /**
    * 🔴 ห้ามคิดวันที่ให้ทุกคนจากเวลาไทย (แก้ 30 ก.ค. 69)
@@ -183,7 +183,7 @@ async function main() {
   const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(DATE_ARG)
     ? DATE_ARG
     : guard.localDateStr(guard.FALLBACK_TZ, runAt);
-  console.log(`[mobile-network-push] ${new Date().toISOString()} date=${dateStr} users=${users.length} dry=${DRY}${ONLY_EMAIL ? ` email=${ONLY_EMAIL}` : ""}`);
+  console.log(`[mobile-network-push] ${new Date().toISOString()} date=${dateStr} users=${users.length} dry=${DRY}`);
 
   let notified = 0, skipped = 0, failed = 0;
   for (const u of users) {
@@ -199,7 +199,7 @@ async function main() {
        * ตัวคุมกลางบังคับครบ: ยินยอม · ช่วงห้ามรบกวนตามเขตเวลาผู้ใช้ · เพดานต่อวัน
        */
       const verdict = guard.mayNotify({
-        category: "daily",
+        category: "service",
         prefs: u.has_prefs ? u : null,
         timezone: u.user_timezone,
         sentToday: Number(u.sent_today || 0),
@@ -213,7 +213,7 @@ async function main() {
         ? DATE_ARG
         : guard.localDateStr(u.user_timezone, runAt);
       const localDateLabel = `${userDate.slice(8, 10)}/${userDate.slice(5, 7)}`;
-      const data = await getJson(u, `${BASE}/api/mobile/v1/network?date=${userDate}`);
+      const data = await getJson(u, `${BASE}/api/mobile/v1/network?date=${userDate}`, schedulerSignal);
       if (!data || data.ok === false || !Array.isArray(data.people)) { skipped++; continue; }
       const centerId = data.active_profile && data.active_profile.id ? data.active_profile.id : null;
       if (!centerId) { skipped++; continue; }
@@ -246,7 +246,7 @@ async function main() {
       const recent = COOLDOWN_DAYS > 0
         ? await db.query(
             `SELECT 1 FROM mobile_push_log
-              WHERE user_id=$1 AND kind='daily'
+              WHERE user_id=$1 AND kind='service'
                 AND sent_at > now() - ($2 || ' days')::interval
                 AND source_facts->>'allyProfileId' IS NOT DISTINCT FROM $3
                 AND source_facts->>'riskProfileId' IS NOT DISTINCT FROM $4
@@ -269,28 +269,25 @@ async function main() {
       // คู่เดิมเพิ่งยิงไปในช่วง cooldown → ข้าม (กันข้อความเดิมซ้ำทุกเช้า)
       if (recent.rows.length) { skipped++; continue; }
 
-      const typedPayload = notificationPayload.buildNotificationPayload("daily", String(u.id), {
-        slot: "morning", date: userDate, url: "/today",
-      });
+      const producer = buildNetworkProducer(u.id, "th", userDate, centerId, allyPick, riskPick);
+      const typedPayload = producer.payload;
       const userMessages = [];
       for (const tk of u.tokens || []) {
         const entry = typeof tk === "object" && tk ? tk : { device: tk, locale: "th" };
-        const loc = entry.locale === "en" || entry.locale === "zh" ? entry.locale : "th";
+        const loc = notificationPayload.normalizedLocale(entry.locale);
         const m = buildMessage(loc, allyPick, riskPick, localDateLabel);
         if (!m.body) continue;
         userMessages.push({
           tokenId: entry.id, deviceToken: entry.device, deviceTokenType: entry.deviceType,
-          expoToken: entry.expo, platform: entry.platform, locale: loc, category: "daily",
-          title: m.title, body: m.body, url: "/today", data: typedPayload,
+          expoToken: entry.expo, platform: entry.platform, locale: loc, category: "service",
+          title: m.title, body: m.body, url: "/network", data: typedPayload,
         });
       }
       const result = await delivery.deliver(db, {
-        userId: u.id, key: yamKey, kind: "daily", title: thMsg.title, body: thMsg.body,
+        userId: u.id, key: yamKey, kind: "service", title: thMsg.title, body: thMsg.body,
         payload: typedPayload,
         sourceFacts: {
-          timezone: u.user_timezone, centerProfileId: centerId,
-          allyProfileId: allyId, allyDayScore: allyPick ? allyScore : null,
-          riskProfileId: riskId, riskDayScore: riskPick ? riskScore : null,
+          ...producer.sourceFacts, timezone: u.user_timezone,
         },
         messages: userMessages,
       }, { dry: DRY });
@@ -305,8 +302,24 @@ async function main() {
   }
 
   console.log(`[mobile-network-push] ${DRY ? "DRY " : ""}date=${dateStr} accepted=${notified} skipped=${skipped} errors=${failed}`);
-  await runLease.release();
-  await db.end();
+  return { notified, skipped, failed };
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+async function main() {
+  const db = new Client({
+    host: process.env.PGHOST || "127.0.0.1",
+    port: Number(process.env.PGPORT || 5432),
+    user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
+  });
+  await db.connect();
+  try {
+    const outcome = await delivery.withSchedulerRunLease(db, "network-morning", (signal) => runScheduler(db, signal), { timeoutMs: 12_000 });
+    if (!outcome.acquired) console.log("[mobile-network-push] overlap skipped");
+  } finally {
+    await db.end();
+  }
+}
+
+module.exports = { buildMessage,buildNetworkProducer,getJson,loadUsers,main,runScheduler };
+
+if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });

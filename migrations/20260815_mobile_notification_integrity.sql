@@ -2,6 +2,13 @@
 -- Additive and rerunnable. This migration does not send notifications.
 BEGIN;
 
+-- Empty native-token strings are not provider identities. Normalize them
+-- before dedupe/indexing so unrelated installations neither collide nor get
+-- disabled as duplicate owners of an unusable value.
+UPDATE mobile_push_tokens
+   SET device_push_token=NULL, updated_at=now()
+ WHERE device_push_token IS NOT NULL AND device_push_token !~ '[^[:space:]]';
+
 -- Resolve historical active duplicates deterministically before enforcing one
 -- active owner per installation/native token. Keep the most recently
 -- registered row active and retain older rows as disabled audit history.
@@ -26,7 +33,7 @@ WITH ranked AS (
            ORDER BY last_registered_at DESC NULLS LAST, updated_at DESC NULLS LAST, id DESC
          ) AS ordinal
     FROM mobile_push_tokens
-   WHERE enabled=true AND device_push_token IS NOT NULL
+   WHERE enabled=true AND device_push_token IS NOT NULL AND device_push_token ~ '[^[:space:]]'
 )
 UPDATE mobile_push_tokens t
    SET enabled=false, disabled_at=COALESCE(t.disabled_at, now()), updated_at=now()
@@ -41,8 +48,10 @@ ALTER TABLE mobile_push_tokens
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_tokens_active_installation
   ON mobile_push_tokens(installation_id) WHERE enabled=true;
-CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_tokens_active_native
-  ON mobile_push_tokens(device_push_token) WHERE enabled=true AND device_push_token IS NOT NULL;
+DROP INDEX IF EXISTS ux_mobile_push_tokens_active_native;
+CREATE UNIQUE INDEX ux_mobile_push_tokens_active_native
+  ON mobile_push_tokens(device_push_token)
+  WHERE enabled=true AND device_push_token IS NOT NULL AND device_push_token ~ '[^[:space:]]';
 
 ALTER TABLE mobile_notification_prefs
   ADD COLUMN IF NOT EXISTS privacy_preview boolean NOT NULL DEFAULT false,
@@ -83,7 +92,10 @@ CREATE TABLE IF NOT EXISTS mobile_push_attempts (
   provider_message_id text,
   provider_ticket_id text,
   next_receipt_at timestamptz,
+  provider_receipt_checked_at timestamptz,
   receipt_poll_count integer NOT NULL DEFAULT 0 CHECK (receipt_poll_count >= 0),
+  privacy_safe boolean NOT NULL DEFAULT false,
+  transactional boolean NOT NULL DEFAULT false,
   last_error text,
   accepted_at timestamptz,
   delivered_at timestamptz,
@@ -97,7 +109,10 @@ CREATE TABLE IF NOT EXISTS mobile_push_attempts (
 ALTER TABLE mobile_push_attempts
   ADD COLUMN IF NOT EXISTS send_started_at timestamptz,
   ADD COLUMN IF NOT EXISTS next_receipt_at timestamptz,
-  ADD COLUMN IF NOT EXISTS receipt_poll_count integer NOT NULL DEFAULT 0;
+  ADD COLUMN IF NOT EXISTS provider_receipt_checked_at timestamptz,
+  ADD COLUMN IF NOT EXISTS receipt_poll_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS privacy_safe boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS transactional boolean NOT NULL DEFAULT false;
 ALTER TABLE mobile_push_attempts
   DROP CONSTRAINT IF EXISTS mobile_push_attempts_receipt_poll_count_check;
 ALTER TABLE mobile_push_attempts
@@ -112,7 +127,8 @@ CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_stale_lease
 DROP INDEX IF EXISTS ix_mobile_push_attempts_expo_receipt;
 CREATE INDEX ix_mobile_push_attempts_expo_receipt
   ON mobile_push_attempts(next_receipt_at, accepted_at)
-  WHERE status='provider_accepted' AND provider='expo' AND provider_ticket_id IS NOT NULL;
+  WHERE status='provider_accepted' AND provider='expo' AND provider_ticket_id IS NOT NULL
+    AND provider_receipt_checked_at IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_attempts_provider_ticket
   ON mobile_push_attempts(provider_ticket_id) WHERE provider_ticket_id IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_attempts_provider_message

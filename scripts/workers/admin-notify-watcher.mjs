@@ -4,9 +4,11 @@ import pg from "pg";
 import webPush from "web-push";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
-const mobilePush = require("../../src/lib/push-send.cjs");
+const mobileDelivery = require("../../src/lib/mobile-notification-delivery.cjs");
+const notificationPayload = require("../../src/lib/notification-payload.cjs");
 
 nextEnv.loadEnvConfig(process.cwd(), false, console);
 
@@ -154,40 +156,100 @@ function localeKey(raw) {
   const base = value.split("-")[0];
   return COPY[base] ? base : "en";
 }
-function messageFor(eventType, locale, payload) {
+function messageFor(eventType, locale, payload, targetUrl = "/account") {
   const lang = localeKey(locale);
   const pair = COPY[lang]?.[eventType] || COPY.en[eventType] || ["hourkey", "There is a new update"];
   let body = pair[1];
   if (eventType === "job_fail_spike" && payload?.failed) body += ` (${payload.failed})`;
   if (eventType === "support_status_changed" && payload?.status) body += ` · ${payload.status}`;
   if ((eventType === "payment_exception" || eventType === "refund_failed") && payload?.order_id) body += ` · #${String(payload.order_id).slice(0, 8)}`;
+  const action = lang === "th" ? "แตะเพื่อเปิดและตรวจสอบ"
+    : lang === "zh" || lang === "cn" ? "點按開啟並檢查"
+      : lang === "vi" ? "Nhấn để mở và kiểm tra"
+        : lang === "ja" ? "タップして開き、確認してください"
+          : lang === "ru" ? "Нажмите, чтобы открыть и проверить"
+            : lang === "ko" ? "탭하여 열고 확인하세요"
+              : lang === "es" ? "Toca para abrir y revisar"
+                : "Tap to open and review";
+  if (!body.includes(action)) body = `${body} · ${action}`;
   return { title: pair[0], body };
 }
 
-async function sendNativePush(userId, msg, targetUrl, tag) {
-  const tokens = await db.query(
+function categoryForEvent(tag) {
+  return /(?:login|password|security|admin_role)/i.test(String(tag || "")) ? "security" : "service";
+}
+
+function mobileDestination(tag) {
+  const value = String(tag || "");
+  if (/(?:login|password|security|admin_role)/iu.test(value)) return "/account";
+  if (/^support_/u.test(value)) return "/support";
+  if (/(?:order|payment|purchase|refund)/iu.test(value)) return "/store";
+  return "/account";
+}
+
+function buildAdminMobileNotice({ userId, eventId, eventType, msg, tokens }) {
+  const category = categoryForEvent(eventType);
+  const url = mobileDestination(eventType);
+  const facts = category === "security"
+    ? { event: String(eventType).slice(0, 80), url }
+    : { event: String(eventType).slice(0, 80), referenceId: String(eventId), url };
+  const typed = notificationPayload.buildNotificationPayload(category, String(userId), facts);
+  return {
+    userId,
+    key: `outbox|${eventId}`,
+    kind: category,
+    transactional: true,
+    title: String(msg.title || "Hourkey").slice(0, 120),
+    body: String(msg.body || "").slice(0, 400),
+    payload: typed,
+    sourceFacts: { eventType: String(eventType), referenceId: String(eventId), destination: url },
+    messages: tokens.map((token) => ({
+      tokenId: token.id,
+      expoToken: token.expo_push_token,
+      deviceToken: token.device_push_token,
+      deviceTokenType: token.device_token_type,
+      platform: token.platform,
+      category,
+      locale: notificationPayload.normalizedLocale(token.locale),
+      title: String(msg.title || "Hourkey").slice(0, 120),
+      body: String(msg.body || "").slice(0, 400),
+      url,
+      data: typed,
+    })),
+  };
+}
+
+async function sendNativePush(userId, msg, targetUrl, tag, referenceId, dependencies = {}) {
+  const database = dependencies.db || db;
+  const durable = dependencies.delivery || mobileDelivery;
+  const tokens = await database.query(
     `SELECT id,expo_push_token,device_push_token,device_token_type,platform,fail_count
+            ,locale
        FROM mobile_push_tokens
       WHERE user_id=$1 AND enabled=true ORDER BY created_at LIMIT 100`,
     [userId]
   );
-  if (!tokens.rows.length) return { sent: 0, temporaryFailures: 0 };
-  const category = /(?:login|password|security|admin_role)/i.test(String(tag || "")) ? "security" : "service";
-  const result = await mobilePush.sendAll(tokens.rows.map((token) => ({
-    tokenId: token.id,
-    expoToken: token.expo_push_token,
-    deviceToken: token.device_push_token,
-    deviceTokenType: token.device_token_type,
-    platform: token.platform,
-    category,
-    title: String(msg.title || "Hourkey").slice(0, 120),
-    body: String(msg.body || "").slice(0, 400),
-    url: targetUrl,
-    data: { url: targetUrl, event: tag },
-  })), { db });
+  if (!tokens.rows.length) return { sent: 0, temporaryFailures: 0, permanentFailures: 0, attempted: 0 };
+  const notice = buildAdminMobileNotice({ userId, eventId: referenceId, eventType: tag, msg, tokens: tokens.rows });
+  const result = await durable.deliver(database, notice);
+  if (result.status === "duplicate") {
+    const existing = await database.query(
+      `SELECT delivery_status FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`,
+      [userId, notice.key],
+    );
+    const status = existing.rows[0]?.delivery_status;
+    return {
+      sent: status === "accepted" || status === "delivered" ? 1 : 0,
+      temporaryFailures: status === "pending" ? 1 : 0,
+      permanentFailures: status === "failed" ? 1 : 0,
+      attempted: tokens.rows.length,
+    };
+  }
   return {
     sent: result.sent,
-    temporaryFailures: result.failed,
+    temporaryFailures: Number(result.result?.retryDue || 0),
+    permanentFailures: Number(result.result?.dead || (result.status === "failed" ? result.failed : 0)),
+    attempted: tokens.rows.length,
   };
 }
 
@@ -347,11 +409,14 @@ async function claimDelivery() {
   return { ...row, event, locale: user?.locale || "th" };
 }
 
-async function sendDelivery(delivery) {
+async function sendDelivery(delivery, dependencies = {}) {
+  const database = dependencies.db || db;
+  const browserPush = dependencies.webPush || webPush;
+  const nativeSender = dependencies.sendNativePush || sendNativePush;
   const event = delivery.event;
   const payload = event.payload || {};
-  const msg = messageFor(event.event_type, delivery.locale, payload);
-  await db.query(
+  const msg = messageFor(event.event_type, delivery.locale, payload, event.target_url);
+  await database.query(
     `INSERT INTO notification_inbox(event_id,recipient_user_id,event_type,severity,title,body,target_url)
      VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(event_id,recipient_user_id) DO NOTHING`,
     [event.id, delivery.recipient_user_id, event.event_type, event.severity, msg.title, msg.body, event.target_url]
@@ -360,32 +425,17 @@ async function sendDelivery(delivery) {
   if (DRY_RUN) {
     return;
   }
-  const native = await sendNativePush(
+  const native = await nativeSender(
     delivery.recipient_user_id,
     msg,
     event.target_url,
-    event.event_type
+    event.event_type,
+    event.id,
+    { db: database, delivery: dependencies.delivery || mobileDelivery },
   );
-  if (native.sent > 0) {
-    const category = /(?:login|password|security|admin_role)/i.test(String(event.event_type || "")) ? "security" : "service";
-    await db.query(
-      `INSERT INTO mobile_push_log
-         (user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,accepted_at,updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6::jsonb,'accepted',1,now(),now())
-       ON CONFLICT (user_id,yam_key) DO NOTHING`,
-      [
-        delivery.recipient_user_id,
-        `outbox|${event.id}`,
-        category,
-        msg.title,
-        msg.body,
-        JSON.stringify({ url: event.target_url, eventType: event.event_type }),
-      ],
-    ).catch((error) => log({ event: "mobile_history_failed", error: error.message }));
-  }
-  const subs = await db.query(`SELECT id,endpoint,p256dh,auth,fail_count FROM push_subscriptions WHERE user_id=$1`, [delivery.recipient_user_id]);
-  if ((!subs.rows.length || !vapidReady) && !native.sent && !native.temporaryFailures) {
-    await db.query(
+  const subs = await database.query(`SELECT id,endpoint,p256dh,auth,fail_count FROM push_subscriptions WHERE user_id=$1`, [delivery.recipient_user_id]);
+  if ((!subs.rows.length || !vapidReady) && !native.sent && !native.temporaryFailures && !native.permanentFailures) {
+    await database.query(
       `UPDATE notification_deliveries SET status='sent',push_status=$2,sent_at=now(),updated_at=now(),locked_at=NULL,locked_by=NULL WHERE id=$1`,
       [delivery.id, subs.rows.length ? "no_vapid" : "no_subscription"]
     );
@@ -394,36 +444,41 @@ async function sendDelivery(delivery) {
   let sent = native.sent, temporaryFailures = native.temporaryFailures;
   for (const sub of vapidReady ? subs.rows : []) {
     try {
-      await webPush.sendNotification(
+      await browserPush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         JSON.stringify({ title: msg.title, body: msg.body, url: event.target_url, tag: `event_${event.id}` }),
         { TTL: 60 * 60 * 6 }
       );
       sent++;
-      await db.query(`UPDATE push_subscriptions SET last_success=now(),fail_count=0 WHERE id=$1`, [sub.id]).catch(() => {});
+      await database.query(`UPDATE push_subscriptions SET last_success=now(),fail_count=0 WHERE id=$1`, [sub.id]).catch(() => {});
     } catch (error) {
       const code = error?.statusCode || 0;
       if (code === 404 || code === 410 || Number(sub.fail_count || 0) + 1 > MAX_SUB_FAIL) {
-        await db.query(`DELETE FROM push_subscriptions WHERE id=$1`, [sub.id]).catch(() => {});
+        await database.query(`DELETE FROM push_subscriptions WHERE id=$1`, [sub.id]).catch(() => {});
       } else {
         temporaryFailures++;
-        await db.query(`UPDATE push_subscriptions SET fail_count=fail_count+1 WHERE id=$1`, [sub.id]).catch(() => {});
+        await database.query(`UPDATE push_subscriptions SET fail_count=fail_count+1 WHERE id=$1`, [sub.id]).catch(() => {});
       }
     }
   }
-  if (sent || !temporaryFailures) {
-    await db.query(
+  if (sent) {
+    await database.query(
       `UPDATE notification_deliveries SET status='sent',push_status=$2,sent_at=now(),updated_at=now(),locked_at=NULL,locked_by=NULL WHERE id=$1`,
-      [delivery.id, sent ? `sent:${sent}` : "subscriptions_removed"]
+      [delivery.id, `sent:${sent}`]
     );
-  } else if (Number(delivery.attempts) >= Number(delivery.max_attempts)) {
-    await db.query(
+  } else if (native.permanentFailures || Number(delivery.attempts) >= Number(delivery.max_attempts)) {
+    await database.query(
       `UPDATE notification_deliveries SET status='dead',push_status='failed',last_error='push_failed',updated_at=now(),locked_at=NULL,locked_by=NULL WHERE id=$1`,
+      [delivery.id]
+    );
+  } else if (!temporaryFailures) {
+    await database.query(
+      `UPDATE notification_deliveries SET status='sent',push_status='subscriptions_removed',sent_at=now(),updated_at=now(),locked_at=NULL,locked_by=NULL WHERE id=$1`,
       [delivery.id]
     );
   } else {
     const delaySeconds = Math.min(3600, 30 * Math.pow(2, Math.max(0, Number(delivery.attempts) - 1)));
-    await db.query(
+    await database.query(
       `UPDATE notification_deliveries SET status='retry',push_status='retry',last_error='push_failed',
               next_attempt_at=now()+($2||' seconds')::interval,updated_at=now(),locked_at=NULL,locked_by=NULL WHERE id=$1`,
       [delivery.id, String(delaySeconds)]
@@ -471,10 +526,29 @@ async function tick() {
   }
 }
 
-log({ event: "ready", dryRun: DRY_RUN, once: ONCE, outboxOnly: OUTBOX_ONLY, pollMs: POLL_MS, batchSize: BATCH_SIZE, vapid: vapidReady });
-await tick();
-if (ONCE) { await db.end(); process.exit(0); }
-const timer = setInterval(() => { void tick(); }, POLL_MS);
-async function shutdown(signal) { clearInterval(timer); await db.end().catch(() => {}); log({ event: "shutdown", signal }); process.exit(0); }
-process.once("SIGTERM", () => { void shutdown("SIGTERM"); });
-process.once("SIGINT", () => { void shutdown("SIGINT"); });
+async function runWorker() {
+  log({ event: "ready", dryRun: DRY_RUN, once: ONCE, outboxOnly: OUTBOX_ONLY, pollMs: POLL_MS, batchSize: BATCH_SIZE, vapid: vapidReady });
+  await tick();
+  if (ONCE) { await db.end(); return; }
+  const timer = setInterval(() => { void tick(); }, POLL_MS);
+  async function shutdown(signal) {
+    clearInterval(timer);
+    await db.end().catch(() => {});
+    log({ event: "shutdown", signal });
+  }
+  process.once("SIGTERM", () => { void shutdown("SIGTERM"); });
+  process.once("SIGINT", () => { void shutdown("SIGINT"); });
+}
+
+export {
+  buildAdminMobileNotice,categoryForEvent,localeKey,messageFor,mobileDestination,
+  runWorker,sendDelivery,sendNativePush,
+};
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await runWorker().catch(async (error) => {
+    console.error(JSON.stringify({ event: "worker_failed", error: String(error?.message || error) }));
+    await db.end().catch(() => {});
+    process.exitCode = 1;
+  });
+}
