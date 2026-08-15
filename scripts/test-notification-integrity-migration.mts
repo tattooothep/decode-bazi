@@ -107,6 +107,28 @@ try {
     "1",
     "database enforces one attempt per logical push and installation",
   );
+  assert.equal(
+    psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_attempts' AND column_name='send_started_at';`),
+    "1",
+    "attempt schema records the committed external-send boundary",
+  );
+  assert.equal(
+    psql(database, `SELECT count(*) FROM pg_indexes WHERE tablename='mobile_push_attempts' AND indexdef ILIKE '%UNIQUE%provider_ticket_id%' AND indexdef ILIKE '%provider_ticket_id IS NOT NULL%';`),
+    "1",
+    "Expo ticket IDs are unique when present",
+  );
+  assert.equal(
+    psql(database, `SELECT count(*) FROM pg_indexes WHERE tablename='mobile_push_attempts' AND indexdef ILIKE '%UNIQUE%provider_message_id%' AND indexdef ILIKE '%provider_message_id IS NOT NULL%';`),
+    "1",
+    "FCM provider message IDs are unique when present",
+  );
+  psql(database, `ALTER TABLE mobile_push_attempts DROP COLUMN send_started_at;`);
+  psql(database, forward);
+  assert.equal(
+    psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_attempts' AND column_name='send_started_at';`),
+    "1",
+    "rerunning forward migration upgrades an already-created Task 2 attempt table",
+  );
   psql(database, `INSERT INTO mobile_push_tokens(user_id,installation_id,expo_push_token,platform,enabled)
     VALUES('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','ExponentPushToken[fixture-rotated-history]','android',false);`);
   assert.equal(

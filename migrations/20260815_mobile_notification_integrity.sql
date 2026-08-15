@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS mobile_push_attempts (
   next_retry_at timestamptz,
   lease_token text,
   lease_expires_at timestamptz,
+  send_started_at timestamptz,
   provider_message_id text,
   provider_ticket_id text,
   last_error text,
@@ -86,6 +87,11 @@ CREATE TABLE IF NOT EXISTS mobile_push_attempts (
   UNIQUE(push_log_id, installation_id)
 );
 
+-- Keep the migration upgrade-safe when an earlier Task 2 draft created the
+-- table before the committed external-send boundary was added.
+ALTER TABLE mobile_push_attempts
+  ADD COLUMN IF NOT EXISTS send_started_at timestamptz;
+
 CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_due
   ON mobile_push_attempts(next_retry_at, created_at)
   WHERE status IN ('reserved', 'retry_due');
@@ -95,6 +101,10 @@ CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_stale_lease
 CREATE INDEX IF NOT EXISTS ix_mobile_push_attempts_expo_receipt
   ON mobile_push_attempts(accepted_at)
   WHERE status='provider_accepted' AND provider='expo' AND provider_ticket_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_attempts_provider_ticket
+  ON mobile_push_attempts(provider_ticket_id) WHERE provider_ticket_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_attempts_provider_message
+  ON mobile_push_attempts(provider_message_id) WHERE provider_message_id IS NOT NULL;
 
 CREATE OR REPLACE FUNCTION protect_mobile_push_attempt_message()
 RETURNS trigger LANGUAGE plpgsql AS $$

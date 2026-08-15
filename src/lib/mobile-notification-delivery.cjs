@@ -23,11 +23,6 @@ function messageSha256(message) {
   return createHash("sha256").update(stableStringify(message)).digest("hex");
 }
 
-function deterministicLeaseToken(attemptId, ordinal) {
-  const hex = createHash("md5").update(`${attemptId}:${ordinal}`).digest("hex");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
-
 function safeReason(outcome) {
   return String(outcome?.reason || outcome?.kind || "provider_failed")
     .replace(/[\r\n\t]+/gu, " ")
@@ -42,9 +37,21 @@ function errorSummary(result) {
   return [...new Set(reasons)].join(" | ").slice(0, 800) || "provider_not_accepted";
 }
 
-async function transaction(db, run) {
-  const isPool = typeof db?.connect === "function" && typeof db?.totalCount === "number";
-  const client = isPool ? await db.connect() : db;
+function isPool(db) {
+  return typeof db?.connect === "function" && typeof db?.totalCount === "number";
+}
+
+async function withClient(db, run) {
+  const pooled = isPool(db);
+  const client = pooled ? await db.connect() : db;
+  try {
+    return await run(client);
+  } finally {
+    if (pooled) client.release();
+  }
+}
+
+async function transactionOn(client, run) {
   try {
     await client.query("BEGIN");
     const result = await run(client);
@@ -53,78 +60,25 @@ async function transaction(db, run) {
   } catch (error) {
     await client.query("ROLLBACK").catch(() => null);
     throw error;
-  } finally {
-    if (isPool) client.release();
   }
 }
 
-async function reserve(db, notice, dry = false) {
-  if (dry) {
-    const existing = await db.query(
-      `SELECT delivery_status FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`,
-      [notice.userId, notice.key],
-    );
-    return existing.rows[0] ? null : { id: null, attemptIds: [] };
-  }
-
-  return transaction(db, async (client) => {
-    const parent = await client.query(
-      `INSERT INTO mobile_push_log
-         (user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,
-          next_retry_at,accepted_at,sent_at,last_error,updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6::jsonb,'pending',0,now(),NULL,NULL,NULL,now())
-       ON CONFLICT (user_id,yam_key) DO NOTHING
-       RETURNING id`,
-      [notice.userId, notice.key, notice.kind, notice.title, notice.body, JSON.stringify(notice.payload || {})],
-    );
-    if (!parent.rows[0]) return null;
-
-    const attemptIds = [];
-    const messages = Array.isArray(notice.messages) ? notice.messages.slice(0, 100) : [];
-    for (const item of messages) {
-      if (!item?.tokenId) continue;
-      const tokenResult = await client.query(
-        `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform
-           FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true`,
-        [item.tokenId, notice.userId],
-      );
-      const token = tokenResult.rows[0];
-      if (!token) continue;
-      const target = {
-        ...item,
-        tokenId: token.id,
-        installationId: token.installation_id,
-        deviceToken: token.device_push_token,
-        deviceTokenType: token.device_token_type,
-        expoToken: token.expo_push_token,
-        platform: token.platform,
-      };
-      const provider = push.providerFor(target);
-      if (!provider) continue;
-      const providerMessage = cleanJson(push.prepareMessage(item, provider));
-      const inserted = await client.query(
-        `INSERT INTO mobile_push_attempts
-           (push_log_id,token_id,installation_id,provider,provider_message,message_sha256,
-            status,next_retry_at,updated_at)
-         VALUES($1,$2,$3,$4,$5::jsonb,$6,'reserved',now(),now())
-         ON CONFLICT(push_log_id,installation_id) DO NOTHING RETURNING id`,
-        [parent.rows[0].id, token.id, token.installation_id, provider, JSON.stringify(providerMessage), messageSha256(providerMessage)],
-      );
-      if (inserted.rows[0]) attemptIds.push(inserted.rows[0].id);
-    }
-    return { id: parent.rows[0].id, attemptIds };
-  });
+async function transaction(db, run) {
+  return withClient(db, (client) => transactionOn(client, run));
 }
 
-async function deriveParent(db, pushLogId) {
-  await db.query(
+async function lockParent(client, pushLogId) {
+  const result = await client.query(`SELECT id FROM mobile_push_log WHERE id=$1 FOR UPDATE`, [pushLogId]);
+  return result.rowCount === 1;
+}
+
+async function deriveParentLocked(client, pushLogId) {
+  await client.query(
     `WITH child AS (
        SELECT push_log_id,
               count(*) FILTER (WHERE status='delivered') AS delivered,
               count(*) FILTER (WHERE status='provider_accepted') AS accepted,
               count(*) FILTER (WHERE status IN ('reserved','retry_due')) AS open,
-              count(*) FILTER (WHERE status='dead') AS dead,
-              count(*) AS total,
               COALESCE(sum(send_count),0) AS sends,
               min(next_retry_at) FILTER (WHERE status='retry_due') AS retry_at
          FROM mobile_push_attempts WHERE push_log_id=$1 GROUP BY push_log_id
@@ -150,55 +104,57 @@ async function deriveParent(db, pushLogId) {
   );
 }
 
-async function claimDue(db, options = {}) {
-  const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
-  const leaseSeconds = Math.max(5, Math.min(900, Number(options.leaseSeconds || DEFAULT_LEASE_SECONDS)));
-  const attemptIds = Array.isArray(options.attemptIds) && options.attemptIds.length ? options.attemptIds : null;
+async function deriveParent(db, pushLogId) {
   return transaction(db, async (client) => {
-    const result = await client.query(
-      `WITH candidates AS (
-         SELECT a.id,target.id AS target_token_id
-           FROM mobile_push_attempts a
-           JOIN mobile_push_log l ON l.id=a.push_log_id
-           LEFT JOIN LATERAL (
-             SELECT t.id
-               FROM mobile_push_tokens t
-              WHERE t.user_id=l.user_id AND t.installation_id=a.installation_id AND t.enabled=true
-                AND (
-                  (a.provider='fcm' AND t.device_push_token IS NOT NULL
-                    AND t.platform<>'ios' AND COALESCE(t.device_token_type,'')<>'apns')
-                  OR (a.provider='expo' AND t.expo_push_token IS NOT NULL)
-                )
-              ORDER BY (t.id=a.token_id) DESC,t.last_registered_at DESC NULLS LAST,t.updated_at DESC,t.id DESC
-              LIMIT 1
-           ) target ON true
-          WHERE a.status IN ('reserved','retry_due')
-            AND COALESCE(a.next_retry_at,to_timestamp(0))<=now()
-            AND (a.lease_token IS NULL OR a.lease_expires_at<=now())
-            AND ($2::uuid[] IS NULL OR a.id=ANY($2::uuid[]))
-          ORDER BY COALESCE(a.next_retry_at,a.created_at),a.created_at,a.id
-          FOR UPDATE OF a SKIP LOCKED
-          LIMIT $1
-       ), claimed AS (
-         UPDATE mobile_push_attempts a SET
-           send_count=a.send_count+1,
-           token_id=c.target_token_id,
-           lease_token=substr(md5(a.id::text||':'||(a.send_count+1)::text),1,8)||'-'||
-                       substr(md5(a.id::text||':'||(a.send_count+1)::text),9,4)||'-'||
-                       substr(md5(a.id::text||':'||(a.send_count+1)::text),13,4)||'-'||
-                       substr(md5(a.id::text||':'||(a.send_count+1)::text),17,4)||'-'||
-                       substr(md5(a.id::text||':'||(a.send_count+1)::text),21,12),
-           lease_expires_at=now()+($3::text||' seconds')::interval,
-           updated_at=now()
-          FROM candidates c WHERE a.id=c.id
-          RETURNING a.*
-       )
-       SELECT c.*,t.device_push_token,t.expo_push_token,t.enabled AS token_enabled
-         FROM claimed c LEFT JOIN mobile_push_tokens t ON t.id=c.token_id
-        ORDER BY c.created_at,c.id`,
-      [limit, attemptIds, String(leaseSeconds)],
+    if (!await lockParent(client, pushLogId)) return;
+    await deriveParentLocked(client, pushLogId);
+  });
+}
+
+async function reserve(db, notice, dry = false) {
+  if (dry) {
+    const existing = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [notice.userId, notice.key]);
+    return existing.rows[0] ? null : { id: null, attemptIds: [] };
+  }
+  return transaction(db, async (client) => {
+    const parent = await client.query(
+      `INSERT INTO mobile_push_log
+         (user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,
+          next_retry_at,accepted_at,sent_at,last_error,updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,'pending',0,now(),NULL,NULL,NULL,now())
+       ON CONFLICT (user_id,yam_key) DO NOTHING RETURNING id`,
+      [notice.userId, notice.key, notice.kind, notice.title, notice.body, JSON.stringify(notice.payload || {})],
     );
-    return result.rows;
+    if (!parent.rows[0]) return null;
+    const attemptIds = [];
+    for (const item of (Array.isArray(notice.messages) ? notice.messages.slice(0, 100) : [])) {
+      if (!item?.tokenId) continue;
+      const tokenResult = await client.query(
+        `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform
+           FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true`,
+        [item.tokenId, notice.userId],
+      );
+      const token = tokenResult.rows[0];
+      if (!token) continue;
+      const provider = push.providerFor({
+        ...item,
+        deviceToken: token.device_push_token,
+        deviceTokenType: token.device_token_type,
+        expoToken: token.expo_push_token,
+        platform: token.platform,
+      });
+      if (!provider) continue;
+      const providerMessage = cleanJson(push.prepareMessage(item, provider));
+      const inserted = await client.query(
+        `INSERT INTO mobile_push_attempts
+           (push_log_id,token_id,installation_id,provider,provider_message,message_sha256,status,next_retry_at,updated_at)
+         VALUES($1,$2,$3,$4,$5::jsonb,$6,'reserved',now(),now())
+         ON CONFLICT(push_log_id,installation_id) DO NOTHING RETURNING id`,
+        [parent.rows[0].id, token.id, token.installation_id, provider, JSON.stringify(providerMessage), messageSha256(providerMessage)],
+      );
+      if (inserted.rows[0]) attemptIds.push(inserted.rows[0].id);
+    }
+    return { id: parent.rows[0].id, attemptIds };
   });
 }
 
@@ -208,6 +164,107 @@ function retryDelaySeconds(sendCount, baseDelaySeconds, retryAfterSeconds) {
   return Math.min(MAX_DELAY_SECONDS, Math.max(exponential, providerDelay));
 }
 
+async function claimOne(db, options = {}) {
+  const leaseSeconds = Math.max(5, Math.min(900, Number(options.leaseSeconds || DEFAULT_LEASE_SECONDS)));
+  const attemptIds = Array.isArray(options.attemptIds) && options.attemptIds.length ? options.attemptIds : null;
+  return transaction(db, async (client) => {
+    const result = await client.query(
+      `WITH candidate AS (
+         SELECT a.id,target.id AS target_token_id
+           FROM mobile_push_attempts a
+           JOIN mobile_push_log l ON l.id=a.push_log_id
+           LEFT JOIN LATERAL (
+             SELECT t.id FROM mobile_push_tokens t
+              WHERE t.user_id=l.user_id AND t.installation_id=a.installation_id AND t.enabled=true
+                AND ((a.provider='fcm' AND t.device_push_token IS NOT NULL AND t.platform<>'ios' AND COALESCE(t.device_token_type,'')<>'apns')
+                  OR (a.provider='expo' AND t.expo_push_token IS NOT NULL))
+              ORDER BY (t.id=a.token_id) DESC,t.last_registered_at DESC NULLS LAST,t.updated_at DESC,t.id DESC LIMIT 1
+           ) target ON true
+          WHERE a.status IN ('reserved','retry_due') AND a.send_started_at IS NULL
+            AND COALESCE(a.next_retry_at,to_timestamp(0))<=now()
+            AND (a.lease_token IS NULL OR a.lease_expires_at<=now())
+            AND ($1::uuid[] IS NULL OR a.id=ANY($1::uuid[]))
+          ORDER BY COALESCE(a.next_retry_at,a.created_at),a.created_at,a.id
+          FOR UPDATE OF a SKIP LOCKED LIMIT 1
+       )
+       UPDATE mobile_push_attempts a SET
+         token_id=c.target_token_id,lease_token=gen_random_uuid()::text,
+         lease_expires_at=now()+($2::text||' seconds')::interval,updated_at=now()
+        FROM candidate c WHERE a.id=c.id RETURNING a.*`,
+      [attemptIds, String(leaseSeconds)],
+    );
+    return result.rows[0] || null;
+  });
+}
+
+async function tryInstallationLock(client, installationId) {
+  const result = await client.query(
+    `SELECT pg_try_advisory_xact_lock(hashtextextended('mobile-push-installation:'||$1::text,0)) AS locked`,
+    [installationId],
+  );
+  return result.rows[0]?.locked === true;
+}
+
+async function acquireInstallationLock(client, installationId) {
+  await client.query(
+    `SELECT pg_advisory_lock(hashtextextended('mobile-push-installation:'||$1::text,0))`,
+    [installationId],
+  );
+}
+
+async function releaseInstallationLock(client, installationId) {
+  await client.query(
+    `SELECT pg_advisory_unlock(hashtextextended('mobile-push-installation:'||$1::text,0))`,
+    [installationId],
+  ).catch(() => null);
+}
+
+async function recoverUncertainOne(db, options = {}) {
+  const attemptIds = Array.isArray(options.attemptIds) && options.attemptIds.length ? options.attemptIds : null;
+  return transaction(db, async (client) => {
+    const candidate = await client.query(
+      `SELECT id,push_log_id,installation_id,lease_token FROM mobile_push_attempts
+        WHERE status IN ('reserved','retry_due') AND send_started_at IS NOT NULL
+          AND lease_expires_at<=now() AND ($1::uuid[] IS NULL OR id=ANY($1::uuid[]))
+        ORDER BY lease_expires_at,id LIMIT 1`,
+      [attemptIds],
+    );
+    const attempt = candidate.rows[0];
+    if (!attempt || !await tryInstallationLock(client, attempt.installation_id)) return null;
+    if (!await lockParent(client, attempt.push_log_id)) return null;
+    const current = await client.query(
+      `SELECT id FROM mobile_push_attempts WHERE id=$1 AND lease_token=$2
+        AND status IN ('reserved','retry_due') AND send_started_at IS NOT NULL AND lease_expires_at<=now() FOR UPDATE`,
+      [attempt.id, attempt.lease_token],
+    );
+    if (!current.rows[0]) return null;
+    const updated = await client.query(
+      `UPDATE mobile_push_attempts SET status='dead',next_retry_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+         last_error='uncertain_provider_result',updated_at=now()
+        WHERE id=$1 AND lease_token=$2 AND send_started_at IS NOT NULL RETURNING id`,
+      [attempt.id, attempt.lease_token],
+    );
+    if (!updated.rows[0]) return null;
+    await deriveParentLocked(client, attempt.push_log_id);
+    return attempt.id;
+  });
+}
+
+async function finishIdentifierConflict(db, attempt) {
+  return transaction(db, async (client) => {
+    if (!await lockParent(client, attempt.push_log_id)) return null;
+    const updated = await client.query(
+      `UPDATE mobile_push_attempts SET status='dead',next_retry_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+         last_error='provider_identifier_conflict',updated_at=now()
+        WHERE id=$1 AND lease_token=$2 RETURNING id`,
+      [attempt.id, attempt.lease_token],
+    );
+    if (!updated.rows[0]) return null;
+    await deriveParentLocked(client, attempt.push_log_id);
+    return "dead";
+  });
+}
+
 async function finishAttempt(db, attempt, outcome, options = {}) {
   const maxAttempts = Math.max(1, Math.min(20, Number(options.maxAttempts || DEFAULT_MAX_ATTEMPTS)));
   const baseDelaySeconds = Math.max(1, Math.min(3600, Number(options.baseDelaySeconds || DEFAULT_BASE_DELAY_SECONDS)));
@@ -215,113 +272,164 @@ async function finishAttempt(db, attempt, outcome, options = {}) {
   const delivered = outcome?.kind === "delivered";
   const terminal = outcome?.kind === "gone" || outcome?.retryable === false || Number(attempt.send_count) >= maxAttempts;
   const status = delivered ? "delivered" : accepted ? "provider_accepted" : terminal ? "dead" : "retry_due";
-  const delay = status === "retry_due"
-    ? retryDelaySeconds(Number(attempt.send_count), baseDelaySeconds, outcome?.retryAfterSeconds)
-    : null;
-  return transaction(db, async (client) => {
-    const result = await client.query(
-      `UPDATE mobile_push_attempts SET
-         status=$3,
-         next_retry_at=CASE WHEN $4::integer IS NULL THEN NULL ELSE now()+($4::text||' seconds')::interval END,
-         lease_token=NULL,lease_expires_at=NULL,
-         provider_message_id=COALESCE($5,provider_message_id),
-         provider_ticket_id=COALESCE($6,provider_ticket_id),
-         last_error=CASE WHEN $3 IN ('provider_accepted','delivered') THEN NULL ELSE $7 END,
-         accepted_at=CASE WHEN $3 IN ('provider_accepted','delivered') THEN COALESCE(accepted_at,now()) ELSE accepted_at END,
-         delivered_at=CASE WHEN $3='delivered' THEN COALESCE(delivered_at,now()) ELSE delivered_at END,
-         updated_at=now()
-       WHERE id=$1 AND lease_token=$2
-       RETURNING push_log_id,token_id`,
-      [attempt.id, attempt.lease_token, status, delay, outcome?.providerMessageId || null, outcome?.providerTicketId || null, safeReason(outcome)],
-    );
-    const updated = result.rows[0];
-    if (!updated) return status;
-    if (status === "dead" && (outcome?.kind === "gone" || safeReason(outcome) === "DeviceNotRegistered") && updated.token_id) {
-      await client.query(
-        `UPDATE mobile_push_tokens SET enabled=false,disabled_at=COALESCE(disabled_at,now()),updated_at=now() WHERE id=$1`,
-        [updated.token_id],
+  const delay = status === "retry_due" ? retryDelaySeconds(Number(attempt.send_count), baseDelaySeconds, outcome?.retryAfterSeconds) : null;
+  try {
+    return await transaction(db, async (client) => {
+      if (!await lockParent(client, attempt.push_log_id)) return null;
+      const updated = await client.query(
+        `UPDATE mobile_push_attempts SET status=$3,
+           next_retry_at=CASE WHEN $4::integer IS NULL THEN NULL ELSE now()+($4::text||' seconds')::interval END,
+           lease_token=NULL,lease_expires_at=NULL,
+           send_started_at=CASE WHEN $3='retry_due' THEN NULL ELSE send_started_at END,
+           provider_message_id=COALESCE($5,provider_message_id),provider_ticket_id=COALESCE($6,provider_ticket_id),
+           last_error=CASE WHEN $3 IN ('provider_accepted','delivered') THEN NULL ELSE $7 END,
+           accepted_at=CASE WHEN $3 IN ('provider_accepted','delivered') THEN COALESCE(accepted_at,now()) ELSE accepted_at END,
+           delivered_at=CASE WHEN $3='delivered' THEN COALESCE(delivered_at,now()) ELSE delivered_at END,updated_at=now()
+         WHERE id=$1 AND lease_token=$2 RETURNING push_log_id,token_id`,
+        [attempt.id, attempt.lease_token, status, delay, outcome?.providerMessageId || null, outcome?.providerTicketId || null, safeReason(outcome)],
       );
+      const row = updated.rows[0];
+      if (!row) return null;
+      if (status === "dead" && (outcome?.kind === "gone" || safeReason(outcome) === "DeviceNotRegistered") && row.token_id) {
+        await client.query(`UPDATE mobile_push_tokens SET enabled=false,disabled_at=COALESCE(disabled_at,now()),updated_at=now() WHERE id=$1`, [row.token_id]);
+      }
+      await deriveParentLocked(client, row.push_log_id);
+      return status;
+    });
+  } catch (error) {
+    if (error?.code === "23505") return finishIdentifierConflict(db, attempt);
+    throw error;
+  }
+}
+
+async function processClaim(db, attempt, options = {}) {
+  const sender = options.sender || push;
+  return withClient(db, async (client) => {
+    await acquireInstallationLock(client, attempt.installation_id);
+    try {
+      if (options.hooks?.afterClaim) await options.hooks.afterClaim(attempt);
+      const started = await transactionOn(client, async (tx) => {
+        const current = await tx.query(
+          `SELECT a.*,l.user_id FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+            WHERE a.id=$1 AND a.lease_token=$2 AND a.status IN ('reserved','retry_due') AND a.send_started_at IS NULL
+            FOR UPDATE OF a`,
+          [attempt.id, attempt.lease_token],
+        );
+        const row = current.rows[0];
+        if (!row) return null;
+        const token = await tx.query(
+          `SELECT id,device_push_token,expo_push_token FROM mobile_push_tokens
+            WHERE user_id=$1 AND installation_id=$2 AND enabled=true
+              AND (($3='fcm' AND device_push_token IS NOT NULL AND platform<>'ios' AND COALESCE(device_token_type,'')<>'apns')
+                OR ($3='expo' AND expo_push_token IS NOT NULL))
+            ORDER BY (id=$4) DESC,last_registered_at DESC NULLS LAST,updated_at DESC,id DESC LIMIT 1 FOR UPDATE`,
+          [row.user_id, row.installation_id, row.provider, row.token_id],
+        );
+        if (!token.rows[0]) return { ...row, targetUnavailable: true };
+        const marked = await tx.query(
+          `UPDATE mobile_push_attempts SET token_id=$3,send_count=send_count+1,send_started_at=now(),updated_at=now()
+            WHERE id=$1 AND lease_token=$2 RETURNING *`,
+          [row.id, row.lease_token, token.rows[0].id],
+        );
+        return {
+          ...marked.rows[0],
+          device_push_token: token.rows[0].device_push_token,
+          expo_push_token: token.rows[0].expo_push_token,
+        };
+      });
+      if (!started) return null;
+      if (started.targetUnavailable) {
+        const status = await finishAttempt(client, started, { kind: "gone", reason: "target_unavailable", retryable: false }, options);
+        return { status, outcome: { kind: "gone", reason: "target_unavailable", retryable: false } };
+      }
+      if (options.hooks?.afterSendStarted) await options.hooks.afterSendStarted(started);
+      let outcome;
+      try {
+        outcome = await sender.sendPrepared({
+          attemptId: started.id,provider: started.provider,providerMessage: started.provider_message,
+          deviceToken: started.device_push_token,expoToken: started.expo_push_token,
+        });
+      } catch {
+        outcome = { kind: "failed", provider: started.provider, reason: "uncertain_provider_result", retryable: false };
+      }
+      const status = await finishAttempt(client, started, outcome, options);
+      return { status, outcome };
+    } finally {
+      await releaseInstallationLock(client, attempt.installation_id);
     }
-    await deriveParent(client, updated.push_log_id);
-    return status;
   });
 }
 
 async function runRetryBatch(db, options = {}) {
-  const sender = options.sender || push;
-  const claimed = await claimDue(db, options);
-  const report = { claimed: claimed.length, accepted: 0, delivered: 0, retryDue: 0, dead: 0, outcomes: [] };
-  for (const attempt of claimed) {
-    let outcome;
-    if (attempt.token_enabled !== true) {
-      outcome = { kind: "gone", provider: attempt.provider, reason: "target_unavailable", retryable: false };
-    } else {
-      try {
-        outcome = await sender.sendPrepared({
-          attemptId: attempt.id,
-          provider: attempt.provider,
-          providerMessage: attempt.provider_message,
-          deviceToken: attempt.device_push_token,
-          expoToken: attempt.expo_push_token,
-        });
-      } catch {
-        outcome = { kind: "failed", provider: attempt.provider, reason: "provider_exception", retryable: true };
-      }
+  const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
+  const report = { claimed: 0, accepted: 0, delivered: 0, retryDue: 0, dead: 0, uncertainRecovered: 0, outcomes: [] };
+  for (let processed = 0; processed < limit; processed += 1) {
+    const recovered = await recoverUncertainOne(db, options);
+    if (recovered) {
+      report.dead += 1;
+      report.uncertainRecovered += 1;
+      continue;
     }
-    report.outcomes.push(outcome);
-    const status = await finishAttempt(db, attempt, outcome, options);
-    if (status === "provider_accepted") report.accepted += 1;
-    else if (status === "delivered") report.delivered += 1;
-    else if (status === "retry_due") report.retryDue += 1;
+    const attempt = await claimOne(db, options);
+    if (!attempt) break;
+    report.claimed += 1;
+    const completed = await processClaim(db, attempt, options);
+    if (!completed?.status) continue;
+    report.outcomes.push(completed.outcome);
+    if (completed.status === "provider_accepted") report.accepted += 1;
+    else if (completed.status === "delivered") report.delivered += 1;
+    else if (completed.status === "retry_due") report.retryDue += 1;
     else report.dead += 1;
   }
   return report;
 }
 
-async function pollReceiptBatch(db, options = {}) {
-  const sender = options.sender || push;
-  const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
+async function claimReceiptOne(db, options = {}) {
   const leaseSeconds = Math.max(5, Math.min(900, Number(options.leaseSeconds || DEFAULT_LEASE_SECONDS)));
-  const attempts = await transaction(db, async (client) => {
+  return transaction(db, async (client) => {
     const result = await client.query(
-      `WITH candidates AS (
+      `WITH candidate AS (
          SELECT id FROM mobile_push_attempts
           WHERE provider='expo' AND status='provider_accepted' AND provider_ticket_id IS NOT NULL
             AND (lease_token IS NULL OR lease_expires_at<=now())
-          ORDER BY accepted_at,id FOR UPDATE SKIP LOCKED LIMIT $1
-       ), claimed AS (
-         UPDATE mobile_push_attempts a SET
-           lease_token='receipt-'||substr(md5(a.id::text||':'||a.send_count::text),1,32),
-           lease_expires_at=now()+($2::text||' seconds')::interval,updated_at=now()
-          FROM candidates c WHERE a.id=c.id RETURNING a.*
-       ) SELECT * FROM claimed ORDER BY accepted_at,id`,
-      [limit, String(leaseSeconds)],
+          ORDER BY accepted_at,id FOR UPDATE SKIP LOCKED LIMIT 1
+       ) UPDATE mobile_push_attempts a SET lease_token=gen_random_uuid()::text,
+           lease_expires_at=now()+($1::text||' seconds')::interval,updated_at=now()
+          FROM candidate c WHERE a.id=c.id RETURNING a.*`,
+      [String(leaseSeconds)],
     );
-    return result.rows;
+    return result.rows[0] || null;
   });
-  const report = { claimed: attempts.length, delivered: 0, errors: 0, pending: 0 };
-  if (attempts.length === 0) return report;
-  let receipts;
-  try {
-    receipts = await sender.pollExpoReceipts(attempts.map((attempt) => attempt.provider_ticket_id));
-  } catch {
-    receipts = {};
-  }
-  for (const attempt of attempts) {
+}
+
+async function finishReceipt(db, attempt, receipt, options = {}) {
+  const outcome = receipt?.kind === "delivered"
+    ? { kind: "delivered" }
+    : { kind: "failed", reason: receipt?.reason || "expo_receipt_error", retryable: receipt?.retryable !== false };
+  const status = await finishAttempt(db, attempt, outcome, options);
+  return status !== null;
+}
+
+async function pollReceiptBatch(db, options = {}) {
+  const sender = options.sender || push;
+  const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
+  const report = { claimed: 0, delivered: 0, errors: 0, pending: 0 };
+  for (let count = 0; count < limit; count += 1) {
+    const attempt = await claimReceiptOne(db, options);
+    if (!attempt) break;
+    report.claimed += 1;
+    let receipts;
+    try { receipts = await sender.pollExpoReceipts([attempt.provider_ticket_id]); }
+    catch { receipts = {}; }
     const receipt = receipts?.[attempt.provider_ticket_id];
     if (!receipt) {
-      await db.query(
-        `UPDATE mobile_push_attempts SET lease_token=NULL,lease_expires_at=NULL,updated_at=now() WHERE id=$1 AND lease_token=$2`,
-        [attempt.id, attempt.lease_token],
-      );
+      await db.query(`UPDATE mobile_push_attempts SET lease_token=NULL,lease_expires_at=NULL,updated_at=now() WHERE id=$1 AND lease_token=$2`, [attempt.id, attempt.lease_token]);
       report.pending += 1;
       continue;
     }
-    const outcome = receipt.kind === "delivered"
-      ? { kind: "delivered" }
-      : { kind: "failed", reason: receipt.reason || "expo_receipt_error", retryable: receipt.retryable !== false };
-    const status = await finishAttempt(db, attempt, outcome, options);
-    if (status === "delivered") report.delivered += 1;
+    const finished = await finishReceipt(db, attempt, receipt, options);
+    if (!finished) continue;
+    if (receipt.kind === "delivered") report.delivered += 1;
     else report.errors += 1;
   }
   return report;
@@ -334,34 +442,16 @@ async function deliver(db, notice, options = {}) {
   const messages = Array.isArray(notice.messages) ? notice.messages : [];
   if (dry) return { status: "dry", sent: messages.length, failed: 0, result: null };
   if (reservation.attemptIds.length === 0) {
-    await db.query(
-      `UPDATE mobile_push_log SET delivery_status='failed',next_retry_at=NULL,last_error='no_deliverable_installation',updated_at=now() WHERE id=$1`,
-      [reservation.id],
-    );
+    await db.query(`UPDATE mobile_push_log SET delivery_status='failed',next_retry_at=NULL,last_error='no_deliverable_installation',updated_at=now() WHERE id=$1`, [reservation.id]);
     return { status: "failed", sent: 0, failed: messages.length, result: null };
   }
   if (options.defer === true) return { status: "pending", sent: 0, failed: 0, result: null };
-  const result = await runRetryBatch(db, { ...options, attemptIds: reservation.attemptIds });
+  const result = await runRetryBatch(db, { ...options, attemptIds: reservation.attemptIds, limit: reservation.attemptIds.length });
   const parent = await db.query(`SELECT delivery_status FROM mobile_push_log WHERE id=$1`, [reservation.id]);
-  return {
-    status: parent.rows[0]?.delivery_status || "failed",
-    sent: result.accepted + result.delivered,
-    failed: result.retryDue + result.dead,
-    result,
-  };
+  return { status: parent.rows[0]?.delivery_status || "failed", sent: result.accepted + result.delivered, failed: result.retryDue + result.dead, result };
 }
 
 module.exports = {
-  claimDue,
-  deliver,
-  deriveParent,
-  deterministicLeaseToken,
-  errorSummary,
-  finishAttempt,
-  messageSha256,
-  pollReceiptBatch,
-  reserve,
-  retryDelaySeconds,
-  runRetryBatch,
-  stableStringify,
+  claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
+  messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
 };

@@ -7,19 +7,22 @@
 const { Client } = require("pg");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 
-async function main() {
-  const db = new Client({
+async function main(options = {}) {
+  const db = options.db || new Client({
     host: process.env.PGHOST || "127.0.0.1",
     port: Number(process.env.PGPORT || 5433),
     database: process.env.PGDATABASE || "decode_db",
     user: process.env.PGUSER || "decode_user",
     password: process.env.PGPASSWORD,
   });
+  const runRetry = options.runRetryBatch || delivery.runRetryBatch;
+  const pollReceipts = options.pollReceiptBatch || delivery.pollReceiptBatch;
+  const log = options.log || console.log;
   await db.connect();
   try {
-    const retry = await delivery.runRetryBatch(db);
-    const receipts = await delivery.pollReceiptBatch(db);
-    console.log(
+    const retry = await runRetry(db);
+    const receipts = await pollReceipts(db);
+    log(
       `[mobile-push-retry] claimed=${retry.claimed} accepted=${retry.accepted} retry_due=${retry.retryDue} dead=${retry.dead} receipt_checked=${receipts.claimed} delivered=${receipts.delivered} receipt_errors=${receipts.errors}`,
     );
   } finally {
@@ -35,7 +38,10 @@ if (require.main === module) {
 }
 
 module.exports = {
-  deterministicLeaseToken: delivery.deterministicLeaseToken,
+  claimOne: delivery.claimOne,
+  claimReceiptOne: delivery.claimReceiptOne,
+  finishReceipt: delivery.finishReceipt,
+  main,
   pollReceiptBatch: delivery.pollReceiptBatch,
   runRetryBatch: delivery.runRetryBatch,
 };

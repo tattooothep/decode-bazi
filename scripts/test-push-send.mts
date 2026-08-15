@@ -56,6 +56,7 @@ await check("โหมดไม่ส่งจริงต้องไม่ย�
 await check("provider adapter เก็บ message ID/ticket และไม่เรียก HTTP success ว่า delivered", async () => {
   const originalFetch = globalThis.fetch;
   const requests: Array<{ url: string; body: unknown }> = [];
+  let malformedFcm = false;
   try {
     globalThis.fetch = async (input, init) => {
       const url = String(input);
@@ -66,7 +67,7 @@ await check("provider adapter เก็บ message ID/ticket และไม่�
       }
       requests.push({ url, body: requestBody });
       if (url.includes("/messages:send")) {
-        return new Response(JSON.stringify({ name: "projects/test/messages/provider-id" }), {
+        return new Response(JSON.stringify(malformedFcm ? {} : { name: "projects/test/messages/provider-id" }), {
           status: 200,
           headers: { "content-type": "application/json" },
         });
@@ -94,6 +95,11 @@ await check("provider adapter เก็บ message ID/ticket และไม่�
     assert.equal(fcm.kind, "provider_accepted");
     assert.equal(fcm.providerMessageId, "projects/test/messages/provider-id");
     assert.equal(JSON.stringify(fcmMessage).includes("credential-only-at-send"), false);
+    malformedFcm = true;
+    const malformed = await S.sendPrepared({ provider: "fcm", deviceToken: "credential-only-at-send", providerMessage: fcmMessage });
+    assert.equal(malformed.kind, "failed");
+    assert.equal(malformed.reason, "fcm_missing_message_name");
+    assert.equal(malformed.retryable, true);
 
     const expoMessage = S.prepareMessage({ title: "Exact", body: "Expo", category: "daily", url: "/today" }, "expo");
     const expo = await S.sendPrepared({ provider: "expo", expoToken: "ExponentPushToken[credential-only-at-send]", providerMessage: expoMessage });
@@ -105,6 +111,27 @@ await check("provider adapter เก็บ message ID/ticket และไม่�
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+await check("durable provider data ตัด credential-like keys ออกก่อน hash/persist", () => {
+  const prepared = S.prepareMessage({
+    title: "Exact",
+    body: "Safe",
+    category: "goal",
+    url: "/calendar/goals",
+    data: {
+      goalId: "goal-1",
+      apiToken: "raw-token",
+      authSecret: "raw-secret",
+      deviceCredential: "raw-credential",
+      cookie: "raw-cookie",
+    },
+  }, "expo");
+  assert.equal(prepared.data.goalId, "goal-1");
+  assert.equal(JSON.stringify(prepared).includes("raw-token"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-secret"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-credential"), false);
+  assert.equal(JSON.stringify(prepared).includes("raw-cookie"), false);
 });
 
 await check("Retry-After จาก provider ถูกแปลงเป็นวินาทีสำหรับ durable backoff", () => {

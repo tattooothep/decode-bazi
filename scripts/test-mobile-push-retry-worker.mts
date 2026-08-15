@@ -78,7 +78,7 @@ const fcmMessage = {
   title: "English title",
   body: "English exact body",
   url: "/today",
-  data: { url: "/today", locale: "en", score: 88 },
+  data: { url: "/today", locale: "en", score: 88, apiToken: "embedded-raw-token", authSecret: "embedded-raw-secret" },
 };
 const expoMessage = {
   tokenId: expoTokenId,
@@ -183,7 +183,10 @@ try {
   )).rows;
   check(attempts.length === 2, "one durable attempt is created per installation");
   check(attempts.every((attempt) => /^[0-9a-f]{64}$/u.test(attempt.message_sha256)), "every exact provider message has a SHA-256 digest");
-  check(JSON.stringify(attempts).includes("secret-not-persisted") === false, "attempt rows never persist provider credentials");
+  check(JSON.stringify(attempts).includes("secret-not-persisted") === false
+    && JSON.stringify(attempts).includes("embedded-raw-token") === false
+    && JSON.stringify(attempts).includes("embedded-raw-secret") === false,
+  "attempt rows never persist provider credentials, including credential-like data keys");
   check(attempts.find((attempt) => attempt.provider === "fcm")?.status === "provider_accepted", "FCM HTTP acceptance remains provider_accepted, not delivered");
   check(attempts.find((attempt) => attempt.provider === "fcm")?.provider_message_id === "projects/test/messages/fcm-1", "FCM provider message name is persisted");
   check(attempts.find((attempt) => attempt.provider === "expo")?.status === "retry_due", "only the failed Expo installation becomes retry-due");
@@ -318,10 +321,233 @@ try {
   check(exhausted.status === "dead" && exhausted.delivery_status === "failed", "bounded attempts exhaust to a dead child and failed parent");
   check(exhausted.sent_at === null && exhausted.accepted_at === null, "all-dead retry exhaustion never leaves accepted timestamps");
 
-  const leaseAttemptId = crypto.randomUUID();
-  const deterministicA = worker.deterministicLeaseToken(leaseAttemptId, 2);
-  const deterministicB = worker.deterministicLeaseToken(leaseAttemptId, 2);
-  check(/^[0-9a-f-]{36}$/u.test(deterministicA) && deterministicA === deterministicB, "lease-token generation is deterministic for an attempt/ordinal pair");
+  await delivery.deliver(pool, notice("crash-before-send", [fcmMessage]), { defer: true });
+  let crashedBefore = false;
+  try {
+    await worker.runRetryBatch(pool, {
+      sender: { async sendPrepared() { throw new Error("must not reach provider"); } },
+      hooks: { async afterClaim() { throw new Error("crash-before-send-started"); } },
+      limit: 1,
+    });
+  } catch {
+    crashedBefore = true;
+  }
+  const beforeCrash = await row(
+    `SELECT lease_token,send_started_at FROM mobile_push_attempts WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='crash-before-send')`,
+  );
+  await pool.query(`UPDATE mobile_push_attempts SET lease_expires_at=now()-interval '1 second' WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='crash-before-send')`);
+  let crashedBeforeAgain = false;
+  try {
+    await worker.runRetryBatch(pool, {
+      sender: { async sendPrepared() { throw new Error("must not reach provider"); } },
+      hooks: { async afterClaim() { throw new Error("second-crash-before-send-started"); } },
+      limit: 1,
+    });
+  } catch {
+    crashedBeforeAgain = true;
+  }
+  const secondBeforeCrash = await row(
+    `SELECT lease_token,send_started_at FROM mobile_push_attempts WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='crash-before-send')`,
+  );
+  await pool.query(`UPDATE mobile_push_attempts SET lease_expires_at=now()-interval '1 second' WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='crash-before-send')`);
+  let reclaimedSends = 0;
+  await worker.runRetryBatch(pool, {
+    sender: { async sendPrepared() { reclaimedSends += 1; return { kind: "provider_accepted", providerMessageId: "crash-before-recovered" }; } },
+    limit: 1,
+  });
+  const afterReclaim = await row(
+    `SELECT lease_token,send_started_at FROM mobile_push_attempts WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='crash-before-send')`,
+  );
+  check(crashedBefore && crashedBeforeAgain && beforeCrash.send_started_at === null && secondBeforeCrash.send_started_at === null && reclaimedSends === 1, "a stale reservation that never crossed send-start is safely reclaimed");
+  check(beforeCrash.lease_token !== secondBeforeCrash.lease_token && secondBeforeCrash.lease_token !== afterReclaim.lease_token, "every claim receives a fresh random lease token");
+
+  await delivery.deliver(pool, notice("crash-after-send-start", [fcmMessage]), { defer: true });
+  let crashedAfter = false;
+  try {
+    await worker.runRetryBatch(pool, {
+      sender: { async sendPrepared() { throw new Error("must not reach provider after hook crash"); } },
+      hooks: { async afterSendStarted() { throw new Error("crash-after-send-started"); } },
+      limit: 1,
+    });
+  } catch {
+    crashedAfter = true;
+  }
+  const startedCrash = await row(
+    `SELECT send_started_at FROM mobile_push_attempts WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='crash-after-send-start')`,
+  );
+  await pool.query(`UPDATE mobile_push_attempts SET lease_expires_at=now()-interval '1 second' WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='crash-after-send-start')`);
+  let uncertainResends = 0;
+  await worker.runRetryBatch(pool, {
+    sender: { async sendPrepared() { uncertainResends += 1; return { kind: "provider_accepted", providerMessageId: "must-not-send" }; } },
+    limit: 1,
+  });
+  const uncertain = await row(
+    `SELECT a.status,a.last_error,l.delivery_status FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='crash-after-send-start'`,
+  );
+  check(crashedAfter && startedCrash.send_started_at !== null && uncertainResends === 0, "an expired unknown provider result is never resent");
+  check(uncertain.status === "dead" && uncertain.last_error === "uncertain_provider_result" && uncertain.delivery_status === "failed", "unknown provider outcome recovers deterministically to dead");
+
+  const secondTokenId = "10000000-0000-4000-8000-000000000005";
+  const secondInstallation = "20000000-0000-4000-8000-000000000005";
+  await pool.query(
+    `INSERT INTO mobile_push_tokens
+       (id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,last_registered_at)
+     VALUES($1,$2,$3,'ExponentPushToken[second-fcm]','second-current-fcm','fcm','android','en',now())`,
+    [secondTokenId, userId, secondInstallation],
+  );
+  const secondFcmMessage = { ...fcmMessage, tokenId: secondTokenId };
+  await delivery.deliver(pool, notice("slow-single-claim", [fcmMessage, secondFcmMessage]), { defer: true });
+  let releaseSlow!: () => void;
+  let enteredSlow!: () => void;
+  const slowEntered = new Promise<void>((resolve) => { enteredSlow = resolve; });
+  const slowRelease = new Promise<void>((resolve) => { releaseSlow = resolve; });
+  let slowSends = 0;
+  const slowWorker = worker.runRetryBatch(pool, {
+    sender: { async sendPrepared() { slowSends += 1; enteredSlow(); await slowRelease; return { kind: "provider_accepted", providerMessageId: `slow-${slowSends}` }; } },
+    leaseSeconds: 5,
+    limit: 2,
+  });
+  await slowEntered;
+  const siblingWhileSlow = await row(
+    `SELECT count(*)::int AS leased FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+      WHERE l.yam_key='slow-single-claim' AND a.lease_token IS NOT NULL AND a.send_started_at IS NULL`,
+  );
+  const inFlightSlow = await row(
+    `SELECT a.id FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+      WHERE l.yam_key='slow-single-claim' AND a.send_started_at IS NOT NULL`,
+  );
+  await pool.query(`UPDATE mobile_push_attempts SET lease_expires_at=now()-interval '1 second' WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='slow-single-claim') AND send_started_at IS NOT NULL`);
+  const competingSlow = await worker.runRetryBatch(pool, {
+    sender: { async sendPrepared() { slowSends += 1; return { kind: "provider_accepted", providerMessageId: "duplicate-slow" }; } },
+    limit: 1,
+    attemptIds: [inFlightSlow.id],
+  });
+  check(siblingWhileSlow.leased === 0, "worker never pre-claims a sibling before the current external send finishes");
+  check(competingSlow.claimed === 0 && slowSends === 1, "a second worker cannot resend a slow in-flight provider call after lease expiry");
+  releaseSlow();
+  await slowWorker;
+
+  const receiptTokenId = "10000000-0000-4000-8000-000000000006";
+  const receiptInstallation = "20000000-0000-4000-8000-000000000006";
+  await pool.query(
+    `INSERT INTO mobile_push_tokens
+       (id,user_id,installation_id,expo_push_token,device_token_type,platform,locale,last_registered_at)
+     VALUES($1,$2,$3,'ExponentPushToken[receipt-fence]','apns','ios','th',now())`,
+    [receiptTokenId, userId, receiptInstallation],
+  );
+  await delivery.deliver(pool, notice("receipt-fence", [{ ...expoMessage, tokenId: receiptTokenId }]), { defer: true });
+  await pool.query(
+    `UPDATE mobile_push_attempts SET status='provider_accepted',provider_ticket_id='receipt-fence-ticket',accepted_at=now()
+      WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='receipt-fence')`,
+  );
+  const receiptClaimA = await worker.claimReceiptOne(pool, { leaseSeconds: 5 });
+  await pool.query(`UPDATE mobile_push_attempts SET lease_expires_at=now()-interval '1 second' WHERE id=$1`, [receiptClaimA.id]);
+  const receiptClaimB = await worker.claimReceiptOne(pool, { leaseSeconds: 5 });
+  const staleReceiptFinished = await worker.finishReceipt(pool, receiptClaimA, { kind: "delivered" });
+  const receiptBeforeCurrent = await row(`SELECT status FROM mobile_push_attempts WHERE id=$1`, [receiptClaimA.id]);
+  const currentReceiptFinished = await worker.finishReceipt(pool, receiptClaimB, { kind: "delivered" });
+  check(receiptClaimA.lease_token !== receiptClaimB.lease_token, "receipt recovery receives a fresh random lease token");
+  check(staleReceiptFinished === false && receiptBeforeCurrent.status === "provider_accepted" && currentReceiptFinished === true,
+    "a stale receipt worker cannot clear or finalize a replacement lease");
+
+  await delivery.deliver(pool, notice("concurrent-all-dead", [fcmMessage, secondFcmMessage]), { defer: true });
+  let siblingEntered = 0;
+  let releaseSiblings!: () => void;
+  let bothSiblingsEntered!: () => void;
+  const siblingGate = new Promise<void>((resolve) => { releaseSiblings = resolve; });
+  const bothEntered = new Promise<void>((resolve) => { bothSiblingsEntered = resolve; });
+  const siblingSender = {
+    async sendPrepared() {
+      siblingEntered += 1;
+      if (siblingEntered === 2) bothSiblingsEntered();
+      await siblingGate;
+      return { kind: "failed", reason: "permanent-sibling-failure", retryable: false };
+    },
+  };
+  const siblingWorkerA = worker.runRetryBatch(pool, { sender: siblingSender, limit: 1 });
+  const siblingWorkerB = worker.runRetryBatch(pool, { sender: siblingSender, limit: 1 });
+  await bothEntered;
+  releaseSiblings();
+  await Promise.all([siblingWorkerA, siblingWorkerB]);
+  const allDeadParent = await row(
+    `SELECT delivery_status,sent_at,accepted_at FROM mobile_push_log WHERE yam_key='concurrent-all-dead'`,
+  );
+  check(allDeadParent.delivery_status === "failed" && allDeadParent.sent_at === null && allDeadParent.accepted_at === null,
+    "concurrent sibling completions serialize on the parent and preserve all-dead truth");
+
+  const transferUserId = "00000000-0000-4000-8000-000000000003";
+  await pool.query(`INSERT INTO users(id) VALUES($1)`, [transferUserId]);
+  await delivery.deliver(pool, notice("transfer-during-send", [secondFcmMessage]), { defer: true });
+  let releaseTransferSend!: () => void;
+  let enteredTransferSend!: () => void;
+  const transferSendEntered = new Promise<void>((resolve) => { enteredTransferSend = resolve; });
+  const transferSendRelease = new Promise<void>((resolve) => { releaseTransferSend = resolve; });
+  let sentDuringTransfer: string | null = null;
+  const transferWorker = worker.runRetryBatch(pool, {
+    sender: { async sendPrepared(target: { deviceToken: string }) { sentDuringTransfer = target.deviceToken; enteredTransferSend(); await transferSendRelease; return { kind: "provider_accepted", providerMessageId: "transfer-held-fcm" }; } },
+    limit: 1,
+  });
+  await transferSendEntered;
+  const transferClient = new pg.Client({
+    host: process.env.PGHOST || "127.0.0.1", port: Number(process.env.PGPORT || 5433), database,
+    user: databaseRole, password: databasePassword,
+  });
+  await transferClient.connect();
+  let transferCommitted = false;
+  const transferPromise = (async () => {
+    await transferClient.query("BEGIN");
+    await transferClient.query(`SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:'||$1::text,0))`, [secondInstallation]);
+    await transferClient.query(`UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now() WHERE id=$1`, [secondTokenId]);
+    await transferClient.query(
+      `INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,last_registered_at)
+       VALUES('10000000-0000-4000-8000-000000000007',$1,$2,'ExponentPushToken[transfer-new-owner]','transfer-new-owner-fcm','fcm','android','en',now())`,
+      [transferUserId, secondInstallation],
+    );
+    await transferClient.query("COMMIT");
+    transferCommitted = true;
+  })();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  check(transferCommitted === false, "ownership transfer cannot commit while the old owner's provider send is in flight");
+  releaseTransferSend();
+  await transferWorker;
+  await transferPromise;
+  await transferClient.end();
+  check(sentDuringTransfer === "second-current-fcm" && transferCommitted, "in-flight content uses only the locked old-owner transport before transfer commits");
+
+  await delivery.deliver(pool, notice("provider-id-first", [fcmMessage]), {
+    sender: { async sendPrepared() { return { kind: "provider_accepted", providerMessageId: "duplicate-provider-id" }; } },
+  });
+  const identifierConflict = await delivery.deliver(pool, notice("provider-id-second", [fcmMessage]), {
+    sender: { async sendPrepared() { return { kind: "provider_accepted", providerMessageId: "duplicate-provider-id" }; } },
+  });
+  const identifierConflictRow = await row(
+    `SELECT a.status,a.last_error,l.delivery_status FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='provider-id-second'`,
+  );
+  check(identifierConflict.status === "failed" && identifierConflictRow.status === "dead"
+    && identifierConflictRow.last_error === "provider_identifier_conflict" && identifierConflictRow.delivery_status === "failed",
+  "duplicate provider identifiers fail generically without corrupting parent truth");
+
+  const cliEvents: string[] = [];
+  await worker.main({
+    db: { async connect() { cliEvents.push("connect"); }, async end() { cliEvents.push("end"); } },
+    async runRetryBatch() { cliEvents.push("retry"); return { claimed: 0, accepted: 0, retryDue: 0, dead: 0 }; },
+    async pollReceiptBatch() { cliEvents.push("receipt"); return { claimed: 0, delivered: 0, errors: 0 }; },
+    log() { cliEvents.push("report"); },
+  });
+  check(cliEvents.join(",") === "connect,retry,receipt,report,end", "CLI main runs retry then receipts, reports once, and always closes its connection");
+  const cliFailureEvents: string[] = [];
+  let cliFailed = false;
+  try {
+    await worker.main({
+      db: { async connect() { cliFailureEvents.push("connect"); }, async end() { cliFailureEvents.push("end"); } },
+      async runRetryBatch() { cliFailureEvents.push("retry"); throw new Error("fixture-worker-failure"); },
+      async pollReceiptBatch() { cliFailureEvents.push("receipt"); return { claimed: 0, delivered: 0, errors: 0 }; },
+      log() { cliFailureEvents.push("report"); },
+    });
+  } catch {
+    cliFailed = true;
+  }
+  check(cliFailed && cliFailureEvents.join(",") === "connect,retry,end", "CLI main exits through its error path without polling/reporting and still closes the connection");
 
   await delivery.deliver(pool, notice("same-owner-rotation", [fcmMessage]), { defer: true });
   const exactBeforeRotation = await row(

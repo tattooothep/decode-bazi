@@ -121,3 +121,63 @@ legacy delivery, credentials, or release identity were changed.
 ## Commit
 
 - Implementation: `fc878da62618c6000365e62bf22eb809df32157b`
+
+## Review remediation (supersedes the original lease design)
+
+The post-implementation review identified concurrency and ambiguity windows in
+the original deterministic, batch-claim design. The remediation replaces that
+design as follows:
+
+- Workers claim and process one attempt at a time with a fresh database-random
+  UUID lease on every claim or recovery. They never reserve a batch that can
+  age while earlier sends are in flight.
+- `send_started_at` is committed before the provider call. An expired claim
+  that never crossed that boundary is reclaimable; one that did cross it is
+  finalized as dead with `uncertain_provider_result` and is never resent.
+- A session advisory lock using the same installation key as Task 1 is held
+  from active-token revalidation through the provider call and finalization.
+  Registration transfer therefore cannot change ownership mid-send, and a
+  claimed attempt is not sent after an already-completed transfer.
+- Child finalization locks the parent `mobile_push_log` first, then updates the
+  child and derives parent truth in the same transaction. Concurrent sibling
+  completion cannot leave an accepted/sent parent when all children are dead.
+- Receipt claims also use fresh random leases; finalization is fenced by the
+  current lease, so a stale poller cannot clear or finalize a replacement
+  claim.
+- Partial unique indexes protect non-null Expo ticket IDs and provider message
+  IDs. Provider-identifier conflicts are handled without exposing provider
+  details.
+- Both active FCM adapters now require a nonempty provider message name for a
+  2xx response. Success is `provider_accepted`, never delivered, and raw
+  provider responses are not logged.
+- Credential-shaped keys are removed from durable notification data before the
+  immutable exact message and its SHA-256 are stored.
+- The one-shot worker main path is dependency-injectable and tested for retry,
+  receipt, reporting, cleanup, and failure ordering.
+
+Additional meaningful REDs preceded these changes: missing `send_started_at`
+and unique indexes, malformed FCM 2xx accepted as success, credentials retained
+in the durable message, stale pre-send claims not reclaimed, missing random
+receipt claims/fencing, and the unused direct FCM adapter returning `sent`.
+
+### Fresh review-fix verification
+
+- `npx tsx scripts/test-mobile-push-retry-worker.mts` → 39 checks passed,
+  including slow-provider/two-worker exclusion, pre/post-send crash boundaries,
+  unknown-result no-resend, concurrent all-dead sibling derivation, transfer
+  blocking, receipt fencing, provider-ID conflicts, and CLI ordering.
+- `npx tsx scripts/test-push-send.mts` → 12 checks passed.
+- `npx tsx scripts/test-fcm-direct.mts` → `FCM_DIRECT_OK`.
+- `npx tsx scripts/test-push-guard.mts` → 22 checks passed.
+- Notification integrity contract and migration tests both passed, including
+  rollback/reapply and the new partial unique indexes.
+- Existing mobile push delivery suite → 6 checks passed on disposable
+  database `notification_integrity_delivery_test_task2_review_4300`.
+- `npx tsc --noEmit`, CJS syntax checks, and `git diff --check` all passed.
+- The final catalog check confirmed that both the disposable database and its
+  login role had been removed.
+
+No known correctness concern remains in Task 2's requested source scope. The
+independent worker still requires production scheduling in a later authorized
+deployment task; no production mutation, deployment, real send, science code,
+legacy delivery, or build/release setting was touched.

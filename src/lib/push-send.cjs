@@ -74,6 +74,11 @@ function stringData(message) {
   };
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined || value === null || key === "url") continue;
+    const keyParts = String(key).replace(/([a-z0-9])([A-Z])/gu, "$1_$2").toLowerCase().split(/[^a-z0-9]+/u);
+    if (keyParts.some((part) => [
+      "token", "auth", "authorization", "secret", "key", "credential", "password", "cookie", "session",
+      "apikey", "privatekey", "accesskey", "clientsecret", "bearer",
+    ].includes(part))) continue;
     out[String(key).slice(0, 80)] = String(value).slice(0, 500);
   }
   return out;
@@ -188,10 +193,14 @@ async function sendPreparedFcmOnce(deviceToken, providerMessage) {
     );
     if (response.ok) {
       const payload = await response.json().catch(() => ({}));
+      const providerMessageId = typeof payload.name === "string" ? payload.name.trim() : "";
+      if (!providerMessageId) {
+        return { kind: "failed", provider: "fcm", reason: "fcm_missing_message_name", retryable: true };
+      }
       return {
         kind: "provider_accepted",
         provider: "fcm",
-        providerMessageId: typeof payload.name === "string" ? payload.name : null,
+        providerMessageId,
       };
     }
     const detail = (await response.text()).slice(0, 500);

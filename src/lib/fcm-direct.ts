@@ -109,7 +109,7 @@ async function getTicket(): Promise<string | null> {
       error_description?: string;
     };
     if (typeof data.access_token !== "string") {
-      console.error("[fcm] ขอตั๋วไม่สำเร็จ", data.error_description ?? "");
+      console.error("[fcm] ขอตั๋วไม่สำเร็จ");
       return null;
     }
     const lifetime = (data.expires_in ?? 3600) - TICKET_SAFETY_SECONDS;
@@ -119,19 +119,16 @@ async function getTicket(): Promise<string | null> {
     };
     return cachedTicket.token;
   } catch (error) {
-    console.error(
-      "[fcm] ขอตั๋วล้ม",
-      String((error as Error)?.message ?? error),
-    );
+    console.error("[fcm] ขอตั๋วล้ม");
     return null;
   }
 }
 
 export type FcmSendResult =
-  | { kind: "sent" }
+  | { kind: "provider_accepted"; provider: "fcm"; providerMessageId: string }
   /** เครื่องนี้ไม่รับแล้ว (ถอนแอพ/กุญแจหมดอายุ) — ตัวเรียกควรลบทิ้ง */
-  | { kind: "gone"; reason: string }
-  | { kind: "failed"; reason: string };
+  | { kind: "gone"; provider: "fcm"; reason: string; retryable: false }
+  | { kind: "failed"; provider: "fcm"; reason: string; retryable: true };
 
 /**
  * ส่งหนึ่งข้อความไปหาหนึ่งเครื่อง
@@ -145,9 +142,9 @@ export async function sendFcmToDevice(
   message: Readonly<{ title: string; body: string; url?: string }>,
 ): Promise<FcmSendResult> {
   const key = loadKey();
-  if (key === null) return { kind: "failed", reason: "no_service_account" };
+  if (key === null) return { kind: "failed", provider: "fcm", reason: "no_service_account", retryable: true };
   const ticket = await getTicket();
-  if (ticket === null) return { kind: "failed", reason: "no_ticket" };
+  if (ticket === null) return { kind: "failed", provider: "fcm", reason: "no_ticket", retryable: true };
 
   const endpoint =
     `https://fcm.googleapis.com/v1/projects/${key.project_id}/messages:send`;
@@ -173,21 +170,26 @@ export async function sendFcmToDevice(
       }),
     });
 
-    if (response.ok) return { kind: "sent" };
+    if (response.ok) {
+      const payload = await response.json().catch(() => ({})) as { name?: unknown };
+      const providerMessageId = typeof payload.name === "string" ? payload.name.trim() : "";
+      return providerMessageId
+        ? { kind: "provider_accepted", provider: "fcm", providerMessageId }
+        : { kind: "failed", provider: "fcm", reason: "fcm_missing_message_name", retryable: true };
+    }
 
     const detail = (await response.text()).slice(0, 300);
     // 404/400 ที่บอกว่ากุญแจใช้ไม่ได้ = เครื่องนี้ไม่รับแล้ว ต้องลบทิ้ง
     const gone = response.status === 404
       || detail.includes("UNREGISTERED")
       || detail.includes("INVALID_ARGUMENT");
-    console.error(`[fcm] ส่งไม่สำเร็จ ${response.status}`, detail);
+    console.error(`[fcm] ส่งไม่สำเร็จ ${response.status}`);
     return gone
-      ? { kind: "gone", reason: `${response.status}` }
-      : { kind: "failed", reason: `${response.status}` };
+      ? { kind: "gone", provider: "fcm", reason: `fcm_${response.status}`, retryable: false }
+      : { kind: "failed", provider: "fcm", reason: `fcm_${response.status}`, retryable: true };
   } catch (error) {
     return {
-      kind: "failed",
-      reason: String((error as Error)?.message ?? error),
+      kind: "failed", provider: "fcm", reason: "fcm_transport_error", retryable: true,
     };
   }
 }
