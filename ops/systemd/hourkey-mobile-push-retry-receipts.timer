@@ -1,0 +1,12 @@
+[Unit]
+Description=Schedule Hourkey mobile push retry and Expo receipt worker
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Persistent=true
+Unit=hourkey-mobile-push-retry-receipts.service
+
+[Install]
+WantedBy=timers.target

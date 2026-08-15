@@ -1,0 +1,17 @@
+[Unit]
+Description=Hourkey mobile push retry and Expo receipt worker
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=hourkey
+Group=hourkey
+WorkingDirectory=/root/releases/current
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/hourkey/hourkey.env
+StateDirectory=hourkey-notification
+ExecStart=/usr/bin/node /root/releases/current/scripts/notification-retry-receipt-runner.cjs --heartbeat-file /var/lib/hourkey-notification/retry-receipt.heartbeat
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/hourkey-notification

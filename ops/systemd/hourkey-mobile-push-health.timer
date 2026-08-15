@@ -1,0 +1,12 @@
+[Unit]
+Description=Schedule Hourkey aggregate mobile push health check
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Persistent=true
+Unit=hourkey-mobile-push-health.service
+
+[Install]
+WantedBy=timers.target

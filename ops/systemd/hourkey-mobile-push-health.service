@@ -1,0 +1,15 @@
+[Unit]
+Description=Hourkey aggregate mobile push health check
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=hourkey
+Group=hourkey
+WorkingDirectory=/root/releases/current
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/hourkey/hourkey.env
+ExecStart=/usr/bin/node /root/releases/current/scripts/notification-health.cjs --lookback-hours 168 --worker-heartbeat-file /var/lib/hourkey-notification/retry-receipt.heartbeat --scheduler-heartbeat-file /var/lib/hourkey-notification/scheduler.heartbeat
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
