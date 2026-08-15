@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { accessSync, constants } from "node:fs";
 import { mkdtemp, readFile, rm, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,6 +11,8 @@ const directory = await mkdtemp(join(tmpdir(), "notification-observability-"));
 
 try {
   const health = require("./notification-health.cjs");
+  const reconciliation = require("./notification-reconcile.cjs");
+  const preflight = require("./notification-observability-preflight.cjs");
   const runner = require("./notification-retry-receipt-runner.cjs");
   const heartbeat = join(directory, "retry.heartbeat");
   assert.equal(health.providerReadiness({ FCM_SERVICE_ACCOUNT_PATH: join(directory, "missing-service-account.json") }).fcm, false, "a routed FCM provider without a readable credential is unhealthy without printing its path");
@@ -17,6 +21,12 @@ try {
   await utimes(heartbeat, new Date("2026-08-16T00:00:00.000Z"), new Date("2026-08-16T00:00:00.000Z"));
   assert.equal(health.readHeartbeat(heartbeat), "2026-08-16T00:00:00.000Z", "health reads heartbeat freshness from file metadata rather than contents");
   assert.equal(health.readHeartbeat(join(directory, "missing")), null, "missing heartbeat remains unhealthy rather than being treated as fresh");
+  const failingProcess: { exitCode?: number } = {};
+  await reconciliation.runCli({ execute: async () => ({ ok: false, counts: { parentTruthMismatch: 1 } }), processRef: failingProcess });
+  assert.equal(failingProcess.exitCode, 1, "reconciliation CLI exits nonzero when any invariant remains unresolved");
+  const passingProcess: { exitCode?: number } = {};
+  await reconciliation.runCli({ execute: async () => ({ ok: true, counts: {} }), processRef: passingProcess });
+  assert.equal(passingProcess.exitCode, 0, "reconciliation CLI exits zero only when every invariant count is zero");
 
   const retryUnit = "ops/systemd/hourkey-mobile-push-retry-receipts.service";
   const receiptTimer = "ops/systemd/hourkey-mobile-push-retry-receipts.timer";
@@ -30,6 +40,29 @@ try {
   assert.match(await readFile(receiptTimer, "utf8"), /OnUnitActiveSec=1min/u, "retry/receipt timer has a bounded cadence");
   assert.match(await readFile(healthUnit, "utf8"), /notification-health\.cjs.*--worker-heartbeat-file/u, "health unit fails closed on the retry heartbeat input");
   assert.match(await readFile(healthTimer, "utf8"), /OnUnitActiveSec=1min/u, "health timer has a bounded cadence");
+  for (const file of [retryUnit, healthUnit]) {
+    const source = await readFile(file, "utf8");
+    assert.match(source, /^User=root$/mu, `${file} uses the existing validated runtime account`);
+    assert.match(source, /^Group=root$/mu, `${file} uses the existing validated runtime group`);
+    assert.doesNotMatch(source, /^User=hourkey$/mu, `${file} does not name a nonexistent service account`);
+  }
+  assert.match(execFileSync("getent", ["passwd", "root"], { encoding: "utf8" }), /^root:/mu, "template runtime account exists on the reviewed host");
+  accessSync("/usr/bin/node", constants.X_OK);
+  const preflightReport = preflight.inspect({
+    access: () => {}, lookupUser: () => true, uid: () => 0,
+  });
+  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, credentialReadable: true, stateWritable: true }, "preflight validates root runtime and required executable/access model without printing paths or secrets");
+  const blockedPreflight = preflight.inspect({
+    access: () => { throw new Error("private-path"); }, lookupUser: () => false, uid: () => 99,
+  });
+  assert.equal(blockedPreflight.ok, false, "preflight fails closed when executable or credential access is unavailable");
+  assert.equal(JSON.stringify(blockedPreflight).includes("private-path"), false, "preflight never serializes filesystem exception content");
+  assert.equal(preflight.inspect({ access: () => {}, uid: () => 0 }).runtimeRoot, true, "preflight independently verifies the template root account exists on this host");
+  execFileSync("systemd-analyze", ["verify", retryUnit, receiptTimer, healthUnit, healthTimer], { stdio: "pipe" });
+  const runbook = await readFile("docs/runbooks/notification-observability.md", "utf8");
+  assert.match(runbook, /root.*least-privilege|least-privilege.*root/isu, "runbook records the root credential-access and least-privilege tradeoff");
+  assert.match(runbook, /notification-observability-preflight\.cjs/u, "runbook requires source-only executable and credential-access preflight");
+  assert.match(runbook, /\/api\/internal\/health\/notifications/u, "runbook documents the authenticated internal health endpoint");
   console.log("NOTIFICATION_OBSERVABILITY_CLI_OK");
 } finally {
   await rm(directory, { recursive: true, force: true });

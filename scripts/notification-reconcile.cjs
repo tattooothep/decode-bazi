@@ -30,6 +30,12 @@ async function main(options = {}) {
   }
 }
 
-if (require.main === module) main().then((report) => { if (report.ok === false) process.exitCode = 1; });
+async function runCli(options = {}) {
+  const report = await (options.execute || main)(options);
+  (options.processRef || process).exitCode = report.ok === true ? 0 : 1;
+  return report;
+}
 
-module.exports = { main };
+if (require.main === module) runCli();
+
+module.exports = { main, runCli };

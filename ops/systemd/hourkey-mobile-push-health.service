@@ -4,8 +4,8 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-User=hourkey
-Group=hourkey
+User=root
+Group=root
 WorkingDirectory=/root/releases/current
 Environment=NODE_ENV=production
 EnvironmentFile=-/etc/hourkey/hourkey.env
