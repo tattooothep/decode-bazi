@@ -156,7 +156,14 @@ DECLARE
   parent_kind text;
 BEGIN
   IF NEW.transactional = true THEN
-    SELECT kind INTO parent_kind FROM mobile_push_log WHERE id=NEW.push_log_id;
+    -- Serialize against a concurrent parent-kind UPDATE on the same row before
+    -- validating. The UPDATE trigger below runs only after PostgreSQL has
+    -- acquired that row's update lock, so both trigger paths share one lock
+    -- order without introducing a separate advisory-lock deadlock cycle.
+    SELECT kind INTO parent_kind
+      FROM mobile_push_log
+     WHERE id=NEW.push_log_id
+       FOR UPDATE;
     IF parent_kind IS NULL OR parent_kind NOT IN ('security','service') THEN
       RAISE EXCEPTION 'transactional mobile push requires security or service parent kind'
         USING ERRCODE='23514';
@@ -174,6 +181,8 @@ FOR EACH ROW EXECUTE FUNCTION enforce_mobile_push_attempt_transactional_kind();
 CREATE OR REPLACE FUNCTION enforce_mobile_push_log_transactional_kind()
 RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+  -- A BEFORE ROW UPDATE trigger is invoked with the target parent tuple locked.
+  -- Attempt INSERT/UPDATE takes this identical row lock above before its check.
   IF NEW.kind NOT IN ('security','service')
      AND EXISTS (
        SELECT 1 FROM mobile_push_attempts

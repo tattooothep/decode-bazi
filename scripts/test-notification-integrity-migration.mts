@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import pg, { type QueryConfig } from "pg";
 
 const database = `notification_integrity_test_${process.pid}`;
+const role = `notification_integrity_race_role_${process.pid}`;
+const password = crypto.randomBytes(24).toString("hex");
 assert.match(database, /^notification_integrity_test_/u, "migration tests may only create an explicitly disposable database");
 const forward = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
 const rollback = readFileSync("migrations/20260815_mobile_notification_integrity.rollback.sql", "utf8");
@@ -25,8 +29,138 @@ function expectSqlFailure(sql: string, message: string) {
   assert.equal(failed, true, message);
 }
 
+type TrackedOutcome = {
+  isSettled: () => boolean;
+  result: Promise<TransactionOutcome>;
+};
+
+type TransactionOutcome = { committed: true } | { committed: false; sqlState?: string };
+
+function sqlState(error: unknown): string | undefined {
+  if (typeof error !== "object" || error === null || !("code" in error)) return undefined;
+  return typeof error.code === "string" ? error.code : undefined;
+}
+
+function trackTransaction(client: pg.Client, sql: string | QueryConfig): TrackedOutcome {
+  let settled = false;
+  const result = (async () => {
+    try {
+      await client.query(sql);
+      await client.query("COMMIT");
+      return { committed: true } as const;
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => null);
+      return { committed: false, sqlState: sqlState(error) } as const;
+    } finally {
+      settled = true;
+    }
+  })();
+  return { isSettled: () => settled, result };
+}
+
+async function waitForLockOrSettlement(
+  observer: pg.Client,
+  applicationName: string,
+  tracked: TrackedOutcome,
+): Promise<"lock" | "settled"> {
+  const deadline = Date.now() + 3_000;
+  while (Date.now() < deadline) {
+    if (tracked.isSettled()) return "settled";
+    const activity = await observer.query(
+      `SELECT wait_event_type FROM pg_stat_activity WHERE application_name=$1`,
+      [applicationName],
+    );
+    if (activity.rows.some((row) => row.wait_event_type === "Lock")) return "lock";
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  throw new Error(`transaction ${applicationName} neither settled nor waited on a lock`);
+}
+
+async function testTransactionalKindRace(order: "attempt-first" | "parent-first") {
+  const suffix = order === "attempt-first" ? "1" : "2";
+  const parentId = `30000000-0000-4000-8000-00000000000${suffix}`;
+  const installationId = `40000000-0000-4000-8000-00000000000${suffix}`;
+  const attemptName = `notification_race_attempt_${process.pid}_${suffix}`;
+  const parentName = `notification_race_parent_${process.pid}_${suffix}`;
+  const connection = { host: "127.0.0.1", port: 5433, database, user: role, password };
+  const attemptClient = new pg.Client({ ...connection, application_name: attemptName });
+  const parentClient = new pg.Client({ ...connection, application_name: parentName });
+  const observer = new pg.Client({ ...connection, application_name: `notification_race_observer_${process.pid}_${suffix}` });
+  await Promise.all([attemptClient.connect(), parentClient.connect(), observer.connect()]);
+  try {
+    await observer.query(
+      `INSERT INTO mobile_push_log(id,user_id,kind)
+       VALUES($1,'00000000-0000-4000-8000-000000000001','service')`,
+      [parentId],
+    );
+    const insertAttempt = {
+      text: `INSERT INTO mobile_push_attempts
+        (push_log_id,installation_id,provider,provider_message,message_sha256,transactional)
+        VALUES($1,$2,'expo','{}',$3,true)`,
+      values: [parentId, installationId, suffix.repeat(64)],
+    };
+
+    let attemptOutcome: TransactionOutcome;
+    let parentOutcome: TransactionOutcome;
+    if (order === "attempt-first") {
+      await attemptClient.query("BEGIN");
+      await attemptClient.query(insertAttempt);
+      await parentClient.query("BEGIN");
+      const parentMutation = trackTransaction(parentClient, {
+        text: "UPDATE mobile_push_log SET kind='daily' WHERE id=$1",
+        values: [parentId],
+      });
+      await waitForLockOrSettlement(observer, parentName, parentMutation);
+      attemptOutcome = await attemptClient.query("COMMIT").then(
+        () => ({ committed: true } as const),
+        (error) => ({ committed: false, sqlState: sqlState(error) } as const),
+      );
+      parentOutcome = await parentMutation.result;
+    } else {
+      await parentClient.query("BEGIN");
+      await parentClient.query("UPDATE mobile_push_log SET kind='daily' WHERE id=$1", [parentId]);
+      await attemptClient.query("BEGIN");
+      const attemptMutation = trackTransaction(attemptClient, insertAttempt);
+      await waitForLockOrSettlement(observer, attemptName, attemptMutation);
+      parentOutcome = await parentClient.query("COMMIT").then(
+        () => ({ committed: true } as const),
+        (error) => ({ committed: false, sqlState: sqlState(error) } as const),
+      );
+      attemptOutcome = await attemptMutation.result;
+    }
+
+    assert.equal(
+      Number(attemptOutcome.committed) + Number(parentOutcome.committed),
+      1,
+      `${order} race permits at most one conflicting transaction to commit`,
+    );
+    const expectedWinner = order === "attempt-first" ? attemptOutcome : parentOutcome;
+    const expectedRejection = order === "attempt-first" ? parentOutcome : attemptOutcome;
+    assert.equal(expectedWinner.committed, true, `${order} first transaction commits`);
+    assert.equal(expectedRejection.committed, false, `${order} second transaction is rejected`);
+    assert.equal(
+      expectedRejection.committed ? undefined : expectedRejection.sqlState,
+      "23514",
+      `${order} conflict is rejected by the invariant rather than a deadlock`,
+    );
+    const invariant = await observer.query(
+      `SELECT count(*)::int AS invalid
+         FROM mobile_push_log l
+         JOIN mobile_push_attempts a ON a.push_log_id=l.id
+        WHERE l.id=$1 AND a.transactional=true AND l.kind NOT IN ('security','service')`,
+      [parentId],
+    );
+    assert.equal(invariant.rows[0].invalid, 0, `${order} race preserves the transactional-kind invariant`);
+  } finally {
+    await Promise.allSettled([
+      attemptClient.query("ROLLBACK"), parentClient.query("ROLLBACK"),
+    ]);
+    await Promise.allSettled([attemptClient.end(), parentClient.end(), observer.end()]);
+  }
+}
+
 try {
-  psql("postgres", `DROP DATABASE IF EXISTS ${database}; CREATE DATABASE ${database};`);
+  psql("postgres", `DROP DATABASE IF EXISTS ${database}; DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     CREATE TABLE users (id uuid PRIMARY KEY);
@@ -77,6 +211,7 @@ try {
   `);
 
   psql(database, forward);
+  psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
   assert.equal(
     psql(database, `SELECT count(*) FROM mobile_push_tokens WHERE id IN ('10000000-0000-4000-8000-000000000011','10000000-0000-4000-8000-000000000012') AND enabled=true AND device_push_token IS NULL;`),
     "2",
@@ -143,6 +278,8 @@ try {
     `UPDATE mobile_push_log SET kind='daily' WHERE id='${serviceParent}';`,
     "database prevents changing a transactional attempt parent into an advisory/science kind",
   );
+  await testTransactionalKindRace("attempt-first");
+  await testTransactionalKindRace("parent-first");
   assert.equal(
     psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_push_attempts' AND column_name='send_started_at';`),
     "1",
@@ -215,7 +352,7 @@ try {
   console.log("NOTIFICATION_INTEGRITY_MIGRATION_OK");
 } finally {
   try {
-    psql("postgres", `DROP DATABASE IF EXISTS ${database};`);
+    psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role};`);
   } catch {
     // Preserve the original failure; this disposable database is named uniquely.
   }

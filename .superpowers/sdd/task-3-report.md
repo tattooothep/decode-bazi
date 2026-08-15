@@ -1,6 +1,6 @@
 # Task 3 — Notification scheduler/science and delivery final report
 
-Date: 2026-08-15
+Date: 2026-08-16
 Original base: `600c9fd9de752a97d559f373e4f81b2b08731455`
 First review correction: `196b539793fcfe24cda76bf79894d010e1371bb6`
 
@@ -21,7 +21,8 @@ Scope remained limited to backend notification schedulers, notification-facing s
 - Reservation rejects `transactional:true` before any query unless `kind` is exactly `security` or `service`; it no longer silently treats an advisory/science notice as privileged.
 - Retry joins and trusts the stored parent kind. A raw transactional flag on `daily`, Yam, or another advisory/science parent is terminal policy failure, not a consent/pause/quiet/cap bypass.
 - PostgreSQL independently enforces the same invariant. An attempt trigger validates the referenced parent kind on insert/update, and a parent trigger prevents later changing a transactional security/service parent to another kind.
-- Rollback/reapply tests prove direct transactional daily writes and parent-kind mutation fail while service succeeds.
+- Both trigger paths serialize on the same parent row before checking: attempt INSERT/UPDATE takes `SELECT ... FOR UPDATE`, while parent kind UPDATE holds that target-row lock before its row trigger runs. This closes the concurrent write-skew window without mixing advisory and row-lock order, and leaves the foreign key check intact.
+- Rollback/reapply tests prove direct transactional daily writes and parent-kind mutation fail while service succeeds. A deterministic two-connection test covers attempt-first and parent-first transaction schedules; in each schedule exactly the first transaction commits, the conflict is rejected with SQLSTATE `23514` rather than a deadlock, and the final stored-state invariant holds.
 
 ### Locale-correct authenticated history and privacy
 
@@ -62,6 +63,7 @@ Observed RED failures before production fixes included:
 6. Final cron logging exposed emails, stable IDs, notification copy, and raw errors.
 7. The first aggregate found the general timeout had been fenced too broadly; the daily never-settling timeout test caught it. Per-call and lease-fenced timeout semantics were separated.
 8. The Yam compatibility test caught removal of its fixed failure marker; the safe marker was restored without raw error content.
+9. Before parent-row serialization, both deterministic transaction schedules allowed the transactional attempt and conflicting service-to-daily parent mutation to commit (`2 !== 1`), leaving an invalid joined state.
 
 Every item was rerun GREEN before the aggregate.
 
@@ -76,7 +78,7 @@ Task 3 focused:
 - `test-notification-payload-task3.mts` — all 8 categories.
 - `test-notification-atomicity-task3.mts` — lock fencing, overlap refusal, settle-then-unlock, unlock discard, cap/local-day SQL, trusted transactional app policy.
 - `test-notification-cap-task3.mts` — credential rejection-before-storage, 8 contenders → 1 reservation, local-day boundary, account-locale history, privacy/provider parity; disposable DB/role removed.
-- `test-notification-integrity-migration.mts` — blank tokens, transactional-kind triggers, parent mutation defense, rollback/reapply; disposable DB removed.
+- `test-notification-integrity-migration.mts` — blank tokens, sequential transactional-kind checks, two live-connection race schedules, SQLSTATE/no-deadlock assertions, parent mutation defense, rollback/reapply; disposable DB and login role removed.
 
 Task 2 delivery/retry/sender:
 
