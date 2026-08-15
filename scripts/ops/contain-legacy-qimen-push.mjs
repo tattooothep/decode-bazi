@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { closeSync, constants, existsSync, fchmodSync, fchownSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, parse, relative, resolve, sep } from "node:path";
 
 const CONFIRM_APPLY = "DISABLE_LEGACY_QIMEN_PUSH";
@@ -18,9 +18,8 @@ const SAFE_FAILURE_CODES = new Set([
   "rollback_checksum_mismatch", "rollback_confirmation_required", "rollback_manifest_missing",
   "root_and_inventory_required", "unexpected_target_checksum", "unknown_argument", "unsafe_inventory_path",
   "vapid_environment_unavailable", "invalid_target_encoding", "target_state_changed_before_write",
-  "test_hook_not_permitted",
+  "target_metadata_not_preserved",
 ]);
-const TEST_AFTER_BACKUP_MUTATION = "// concurrent target changed after backup\n";
 
 function fail(code) {
   throw new Error(code);
@@ -210,6 +209,8 @@ function targetSnapshot(root, relativePath) {
     dev: stat.dev,
     ino: stat.ino,
     mode: stat.mode,
+    uid: stat.uid,
+    gid: stat.gid,
     size: stat.size,
     mtimeMs: stat.mtimeMs,
     ctimeMs: stat.ctimeMs,
@@ -218,7 +219,7 @@ function targetSnapshot(root, relativePath) {
 
 function verifyTargetSnapshot(root, relativePath, before) {
   const current = targetSnapshot(root, relativePath);
-  if (current.target !== before.target || current.sha256 !== before.sha256 || current.dev !== before.dev || current.ino !== before.ino || current.mode !== before.mode || current.size !== before.size || current.mtimeMs !== before.mtimeMs || current.ctimeMs !== before.ctimeMs) {
+  if (current.target !== before.target || current.sha256 !== before.sha256 || current.dev !== before.dev || current.ino !== before.ino || current.mode !== before.mode || current.uid !== before.uid || current.gid !== before.gid || current.size !== before.size || current.mtimeMs !== before.mtimeMs || current.ctimeMs !== before.ctimeMs) {
     fail("target_state_changed_before_write");
   }
   return current;
@@ -226,15 +227,6 @@ function verifyTargetSnapshot(root, relativePath, before) {
 
 function verifyAllTargetSnapshots(root, changes) {
   for (const [path, change] of changes) verifyTargetSnapshot(root, path, change.before);
-}
-
-function runTestAfterBackupHook(root, changes) {
-  const hook = process.env.LEGACY_CONTAINMENT_TEST_HOOK;
-  if (!hook) return;
-  if (process.env.NODE_ENV !== "test" || hook !== "mutate-first-target") fail("test_hook_not_permitted");
-  const first = changes.entries().next().value;
-  if (!first) fail("test_hook_not_permitted");
-  writeFileSync(regularFile(root, first[0]), TEST_AFTER_BACKUP_MUTATION, "utf8");
 }
 
 function audit(root, inventory, overrides) {
@@ -275,9 +267,25 @@ function approvalCount(path) {
   return reviewers.size;
 }
 
-function writeNewTemporary(path, text) {
+function metadataFromSnapshot(snapshot) {
+  return { mode: snapshot.mode & 0o7777, uid: snapshot.uid, gid: snapshot.gid };
+}
+
+function validMetadata(value, failureCode) {
+  if (!value || typeof value !== "object" || !Number.isSafeInteger(value.mode) || value.mode < 0 || value.mode > 0o7777 || !Number.isSafeInteger(value.uid) || value.uid < 0 || !Number.isSafeInteger(value.gid) || value.gid < 0) fail(failureCode);
+  return value;
+}
+
+function writeNewTemporary(path, text, metadata) {
   const descriptor = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
-  try { writeFileSync(descriptor, text, "utf8"); }
+  try {
+    writeFileSync(descriptor, text, "utf8");
+    if (metadata) {
+      const expected = validMetadata(metadata, "target_metadata_not_preserved");
+      fchownSync(descriptor, expected.uid, expected.gid);
+      fchmodSync(descriptor, expected.mode);
+    }
+  }
   finally { closeSync(descriptor); }
 }
 
@@ -304,16 +312,45 @@ function backupFile(backupDir, name) {
   return secureAbsoluteFile(join(backupDir, "files", name), "invalid_rollback_manifest");
 }
 
-function atomicWriteTarget(root, relativePath, text, before) {
+function verifyWrittenTarget(root, relativePath, text, metadata) {
+  const current = targetSnapshot(root, relativePath);
+  const expected = validMetadata(metadata, "target_metadata_not_preserved");
+  if (current.sha256 !== sha256(text) || (current.mode & 0o7777) !== expected.mode || current.uid !== expected.uid || current.gid !== expected.gid) fail("target_metadata_not_preserved");
+  return current;
+}
+
+function writeTargetOnce(root, relativePath, text, before, metadata) {
   const target = verifyTargetSnapshot(root, relativePath, before).target;
   const temporary = `${target}.legacy-containment-${process.pid}-${Date.now()}`;
   try {
     verifyTargetSnapshot(root, relativePath, before);
-    writeNewTemporary(temporary, text);
+    writeNewTemporary(temporary, text, metadata);
     verifyTargetSnapshot(root, relativePath, before);
     renameSync(temporary, target);
   } catch (error) {
     if (existsSync(temporary) && !lstatSync(temporary).isSymbolicLink()) unlinkSync(temporary);
+    throw error;
+  }
+  return target;
+}
+
+function atomicWriteTarget(root, relativePath, text, before, metadata = metadataFromSnapshot(before)) {
+  let renamed = false;
+  try {
+    writeTargetOnce(root, relativePath, text, before, metadata);
+    renamed = true;
+    verifyWrittenTarget(root, relativePath, text, metadata);
+  } catch (error) {
+    if (renamed) {
+      try {
+        const current = targetSnapshot(root, relativePath);
+        if (current.sha256 !== sha256(text)) fail("target_state_changed_before_write");
+        writeTargetOnce(root, relativePath, before.text, current, metadataFromSnapshot(before));
+        verifyWrittenTarget(root, relativePath, before.text, metadataFromSnapshot(before));
+      } catch {
+        fail("target_metadata_not_preserved");
+      }
+    }
     throw error;
   }
 }
@@ -369,10 +406,15 @@ function apply(options, root, inventory) {
   for (const [path, change] of changes) {
     const backupName = sha256(path);
     atomicWriteBackup(backupDir, backupName, change.before.text);
-    manifest.files.push({ path, backupName, originalSha256: change.before.sha256, appliedSha256: sha256(change.replacement) });
+    manifest.files.push({
+      path,
+      backupName,
+      originalSha256: change.before.sha256,
+      appliedSha256: sha256(change.replacement),
+      originalMetadata: metadataFromSnapshot(change.before),
+    });
   }
   atomicWriteBackup(backupDir, "manifest.json", `${JSON.stringify(manifest)}\n`);
-  runTestAfterBackupHook(root, changes);
   verifyAllTargetSnapshots(root, changes);
   const written = [];
   try {
@@ -385,7 +427,7 @@ function apply(options, root, inventory) {
     for (const path of written.reverse()) {
       const current = targetSnapshot(root, path);
       if (current.sha256 !== sha256(changes.get(path).replacement)) fail("apply_failed_rolled_back");
-      atomicWriteTarget(root, path, changes.get(path).before.text, current);
+      atomicWriteTarget(root, path, changes.get(path).before.text, current, metadataFromSnapshot(changes.get(path).before));
     }
     fail("apply_failed_rolled_back");
   }
@@ -406,12 +448,13 @@ function rollback(options, root) {
   const before = new Map();
   for (const file of manifest.files) {
     if (!file || typeof file.path !== "string" || !/^[a-f0-9]{64}$/u.test(file.backupName || "")) fail("invalid_rollback_manifest");
+    validMetadata(file.originalMetadata, "invalid_rollback_manifest");
     const original = readFileSync(backupFile(backupDir, file.backupName), "utf8");
     const target = targetSnapshot(root, file.path);
     if (sha256(original) !== file.originalSha256 || target.sha256 !== file.appliedSha256) fail("rollback_checksum_mismatch");
     before.set(file.path, target);
   }
-  for (const file of manifest.files) atomicWriteTarget(root, file.path, readFileSync(backupFile(backupDir, file.backupName), "utf8"), before.get(file.path));
+  for (const file of manifest.files) atomicWriteTarget(root, file.path, readFileSync(backupFile(backupDir, file.backupName), "utf8"), before.get(file.path), file.originalMetadata);
   process.stdout.write("LEGACY_QIMEN_CONTAINMENT_ROLLBACK_OK\n");
 }
 

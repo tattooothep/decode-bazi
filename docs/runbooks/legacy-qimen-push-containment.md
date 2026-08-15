@@ -85,7 +85,11 @@ node scripts/ops/contain-legacy-qimen-push.mjs --apply \
 ```
 
 Apply stores checksummed, mode-0600 backups and writes each reviewed target via
-atomic rename. It validates every target checksum before writing, validates the
+atomic rename. It captures and preserves each target's exact Unix permission
+mode, uid, and gid through apply and rollback, then verifies those fields after
+each rename; the backup manifest records the original metadata. Target mtime and
+ctime are intentionally not contractual because an atomic replacement creates a
+new file. It validates every target checksum before writing, validates the
 candidate configuration before writing, and restores already-written files if a
 post-write validation fails. A process interruption still requires the rollback
 procedure below; do not reload a service before the post-apply audit succeeds.

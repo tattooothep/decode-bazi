@@ -170,3 +170,61 @@
   `node --check scripts/workers/admin-notify-watcher.mjs`, and
   `node --check src/lib/admin-notify-recipient-rbac.mjs` passed.
 - `git diff --check` passed.
+
+## Fourth Reviewer Remediation — Metadata and Hook Removal
+
+### RED evidence
+
+- Added a non-default `0640` route-file fixture with its current safe uid/gid,
+  manifest metadata assertions, and apply/rollback preservation checks before
+  changing the tool. `node scripts/test-legacy-qimen-containment.mjs` failed at
+  `apply preserves reviewed target mode and ownership`: the prior atomic
+  temporary was created as `0600` and replaced the reviewed mode.
+- Replaced the former operational mutation hook test with a test-only Node
+  preload. The preload pauses immediately after the backup manifest rename,
+  then the test externally changes the target and releases the child process.
+  This deterministically proves the final all-target verification aborts before
+  a reviewed replacement, preserves the concurrent bytes, and leaves later
+  targets untouched, without a tool test hook or test-environment branch.
+
+### GREEN evidence
+
+- `node scripts/test-legacy-qimen-containment.mjs` ->
+  `LEGACY_QIMEN_CONTAINMENT_OK 58`.
+  - Target snapshots now include uid/gid. Atomic target replacement creates a
+    `0600` private temporary, applies only that target's captured uid/gid/mode
+    with descriptor-level `fchown` then `fchmod`, renames it, and verifies the
+    replacement content and metadata.
+  - If post-rename verification fails, the helper atomically restores the
+    captured pre-write bytes and metadata when the replacement bytes still
+    match; otherwise it fails closed without overwriting concurrent bytes.
+  - Apply writes `originalMetadata` into the checked rollback manifest and
+    rollback validates and uses it, rather than inheriting metadata from the
+    applied file. The non-default mode/current uid/current gid fixture proves
+    apply and rollback each preserve the original values.
+  - The operational tool contains no `TEST_AFTER_BACKUP_MUTATION`,
+    `LEGACY_CONTAINMENT_TEST_HOOK`, `runTestAfterBackupHook`, or test-mode
+    branch; a focused source assertion enforces that regression boundary.
+- `node scripts/test-admin-notify-recipient-rbac.mjs` ->
+  `ADMIN_NOTIFY_RECIPIENT_RBAC_OK`.
+- `node --check scripts/ops/contain-legacy-qimen-push.mjs`,
+  `node --check scripts/test-legacy-qimen-containment.mjs`,
+  `node --check scripts/workers/admin-notify-watcher.mjs`, and
+  `node --check src/lib/admin-notify-recipient-rbac.mjs` passed.
+- `git diff --check` passed.
+
+### Timestamp and concurrency note
+
+- The runbook now explicitly contracts mode/uid/gid preservation only. Atomic
+  rename intentionally changes mtime/ctime, so those timestamps are not a
+  preservation contract. The existing cooperative-operator constraint remains:
+  a privileged actor able to rename directories in the tiny interval after the
+  final checks but before kernel rename is outside a path-based tool's
+  guarantee.
+
+### Current limitation
+
+- `tsc --noEmit` could not run because `tsc` is not installed in this isolated
+  workspace. No package installation was attempted because the root filesystem
+  is nearly full; the scoped implementation is JavaScript and passed its syntax
+  checks.

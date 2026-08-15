@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync, existsSync, symlinkSync, unlinkSync } from "node:fs";
+import { chownSync, chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync, existsSync, lstatSync, symlinkSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { setTimeout as delay } from "node:timers/promises";
 
 const root = process.cwd();
 const tool = join(root, "scripts/ops/contain-legacy-qimen-push.mjs");
@@ -24,15 +25,76 @@ function write(relative, value) {
 }
 
 function invoke(...args) {
-  return invokeWithEnv({}, ...args);
-}
-
-function invokeWithEnv(extraEnv, ...args) {
   return spawnSync(process.execPath, [tool, ...args], {
     cwd: root,
     encoding: "utf8",
-    env: { ...process.env, NO_COLOR: "1", ...extraEnv },
+    env: { ...process.env, NO_COLOR: "1" },
   });
+}
+
+async function invokeWithExternalPostBackupPause(args, target) {
+  const ready = join(temp, "race-ready");
+  const release = join(temp, "race-release");
+  const manifest = join(temp, "concurrent-backups", "manifest.json");
+  const wrapper = join(temp, "external-race-pause.cjs");
+  writeFileSync(wrapper, [
+    "const fs = require('node:fs');",
+    "const path = require('node:path');",
+    "const { syncBuiltinESMExports } = require('node:module');",
+    "const originalRename = fs.renameSync;",
+    "let paused = false;",
+    "fs.renameSync = function legacyContainmentRacePause(from, to) {",
+    "  originalRename(from, to);",
+    "  if (!paused && path.resolve(to) === path.resolve(process.env.CONTAINMENT_RACE_MANIFEST)) {",
+    "    paused = true;",
+    "    fs.writeFileSync(process.env.CONTAINMENT_RACE_READY, 'ready', { flag: 'wx' });",
+    "    const wait = new Int32Array(new SharedArrayBuffer(4));",
+    "    const deadline = Date.now() + 5000;",
+    "    while (!fs.existsSync(process.env.CONTAINMENT_RACE_RELEASE)) {",
+    "      if (Date.now() > deadline) throw new Error('race_pause_timeout');",
+    "      Atomics.wait(wait, 0, 0, 10);",
+    "    }",
+    "  }",
+    "};",
+    "syncBuiltinESMExports();",
+    "",
+  ].join("\n"), "utf8");
+
+  const child = spawn(process.execPath, ["--require", wrapper, tool, ...args], {
+    cwd: root,
+    env: {
+      ...process.env,
+      NO_COLOR: "1",
+      CONTAINMENT_RACE_MANIFEST: manifest,
+      CONTAINMENT_RACE_READY: ready,
+      CONTAINMENT_RACE_RELEASE: release,
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", (chunk) => { stdout += chunk; });
+  child.stderr.on("data", (chunk) => { stderr += chunk; });
+  const completion = new Promise((resolveChild, rejectChild) => {
+    child.once("error", rejectChild);
+    child.once("close", (status) => resolveChild({ status, stdout, stderr }));
+  });
+
+  let paused = false;
+  try {
+    for (let attempt = 0; attempt < 500; attempt += 1) {
+      if (existsSync(ready)) {
+        paused = true;
+        break;
+      }
+      await delay(10);
+    }
+    if (!paused) throw new Error("external race pause was not reached");
+    writeFileSync(target, concurrentMutation, "utf8");
+  } finally {
+    if (!existsSync(release)) writeFileSync(release, "release", { flag: "wx" });
+  }
+  return completion;
 }
 
 function check(condition, message) {
@@ -221,16 +283,25 @@ try {
   check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "refused apply changes nothing");
 
   const concurrentBackupDir = join(temp, "concurrent-backups");
-  const concurrentApply = invokeWithEnv(
-    { NODE_ENV: "test", LEGACY_CONTAINMENT_TEST_HOOK: "mutate-first-target" },
+  const concurrentApply = await invokeWithExternalPostBackupPause([
     "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
     "--inventory", inventoryPath, "--approvals", join(temp, "approvals.txt"), "--backup-dir", concurrentBackupDir,
-  );
+  ], join(temp, "src/push-routes.js"));
   check(concurrentApply.status !== 0, "post-backup target mutation aborts apply before any replacement");
   check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === concurrentMutation, "concurrent target bytes remain untouched by refused apply");
   check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "no later target is written after concurrent mutation");
   check(readFileSync(join(concurrentBackupDir, "files", sha256("src/push-routes.js")), "utf8") === unsafeRoutes, "backup preserves exact approved-before bytes");
   write("src/push-routes.js", unsafeRoutes);
+
+  const metadataTarget = join(temp, "src/push-routes.js");
+  const originalMetadata = lstatSync(metadataTarget);
+  chmodSync(metadataTarget, 0o640);
+  chownSync(metadataTarget, originalMetadata.uid, originalMetadata.gid);
+  const expectedMetadata = {
+    mode: lstatSync(metadataTarget).mode & 0o7777,
+    uid: lstatSync(metadataTarget).uid,
+    gid: lstatSync(metadataTarget).gid,
+  };
 
   const apply = invoke(
     "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
@@ -240,6 +311,11 @@ try {
   check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === safeRoutes, "apply removes legacy route definitions");
   check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === safeCron, "apply disables the legacy cron");
   check(existsSync(join(backupDir, "manifest.json")), "apply records a rollback manifest with no secret values");
+  const appliedMetadata = lstatSync(metadataTarget);
+  check((appliedMetadata.mode & 0o7777) === expectedMetadata.mode && appliedMetadata.uid === expectedMetadata.uid && appliedMetadata.gid === expectedMetadata.gid, "apply preserves reviewed target mode and ownership");
+  const backupManifest = JSON.parse(readFileSync(join(backupDir, "manifest.json"), "utf8"));
+  const routeManifest = backupManifest.files.find((file) => file.path === "src/push-routes.js");
+  check(routeManifest && routeManifest.originalMetadata.mode === expectedMetadata.mode && routeManifest.originalMetadata.uid === expectedMetadata.uid && routeManifest.originalMetadata.gid === expectedMetadata.gid, "backup manifest records reviewed target mode and ownership");
 
   const rollback = invoke(
     "--rollback", "--confirm=ROLLBACK_LEGACY_QIMEN_PUSH", "--root", temp,
@@ -247,6 +323,8 @@ try {
   );
   check(rollback.status === 0, "explicit rollback restores only checksum-verified backups");
   check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === unsafeRoutes, "rollback restores the exact prior route source");
+  const rolledBackMetadata = lstatSync(metadataTarget);
+  check((rolledBackMetadata.mode & 0o7777) === expectedMetadata.mode && rolledBackMetadata.uid === expectedMetadata.uid && rolledBackMetadata.gid === expectedMetadata.gid, "rollback restores manifest-recorded target mode and ownership");
 
   write("unrelated/sentinel.txt", "do-not-change\n");
   inventory.patches.push({
@@ -266,6 +344,8 @@ try {
   check(runbookText.includes("--confirm=DISABLE_LEGACY_QIMEN_PUSH"), "runbook requires explicit apply confirmation");
   check(runbookText.includes("--confirm=ROLLBACK_LEGACY_QIMEN_PUSH"), "runbook records explicit rollback confirmation");
   check(runbookText.includes("never print"), "runbook prohibits secret output");
+  const operationalTool = readFileSync(tool, "utf8");
+  check(!/TEST_AFTER_BACKUP_MUTATION|LEGACY_CONTAINMENT_TEST_HOOK|runTestAfterBackupHook|NODE_ENV\s*!==?\s*["']test/u.test(operationalTool), "operational tool contains no mutation test hook or test-environment branch");
 
   console.log(`LEGACY_QIMEN_CONTAINMENT_OK ${checks}`);
 } finally {
