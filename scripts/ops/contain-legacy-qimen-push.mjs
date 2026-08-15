@@ -17,8 +17,10 @@ const SAFE_FAILURE_CODES = new Set([
   "patches_required_for_apply", "replacement_not_exact", "required_file_missing", "required_file_not_regular",
   "rollback_checksum_mismatch", "rollback_confirmation_required", "rollback_manifest_missing",
   "root_and_inventory_required", "unexpected_target_checksum", "unknown_argument", "unsafe_inventory_path",
-  "vapid_environment_unavailable",
+  "vapid_environment_unavailable", "invalid_target_encoding", "target_state_changed_before_write",
+  "test_hook_not_permitted",
 ]);
+const TEST_AFTER_BACKUP_MUTATION = "// concurrent target changed after backup\n";
 
 function fail(code) {
   throw new Error(code);
@@ -146,32 +148,93 @@ function stripNginxComments(text) {
   return output;
 }
 
-function exactLocationBody(text, route) {
+function exactLocationBodies(text, route) {
   const escaped = route.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   const config = stripNginxComments(text);
-  const match = new RegExp(`\\blocation\\s*=\\s*${escaped}\\s*\\{`, "iu").exec(config);
-  if (!match) return null;
-  let depth = 1;
-  for (let index = match.index + match[0].length; index < config.length; index += 1) {
-    if (config[index] === "{") depth += 1;
-    else if (config[index] === "}" && --depth === 0) return config.slice(match.index + match[0].length, index);
+  const header = new RegExp(`\\blocation\\s*=\\s*${escaped}\\s*\\{`, "giu");
+  const bodies = [];
+  for (const match of config.matchAll(header)) {
+    let depth = 1;
+    for (let index = match.index + match[0].length; index < config.length; index += 1) {
+      if (config[index] === "{") depth += 1;
+      else if (config[index] === "}" && --depth === 0) {
+        bodies.push(config.slice(match.index + match[0].length, index));
+        break;
+      }
+    }
   }
-  return null;
+  return bodies;
 }
 
 function containsDeniedRoute(text, route) {
-  const body = exactLocationBody(text, route);
-  return body !== null && /(?:^|[;\s])(?:return\s+(?:403|404|410)|deny\s+all)\s*;/iu.test(body);
+  const bodies = exactLocationBodies(text, route);
+  return bodies.length === 1 && bodies[0].trim() === "return 404;";
 }
 
-function hasVapidEnvironmentFallback(text) {
-  const reference = /process\s*(?:\?\s*\.\s*|\.\s*)env\s*(?:(?:\?\s*\.\s*|\.\s*)VAPID_(?:PRIVATE|PUBLIC)_KEY|(?:\?\s*\.\s*)?\[\s*["'`]VAPID_(?:PRIVATE|PUBLIC)_KEY["'`]\s*\])/giu;
-  for (const match of text.matchAll(reference)) {
-    let index = match.index + match[0].length;
-    while (/[\s)]/u.test(text[index] || "")) index += 1;
-    if (text.startsWith("||", index) || text.startsWith("??", index)) return true;
+function hasOnlyCanonicalVapidDataflow(text) {
+  const canonicalBindings = new Set([
+    "constVAPID_PUBLIC_KEY=process.env.VAPID_PUBLIC_KEY;",
+    "constVAPID_PRIVATE_KEY=process.env.VAPID_PRIVATE_KEY;",
+    "constVAPID_SUBJECT=process.env.VAPID_SUBJECT;",
+  ]);
+  const canonicalCall = "webPush.setVapidDetails(VAPID_SUBJECT,VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY);";
+  const bindings = new Set();
+  let calls = 0;
+  let seen = false;
+  for (const line of text.split(/\r?\n/u)) {
+    const compact = line.replace(/\s+/gu, "");
+    if (!/(?:VAPID|[Vv]apid|setVapidDetails)/u.test(compact)) continue;
+    seen = true;
+    if (canonicalBindings.has(compact)) {
+      if (bindings.has(compact)) return false;
+      bindings.add(compact);
+      continue;
+    }
+    if (compact === canonicalCall) { calls += 1; continue; }
+    return false;
   }
-  return false;
+  return !seen || (calls === 1 && bindings.size === canonicalBindings.size);
+}
+
+function targetSnapshot(root, relativePath) {
+  const target = regularFile(root, relativePath);
+  const stat = lstatSync(target);
+  const bytes = readFileSync(target);
+  const text = bytes.toString("utf8");
+  if (!Buffer.from(text, "utf8").equals(bytes)) fail("invalid_target_encoding");
+  return {
+    target,
+    bytes,
+    text,
+    sha256: sha256(bytes),
+    dev: stat.dev,
+    ino: stat.ino,
+    mode: stat.mode,
+    size: stat.size,
+    mtimeMs: stat.mtimeMs,
+    ctimeMs: stat.ctimeMs,
+  };
+}
+
+function verifyTargetSnapshot(root, relativePath, before) {
+  const current = targetSnapshot(root, relativePath);
+  if (current.target !== before.target || current.sha256 !== before.sha256 || current.dev !== before.dev || current.ino !== before.ino || current.mode !== before.mode || current.size !== before.size || current.mtimeMs !== before.mtimeMs || current.ctimeMs !== before.ctimeMs) {
+    fail("target_state_changed_before_write");
+  }
+  return current;
+}
+
+function verifyAllTargetSnapshots(root, changes) {
+  for (const [path, change] of changes) verifyTargetSnapshot(root, path, change.before);
+}
+
+function runTestAfterBackupHook(root, changes) {
+  const hook = process.env.LEGACY_CONTAINMENT_TEST_HOOK;
+  if (!hook) return;
+  if (process.env.NODE_ENV !== "test" || hook !== "mutate-first-target") fail("test_hook_not_permitted");
+  const first = changes.entries().next().value;
+  if (!first) fail("test_hook_not_permitted");
+  writeFileSync(regularFile(root, first[0]), TEST_AFTER_BACKUP_MUTATION, "utf8");
 }
 
 function audit(root, inventory, overrides) {
@@ -182,9 +245,7 @@ function audit(root, inventory, overrides) {
   const sourceControlledFiles = [...inventory.routeFiles, ...inventory.sourceFiles, ...inventory.cronFiles];
   for (const path of sourceControlledFiles) {
     const text = fileText(root, path, overrides);
-    if (/(?:VAPID_(?:PRIVATE|PUBLIC)_KEY|(?:vapid|private|public)(?:[_-]?key)?)\s*(?:=|:)\s*["'`][^"'`\r\n]+["'`]/iu.test(text)) fail("hardcoded_vapid_private_key");
-    if (/setVapidDetails\s*\([^,]+,[^,]+,\s*["'`]/u.test(text)) fail("hardcoded_vapid_private_key");
-    if (hasVapidEnvironmentFallback(text)) fail("hardcoded_vapid_private_key");
+    if (!hasOnlyCanonicalVapidDataflow(text)) fail("hardcoded_vapid_private_key");
   }
   for (const path of [...inventory.sourceFiles, ...inventory.cronFiles]) {
     if (/["'`]\/push\/(?:test|unsubscribe)["'`]/u.test(fileText(root, path, overrides))) fail("legacy_route_present");
@@ -243,14 +304,13 @@ function backupFile(backupDir, name) {
   return secureAbsoluteFile(join(backupDir, "files", name), "invalid_rollback_manifest");
 }
 
-function atomicWriteTarget(root, relativePath, text) {
-  const target = regularFile(root, relativePath);
-  if (regularFile(root, relativePath) !== target) fail("path_realpath_escape");
+function atomicWriteTarget(root, relativePath, text, before) {
+  const target = verifyTargetSnapshot(root, relativePath, before).target;
   const temporary = `${target}.legacy-containment-${process.pid}-${Date.now()}`;
   try {
-    if (regularFile(root, relativePath) !== target) fail("path_realpath_escape");
+    verifyTargetSnapshot(root, relativePath, before);
     writeNewTemporary(temporary, text);
-    if (regularFile(root, relativePath) !== target) fail("path_realpath_escape");
+    verifyTargetSnapshot(root, relativePath, before);
     renameSync(temporary, target);
   } catch (error) {
     if (existsSync(temporary) && !lstatSync(temporary).isSymbolicLink()) unlinkSync(temporary);
@@ -266,15 +326,15 @@ function preparePatches(root, inventory) {
     if (!patch || typeof patch !== "object" || typeof patch.path !== "string" || !/^[a-f0-9]{64}$/u.test(patch.expectedSha256 || "") || !Array.isArray(patch.replacements) || patch.replacements.length === 0) fail("invalid_patch");
     if (!approvedPaths.has(patch.path)) fail("patch_path_not_allowlisted");
     if (changes.has(patch.path)) fail("duplicate_patch_path");
-    const original = fileText(root, patch.path);
-    if (sha256(original) !== patch.expectedSha256) fail("unexpected_target_checksum");
-    let replacement = original;
+    const before = targetSnapshot(root, patch.path);
+    if (before.sha256 !== patch.expectedSha256) fail("unexpected_target_checksum");
+    let replacement = before.text;
     for (const edit of patch.replacements) {
       if (!edit || typeof edit.find !== "string" || !edit.find || typeof edit.replace !== "string") fail("invalid_replacement");
       if (replacement.split(edit.find).length - 1 !== 1) fail("replacement_not_exact");
       replacement = replacement.replace(edit.find, edit.replace);
     }
-    changes.set(patch.path, { original, replacement });
+    changes.set(patch.path, { before, replacement });
   }
   audit(root, inventory, new Map([...changes].map(([path, change]) => [path, change.replacement])));
   return changes;
@@ -305,21 +365,28 @@ function apply(options, root, inventory) {
   const backupDir = createExclusiveBackupDir(root, options.backupDir);
   mkdirSync(joinPath(backupDir, "files"), { recursive: false, mode: 0o700 });
   const manifest = { version: 1, root, files: [] };
+  verifyAllTargetSnapshots(root, changes);
   for (const [path, change] of changes) {
     const backupName = sha256(path);
-    atomicWriteBackup(backupDir, backupName, change.original);
-    manifest.files.push({ path, backupName, originalSha256: sha256(change.original), appliedSha256: sha256(change.replacement) });
+    atomicWriteBackup(backupDir, backupName, change.before.text);
+    manifest.files.push({ path, backupName, originalSha256: change.before.sha256, appliedSha256: sha256(change.replacement) });
   }
   atomicWriteBackup(backupDir, "manifest.json", `${JSON.stringify(manifest)}\n`);
+  runTestAfterBackupHook(root, changes);
+  verifyAllTargetSnapshots(root, changes);
   const written = [];
   try {
     for (const [path, change] of changes) {
-      atomicWriteTarget(root, path, change.replacement);
+      atomicWriteTarget(root, path, change.replacement, change.before);
       written.push(path);
     }
     audit(root, inventory);
   } catch {
-    for (const path of written.reverse()) atomicWriteTarget(root, path, changes.get(path).original);
+    for (const path of written.reverse()) {
+      const current = targetSnapshot(root, path);
+      if (current.sha256 !== sha256(changes.get(path).replacement)) fail("apply_failed_rolled_back");
+      atomicWriteTarget(root, path, changes.get(path).before.text, current);
+    }
     fail("apply_failed_rolled_back");
   }
   process.stdout.write("LEGACY_QIMEN_CONTAINMENT_APPLY_OK\n");
@@ -336,12 +403,15 @@ function rollback(options, root) {
   let manifest;
   try { manifest = JSON.parse(readFileSync(manifestPath, "utf8")); } catch { fail("invalid_rollback_manifest"); }
   if (!manifest || manifest.version !== 1 || manifest.root !== root || !Array.isArray(manifest.files) || manifest.files.length === 0) fail("invalid_rollback_manifest");
+  const before = new Map();
   for (const file of manifest.files) {
     if (!file || typeof file.path !== "string" || !/^[a-f0-9]{64}$/u.test(file.backupName || "")) fail("invalid_rollback_manifest");
     const original = readFileSync(backupFile(backupDir, file.backupName), "utf8");
-    if (sha256(original) !== file.originalSha256 || sha256(fileText(root, file.path)) !== file.appliedSha256) fail("rollback_checksum_mismatch");
+    const target = targetSnapshot(root, file.path);
+    if (sha256(original) !== file.originalSha256 || target.sha256 !== file.appliedSha256) fail("rollback_checksum_mismatch");
+    before.set(file.path, target);
   }
-  for (const file of manifest.files) atomicWriteTarget(root, file.path, readFileSync(backupFile(backupDir, file.backupName), "utf8"));
+  for (const file of manifest.files) atomicWriteTarget(root, file.path, readFileSync(backupFile(backupDir, file.backupName), "utf8"), before.get(file.path));
   process.stdout.write("LEGACY_QIMEN_CONTAINMENT_ROLLBACK_OK\n");
 }
 

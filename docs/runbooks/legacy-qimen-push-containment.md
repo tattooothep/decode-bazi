@@ -35,6 +35,18 @@ declarations, non-denied legacy routes, enabled legacy cron entries, and literal
 VAPID private key material. Target paths are rechecked immediately around writes.
 The replacements must make the post-change audit pass before any file is written.
 
+For a source file that configures Web Push, the reviewed replacement must use
+only this canonical environment-only binding/dataflow (with no aliases,
+fallbacks, optional access, computed access, literals, templates, calls, or
+defaults):
+
+```js
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT;
+webPush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+```
+
 ## Audit (default, read-only)
 
 Run from the backend repository against an approved configuration snapshot:
@@ -77,6 +89,16 @@ atomic rename. It validates every target checksum before writing, validates the
 candidate configuration before writing, and restores already-written files if a
 post-write validation fails. A process interruption still requires the rollback
 procedure below; do not reload a service before the post-apply audit succeeds.
+
+After backups are written, apply re-resolves and rereads **every** target and
+compares its approved-before bytes, checksum, device, inode, mode, size, and
+timestamps before any replacement begins. It repeats that check immediately
+before every target write. This prevents ordinary concurrent edits from being
+overwritten or causing a partial operation. As with any path-based filesystem
+tool, a privileged actor that can race directory renames in the tiny interval
+between the final OS checks and rename remains outside this tool's guarantee;
+operators must keep configuration management paused and maintain exclusive host
+access for the short apply window.
 
 ## Post-apply audit and service change
 

@@ -75,6 +75,39 @@
 - Syntax checks for containment, watcher, and RBAC helper plus `git diff --check`
   passed.
 
+## Third Reviewer Remediation — Final Integrity Gates
+
+### RED evidence
+
+- `node scripts/test-legacy-qimen-containment.mjs` failed after adding the exact
+  conditional-location exploit with `conditional proxy denial directives never
+  satisfy canonical endpoint containment`. The earlier parser accepted a nested
+  `if` containing `return 404`.
+- The same RED extension added strict VAPID bracket-environment and indirect
+  literal cases plus a deterministic post-backup concurrent-edit hook. They were
+  added before the canonical parser/dataflow and final integrity-gate changes.
+
+### GREEN evidence
+
+- `node scripts/test-legacy-qimen-containment.mjs` ->
+  `LEGACY_QIMEN_CONTAINMENT_OK 54`.
+  - Nginx endpoint containment now accepts exactly one uncommented exact-match
+    location body consisting only of `return 404;`; conditional, proxy, rewrite,
+    `try_files`, duplicate, and commented variants fail closed.
+  - Any VAPID-bearing source is accepted only with the three exact environment
+    bindings and the exact `webPush.setVapidDetails` dataflow; optional/bracket
+    access, aliases, fallbacks, literals, templates, calls, and defaults fail.
+  - A target snapshot captures bytes/checksum plus device, inode, mode, size and
+    timestamps before backups. All targets are revalidated before backup and
+    again after backup but before the first write; each individual write
+    revalidates once more immediately before temporary creation and rename.
+  - The deterministic test-only post-backup mutation aborts before target writes,
+    leaves the concurrent target content unchanged, leaves later targets
+    unchanged, and preserves the approved-before backup bytes.
+- `node scripts/test-admin-notify-recipient-rbac.mjs` ->
+  `ADMIN_NOTIFY_RECIPIENT_RBAC_OK`.
+- Containment/watcher/RBAC syntax checks and `git diff --check` passed.
+
 ## Delivered source changes
 
 - `scripts/ops/contain-legacy-qimen-push.mjs`: default dry audit plus guarded

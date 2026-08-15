@@ -24,10 +24,14 @@ function write(relative, value) {
 }
 
 function invoke(...args) {
+  return invokeWithEnv({}, ...args);
+}
+
+function invokeWithEnv(extraEnv, ...args) {
   return spawnSync(process.execPath, [tool, ...args], {
     cwd: root,
     encoding: "utf8",
-    env: { ...process.env, NO_COLOR: "1" },
+    env: { ...process.env, NO_COLOR: "1", ...extraEnv },
   });
 }
 
@@ -51,11 +55,24 @@ const commentedRouteConfig = [
   "}",
   "",
 ].join("\n");
+const conditionalRouteConfig = [
+  "location = /push/test {",
+  "  if ($arg_probe) { return 404; }",
+  "}",
+  "location = /push/unsubscribe { return 404; }",
+  "",
+].join("\n");
 const unsafeRoutes = "app.post('/push/test', sendTest);\napp.post('/push/unsubscribe', unsubscribe);\n";
 const safeRoutes = "// Legacy browser-push endpoints removed; Qimen calculation routes remain available.\n";
 const unsafeCron = "*/5 * * * * node scripts/legacy-qimen-web-push.js\n";
 const safeCron = "# legacy qimen web push cron disabled\n";
-const safeVapid = "const privateKey = process.env.VAPID_PRIVATE_KEY;\n";
+const safeVapid = [
+  "const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;",
+  "const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;",
+  "const VAPID_SUBJECT = process.env.VAPID_SUBJECT;",
+  "webPush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);",
+  "",
+].join("\n");
 const unsafeVapid = "const VAPID_" + "PRIVATE_KEY = 'opaque_test_material';\n";
 const activeCronWithTrailingComment = "*/5 * * * * node scripts/legacy-qimen-web-push.js # disabled\n";
 const vapidFallbackCases = [
@@ -67,7 +84,10 @@ const vapidFallbackCases = [
   { marker: "opaque_private_optional_bracket", source: 'const f = process.env?.["VAPID_PRIVATE_KEY"] || "opaque_private_optional_bracket";\n' },
   { marker: "opaque_public_parenthesized", source: 'const g = (( process . env ? . [ "VAPID_PUBLIC_KEY" ] )) ?? "opaque_public_parenthesized";\n' },
   { marker: "opaque_embedded_vapid", source: "const config = { vapid: 'opaque_embedded_vapid' };\n" },
+  { marker: "opaque_bracket_env", source: 'const VAPID_PRIVATE_KEY = process?.["env"].VAPID_PRIVATE_KEY;\n' },
+  { marker: "opaque_indirect_literal", source: 'const raw = "opaque_indirect_literal";\nconst VAPID_PRIVATE_KEY = raw;\n' },
 ];
+const concurrentMutation = "// concurrent target changed after backup\n";
 const approvals = "security-reviewer APPROVE\nbackend-reviewer APPROVE\nmobile-reviewer APPROVE\n";
 
 try {
@@ -125,6 +145,11 @@ try {
   check(commentedDenialAudit.status !== 0, "commented proxy denial directives never satisfy endpoint containment");
   write("nginx/qimen.conf", routeConfig);
 
+  write("nginx/qimen.conf", conditionalRouteConfig);
+  const conditionalDenialAudit = invoke("--root", temp, "--inventory", inventoryPath);
+  check(conditionalDenialAudit.status !== 0, "conditional proxy denial directives never satisfy canonical endpoint containment");
+  write("nginx/qimen.conf", routeConfig);
+
   const outsideRoute = join(outside, "push-routes.js");
   const outsideOriginal = "// outside root must remain unchanged\n";
   writeFileSync(outsideRoute, outsideOriginal, "utf8");
@@ -164,7 +189,7 @@ try {
     check(fallbackAudit.status !== 0, "audit rejects each literal or fallback VAPID pattern");
     check(!`${fallbackAudit.stdout}${fallbackAudit.stderr}`.includes(fallback.marker), "fallback failure is redacted");
   }
-  write("src/vapid-fallbacks.js", "const a = process.env.VAPID_PRIVATE_KEY;\nconst b = process.env.VAPID_PUBLIC_KEY;\n");
+  write("src/vapid-fallbacks.js", safeVapid);
   const fallbackSafeAudit = invoke("--root", temp, "--inventory", inventoryPath);
   check(fallbackSafeAudit.status === 0, "audit accepts direct environment-only VAPID values without literal fallbacks");
 
@@ -194,6 +219,18 @@ try {
   const deniedApply = invoke("--apply", "--root", temp, "--inventory", inventoryPath, "--backup-dir", backupDir);
   check(deniedApply.status !== 0, "apply requires an explicit confirmation and approvals");
   check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "refused apply changes nothing");
+
+  const concurrentBackupDir = join(temp, "concurrent-backups");
+  const concurrentApply = invokeWithEnv(
+    { NODE_ENV: "test", LEGACY_CONTAINMENT_TEST_HOOK: "mutate-first-target" },
+    "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
+    "--inventory", inventoryPath, "--approvals", join(temp, "approvals.txt"), "--backup-dir", concurrentBackupDir,
+  );
+  check(concurrentApply.status !== 0, "post-backup target mutation aborts apply before any replacement");
+  check(readFileSync(join(temp, "src/push-routes.js"), "utf8") === concurrentMutation, "concurrent target bytes remain untouched by refused apply");
+  check(readFileSync(join(temp, "cron/qimen.cron"), "utf8") === unsafeCron, "no later target is written after concurrent mutation");
+  check(readFileSync(join(concurrentBackupDir, "files", sha256("src/push-routes.js")), "utf8") === unsafeRoutes, "backup preserves exact approved-before bytes");
+  write("src/push-routes.js", unsafeRoutes);
 
   const apply = invoke(
     "--apply", "--confirm=DISABLE_LEGACY_QIMEN_PUSH", "--root", temp,
