@@ -158,6 +158,7 @@ try {
       const provider = await delivery.runRetryBatch(pool, {
         limit: INSTALLATIONS,
         concurrency: WORKERS,
+        hooks: { policyNow: () => at },
         sender: {
           async sendPrepared() {
             providerSequence += 1;

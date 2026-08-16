@@ -560,7 +560,16 @@ function currentPolicyDecision(row, context, capCount) {
   return { allow: true };
 }
 
-async function applyCurrentPolicyLocked(tx, row) {
+function resolvePolicyClock(options = {}) {
+  const source = options.hooks?.policyNow;
+  if (source == null) return null;
+  const value = typeof source === "function" ? source() : source;
+  const parsed = value instanceof Date ? new Date(value.valueOf()) : new Date(value);
+  if (!Number.isFinite(parsed.valueOf())) throw new Error("mobile_push_policy_clock_invalid");
+  return parsed;
+}
+
+async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
   await tx.query(
     `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
     [row.user_id],
@@ -576,6 +585,7 @@ async function applyCurrentPolicyLocked(tx, row) {
   const context = contextResult.rows[0] || {
     timezone: "Asia/Bangkok", privacy_preview: false, has_prefs: false, prefs: null, now_at: new Date(),
   };
+  if (policyNow) context.now_at = policyNow;
   if (row.kind === "zibai") {
     const event = row.payload && typeof row.payload === "object" ? row.payload.event : null;
     const zibai = await tx.query(
@@ -635,7 +645,7 @@ async function processClaim(db, attempt, options = {}) {
         );
         const row = current.rows[0];
         if (!row) return null;
-        const policy = await applyCurrentPolicyLocked(tx, row);
+        const policy = await applyCurrentPolicyLocked(tx, row, resolvePolicyClock(options));
         if (policy) return { ...row, policyBlocked: true, policy };
         const token = await tx.query(
           `SELECT id,device_push_token,expo_push_token FROM mobile_push_tokens
