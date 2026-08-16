@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 const database = `zibai_notification_test_${process.pid}`;
 assert.match(database, /^zibai_notification_test_/u);
 const forward = readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8");
+const legacyForward = forward.replaceAll("zibai-zaoming-true-solar-v2", "zibai-zaoming-true-solar-v1");
 const rollback = readFileSync("migrations/20260816_mobile_zibai_notifications.rollback.sql", "utf8");
 function psql(db: string, sql: string): string {
   return execFileSync("docker", ["exec", "-i", "decode-postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "decode_user", "-d", db, "-Atq"], { encoding: "utf8", input: sql }).trim();
@@ -21,6 +22,23 @@ try {
     CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid());
     INSERT INTO users VALUES('00000000-0000-4000-8000-000000000001'),('00000000-0000-4000-8000-000000000002');
   `);
+  psql(database, legacyForward);
+  psql(database, `INSERT INTO mobile_zibai_installations(user_id,installation_id)
+    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000009');
+    INSERT INTO mobile_zibai_occurrences
+      (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,calculation_version)
+    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000009','legacy-v1','daily','2026-08-15','zibai-zaoming-true-solar-v1');`);
+  psql(database, forward);
+  assert.equal(psql(database, `SELECT column_default FROM information_schema.columns
+    WHERE table_name='mobile_zibai_installations' AND column_name='calculation_version';`), "'zibai-zaoming-true-solar-v2'::text");
+  assert.equal(psql(database, `SELECT calculation_version FROM mobile_zibai_installations
+    WHERE installation_id='10000000-0000-4000-8000-000000000009';`), "zibai-zaoming-true-solar-v2");
+  assert.equal(psql(database, `SELECT calculation_version FROM mobile_zibai_occurrences WHERE occurrence_key='legacy-v1';`),
+    "zibai-zaoming-true-solar-v1", "immutable legacy occurrence evidence must survive the upgrade");
+  psql(database, `INSERT INTO mobile_zibai_occurrences
+    (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,calculation_version)
+    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000009','upgrade-v2','daily','2026-08-16','zibai-zaoming-true-solar-v2');`);
+  psql(database, rollback);
   psql(database, forward);
   psql(database, `INSERT INTO mobile_zibai_installations
     (user_id,installation_id,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)

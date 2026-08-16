@@ -79,6 +79,27 @@ CREATE TABLE IF NOT EXISTS mobile_zibai_occurrences (
   UNIQUE(user_id,installation_id,occurrence_key)
 );
 
+-- Upgrade-safe v1 → v2 path. The first unpublished draft used v1 in the
+-- installation default and occurrence CHECK. CREATE TABLE IF NOT EXISTS does
+-- not update either, so explicitly migrate configuration rows while retaining
+-- immutable v1 occurrence audit records and accepting new v2 occurrences.
+ALTER TABLE mobile_zibai_installations
+  ALTER COLUMN calculation_version SET DEFAULT 'zibai-zaoming-true-solar-v2';
+ALTER TABLE mobile_zibai_installations
+  DROP CONSTRAINT IF EXISTS mobile_zibai_installations_calculation_version_check;
+UPDATE mobile_zibai_installations
+  SET calculation_version='zibai-zaoming-true-solar-v2'
+  WHERE calculation_version='zibai-zaoming-true-solar-v1';
+ALTER TABLE mobile_zibai_installations
+  ADD CONSTRAINT mobile_zibai_installations_calculation_version_check
+  CHECK (calculation_version='zibai-zaoming-true-solar-v2');
+
+ALTER TABLE mobile_zibai_occurrences
+  DROP CONSTRAINT IF EXISTS mobile_zibai_occurrences_calculation_version_check;
+ALTER TABLE mobile_zibai_occurrences
+  ADD CONSTRAINT mobile_zibai_occurrences_calculation_version_check
+  CHECK (calculation_version IN ('zibai-zaoming-true-solar-v1','zibai-zaoming-true-solar-v2'));
+
 CREATE INDEX IF NOT EXISTS ix_mobile_zibai_occurrence_daily_cap
   ON mobile_zibai_occurrences(user_id,installation_id,apparent_solar_date,occurrence_type,state);
 CREATE INDEX IF NOT EXISTS ix_mobile_zibai_occurrence_retention

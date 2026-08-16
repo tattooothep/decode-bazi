@@ -176,9 +176,15 @@ export async function POST(req: Request) {
       [token, session.userId, installationId, deviceToken]
     );
     const accountContext = await client.query<{ locale: string | null }>(
-      `SELECT locale FROM users WHERE id=$1 FOR UPDATE`,
+      `SELECT locale FROM users
+        WHERE id=$1 AND deleted_at IS NULL AND is_active IS DISTINCT FROM false
+        FOR UPDATE`,
       [session.userId],
     );
+    if (!accountContext.rows[0]) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ ok: false, error: "account_not_available" }, { status: 409 });
+    }
     const tokenLocale = locale
       ?? (LOCALES.has(String(accountContext.rows[0]?.locale || "").toLowerCase())
         ? String(accountContext.rows[0]?.locale).toLowerCase()

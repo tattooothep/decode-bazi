@@ -26,4 +26,22 @@ assert.equal(daily.dailyForecastDate("evening", "2026-08-17", 1), "2026-08-17",
   "the delayed evening summary forecasts the originally intended next day, not one extra day ahead");
 assert.equal(daily.dailyForecastDate("evening", "2026-08-16", 0), "2026-08-17");
 
+const delayedNotice = daily.buildDailyProducer({
+  id: "00000000-0000-4000-8000-000000000001", profile_id: "10000000-0000-4000-8000-000000000001",
+  user_timezone: "Asia/Bangkok", tokens: [],
+}, {
+  slot: "evening", date: "2026-08-17", isTomorrow: false, nowMinutes: 8 * 60,
+  todayApi: { ok: true, verdict: { score: 75, label: "good" }, tongshu: { yi: ["วางแผน"] } },
+  hoursApi: { hours: [
+    { range: "07:00-09:00", quality: "best" },
+    { range: "09:00-11:00", quality: "good" },
+  ] },
+});
+assert.ok(delayedNotice);
+assert.match(delayedNotice.title, /ดวงวันนี้/u,
+  "an evening occurrence delayed into its forecast date must no longer claim tomorrow");
+assert.doesNotMatch(delayedNotice.body, /07:00-09:00/u,
+  "a delayed summary cannot recommend a golden hour that already elapsed");
+assert.match(delayedNotice.body, /09:00-11:00/u);
+
 console.log("NOTIFICATION_DAILY_QUIET_DELAY_OK cases=9");

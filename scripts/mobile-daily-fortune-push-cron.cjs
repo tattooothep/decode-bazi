@@ -89,7 +89,7 @@ function dailyForecastDate(slot, deliveryLocalDate, delayDayOffset) {
   return shiftCivilDate(deliveryLocalDate, (slot === "evening" ? 1 : 0) - delayDayOffset);
 }
 
-function buildDailyCopy({ loc, slot, dateLabel, score, label, tongshuYi, golden }) {
+function buildDailyCopy({ loc, isTomorrow, dateLabel, score, label, tongshuYi, golden }) {
   const family = notificationPayload.normalizedLocale(loc);
   const parts = [];
   if (family === "zh") {
@@ -107,10 +107,10 @@ function buildDailyCopy({ loc, slot, dateLabel, score, label, tongshuYi, golden 
     parts.push("เปิดดวงวันนี้เพื่อดูคำแนะนำ");
   }
   const title = family === "zh"
-    ? (slot === "morning" ? `☀️ 今日運勢（${dateLabel}）` : `🌙 明日運勢（${dateLabel}）搶先規劃`)
+    ? (!isTomorrow ? `☀️ 今日運勢（${dateLabel}）` : `🌙 明日運勢（${dateLabel}）搶先規劃`)
     : family === "en"
-      ? (slot === "morning" ? `☀️ Your fortune today (${dateLabel})` : `🌙 Tomorrow's fortune (${dateLabel}) — plan ahead`)
-      : (slot === "morning" ? `☀️ ดวงวันนี้ของคุณ (${dateLabel})` : `🌙 ดวงพรุ่งนี้ (${dateLabel}) — วางแผนก่อนใคร`);
+      ? (!isTomorrow ? `☀️ Your fortune today (${dateLabel})` : `🌙 Tomorrow's fortune (${dateLabel}) — plan ahead`)
+      : (!isTomorrow ? `☀️ ดวงวันนี้ของคุณ (${dateLabel})` : `🌙 ดวงพรุ่งนี้ (${dateLabel}) — วางแผนก่อนใคร`);
   return { title, body: parts.join(" · ") };
 }
 
@@ -118,6 +118,7 @@ function buildDailyProducer(user, input) {
   const today = input?.todayApi;
   if (!today || today.ok === false || !user?.id || !user?.profile_id) return null;
   const slot = input?.slot === "evening" ? "evening" : "morning";
+  const isTomorrow = input?.isTomorrow === undefined ? slot === "evening" : input.isTomorrow === true;
   const date = String(input?.date || "");
   const dateLabel = `${date.slice(8, 10)}/${date.slice(5, 7)}`;
   const verdict = today.verdict && typeof today.verdict === "object" ? today.verdict : {};
@@ -125,14 +126,14 @@ function buildDailyProducer(user, input) {
   const label = typeof verdict.label === "string" ? verdict.label : "";
   const tongshuYi = Array.isArray(today?.tongshu?.yi) ? today.tongshu.yi.slice(0, 2) : [];
   const hours = Array.isArray(input?.hoursApi?.hours) ? input.hoursApi.hours : [];
-  const nowMinutes = slot === "morning" && Number.isFinite(Number(input?.nowMinutes)) ? Number(input.nowMinutes) : -1;
+  const nowMinutes = !isTomorrow && Number.isFinite(Number(input?.nowMinutes)) ? Number(input.nowMinutes) : -1;
   const usable = hours.filter((hour) => {
     const match = /^(\d{2}):(\d{2})-/u.exec(String(hour?.range || ""));
     return match ? Number(match[1]) * 60 + Number(match[2]) >= nowMinutes : false;
   });
   const golden = usable.find((hour) => String(hour.quality || "") === "best")
     || usable.find((hour) => String(hour.quality || "") === "good") || null;
-  const build = (locale) => buildDailyCopy({ loc: locale, slot, dateLabel, score, label, tongshuYi, golden });
+  const build = (locale) => buildDailyCopy({ loc: locale, isTomorrow, dateLabel, score, label, tongshuYi, golden });
   const historyCopies = delivery.localizedHistoryCopies(build);
   const payload = notificationPayload.buildNotificationPayload("daily", String(user.id), { slot, date, url: "/today" });
   return {
@@ -263,7 +264,8 @@ async function main() {
       }, 12_000);
       const notice = buildDailyProducer(u, {
         slot: SLOT, date: dateStr, todayApi: engine.today, hoursApi: engine.hoursData,
-        nowMinutes: SLOT === "morning" ? (localNowMin ?? 0) : -1,
+        isTomorrow: dateStr !== baseDay,
+        nowMinutes: dateStr === baseDay ? (localNowMin ?? 0) : -1,
       });
       if (!notice) { skipped++; continue; }
       const result = await delivery.deliver(db, notice, { dry: DRY });

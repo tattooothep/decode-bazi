@@ -686,26 +686,50 @@ async function processClaim(db, attempt, options = {}) {
 }
 
 async function runRetryBatch(db, options = {}) {
-  const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
+  const limit = Math.max(1, Math.min(20_000, Number(options.limit || 100)));
+  const concurrency = Math.max(1, Math.min(32, Number(options.concurrency || 1)));
   const report = { claimed: 0, accepted: 0, delivered: 0, retryDue: 0, dead: 0, uncertainRecovered: 0, outcomes: [] };
-  for (let processed = 0; processed < limit; processed += 1) {
-    const recovered = await recoverUncertainOne(db, options);
-    if (recovered) {
-      report.dead += 1;
-      report.uncertainRecovered += 1;
-      continue;
+  let cursor = 0;
+  let firstFailure;
+  const runOne = async () => {
+    while (true) {
+      if (firstFailure !== undefined) return;
+      const position = cursor;
+      cursor += 1;
+      if (position >= limit) return;
+      try {
+        const recovered = await recoverUncertainOne(db, options);
+        if (recovered) {
+          report.dead += 1;
+          report.uncertainRecovered += 1;
+          continue;
+        }
+        // Once another worker encounters a fatal local/DB failure, do not
+        // claim additional work. An attempt already claimed before that point
+        // still completes below so its lease is never stranded.
+        if (firstFailure !== undefined) return;
+        const attempt = await claimOne(db, options);
+        if (!attempt) return;
+        report.claimed += 1;
+        const completed = await processClaim(db, attempt, options);
+        if (!completed?.status) continue;
+        report.outcomes.push(completed.outcome);
+        if (completed.status === "provider_accepted") report.accepted += 1;
+        else if (completed.status === "delivered") report.delivered += 1;
+        else if (completed.status === "retry_due") report.retryDue += 1;
+        else report.dead += 1;
+      } catch (error) {
+        if (firstFailure === undefined) firstFailure = error;
+        throw error;
+      }
     }
-    const attempt = await claimOne(db, options);
-    if (!attempt) break;
-    report.claimed += 1;
-    const completed = await processClaim(db, attempt, options);
-    if (!completed?.status) continue;
-    report.outcomes.push(completed.outcome);
-    if (completed.status === "provider_accepted") report.accepted += 1;
-    else if (completed.status === "delivered") report.delivered += 1;
-    else if (completed.status === "retry_due") report.retryDue += 1;
-    else report.dead += 1;
-  }
+  };
+  const workers = await Promise.allSettled(
+    Array.from({ length: Math.min(concurrency, limit) }, runOne),
+  );
+  if (firstFailure !== undefined) throw firstFailure;
+  const failure = workers.find((worker) => worker.status === "rejected");
+  if (failure) throw failure.reason;
   return report;
 }
 

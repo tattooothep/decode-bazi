@@ -27,6 +27,7 @@ export type ZibaiMutation =
   | { action: "settings"; installationId: string; dailyEnabled?: boolean; shichenEnabled?: boolean; dailyMinute?: number; quietStart?: number; quietEnd?: number }
   | { action: "location"; installationId: string; permission: "foreground" | "background"; latitude: number; longitude: number; timezone: string; capturedAt: string }
   | { action: "location"; installationId: string; permission: "denied" }
+  | { action: "background_location"; installationId: string; latitude: number; longitude: number; timezone: string; capturedAt: string }
   | { action: "disable_shichen"; installationId: string };
 
 export class ZibaiStateError extends Error {
@@ -64,7 +65,16 @@ export function parseZibaiMutation(value: unknown): ZibaiMutation {
     if (!exactKeys(body, ["action", "installationId"])) throw new TypeError("zibai_input_invalid");
     return { action: "disable_shichen", installationId };
   }
-  if (body.action === "location") {
+  if (body.action === "location" || body.action === "background_location") {
+    if (body.action === "background_location") {
+      if (!exactKeys(body, ["action", "installationId", "latitude", "longitude", "timezone", "capturedAt"])
+        || !Number.isFinite(body.latitude) || Number(body.latitude) < -90 || Number(body.latitude) > 90
+        || !Number.isFinite(body.longitude) || Number(body.longitude) < -180 || Number(body.longitude) > 180
+        || !validTimezone(body.timezone) || typeof body.capturedAt !== "string"
+        || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(body.capturedAt)
+        || new Date(body.capturedAt).toISOString() !== body.capturedAt) throw new TypeError("zibai_input_invalid");
+      return { action: "background_location", installationId, latitude: Number(body.latitude), longitude: Number(body.longitude), timezone: body.timezone, capturedAt: body.capturedAt };
+    }
     if (body.permission === "denied") {
       if (!exactKeys(body, ["action", "installationId", "permission"])) throw new TypeError("zibai_input_invalid");
       return { action: "location", installationId, permission: "denied" };
@@ -119,8 +129,9 @@ export function sanitizeZibaiStatus(row: ZibaiRow | null, at = new Date()) {
   const capturedMs = captured ? Date.parse(captured) : NaN;
   const ageMs = Number.isFinite(capturedMs) ? Math.max(0, at.getTime() - capturedMs) : null;
   const capturedNotFuture = Number.isFinite(capturedMs) && capturedMs <= at.getTime() + 5 * 60_000;
-  const longitude = Number(row.longitude);
-  const currentSolar = Number.isFinite(longitude) ? apparentSolarParts(at, longitude) : null;
+  const longitude = row.longitude === null ? NaN : Number(row.longitude);
+  const withinRetention = ageMs !== null && ageMs <= MAX_LOCATION_RETENTION_MS;
+  const currentSolar = Number.isFinite(longitude) && withinRetention ? apparentSolarParts(at, longitude) : null;
   const nextShichenIso = iso(row.next_shichen_at);
   const nextSolar = currentSolar && nextShichenIso ? apparentSolarParts(new Date(nextShichenIso), longitude) : null;
   const hhmm = (parts: { hour: number; minute: number } | null) => parts
@@ -129,7 +140,7 @@ export function sanitizeZibaiStatus(row: ZibaiRow | null, at = new Date()) {
     dailyEnabled: row.daily_enabled, shichenEnabled: row.shichen_enabled, dailyMinute: Number(row.daily_minute), quietStart: Number(row.quiet_start), quietEnd: Number(row.quiet_end),
     permission: row.location_permission,
     locationFresh: capturedNotFuture && ageMs !== null && ageMs <= MAX_LOCATION_AGE_MS && expires !== null && Date.parse(expires) > at.getTime(),
-    locationAgeSeconds: ageMs === null ? null : Math.floor(ageMs / 1000), lastLocationAt: captured,
+    locationAgeSeconds: !withinRetention || ageMs === null ? null : Math.floor(ageMs / 1000), lastLocationAt: captured,
     locationExpiresAt: expires, nextDailyAt: iso(row.next_daily_at), nextShichenAt: nextShichenIso,
     apparentSolarTime: hhmm(currentSolar), nextShichenSolarTime: hhmm(nextSolar),
     locationTimezone: row.location_timezone,
@@ -151,16 +162,27 @@ export async function mutateZibaiInstallation(pool: Pool, userId: string, mutati
     await client.query(`INSERT INTO mobile_zibai_installations(user_id,installation_id) VALUES($1,$2) ON CONFLICT(user_id,installation_id) DO NOTHING`, [userId, mutation.installationId]);
     const selected = await client.query<ZibaiRow>(`SELECT * FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2 FOR UPDATE`, [userId, mutation.installationId]);
     const current = selected.rows[0];
-    if (mutation.action === "location") {
-      if (mutation.permission === "denied") {
+    if (mutation.action === "location" || mutation.action === "background_location") {
+      if (mutation.action === "background_location"
+        && (!current.shichen_enabled || current.location_permission !== "background")) {
+        throw new ZibaiStateError("zibai_shichen_disabled", 409);
+      }
+      if (mutation.action === "location" && mutation.permission === "denied") {
         await client.query(`UPDATE mobile_zibai_installations SET location_permission='denied',latitude=NULL,longitude=NULL,location_timezone=NULL,location_captured_at=NULL,location_expires_at=NULL,shichen_enabled=false,next_daily_at=NULL,next_shichen_at=NULL,last_skip_reason='location_permission_denied',updated_at=$3 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, at.toISOString()]);
       } else {
         const capturedAt = new Date(mutation.capturedAt);
+        const permission = mutation.action === "background_location" ? "background" : mutation.permission;
         if (capturedAt.getTime() > at.getTime() + 5 * 60_000 || at.getTime() - capturedAt.getTime() > MAX_LOCATION_RETENTION_MS) throw new ZibaiStateError("zibai_location_time_invalid", 400);
         const expiresAt = new Date(capturedAt.getTime() + MAX_LOCATION_RETENTION_MS);
-        const nextShichenAt = nextShichenBoundary(at, mutation.longitude);
-        const nextDailyAt = current.daily_enabled ? nextCivilMinute(at, mutation.timezone, current.daily_minute) : null;
-        await client.query(`UPDATE mobile_zibai_installations SET location_permission=$3,latitude=$4,longitude=$5,location_timezone=$6,location_captured_at=$7,location_expires_at=$8,next_daily_at=$9,shichen_enabled=CASE WHEN $3='background' THEN shichen_enabled ELSE false END,next_shichen_at=CASE WHEN shichen_enabled AND $3='background' THEN $10::timestamptz ELSE NULL END,last_skip_reason=CASE WHEN $3='background' THEN NULL WHEN shichen_enabled THEN 'background_permission_missing' ELSE NULL END,updated_at=$11 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, mutation.permission, mutation.latitude, mutation.longitude, mutation.timezone, capturedAt.toISOString(), expiresAt.toISOString(), nextDailyAt?.toISOString() || null, nextShichenAt.toISOString(), at.toISOString()]);
+        const computedShichenAt = nextShichenBoundary(at, mutation.longitude);
+        const computedDailyAt = current.daily_enabled ? nextCivilMinute(at, mutation.timezone, current.daily_minute) : null;
+        const currentDailyAt = iso(current.next_daily_at);
+        const currentShichenAt = iso(current.next_shichen_at);
+        const nextDailyAt = current.daily_enabled && currentDailyAt && Date.parse(currentDailyAt) <= at.getTime()
+          ? new Date(currentDailyAt) : computedDailyAt;
+        const nextShichenAt = current.shichen_enabled && currentShichenAt && Date.parse(currentShichenAt) <= at.getTime()
+          ? new Date(currentShichenAt) : computedShichenAt;
+        await client.query(`UPDATE mobile_zibai_installations SET location_permission=$3,latitude=$4,longitude=$5,location_timezone=$6,location_captured_at=$7,location_expires_at=$8,next_daily_at=$9,shichen_enabled=CASE WHEN $3='background' THEN shichen_enabled ELSE false END,next_shichen_at=CASE WHEN shichen_enabled AND $3='background' THEN $10::timestamptz ELSE NULL END,last_skip_reason=CASE WHEN $3='background' THEN NULL WHEN shichen_enabled THEN 'background_permission_missing' ELSE NULL END,updated_at=$11 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, permission, mutation.latitude, mutation.longitude, mutation.timezone, capturedAt.toISOString(), expiresAt.toISOString(), nextDailyAt?.toISOString() || null, nextShichenAt.toISOString(), at.toISOString()]);
       }
     } else if (mutation.action === "disable_shichen") {
       await client.query(`UPDATE mobile_zibai_installations SET shichen_enabled=false,next_shichen_at=NULL,last_skip_reason='disabled_by_action',updated_at=$3 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, at.toISOString()]);
@@ -173,11 +195,15 @@ export async function mutateZibaiInstallation(pool: Pool, userId: string, mutati
       const capturedMs = current.location_captured_at ? new Date(current.location_captured_at).getTime() : NaN;
       const expiresMs = current.location_expires_at ? new Date(current.location_expires_at).getTime() : NaN;
       const fresh = Number.isFinite(capturedMs) && at.getTime() - capturedMs <= MAX_LOCATION_AGE_MS && capturedMs <= at.getTime() + 5 * 60_000 && expiresMs > at.getTime();
-      if (dailyEnabled && !fresh) throw new ZibaiStateError("zibai_location_required", 409);
-      if (shichenEnabled && (!fresh || current.location_permission !== "background")) throw new ZibaiStateError("zibai_background_location_required", 409);
-      const nextDailyAt = dailyEnabled ? nextCivilMinute(at, String(current.location_timezone), dailyMinute) : null;
-      const nextShichenAt = shichenEnabled ? nextShichenBoundary(at, Number(current.longitude)) : null;
-      await client.query(`UPDATE mobile_zibai_installations SET daily_enabled=$3,shichen_enabled=$4,daily_minute=$5,quiet_start=$6,quiet_end=$7,next_daily_at=$8,next_shichen_at=$9,last_skip_reason=NULL,updated_at=$10 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, dailyEnabled, shichenEnabled, dailyMinute, quietStart, quietEnd, nextDailyAt?.toISOString() || null, nextShichenAt?.toISOString() || null, at.toISOString()]);
+      const enablingDaily = mutation.dailyEnabled === true && !current.daily_enabled;
+      const enablingShichen = mutation.shichenEnabled === true && !current.shichen_enabled;
+      if (enablingDaily && !fresh) throw new ZibaiStateError("zibai_location_required", 409);
+      if (enablingShichen && (!fresh || current.location_permission !== "background")) throw new ZibaiStateError("zibai_background_location_required", 409);
+      const nextDailyAt = dailyEnabled && fresh ? nextCivilMinute(at, String(current.location_timezone), dailyMinute) : null;
+      const nextShichenAt = shichenEnabled && fresh && current.location_permission === "background"
+        ? nextShichenBoundary(at, Number(current.longitude)) : null;
+      const disabledWithStalePeer = !fresh && (dailyEnabled || shichenEnabled);
+      await client.query(`UPDATE mobile_zibai_installations SET daily_enabled=$3,shichen_enabled=$4,daily_minute=$5,quiet_start=$6,quiet_end=$7,next_daily_at=$8,next_shichen_at=$9,last_skip_reason=$10,updated_at=$11 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, dailyEnabled, shichenEnabled, dailyMinute, quietStart, quietEnd, nextDailyAt?.toISOString() || null, nextShichenAt?.toISOString() || null, disabledWithStalePeer ? "location_stale" : null, at.toISOString()]);
     }
     const saved = await client.query<ZibaiRow>(`SELECT * FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId]);
     await client.query("COMMIT");

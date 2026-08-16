@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import {
-  bumpSessionVersion,
   clearAuthCookie,
   readSessionVersion,
   setAuthCookie,
   signSession,
   verifyPassword,
 } from "@/lib/auth";
-import { q1 } from "@/lib/db";
+import { pool, q1 } from "@/lib/db";
 import { getMobileSession, mobileBearerToken, validateMobileBearerToken } from "@/lib/mobile-auth";
 import { userHasProfile } from "@/lib/profile-status";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -157,21 +156,36 @@ export async function DELETE(req: Request) {
   if (bearer) {
     const session = await validateMobileBearerToken(bearer);
     if (session) {
-      await bumpSessionVersion(session.userId);
-      await q1(
-        `WITH disabled AS (
-           UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        await client.query(`SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))`, [session.userId]);
+        await client.query(
+          `UPDATE users SET session_version=COALESCE(session_version,0)+1 WHERE id=$1`,
+          [session.userId],
+        );
+        await client.query(
+          `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
             WHERE user_id=$1 AND enabled=true
-              AND ($2::uuid IS NULL OR installation_id=$2::uuid)
-            RETURNING installation_id
-         ), removed AS (
-           DELETE FROM mobile_zibai_installations
-            WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)
-            RETURNING installation_id
-         )
-         SELECT 1 AS id`,
-        [session.userId, validInstallationId]
-      ).catch(() => null);
+              AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
+          [session.userId, validInstallationId],
+        );
+        await client.query(
+          `DELETE FROM mobile_zibai_installations
+            WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
+          [session.userId, validInstallationId],
+        );
+        await client.query("COMMIT");
+      } catch {
+        await client.query("ROLLBACK").catch(() => null);
+        await clearAuthCookie();
+        return NextResponse.json(
+          { ok: false, error: "session_revocation_failed", client_action: "discard_bearer_token" },
+          { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } },
+        );
+      } finally {
+        client.release();
+      }
       revokedServerSession = true;
     }
   }

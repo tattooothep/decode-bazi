@@ -70,14 +70,24 @@ function channelOf(category) {
 function providerData(message, stringifyValues) {
   const data = message?.data && typeof message.data === "object" ? message.data : {};
   const out = {};
+  const zibaiShichenKeys = new Set(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
+  const exactZibaiPayload = data.kind === "zibai"
+    && (data.event === "zibai_daily" || data.event === "zibai_shichen");
   const sensitiveKeyParts = [
     "token", "auth", "authorization", "secret", "credential", "password", "cookie", "session",
     "apikey", "privatekey", "accesskey", "clientsecret", "bearer",
   ];
   for (const [key, value] of Object.entries(data)) {
-    if (value === undefined || value === null) continue;
+    if (value === undefined) continue;
+    const approvedZibaiNull = exactZibaiPayload && data.event === "zibai_daily"
+      && (key === "shichenKey" || key === "shichenPalaces") && value === null;
+    if (value === null && !approvedZibaiNull) continue;
     const normalizedKey = String(key).toLowerCase().replace(/[^a-z0-9]+/gu, "");
-    if (normalizedKey.endsWith("key") || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) continue;
+    const approvedZibaiShichenKey = exactZibaiPayload && key === "shichenKey"
+      && ((data.event === "zibai_daily" && value === null)
+        || (data.event === "zibai_shichen" && zibaiShichenKeys.has(value)));
+    if ((normalizedKey.endsWith("key") && !approvedZibaiShichenKey)
+      || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) continue;
     out[String(key).slice(0, 80)] = stringifyValues ? String(value).slice(0, 500) : value;
   }
   if (typeof out.url !== "string") out.url = safeUrl(message?.url || data.url);

@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import pg from "pg";
 import scheduler from "./mobile-zibai-push-cron.cjs";
+import delivery from "../src/lib/mobile-notification-delivery.cjs";
 
 const database = `zibai_queue_10k_${process.pid}`;
 const role = `zibai_queue_10k_role_${process.pid}`;
@@ -12,6 +13,7 @@ const INSTALLATIONS = 10_000;
 const WORKERS = 20;
 const BATCH = 500;
 const RUN_SLO_MS = 50_000;
+const PROVIDER_DRAIN_SLO_MS = 120_000;
 const startAt = new Date("2026-08-16T06:59:00.000Z");
 assert.match(database, /^zibai_queue_10k_/u);
 
@@ -123,7 +125,7 @@ try {
     }, 5);
     const cpuStart = process.cpuUsage();
     const testStarted = performance.now();
-    const runStats: Array<{ durationMs: number; p95LagMs: number; p99LagMs: number; errors: number }> = [];
+    const runStats: Array<{ durationMs: number; p95LagMs: number; p99LagMs: number; errors: number; providerMs: number }> = [];
 
     for (let cycle = 0; cycle < 2; cycle += 1) {
       const at = cycle === 0
@@ -151,11 +153,28 @@ try {
       const durationMs = performance.now() - runStarted;
       const p95LagMs = percentile(completionLagMs, 0.95);
       const p99LagMs = percentile(completionLagMs, 0.99);
-      runStats.push({ durationMs, p95LagMs, p99LagMs, errors });
+      const providerStarted = performance.now();
+      let providerSequence = cycle * INSTALLATIONS;
+      const provider = await delivery.runRetryBatch(pool, {
+        limit: INSTALLATIONS,
+        concurrency: WORKERS,
+        sender: {
+          async sendPrepared() {
+            providerSequence += 1;
+            return { kind: "provider_accepted", providerMessageId: `stub-zibai-${providerSequence}` };
+          },
+        },
+      });
+      const providerMs = performance.now() - providerStarted;
+      runStats.push({ durationMs, p95LagMs, p99LagMs, errors, providerMs });
       assert.equal(errors, 0, `cycle ${cycle + 1} must have zero pipeline errors: ${errorSamples.join(" | ")}`);
       assert.equal(completionLagMs.length, INSTALLATIONS);
       assert.ok(durationMs < RUN_SLO_MS, `cycle ${cycle + 1} full pipeline took ${durationMs.toFixed(1)}ms`);
       assert.ok(p99LagMs < RUN_SLO_MS, `cycle ${cycle + 1} p99 due-to-reservation lag took ${p99LagMs.toFixed(1)}ms`);
+      assert.equal(provider.claimed, INSTALLATIONS, `cycle ${cycle + 1} must drain every reserved provider attempt`);
+      assert.equal(provider.accepted, INSTALLATIONS, `cycle ${cycle + 1} stub provider must accept every exact message`);
+      assert.equal(provider.retryDue + provider.dead, 0);
+      assert.ok(providerMs < PROVIDER_DRAIN_SLO_MS, `cycle ${cycle + 1} provider-stage drain took ${providerMs.toFixed(1)}ms`);
       assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_installations WHERE lease_token IS NOT NULL`)).rows[0].n, 0,
         "full pipeline releases every claimed lease");
       assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_installations WHERE next_shichen_at<=$1`, [at.toISOString()])).rows[0].n, 0,
@@ -167,8 +186,8 @@ try {
     const cpuMs = (cpu.user + cpu.system) / 1_000;
     const totalMs = performance.now() - testStarted;
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_occurrences WHERE state='reserved'`)).rows[0].n, INSTALLATIONS * 2);
-    assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_log WHERE kind='zibai' AND delivery_status='pending'`)).rows[0].n, INSTALLATIONS * 2);
-    assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_attempts WHERE status='reserved' AND provider='fcm'`)).rows[0].n, INSTALLATIONS * 2);
+    assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_log WHERE kind='zibai' AND delivery_status='accepted'`)).rows[0].n, INSTALLATIONS * 2);
+    assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_attempts WHERE status='provider_accepted' AND provider='fcm'`)).rows[0].n, INSTALLATIONS * 2);
     const invalidHistoryCopy = await pool.query(`
       SELECT count(*)::int AS n FROM mobile_push_log
        WHERE length(body)>400 OR body NOT LIKE '%1%' OR body NOT LIKE '%2%' OR body NOT LIKE '%5%' OR body NOT LIKE '%9%'
@@ -197,7 +216,7 @@ try {
     psql(database, `UPDATE mobile_zibai_installations SET lease_token=NULL,lease_expires_at=NULL,location_captured_at=now()-interval '24 hours',location_expires_at=now()-interval '1 second' WHERE user_id=(SELECT id FROM users LIMIT 1);`);
     assert.equal(await scheduler.purgeExpiredLocations(pool, new Date()), 1);
     assert.equal(psql(database, `SELECT count(*) FROM mobile_zibai_installations WHERE latitude IS NULL AND longitude IS NULL AND location_expires_at IS NULL;`), "1");
-    console.log(`ZIBAI_10K_PIPELINE_OK installations=${INSTALLATIONS} cycles=2 reservations=${INSTALLATIONS * 2} totalMs=${totalMs.toFixed(1)} cpuMs=${cpuMs.toFixed(1)} peakPool=${peakBusy}/${peakTotal} peakWaiting=${peakWaiting} runs=${runStats.map((run) => `${run.durationMs.toFixed(1)}:${run.p95LagMs.toFixed(1)}:${run.p99LagMs.toFixed(1)}:${run.errors}`).join(",")}`);
+    console.log(`ZIBAI_10K_PIPELINE_OK installations=${INSTALLATIONS} cycles=2 accepted=${INSTALLATIONS * 2} totalMs=${totalMs.toFixed(1)} cpuMs=${cpuMs.toFixed(1)} peakPool=${peakBusy}/${peakTotal} peakWaiting=${peakWaiting} runs=${runStats.map((run) => `${run.durationMs.toFixed(1)}:${run.p95LagMs.toFixed(1)}:${run.p99LagMs.toFixed(1)}:${run.providerMs.toFixed(1)}:${run.errors}`).join(",")}`);
   } finally { await pool.end(); }
 } finally {
   try { psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role};`); } catch { /* guarded cleanup */ }

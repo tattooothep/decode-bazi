@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import push from "../src/lib/push-send.cjs";
 import delivery from "../src/lib/mobile-notification-delivery.cjs";
+import { buildZibaiSnapshot, solarDayWindow } from "../src/lib/zibai-science.ts";
+import scheduler from "./mobile-zibai-push-cron.cjs";
 
 const data = { v: 1, kind: "zibai", event: "zibai_shichen", accountId: "a", url: "/zibai" };
 const fcm = push.prepareMessage({ category: "zibai", title: "t", body: "b", data }, "fcm");
@@ -11,6 +13,39 @@ assert.deepEqual(JSON.parse(fcm.data.body), expo.data);
 
 const daily = push.prepareMessage({ category: "zibai", title: "t", body: "b", data: { ...data, event: "zibai_daily" } }, "expo");
 assert.equal("categoryId" in daily, false);
+
+const accountId = "00000000-0000-4000-8000-000000000001";
+const notificationId = "00000000-0000-4000-8000-000000000002";
+const occurrenceId = "00000000-0000-4000-8000-000000000003";
+const at = new Date("2026-08-16T03:00:00.000Z");
+const exactSnapshot = buildZibaiSnapshot(at, 100.5018);
+const row = {
+  user_id: accountId, installation_id: "00000000-0000-4000-8000-000000000004",
+  token_id: "00000000-0000-4000-8000-000000000005", device_push_token: "fcm-fixture",
+  device_token_type: "fcm", expo_push_token: "ExponentPushToken[zibaiparityfixture]",
+  platform: "android", token_locale: "th", privacy_preview: true,
+};
+const window = solarDayWindow(at, 100.5018);
+const exactDailySnapshot = {
+  ...exactSnapshot, shichenKey: null, startAt: window.start.toISOString(), endAt: window.end.toISOString(),
+  shichenPalaces: null,
+  focus: exactSnapshot.focus.map((item) => ({
+    star: item.star, dayDirection: item.dayDirection, dayRelation: item.dayRelation,
+    shichenDirection: null, shichenRelation: null, overlaps: false,
+  })),
+};
+for (const [event, sourceSnapshot] of [["zibai_shichen", exactSnapshot], ["zibai_daily", exactDailySnapshot]] as const) {
+  const notice = scheduler.buildZibaiNotice(row, event, sourceSnapshot, occurrenceId);
+  const exactData = { ...notice.messages[0].data, notificationId };
+  const fcmExact = push.prepareMessage({ ...notice.messages[0], transactional: false, data: exactData }, "fcm");
+  const expoExact = push.prepareMessage({ ...notice.messages[0], transactional: false, data: exactData }, "expo");
+  const fcmPayload = JSON.parse(fcmExact.data.body);
+  assert.deepEqual(fcmPayload, expoExact.data, `${event} FCM and Expo exact data must remain identical`);
+  assert.deepEqual(fcmPayload, exactData,
+    `${event} provider sanitization must preserve the exact strict Zi Bai contract`);
+  assert.equal(Object.hasOwn(fcmPayload, "shichenKey"), true, `${event} must retain shichenKey even when null`);
+  assert.equal(Object.hasOwn(fcmPayload, "shichenPalaces"), true, `${event} must retain shichenPalaces even when null`);
+}
 
 assert.deepEqual(delivery.currentPolicyDecision(
   { kind: "zibai", transactional: false, privacy_safe: true, created_at: new Date().toISOString() },

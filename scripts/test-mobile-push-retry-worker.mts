@@ -508,6 +508,66 @@ try {
   releaseSlow();
   await slowWorker;
 
+  const drainThirdTokenId = "10000000-0000-4000-8000-000000000099";
+  const drainThirdInstallation = "20000000-0000-4000-8000-000000000099";
+  await pool.query(
+    `INSERT INTO mobile_push_tokens
+       (id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,last_registered_at)
+     VALUES($1,$2,$3,'ExponentPushToken[drain-third]','drain-third-fcm','fcm','android','en',now())`,
+    [drainThirdTokenId, userId, drainThirdInstallation],
+  );
+  await delivery.deliver(pool, notice("concurrent-error-drain", [
+    fcmMessage,
+    secondFcmMessage,
+    { ...fcmMessage, tokenId: drainThirdTokenId },
+  ]), { defer: true });
+  let enteredDrainBarrier!: () => void;
+  let enteredCount = 0;
+  let failingDrainInstallation: string | null = null;
+  const bothDrainWorkersEntered = new Promise<void>((resolve) => { enteredDrainBarrier = resolve; });
+  let releaseSibling!: () => void;
+  const siblingRelease = new Promise<void>((resolve) => { releaseSibling = resolve; });
+  const batch = worker.runRetryBatch(pool, {
+    concurrency: 2,
+    limit: 3,
+    sender: { async sendPrepared() { return { kind: "provider_accepted", providerMessageId: "drained-sibling" }; } },
+    hooks: {
+      async afterClaim(attempt: { installation_id: string }) {
+        enteredCount += 1;
+        if (enteredCount === 1) failingDrainInstallation = attempt.installation_id;
+        if (enteredCount === 2) enteredDrainBarrier();
+        await bothDrainWorkersEntered;
+        if (attempt.installation_id === failingDrainInstallation) throw new Error("fixture-concurrent-worker-failure");
+        await siblingRelease;
+      },
+    },
+  });
+  let batchSettled = false;
+  const batchOutcome = batch.then(
+    () => ({ rejected: false, error: null as unknown }),
+    (error: unknown) => ({ rejected: true, error }),
+  ).finally(() => { batchSettled = true; });
+  await bothDrainWorkersEntered;
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  check(batchSettled === false,
+    "a concurrent worker failure waits for every in-flight sibling before rejecting the batch");
+  releaseSibling();
+  const drainedOutcome = await batchOutcome;
+  check(drainedOutcome.rejected && String(drainedOutcome.error).includes("fixture-concurrent-worker-failure"),
+    "the drained concurrent batch still exposes the original worker failure");
+  const drainedSiblings = await row(
+    `SELECT count(*) FILTER (WHERE a.status='provider_accepted')::int AS accepted,
+            count(*) FILTER (WHERE a.status='reserved' AND a.lease_token IS NULL)::int AS unclaimed
+      FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+      WHERE l.yam_key='concurrent-error-drain' AND a.installation_id<>$1`,
+    [failingDrainInstallation],
+  );
+  check(drainedSiblings.accepted === 1,
+    "a sibling already in flight completes durably before the concurrent batch reports failure");
+  check(drainedSiblings.unclaimed === 1,
+    "a fatal concurrent worker error stops new claims after draining already in-flight siblings");
+  await pool.query(`DELETE FROM mobile_push_log WHERE yam_key='concurrent-error-drain'`);
+
   const receiptTokenId = "10000000-0000-4000-8000-000000000006";
   const receiptInstallation = "20000000-0000-4000-8000-000000000006";
   await pool.query(
