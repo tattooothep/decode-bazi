@@ -80,17 +80,20 @@ await check("daily calls use one total deadline even when a call never resolves"
   assert.ok(Date.now() - started < 250);
 });
 
-await check("all seven scheduler names have stable advisory lease keys", () => {
+await check("all heartbeat and execution scheduler names have stable advisory lease keys", () => {
   assert.deepEqual(science.SCHEDULER_NAMES, [
     "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning", "zibai",
   ]);
-  assert.equal(new Set(science.SCHEDULER_NAMES.map(science.schedulerLeaseKey)).size, 7);
+  assert.deepEqual(science.SCHEDULER_LEASE_NAMES, [
+    "yam", "daily-fortune-morning", "daily-fortune-evening", "auspicious",
+    "personal-reminders", "monthly-report", "network-morning", "zibai",
+  ]);
+  assert.equal(new Set(science.SCHEDULER_LEASE_NAMES.map(science.schedulerLeaseKey)).size, 8);
 });
 
-await check("all seven scheduler entrypoints acquire their named DB run lease", () => {
+await check("all scheduler entrypoints acquire their named DB run lease", () => {
   const files = {
     yam: "scripts/mobile-yam-push-cron.cjs",
-    "daily-fortune": "scripts/mobile-daily-fortune-push-cron.cjs",
     auspicious: "scripts/mobile-auspicious-push-cron.cjs",
     "personal-reminders": "scripts/mobile-personal-reminders-cron.cjs",
     "monthly-report": "scripts/mobile-monthly-report-push-cron.cjs",
@@ -100,6 +103,11 @@ await check("all seven scheduler entrypoints acquire their named DB run lease", 
   for (const [name, file] of Object.entries(files)) {
     assert.match(readFileSync(file, "utf8"), new RegExp(`(?:try|with)SchedulerRunLease\\(db, ["']${name}["']`));
   }
+  const daily = require("../scripts/mobile-daily-fortune-push-cron.cjs");
+  assert.equal(daily.dailySchedulerLeaseName("morning"), "daily-fortune-morning");
+  assert.equal(daily.dailySchedulerLeaseName("evening"), "daily-fortune-evening");
+  assert.notEqual(science.schedulerLeaseKey(daily.dailySchedulerLeaseName("morning")),
+    science.schedulerLeaseKey(daily.dailySchedulerLeaseName("evening")));
 });
 
 await check("scheduler adapters wire consent, timezone, bound goals, due rows, and total deadline", () => {

@@ -58,12 +58,35 @@ const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.
  * chosen time is inside quiet hours, move that occurrence to the first minute
  * after quiet hours instead of silently losing it for the whole day.
  */
-function effectiveDailyMinute(targetMinute, quietStart, quietEnd) {
+function effectiveDailySchedule(targetMinute, quietStart, quietEnd) {
   const target = Number(targetMinute);
   const start = Number.isInteger(Number(quietStart)) ? Number(quietStart) : 22;
   const end = Number.isInteger(Number(quietEnd)) ? Number(quietEnd) : 7;
   if (!Number.isInteger(target) || target < 0 || target > 1439) throw new TypeError("daily_target_minute_invalid");
-  return guard.inQuietHours(Math.floor(target / 60), start, end) ? end * 60 : target;
+  if (!guard.inQuietHours(Math.floor(target / 60), start, end)) return { minute: target, dayOffset: 0 };
+  const wraps = start > end && target >= start * 60;
+  return { minute: end * 60, dayOffset: wraps ? 1 : 0 };
+}
+
+function effectiveDailyMinute(targetMinute, quietStart, quietEnd) {
+  return effectiveDailySchedule(targetMinute, quietStart, quietEnd).minute;
+}
+
+function dailySchedulerLeaseName(slot) {
+  if (slot !== "morning" && slot !== "evening") throw new Error("daily_slot_invalid");
+  return `daily-fortune-${slot}`;
+}
+
+function shiftCivilDate(date, offsetDays) {
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(String(date)) || !Number.isInteger(offsetDays)) {
+    throw new TypeError("daily_civil_date_invalid");
+  }
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + offsetDays)).toISOString().slice(0, 10);
+}
+
+function dailyForecastDate(slot, deliveryLocalDate, delayDayOffset) {
+  return shiftCivilDate(deliveryLocalDate, (slot === "evening" ? 1 : 0) - delayDayOffset);
 }
 
 function buildDailyCopy({ loc, slot, dateLabel, score, label, tongshuYi, golden }) {
@@ -171,7 +194,9 @@ async function main() {
     user: process.env.PGUSER, password: process.env.PGPASSWORD, database: process.env.PGDATABASE,
   });
   await db.connect();
-  const runLease = await delivery.trySchedulerRunLease(db, "daily-fortune");
+  // Morning and evening are separate cron processes launched at the same minute.
+  // A shared lease lets the wrong slot win and suppress the due slot entirely.
+  const runLease = await delivery.trySchedulerRunLease(db, dailySchedulerLeaseName(SLOT));
   if (!runLease.acquired) { console.log("[mobile-daily-push] overlap skipped"); await db.end(); return; }
   const users = await loadDailyUsers(db);
   console.log(`[mobile-daily-push] ${new Date().toISOString()} slot=${SLOT} users=${users.length} dry=${DRY}`);
@@ -192,7 +217,8 @@ async function main() {
       if (chosenSlot !== "both" && chosenSlot !== SLOT) { skipped++; continue; }
       const localNowMin = guard.localMinutes(u.user_timezone, runAt);
       const targetMin = SLOT === "morning" ? 7 * 60 : 19 * 60 + 30;
-      const deliveryMin = effectiveDailyMinute(targetMin, u.quiet_start, u.quiet_end);
+      const deliverySchedule = effectiveDailySchedule(targetMin, u.quiet_start, u.quiet_end);
+      const deliveryMin = deliverySchedule.minute;
       if (!DRY && (localNowMin === null || localNowMin < deliveryMin || localNowMin >= deliveryMin + 15)) {
         skipped++;
         continue;
@@ -221,9 +247,7 @@ async function main() {
       if (!u.profile_id) { skipped++; continue; }
       // วันตามปฏิทินของผู้ใช้คนนี้ — รอบค่ำชี้วันพรุ่งนี้ของเขา ไม่ใช่ของไทย
       const baseDay = guard.localDateStr(u.user_timezone, runAt);
-      const dateStr = SLOT === "evening"
-        ? guard.localDateStr(u.user_timezone, new Date(runAt.getTime() + 86_400_000))
-        : baseDay;
+      const dateStr = dailyForecastDate(SLOT, baseDay, deliverySchedule.dayOffset);
       const engine = await science.withTotalTimeout(async (signal) => {
         const todayResult = await getJson(u, `${BASE}/api/mobile/v1/today?date=${dateStr}&profileId=${u.profile_id}`, signal);
         if (!todayResult || todayResult.ok === false) return { today: null, hoursData: null };
@@ -256,6 +280,6 @@ async function main() {
   await schedulerHeartbeat.writeSchedulerHeartbeat("daily-fortune");
 }
 
-module.exports = { DAILY_USERS_SQL,buildDailyCopy,buildDailyProducer,effectiveDailyMinute,getJson,loadDailyUsers,main };
+module.exports = { DAILY_USERS_SQL,buildDailyCopy,buildDailyProducer,dailyForecastDate,dailySchedulerLeaseName,effectiveDailyMinute,effectiveDailySchedule,getJson,loadDailyUsers,main };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-daily-push] category=daily error_code=scheduler_failed"); process.exit(1); });

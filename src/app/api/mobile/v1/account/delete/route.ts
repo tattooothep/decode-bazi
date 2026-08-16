@@ -91,8 +91,13 @@ export async function POST(req: Request) {
     [session.userId]
   ).catch(() => null);
   await q1(
-    `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
-      WHERE user_id=$1 AND enabled=true RETURNING id`,
+    `WITH disabled AS (
+       UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+        WHERE user_id=$1 AND enabled=true RETURNING installation_id
+     ), removed AS (
+       DELETE FROM mobile_zibai_installations WHERE user_id=$1 RETURNING installation_id
+     )
+     SELECT 1 AS id`,
     [session.userId]
   ).catch(() => null);
   await clearAuthCookie();

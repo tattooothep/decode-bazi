@@ -31,10 +31,10 @@ try {
   assert.equal(rejected(`INSERT INTO mobile_zibai_installations(user_id,installation_id) VALUES('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001');`), true);
   psql(database, `UPDATE mobile_zibai_installations SET shichen_enabled=true; INSERT INTO mobile_zibai_occurrences
     (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version)
-    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','fixture','shichen','2026-08-16','si','zibai-zaoming-true-solar-v1');`);
+    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','fixture','shichen','2026-08-16','si','zibai-zaoming-true-solar-v2');`);
   assert.equal(rejected(`INSERT INTO mobile_zibai_occurrences
     (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version)
-    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','fixture','shichen','2026-08-16','si','zibai-zaoming-true-solar-v1');`), true);
+    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','fixture','shichen','2026-08-16','si','zibai-zaoming-true-solar-v2');`), true);
   assert.equal(psql(database, `SELECT count(*) FROM information_schema.columns WHERE table_name='mobile_zibai_occurrences' AND column_name IN ('latitude','longitude');`), "0");
   assert.equal(psql(database, `SELECT to_regclass('ix_mobile_zibai_occurrence_retention') IS NOT NULL;`), "t");
   psql(database, rollback);

@@ -9,6 +9,11 @@ assert.match(policy, /24 hours/u);
 assert.match(policy, /3 hours/u);
 assert.match(policy, /latest location/u);
 assert.match(policy, /background/u);
+const spanishStart = policy.indexOf("es:['11. Ubicación para avisos Zi Bai'");
+const spanish = policy.slice(spanishStart, policy.indexOf("]]", spanishStart) + 2);
+assert.ok(spanishStart >= 0 && spanish.length > 80);
+assert.doesNotMatch(spanish, /latest location|3 hours|24 hours|recopilación background/u,
+  "Spanish Zi Bai privacy copy must not fall back to English fragments");
 assert.match(policy, /LOCATION_NOTICE/u);
 assert.match(policy, /16 สิงหาคม 2026|August 16, 2026/u);
 

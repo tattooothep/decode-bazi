@@ -24,12 +24,17 @@ assert.equal(notice.messages[0].category, "zibai");
 assert.equal(notice.payload.kind, "zibai");
 assert.equal(notice.zibaiOccurrenceId, occurrenceId);
 assert.equal(notice.messages[0].title, "การแจ้งเตือนส่วนตัว");
-assert.doesNotMatch(notice.messages[0].body, /หนึ่งขาว|สองดำ|ห้าเหลือง|เก้าม่วง/u);
-assert.match(notice.historyCopies.th.body, /หนึ่งขาว/u, "authenticated history keeps the useful full copy");
+assert.doesNotMatch(notice.messages[0].body, /วางแผน|พักให้พอ|งดเจาะ|งานสร้างสรรค์/u);
+for (const token of ["1 ", "2 ", "5 ", "9 ", "วางแผน", "พักให้พอ", "งดเจาะ", "งานสร้างสรรค์"]) {
+  assert.ok(notice.historyCopies.th.body.includes(token), `authenticated history retains bounded practical copy: ${token}`);
+}
 const optedInPreview = scheduler.buildZibaiNotice({ ...row, privacy_preview: true }, "zibai_shichen", snapshot, occurrenceId);
-assert.match(optedInPreview.messages[0].body, /หนึ่งขาว/u);
+assert.equal(optedInPreview.messages[0].body, notice.historyCopies.th.body,
+  "privacy-preview provider copy is the exact bounded history copy without truncation");
+assert.deepEqual(Object.keys(notice.sourceFacts).sort(), ["apparentSolarDate", "calculationVersion", "occurrenceType", "shichen"],
+  "science audit facts retain the branch without a credential-like key name");
 assert.equal(/latitude|longitude|100\.5018|13\.7/iu.test(JSON.stringify(notice)), false);
-assert.equal(scheduler.occurrenceKey(row.installation_id, "zibai_shichen", snapshot.apparentSolarDate, snapshot.shichenKey), `${row.installation_id}|${snapshot.apparentSolarDate}|${snapshot.shichenKey}|zibai-zaoming-true-solar-v1`);
+assert.equal(scheduler.occurrenceKey(row.installation_id, "zibai_shichen", snapshot.apparentSolarDate, snapshot.shichenKey), `${row.installation_id}|${snapshot.apparentSolarDate}|${snapshot.shichenKey}|zibai-zaoming-true-solar-v2`);
 
 const dailyWindow = solarDayWindow(at, 100.5018);
 assert.ok(dailyWindow.end.getTime() - dailyWindow.start.getTime() > 23.9 * 3_600_000);

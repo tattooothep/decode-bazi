@@ -40,7 +40,7 @@ function cleanText(value, min = 1, max = 160) {
 
 const ZIBAI_DIRECTIONS = Object.freeze(["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"]);
 const ZIBAI_SHICHEN = new Set(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
-const ZIBAI_RELATIONS = new Set(["generates-palace", "controls-palace", "drains-star", "same-element", "palace-controls-star"]);
+const ZIBAI_RELATIONS = new Set(["generates-palace", "controls-palace", "palace-generates-star", "same-element", "palace-controls-star"]);
 const ZIBAI_FOCUS_KEYS = Object.freeze(["star", "dayDirection", "dayRelation", "shichenDirection", "shichenRelation", "overlaps"]);
 
 function validIso(value) {
@@ -61,13 +61,13 @@ function directionForStar(palaces, star) {
 
 function validZibaiFacts(facts) {
   const isDaily = facts.event === "zibai_daily";
-  const referenceMatch = /^zibai\|(\d{4}-\d{2}-\d{2})\|(daily|zi|chou|yin|mao|chen|si|wu|wei|shen|you|xu|hai)\|zibai-zaoming-true-solar-v1$/u.exec(String(facts.referenceId || ""));
+  const referenceMatch = /^zibai\|(\d{4}-\d{2}-\d{2})\|(daily|zi|chou|yin|mao|chen|si|wu|wei|shen|you|xu|hai)\|zibai-zaoming-true-solar-v2$/u.exec(String(facts.referenceId || ""));
   const durationMs = validIso(facts.startAt) && validIso(facts.endAt)
     ? new Date(facts.endAt).getTime() - new Date(facts.startAt).getTime()
     : NaN;
   if (!["zibai_daily", "zibai_shichen"].includes(facts.event)
     || referenceMatch === null
-    || facts.calculationVersion !== "zibai-zaoming-true-solar-v1"
+    || facts.calculationVersion !== "zibai-zaoming-true-solar-v2"
     || !validDate(facts.apparentSolarDate)
     || !validIso(facts.startAt) || !validIso(facts.endAt)
     || durationMs <= 0

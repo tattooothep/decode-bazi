@@ -14,8 +14,8 @@ const focus = [1, 2, 5, 9].map((star) => ({
 
 const facts = {
   event: "zibai_shichen",
-  referenceId: "zibai|2026-08-16|si|zibai-zaoming-true-solar-v1",
-  calculationVersion: "zibai-zaoming-true-solar-v1",
+  referenceId: "zibai|2026-08-16|si|zibai-zaoming-true-solar-v2",
+  calculationVersion: "zibai-zaoming-true-solar-v2",
   apparentSolarDate: "2026-08-16",
   shichenKey: "si",
   startAt: "2026-08-16T02:07:00.000Z",
@@ -35,13 +35,13 @@ assert.throws(() => runtime.buildNotificationPayload("zibai", payload.accountId,
 assert.throws(() => runtime.buildNotificationPayload("zibai", payload.accountId, { ...facts, shichenKey: "midnight" }), /invalid zibai/u);
 assert.throws(() => runtime.buildNotificationPayload("zibai", payload.accountId, { ...facts, latitude: 13.7 }), /invalid zibai/u);
 assert.throws(() => runtime.buildNotificationPayload("zibai", payload.accountId, { ...facts, url: "/luopan" }), /invalid zibai/u);
-assert.throws(() => runtime.buildNotificationPayload("zibai", payload.accountId, { ...facts, referenceId: "zibai|2026-08-15|si|zibai-zaoming-true-solar-v1" }), /invalid zibai/u,
+assert.throws(() => runtime.buildNotificationPayload("zibai", payload.accountId, { ...facts, referenceId: "zibai|2026-08-15|si|zibai-zaoming-true-solar-v2" }), /invalid zibai/u,
   "the occurrence reference date must equal apparentSolarDate");
 
 const daily = runtime.buildNotificationPayload("zibai", payload.accountId, {
   ...facts,
   event: "zibai_daily",
-  referenceId: "zibai|2026-08-16|daily|zibai-zaoming-true-solar-v1",
+  referenceId: "zibai|2026-08-16|daily|zibai-zaoming-true-solar-v2",
   shichenKey: null,
   endAt: "2026-08-17T02:07:00.000Z",
   shichenPalaces: null,

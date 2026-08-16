@@ -8,13 +8,21 @@ import {
   nextShichenBoundary,
   shichenAt,
   solarDayKey,
+  starPalaceRelation,
 } from "../src/lib/zibai-science.ts";
 
 function permutation(values: Record<string, number>) {
   assert.deepEqual([...Object.values(values)].sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
 }
 
-assert.equal(ZIBAI_CALCULATION_VERSION, "zibai-zaoming-true-solar-v1");
+assert.equal(ZIBAI_CALCULATION_VERSION, "zibai-zaoming-true-solar-v2");
+
+// Worked five-element relations. 宮生星 nourishes the star; 星生宮 expends
+// star qi into the sector. These two directions must never be reversed.
+assert.equal(starPalaceRelation(1, "W"), "palace-generates-star", "metal palace nourishes water star");
+assert.equal(starPalaceRelation(1, "E"), "generates-palace", "water star generates wood palace");
+assert.equal(starPalaceRelation(9, "W"), "controls-palace", "fire star controls metal palace");
+assert.equal(starPalaceRelation(9, "NE"), "generates-palace", "fire star generates earth palace");
 
 // NOAA fractional-year equation-of-time reference values (minute precision).
 assert.ok(Math.abs(equationOfTimeMinutes(new Date("2026-02-11T12:00:00Z")) - -14.2) < 0.7);
@@ -53,6 +61,14 @@ for (const fixture of [
   const p = apparentSolarParts(next, fixture.longitude);
   assert.ok([1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23].includes(p.hour));
   assert.ok(p.minute === 0 && p.second <= 1);
+}
+
+// Solar terms are global instants. Longitude changes apparent day/hour
+// pillars, but cannot move the 夏至/冬至 flight-direction boundary itself.
+for (const at of ["2026-06-21T12:00:00.000Z", "2026-06-21T20:00:00.000Z", "2026-12-21T20:00:00.000Z"]) {
+  const snapshots = [-74.006, 0, 100.5018, 151.2093].map((longitude) => buildZibaiSnapshot(new Date(at), longitude));
+  assert.equal(new Set(snapshots.map((snapshot) => snapshot.dayFlight)).size, 1, `${at} day flight must be longitude-independent`);
+  assert.equal(new Set(snapshots.map((snapshot) => snapshot.shichenFlight)).size, 1, `${at} shichen flight must be longitude-independent`);
 }
 
 // Canonical tyme4ts / 造命 engine output; never the legacy day_branch % 9 shortcut.

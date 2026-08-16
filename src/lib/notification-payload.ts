@@ -12,7 +12,7 @@ export type NotificationFacts = {
   zibai: {
     event: "zibai_daily" | "zibai_shichen";
     referenceId: string;
-    calculationVersion: "zibai-zaoming-true-solar-v1";
+    calculationVersion: "zibai-zaoming-true-solar-v2";
     apparentSolarDate: string;
     shichenKey: "zi" | "chou" | "yin" | "mao" | "chen" | "si" | "wu" | "wei" | "shen" | "you" | "xu" | "hai" | null;
     startAt: string;
@@ -22,9 +22,9 @@ export type NotificationFacts = {
     focus: Array<{
       star: 1 | 2 | 5 | 9;
       dayDirection: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | "C";
-      dayRelation: "generates-palace" | "controls-palace" | "drains-star" | "same-element" | "palace-controls-star";
+      dayRelation: "generates-palace" | "controls-palace" | "palace-generates-star" | "same-element" | "palace-controls-star";
       shichenDirection: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | "C" | null;
-      shichenRelation: "generates-palace" | "controls-palace" | "drains-star" | "same-element" | "palace-controls-star" | null;
+      shichenRelation: "generates-palace" | "controls-palace" | "palace-generates-star" | "same-element" | "palace-controls-star" | null;
       overlaps: boolean;
     }>;
     url: "/zibai";

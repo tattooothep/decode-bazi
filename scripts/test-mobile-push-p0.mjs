@@ -353,10 +353,17 @@ try {
   rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`, [users[1]]);
   check(rows.rows[0].n === 0, "unregister-all leaves no active token for its account");
 
+  await db.query(`INSERT INTO mobile_zibai_installations(user_id,installation_id,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at)
+    VALUES($1,$2,'background',13.75,100.5,'Asia/Bangkok',now(),now()+interval '24 hours')
+    ON CONFLICT(user_id,installation_id) DO UPDATE SET latitude=excluded.latitude,longitude=excluded.longitude`,
+  [users[1], engagementToken.installation_id]);
+
   result = await api("/api/mobile/v1/session", tokens[1], { method: "DELETE" });
   check(result.response.status === 200 && result.data.revoked_server_session === true, "logout revokes the mobile session");
   rows = await db.query(`SELECT count(*)::int n FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`, [users[1]]);
   check(rows.rows[0].n === 0, "logout disables native push for the old account");
+  rows = await db.query(`SELECT count(*)::int n FROM mobile_zibai_installations WHERE user_id=$1`, [users[1]]);
+  check(rows.rows[0].n === 0, "logout immediately deletes retained Zi Bai coordinates for the signed-out account");
 
   result = await fetch(`${base}/api/internal/jobs/mobile-push-receipts`, { method: "POST" });
   check(result.status === 404, "receipt worker is hidden without its internal bearer secret");

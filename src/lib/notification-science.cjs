@@ -7,6 +7,16 @@ const SCHEDULER_NAMES = Object.freeze([
   "network-morning",
   "zibai",
 ]);
+const SCHEDULER_LEASE_NAMES = Object.freeze([
+  "yam",
+  "daily-fortune-morning",
+  "daily-fortune-evening",
+  "auspicious",
+  "personal-reminders",
+  "monthly-report",
+  "network-morning",
+  "zibai",
+]);
 
 // Slightly above each reviewed source cadence. Monthly work must not be judged
 // by the hourly Yam/personal-reminder threshold.
@@ -204,12 +214,13 @@ async function withFencedTotalTimeout(run, timeoutMs = 12_000) {
 }
 
 function schedulerLeaseKey(name) {
-  if (!SCHEDULER_NAMES.includes(name)) throw new TypeError(`unknown notification scheduler: ${name}`);
+  if (!SCHEDULER_LEASE_NAMES.includes(name)) throw new TypeError(`unknown notification scheduler: ${name}`);
   return `mobile-notification-scheduler:${name}:v1`;
 }
 
 module.exports = {
   SCHEDULER_NAMES,
+  SCHEDULER_LEASE_NAMES,
   SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS,
   buildGoalScienceRequests,
   buildQimenSchedulerRequest,

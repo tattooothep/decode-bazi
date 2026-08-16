@@ -153,6 +153,14 @@ function dayPeriodOf(st: SolarTime): number {
 // day_school: 'zaoming' (default · ครึ่งร้อน逆飛 · 造命宗鏡集/นิยมสุด)
 //             'shen'    (沈氏 · 順飛ตลอดทั้งปี)
 export type DaySchool = "zaoming" | "shen";
+export type FlyingTermReference = Readonly<{
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+}>;
 function centerOfDayPan(N: number, period: number, school: DaySchool): { center: number; forward: boolean } {
   // ครึ่งหนาว (period 0-2) = 陽遁順飛 ทุกสำนัก (มั่นใจสูง)
   switch (period) {
@@ -220,12 +228,27 @@ export function computeFlyingLayers(
   mi: number,
   s = 0,
   daySchool: DaySchool = "zaoming",
-  annualCenter?: number   // 年盤 ดาวกลางปี (centre_star จาก annual table · route ส่งค่า verify มา) · ปีจร順飛
+  annualCenter?: number,   // 年盤 ดาวกลางปี (centre_star จาก annual table · route ส่งค่า verify มา) · ปีจร順飛
+  termReference?: FlyingTermReference,
 ) {
   const st = toSolarTime(y, mo, d, h, mi, s);
+  // Solar terms are global instants. Most existing callers intentionally use
+  // their local-civil fields for both pillars and terms, so retain that
+  // behavior by default. True-solar Zi Bai supplies one fixed UTC+8 reference
+  // for term lookup while keeping apparent-local fields for day/hour pillars.
+  const termSt = termReference
+    ? toSolarTime(
+        termReference.year,
+        termReference.month,
+        termReference.day,
+        termReference.hour,
+        termReference.minute,
+        termReference.second,
+      )
+    : st;
 
   // เสาปี/เดือน (節氣) · 干支วัน · 干支ยาม
-  const { year: yearP, month: monthP } = yearMonthPillar(st);
+  const { year: yearP, month: monthP } = yearMonthPillar(termSt);
   const dayP = dayPillar(st);
   const hourP = hourPillar(st);
 
@@ -249,7 +272,7 @@ export function computeFlyingLayers(
 
   // ── 日盤 ──
   const N = ganzhiSeq(dayP);
-  const dayPeriod = dayPeriodOf(st);
+  const dayPeriod = dayPeriodOf(termSt);
   const { center: dayCenter, forward: dayForward } = centerOfDayPan(N, dayPeriod, daySchool);
   const day_stars: DayStars = {
     center: dayCenter,

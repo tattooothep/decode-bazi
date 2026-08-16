@@ -10,7 +10,7 @@ const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-h
 const DRY = process.argv.includes("--dry");
 const BATCH = Math.max(1, Math.min(1_000, Number((process.argv.find((arg) => arg.startsWith("--batch=")) || "--batch=250").slice(8))));
 const WORKERS = Math.max(1, Math.min(20, Number((process.argv.find((arg) => arg.startsWith("--workers=")) || "--workers=1").slice(10))));
-const CALCULATION_VERSION = "zibai-zaoming-true-solar-v1";
+const CALCULATION_VERSION = "zibai-zaoming-true-solar-v2";
 
 (function loadEnv() {
   const envPath = path.join(__dirname, "..", ".env.local");
@@ -73,7 +73,9 @@ function buildZibaiNotice(row, event, snapshot, occurrenceId) {
       calculationVersion: CALCULATION_VERSION,
       occurrenceType: event === "zibai_shichen" ? "shichen" : "daily",
       apparentSolarDate: snapshot.apparentSolarDate,
-      shichenKey,
+      // Avoid the generic credential-key sentinel while retaining the
+      // non-sensitive branch name needed for science audit replay.
+      shichen: shichenKey,
     },
     messages: [{
       tokenId: row.token_id, deviceToken: row.device_push_token, deviceTokenType: row.device_token_type,

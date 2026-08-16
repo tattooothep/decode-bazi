@@ -133,7 +133,7 @@ try {
     VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002',true,false,'foreground',13.75,100.5,'Asia/Bangkok',now()-interval '1 hour',now()+interval '23 hours',now()-interval '20 minutes',NULL,'engine_unavailable',now());
     INSERT INTO mobile_zibai_occurrences
       (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state,skip_reason)
-    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','observability-quiet','shichen',current_date,'si','zibai-zaoming-true-solar-v1','skipped','quiet_hours');
+    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','observability-quiet','shichen',current_date,'si','zibai-zaoming-true-solar-v2','skipped','quiet_hours');
   `);
 
   const observability = require("../src/lib/notification-observability.cjs");

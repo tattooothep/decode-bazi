@@ -33,9 +33,14 @@ assert.deepEqual(delivery.currentPolicyDecision(
 ), { allow: false, terminal: true, reason: "policy_quiet_hours" }, "a queued shichen crossing into quiet hours is discarded, never replayed");
 assert.deepEqual(delivery.currentPolicyDecision(
   { kind: "zibai", payload: { event: "zibai_daily" }, transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
-  { ...quietContext, zibai_expires_at: null },
+  { ...quietContext, zibai_expires_at: "2026-08-17T01:00:00.000Z" },
   0,
 ), { allow: false, terminal: false, reason: "policy_quiet_hours" }, "a queued daily summary waits through quiet hours");
+assert.deepEqual(delivery.currentPolicyDecision(
+  { kind: "zibai", payload: { event: "zibai_daily" }, transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
+  { ...quietContext, now_at: new Date("2026-08-17T01:00:00.000Z"), zibai_expires_at: "2026-08-17T01:00:00.000Z" },
+  0,
+), { allow: false, terminal: true, reason: "policy_expired_occurrence" }, "a delayed daily chart expires at its immutable solar-day end and cannot replay later");
 
 await assert.rejects(
   () => delivery.reserve({ query: async () => ({ rows: [] }) }, { userId: "a", key: "k", kind: "zibai", messages: [] }),

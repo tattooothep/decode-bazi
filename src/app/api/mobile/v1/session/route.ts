@@ -159,10 +159,17 @@ export async function DELETE(req: Request) {
     if (session) {
       await bumpSessionVersion(session.userId);
       await q1(
-        `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
-          WHERE user_id=$1 AND enabled=true
-            AND ($2::uuid IS NULL OR installation_id=$2::uuid)
-          RETURNING id`,
+        `WITH disabled AS (
+           UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+            WHERE user_id=$1 AND enabled=true
+              AND ($2::uuid IS NULL OR installation_id=$2::uuid)
+            RETURNING installation_id
+         ), removed AS (
+           DELETE FROM mobile_zibai_installations
+            WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)
+            RETURNING installation_id
+         )
+         SELECT 1 AS id`,
         [session.userId, validInstallationId]
       ).catch(() => null);
       revokedServerSession = true;

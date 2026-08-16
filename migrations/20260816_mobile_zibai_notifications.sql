@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS mobile_zibai_installations (
   location_expires_at timestamptz,
   next_daily_at timestamptz,
   next_shichen_at timestamptz,
-  calculation_version text NOT NULL DEFAULT 'zibai-zaoming-true-solar-v1'
-    CHECK (calculation_version='zibai-zaoming-true-solar-v1'),
+  calculation_version text NOT NULL DEFAULT 'zibai-zaoming-true-solar-v2'
+    CHECK (calculation_version='zibai-zaoming-true-solar-v2'),
   owner_generation bigint NOT NULL DEFAULT 1 CHECK (owner_generation > 0),
   last_skip_reason text,
   lease_token uuid,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS mobile_zibai_occurrences (
   occurrence_type text NOT NULL CHECK (occurrence_type IN ('daily','shichen')),
   apparent_solar_date date NOT NULL,
   shichen_key text CHECK (shichen_key IS NULL OR shichen_key IN ('zi','chou','yin','mao','chen','si','wu','wei','shen','you','xu','hai')),
-  calculation_version text NOT NULL CHECK (calculation_version='zibai-zaoming-true-solar-v1'),
+  calculation_version text NOT NULL CHECK (calculation_version='zibai-zaoming-true-solar-v2'),
   state text NOT NULL DEFAULT 'claimed' CHECK (state IN ('claimed','reserved','skipped')),
   skip_reason text,
   push_log_id uuid REFERENCES mobile_push_log(id) ON DELETE SET NULL,

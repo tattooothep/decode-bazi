@@ -19,47 +19,47 @@ const DIR = Object.freeze({
 });
 const RELATION = Object.freeze({
   th: Object.freeze({
-    "generates-palace": "ดาว生ธาตุวัง พลังถูกส่งไปสู่พื้นที่",
-    "controls-palace": "ดาว剋ธาตุวัง พลังต้านกัน ควรใช้พื้นที่อย่างพอดี",
-    "drains-star": "วัง洩พลังดาว ผลของดาวอ่อนลงและกระจายออก",
-    "same-element": "ดาวกับวังเป็นธาตุเดียวกัน พลังซ้อนและเด่นขึ้น",
-    "palace-controls-star": "ธาตุวัง剋ดาว พลังดาวถูกจำกัด ควรทำอย่างระมัดระวัง",
+    "generates-palace": "ดาวส่งพลังสู่วัง",
+    "controls-palace": "ดาวข่มวัง ใช้อย่างพอดี",
+    "palace-generates-star": "วังหนุนดาวให้เด่นขึ้น",
+    "same-element": "ดาว–วังธาตุเดียวกัน พลังเด่น",
+    "palace-controls-star": "วังข่มดาว ใช้อย่างระวัง",
   }),
   en: Object.freeze({
-    "generates-palace": "the star generates the palace element, feeding energy into this sector",
-    "controls-palace": "the star controls the palace element; use the sector in moderation",
-    "drains-star": "the palace drains the star, dispersing and softening its effect",
-    "same-element": "star and palace share an element, reinforcing the pattern",
-    "palace-controls-star": "the palace controls the star, so proceed carefully and keep activity measured",
+    "generates-palace": "star feeds sector",
+    "controls-palace": "star checks sector; moderate",
+    "palace-generates-star": "sector strengthens star",
+    "same-element": "same element; reinforced",
+    "palace-controls-star": "sector checks star; use care",
   }),
   zh: Object.freeze({
-    "generates-palace": "星生宮，能量流入此方",
-    "controls-palace": "星剋宮，宜節制使用此方",
-    "drains-star": "宮洩星氣，作用較分散柔和",
-    "same-element": "星宮比和，特性較為突出",
-    "palace-controls-star": "宮剋星，宜謹慎並減少強烈活動",
+    "generates-palace": "星生宮，星氣付出",
+    "controls-palace": "星剋宮，宜節制",
+    "palace-generates-star": "宮生星，星氣得助增強",
+    "same-element": "星宮比和，特性突出",
+    "palace-controls-star": "宮剋星，宜謹慎",
   }),
 });
 
 function recommendation(locale, star) {
   const table = {
     th: {
-      1: "เหมาะกับการคิด วางแผน ติดต่อ หรือทำงานที่ต้องการความนิ่งและความชัดเจน",
-      2: "ดูแลความเป็นระเบียบ ความสะอาด และพักร่างกายให้พอ หลีกเลี่ยงการโหมงานในทิศนี้",
-      5: "ลดเสียง การสั่นสะเทือน การเจาะ ตอก หรือรื้อในทิศนี้ และใช้พื้นที่อย่างสงบ",
-      9: "เหมาะกับพื้นที่สว่าง งานสร้างสรรค์ การสื่อสาร และการทำสิ่งให้เห็นผลอย่างมีสติ",
+      1: "วางแผน ติดต่อ หรืองานที่ต้องนิ่งชัด",
+      2: "จัดระเบียบและพักให้พอ ไม่โหมงาน",
+      5: "งดเจาะ ตอก รื้อ และแรงสั่น ใช้พื้นที่สงบ",
+      9: "ใช้แสง งานสร้างสรรค์ และการสื่อสาร",
     },
     en: {
-      1: "Good for planning, communication and calm work that benefits from clarity.",
-      2: "Keep the area orderly, rest adequately and avoid overexertion in this direction.",
-      5: "Keep this direction quiet; avoid drilling, hammering, demolition and strong vibration.",
-      9: "Good for light, creative work, communication and making progress visible with care.",
+      1: "plan, communicate, work calmly",
+      2: "organize, rest; avoid overwork",
+      5: "keep quiet; no drilling or vibration",
+      9: "use light, creativity and communication",
     },
     zh: {
-      1: "適合規劃、溝通，以及需要沉著清晰的工作。",
-      2: "保持整潔並充分休息，避免在此方過度勞累。",
-      5: "此方宜靜，避免鑽孔、敲打、拆動及強烈震動。",
-      9: "適合明亮空間、創作、溝通與穩健地推動成果。",
+      1: "宜規劃、溝通及沉著工作",
+      2: "宜整潔休息，勿過度勞累",
+      5: "宜靜，忌鑽敲拆動與震動",
+      9: "宜明亮、創作與溝通",
     },
   };
   return table[locale][star];
@@ -68,14 +68,17 @@ function recommendation(locale, star) {
 function line(locale, item, event) {
   const direction = event === "zibai_shichen" ? item.shichenDirection : item.dayDirection;
   const relation = event === "zibai_shichen" ? item.shichenRelation : item.dayRelation;
-  const overlap = item.overlaps
-    ? locale === "th" ? " ดาววัน–ดาวยามซ้อนทิศเดียวกัน จึงควรให้น้ำหนักกับคำแนะนำนี้มากขึ้น"
-      : locale === "zh" ? " 日星與時星同宮，這項提示值得優先留意"
-        : " The day and shichen layers overlap here, so give this guidance extra attention."
-    : "";
-  const separator = locale === "zh" ? "：" : " — ";
-  const sentenceBreak = locale === "zh" ? "。" : locale === "th" ? " · " : ". ";
-  return `${STAR[locale][item.star]} ${DIR[locale][direction]}${separator}${RELATION[locale][relation]}${sentenceBreak}${recommendation(locale, item.star)}${overlap}`;
+  const overlap = item.overlaps ? (locale === "zh" ? "·日時同宮" : locale === "th" ? "·วัน–ยามซ้อน" : "·overlap") : "";
+  return `${item.star} ${DIR[locale][direction]}: ${RELATION[locale][relation]}; ${recommendation(locale, item.star)}${overlap}`;
+}
+
+function immutableWindow(snapshot) {
+  const start = new Date(snapshot.startAt);
+  const end = new Date(snapshot.endAt);
+  if (!Number.isFinite(start.valueOf()) || !Number.isFinite(end.valueOf()) || end <= start) {
+    throw new TypeError("zibai_copy_window_invalid");
+  }
+  return `${snapshot.startAt.slice(11, 16)}–${snapshot.endAt.slice(11, 16)} UTC`;
 }
 
 function buildZibaiCopy(localeInput, event, snapshot) {
@@ -84,18 +87,24 @@ function buildZibaiCopy(localeInput, event, snapshot) {
   const daily = event === "zibai_daily";
   const shichen = daily ? null : SHICHEN[snapshot.shichenKey];
   if (!daily && !shichen) throw new TypeError("zibai_copy_shichen_invalid");
+  const window = immutableWindow(snapshot);
   const title = daily
     ? locale === "th" ? `จื่อไป๋ประจำวัน · ${snapshot.apparentSolarDate}` : locale === "zh" ? `每日紫白 · ${snapshot.apparentSolarDate}` : `Daily Zi Bai · ${snapshot.apparentSolarDate}`
     : locale === "th" ? `จื่อไป๋ยาม${shichen[0]} · ${shichen[1]} เวลาสุริยะจริง`
       : locale === "zh" ? `紫白${shichen[0]}時 · 真太陽時 ${shichen[1]}`
         : `Zi Bai ${shichen[0]} shichen · true solar ${shichen[1]}`;
   const lines = snapshot.focus.map((item) => line(locale, item, event));
+  const period = locale === "th"
+    ? `ช่วง ${window} · เวลาสุริยะจริง`
+    : locale === "zh" ? `時段 ${window} · 真太陽時` : `Window ${window} · true solar`;
   const footer = locale === "th"
-    ? "แตะเพื่อดูผัง 9 วังครบ ความสัมพันธ์ธาตุ และช่วงเวลาที่คำนวณจากเวลาสุริยะจริง"
+    ? "แตะดูผัง 9 วัง"
     : locale === "zh"
-      ? "點按查看完整九宮、五行關係及真太陽時計算時段"
-      : "Tap for the complete nine-palace chart, elemental relationships and true-solar time window.";
-  return Object.freeze({ title, body: `${lines.join("\n")}\n${footer}` });
+      ? "點按看全盤"
+      : "Tap for full chart.";
+  const body = `${period}\n${lines.join("\n")}\n${footer}`;
+  if (body.length > 400) throw new Error(`zibai_copy_exceeds_provider_limit:${locale}:${body.length}`);
+  return Object.freeze({ title, body });
 }
 
 function zibaiProviderCopy(locale, privacyPreview, event, snapshot) {

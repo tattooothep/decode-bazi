@@ -67,6 +67,12 @@ export async function POST(req:Request) {
   const sv=await bumpSessionVersion(acc.u.id);
   const token=await signSession({userId:acc.u.id,email:acc.u.email,orgId:acc.u.current_org_id,sv});
   await setAuthCookie(token);
-  await q(`UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now() WHERE user_id=$1 AND enabled=true AND ($2::uuid IS NULL OR installation_id<>$2::uuid)`,[acc.u.id,installationId||null]).catch(()=>null);
+  await q(`WITH disabled AS (
+    UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+     WHERE user_id=$1 AND enabled=true AND ($2::uuid IS NULL OR installation_id<>$2::uuid)
+     RETURNING installation_id
+  )
+  DELETE FROM mobile_zibai_installations
+   WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id<>$2::uuid)`,[acc.u.id,installationId||null]).catch(()=>null);
   return NextResponse.json({ok:true,revoked_other_sessions:true,...(mobileBearerToken(req)?{access_token:token,token_type:"Bearer"}:{})});
 }

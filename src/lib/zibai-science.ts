@@ -1,11 +1,11 @@
 import { computeFlyingLayers, type Dir9, type PalaceStars } from "./fengshui-luxing";
 
-export const ZIBAI_CALCULATION_VERSION = "zibai-zaoming-true-solar-v1" as const;
+export const ZIBAI_CALCULATION_VERSION = "zibai-zaoming-true-solar-v2" as const;
 
 const SHICHEN = ["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"] as const;
 export type ZibaiShichenKey = (typeof SHICHEN)[number];
 export type ZibaiElement = "water" | "wood" | "fire" | "earth" | "metal";
-export type ZibaiRelation = "generates-palace" | "controls-palace" | "drains-star" | "same-element" | "palace-controls-star";
+export type ZibaiRelation = "generates-palace" | "controls-palace" | "palace-generates-star" | "same-element" | "palace-controls-star";
 
 const DIRECTIONS: Dir9[] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"];
 const PALACE_ELEMENT: Record<Dir9, ZibaiElement> = {
@@ -169,14 +169,25 @@ export function starPalaceRelation(star: number, direction: Dir9): ZibaiRelation
   if (!starElement) throw new TypeError("zibai_invalid_star");
   if (starElement === palaceElement) return "same-element";
   if (GENERATES[starElement] === palaceElement) return "generates-palace";
-  if (GENERATES[palaceElement] === starElement) return "drains-star";
+  if (GENERATES[palaceElement] === starElement) return "palace-generates-star";
   if (CONTROLS[starElement] === palaceElement) return "controls-palace";
   return "palace-controls-star";
 }
 
 export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
   const p = apparentSolarParts(at, longitude);
-  const layer = computeFlyingLayers(p.year, p.month, p.day, p.hour, p.minute, p.second, "zaoming");
+  // tyme4ts expresses solar-term boundaries in Chinese standard civil time.
+  // Project the one global UTC instant into UTC+8 once for term lookup; do not
+  // let longitude move 夏至/冬至. Apparent-local fields still own the pillars.
+  const termInstant = new Date(at.getTime() + 8 * 3_600_000);
+  const layer = computeFlyingLayers(
+    p.year, p.month, p.day, p.hour, p.minute, p.second, "zaoming", undefined,
+    {
+      year: termInstant.getUTCFullYear(), month: termInstant.getUTCMonth() + 1,
+      day: termInstant.getUTCDate(), hour: termInstant.getUTCHours(),
+      minute: termInstant.getUTCMinutes(), second: termInstant.getUTCSeconds(),
+    },
+  );
   const dayPalaces = exactPermutation(layer.day_stars.palaces);
   const shichenPalaces = exactPermutation(layer.hour_stars.palaces);
   const shichen = shichenAt(at, longitude);

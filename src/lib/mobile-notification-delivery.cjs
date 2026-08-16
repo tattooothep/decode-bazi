@@ -585,7 +585,8 @@ async function applyCurrentPolicyLocked(tx, row) {
       [row.user_id, row.installation_id, event],
     );
     context.zibai_enabled = zibai.rows[0]?.enabled === true;
-    context.zibai_expires_at = event === "zibai_shichen" ? row.payload?.endAt || null : null;
+    context.zibai_expires_at = (event === "zibai_shichen" || event === "zibai_daily")
+      ? row.payload?.endAt || null : null;
     context.zibai_timezone = zibai.rows[0]?.location_timezone || "UTC";
     context.zibai_quiet_start = zibai.rows[0]?.quiet_start;
     context.zibai_quiet_end = zibai.rows[0]?.quiet_end;
