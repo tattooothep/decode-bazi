@@ -183,6 +183,13 @@ export async function POST(req: Request) {
       ?? (LOCALES.has(String(accountContext.rows[0]?.locale || "").toLowerCase())
         ? String(accountContext.rows[0]?.locale).toLowerCase()
         : "th");
+    await client.query(
+      `DELETE FROM mobile_zibai_installations z USING mobile_push_tokens t
+        WHERE z.user_id=t.user_id AND z.installation_id=t.installation_id
+          AND t.user_id<>$1
+          AND (t.installation_id=$2::uuid OR ($3::text IS NOT NULL AND t.device_push_token=$3))`,
+      [session.userId, installationId, deviceToken],
+    );
     // Installation IDs and native push tokens identify a physical app install,
     // not an account. Transfer both identities before the upsert so an old
     // account can never remain enabled for the same device after account switch.
@@ -306,6 +313,11 @@ export async function DELETE(req: Request) {
         WHERE user_id=$1 AND enabled=true
           AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
       [session.userId, installationId || null]
+    );
+    await client.query(
+      `DELETE FROM mobile_zibai_installations
+        WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
+      [session.userId, installationId || null],
     );
     await client.query("COMMIT");
   } catch {

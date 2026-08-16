@@ -7,6 +7,7 @@ const ROUTES = Object.freeze({
   shrine: new Set(["/shrine"]),
   goal: new Set(["/calendar/goals"]),
   service: new Set(["/account", "/support", "/store", "/calendar", "/network", "/fusion"]),
+  zibai: new Set(["/zibai"]),
 });
 
 const FACT_KEYS = Object.freeze({
@@ -18,6 +19,7 @@ const FACT_KEYS = Object.freeze({
   shrine: ["date", "festival", "url"],
   goal: ["goalId", "date", "url"],
   service: ["event", "referenceId", "url"],
+  zibai: ["event", "referenceId", "calculationVersion", "apparentSolarDate", "shichenKey", "startAt", "endAt", "dayPalaces", "shichenPalaces", "focus", "url"],
 });
 
 function exactKeys(value, expected) {
@@ -34,6 +36,63 @@ function validDate(value) {
 
 function cleanText(value, min = 1, max = 160) {
   return typeof value === "string" && value.length >= min && value.length <= max && value.trim() === value;
+}
+
+const ZIBAI_DIRECTIONS = Object.freeze(["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"]);
+const ZIBAI_SHICHEN = new Set(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
+const ZIBAI_RELATIONS = new Set(["generates-palace", "controls-palace", "drains-star", "same-element", "palace-controls-star"]);
+const ZIBAI_FOCUS_KEYS = Object.freeze(["star", "dayDirection", "dayRelation", "shichenDirection", "shichenRelation", "overlaps"]);
+
+function validIso(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.valueOf()) && parsed.toISOString() === value;
+}
+
+function validZibaiPalaces(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || !exactKeys(value, ZIBAI_DIRECTIONS)) return false;
+  const numbers = ZIBAI_DIRECTIONS.map((direction) => value[direction]);
+  return numbers.every((star) => Number.isInteger(star) && star >= 1 && star <= 9) && new Set(numbers).size === 9;
+}
+
+function directionForStar(palaces, star) {
+  return ZIBAI_DIRECTIONS.find((direction) => palaces[direction] === star) || null;
+}
+
+function validZibaiFacts(facts) {
+  const isDaily = facts.event === "zibai_daily";
+  const referenceMatch = /^zibai\|(\d{4}-\d{2}-\d{2})\|(daily|zi|chou|yin|mao|chen|si|wu|wei|shen|you|xu|hai)\|zibai-zaoming-true-solar-v1$/u.exec(String(facts.referenceId || ""));
+  const durationMs = validIso(facts.startAt) && validIso(facts.endAt)
+    ? new Date(facts.endAt).getTime() - new Date(facts.startAt).getTime()
+    : NaN;
+  if (!["zibai_daily", "zibai_shichen"].includes(facts.event)
+    || referenceMatch === null
+    || facts.calculationVersion !== "zibai-zaoming-true-solar-v1"
+    || !validDate(facts.apparentSolarDate)
+    || !validIso(facts.startAt) || !validIso(facts.endAt)
+    || durationMs <= 0
+    || (isDaily
+      ? durationMs < 23 * 60 * 60 * 1000 || durationMs > 25 * 60 * 60 * 1000
+      : durationMs < 90 * 60 * 1000 || durationMs > 150 * 60 * 1000)
+    || !validZibaiPalaces(facts.dayPalaces)
+    || !Array.isArray(facts.focus) || facts.focus.length !== 4) return false;
+  if (isDaily ? facts.shichenKey !== null || facts.shichenPalaces !== null : !ZIBAI_SHICHEN.has(facts.shichenKey) || !validZibaiPalaces(facts.shichenPalaces)) return false;
+  const expectedReferencePart = isDaily ? "daily" : facts.shichenKey;
+  if (referenceMatch[1] !== facts.apparentSolarDate || referenceMatch[2] !== expectedReferencePart) return false;
+  const stars = [];
+  for (const item of facts.focus) {
+    if (!item || typeof item !== "object" || Array.isArray(item) || !exactKeys(item, ZIBAI_FOCUS_KEYS)
+      || ![1, 2, 5, 9].includes(item.star) || !ZIBAI_DIRECTIONS.includes(item.dayDirection)
+      || !ZIBAI_RELATIONS.has(item.dayRelation) || typeof item.overlaps !== "boolean"
+      || directionForStar(facts.dayPalaces, item.star) !== item.dayDirection) return false;
+    if (isDaily) {
+      if (item.shichenDirection !== null || item.shichenRelation !== null || item.overlaps) return false;
+    } else if (!ZIBAI_DIRECTIONS.includes(item.shichenDirection) || !ZIBAI_RELATIONS.has(item.shichenRelation)
+      || directionForStar(facts.shichenPalaces, item.star) !== item.shichenDirection
+      || item.overlaps !== (item.dayDirection === item.shichenDirection)) return false;
+    stars.push(item.star);
+  }
+  return stars.sort((a, b) => a - b).join(",") === "1,2,5,9";
 }
 
 function buildNotificationPayload(kind, accountId, facts) {
@@ -66,6 +125,7 @@ function buildNotificationPayload(kind, accountId, facts) {
           : true;
     if (!exactDestination) throw new TypeError("invalid service destination facts");
   }
+  if (kind === "zibai" && !validZibaiFacts(facts)) throw new TypeError("invalid zibai notification facts");
   return Object.freeze({ v: 1, kind, accountId, ...facts });
 }
 

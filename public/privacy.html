@@ -168,6 +168,18 @@
         ['10. Menores y cambios',['El servicio no está dirigido a menores que no puedan consentir legalmente por sí mismos. Si un tutor cree que se enviaron datos de un menor, debe contactarnos.','Podemos actualizar esta política y mostraremos la fecha más reciente en esta página.','Seguir usando el servicio tras una actualización significa que reconoces la política más reciente.']]
       ]}
     };
+    var LOCATION_NOTICE={
+      th:['11. ตำแหน่งสำหรับการแจ้งเตือนจื่อไป๋',['เมื่อคุณเปิดแจ้งเตือนจื่อไป๋รายยามโดยชัดแจ้ง แอพจะขอตำแหน่งเบื้องหลังและขออัปเดตเป็นระยะเพื่อคำนวณเวลาสุริยะจริง รายวันใช้เพียงตำแหน่งขณะเปิดแอพ','ระบบเก็บเฉพาะตำแหน่งล่าสุดของบัญชีและการติดตั้งนี้ โดยเขียนทับค่าเดิม ใช้คำนวณได้ไม่เกิน 3 ชั่วโมง และล้างภายใน 24 ชั่วโมง จึงไม่สร้างประวัติเส้นทาง','พิกัดไม่อยู่ในข้อความแจ้งเตือนหรือประวัติแจ้งเตือน การปิดรายยาม ออกจากระบบ ลบเครื่อง หรือถอนสิทธิ์จะหยุดการเก็บเบื้องหลัง']],
+      en:['11. Location for Zi Bai alerts',['When you explicitly enable shichen Zi Bai alerts, the app requests background location and periodic refreshes to calculate true apparent solar time. Daily Zi Bai uses foreground location only.','We keep only the latest location for that account and installation, overwrite the prior value, use it for at most 3 hours, and clear it within 24 hours. We do not create a route history.','Coordinates are excluded from notification payloads and notification history. Disabling shichen alerts, signing out, removing the device, or revoking permission stops background collection.']],
+      zh:['11. 紫白提醒的位置資料',['只有在您明確開啟紫白時辰提醒後，App 才會申請背景定位並定期更新，以計算真太陽時；每日紫白只使用前景定位。','每個帳戶與安裝只保留最新位置並覆寫舊值；資料最多使用 3 小時，並在 24 小時內清除，不建立移動路線紀錄。','通知內容與通知歷史不含座標。關閉時辰提醒、登出、移除裝置或撤回權限後，背景收集即停止。']],
+      cn:['11. 紫白提醒的位置数据',['只有在您明确开启紫白时辰提醒后，App 才会申请后台定位并定期更新，用于计算真太阳时；每日紫白只使用前台定位。','每个账户与安装只保留最新位置并覆盖旧值；数据最多使用 3 小时，并在 24 小时内清除，不建立移动路线记录。','通知内容与通知历史不含坐标。关闭时辰提醒、退出登录、移除设备或撤回权限后，后台收集即停止。']],
+      vi:['11. Vị trí cho thông báo Zi Bai',['Chỉ khi bạn chủ động bật thông báo Zi Bai theo thời thần, ứng dụng mới xin quyền vị trí nền và cập nhật định kỳ để tính giờ Mặt Trời biểu kiến thực. Bản tóm tắt hằng ngày chỉ dùng vị trí khi ứng dụng đang mở.','Mỗi tài khoản và bản cài đặt chỉ giữ vị trí mới nhất, ghi đè giá trị trước, dùng tối đa 3 giờ và xóa trong vòng 24 giờ; không tạo lịch sử lộ trình.','Tọa độ không nằm trong nội dung hay lịch sử thông báo. Tắt thông báo thời thần, đăng xuất, xóa thiết bị hoặc thu hồi quyền sẽ dừng thu thập nền.']],
+      ja:['11. 紫白通知の位置情報',['紫白の時辰通知を明示的に有効にした場合のみ、真太陽時の計算のためにバックグラウンド位置情報と定期更新を求めます。日次紫白はフォアグラウンド位置情報のみを使います。','アカウントとインストールごとに最新位置だけを保存して上書きし、利用は最長 3 時間、24 時間以内に消去します。移動履歴は作成しません。','座標は通知ペイロードや通知履歴に含めません。時辰通知の無効化、ログアウト、端末削除、権限取消でバックグラウンド収集を停止します。']],
+      ko:['11. 자백 알림 위치 정보',['자백 시진 알림을 명시적으로 켠 경우에만 진태양시 계산을 위해 백그라운드 위치 권한과 주기적 갱신을 요청합니다. 일일 자백은 포그라운드 위치만 사용합니다.','계정과 설치별 최신 위치 하나만 이전 값을 덮어써 보관하며 최대 3시간 사용하고 24시간 이내 삭제합니다. 이동 경로 기록은 만들지 않습니다.','좌표는 알림 payload나 알림 기록에 포함되지 않습니다. 시진 알림 끄기, 로그아웃, 기기 제거 또는 권한 철회 시 백그라운드 수집이 중지됩니다.']],
+      ru:['11. Геопозиция для уведомлений Zi Bai',['Только при явном включении уведомлений Zi Bai по двухчасовым периодам приложение запрашивает фоновую геопозицию и периодические обновления для расчета истинного солнечного времени. Для ежедневной сводки используется только геопозиция при открытом приложении.','Для аккаунта и установки хранится только последняя позиция с заменой предыдущей; она используется не более 3 часов и удаляется в течение 24 часов. История маршрута не создается.','Координаты не включаются в payload или историю уведомлений. Отключение уведомлений, выход, удаление устройства или отзыв разрешения прекращают фоновый сбор.']],
+      es:['11. Ubicación para avisos Zi Bai',['Solo cuando activas expresamente los avisos Zi Bai por hora doble, la app solicita ubicación en segundo plano y actualizaciones periódicas para calcular la hora solar aparente real. El resumen diario usa solo ubicación en primer plano.','Conservamos únicamente la latest location de esa cuenta e instalación, sustituyendo la anterior; se usa como máximo 3 hours y se elimina dentro de 24 hours. No creamos un historial de recorridos.','Las coordenadas no se incluyen en el contenido ni en el historial de notificaciones. Desactivar los avisos, cerrar sesión, eliminar el dispositivo o retirar el permiso detiene la recopilación background.']]
+    };
+    var LOCATION_UPDATED={th:'อัปเดตล่าสุด: 16 สิงหาคม 2026',en:'Last updated: August 16, 2026',zh:'最近更新：2026 年 8 月 16 日',cn:'最近更新：2026 年 8 月 16 日',vi:'Cập nhật lần cuối: 16 tháng 8 năm 2026',ja:'最終更新：2026年8月16日',ko:'최종 업데이트: 2026년 8월 16일',ru:'Последнее обновление: 16 августа 2026 г.',es:'Última actualización: 16 de agosto de 2026'};
     function pickLang(){
       var q=new URLSearchParams(location.search).get('lang');
       var saved=''; try{saved=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';}catch(_){}
@@ -189,10 +201,10 @@
       document.getElementById('kicker').textContent=d.kicker;
       document.getElementById('title').textContent=d.title;
       document.getElementById('lead').textContent=d.lead;
-      document.getElementById('updated').textContent=d.updated;
+      document.getElementById('updated').textContent=LOCATION_UPDATED[lang]||LOCATION_UPDATED.en;
       document.getElementById('scope').textContent=d.scope;
       document.getElementById('foot').textContent=d.foot;
-      document.getElementById('doc').innerHTML=d.sections.map(function(sec){
+      document.getElementById('doc').innerHTML=d.sections.concat([LOCATION_NOTICE[lang]||LOCATION_NOTICE.en]).map(function(sec){
         return '<section class="card"><h2>'+esc(sec[0])+'</h2><ul>'+sec[1].map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';
       }).join('');
       document.querySelectorAll('#lang button').forEach(function(b){b.classList.toggle('on',b.dataset.lang===lang);});

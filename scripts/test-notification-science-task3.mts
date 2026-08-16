@@ -80,14 +80,14 @@ await check("daily calls use one total deadline even when a call never resolves"
   assert.ok(Date.now() - started < 250);
 });
 
-await check("all six scheduler names have stable advisory lease keys", () => {
+await check("all seven scheduler names have stable advisory lease keys", () => {
   assert.deepEqual(science.SCHEDULER_NAMES, [
-    "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning",
+    "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning", "zibai",
   ]);
-  assert.equal(new Set(science.SCHEDULER_NAMES.map(science.schedulerLeaseKey)).size, 6);
+  assert.equal(new Set(science.SCHEDULER_NAMES.map(science.schedulerLeaseKey)).size, 7);
 });
 
-await check("all six scheduler entrypoints acquire their named DB run lease", () => {
+await check("all seven scheduler entrypoints acquire their named DB run lease", () => {
   const files = {
     yam: "scripts/mobile-yam-push-cron.cjs",
     "daily-fortune": "scripts/mobile-daily-fortune-push-cron.cjs",
@@ -95,6 +95,7 @@ await check("all six scheduler entrypoints acquire their named DB run lease", ()
     "personal-reminders": "scripts/mobile-personal-reminders-cron.cjs",
     "monthly-report": "scripts/mobile-monthly-report-push-cron.cjs",
     "network-morning": "scripts/mobile-network-morning-push-cron.cjs",
+    zibai: "scripts/mobile-zibai-push-cron.cjs",
   };
   for (const [name, file] of Object.entries(files)) {
     assert.match(readFileSync(file, "utf8"), new RegExp(`(?:try|with)SchedulerRunLease\\(db, ["']${name}["']`));

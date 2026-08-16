@@ -164,6 +164,10 @@ async function deriveParent(db, pushLogId) {
 
 async function reserve(db, notice, dry = false) {
   assertTransactionalKind(notice);
+  const zibaiOccurrenceId = notice?.kind === "zibai" && typeof notice?.zibaiOccurrenceId === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.zibaiOccurrenceId)
+    ? notice.zibaiOccurrenceId : null;
+  if (notice?.kind === "zibai" && zibaiOccurrenceId === null) throw new TypeError("zibai occurrence reservation required");
   if (dry) {
     const existing = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [notice.userId, notice.key]);
     return existing.rows[0] ? null : { id: null, attemptIds: [] };
@@ -191,8 +195,19 @@ async function reserve(db, notice, dry = false) {
     );
     const context = contextResult.rows[0];
     if (!context) return null;
+    let zibaiOccurrence = null;
+    if (notice.kind === "zibai") {
+      const occurrence = await client.query(
+        `SELECT id,user_id,installation_id,state,push_log_id FROM mobile_zibai_occurrences
+          WHERE id=$1 AND user_id=$2 FOR UPDATE`,
+        [zibaiOccurrenceId, notice.userId],
+      );
+      zibaiOccurrence = occurrence.rows[0] || null;
+      if (!zibaiOccurrence || zibaiOccurrence.state !== "claimed" || zibaiOccurrence.push_log_id !== null
+        || !Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
+    }
     const historyCopy = historyCopyFor(notice, context.locale);
-    if (context.has_prefs === true && notice.transactional !== true) {
+    if (context.has_prefs === true && notice.transactional !== true && notice.kind !== "zibai") {
       const cap = await client.query(
         `SELECT count(*)::int AS reserved_today
            FROM mobile_push_log l
@@ -224,6 +239,7 @@ async function reserve(db, notice, dry = false) {
       );
       const token = tokenResult.rows[0];
       if (!token) continue;
+      if (notice.kind === "zibai" && token.installation_id !== zibaiOccurrence.installation_id) continue;
       const provider = push.providerFor({
         ...item,
         deviceToken: token.device_push_token,
@@ -255,6 +271,13 @@ async function reserve(db, notice, dry = false) {
           messageSha256(providerMessage), context.privacy_preview !== true, notice.transactional === true],
       );
       if (inserted.rows[0]) attemptIds.push(inserted.rows[0].id);
+    }
+    if (notice.kind === "zibai") {
+      await client.query(
+        `UPDATE mobile_zibai_occurrences SET state='reserved',push_log_id=$2,updated_at=now()
+          WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
+        [zibaiOccurrenceId, parent.rows[0].id],
+      );
     }
     return { id: parent.rows[0].id, attemptIds };
   });
@@ -493,6 +516,24 @@ function currentPolicyDecision(row, context, capCount) {
   }
   if (row.transactional === true) return { allow: true };
   const now = new Date(context.now_at);
+  if (row.kind === "zibai") {
+    if (context.zibai_enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
+    if (context.zibai_expires_at && new Date(context.zibai_expires_at) <= now) {
+      return { allow: false, terminal: true, reason: "policy_expired_occurrence" };
+    }
+    const timezone = notificationScience.safeTimezone(context.zibai_timezone);
+    const hour = Number(notificationScience.zonedClock(timezone, now).time.slice(0, 2));
+    const quietStart = Number.isInteger(Number(context.zibai_quiet_start)) ? Number(context.zibai_quiet_start) : 22;
+    const quietEnd = Number.isInteger(Number(context.zibai_quiet_end)) ? Number(context.zibai_quiet_end) : 7;
+    const quiet = quietStart === quietEnd ? false
+      : quietStart < quietEnd ? hour >= quietStart && hour < quietEnd : hour >= quietStart || hour < quietEnd;
+    if (quiet) return {
+      allow: false,
+      terminal: row.payload?.event === "zibai_shichen",
+      reason: "policy_quiet_hours",
+    };
+    return { allow: true };
+  }
   const timezone = notificationScience.safeTimezone(context.timezone);
   if (notificationScience.zonedClock(timezone, new Date(row.created_at)).date
       !== notificationScience.zonedClock(timezone, now).date) {
@@ -535,8 +576,22 @@ async function applyCurrentPolicyLocked(tx, row) {
   const context = contextResult.rows[0] || {
     timezone: "Asia/Bangkok", privacy_preview: false, has_prefs: false, prefs: null, now_at: new Date(),
   };
+  if (row.kind === "zibai") {
+    const event = row.payload && typeof row.payload === "object" ? row.payload.event : null;
+    const zibai = await tx.query(
+      `SELECT CASE WHEN $3='zibai_shichen' THEN shichen_enabled ELSE daily_enabled END AS enabled,
+              location_timezone,quiet_start,quiet_end
+         FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2`,
+      [row.user_id, row.installation_id, event],
+    );
+    context.zibai_enabled = zibai.rows[0]?.enabled === true;
+    context.zibai_expires_at = event === "zibai_shichen" ? row.payload?.endAt || null : null;
+    context.zibai_timezone = zibai.rows[0]?.location_timezone || "UTC";
+    context.zibai_quiet_start = zibai.rows[0]?.quiet_start;
+    context.zibai_quiet_end = zibai.rows[0]?.quiet_end;
+  }
   let capCount = 0;
-  if (!(row.transactional === true && isTransactionalKind(row.kind))) {
+  if (!(row.transactional === true && isTransactionalKind(row.kind)) && row.kind !== "zibai") {
     const cap = await tx.query(
       `SELECT count(*)::int AS reserved_today
          FROM mobile_push_log l
@@ -572,7 +627,7 @@ async function processClaim(db, attempt, options = {}) {
       if (options.hooks?.afterClaim) await options.hooks.afterClaim(attempt);
       const started = await transactionOn(client, async (tx) => {
         const current = await tx.query(
-          `SELECT a.*,l.user_id,l.kind FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+          `SELECT a.*,l.user_id,l.kind,l.payload FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
             WHERE a.id=$1 AND a.lease_token=$2 AND a.status IN ('reserved','retry_due') AND a.send_started_at IS NULL
             FOR UPDATE OF a`,
           [attempt.id, attempt.lease_token],

@@ -1,0 +1,22 @@
+[Unit]
+Description=Hourkey Zi Bai indexed installation notification scheduler
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/root/releases/current
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/hourkey/hourkey.env
+StateDirectory=hourkey-notification
+UMask=0027
+ExecStart=/usr/bin/node --import tsx /root/releases/current/scripts/mobile-zibai-push-cron.cjs --batch=500 --workers=20
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/hourkey-notification
+StandardOutput=append:/var/log/hourkey/mobile-zibai-push.log
+StandardError=append:/var/log/hourkey/mobile-zibai-push.log

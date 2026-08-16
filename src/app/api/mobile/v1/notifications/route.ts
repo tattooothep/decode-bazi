@@ -1,5 +1,5 @@
 /**
- * ศูนย์แจ้งเตือนในแอพ — ประวัติจริงและการตั้งค่า 8 หมวด
+ * ศูนย์แจ้งเตือนในแอพ — ประวัติจริง 9 หมวดและการตั้งค่าบัญชี
  * GET  ?kind=all|<category>&limit= → รายการที่ผู้ให้บริการรับแล้ว + จำนวนที่ยังไม่อ่าน + ตั้งค่า
  * POST {action:"read", ids?:[]} → ทำเครื่องหมายอ่านแล้ว (ไม่ส่ง ids = อ่านทั้งหมด)
  *      {action:"engagement", notificationId, installationId,
@@ -31,7 +31,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const KINDS = new Set([
-  "security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service",
+  "security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service", "zibai",
   // legacy rows remain readable after the category split
   "auspicious", "network",
 ]);

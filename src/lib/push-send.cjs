@@ -11,6 +11,7 @@ const TRANSIENT_HTTP = new Set([408, 425, 429, 500, 502, 503, 504]);
 const MAX_ATTEMPTS = 3;
 const CONCURRENCY = 10;
 const ACTION_CATEGORY_ID = "hourkey_daily";
+const ZIBAI_ACTION_CATEGORY_ID = "hourkey_zibai";
 
 let cachedKey = null;
 let cachedTicket = null;
@@ -55,7 +56,7 @@ function safeUrl(raw) {
 
 function categoryOf(message) {
   const value = String(message?.category || "daily").trim();
-  return ["security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service"].includes(value)
+  return ["security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service", "zibai"].includes(value)
     ? value
     : "daily";
 }
@@ -102,7 +103,9 @@ function prepareMessage(item, provider = providerFor(item)) {
   const category = categoryOf(item);
   const actionCategoryId = category === "security" || item?.transactional === true
     ? null
-    : ACTION_CATEGORY_ID;
+    : category === "zibai"
+      ? item?.data?.event === "zibai_shichen" ? ZIBAI_ACTION_CATEGORY_ID : null
+      : ACTION_CATEGORY_ID;
   if (provider === "fcm") {
     return {
       notification: {

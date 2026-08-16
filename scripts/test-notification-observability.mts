@@ -12,6 +12,7 @@ const password = crypto.randomBytes(24).toString("hex");
 const migration = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
 const observabilityMigration = readFileSync("migrations/20260816_mobile_notification_observability.sql", "utf8");
 const engagementMigration = readFileSync("migrations/20260816_mobile_notification_engagement.sql", "utf8");
+const zibaiMigration = readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8");
 
 assert.match(database, /^notification_observability_test_/u, "test database name must be disposable");
 assert.match(role, /^notification_observability_role_/u, "test role name must be disposable");
@@ -53,6 +54,7 @@ try {
   psql(database, migration);
   psql(database, observabilityMigration);
   psql(database, engagementMigration);
+  psql(database, zibaiMigration);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
 
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password });
@@ -125,6 +127,13 @@ try {
       ('30000000-0000-4000-8000-000000000016','00000000-0000-4000-8000-000000000001','new-accepted-no-attempt','service','accepted',now()-interval '1 hour',1);
     INSERT INTO mobile_push_log(id,user_id,yam_key,kind,delivery_status,last_error,updated_at,delivery_model_generation)
     VALUES ('30000000-0000-4000-8000-000000000017','00000000-0000-4000-8000-000000000001','new-intentional-no-delivery','service','failed','no_deliverable_installation',now()-interval '1 hour',1);
+    INSERT INTO mobile_zibai_installations
+      (user_id,installation_id,daily_enabled,shichen_enabled,location_permission,latitude,longitude,location_timezone,
+       location_captured_at,location_expires_at,next_daily_at,next_shichen_at,last_skip_reason,updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002',true,false,'foreground',13.75,100.5,'Asia/Bangkok',now()-interval '1 hour',now()+interval '23 hours',now()-interval '20 minutes',NULL,'engine_unavailable',now());
+    INSERT INTO mobile_zibai_occurrences
+      (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state,skip_reason)
+    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','observability-quiet','shichen',current_date,'si','zibai-zaoming-true-solar-v1','skipped','quiet_hours');
   `);
 
   const observability = require("../src/lib/notification-observability.cjs");
@@ -132,7 +141,7 @@ try {
   const freshSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, new Date().toISOString()]));
   const report = await observability.collectHealth(pool, {
     lookbackHours: 24,
-    thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1 },
+    thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1, maxZibaiDueLagSeconds: 600, maxZibaiEngineFailureCount: 0 },
     heartbeat: { workerAt: new Date(Date.now() - 10_000).toISOString(), schedulers: freshSchedulers },
     providerReady: { fcm: false, expo: true },
   });
@@ -142,7 +151,15 @@ try {
   assert.equal(report.metrics.receipts.stalledCount, 3, "Expo provider acceptance without accepted_at is stalled and unhealthy beyond the historical metrics lookback");
   assert.equal(report.metrics.readiness.mismatchCount, 2, "actively routed provider/token and credential readiness mismatches are counted without token output");
   assert.equal(report.metrics.worker.fresh, false, "stale worker heartbeat is visible and unhealthy");
-  assert.equal(report.metrics.schedulers.every((entry: { fresh: boolean }) => entry.fresh), true, "all six fresh scheduler heartbeats are individually healthy");
+  assert.equal(report.metrics.schedulers.every((entry: { fresh: boolean }) => entry.fresh), true, "all seven fresh scheduler heartbeats are individually healthy");
+  assert.deepEqual(report.metrics.zibai, {
+    overdueCount: 1, oldestLagSeconds: report.metrics.zibai.oldestLagSeconds,
+    locationFreshCount: 1, locationStaleCount: 0, locationAbsentCount: 0, engineFailureCount: 1,
+    dailyReservedCount: 0, shichenReservedCount: 0, skippedCount: 1, quietSkipCount: 1, duplicateOrCapCount: 0,
+  }, "health exposes aggregate Zi Bai queue, freshness, skip, and occurrence metrics without coordinates");
+  assert.ok(report.metrics.zibai.oldestLagSeconds >= 1_200);
+  assert.equal(report.reasons.includes("zibai_due_lag"), true);
+  assert.equal(report.reasons.includes("zibai_engine_failures"), true);
   assert.deepEqual(report.metrics.engagement, {
     targetedCount: 2, appReceivedCount: 1, openedCount: 1, actionCount: 1,
     ackRate: 0.5, openRate: 0.5, actionRate: 0.5,
@@ -162,7 +179,7 @@ try {
   });
   assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_missing:yam"), true, "a missing named scheduler heartbeat has an actionable reason");
   assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_stale:daily-fortune"), true, "a stale named scheduler heartbeat has an actionable reason");
-  assert.equal(schedulerReport.metrics.schedulers.length, 6, "health reports every notification scheduler rather than one generic marker");
+  assert.equal(schedulerReport.metrics.schedulers.length, 7, "health reports every notification scheduler rather than one generic marker");
   const cadenceNow = new Date("2026-08-16T12:00:00.000Z");
   const cadenceSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, cadenceNow.toISOString()]));
   cadenceSchedulers.yam = new Date(cadenceNow.valueOf() - 2 * 3_600_000).toISOString();

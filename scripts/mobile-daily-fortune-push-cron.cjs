@@ -53,6 +53,19 @@ const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
+/**
+ * A daily summary is one bounded occurrence, unlike a shichen alert. When its
+ * chosen time is inside quiet hours, move that occurrence to the first minute
+ * after quiet hours instead of silently losing it for the whole day.
+ */
+function effectiveDailyMinute(targetMinute, quietStart, quietEnd) {
+  const target = Number(targetMinute);
+  const start = Number.isInteger(Number(quietStart)) ? Number(quietStart) : 22;
+  const end = Number.isInteger(Number(quietEnd)) ? Number(quietEnd) : 7;
+  if (!Number.isInteger(target) || target < 0 || target > 1439) throw new TypeError("daily_target_minute_invalid");
+  return guard.inQuietHours(Math.floor(target / 60), start, end) ? end * 60 : target;
+}
+
 function buildDailyCopy({ loc, slot, dateLabel, score, label, tongshuYi, golden }) {
   const family = notificationPayload.normalizedLocale(loc);
   const parts = [];
@@ -179,7 +192,8 @@ async function main() {
       if (chosenSlot !== "both" && chosenSlot !== SLOT) { skipped++; continue; }
       const localNowMin = guard.localMinutes(u.user_timezone, runAt);
       const targetMin = SLOT === "morning" ? 7 * 60 : 19 * 60 + 30;
-      if (!DRY && (localNowMin === null || localNowMin < targetMin || localNowMin >= targetMin + 15)) {
+      const deliveryMin = effectiveDailyMinute(targetMin, u.quiet_start, u.quiet_end);
+      if (!DRY && (localNowMin === null || localNowMin < deliveryMin || localNowMin >= deliveryMin + 15)) {
         skipped++;
         continue;
       }
@@ -242,6 +256,6 @@ async function main() {
   await schedulerHeartbeat.writeSchedulerHeartbeat("daily-fortune");
 }
 
-module.exports = { DAILY_USERS_SQL,buildDailyCopy,buildDailyProducer,getJson,loadDailyUsers,main };
+module.exports = { DAILY_USERS_SQL,buildDailyCopy,buildDailyProducer,effectiveDailyMinute,getJson,loadDailyUsers,main };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-daily-push] category=daily error_code=scheduler_failed"); process.exit(1); });

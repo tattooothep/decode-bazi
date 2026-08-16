@@ -52,6 +52,8 @@ function optionsFor(input = {}) {
       receiptStallSeconds: boundedNumber(thresholds.receiptStallSeconds, 900, 1, 31 * 24 * 3600),
       workerHeartbeatSeconds: boundedNumber(thresholds.workerHeartbeatSeconds, 300, 1, 24 * 3600),
       heartbeatFutureSkewSeconds: boundedNumber(thresholds.heartbeatFutureSkewSeconds, 60, 0, 300),
+      maxZibaiDueLagSeconds: boundedNumber(thresholds.maxZibaiDueLagSeconds, 600, 1, 24 * 3600),
+      maxZibaiEngineFailureCount: boundedNumber(thresholds.maxZibaiEngineFailureCount, 10, 0, 1_000_000),
       schedulerHeartbeatSeconds: thresholds.schedulerHeartbeatSeconds === undefined
         ? null
         : boundedNumber(thresholds.schedulerHeartbeatSeconds, 3600, 1, 40 * 24 * 3600),
@@ -87,7 +89,7 @@ async function collectHealth(db, input = {}) {
   const now = input.now instanceof Date ? input.now : new Date();
   // Actionable alert predicates deliberately have no historical window. Each
   // is a direct indexed query so an old blocked row cannot become invisible.
-  const [retryResult, expiredLeaseResult, permanentLeaseResult, unrecoverableInFlightResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult, engagementResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
+  const [retryResult, expiredLeaseResult, permanentLeaseResult, unrecoverableInFlightResult, reservedResult, receiptResult, attemptReadinessResult, inventoryResult, terminalResult, aggregatesResult, engagementResult, zibaiResult] = await readOnlyBounded(db, (readDb) => serialQueryResults([
     () => readDb.query(
       `SELECT count(*)::int AS overdue_count,
               COALESCE(max(extract(epoch FROM now()-COALESCE(next_retry_at,to_timestamp(0)))),0)::bigint AS oldest_age_seconds
@@ -183,6 +185,29 @@ async function collectHealth(db, input = {}) {
          FROM evidence`,
       [String(config.lookbackHours)],
     ),
+    () => readDb.query(
+      `WITH installation AS (
+         SELECT count(*) FILTER (WHERE due_at<=now()-($1::text||' seconds')::interval)::int AS overdue_count,
+                COALESCE(max(extract(epoch FROM now()-due_at)) FILTER (WHERE due_at<=now()),0)::bigint AS oldest_lag_seconds,
+                count(*) FILTER (WHERE latitude IS NULL)::int AS location_absent_count,
+                count(*) FILTER (WHERE latitude IS NOT NULL AND location_captured_at>=now()-interval '3 hours' AND location_expires_at>now())::int AS location_fresh_count,
+                count(*) FILTER (WHERE latitude IS NOT NULL AND NOT (location_captured_at>=now()-interval '3 hours' AND location_expires_at>now()))::int AS location_stale_count,
+                count(*) FILTER (WHERE last_skip_reason='engine_unavailable' AND updated_at>=now()-($2::text||' hours')::interval)::int AS engine_failure_count
+           FROM mobile_zibai_installations z
+           CROSS JOIN LATERAL (VALUES (LEAST(
+             CASE WHEN daily_enabled THEN COALESCE(next_daily_at,'infinity'::timestamptz) ELSE 'infinity'::timestamptz END,
+             CASE WHEN shichen_enabled THEN COALESCE(next_shichen_at,'infinity'::timestamptz) ELSE 'infinity'::timestamptz END
+           ))) due(due_at)
+       ), occurrence AS (
+         SELECT count(*) FILTER (WHERE occurrence_type='daily' AND state='reserved')::int AS daily_reserved_count,
+                count(*) FILTER (WHERE occurrence_type='shichen' AND state='reserved')::int AS shichen_reserved_count,
+                count(*) FILTER (WHERE state='skipped')::int AS skipped_count,
+                count(*) FILTER (WHERE state='skipped' AND skip_reason='quiet_hours')::int AS quiet_skip_count,
+                count(*) FILTER (WHERE skip_reason IN ('duplicate','duplicate_or_cap'))::int AS duplicate_or_cap_count
+           FROM mobile_zibai_occurrences WHERE created_at>=now()-($2::text||' hours')::interval
+       ) SELECT * FROM installation CROSS JOIN occurrence`,
+      [String(config.thresholds.maxZibaiDueLagSeconds), String(config.lookbackHours)],
+    ),
   ]));
   const retry = retryResult.rows[0] || {};
   const expiredLease = expiredLeaseResult.rows[0] || {};
@@ -194,6 +219,7 @@ async function collectHealth(db, input = {}) {
   const inventory = inventoryResult.rows[0] || {};
   const terminal = terminalResult.rows[0] || {};
   const engagement = engagementResult.rows[0] || {};
+  const zibai = zibaiResult.rows[0] || {};
   const worker = heartbeatTiming(
     input.heartbeat?.workerAt,
     config.thresholds.workerHeartbeatSeconds,
@@ -233,6 +259,14 @@ async function collectHealth(db, input = {}) {
       openRate: ratio(engagement.opened_count, engagement.targeted_count),
       actionRate: ratio(engagement.action_count, engagement.targeted_count),
     },
+    zibai: {
+      overdueCount: numeric(zibai.overdue_count), oldestLagSeconds: numeric(zibai.oldest_lag_seconds),
+      locationFreshCount: numeric(zibai.location_fresh_count), locationStaleCount: numeric(zibai.location_stale_count),
+      locationAbsentCount: numeric(zibai.location_absent_count), engineFailureCount: numeric(zibai.engine_failure_count),
+      dailyReservedCount: numeric(zibai.daily_reserved_count), shichenReservedCount: numeric(zibai.shichen_reserved_count),
+      skippedCount: numeric(zibai.skipped_count), quietSkipCount: numeric(zibai.quiet_skip_count),
+      duplicateOrCapCount: numeric(zibai.duplicate_or_cap_count),
+    },
     byCategoryProviderState: aggregatesResult.rows.map((row) => ({
       category: row.kind, provider: row.provider, state: row.status, count: numeric(row.count),
       providerLatencyP50Ms: roundedMilliseconds(row.provider_latency_p50_ms),
@@ -247,6 +281,8 @@ async function collectHealth(db, input = {}) {
   if (metrics.leases.staleCount > config.thresholds.maxStaleLeaseCount) reasons.push("stale_lease");
   if (metrics.receipts.stalledCount > config.thresholds.maxReceiptStalledCount) reasons.push("receipt_poll_stalled");
   if (metrics.readiness.mismatchCount > 0) reasons.push("provider_readiness_mismatch");
+  if (metrics.zibai.overdueCount > 0) reasons.push("zibai_due_lag");
+  if (metrics.zibai.engineFailureCount > config.thresholds.maxZibaiEngineFailureCount) reasons.push("zibai_engine_failures");
   if (!metrics.worker.fresh) reasons.push(metrics.worker.ageSeconds === null
     ? "worker_heartbeat_missing" : metrics.worker.future ? "worker_heartbeat_future" : "worker_heartbeat_stale");
   for (const scheduler of metrics.schedulers) {

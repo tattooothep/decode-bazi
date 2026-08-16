@@ -5,6 +5,7 @@ const SCHEDULER_NAMES = Object.freeze([
   "personal-reminders",
   "monthly-report",
   "network-morning",
+  "zibai",
 ]);
 
 // Slightly above each reviewed source cadence. Monthly work must not be judged
@@ -16,6 +17,7 @@ const SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS = Object.freeze({
   "personal-reminders": 60 * 60,
   "monthly-report": 32 * 24 * 60 * 60,
   "network-morning": 26 * 60 * 60,
+  zibai: 10 * 60,
 });
 
 function safeTimezone(value) {
