@@ -5,6 +5,7 @@ import locationPolicy from "./zibai-location-policy.cjs";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const MAX_LOCATION_AGE_MS = locationPolicy.ZIBAI_LOCATION_LEASE_MS;
 const MAX_LOCATION_RETENTION_MS = locationPolicy.ZIBAI_LOCATION_LEASE_MS;
+const LEGACY_STATUS_LOCATION_AGE_SECONDS = 24 * 60 * 60;
 
 type Permission = "unknown" | "foreground" | "background" | "denied";
 type ZibaiRow = {
@@ -143,7 +144,8 @@ export function sanitizeZibaiStatus(row: ZibaiRow | null, at = new Date()) {
     dailyEnabled: row.daily_enabled, shichenEnabled: row.shichen_enabled, dailyMinute: Number(row.daily_minute), quietStart: Number(row.quiet_start), quietEnd: Number(row.quiet_end),
     permission: row.location_permission,
     locationFresh: capturedNotFuture && ageMs !== null && ageMs <= MAX_LOCATION_AGE_MS && withinRetention,
-    locationAgeSeconds: !withinRetention || ageMs === null ? null : Math.floor(ageMs / 1000), lastLocationAt: captured,
+    locationAgeSeconds: !withinRetention || ageMs === null || ageMs > LEGACY_STATUS_LOCATION_AGE_SECONDS * 1000
+      ? null : Math.floor(ageMs / 1000), lastLocationAt: captured,
     locationExpiresAt: expires, nextDailyAt: iso(row.next_daily_at), nextShichenAt: nextShichenIso,
     apparentSolarTime: hhmm(currentSolar), nextShichenSolarTime: hhmm(nextSolar),
     locationTimezone: row.location_timezone,
@@ -175,17 +177,24 @@ export async function mutateZibaiInstallation(pool: Pool, userId: string, mutati
       } else {
         const capturedAt = new Date(mutation.capturedAt);
         const permission = mutation.action === "background_location" ? "background" : mutation.permission;
-        if (capturedAt.getTime() > at.getTime() + 5 * 60_000 || at.getTime() - capturedAt.getTime() > MAX_LOCATION_RETENTION_MS) throw new ZibaiStateError("zibai_location_time_invalid", 400);
-        const expiresAt = new Date(capturedAt.getTime() + MAX_LOCATION_RETENTION_MS);
-        const computedShichenAt = nextShichenBoundary(at, mutation.longitude);
-        const computedDailyAt = current.daily_enabled ? nextCivilMinute(at, mutation.timezone, current.daily_minute) : null;
-        const currentDailyAt = iso(current.next_daily_at);
-        const currentShichenAt = iso(current.next_shichen_at);
-        const nextDailyAt = current.daily_enabled && currentDailyAt && Date.parse(currentDailyAt) <= at.getTime()
-          ? new Date(currentDailyAt) : computedDailyAt;
-        const nextShichenAt = current.shichen_enabled && currentShichenAt && Date.parse(currentShichenAt) <= at.getTime()
-          ? new Date(currentShichenAt) : computedShichenAt;
-        await client.query(`UPDATE mobile_zibai_installations SET location_permission=$3,latitude=$4,longitude=$5,location_timezone=$6,location_captured_at=$7,location_expires_at=$8,next_daily_at=$9,shichen_enabled=CASE WHEN $3='background' THEN shichen_enabled ELSE false END,next_shichen_at=CASE WHEN shichen_enabled AND $3='background' THEN $10::timestamptz ELSE NULL END,last_skip_reason=CASE WHEN $3='background' THEN NULL WHEN shichen_enabled THEN 'background_permission_missing' ELSE NULL END,updated_at=$11 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, permission, mutation.latitude, mutation.longitude, mutation.timezone, capturedAt.toISOString(), expiresAt.toISOString(), nextDailyAt?.toISOString() || null, nextShichenAt.toISOString(), at.toISOString()]);
+        if (capturedAt.getTime() > at.getTime() + 5 * 60_000 || at.getTime() - capturedAt.getTime() >= MAX_LOCATION_RETENTION_MS) throw new ZibaiStateError("zibai_location_time_invalid", 400);
+        const currentCapturedMs = current.location_captured_at ? new Date(current.location_captured_at).getTime() : NaN;
+        if (Number.isFinite(currentCapturedMs) && capturedAt.getTime() <= currentCapturedMs) {
+          if (permission === "foreground" && current.location_permission === "background") {
+            await client.query(`UPDATE mobile_zibai_installations SET location_permission='foreground',shichen_enabled=false,next_shichen_at=NULL,last_skip_reason=CASE WHEN shichen_enabled THEN 'background_permission_missing' ELSE last_skip_reason END,updated_at=$3 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, at.toISOString()]);
+          }
+        } else {
+          const expiresAt = new Date(capturedAt.getTime() + MAX_LOCATION_RETENTION_MS);
+          const computedShichenAt = nextShichenBoundary(at, mutation.longitude);
+          const computedDailyAt = current.daily_enabled ? nextCivilMinute(at, mutation.timezone, current.daily_minute) : null;
+          const currentDailyAt = iso(current.next_daily_at);
+          const currentShichenAt = iso(current.next_shichen_at);
+          const nextDailyAt = current.daily_enabled && currentDailyAt && Date.parse(currentDailyAt) <= at.getTime()
+            ? new Date(currentDailyAt) : computedDailyAt;
+          const nextShichenAt = current.shichen_enabled && currentShichenAt && Date.parse(currentShichenAt) <= at.getTime()
+            ? new Date(currentShichenAt) : computedShichenAt;
+          await client.query(`UPDATE mobile_zibai_installations SET location_permission=$3,latitude=$4,longitude=$5,location_timezone=$6,location_captured_at=$7,location_expires_at=$8,next_daily_at=$9,shichen_enabled=CASE WHEN $3='background' THEN shichen_enabled ELSE false END,next_shichen_at=CASE WHEN shichen_enabled AND $3='background' THEN $10::timestamptz ELSE NULL END,last_skip_reason=CASE WHEN $3='background' THEN NULL WHEN shichen_enabled THEN 'background_permission_missing' ELSE NULL END,updated_at=$11 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, permission, mutation.latitude, mutation.longitude, mutation.timezone, capturedAt.toISOString(), expiresAt.toISOString(), nextDailyAt?.toISOString() || null, nextShichenAt.toISOString(), at.toISOString()]);
+        }
       }
     } else if (mutation.action === "disable_shichen") {
       await client.query(`UPDATE mobile_zibai_installations SET shichen_enabled=false,next_shichen_at=NULL,last_skip_reason='disabled_by_action',updated_at=$3 WHERE user_id=$1 AND installation_id=$2`, [userId, mutation.installationId, at.toISOString()]);

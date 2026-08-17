@@ -49,7 +49,8 @@ const almostSevenDays = sanitizeZibaiStatus({
   next_daily_at: null, next_shichen_at: null, last_skip_reason: null,
 }, new Date("2026-08-22T23:59:59.000Z"));
 assert.equal(almostSevenDays.locationFresh, true, "a permitted location remains usable until the seven-day lease expires");
-assert.equal(almostSevenDays.locationAgeSeconds, 7 * 24 * 60 * 60 - 1);
+assert.equal(almostSevenDays.locationAgeSeconds, null,
+  "the unversioned status omits ages beyond the installed v216 wire limit while the lease stays fresh for seven days");
 
 const sevenDaysExpired = sanitizeZibaiStatus({
   daily_enabled: true, shichen_enabled: true, daily_minute: 420, quiet_start: 22, quiet_end: 7, location_permission: "background",

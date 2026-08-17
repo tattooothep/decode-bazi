@@ -66,11 +66,54 @@ try {
     assert.ok(daily.nextDailyAt);
     await rejectsCode(() => mutateZibaiInstallation(pool, userId, { action: "settings", installationId, shichenEnabled: true }, at), "zibai_background_location_required");
 
+    const backgroundCapturedAt = new Date(at.getTime() - 45_000).toISOString();
     const background = await mutateZibaiInstallation(pool, userId, {
       action: "location", installationId, permission: "background", latitude: 13.75, longitude: 100.5,
-      timezone: "Asia/Bangkok", capturedAt,
+      timezone: "Asia/Bangkok", capturedAt: backgroundCapturedAt,
     }, at);
     assert.equal(background.permission, "background");
+
+    const newestCapturedAt = new Date(at.getTime() - 30_000).toISOString();
+    await mutateZibaiInstallation(pool, userId, {
+      action: "location", installationId, permission: "background", latitude: 14.1, longitude: 101.1,
+      timezone: "Asia/Bangkok", capturedAt: newestCapturedAt,
+    }, at);
+    const staleLocationResult = await mutateZibaiInstallation(pool, userId, {
+      action: "location", installationId, permission: "foreground", latitude: 15.2, longitude: 102.2,
+      timezone: "Asia/Bangkok", capturedAt,
+    }, at);
+    assert.equal(staleLocationResult.permission, "foreground",
+      "a permission downgrade applies immediately even when its bundled fix is older");
+    const monotonicLocation = (await pool.query(`SELECT latitude::float8 AS latitude,longitude::float8 AS longitude,
+      location_captured_at::text AS captured_at FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2`,
+      [userId, installationId])).rows[0];
+    assert.equal(monotonicLocation.latitude, 14.1, "a delayed older fix cannot replace newer latitude");
+    assert.equal(monotonicLocation.longitude, 101.1, "a delayed older fix cannot replace newer longitude");
+    assert.equal(new Date(monotonicLocation.captured_at).toISOString(), newestCapturedAt,
+      "captured_at remains monotonic for one installation");
+
+    const restoredBackgroundAt = new Date(at.getTime() - 15_000).toISOString();
+    await mutateZibaiInstallation(pool, userId, {
+      action: "location", installationId, permission: "background", latitude: 14.2, longitude: 101.2,
+      timezone: "Asia/Bangkok", capturedAt: restoredBackgroundAt,
+    }, at);
+    await mutateZibaiInstallation(pool, userId, {
+      action: "location", installationId, permission: "background", latitude: 16.3, longitude: 103.3,
+      timezone: "Asia/Singapore", capturedAt: restoredBackgroundAt,
+    }, at);
+    const idempotentLocation = (await pool.query(`SELECT latitude::float8 AS latitude,longitude::float8 AS longitude,
+      location_timezone AS timezone,location_captured_at::text AS captured_at FROM mobile_zibai_installations
+      WHERE user_id=$1 AND installation_id=$2`, [userId, installationId])).rows[0];
+    assert.equal(idempotentLocation.latitude, 14.2, "an equal timestamp is idempotent and cannot replace latitude");
+    assert.equal(idempotentLocation.longitude, 101.2, "an equal timestamp is idempotent and cannot replace longitude");
+    assert.equal(idempotentLocation.timezone, "Asia/Bangkok", "an equal timestamp cannot replace timezone");
+    assert.equal(new Date(idempotentLocation.captured_at).toISOString(), restoredBackgroundAt);
+
+    await rejectsCode(() => mutateZibaiInstallation(pool, userId, {
+      action: "location", installationId, permission: "background", latitude: 13.75, longitude: 100.5,
+      timezone: "Asia/Bangkok", capturedAt: new Date(at.getTime() - 7 * 24 * 3_600_000).toISOString(),
+    }, at), "zibai_location_time_invalid");
+
     const enabled = await mutateZibaiInstallation(pool, userId, { action: "settings", installationId, shichenEnabled: true }, at);
     assert.equal(enabled.shichenEnabled, true);
     assert.ok(enabled.nextShichenAt);
