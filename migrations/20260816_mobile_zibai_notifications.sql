@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS mobile_zibai_installations (
       AND location_timezone IS NOT NULL AND btrim(location_timezone)<>''
       AND location_captured_at IS NOT NULL AND location_expires_at IS NOT NULL
       AND location_expires_at > location_captured_at
-      AND location_expires_at <= location_captured_at + interval '24 hours')
+      AND location_expires_at <= location_captured_at + interval '7 days')
   ),
   CONSTRAINT mobile_zibai_background_required CHECK (
     shichen_enabled=false OR location_permission='background'
@@ -78,6 +78,23 @@ CREATE TABLE IF NOT EXISTS mobile_zibai_occurrences (
   ),
   UNIQUE(user_id,installation_id,occurrence_key)
 );
+
+-- Upgrade the previously deployed 24-hour location bound without extending
+-- any existing row. Only the next authorized location refresh grants a new
+-- seven-day expiry; old rows keep their original location_expires_at value.
+ALTER TABLE mobile_zibai_installations
+  DROP CONSTRAINT IF EXISTS mobile_zibai_location_all_or_none;
+ALTER TABLE mobile_zibai_installations
+  ADD CONSTRAINT mobile_zibai_location_all_or_none CHECK (
+    (latitude IS NULL AND longitude IS NULL AND location_timezone IS NULL
+      AND location_captured_at IS NULL AND location_expires_at IS NULL)
+    OR
+    (latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180
+      AND location_timezone IS NOT NULL AND btrim(location_timezone)<>''
+      AND location_captured_at IS NOT NULL AND location_expires_at IS NOT NULL
+      AND location_expires_at > location_captured_at
+      AND location_expires_at <= location_captured_at + interval '7 days')
+  );
 
 -- Upgrade-safe v1 → v2 path. The first unpublished draft used v1 in the
 -- installation default and occurrence CHECK. CREATE TABLE IF NOT EXISTS does

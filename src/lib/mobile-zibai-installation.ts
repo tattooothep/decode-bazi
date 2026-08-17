@@ -1,9 +1,10 @@
 import type { Pool, PoolClient } from "pg";
 import { apparentSolarParts, nextShichenBoundary } from "./zibai-science";
+import locationPolicy from "./zibai-location-policy.cjs";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-const MAX_LOCATION_AGE_MS = 3 * 3_600_000;
-const MAX_LOCATION_RETENTION_MS = 24 * 3_600_000;
+const MAX_LOCATION_AGE_MS = locationPolicy.ZIBAI_LOCATION_LEASE_MS;
+const MAX_LOCATION_RETENTION_MS = locationPolicy.ZIBAI_LOCATION_LEASE_MS;
 
 type Permission = "unknown" | "foreground" | "background" | "denied";
 type ZibaiRow = {
@@ -130,7 +131,9 @@ export function sanitizeZibaiStatus(row: ZibaiRow | null, at = new Date()) {
   const ageMs = Number.isFinite(capturedMs) ? Math.max(0, at.getTime() - capturedMs) : null;
   const capturedNotFuture = Number.isFinite(capturedMs) && capturedMs <= at.getTime() + 5 * 60_000;
   const longitude = row.longitude === null ? NaN : Number(row.longitude);
-  const withinRetention = ageMs !== null && ageMs <= MAX_LOCATION_RETENTION_MS;
+  const expiresMs = expires ? Date.parse(expires) : NaN;
+  const withinRetention = ageMs !== null && ageMs <= MAX_LOCATION_RETENTION_MS
+    && Number.isFinite(expiresMs) && expiresMs > at.getTime();
   const currentSolar = Number.isFinite(longitude) && withinRetention ? apparentSolarParts(at, longitude) : null;
   const nextShichenIso = iso(row.next_shichen_at);
   const nextSolar = currentSolar && nextShichenIso ? apparentSolarParts(new Date(nextShichenIso), longitude) : null;
@@ -139,7 +142,7 @@ export function sanitizeZibaiStatus(row: ZibaiRow | null, at = new Date()) {
   return Object.freeze({
     dailyEnabled: row.daily_enabled, shichenEnabled: row.shichen_enabled, dailyMinute: Number(row.daily_minute), quietStart: Number(row.quiet_start), quietEnd: Number(row.quiet_end),
     permission: row.location_permission,
-    locationFresh: capturedNotFuture && ageMs !== null && ageMs <= MAX_LOCATION_AGE_MS && expires !== null && Date.parse(expires) > at.getTime(),
+    locationFresh: capturedNotFuture && ageMs !== null && ageMs <= MAX_LOCATION_AGE_MS && withinRetention,
     locationAgeSeconds: !withinRetention || ageMs === null ? null : Math.floor(ageMs / 1000), lastLocationAt: captured,
     locationExpiresAt: expires, nextDailyAt: iso(row.next_daily_at), nextShichenAt: nextShichenIso,
     apparentSolarTime: hhmm(currentSolar), nextShichenSolarTime: hhmm(nextSolar),

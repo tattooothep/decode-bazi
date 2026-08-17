@@ -3,6 +3,7 @@
 /** Read-only, aggregate-only notification health and reconciliation checks. */
 const { SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS, SCHEDULER_NAMES } = require("./notification-science.cjs");
 const { attemptImpossibleSql, derivedParentStatusSql } = require("./notification-delivery-invariants.cjs");
+const { ZIBAI_LOCATION_LEASE_SECONDS } = require("./zibai-location-policy.cjs");
 
 function boundedNumber(value, fallback, minimum, maximum) {
   const parsed = Number(value);
@@ -190,8 +191,8 @@ async function collectHealth(db, input = {}) {
          SELECT count(*) FILTER (WHERE due_at<=now()-($1::text||' seconds')::interval)::int AS overdue_count,
                 COALESCE(max(extract(epoch FROM now()-due_at)) FILTER (WHERE due_at<=now()),0)::bigint AS oldest_lag_seconds,
                 count(*) FILTER (WHERE latitude IS NULL)::int AS location_absent_count,
-                count(*) FILTER (WHERE latitude IS NOT NULL AND location_captured_at>=now()-interval '3 hours' AND location_expires_at>now())::int AS location_fresh_count,
-                count(*) FILTER (WHERE latitude IS NOT NULL AND NOT (location_captured_at>=now()-interval '3 hours' AND location_expires_at>now()))::int AS location_stale_count,
+                count(*) FILTER (WHERE latitude IS NOT NULL AND location_captured_at>=now()-($3::text||' seconds')::interval AND location_expires_at>now())::int AS location_fresh_count,
+                count(*) FILTER (WHERE latitude IS NOT NULL AND NOT (location_captured_at>=now()-($3::text||' seconds')::interval AND location_expires_at>now()))::int AS location_stale_count,
                 count(*) FILTER (WHERE last_skip_reason='engine_unavailable' AND updated_at>=now()-($2::text||' hours')::interval)::int AS engine_failure_count
            FROM mobile_zibai_installations z
            CROSS JOIN LATERAL (VALUES (LEAST(
@@ -206,7 +207,7 @@ async function collectHealth(db, input = {}) {
                 count(*) FILTER (WHERE skip_reason IN ('duplicate','duplicate_or_cap'))::int AS duplicate_or_cap_count
            FROM mobile_zibai_occurrences WHERE created_at>=now()-($2::text||' hours')::interval
        ) SELECT * FROM installation CROSS JOIN occurrence`,
-      [String(config.thresholds.maxZibaiDueLagSeconds), String(config.lookbackHours)],
+      [String(config.thresholds.maxZibaiDueLagSeconds), String(config.lookbackHours), String(ZIBAI_LOCATION_LEASE_SECONDS)],
     ),
   ]));
   const retry = retryResult.rows[0] || {};

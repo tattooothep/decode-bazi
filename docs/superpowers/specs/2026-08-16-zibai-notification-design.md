@@ -143,7 +143,7 @@ Maintain at most one current-location record per installation:
 - installation owner; and
 - expiry instant.
 
-The record may be retained for at most 24 hours. It is eligible for notification calculation only while its captured-at age is no more than 3 hours. A stale record causes that occurrence to be skipped. A later location refresh resumes from the next eligible occurrence; missed occurrences are never replayed.
+The record may be retained and used for at most seven days. A stale record causes that occurrence to be skipped. A later location refresh resumes from the next eligible occurrence; missed occurrences are never replayed. Users should refresh after long-distance or international travel.
 
 The location row is overwritten rather than appended. The feature must not create a location-history trail.
 
@@ -287,7 +287,7 @@ Add aggregate, PII-free Zi Bai metrics:
 
 Health becomes unhealthy for a stale scheduler heartbeat, excessive due lag, growing retry backlog, impossible attempt state, credential mismatch, or sustained engine failures. Location data is never emitted in metrics.
 
-Location retention runs independently from notification-history retention and proves deletion after 24 hours. Notification attempts and engagement evidence follow the existing reviewed retention windows.
+Location retention runs independently from notification-history retention and proves deletion after seven days. Notification attempts and engagement evidence follow the existing reviewed retention windows.
 
 ## 11. Testing and acceptance
 
@@ -307,7 +307,7 @@ Location retention runs independently from notification-history retention and pr
 ### 11.2 Backend behavior
 
 - installation/account ownership and transfer races;
-- location freshness at 3 hours and deletion at 24 hours;
+- location freshness and deletion at the seven-day boundary;
 - no coordinate propagation to durable/provider/history/engagement/log output;
 - quiet-hour skips without replay;
 - one-per-shichen and twelve-per-solar-day cap;

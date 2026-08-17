@@ -42,6 +42,24 @@ assert.equal("longitude" in status, false);
 assert.equal(JSON.stringify(status).includes("13.75"), false);
 assert.equal(JSON.stringify(status).includes("100.5"), false);
 
+const almostSevenDays = sanitizeZibaiStatus({
+  daily_enabled: true, shichen_enabled: true, daily_minute: 420, quiet_start: 22, quiet_end: 7, location_permission: "background",
+  latitude: 13.75, longitude: 100.5, location_timezone: "Asia/Bangkok",
+  location_captured_at: "2026-08-16T00:00:00.000Z", location_expires_at: "2026-08-23T00:00:00.000Z",
+  next_daily_at: null, next_shichen_at: null, last_skip_reason: null,
+}, new Date("2026-08-22T23:59:59.000Z"));
+assert.equal(almostSevenDays.locationFresh, true, "a permitted location remains usable until the seven-day lease expires");
+assert.equal(almostSevenDays.locationAgeSeconds, 7 * 24 * 60 * 60 - 1);
+
+const sevenDaysExpired = sanitizeZibaiStatus({
+  daily_enabled: true, shichen_enabled: true, daily_minute: 420, quiet_start: 22, quiet_end: 7, location_permission: "background",
+  latitude: 13.75, longitude: 100.5, location_timezone: "Asia/Bangkok",
+  location_captured_at: "2026-08-16T00:00:00.000Z", location_expires_at: "2026-08-23T00:00:00.000Z",
+  next_daily_at: null, next_shichen_at: null, last_skip_reason: null,
+}, new Date("2026-08-23T00:00:00.000Z"));
+assert.equal(sevenDaysExpired.locationFresh, false, "the seven-day lease expires at its exact boundary");
+assert.equal(sevenDaysExpired.locationAgeSeconds, null, "an expired lease exposes no retained-location age");
+
 const absentLocation = sanitizeZibaiStatus({
   daily_enabled: false, shichen_enabled: false, daily_minute: 420, quiet_start: 22, quiet_end: 7, location_permission: "unknown",
   latitude: null, longitude: null, location_timezone: null, location_captured_at: null, location_expires_at: null,

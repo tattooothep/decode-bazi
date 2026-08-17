@@ -54,6 +54,8 @@ try {
     assert.equal(foreground.permission, "foreground");
     assert.equal(foreground.locationFresh, true);
     assert.equal("latitude" in foreground || "longitude" in foreground, false);
+    assert.equal(foreground.locationExpiresAt, new Date(Date.parse(capturedAt) + 7 * 24 * 3_600_000).toISOString(),
+      "a fresh authorized location grants one seven-day lease");
 
     const daily = await mutateZibaiInstallation(pool, userId, {
       action: "settings", installationId, dailyEnabled: true, dailyMinute: 480, quietStart: 21, quietEnd: 8,

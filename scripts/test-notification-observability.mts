@@ -130,7 +130,7 @@ try {
     INSERT INTO mobile_zibai_installations
       (user_id,installation_id,daily_enabled,shichen_enabled,location_permission,latitude,longitude,location_timezone,
        location_captured_at,location_expires_at,next_daily_at,next_shichen_at,last_skip_reason,updated_at)
-    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002',true,false,'foreground',13.75,100.5,'Asia/Bangkok',now()-interval '1 hour',now()+interval '23 hours',now()-interval '20 minutes',NULL,'engine_unavailable',now());
+    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002',true,false,'foreground',13.75,100.5,'Asia/Bangkok',now()-interval '6 days',now()+interval '1 day',now()-interval '20 minutes',NULL,'engine_unavailable',now());
     INSERT INTO mobile_zibai_occurrences
       (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state,skip_reason)
     VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','observability-quiet','shichen',current_date,'si','zibai-zaoming-true-solar-v2','skipped','quiet_hours');

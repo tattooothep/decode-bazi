@@ -6,6 +6,7 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const copy = require("../src/lib/zibai-notification-copy.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
+const { ZIBAI_LOCATION_LEASE_MS } = require("../src/lib/zibai-location-policy.cjs");
 
 const DRY = process.argv.includes("--dry");
 const BATCH = Math.max(1, Math.min(1_000, Number((process.argv.find((arg) => arg.startsWith("--batch=")) || "--batch=250").slice(8))));
@@ -211,7 +212,8 @@ async function processClaim(db, claim, at, science) {
   const next = { at, nextDailyAt: null, nextShichenAt: null, reason: null };
   const locationAt = row.location_captured_at ? new Date(row.location_captured_at) : null;
   const expiresAt = row.location_expires_at ? new Date(row.location_expires_at) : null;
-  const locationFresh = locationAt && expiresAt && locationAt <= at && at.getTime() - locationAt.getTime() <= 3 * 3_600_000 && expiresAt > at;
+  const locationFresh = locationAt && expiresAt && locationAt <= at
+    && at.getTime() - locationAt.getTime() <= ZIBAI_LOCATION_LEASE_MS && expiresAt > at;
   const due = [];
   if (row.daily_enabled && row.next_daily_at && new Date(row.next_daily_at) <= at) due.push("zibai_daily");
   if (row.shichen_enabled && row.next_shichen_at && new Date(row.next_shichen_at) <= at) due.push("zibai_shichen");

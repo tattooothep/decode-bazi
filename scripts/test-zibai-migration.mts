@@ -5,8 +5,12 @@ import { readFileSync } from "node:fs";
 const database = `zibai_notification_test_${process.pid}`;
 assert.match(database, /^zibai_notification_test_/u);
 const forward = readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8");
-const legacyForward = forward.replaceAll("zibai-zaoming-true-solar-v2", "zibai-zaoming-true-solar-v1");
+const legacyForward = forward
+  .replaceAll("zibai-zaoming-true-solar-v2", "zibai-zaoming-true-solar-v1")
+  .replaceAll("interval '7 days'", "interval '24 hours'");
 const rollback = readFileSync("migrations/20260816_mobile_zibai_notifications.rollback.sql", "utf8");
+const leaseUpgrade = readFileSync("migrations/20260817_mobile_zibai_location_lease.sql", "utf8");
+const leaseRollback = readFileSync("migrations/20260817_mobile_zibai_location_lease.rollback.sql", "utf8");
 function psql(db: string, sql: string): string {
   return execFileSync("docker", ["exec", "-i", "decode-postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "decode_user", "-d", db, "-Atq"], { encoding: "utf8", input: sql }).trim();
 }
@@ -25,9 +29,25 @@ try {
   psql(database, legacyForward);
   psql(database, `INSERT INTO mobile_zibai_installations(user_id,installation_id)
     VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000009');
+    UPDATE mobile_zibai_installations SET location_permission='foreground',latitude=13.75,longitude=100.5,
+      location_timezone='Asia/Bangkok',location_captured_at='2026-08-16T00:00:00.000Z',
+      location_expires_at='2026-08-17T00:00:00.000Z'
+      WHERE installation_id='10000000-0000-4000-8000-000000000009';
     INSERT INTO mobile_zibai_occurrences
       (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,calculation_version)
     VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000009','legacy-v1','daily','2026-08-15','zibai-zaoming-true-solar-v1');`);
+  psql(database, leaseUpgrade);
+  assert.equal(psql(database, `SELECT location_expires_at::text FROM mobile_zibai_installations
+    WHERE installation_id='10000000-0000-4000-8000-000000000009';`), "2026-08-17 00:00:00+00",
+    "the upgrade must not silently extend an existing authorized location");
+  psql(database, `UPDATE mobile_zibai_installations
+    SET location_expires_at=location_captured_at+interval '7 days'
+    WHERE installation_id='10000000-0000-4000-8000-000000000009';`);
+  assert.equal(rejected(`UPDATE mobile_zibai_installations SET location_expires_at=location_captured_at+interval '7 days 1 second';`), true);
+  psql(database, leaseRollback);
+  assert.equal(psql(database, `SELECT location_expires_at-location_captured_at FROM mobile_zibai_installations
+    WHERE installation_id='10000000-0000-4000-8000-000000000009';`), "1 day");
+  psql(database, leaseUpgrade);
   psql(database, forward);
   assert.equal(psql(database, `SELECT column_default FROM information_schema.columns
     WHERE table_name='mobile_zibai_installations' AND column_name='calculation_version';`), "'zibai-zaoming-true-solar-v2'::text");
@@ -42,10 +62,10 @@ try {
   psql(database, forward);
   psql(database, `INSERT INTO mobile_zibai_installations
     (user_id,installation_id,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)
-    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','background',13.75,100.5,'Asia/Bangkok',now(),now()+interval '24 hours',now()+interval '1 hour');`);
+    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','background',13.75,100.5,'Asia/Bangkok',now(),now()+interval '7 days',now()+interval '1 hour');`);
   assert.equal(psql(database, `SELECT daily_enabled||','||shichen_enabled||','||daily_minute FROM mobile_zibai_installations;`), "false,false,420");
   assert.equal(rejected(`UPDATE mobile_zibai_installations SET shichen_enabled=true,location_permission='foreground';`), true);
-  assert.equal(rejected(`UPDATE mobile_zibai_installations SET location_expires_at=location_captured_at+interval '24 hours 1 second';`), true);
+  assert.equal(rejected(`UPDATE mobile_zibai_installations SET location_expires_at=location_captured_at+interval '7 days 1 second';`), true);
   assert.equal(rejected(`INSERT INTO mobile_zibai_installations(user_id,installation_id) VALUES('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001');`), true);
   psql(database, `UPDATE mobile_zibai_installations SET shichen_enabled=true; INSERT INTO mobile_zibai_occurrences
     (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version)

@@ -53,7 +53,7 @@ try {
       (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)
     VALUES
       ('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',true,22,7,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}'),
-      ('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}'),
+      ('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - (7 * 24 * 3_600_000 - 60_000)).toISOString()}','${new Date(at.getTime() + 60_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}'),
       ('00000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000003',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}');
     INSERT INTO mobile_zibai_installations
       (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)
