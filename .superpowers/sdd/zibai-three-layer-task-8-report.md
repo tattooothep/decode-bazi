@@ -13,12 +13,18 @@ test(zibai): gate three-layer delivery end to end
 ```
 
 The authoritative portable cross-repository run pinned the exact clean mobile
-source:
+source and the then-current clean backend/report head:
 
 ```text
+HOURKEY_BACKEND_SHA=f32edfbb504d810861fe7d1c0fecfebc00d1ae8e
 HOURKEY_MOBILE_ROOT=/root/worktrees/zibai-three-layer-mobile
-HOURKEY_MOBILE_SHA=3c20bc0875506b18ee41afae5bde35eb5f0691f9
+HOURKEY_MOBILE_SHA=488575b9420b28a1bb7ab51808b6c1302deebab1
 ```
+
+This final candidate supersedes the earlier mobile validation pin. Its delta
+is limited to Zi Bai visual color/focus behavior and associated tests/report;
+the authoritative scheduler/provider/history/parser E2E was rerun rather than
+assuming delivery parity from that scope.
 
 No APK build, deployment, production database mutation, real FCM/Expo send, or
 external side effect occurred.
@@ -129,7 +135,7 @@ Pinned mobile gates:
 ZIBAI_MOBILE_CONTRACT_OK
 NOTIFICATION_PAYLOAD_OK categories=9 backendService=3
 ZIBAI_V2_MOBILE_PARITY_OK shichen=6561 daily=729
-backend=7b24a21860e2591ea60662758b260236937a5488
+backend=f32edfbb504d810861fe7d1c0fecfebc00d1ae8e
 ZIBAI_V1_MOBILE_CONTRACT_OK
 ZIBAI_SCREEN_AST_PARSE_OK
 ZIBAI_THREE_LAYER_MOBILE_CONTRACT_OK
