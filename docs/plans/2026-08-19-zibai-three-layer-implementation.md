@@ -81,18 +81,33 @@ Expected: preserve unrelated dirty files; implementation must use isolated workt
 
 - [ ] **Step 2: Write the shared sanitized fixture**
 
-Use exact maps whose values are permutations `1–9` and include:
+Use two independent cases so every individual layer remains an exact
+permutation `1–9`:
 
 ```json
 {
-  "snapshotSchema": 2,
-  "calculationVersion": "zibai-zaoming-true-solar-v2",
-  "interpretationVersion": "zibai-3layer-rule-v1",
-  "month": { "startTermCode": "liqiu", "endTermCode": "bailu" },
-  "assertions": {
-    "NW": { "month": 9, "day": 9, "shichen": 9, "pattern": "three_layer_same_star" },
-    "N": { "month": 9, "day": 5, "shichen": 2, "pattern": "mixed_caution_priority" }
-  }
+  "cases": [
+    {
+      "id": "triple-nine-northwest",
+      "snapshotSchema": 2,
+      "calculationVersion": "zibai-zaoming-true-solar-v2",
+      "interpretationVersion": "zibai-3layer-rule-v1",
+      "month": { "startTermCode": "liqiu", "endTermCode": "bailu", "palaces": { "C": 8, "NW": 9, "W": 1, "NE": 2, "S": 3, "N": 4, "SW": 5, "E": 6, "SE": 7 } },
+      "day": { "palaces": { "C": 8, "NW": 9, "W": 1, "NE": 2, "S": 3, "N": 4, "SW": 5, "E": 6, "SE": 7 } },
+      "shichen": { "palaces": { "C": 8, "NW": 9, "W": 1, "NE": 2, "S": 3, "N": 4, "SW": 5, "E": 6, "SE": 7 } },
+      "assertion": { "direction": "NW", "month": 9, "day": 9, "shichen": 9, "pattern": "three_layer_same_star" }
+    },
+    {
+      "id": "mixed-nine-five-two-north",
+      "snapshotSchema": 2,
+      "calculationVersion": "zibai-zaoming-true-solar-v2",
+      "interpretationVersion": "zibai-3layer-rule-v1",
+      "month": { "startTermCode": "liqiu", "endTermCode": "bailu", "palaces": { "C": 4, "NW": 5, "W": 6, "NE": 7, "S": 8, "N": 9, "SW": 1, "E": 2, "SE": 3 } },
+      "day": { "palaces": { "C": 9, "NW": 1, "W": 2, "NE": 3, "S": 4, "N": 5, "SW": 6, "E": 7, "SE": 8 } },
+      "shichen": { "palaces": { "C": 6, "NW": 7, "W": 8, "NE": 9, "S": 1, "N": 2, "SW": 3, "E": 4, "SE": 5 } },
+      "assertion": { "direction": "N", "month": 9, "day": 5, "shichen": 2, "pattern": "mixed_caution_priority" }
+    }
+  ]
 }
 ```
 
