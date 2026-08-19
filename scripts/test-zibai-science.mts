@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   ZIBAI_CALCULATION_VERSION,
+  ZIBAI_INTERPRETATION_VERSION,
   apparentSolarInstant,
   apparentSolarParts,
   buildZibaiSnapshot,
@@ -16,6 +17,7 @@ function permutation(values: Record<string, number>) {
 }
 
 assert.equal(ZIBAI_CALCULATION_VERSION, "zibai-zaoming-true-solar-v2");
+assert.equal(ZIBAI_INTERPRETATION_VERSION, "zibai-3layer-rule-v1");
 
 // Worked five-element relations. 宮生星 nourishes the star; 星生宮 expends
 // star qi into the sector. These two directions must never be reversed.
@@ -78,9 +80,25 @@ for (const fixture of [
   { at: "2026-12-21T12:00:00Z", longitude: 151.2093 },
 ]) {
   const snapshot = buildZibaiSnapshot(new Date(fixture.at), fixture.longitude);
+  assert.equal(snapshot.snapshotSchema, 2);
   assert.equal(snapshot.calculationVersion, ZIBAI_CALCULATION_VERSION);
+  assert.equal(snapshot.interpretationVersion, ZIBAI_INTERPRETATION_VERSION);
+  permutation(snapshot.month.palaces);
+  permutation(snapshot.day.palaces);
+  permutation(snapshot.shichen.palaces);
   permutation(snapshot.dayPalaces);
   permutation(snapshot.shichenPalaces);
+  assert.ok(Object.isFrozen(snapshot.month) && Object.isFrozen(snapshot.month.meta));
+  assert.ok(Object.isFrozen(snapshot.day) && Object.isFrozen(snapshot.day.meta));
+  assert.ok(Object.isFrozen(snapshot.shichen) && Object.isFrozen(snapshot.shichen.meta));
+  assert.strictEqual(snapshot.monthPalaces, snapshot.month.palaces);
+  assert.strictEqual(snapshot.dayPalaces, snapshot.day.palaces);
+  assert.strictEqual(snapshot.shichenPalaces, snapshot.shichen.palaces);
+  assert.equal(snapshot.apparentSolarDate, snapshot.day.meta.apparentSolarDate);
+  assert.equal(snapshot.dayPillar, snapshot.day.meta.dayPillar);
+  assert.equal(snapshot.shichenKey, snapshot.shichen.meta.key);
+  assert.equal(snapshot.startAt, snapshot.shichen.startAt);
+  assert.equal(snapshot.endAt, snapshot.shichen.endAt);
   assert.deepEqual(snapshot.focus.map((x) => x.star).sort((a, b) => a - b), [1, 2, 5, 9]);
   assert.equal(new Set(snapshot.focus.map((x) => x.shichenDirection)).size, 4);
 }
