@@ -16,7 +16,7 @@ function sectorsFor(testCase: any) {
     direction,
     month: testCase.month.palaces[direction],
     day: testCase.day.palaces[direction],
-    shichen: testCase.shichen.palaces[direction],
+    shichen: testCase.shichen?.palaces[direction] ?? null,
     patternCode: direction === testCase.assertion.direction ? testCase.assertion.pattern : "reference_only",
   }));
 }
@@ -24,6 +24,7 @@ function sectorsFor(testCase: any) {
 assert.deepEqual(fixture.cases.map((testCase: any) => testCase.id), [
   "triple-nine-northwest",
   "mixed-nine-five-two-north",
+  "daily-two-layer-northwest",
 ]);
 
 for (const testCase of fixture.cases) {
@@ -34,14 +35,42 @@ for (const testCase of fixture.cases) {
     { startTermCode: testCase.month.startTermCode, endTermCode: testCase.month.endTermCode },
     { startTermCode: "liqiu", endTermCode: "bailu" },
   );
-  for (const layer of ["month", "day", "shichen"] as const) exactPermutation(testCase[layer].palaces, `${testCase.id}.${layer}`);
+  for (const layer of ["month", "day"] as const) exactPermutation(testCase[layer].palaces, `${testCase.id}.${layer}`);
+  if (testCase.shichen !== null) exactPermutation(testCase.shichen.palaces, `${testCase.id}.shichen`);
   const { direction, month, day, shichen, pattern } = testCase.assertion;
   assert.deepEqual(
-    { month: testCase.month.palaces[direction], day: testCase.day.palaces[direction], shichen: testCase.shichen.palaces[direction], pattern },
+    { month: testCase.month.palaces[direction], day: testCase.day.palaces[direction], shichen: testCase.shichen?.palaces[direction] ?? null, pattern },
     { month, day, shichen, pattern },
   );
   assert.equal(sectorsFor(testCase).length, 9, `${testCase.id}: all nine sectors are contract data`);
 }
+
+const accountId = "00000000-0000-4000-8000-000000000001";
+const v1DayPalaces = { N: 1, NE: 2, E: 3, SE: 4, S: 5, SW: 6, W: 7, NW: 8, C: 9 };
+const v1ShichenPalaces = { N: 9, NE: 8, E: 7, SE: 6, S: 5, SW: 4, W: 3, NW: 2, C: 1 };
+const v1Facts = {
+  event: "zibai_shichen",
+  referenceId: "zibai|2026-08-16|si|zibai-zaoming-true-solar-v2",
+  calculationVersion: "zibai-zaoming-true-solar-v2",
+  apparentSolarDate: "2026-08-16",
+  shichenKey: "si",
+  startAt: "2026-08-16T02:07:00.000Z",
+  endAt: "2026-08-16T04:07:00.000Z",
+  dayPalaces: v1DayPalaces,
+  shichenPalaces: v1ShichenPalaces,
+  focus: [1, 2, 5, 9].map((star) => ({
+    star,
+    dayDirection: DIRECTIONS.find((direction) => v1DayPalaces[direction] === star),
+    dayRelation: "same-element",
+    shichenDirection: DIRECTIONS.find((direction) => v1ShichenPalaces[direction] === star),
+    shichenRelation: "same-element",
+    overlaps: star === 5,
+  })),
+  url: "/zibai",
+};
+const preservedV1 = runtime.buildNotificationPayload("zibai", accountId, v1Facts);
+assert.deepEqual(JSON.parse(JSON.stringify(preservedV1)), { v: 1, kind: "zibai", accountId, ...v1Facts }, "backend must preserve the current exact v1 Zi Bai payload");
+console.log("ZIBAI_V1_BACKEND_CONTRACT_OK");
 
 const failures: Error[] = [];
 function contract(name: string, check: () => void) {
@@ -65,40 +94,56 @@ contract("canonical snapshot exposes exact Liqiu-to-Bailu bounds", () => {
   assert.equal(snapshot.month?.meta?.endTermCode, "bailu");
 });
 
+function v2FactsFor(testCase: any) {
+  const daily = testCase.shichen === null;
+  return {
+    snapshotSchema: testCase.snapshotSchema,
+    event: daily ? "zibai_daily" : "zibai_shichen",
+    referenceId: `zibai|2026-08-16|${daily ? "daily" : "si"}|zibai-zaoming-true-solar-v2`,
+    calculationVersion: testCase.calculationVersion,
+    interpretationVersion: testCase.interpretationVersion,
+    month: {
+      ...testCase.month,
+      startAt: "2026-08-07T11:42:43.000Z",
+      endAt: "2026-09-07T14:41:16.000Z",
+    },
+    day: {
+      ...testCase.day,
+      apparentSolarDate: "2026-08-16",
+      startAt: "2026-08-15T16:00:00.000Z",
+      endAt: "2026-08-16T16:00:00.000Z",
+    },
+    shichen: daily ? null : {
+      ...testCase.shichen,
+      key: "si",
+      startAt: "2026-08-16T02:00:00.000Z",
+      endAt: "2026-08-16T04:00:00.000Z",
+    },
+    sectors: sectorsFor(testCase),
+    url: "/zibai",
+  };
+}
+
 const mixed = fixture.cases[1];
-const v2Facts = {
-  snapshotSchema: mixed.snapshotSchema,
-  event: "zibai_shichen",
-  referenceId: "zibai|2026-08-16|si|zibai-zaoming-true-solar-v2",
-  calculationVersion: mixed.calculationVersion,
-  interpretationVersion: mixed.interpretationVersion,
-  month: {
-    ...mixed.month,
-    startAt: "2026-08-07T11:42:43.000Z",
-    endAt: "2026-09-07T14:41:16.000Z",
-  },
-  day: {
-    ...mixed.day,
-    apparentSolarDate: "2026-08-16",
-    startAt: "2026-08-15T16:00:00.000Z",
-    endAt: "2026-08-16T16:00:00.000Z",
-  },
-  shichen: {
-    ...mixed.shichen,
-    key: "si",
-    startAt: "2026-08-16T02:00:00.000Z",
-    endAt: "2026-08-16T04:00:00.000Z",
-  },
-  sectors: sectorsFor(mixed),
-  url: "/zibai",
-};
+const daily = fixture.cases[2];
+const v2Facts = v2FactsFor(mixed);
 
 contract("backend accepts and preserves the explicit v2 contract", () => {
-  const payload = runtime.buildNotificationPayload("zibai", "00000000-0000-4000-8000-000000000001", v2Facts) as any;
+  const payload = runtime.buildNotificationPayload("zibai", accountId, v2Facts) as any;
   assert.equal(payload.snapshotSchema, 2);
   assert.equal(payload.sectors.length, 9);
   assert.deepEqual(payload.sectors.find((sector: any) => sector.direction === "N"), {
     direction: "N", month: 9, day: 5, shichen: 2, patternCode: "mixed_caution_priority",
+  });
+});
+contract("backend v2 daily preserves month and day while shichen stays null", () => {
+  const payload = runtime.buildNotificationPayload("zibai", accountId, v2FactsFor(daily)) as any;
+  assert.equal(payload.snapshotSchema, 2);
+  assert.deepEqual(payload.month.palaces, daily.month.palaces);
+  assert.deepEqual(payload.day.palaces, daily.day.palaces);
+  assert.equal(payload.shichen, null);
+  assert.deepEqual(payload.sectors.find((sector: any) => sector.direction === "NW"), {
+    direction: "NW", month: 9, day: 9, shichen: null, patternCode: "two_layer_same_star",
   });
 });
 
