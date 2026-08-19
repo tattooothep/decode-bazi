@@ -364,8 +364,10 @@ git commit -m "feat(zibai): negotiate strict three-layer payloads"
 **Files:**
 - Modify: `scripts/mobile-zibai-push-cron.cjs`
 - Modify: `src/lib/zibai-notification-copy.cjs`
+- Modify: `src/lib/mobile-notification-delivery.cjs`
 - Modify: `src/app/api/mobile/v1/notifications/route.ts`
-- Create: `src/lib/zibai-payload-projection.ts`
+- Create: `src/lib/zibai-payload-projection.cjs`
+- Create: `src/lib/zibai-payload-projection.cjs.d.ts`
 - Modify: `scripts/test-zibai-scheduler.mts`
 - Modify: `scripts/test-zibai-delivery-contract.mts`
 - Create: `scripts/test-zibai-history-projection.mts`
@@ -374,14 +376,24 @@ git commit -m "feat(zibai): negotiate strict three-layer payloads"
 - `buildZibaiV2Facts(snapshot, event): StrictCompactZibaiV2Facts`.
 - `projectZibaiPayload(payload, requestedSchema): v1 | v2` down-converts v2 to exact v1 for old history clients.
 - Mobile history GET sends explicit `X-Hourkey-Zibai-Schema: 2`; absence means schema 1.
+- Reserve one canonical v2 parent/history payload per occurrence. During the
+  same reservation transaction, read each token's persisted capability and
+  project that immutable parent payload to v1 or v2 before building the
+  per-installation `provider_message`. Mixed old/new installations must never
+  create duplicate parents or share the wrong wire schema.
 
 - [ ] **Step 1: Write RED producer/history tests**
 
-Prove capable installation gets v2, legacy installation gets v1, v2 history down-converts exactly for an old client, and a new client retains v2.
+Prove capable installation gets v2, legacy installation gets v1, a mixed-device
+user receives both schemas from one canonical parent, retry reuses each
+attempt's immutable projected `provider_message`, v2 history down-converts
+exactly for an old client, and a new client retains v2.
 
 - [ ] **Step 2: Implement capability branch per installation**
 
-Daily v2 sets `shichen: null`; shichen v2 includes all three immutable layers. Never sample a shichen for daily.
+Daily v2 sets `shichen: null`; shichen v2 includes all three immutable layers.
+Never sample a shichen for daily. Token capability is selected under the same
+reservation transaction and is not inferred from app-version strings.
 
 - [ ] **Step 3: Implement compact caution-first copy**
 
@@ -400,7 +412,7 @@ Expected: FCM=Expo inner data, v1/v2 strict parser fixtures, no coordinates/PII,
 - [ ] **Step 6: Commit**
 
 ```bash
-git add scripts/mobile-zibai-push-cron.cjs src/lib/zibai-notification-copy.cjs src/app/api/mobile/v1/notifications/route.ts src/lib/zibai-payload-projection.ts scripts/test-zibai-scheduler.mts scripts/test-zibai-delivery-contract.mts scripts/test-zibai-history-projection.mts
+git add scripts/mobile-zibai-push-cron.cjs src/lib/zibai-notification-copy.cjs src/lib/mobile-notification-delivery.cjs src/app/api/mobile/v1/notifications/route.ts src/lib/zibai-payload-projection.cjs* scripts/test-zibai-scheduler.mts scripts/test-zibai-delivery-contract.mts scripts/test-zibai-history-projection.mts
 git commit -m "feat(zibai): deliver three-layer snapshots compatibly"
 ```
 
