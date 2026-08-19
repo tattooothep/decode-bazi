@@ -364,7 +364,6 @@ git commit -m "feat(zibai): negotiate strict three-layer payloads"
 **Files:**
 - Modify: `scripts/mobile-zibai-push-cron.cjs`
 - Modify: `src/lib/zibai-notification-copy.cjs`
-- Modify: `src/lib/mobile-notification-delivery.cjs`
 - Modify: `src/app/api/mobile/v1/notifications/route.ts`
 - Create: `src/lib/zibai-payload-projection.cjs`
 - Create: `src/lib/zibai-payload-projection.cjs.d.ts`
@@ -376,17 +375,18 @@ git commit -m "feat(zibai): negotiate strict three-layer payloads"
 - `buildZibaiV2Facts(snapshot, event): StrictCompactZibaiV2Facts`.
 - `projectZibaiPayload(payload, requestedSchema): v1 | v2` down-converts v2 to exact v1 for old history clients.
 - Mobile history GET sends explicit `X-Hourkey-Zibai-Schema: 2`; absence means schema 1.
-- Reserve one canonical v2 parent/history payload per occurrence. During the
-  same reservation transaction, read each token's persisted capability and
-  project that immutable parent payload to v1 or v2 before building the
-  per-installation `provider_message`. Mixed old/new installations must never
-  create duplicate parents or share the wrong wire schema.
+- Zi Bai occurrences are already installation-bound and reserve exactly one
+  message/parent for that installation. Load the same installation token's
+  persisted capability with the claim context and build that occurrence as v1
+  or v2 before reservation. A mixed-device user therefore has distinct
+  installation-scoped occurrences/parents, each with the correct immutable
+  schema; never infer or merge capability across installations.
 
 - [ ] **Step 1: Write RED producer/history tests**
 
 Prove capable installation gets v2, legacy installation gets v1, a mixed-device
-user receives both schemas from one canonical parent, retry reuses each
-attempt's immutable projected `provider_message`, v2 history down-converts
+user receives the correct schema on each installation-scoped occurrence,
+retry reuses each attempt's immutable `provider_message`, v2 history down-converts
 exactly for an old client, and a new client retains v2.
 
 - [ ] **Step 2: Implement capability branch per installation**
@@ -412,7 +412,7 @@ Expected: FCM=Expo inner data, v1/v2 strict parser fixtures, no coordinates/PII,
 - [ ] **Step 6: Commit**
 
 ```bash
-git add scripts/mobile-zibai-push-cron.cjs src/lib/zibai-notification-copy.cjs src/lib/mobile-notification-delivery.cjs src/app/api/mobile/v1/notifications/route.ts src/lib/zibai-payload-projection.cjs* scripts/test-zibai-scheduler.mts scripts/test-zibai-delivery-contract.mts scripts/test-zibai-history-projection.mts
+git add scripts/mobile-zibai-push-cron.cjs src/lib/zibai-notification-copy.cjs src/app/api/mobile/v1/notifications/route.ts src/lib/zibai-payload-projection.cjs* scripts/test-zibai-scheduler.mts scripts/test-zibai-delivery-contract.mts scripts/test-zibai-history-projection.mts
 git commit -m "feat(zibai): deliver three-layer snapshots compatibly"
 ```
 
