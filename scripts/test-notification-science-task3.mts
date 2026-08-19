@@ -113,7 +113,10 @@ await check("all scheduler entrypoints acquire their named DB run lease", () => 
 await check("scheduler adapters wire consent, timezone, bound goals, due rows, and total deadline", () => {
   const yam = readFileSync("scripts/mobile-yam-push-cron.cjs", "utf8");
   assert.match(yam, /qimenEnabled:\s*u\.qimen_enabled === true/u);
-  assert.match(yam, /CASE WHEN np\.qimen_enabled=true THEN np\.qimen_latitude/u);
+  const yamInventory = /const YAM_USERS_SQL = `([\s\S]*?)`;/u.exec(yam)?.[1] || "";
+  assert.doesNotMatch(yamInventory, /qimen_latitude|qimen_longitude|qimen_location_updated_at/u);
+  assert.ok(yam.indexOf("qimenNotificationEntitlement") < yam.indexOf("await loadQimenLocation"),
+    "the product gate must run before precise Qimen location is queried");
   const personal = readFileSync("scripts/mobile-personal-reminders-cron.cjs", "utf8");
   assert.doesNotMatch(personal, /goals\/custom\$\{user\.profile_id/u);
   assert.match(personal, /timezone:\s*user\.user_timezone/u);

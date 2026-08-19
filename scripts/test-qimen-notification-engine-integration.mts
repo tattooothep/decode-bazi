@@ -9,6 +9,7 @@ const fixtures = [
   { date: "2026-08-19", time: "08:00", timezone: "Asia/Bangkok", instant: "2026-08-19T01:00:00.000Z", lat: 13.7563, lng: 100.5018 },
   { date: "2026-03-08", time: "01:30", timezone: "America/New_York", instant: "2026-03-08T06:30:00.000Z", lat: 40.7128, lng: -74.006 },
   { date: "2026-11-01", time: "01:30", timezone: "America/New_York", instant: "2026-11-01T05:30:00.000Z", lat: 40.7128, lng: -74.006 },
+  { date: "2026-11-01", time: "01:30", timezone: "America/New_York", instant: "2026-11-01T06:30:00.000Z", lat: 40.7128, lng: -74.006 },
   { date: "2026-08-19", time: "08:00", timezone: "Asia/Tokyo", instant: "2026-08-18T23:00:00.000Z", lat: 35.6762, lng: 139.6503 },
   { date: "2026-09-06", time: "01:30", timezone: "America/Santiago", instant: "2026-09-06T04:30:00.000Z", lat: -33.4489, lng: -70.6693 },
 ];
@@ -20,6 +21,8 @@ for (const fixture of fixtures) {
   assert.equal(advisory.profileId, 1);
   assert.equal(advisory.school, "chaibu");
   assert.equal(advisory.systemType, "hour");
+  assert.equal(Date.parse(advisory.inputAt), Date.parse(fixture.instant),
+    `${fixture.timezone}: the engine occurrence must equal the requested instant`);
   assert.ok(Date.parse(advisory.validFrom) <= Date.parse(advisory.inputAt));
   assert.ok(Date.parse(advisory.validUntil) > Date.parse(advisory.inputAt));
   const durationMinutes = (Date.parse(advisory.validUntil) - Date.parse(advisory.validFrom)) / 60_000;

@@ -20,6 +20,13 @@ const DIRECTION = Object.freeze({
 const SHICHEN = Object.freeze(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
 const RECOMMENDED_CODES = new Set(["suitable", "usable"]);
 const VIGOR_LABELS = Object.freeze(["旺", "相", "休", "囚", "死"]);
+const ACTION_SUPPORTING_VIGOR = new Set(["旺", "相"]);
+const QIMEN_PLAN_CAPS = Object.freeze({
+  free: Object.freeze({ timeWindowDays: 0, hoursPerDay: 1 }),
+  trial: Object.freeze({ timeWindowDays: 0, hoursPerDay: 12 }),
+  premium: Object.freeze({ timeWindowDays: 90, hoursPerDay: 12 }),
+  master: Object.freeze({ timeWindowDays: 365, hoursPerDay: 12 }),
+});
 const STAR_ELEMENT = Object.freeze({
   TIAN_PENG: "水", TIAN_REN: "土", TIAN_CHONG: "木", TIAN_FU: "木", TIAN_YING: "火",
   TIAN_RUI: "土", TIAN_ZHU: "金", TIAN_XIN: "金", TIAN_QIN: "土",
@@ -190,6 +197,52 @@ function civilRangeWindow(date, range, timezoneInput) {
   return Object.freeze({ startAt: start.toISOString(), endAt: end.toISOString() });
 }
 
+function qimenProductPlan(user, now) {
+  const tier = String(user?.tier || "free").toLowerCase();
+  const subExpiresAt = new Date(user?.sub_expires_at || 0);
+  const trialEndsAt = new Date(user?.trial_ends_at || 0);
+  if ((tier === "master" || tier === "premium") && Number.isFinite(subExpiresAt.valueOf()) && subExpiresAt > now) return tier;
+  if (Number.isFinite(trialEndsAt.valueOf()) && trialEndsAt > now) return "trial";
+  return "free";
+}
+
+function civilShichen(time) {
+  const match = /^(\d{2}):(\d{2})$/u.exec(String(time || ""));
+  if (!match) return -1;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return -1;
+  return hour === 23 ? 0 : Math.floor((hour + 1) / 2);
+}
+
+function qimenNotificationEntitlement(user, input) {
+  const timezone = validTimezone(input?.timezone);
+  const now = new Date(input?.now ?? input?.instant);
+  const date = String(input?.date || "");
+  const time = String(input?.time || "");
+  const plan = qimenProductPlan(user, now);
+  if (!user || typeof user.id !== "string" || !user.id.trim()) {
+    return Object.freeze({ allow: false, plan, reason: "qimen_not_entitled" });
+  }
+  if (!timezone || !Number.isFinite(now.valueOf()) || !/^\d{4}-\d{2}-\d{2}$/u.test(date) || civilShichen(time) < 0) {
+    return Object.freeze({ allow: false, plan, reason: "qimen_request_invalid" });
+  }
+  const current = zonedParts(timezone, now);
+  const currentDate = dateKey(current);
+  const requestedDay = Date.parse(`${date}T00:00:00.000Z`);
+  const currentDay = Date.parse(`${currentDate}T00:00:00.000Z`);
+  const dayDistance = Math.abs(Math.round((requestedDay - currentDay) / 86_400_000));
+  const caps = QIMEN_PLAN_CAPS[plan];
+  if (!Number.isFinite(dayDistance) || dayDistance > caps.timeWindowDays) {
+    return Object.freeze({ allow: false, plan, reason: "qimen_time_window_locked" });
+  }
+  const currentTime = `${String(current.hour).padStart(2, "0")}:${String(current.minute).padStart(2, "0")}`;
+  if (caps.hoursPerDay <= 1 && (date !== currentDate || civilShichen(time) !== civilShichen(currentTime))) {
+    return Object.freeze({ allow: false, plan, reason: "qimen_hour_locked" });
+  }
+  return Object.freeze({ allow: true, plan, reason: null });
+}
+
 function normalizedResult(result) {
   const root = result?.data?.data && typeof result.data.data === "object" ? result.data.data : result?.data;
   return root && typeof root === "object" ? root : null;
@@ -264,7 +317,7 @@ function buildQimenAdvisory(result, options = {}) {
     const star = component(row, "star", vigor);
     if (!DIRECTION[code] || !Number.isFinite(score) || !deity || !door || !star) return null;
     const readingCode = String(row?.beginner_reading?.code || "context");
-    const weakVigor = [door.vigor, star.vigor].some((value) => value === "囚" || value === "死");
+    const weakVigor = [door.vigor, star.vigor].some((value) => !ACTION_SUPPORTING_VIGOR.has(value));
     const recommended = RECOMMENDED_CODES.has(readingCode)
       && row?.beginner_reading?.is_actionable === true
       && Number(row?.beginner_reading?.hard_count || 0) === 0
@@ -282,7 +335,10 @@ function buildQimenAdvisory(result, options = {}) {
     || Math.abs(corrected.valueOf() - (inputAt.valueOf() + engineCorrection * 60_000)) > 1_500) return null;
   const warningValues = [...warningCodes(selected.row, root.warnings)];
   for (const [kind, item] of [["DOOR", selected.door], ["STAR", selected.star]]) {
-    if (item.vigor === "囚" || item.vigor === "死") warningValues.push(`${kind}_VIGOR_${item.vigor === "囚" ? "QIU" : "SI"}`);
+    if (!ACTION_SUPPORTING_VIGOR.has(item.vigor)) {
+      const suffix = item.vigor === "休" ? "XIU" : item.vigor === "囚" ? "QIU" : "SI";
+      warningValues.push(`${kind}_VIGOR_${suffix}`);
+    }
   }
   const warnings = Object.freeze([...new Set(warningValues)].slice(0, 4));
   const recommendation = selected.recommended && warnings.length === 0 ? "recommended" : "caution";
@@ -330,6 +386,15 @@ async function fetchCanonicalQimenAdvisory(input, options = {}) {
     || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
     throw new TypeError("qimen_notification_engine_request_invalid");
   }
+  const requestedInstant = input?.instant == null || input.instant === ""
+    ? civilInstant(date, time, timezone)
+    : new Date(input.instant);
+  if (!Number.isFinite(requestedInstant.valueOf())) throw new TypeError("qimen_notification_engine_request_invalid");
+  const requestedParts = zonedParts(timezone, requestedInstant);
+  const requestedClock = `${String(requestedParts.hour).padStart(2, "0")}:${String(requestedParts.minute).padStart(2, "0")}`;
+  if (dateKey(requestedParts) !== date || requestedClock !== time) {
+    throw new RangeError("qimen_notification_engine_instant_mismatch");
+  }
   options.signal?.throwIfAborted();
   const fetchImpl = options.fetchImpl || fetch;
   const baseUrl = String(options.baseUrl || process.env.QIMEN_API_URL || "http://127.0.0.1:4090").replace(/\/+$/u, "");
@@ -339,7 +404,7 @@ async function fetchCanonicalQimenAdvisory(input, options = {}) {
     method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": "hourkey-mobile-notification/1.0" },
     body: JSON.stringify({
-      datetime: `${date}T${time}:00`, timezone, instant: input?.instant,
+      datetime: requestedInstant.toISOString(), timezone, instant: requestedInstant.toISOString(),
       latitude, longitude, profile_id: ENGINE_PROFILE_ID, purpose: PURPOSE,
       system_type: "hour", skip_save: true, source_endpoint: "mobile-notification",
     }),
@@ -348,7 +413,16 @@ async function fetchCanonicalQimenAdvisory(input, options = {}) {
   if (!response?.ok) throw new Error(`qimen_notification_engine_http_${Number(response?.status) || 0}`);
   const result = await response.json();
   options.signal?.throwIfAborted();
-  return buildQimenAdvisory(result, { timezone, longitude, purpose: PURPOSE });
+  const engineInputAt = new Date(normalizedResult(result)?.calculation?.input_datetime);
+  if (!Number.isFinite(engineInputAt.valueOf())
+    || Math.abs(engineInputAt.valueOf() - requestedInstant.valueOf()) > 1_500) {
+    throw new RangeError("qimen_notification_engine_instant_mismatch");
+  }
+  const advisory = buildQimenAdvisory(result, { timezone, longitude, purpose: PURPOSE });
+  if (advisory && Math.abs(new Date(advisory.inputAt).valueOf() - requestedInstant.valueOf()) > 1_500) {
+    throw new RangeError("qimen_notification_engine_instant_mismatch");
+  }
+  return advisory;
 }
 
 function localeOf(locale) {
@@ -384,8 +458,10 @@ function warningLabel(code, locale) {
     NEAR_SOLAR_TERM_START: { th: "ใกล้จุดเปลี่ยน節氣", en: "near a solar-term change", zh: "近節氣交界" },
     DOOR_VIGOR_QIU: { th: "ประตูอยู่ภาวะ囚", en: "gate qi is imprisoned 囚", zh: "門氣囚" },
     DOOR_VIGOR_SI: { th: "ประตูอยู่ภาวะ死", en: "gate qi is dead 死", zh: "門氣死" },
+    DOOR_VIGOR_XIU: { th: "ประตูอยู่ภาวะ休", en: "gate qi is resting 休", zh: "門氣休" },
     STAR_VIGOR_QIU: { th: "ดาวอยู่ภาวะ囚", en: "star qi is imprisoned 囚", zh: "星氣囚" },
     STAR_VIGOR_SI: { th: "ดาวอยู่ภาวะ死", en: "star qi is dead 死", zh: "星氣死" },
+    STAR_VIGOR_XIU: { th: "ดาวอยู่ภาวะ休", en: "star qi is resting 休", zh: "星氣休" },
   }[code];
   return localized?.[locale] || code;
 }
@@ -478,12 +554,15 @@ function earliestExpiry(...values) {
 module.exports = {
   ADVISORY_VERSION,
   PURPOSE,
+  QIMEN_PLAN_CAPS,
   buildQimenAdvisory,
   buildQimenStandaloneCopy,
   buildQimenYamLine,
+  civilInstant,
   civilRangeWindow,
   earliestExpiry,
   fetchCanonicalQimenAdvisory,
+  qimenNotificationEntitlement,
   qimenSourceFacts,
   trueSolarShichenWindow,
 };

@@ -22,6 +22,18 @@ ok("Yam requests the canonical explicit travel-purpose hour chart",
     && advisorySource.includes('system_type: "hour"'));
 ok("Yam samples the civil-range midpoint instead of falsely treating its start as a true-solar boundary",
   yam.qimenSampleTime("09:00-11:00") === "10:00" && yam.qimenSampleTime("23:00-01:00") === "00:00");
+assert.deepEqual(yam.qimenSampleContext("2026-08-19", "23:00-01:00", "Asia/Bangkok"), {
+  date: "2026-08-20",
+  time: "00:00",
+  instant: "2026-08-19T17:00:00.000Z",
+}, "a cross-midnight Yam must sample Qimen on the following civil date");
+const crossMidnightSample = yam.qimenSampleContext("2026-08-19", "23:00-01:00", "Asia/Bangkok");
+const crossMidnightAdvisory = await qimen.fetchCanonicalQimenAdvisory({
+  ...crossMidnightSample, timezone: "Asia/Bangkok", lat: 13.7563, lng: 100.5018,
+});
+assert.equal(Date.parse(crossMidnightAdvisory.inputAt), Date.parse(crossMidnightSample.instant));
+assert.ok(Date.parse(crossMidnightAdvisory.validUntil) > Date.parse("2026-08-19T16:00:00.000Z"),
+  "cross-midnight Qimen context must not already be expired when its Yam starts");
 
 const advisory = qimen.buildQimenAdvisory(fixture.yam.qimenApi, {
   timezone: fixture.yam.qimenRequest.timezone,

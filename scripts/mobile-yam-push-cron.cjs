@@ -96,7 +96,8 @@ async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone,
   try {
     signal?.throwIfAborted();
     return await qimenAdvisory.fetchCanonicalQimenAdvisory({
-      date: dateStr, time: startTime, lat, lng, timezone, instant: instant.toISOString(),
+      date: dateStr, time: startTime, lat, lng, timezone,
+      instant: instant instanceof Date ? instant.toISOString() : String(instant),
     }, {
       signal,
     });
@@ -204,6 +205,34 @@ function qimenSampleTime(range) {
   return `${String(Math.floor(midpoint / 60)).padStart(2, "0")}:${String(midpoint % 60).padStart(2, "0")}`;
 }
 
+function qimenSampleContext(date, range, timezone) {
+  const match = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/u.exec(String(range || ""));
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(String(date || "")) || !match) return null;
+  const start = Number(match[1]) * 60 + Number(match[2]);
+  let end = Number(match[3]) * 60 + Number(match[4]);
+  if (end <= start) end += 24 * 60;
+  const midpoint = Math.floor((start + end) / 2);
+  const sampleDate = new Date(`${date}T12:00:00.000Z`);
+  if (midpoint >= 24 * 60) sampleDate.setUTCDate(sampleDate.getUTCDate() + 1);
+  const sampleDateKey = sampleDate.toISOString().slice(0, 10);
+  const time = `${String(Math.floor((midpoint % (24 * 60)) / 60)).padStart(2, "0")}:${String(midpoint % 60).padStart(2, "0")}`;
+  try {
+    const instant = qimenAdvisory.civilInstant(sampleDateKey, time, timezone);
+    return Object.freeze({ date: sampleDateKey, time, instant: instant.toISOString() });
+  } catch {
+    return null;
+  }
+}
+
+async function loadQimenLocation(db, userId) {
+  const result = await db.query(
+    `SELECT qimen_latitude,qimen_longitude,qimen_location_updated_at
+       FROM mobile_notification_prefs WHERE user_id=$1 AND qimen_enabled=true`,
+    [userId],
+  );
+  return result.rows[0] || null;
+}
+
 const YAM_USERS_SQL = `
     SELECT u.id, u.email, u.current_org_id, u.session_version,
            array_agg(json_build_object(
@@ -218,9 +247,9 @@ const YAM_USERS_SQL = `
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
            np.qimen_enabled, np.shrine_enabled, np.goal_enabled, np.saved_date_enabled,
            np.yam_min_quality, np.yam_lead_minutes,
-           CASE WHEN np.qimen_enabled=true THEN np.qimen_latitude END AS qimen_latitude,
-           CASE WHEN np.qimen_enabled=true THEN np.qimen_longitude END AS qimen_longitude,
-           CASE WHEN np.qimen_enabled=true THEN np.qimen_location_updated_at END AS qimen_location_updated_at,
+           to_jsonb(u)->>'tier' AS tier,
+           to_jsonb(u)->>'sub_expires_at' AS sub_expires_at,
+           to_jsonb(u)->>'trial_ends_at' AS trial_ends_at,
            np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until,
            COALESCE(np.timezone, u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
@@ -234,7 +263,6 @@ const YAM_USERS_SQL = `
      GROUP BY u.id, np.user_id, np.yam_enabled, np.auspicious_enabled,
               np.daily_enabled, np.qimen_enabled, np.shrine_enabled, np.goal_enabled,
               np.saved_date_enabled, np.yam_min_quality, np.yam_lead_minutes,
-              np.qimen_latitude, np.qimen_longitude, np.qimen_location_updated_at,
               np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until, np.timezone, u.timezone`;
 
 async function loadYamUsers(db) {
@@ -309,17 +337,22 @@ async function runScheduler(db, schedulerSignal) {
       if (!upcoming) { skipped++; continue; }
       // Today Hours เป็นช่วงนาฬิกา แต่ Qimen ใช้เวลาสุริยะจริง จึงสุ่มที่
       // กึ่งกลางช่วงและแสดงขอบเขต Qimen จริงแยกในข้อความ ห้ามครอบทั้งยาม
-      const sampleTime = qimenSampleTime(upcoming.range);
-      const highlight = sampleTime === null ? null : await science.yamQimenHighlight({
+      const timezone = u.user_timezone || guard.FALLBACK_TZ;
+      const sample = qimenSampleContext(dateStr, upcoming.range, timezone);
+      const entitlement = sample && u.qimen_enabled === true
+        ? qimenAdvisory.qimenNotificationEntitlement(u, { ...sample, timezone, now: runAt })
+        : { allow: false };
+      const qimenLocation = entitlement.allow ? await loadQimenLocation(db, u.id) : null;
+      const highlight = !sample || !entitlement.allow ? null : await science.yamQimenHighlight({
         qimenEnabled: u.qimen_enabled === true,
-        location: u.qimen_enabled === true ? {
-          fresh: Boolean(u.qimen_location_updated_at)
-            && runAt.getTime() - new Date(u.qimen_location_updated_at).getTime() <= 30 * 86_400_000,
-          latitude: u.qimen_latitude,
-          longitude: u.qimen_longitude,
+        location: qimenLocation ? {
+          fresh: Boolean(qimenLocation.qimen_location_updated_at)
+            && runAt.getTime() - new Date(qimenLocation.qimen_location_updated_at).getTime() <= 30 * 86_400_000,
+          latitude: qimenLocation.qimen_latitude,
+          longitude: qimenLocation.qimen_longitude,
         } : null,
         fetchHighlight: (lat, lng) => fetchQimenHighlight(
-          u, dateStr, sampleTime, lat, lng, u.user_timezone || guard.FALLBACK_TZ, runAt, schedulerSignal,
+          u, sample.date, sample.time, lat, lng, timezone, sample.instant, schedulerSignal,
         ),
       });
 
@@ -359,6 +392,6 @@ async function main() {
   }
 }
 
-module.exports = { YAM_USERS_SQL,buildYamCopy,buildYamProducer,fetchHours,fetchQimenHighlight,loadYamUsers,main,qimenLine,qimenSampleTime,runScheduler };
+module.exports = { YAM_USERS_SQL,buildYamCopy,buildYamProducer,fetchHours,fetchQimenHighlight,loadQimenLocation,loadYamUsers,main,qimenLine,qimenSampleContext,qimenSampleTime,runScheduler };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-yam-push] category=yam error_code=scheduler_failed"); process.exit(1); });

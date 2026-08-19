@@ -115,7 +115,7 @@ assert.equal(fetchedAdvisory.direction.code, "SE");
 assert.equal(canonicalRequest?.url, "http://qimen-engine.test/api/qimen/calculate");
 const canonicalBody = JSON.parse(String(canonicalRequest?.init.body));
 assert.deepEqual(canonicalBody, {
-  datetime: "2026-08-19T08:00:00", timezone: "Asia/Bangkok", instant: "2026-08-19T01:00:00.000Z",
+  datetime: "2026-08-19T01:00:00.000Z", timezone: "Asia/Bangkok", instant: "2026-08-19T01:00:00.000Z",
   latitude: 13.7563, longitude: 100.5018, profile_id: 1, purpose: "travel",
   system_type: "hour", skip_save: true, source_endpoint: "mobile-notification",
 });
@@ -125,6 +125,28 @@ assert.equal(canonicalHeaders.has("cookie"), false);
 await assert.rejects(
   qimen.fetchCanonicalQimenAdvisory({ date: "bad", time: "08:00", timezone: "Asia/Bangkok", lat: 13, lng: 100 }),
   /qimen_notification_engine_request_invalid/u,
+);
+await assert.rejects(
+  qimen.fetchCanonicalQimenAdvisory({
+    date: "2026-11-01", time: "01:30", timezone: "America/New_York",
+    instant: "2026-11-01T06:30:00.000Z", lat: 40.7128, lng: -74.006,
+  }, {
+    baseUrl: "http://qimen-engine.test/",
+    fetchImpl: async () => new Response(JSON.stringify({
+      data: {
+        ...response.data,
+        calculation: {
+          ...calculation,
+          input_datetime: "2026-11-01T01:30:00.000-04:00",
+          input_timezone: "America/New_York",
+          corrected_datetime: "2026-11-01T01:26:00.000-04:00",
+          correction_minutes: -4,
+        },
+      },
+    }), { status: 200 }),
+  }),
+  /qimen_notification_engine_instant_mismatch/u,
+  "the later repeated civil hour must never accept the engine's earlier occurrence",
 );
 
 for (const locale of ["th", "en", "zh"] as const) {
@@ -205,6 +227,32 @@ const strongVigor = qimen.buildQimenAdvisory({
 assert.equal(strongVigor.star.vigor, "旺");
 assert.equal(strongVigor.door.vigor, "相");
 assert.equal(strongVigor.recommendation, "recommended");
+
+const restingVigor = qimen.buildQimenAdvisory({
+  data: { ...response.data, chart: { wang_xiang_status: ["土", "金", "木", "水", "火"] }, palaces: [palace({})] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(restingVigor.star.vigor, "休");
+assert.equal(restingVigor.door.vigor, "相");
+assert.equal(restingVigor.recommendation, "caution", "travel may proceed only when both door and star are 旺/相");
+assert.ok(restingVigor.warningCodes.includes("STAR_VIGOR_XIU"));
+assert.match(qimen.buildQimenStandaloneCopy(restingVigor, "th").body, /ดาวอยู่ภาวะ休/u);
+
+const accessAt = "2026-08-19T01:05:00.000Z";
+const freeUser = { id: "acct-free", tier: "free", sub_expires_at: null, trial_ends_at: "2026-08-18T00:00:00.000Z" };
+assert.deepEqual(qimen.qimenNotificationEntitlement(freeUser, {
+  date: "2026-08-19", time: "08:05", timezone: "Asia/Bangkok", instant: accessAt,
+}), { allow: true, plan: "free", reason: null });
+assert.equal(qimen.qimenNotificationEntitlement(freeUser, {
+  date: "2026-08-19", time: "10:00", timezone: "Asia/Bangkok", instant: accessAt,
+}).reason, "qimen_hour_locked");
+assert.equal(qimen.qimenNotificationEntitlement({ ...freeUser, trial_ends_at: "2026-08-20T00:00:00.000Z" }, {
+  date: "2026-08-19", time: "10:00", timezone: "Asia/Bangkok", instant: accessAt,
+}).allow, true);
+assert.equal(qimen.qimenNotificationEntitlement({
+  ...freeUser, tier: "premium", sub_expires_at: "2026-10-01T00:00:00.000Z",
+}, {
+  date: "2026-08-20", time: "00:00", timezone: "Asia/Bangkok", instant: accessAt,
+}).allow, true);
 
 const facts = qimen.qimenSourceFacts(advisory, { profileId: "profile-safe-id" });
 assert.equal(facts.eventStartAt, advisory.validFrom);

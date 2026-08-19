@@ -191,22 +191,37 @@ function buildQimenProducer(user, request, result) {
   };
 }
 
+async function loadQimenLocation(db, userId) {
+  const result = await db.query(
+    `SELECT qimen_latitude,qimen_longitude,qimen_location_updated_at
+       FROM mobile_notification_prefs WHERE user_id=$1 AND qimen_enabled=true`,
+    [userId],
+  );
+  return result.rows[0] || null;
+}
+
 async function qimenNotice(db, user, runAt, sentToday) {
   if (user.qimen_enabled !== true) return { status: "skipped", reason: "qimen_disabled" };
   const minute = guard.localMinutes(user.user_timezone, runAt);
   if (!DRY && (minute === null || minute < 8 * 60 || minute >= 8 * 60 + 15)) {
     return { status: "skipped", reason: "outside_qimen_window" };
   }
-  const fresh = user.qimen_location_updated_at
-    && runAt.getTime() - new Date(user.qimen_location_updated_at).getTime() <= 30 * 86_400_000;
-  if (!fresh || !Number.isFinite(Number(user.qimen_latitude)) || !Number.isFinite(Number(user.qimen_longitude))) {
+  const clock = science.zonedClock(user.user_timezone, runAt);
+  const entitlement = qimenAdvisory.qimenNotificationEntitlement(user, {
+    date: clock.date, time: clock.time, timezone: user.user_timezone, now: runAt,
+  });
+  if (!entitlement.allow) return { status: "skipped", reason: entitlement.reason };
+  const location = await loadQimenLocation(db, user.id);
+  const fresh = location?.qimen_location_updated_at
+    && runAt.getTime() - new Date(location.qimen_location_updated_at).getTime() <= 30 * 86_400_000;
+  if (!fresh || !Number.isFinite(Number(location?.qimen_latitude)) || !Number.isFinite(Number(location?.qimen_longitude))) {
     return { status: "skipped", reason: "no_fresh_current_location" };
   }
   const request = science.buildQimenSchedulerRequest({
     timezone: user.user_timezone,
     instant: runAt,
-    latitude: user.qimen_latitude,
-    longitude: user.qimen_longitude,
+    latitude: location.qimen_latitude,
+    longitude: location.qimen_longitude,
   });
   const advisory = await qimenAdvisory.fetchCanonicalQimenAdvisory(request);
   const notice = buildQimenProducer(user, request, advisory);
@@ -284,9 +299,9 @@ function personalUsersSql(onlyEmail = false) {
            np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
            np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
            np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
-           CASE WHEN np.qimen_enabled=true THEN np.qimen_latitude END AS qimen_latitude,
-           CASE WHEN np.qimen_enabled=true THEN np.qimen_longitude END AS qimen_longitude,
-           CASE WHEN np.qimen_enabled=true THEN np.qimen_location_updated_at END AS qimen_location_updated_at,
+           to_jsonb(u)->>'tier' AS tier,
+           to_jsonb(u)->>'sub_expires_at' AS sub_expires_at,
+           to_jsonb(u)->>'trial_ends_at' AS trial_ends_at,
            COALESCE(np.timezone,max(t.timezone),u.timezone) AS user_timezone,
            (np.user_id IS NOT NULL) AS has_prefs,
            (SELECT count(*) FROM mobile_push_log l
@@ -300,7 +315,6 @@ function personalUsersSql(onlyEmail = false) {
      GROUP BY u.id,np.user_id,np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
               np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
               np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
-              np.qimen_latitude,np.qimen_longitude,np.qimen_location_updated_at,
               np.timezone,u.timezone`;
 }
 
@@ -347,7 +361,7 @@ async function main() {
 
 module.exports = {
   buildGoalCopy,buildGoalProducer,buildQimenCopy,buildQimenProducer,buildSavedDateCopy,buildSavedDateProducer,formatGoalDayLabel,getJson,
-  goalNotice,loadPersonalUsers,main,personalUsersSql,qimenNotice,savedDateNotice,
+  goalNotice,loadPersonalUsers,loadQimenLocation,main,personalUsersSql,qimenNotice,savedDateNotice,
 };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-personal-reminders] category=personal error_code=scheduler_failed"); process.exit(1); });

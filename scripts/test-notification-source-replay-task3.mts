@@ -13,9 +13,12 @@ import {
 } from "../src/lib/mobile-fusion-notification.ts";
 
 const require = createRequire(import.meta.url);
-const mobileRoot = process.env.HOURKEY_MOBILE_ROOT
-  ? resolve(process.env.HOURKEY_MOBILE_ROOT)
-  : resolve("..", "hourkey-v197-mobile");
+const mobileRootInput = process.env.HOURKEY_MOBILE_ROOT;
+const expectedMobileSha = process.env.HOURKEY_MOBILE_SHA;
+assert.ok(mobileRootInput && expectedMobileSha, "cross-repo gate requires HOURKEY_MOBILE_ROOT and HOURKEY_MOBILE_SHA");
+const mobileRoot = resolve(mobileRootInput);
+assert.equal(execFileSync("git", ["-C", mobileRoot, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(), expectedMobileSha,
+  "cross-repo gate must execute against the exact reviewed mobile commit");
 const { resolveNotificationPayload } = await import(pathToFileURL(
   resolve(mobileRoot, "src/navigation/notificationPayload.ts"),
 ).href);

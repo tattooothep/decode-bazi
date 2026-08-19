@@ -10,9 +10,12 @@ import { buildFusionMobileNotice } from "../src/lib/mobile-fusion-notification.t
 import { notificationHistoryPayload } from "../src/lib/mobile-notification-history.ts";
 
 const require = createRequire(import.meta.url);
-const mobileRoot = process.env.HOURKEY_MOBILE_ROOT
-  ? resolve(process.env.HOURKEY_MOBILE_ROOT)
-  : resolve("..", "hourkey-v197-mobile");
+const mobileRootInput = process.env.HOURKEY_MOBILE_ROOT;
+const expectedMobileSha = process.env.HOURKEY_MOBILE_SHA;
+assert.ok(mobileRootInput && expectedMobileSha, "cross-repo gate requires HOURKEY_MOBILE_ROOT and HOURKEY_MOBILE_SHA");
+const mobileRoot = resolve(mobileRootInput);
+assert.equal(execFileSync("git", ["-C", mobileRoot, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(), expectedMobileSha,
+  "cross-repo gate must execute against the exact reviewed mobile commit");
 const { resolveNotificationPayload } = await import(pathToFileURL(
   resolve(mobileRoot, "src/navigation/notificationPayload.ts"),
 ).href);
@@ -314,6 +317,10 @@ try {
   globalThis.fetch = originalFetch;
 }
 
+check(!/qimen_latitude|qimen_longitude|qimen_location_updated_at/u.test(personal.personalUsersSql())
+    && !/qimen_latitude|qimen_longitude|qimen_location_updated_at/u.test(yam.YAM_USERS_SQL),
+  "live Qimen producer inventories do not read precise coordinates before the product gate");
+
 process.env.AUTH_SECRET = process.env.AUTH_SECRET || "task3-abort-test-secret";
 const aborted = new AbortController();
 aborted.abort();
@@ -393,13 +400,13 @@ try {
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password, max: 2 });
   const users = await yam.loadYamUsers(pool);
   check(users.length === 1 && users[0].qimen_enabled === false
-      && users[0].qimen_latitude === null && users[0].qimen_longitude === null
+      && !("qimen_latitude" in users[0]) && !("qimen_longitude" in users[0])
       && !("lat" in users[0]) && !("lng" in users[0]),
-    "live Yam SQL executes without permission to profile birth coordinates and CASE-gates current Qimen location when disabled");
+    "live Yam inventory executes without permission to any precise coordinates before its product gate");
   const personalUsers = await personal.loadPersonalUsers(pool);
   check(personalUsers.rows.length === 1 && personalUsers.rows[0].qimen_enabled === false
-      && personalUsers.rows[0].qimen_latitude === null && personalUsers.rows[0].qimen_longitude === null,
-    "live personal-reminder SQL CASE-gates current Qimen coordinates before scheduler code sees a disabled row");
+      && !("qimen_latitude" in personalUsers.rows[0]) && !("qimen_longitude" in personalUsers.rows[0]),
+    "live personal-reminder inventory exposes no precise coordinates before consent and product gates");
 } finally {
   await pool?.end().catch(() => null);
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role};`);
