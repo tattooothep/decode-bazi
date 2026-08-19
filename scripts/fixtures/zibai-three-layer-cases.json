@@ -16,7 +16,18 @@
       "shichen": {
         "palaces": { "C": 8, "NW": 9, "W": 1, "NE": 2, "S": 3, "N": 4, "SW": 5, "E": 6, "SE": 7 }
       },
-      "assertion": { "direction": "NW", "month": 9, "day": 9, "shichen": 9, "pattern": "three_layer_same_star" }
+      "assertion": { "direction": "NW", "month": 9, "day": 9, "shichen": 9, "pattern": "three_layer_same_star" },
+      "sectors": [
+        { "direction": "N", "month": 4, "day": 4, "shichen": 4, "patternCode": "three_layer_same_star" },
+        { "direction": "NE", "month": 2, "day": 2, "shichen": 2, "patternCode": "three_layer_same_star" },
+        { "direction": "E", "month": 6, "day": 6, "shichen": 6, "patternCode": "three_layer_same_star" },
+        { "direction": "SE", "month": 7, "day": 7, "shichen": 7, "patternCode": "three_layer_same_star" },
+        { "direction": "S", "month": 3, "day": 3, "shichen": 3, "patternCode": "three_layer_same_star" },
+        { "direction": "SW", "month": 5, "day": 5, "shichen": 5, "patternCode": "three_layer_same_star" },
+        { "direction": "W", "month": 1, "day": 1, "shichen": 1, "patternCode": "three_layer_same_star" },
+        { "direction": "NW", "month": 9, "day": 9, "shichen": 9, "patternCode": "three_layer_same_star" },
+        { "direction": "C", "month": 8, "day": 8, "shichen": 8, "patternCode": "three_layer_same_star" }
+      ]
     },
     {
       "id": "mixed-nine-five-two-north",
@@ -34,7 +45,18 @@
       "shichen": {
         "palaces": { "C": 6, "NW": 7, "W": 8, "NE": 9, "S": 1, "N": 2, "SW": 3, "E": 4, "SE": 5 }
       },
-      "assertion": { "direction": "N", "month": 9, "day": 5, "shichen": 2, "pattern": "mixed_caution_priority" }
+      "assertion": { "direction": "N", "month": 9, "day": 5, "shichen": 2, "pattern": "mixed_caution_priority" },
+      "sectors": [
+        { "direction": "N", "month": 9, "day": 5, "shichen": 2, "patternCode": "mixed_caution_priority" },
+        { "direction": "NE", "month": 7, "day": 3, "shichen": 9, "patternCode": "reference_only" },
+        { "direction": "E", "month": 2, "day": 7, "shichen": 4, "patternCode": "heightened_caution" },
+        { "direction": "SE", "month": 3, "day": 8, "shichen": 5, "patternCode": "heightened_caution" },
+        { "direction": "S", "month": 8, "day": 4, "shichen": 1, "patternCode": "reference_only" },
+        { "direction": "SW", "month": 1, "day": 6, "shichen": 3, "patternCode": "reference_only" },
+        { "direction": "W", "month": 6, "day": 2, "shichen": 8, "patternCode": "heightened_caution" },
+        { "direction": "NW", "month": 5, "day": 1, "shichen": 7, "patternCode": "mixed_caution_priority" },
+        { "direction": "C", "month": 4, "day": 9, "shichen": 6, "patternCode": "reference_only" }
+      ]
     },
     {
       "id": "daily-two-layer-northwest",
@@ -50,7 +72,18 @@
         "palaces": { "C": 8, "NW": 9, "W": 1, "NE": 2, "S": 3, "N": 4, "SW": 5, "E": 6, "SE": 7 }
       },
       "shichen": null,
-      "assertion": { "direction": "NW", "month": 9, "day": 9, "shichen": null, "pattern": "two_layer_same_star" }
+      "assertion": { "direction": "NW", "month": 9, "day": 9, "shichen": null, "pattern": "two_layer_same_star" },
+      "sectors": [
+        { "direction": "N", "month": 4, "day": 4, "shichen": null, "patternCode": "two_layer_same_star" },
+        { "direction": "NE", "month": 2, "day": 2, "shichen": null, "patternCode": "two_layer_same_star" },
+        { "direction": "E", "month": 6, "day": 6, "shichen": null, "patternCode": "two_layer_same_star" },
+        { "direction": "SE", "month": 7, "day": 7, "shichen": null, "patternCode": "two_layer_same_star" },
+        { "direction": "S", "month": 3, "day": 3, "shichen": null, "patternCode": "two_layer_same_star" },
+        { "direction": "SW", "month": 5, "day": 5, "shichen": null, "patternCode": "heightened_caution" },
+        { "direction": "W", "month": 1, "day": 1, "shichen": null, "patternCode": "two_layer_same_star" },
+        { "direction": "NW", "month": 9, "day": 9, "shichen": null, "patternCode": "two_layer_same_star" },
+        { "direction": "C", "month": 8, "day": 8, "shichen": null, "patternCode": "two_layer_same_star" }
+      ]
     }
   ]
 }

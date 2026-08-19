@@ -12,13 +12,7 @@ function exactPermutation(palaces: Record<string, number>, label: string) {
 }
 
 function sectorsFor(testCase: any) {
-  return DIRECTIONS.map((direction) => ({
-    direction,
-    month: testCase.month.palaces[direction],
-    day: testCase.day.palaces[direction],
-    shichen: testCase.shichen?.palaces[direction] ?? null,
-    patternCode: direction === testCase.assertion.direction ? testCase.assertion.pattern : "reference_only",
-  }));
+  return testCase.sectors;
 }
 
 assert.deepEqual(fixture.cases.map((testCase: any) => testCase.id), [
@@ -42,7 +36,15 @@ for (const testCase of fixture.cases) {
     { month: testCase.month.palaces[direction], day: testCase.day.palaces[direction], shichen: testCase.shichen?.palaces[direction] ?? null, pattern },
     { month, day, shichen, pattern },
   );
-  assert.equal(sectorsFor(testCase).length, 9, `${testCase.id}: all nine sectors are contract data`);
+  assert.deepEqual(testCase.sectors.map((sector: any) => sector.direction), DIRECTIONS,
+    `${testCase.id}: all nine compact attestations use canonical direction order`);
+  for (const sector of testCase.sectors) {
+    assert.deepEqual(Object.keys(sector).sort(), ["day", "direction", "month", "patternCode", "shichen"].sort(),
+      `${testCase.id}.${sector.direction}: exact compact attestation fields`);
+    assert.equal(sector.month, testCase.month.palaces[sector.direction]);
+    assert.equal(sector.day, testCase.day.palaces[sector.direction]);
+    assert.equal(sector.shichen, testCase.shichen?.palaces[sector.direction] ?? null);
+  }
 }
 
 const accountId = "00000000-0000-4000-8000-000000000001";

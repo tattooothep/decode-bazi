@@ -128,6 +128,7 @@ export async function POST(req: Request) {
   const locale = LOCALES.has(requestedLocale) ? requestedLocale : null;
   const appVersion = String(body.app_version || "").trim().slice(0, 40) || null;
   const timezone = cleanTimezone(body.timezone);
+  const zibaiPayloadSchema = body.zibaiPayloadSchema === undefined ? 1 : body.zibaiPayloadSchema;
   /**
    * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
    *
@@ -146,6 +147,7 @@ export async function POST(req: Request) {
     || (localeProvided && locale === null)
     || !nativeTokenValid(platform, deviceTokenType, deviceToken)
     || (body.timezone != null && timezone === null)
+    || !(zibaiPayloadSchema === 1 || zibaiPayloadSchema === 2)
   ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
   }
@@ -219,8 +221,8 @@ export async function POST(req: Request) {
     const registered = await client.query<{ id: string }>(
       `INSERT INTO mobile_push_tokens
          (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,app_version,locale,timezone,enabled,
-          fail_count,last_registered_at,disabled_at,updated_at)
-       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now())
+          fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema)
+       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10)
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
@@ -230,13 +232,14 @@ export async function POST(req: Request) {
          app_version=EXCLUDED.app_version,
          locale=EXCLUDED.locale,
          timezone=COALESCE(EXCLUDED.timezone, mobile_push_tokens.timezone),
+         zibai_payload_schema=EXCLUDED.zibai_payload_schema,
          enabled=true,
          fail_count=0,
          last_registered_at=now(),
          disabled_at=NULL,
          updated_at=now()
        RETURNING id`,
-      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone]
+      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone, zibaiPayloadSchema]
     );
     row = registered.rows[0];
     // Account notification context follows the most recently authenticated

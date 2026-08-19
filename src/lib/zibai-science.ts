@@ -5,6 +5,7 @@ import {
   type FlyingTermReference,
   type PalaceStars,
 } from "./fengshui-luxing";
+import ruleRuntime from "./zibai-three-layer-runtime.cjs";
 
 export const ZIBAI_CALCULATION_VERSION = "zibai-zaoming-true-solar-v2" as const;
 export const ZIBAI_INTERPRETATION_VERSION = "zibai-3layer-rule-v1" as const;
@@ -15,19 +16,9 @@ export type ZibaiElement = "water" | "wood" | "fire" | "earth" | "metal";
 export type ZibaiRelation = "generates-palace" | "controls-palace" | "palace-generates-star" | "same-element" | "palace-controls-star";
 
 const DIRECTIONS: Dir9[] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"];
-const PALACE_ELEMENT: Record<Dir9, ZibaiElement> = {
-  N: "water", NE: "earth", E: "wood", SE: "wood", S: "fire",
-  SW: "earth", W: "metal", NW: "metal", C: "earth",
-};
 const STAR_ELEMENT: Record<number, ZibaiElement> = {
   1: "water", 2: "earth", 3: "wood", 4: "wood", 5: "earth",
   6: "metal", 7: "metal", 8: "earth", 9: "fire",
-};
-const GENERATES: Record<ZibaiElement, ZibaiElement> = {
-  water: "wood", wood: "fire", fire: "earth", earth: "metal", metal: "water",
-};
-const CONTROLS: Record<ZibaiElement, ZibaiElement> = {
-  water: "fire", fire: "metal", metal: "wood", wood: "earth", earth: "water",
 };
 
 export type ApparentSolarParts = Readonly<{
@@ -254,14 +245,7 @@ function directionOf(map: PalaceStars, star: number): Dir9 {
 }
 
 export function starPalaceRelation(star: number, direction: Dir9): ZibaiRelation {
-  const starElement = STAR_ELEMENT[star];
-  const palaceElement = PALACE_ELEMENT[direction];
-  if (!starElement) throw new TypeError("zibai_invalid_star");
-  if (starElement === palaceElement) return "same-element";
-  if (GENERATES[starElement] === palaceElement) return "generates-palace";
-  if (GENERATES[palaceElement] === starElement) return "palace-generates-star";
-  if (CONTROLS[starElement] === palaceElement) return "controls-palace";
-  return "palace-controls-star";
+  return ruleRuntime.starPalaceRelation(star, direction);
 }
 
 export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {

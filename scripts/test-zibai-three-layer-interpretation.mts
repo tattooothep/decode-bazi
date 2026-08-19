@@ -13,6 +13,7 @@ import type {
   ZibaiRelation,
   ZibaiSnapshotV2,
 } from "../src/lib/zibai-science.ts";
+import ruleRuntime from "../src/lib/zibai-three-layer-runtime.cjs";
 
 const DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"] as const;
 const STARS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
@@ -189,12 +190,14 @@ for (const direction of DIRECTIONS) {
         const inputBefore = JSON.stringify(snapshot);
         const first = interpretZibaiSectors(snapshot, true);
         const second = interpretZibaiSectors(snapshot, true);
+        const cjs = ruleRuntime.interpretZibaiSectors(snapshot, true);
         const reading = sector(first, direction);
         const repeat = repeatEvidence(stars, true);
 
         assert.equal(first.length, 9, `${direction} ${stars.join("-")}: exactly nine sectors`);
         assert.deepEqual(first.map((item) => item.direction), DIRECTIONS, `${direction} ${stars.join("-")}: stable direction order`);
         assert.deepEqual(first, second, `${direction} ${stars.join("-")}: deterministic output`);
+        assert.deepEqual(first, cjs, `${direction} ${stars.join("-")}: typed adapter and plain-Node CJS kernel stay identical`);
         assert.equal(JSON.stringify(snapshot), inputBefore, `${direction} ${stars.join("-")}: input is not mutated`);
         assert.deepEqual(reading.month, {
           star: month,
@@ -506,7 +509,12 @@ for (const direction of DIRECTIONS) {
 const centre = sector(interpretZibaiSectors(snapshotFor("C", 1, 1, 1), true), "C");
 assert.doesNotMatch(centre.actionCode, /travel|toward|direction/u, "centre guidance is spatial, never a travel direction");
 
-const implementation = readFileSync(new URL("../src/lib/zibai-three-layer-interpretation.ts", import.meta.url), "utf8");
+const adapterImplementation = readFileSync(new URL("../src/lib/zibai-three-layer-interpretation.ts", import.meta.url), "utf8");
+const kernelImplementation = readFileSync(new URL("../src/lib/zibai-three-layer-runtime.cjs", import.meta.url), "utf8");
+assert.match(adapterImplementation, /ruleRuntime\.interpretZibaiSectors/u, "TypeScript is a typed adapter over the canonical CJS kernel");
+assert.doesNotMatch(adapterImplementation, /function (?:patternFor|warningsFor|actionFor|readingFor)/u,
+  "the typed adapter never copies interpretation branches");
+const implementation = `${adapterImplementation}\n${kernelImplementation}`;
 assert.doesNotMatch(implementation, /Period\s*9|period[_-]?9|ยุค\s*9/iu, "interpreter imports no Period-9 valuation");
 assert.doesNotMatch(implementation, /\b(?:score|weight|weighted|percentage|percentile)\b/iu, "interpreter has no scalar scoring or weights");
 
