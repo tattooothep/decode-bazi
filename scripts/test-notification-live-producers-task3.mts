@@ -293,7 +293,7 @@ for (const [index, item] of liveCases.entries()) {
   assert.equal(provider.categoryId,
     item.transactional === true ? undefined : item.kind === "zibai" ? "hourkey_zibai" : "hourkey_daily",
     `${item.kind}: MUTE category follows transactional policy rather than the broad service kind`);
-  if (item.kind === "yam" || item.kind === "qimen") {
+  if (item.kind === "yam" || item.kind === "qimen" || item.kind === "zibai") {
     assert.equal(provider.ttl, 300, `${item.kind}: provider queue lifetime must not outlive the occurrence`);
   }
   check(item.copy.title.length >= 4 && item.copy.body.length >= 20 && Object.keys(item.sourceFacts).length > 0,

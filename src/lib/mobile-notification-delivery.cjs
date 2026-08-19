@@ -538,7 +538,15 @@ function currentPolicyDecision(row, context, capCount) {
   const now = new Date(context.now_at);
   if (row.kind === "zibai") {
     if (context.zibai_enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
-    if (context.zibai_expires_at && new Date(context.zibai_expires_at) <= now) {
+    const expiryValue = context.zibai_expires_at;
+    const expiresAt = expiryValue instanceof Date
+      ? new Date(expiryValue.valueOf())
+      : typeof expiryValue === "string" && expiryValue.trim() ? new Date(expiryValue) : new Date(Number.NaN);
+    if (!Number.isFinite(expiresAt.valueOf())) {
+      return { allow: false, terminal: true, reason: "policy_missing_occurrence_expiry" };
+    }
+    const queueSafetyMs = push.providerQueueSafetySeconds("zibai") * 1_000;
+    if (expiresAt.valueOf() <= now.valueOf() + queueSafetyMs) {
       return { allow: false, terminal: true, reason: "policy_expired_occurrence" };
     }
     const timezone = notificationScience.safeTimezone(context.zibai_timezone);

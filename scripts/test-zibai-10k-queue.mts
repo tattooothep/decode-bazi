@@ -19,7 +19,7 @@ const WORKERS = 20;
 const BATCH = 500;
 const RUN_SLO_MS = 50_000;
 const PROVIDER_DRAIN_SLO_MS = 120_000;
-const startAt = new Date("2026-08-16T06:59:00.000Z");
+const startAt = new Date("2026-08-16T06:55:00.000Z");
 assert.match(database, /^zibai_queue_10k_/u);
 
 function psql(db: string, sql: string) {

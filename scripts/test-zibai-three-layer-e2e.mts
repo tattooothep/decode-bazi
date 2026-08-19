@@ -42,7 +42,7 @@ const resolveNotificationPayload = mobilePayload.resolveNotificationPayload as (
 const database = `zibai_three_layer_e2e_${process.pid}`;
 const role = `zibai_three_layer_e2e_role_${process.pid}`;
 const password = crypto.randomBytes(24).toString("hex");
-const at = new Date("2026-08-16T06:59:00.000Z");
+const at = new Date("2026-08-16T06:55:00.000Z");
 const ids = {
   dailyV1: "00000000-0000-4000-8000-000000000101",
   dailyV2: "00000000-0000-4000-8000-000000000102",
@@ -196,10 +196,10 @@ try {
        location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,
        next_daily_at,next_shichen_at)
     VALUES
-      ('${ids.dailyV1}','20000000-0000-4000-8000-000000000101',true,false,419,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:58:00.000Z','2026-08-22T06:58:00.000Z','2026-08-16T06:58:59.000Z',NULL),
-      ('${ids.dailyV2}','20000000-0000-4000-8000-000000000102',true,false,419,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:58:00.000Z','2026-08-22T06:58:00.000Z','2026-08-16T06:58:59.000Z',NULL),
-      ('${ids.shichenV1}','20000000-0000-4000-8000-000000000103',false,true,419,0,0,'background',13.75,0,'UTC','2026-08-16T06:58:00.000Z','2026-08-22T06:58:00.000Z',NULL,'2026-08-16T06:58:59.000Z'),
-      ('${ids.shichenV2}','20000000-0000-4000-8000-000000000104',false,true,419,0,0,'background',13.75,0,'UTC','2026-08-16T06:58:00.000Z','2026-08-22T06:58:00.000Z',NULL,'2026-08-16T06:58:59.000Z');
+      ('${ids.dailyV1}','20000000-0000-4000-8000-000000000101',true,false,415,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z','2026-08-16T06:54:59.000Z',NULL),
+      ('${ids.dailyV2}','20000000-0000-4000-8000-000000000102',true,false,415,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z','2026-08-16T06:54:59.000Z',NULL),
+      ('${ids.shichenV1}','20000000-0000-4000-8000-000000000103',false,true,415,0,0,'background',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z',NULL,'2026-08-16T06:54:59.000Z'),
+      ('${ids.shichenV2}','20000000-0000-4000-8000-000000000104',false,true,415,0,0,'background',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z',NULL,'2026-08-16T06:54:59.000Z');
     GRANT USAGE ON SCHEMA public TO ${role};
     GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
   `);
@@ -235,6 +235,9 @@ try {
 
   for (const row of attempts) {
     const inner = providerData(row.provider, row.provider_message);
+    assert.equal(row.provider === "fcm" ? row.provider_message.android.ttl : row.provider_message.ttl,
+      row.provider === "fcm" ? "300s" : 300,
+      `${row.occurrence_type} v${row.zibai_payload_schema} has a bounded provider queue lifetime`);
     const parsed = resolveNotificationPayload(inner, "zibai", row.user_id);
     assert.ok(parsed, `mobile parser accepts durable ${row.occurrence_type} v${row.zibai_payload_schema}`);
     assert.equal(parsed.event, `zibai_${row.occurrence_type}`);
@@ -340,7 +343,7 @@ try {
 
   const expiredRow = attempts.find((row) => row.user_id === ids.dailyV2);
   assert.ok(expiredRow);
-  const expiryAt = new Date(Date.parse(expiredRow.payload.day.endAt) + 1);
+  const expiryAt = new Date(Date.parse(expiredRow.payload.day.endAt) - push.providerQueueSafetySeconds("zibai") * 1_000);
   let forbiddenExpiredSend = 0;
   const expired = await delivery.runRetryBatch(pool, {
     attemptIds: [expiredRow.id], limit: 1, concurrency: 1,
@@ -350,7 +353,8 @@ try {
       return { kind: "provider_accepted", providerMessageId: "must-not-send-expired-v2" };
     } },
   });
-  assert.equal(forbiddenExpiredSend, 0, "expired v2 snapshot is never sent by a later retry");
+  assert.equal(forbiddenExpiredSend, 0,
+    "v2 snapshot is never submitted when its immutable end cannot contain provider TTL plus acceptance headroom");
   assert.deepEqual({ claimed: expired.claimed, dead: expired.dead }, { claimed: 1, dead: 1 });
   assert.equal(expired.outcomes[0]?.reason, "policy_expired_occurrence");
 

@@ -53,12 +53,16 @@ await check("โหมดไม่ส่งจริงต้องไม่ย�
   assert.equal(r.failed, 0, "โหมดทดสอบไม่ควรยิงจริงแล้วล้ม");
 });
 
-await check("Yam/Qimen ใช้ TTL สั้นและตรงกันทั้ง FCM/Expo เพื่อไม่ค้างข้ามยาม", () => {
-  for (const category of ["yam", "qimen"]) {
-    const item = { title: "ช่วงที่มีผล", body: "รายละเอียด", category, data: { url: "/today" } };
+await check("Yam/Qimen/Zi Bai ใช้ TTL สั้นและตรงกันทั้ง FCM/Expo เพื่อไม่ค้างข้ามช่วง", () => {
+  for (const category of ["yam", "qimen", "zibai"]) {
+    const item = { title: "ช่วงที่มีผล", body: "รายละเอียด", category, data: {
+      url: category === "zibai" ? "/zibai" : "/today",
+      ...(category === "zibai" ? { kind: "zibai", event: "zibai_shichen" } : {}),
+    } };
     assert.equal(S.providerTtlSeconds(category), 300);
     assert.equal(S.prepareMessage(item, "fcm").android.ttl, "300s");
     assert.equal(S.prepareMessage(item, "expo").ttl, 300);
+    assert.equal(S.providerQueueSafetySeconds(category), category === "zibai" ? 360 : 300);
   }
   assert.equal(S.providerTtlSeconds("daily"), 86_400);
   assert.equal(S.providerTtlSeconds("security"), 21_600);

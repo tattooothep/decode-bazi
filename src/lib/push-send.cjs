@@ -13,6 +13,7 @@ const CONCURRENCY = 10;
 const ACTION_CATEGORY_ID = "hourkey_daily";
 const ZIBAI_ACTION_CATEGORY_ID = "hourkey_zibai";
 const TIME_BOUND_TTL_SECONDS = 300;
+const TIME_BOUND_ACCEPTANCE_SAFETY_SECONDS = 60;
 
 let cachedKey = null;
 let cachedTicket = null;
@@ -70,9 +71,17 @@ function channelOf(category) {
 
 function providerTtlSeconds(categoryInput) {
   const category = categoryOf({ category: categoryInput });
-  if (category === "yam" || category === "qimen") return TIME_BOUND_TTL_SECONDS;
+  if (category === "yam" || category === "qimen" || category === "zibai") return TIME_BOUND_TTL_SECONDS;
   if (category === "security" || category === "service") return 21_600;
   return 86_400;
+}
+
+function providerQueueSafetySeconds(categoryInput) {
+  const category = categoryOf({ category: categoryInput });
+  const ttl = providerTtlSeconds(category);
+  return category === "zibai"
+    ? ttl + TIME_BOUND_ACCEPTANCE_SAFETY_SECONDS
+    : ttl;
 }
 
 function providerData(message, stringifyValues) {
@@ -465,6 +474,7 @@ module.exports = {
   parseRetryAfterSeconds,
   prepareMessage,
   providerFor,
+  providerQueueSafetySeconds,
   providerTtlSeconds,
   safeUrl,
   sendAll,

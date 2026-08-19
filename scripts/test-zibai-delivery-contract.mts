@@ -14,6 +14,9 @@ assert.deepEqual(JSON.parse(fcm.data.body), expo.data);
 
 const daily = push.prepareMessage({ category: "zibai", title: "t", body: "b", data: { ...data, event: "zibai_daily" } }, "expo");
 assert.equal("categoryId" in daily, false);
+assert.equal(fcm.android.ttl, "300s", "FCM Zi Bai queue lifetime is bounded to five minutes");
+assert.equal(expo.ttl, 300, "Expo Zi Bai queue lifetime is bounded to five minutes");
+assert.equal(daily.ttl, 300, "daily Zi Bai uses the same bounded provider queue lifetime");
 
 const accountId = "00000000-0000-4000-8000-000000000001";
 const notificationId = "00000000-0000-4000-8000-000000000002";
@@ -67,9 +70,26 @@ assert.doesNotMatch(retryWorkerSource, /mobile-zibai-push-cron|buildZibaiNotice|
 
 assert.deepEqual(delivery.currentPolicyDecision(
   { kind: "zibai", transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
-  { privacy_preview: false, zibai_enabled: true, zibai_expires_at: new Date(Date.now() + 60_000).toISOString(), now_at: new Date() },
+  { privacy_preview: false, zibai_enabled: true, zibai_expires_at: new Date(Date.now() + 10 * 60_000).toISOString(), now_at: new Date() },
   999,
 ), { allow: true }, "Zi Bai uses its installation occurrence cap, not the generic account cap");
+for (const event of ["zibai_daily", "zibai_shichen"] as const) {
+  const now = new Date("2026-08-16T12:00:00.000Z");
+  const row = { kind: "zibai", payload: { event }, transactional: false, privacy_safe: true, created_at: now.toISOString() };
+  const context = { privacy_preview: false, zibai_enabled: true, zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7, now_at: now };
+  assert.deepEqual(delivery.currentPolicyDecision(row,
+    { ...context, zibai_expires_at: new Date(now.valueOf() + 361_000).toISOString() }, 0), { allow: true },
+  `${event} may enter the provider queue only with TTL plus acceptance headroom remaining`);
+  assert.deepEqual(delivery.currentPolicyDecision(row,
+    { ...context, zibai_expires_at: new Date(now.valueOf() + 360_000).toISOString() }, 0),
+  { allow: false, terminal: true, reason: "policy_expired_occurrence" },
+  `${event} is rejected when the immutable occurrence cannot contain provider TTL plus acceptance headroom`);
+  for (const missingExpiry of [undefined, null, ""]) {
+    assert.deepEqual(delivery.currentPolicyDecision(row, { ...context, zibai_expires_at: missingExpiry }, 0),
+      { allow: false, terminal: true, reason: "policy_missing_occurrence_expiry" },
+    `${event} fails closed without its immutable occurrence end`);
+  }
+}
 assert.equal(delivery.currentPolicyDecision(
   { kind: "zibai", transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
   { privacy_preview: false, zibai_enabled: false, now_at: new Date() },
