@@ -305,25 +305,33 @@ shichen:
   or null for a daily occurrence
 ```
 
-Required sector records for all nine palaces:
+Required compact sector attestations for all nine palaces:
 
 ```text
 direction
-palaceElement
-month/day/shichen: star, starElement, relation
-repeatCount, repeatedLayers
-patternCode, coherenceCode
-warningCodes, actionCode
+month, day, shichen
+patternCode
 ```
+
+The wire payload intentionally does not repeat palace element, relation,
+coherence, warning, or action fields. A full nine-sector semantic graph is
+about 4.85 KB before provider wrapping and exceeds the safe FCM data budget.
+Backend and mobile derive the full canonical records locally from the exact
+maps plus `interpretationVersion`, then compare every compact attestation with
+that result. The complete derived records are runtime view models, not a second
+wire source of truth.
 
 Validation requirements:
 
 - exact own enumerable primitive/data fields only;
 - exact map keys and exact permutations `1–9`;
-- exact relations derived from map + palace element;
+- exact compact attestations reproduced from the canonical derived records;
 - valid non-overlapping nested bounds;
 - month boundaries match the named solar terms;
-- sector records must reproduce deterministically from the three maps;
+- backend/mobile fixed-vector and property tests must prove identical full
+  derivation from the compact snapshot;
+- serialized notification data must remain at or below 3.5 KB before provider
+  wrapping;
 - no coordinates, house identity, Period-9 values, natal data, Qi Men scores, or
   floor-plan data; and
 - FCM, Expo, durable history, and opened detail use the same immutable snapshot.

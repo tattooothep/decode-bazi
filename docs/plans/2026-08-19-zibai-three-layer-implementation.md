@@ -326,7 +326,11 @@ Assert fresh, upgrade, rollback/reapply, omitted capability=1, explicit 2 persis
 
 - [ ] **Step 2: Write RED exact v2 payload tests**
 
-Reject unknown fields, invalid maps, mismatched sector readings, missing month bounds, coordinates, Period-9 fields, accessors, symbols, and non-enumerable fields.
+Use exactly nine compact attestations
+`{direction,month,day,shichen,patternCode}`. Reject unknown fields, invalid
+maps, any attestation mismatch against the shared rule kernel, missing month
+bounds, coordinates, Period-9 fields, accessors, symbols, and non-enumerable
+fields. Assert the serialized wire envelope is at most 3.5 KB.
 
 - [ ] **Step 3: Implement migration and registration**
 
@@ -334,7 +338,10 @@ Use an additive column only; no destructive rewrite of token rows.
 
 - [ ] **Step 4: Implement exact v2 builder/validator**
 
-Keep v1 byte behavior unchanged. V2 derives/verifies semantic records from maps rather than trusting caller labels.
+Keep v1 byte behavior unchanged. Extract one CJS-compatible canonical rule
+kernel with a typed TypeScript adapter; do not copy interpretation branches.
+V2 derives full semantic records from the maps, verifies every compact
+attestation, and transmits only the compact form.
 
 - [ ] **Step 5: Run migration/payload gates**
 
@@ -364,7 +371,7 @@ git commit -m "feat(zibai): negotiate strict three-layer payloads"
 - Create: `scripts/test-zibai-history-projection.mts`
 
 **Interfaces:**
-- `buildZibaiV2Facts(snapshot, event): StrictZibaiV2Facts`.
+- `buildZibaiV2Facts(snapshot, event): StrictCompactZibaiV2Facts`.
 - `projectZibaiPayload(payload, requestedSchema): v1 | v2` down-converts v2 to exact v1 for old history clients.
 - Mobile history GET sends explicit `X-Hourkey-Zibai-Schema: 2`; absence means schema 1.
 
@@ -382,7 +389,9 @@ Copy prioritizes triple repeats and Five Yellow/caution evidence, includes “no
 
 - [ ] **Step 4: Implement history projection**
 
-Down-conversion removes month/sector semantic fields and reconstructs only exact legacy focus/day/shichen fields from the immutable v2 maps. It never recomputes from current time/location.
+Down-conversion removes month/compact-attestation fields and reconstructs only
+exact legacy focus/day/shichen fields from the immutable v2 maps. It never
+recomputes from current time/location.
 
 - [ ] **Step 5: Run producer/provider/history/privacy tests**
 
@@ -413,11 +422,15 @@ git commit -m "feat(zibai): deliver three-layer snapshots compatibly"
 
 - [ ] **Step 1: Write RED parser mutation tests**
 
-Test exact keys, own data descriptors, 27 map entries, nine derived sector records, bounds, term codes, and v1 compatibility.
+Test exact keys, own data descriptors, 27 map entries, nine compact
+attestations, locally derived full sector records, cross-repo fixed-vector
+parity, bounds, term codes, and v1 compatibility.
 
 - [ ] **Step 2: Implement strict v2 snapshot validation**
 
-Snapshot properties are captured once. Never repeatedly read accessors/proxies while validating.
+Snapshot properties are captured once. Never repeatedly read accessors/proxies
+while validating. Derive the full UI records locally from the versioned compact
+wire contract and reject an attestation mismatch.
 
 - [ ] **Step 3: Wire explicit capability**
 
