@@ -124,6 +124,7 @@ function buildQimenSchedulerRequest(input) {
     instant: instant.toISOString(),
     lat: Number(input.latitude),
     lng: Number(input.longitude),
+    purpose: "travel",
     school: "chaibu",
     system_type: "hour",
   };

@@ -12,6 +12,7 @@ const MAX_ATTEMPTS = 3;
 const CONCURRENCY = 10;
 const ACTION_CATEGORY_ID = "hourkey_daily";
 const ZIBAI_ACTION_CATEGORY_ID = "hourkey_zibai";
+const TIME_BOUND_TTL_SECONDS = 300;
 
 let cachedKey = null;
 let cachedTicket = null;
@@ -67,6 +68,13 @@ function channelOf(category) {
   return "hourkey-reminders";
 }
 
+function providerTtlSeconds(categoryInput) {
+  const category = categoryOf({ category: categoryInput });
+  if (category === "yam" || category === "qimen") return TIME_BOUND_TTL_SECONDS;
+  if (category === "security" || category === "service") return 21_600;
+  return 86_400;
+}
+
 function providerData(message, stringifyValues) {
   const data = message?.data && typeof message.data === "object" ? message.data : {};
   const out = {};
@@ -111,6 +119,7 @@ function providerFor(item) {
 /** Exact provider body without the credential identifying the target device. */
 function prepareMessage(item, provider = providerFor(item)) {
   const category = categoryOf(item);
+  const ttlSeconds = providerTtlSeconds(category);
   const actionCategoryId = category === "security" || item?.transactional === true
     ? null
     : category === "zibai"
@@ -131,7 +140,7 @@ function prepareMessage(item, provider = providerFor(item)) {
       },
       android: {
         priority: category === "security" || category === "service" ? "HIGH" : "NORMAL",
-        ttl: category === "security" || category === "service" ? "21600s" : "86400s",
+        ttl: `${ttlSeconds}s`,
         notification: {
           sound: category === "security" || category === "service" ? "default" : undefined,
           channel_id: channelOf(category),
@@ -146,7 +155,7 @@ function prepareMessage(item, provider = providerFor(item)) {
       data: providerData(item, false),
       sound: category === "security" || category === "service" ? "default" : null,
       priority: category === "security" || category === "service" ? "high" : "normal",
-      ttl: category === "security" || category === "service" ? 21_600 : 86_400,
+      ttl: ttlSeconds,
       channelId: channelOf(category),
       ...(actionCategoryId ? { categoryId: actionCategoryId } : {}),
     };
@@ -455,6 +464,7 @@ module.exports = {
   parseRetryAfterSeconds,
   prepareMessage,
   providerFor,
+  providerTtlSeconds,
   safeUrl,
   sendAll,
   sendExpo,

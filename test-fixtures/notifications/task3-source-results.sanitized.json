@@ -18,7 +18,9 @@
   "savedDate": {
     "id": "50000000-0000-4000-8000-000000000701",
     "payload": {
-      "datetime": { "start": "2026-08-15T02:05:00.000Z" },
+      "datetime": {
+        "start": "2026-08-15T02:05:00.000Z"
+      },
       "activityType": "launch"
     }
   },
@@ -27,13 +29,29 @@
     "date": "2026-08-15",
     "todayApi": {
       "ok": true,
-      "verdict": { "score": 72, "label": "good" },
-      "tongshu": { "yi": ["เริ่มงาน", "เจรจา"] }
+      "verdict": {
+        "score": 72,
+        "label": "good"
+      },
+      "tongshu": {
+        "yi": [
+          "เริ่มงาน",
+          "เจรจา"
+        ]
+      }
     },
     "hoursApi": {
       "hours": [
-        { "range": "09:00-11:00", "quality": "best", "branch": "巳" },
-        { "range": "13:00-15:00", "quality": "good", "branch": "未" }
+        {
+          "range": "09:00-11:00",
+          "quality": "best",
+          "branch": "巳"
+        },
+        {
+          "range": "13:00-15:00",
+          "quality": "good",
+          "branch": "未"
+        }
       ]
     }
   },
@@ -42,9 +60,125 @@
     "nowMinutes": 495,
     "hoursApi": {
       "hours": [
-        { "range": "09:00-11:00", "quality": "best", "branch": "巳" },
-        { "range": "13:00-15:00", "quality": "good", "branch": "未" }
+        {
+          "range": "09:00-11:00",
+          "quality": "best",
+          "branch": "巳"
+        },
+        {
+          "range": "13:00-15:00",
+          "quality": "good",
+          "branch": "未"
+        }
       ]
+    },
+    "qimenRequest": {
+      "date": "2026-08-15",
+      "time": "10:00",
+      "timezone": "Asia/Bangkok",
+      "instant": "2026-08-15T03:00:00.000Z",
+      "lat": 13.7563,
+      "lng": 100.5018,
+      "purpose": "travel",
+      "school": "chaibu",
+      "system_type": "hour"
+    },
+    "qimenApi": {
+      "data": {
+        "calculation": {
+          "input_datetime": "2026-08-15T10:00:00.000+07:00",
+          "input_timezone": "Asia/Bangkok",
+          "corrected_datetime": "2026-08-15T09:37:54.739+07:00",
+          "correction_minutes": -22.087681721858093,
+          "time_mode": "true_solar_time",
+          "ju_method": "chai_bu",
+          "solar_term_code": "LI_QIU",
+          "solar_term_zh": "立秋",
+          "pillars": {
+            "hourPillarZh": "癸巳",
+            "hourPillarCode": 30
+          }
+        },
+        "chart": { "wang_xiang_status": ["土", "金", "火", "木", "水"] },
+        "warnings": [],
+        "palaces": [
+          {
+            "palace_id": 6,
+            "direction": "NW",
+            "display_score": 57,
+            "deity_code": "LIU_HE",
+            "deity_zh": "六合",
+            "deity_name_th": "ลิ่วเหอ",
+            "deity_name_en": "Liu He (Six Harmony)",
+            "deity_quality": "auspicious",
+            "door_code": "KAI_MEN",
+            "door_zh": "開門",
+            "door_name_th": "ประตูเปิด",
+            "door_name_en": "Kai Men (Open Gate)",
+            "door_quality": "great_auspicious",
+            "star_code": "TIAN_YING",
+            "star_zh": "天英",
+            "star_name_th": "ดาวเทียนอิง",
+            "star_name_en": "Tian Ying (Heavenly Hero)",
+            "star_quality": "inauspicious",
+            "door_action_advice_th": "ติดต่อราชการ เริ่มกิจการ เจรจาเปิดดีล",
+            "door_action_advice_en": "Initiate openly, propose, contact authority, start new ventures.",
+            "door_action_advice_zh": "公開發起, 提案, 聯繫官方, 開創新業.",
+            "classical_flags": [
+              {
+                "code": "RU_MU",
+                "label_zh": "入墓",
+                "severity": "caution"
+              },
+              {
+                "code": "FU_YIN",
+                "label_zh": "伏吟",
+                "severity": "caution"
+              }
+            ],
+            "beginner_reading": {
+              "version": "qimen-beginner-reading-20260605",
+              "code": "caution",
+              "tone": "warn",
+              "is_actionable": true,
+              "hard_count": 0,
+              "caution_count": 12,
+              "reasons": [
+                {
+                  "code": "開門",
+                  "label_zh": "開門",
+                  "tone": "good"
+                },
+                {
+                  "code": "天英",
+                  "label_zh": "天英",
+                  "tone": "good"
+                },
+                {
+                  "code": "六合",
+                  "label_zh": "六合",
+                  "tone": "good"
+                },
+                {
+                  "code": "KONG_WANG",
+                  "label_zh": "空亡",
+                  "tone": "warn"
+                },
+                {
+                  "code": "RU_MU",
+                  "label_zh": "入墓",
+                  "tone": "warn"
+                },
+                {
+                  "code": "FU_YIN",
+                  "label_zh": "伏吟",
+                  "tone": "warn"
+                }
+              ]
+            }
+          }
+        ]
+      }
     }
   },
   "qimen": {
@@ -55,15 +189,159 @@
       "instant": "2026-08-15T01:05:00.000Z",
       "lat": 13.7563,
       "lng": 100.5018,
+      "purpose": "travel",
       "school": "chaibu",
       "system_type": "hour"
     },
     "api": {
       "data": {
+        "calculation": {
+          "input_datetime": "2026-08-15T08:05:00.000+07:00",
+          "input_timezone": "Asia/Bangkok",
+          "corrected_datetime": "2026-08-15T07:42:54.739+07:00",
+          "correction_minutes": -22.087681721858093,
+          "time_mode": "true_solar_time",
+          "ju_method": "chai_bu",
+          "solar_term_code": "LI_QIU",
+          "solar_term_zh": "立秋",
+          "pillars": {
+            "hourPillarZh": "壬辰",
+            "hourPillarCode": 29
+          }
+        },
+        "chart": { "wang_xiang_status": ["土", "金", "火", "木", "水"] },
+        "warnings": [],
         "palaces": [
-          { "direction": "SE", "display_score": 67 },
-          { "direction": "N", "display_score": 54 },
-          { "direction": "CENTER", "display_score": 99 }
+          {
+            "palace_id": 7,
+            "direction": "W",
+            "display_score": 56,
+            "deity_code": "XUAN_WU",
+            "deity_zh": "玄武",
+            "deity_name_th": "เสวียนอู่",
+            "deity_name_en": "Xuan Wu (Black Tortoise)",
+            "deity_quality": "neutral",
+            "door_code": "KAI_MEN",
+            "door_zh": "開門",
+            "door_name_th": "ประตูเปิด",
+            "door_name_en": "Kai Men (Open Gate)",
+            "door_quality": "auspicious",
+            "star_code": "TIAN_CHONG",
+            "star_zh": "天沖",
+            "star_name_th": "ดาวเทียนชง",
+            "star_name_en": "Tian Chong (Heavenly Rushing)",
+            "star_quality": "auspicious",
+            "door_action_advice_th": "ติดต่อราชการ เริ่มกิจการ เจรจาเปิดดีล",
+            "door_action_advice_en": "Initiate openly, propose, contact authority, start new ventures.",
+            "door_action_advice_zh": "公開發起, 提案, 聯繫官方, 開創新業.",
+            "classical_flags": [
+              {
+                "code": "FAN_YIN",
+                "label_zh": "反吟",
+                "severity": "caution"
+              }
+            ],
+            "beginner_reading": {
+              "version": "qimen-beginner-reading-20260605",
+              "code": "caution",
+              "tone": "warn",
+              "is_actionable": true,
+              "hard_count": 0,
+              "caution_count": 7,
+              "reasons": [
+                {
+                  "code": "開門",
+                  "label_zh": "開門",
+                  "tone": "good"
+                },
+                {
+                  "code": "玄武",
+                  "label_zh": "玄武",
+                  "tone": "good"
+                },
+                {
+                  "code": "KONG_WANG",
+                  "label_zh": "空亡",
+                  "tone": "warn"
+                },
+                {
+                  "code": "FAN_YIN",
+                  "label_zh": "反吟",
+                  "tone": "warn"
+                }
+              ]
+            }
+          },
+          {
+            "palace_id": 1,
+            "direction": "N",
+            "display_score": 44,
+            "deity_code": "LIU_HE",
+            "deity_zh": "六合",
+            "deity_name_th": "ลิ่วเหอ",
+            "deity_name_en": "Liu He (Six Harmony)",
+            "deity_quality": "auspicious",
+            "door_code": "SHENG_MEN",
+            "door_zh": "生門",
+            "door_name_th": "ประตูชีวิต",
+            "door_name_en": "Sheng Men (Life Gate)",
+            "door_quality": "auspicious",
+            "star_code": "TIAN_YING",
+            "star_zh": "天英",
+            "star_name_th": "ดาวเทียนอิง",
+            "star_name_en": "Tian Ying (Heavenly Hero)",
+            "star_quality": "neutral",
+            "door_action_advice_th": "หาทรัพย์ ซื้อขาย ลงทุน เริ่มสร้าง",
+            "door_action_advice_en": "Seek wealth, invest, buy and sell, start growth ventures.",
+            "door_action_advice_zh": "求財進取, 投資, 買賣, 啟動成長之業.",
+            "classical_flags": [
+              {
+                "code": "MEN_PO",
+                "label_zh": "門迫",
+                "severity": "caution"
+              },
+              {
+                "code": "FAN_YIN",
+                "label_zh": "反吟",
+                "severity": "caution"
+              }
+            ],
+            "beginner_reading": {
+              "version": "qimen-beginner-reading-20260605",
+              "code": "caution",
+              "tone": "warn",
+              "is_actionable": true,
+              "hard_count": 0,
+              "caution_count": 6,
+              "reasons": [
+                {
+                  "code": "生門",
+                  "label_zh": "生門",
+                  "tone": "good"
+                },
+                {
+                  "code": "天英",
+                  "label_zh": "天英",
+                  "tone": "good"
+                },
+                {
+                  "code": "六合",
+                  "label_zh": "六合",
+                  "tone": "good"
+                },
+                {
+                  "code": "MEN_PO",
+                  "label_zh": "門迫",
+                  "tone": "warn"
+                },
+                {
+                  "code": "FAN_YIN",
+                  "label_zh": "反吟",
+                  "tone": "warn"
+                }
+              ]
+            }
+          }
         ]
       }
     }
@@ -71,7 +349,13 @@
   "shrine": {
     "date": "2026-08-16",
     "festivals": [
-      { "th": "เทศกาลจงหยวน", "en": "Ghost Festival", "zh": "中元節", "kind": "festival", "major": true }
+      {
+        "th": "เทศกาลจงหยวน",
+        "en": "Ghost Festival",
+        "zh": "中元節",
+        "kind": "festival",
+        "major": true
+      }
     ]
   },
   "goal": {
@@ -81,7 +365,12 @@
         "id": "60000000-0000-4000-8000-000000000701",
         "profileId": "30000000-0000-4000-8000-000000000701",
         "title": "Launch",
-        "nextAuspicious": { "date": "2026-08-18", "dayLabel": "วันอังคารที่ 18 สิงหาคม", "hourRange": "09:00-11:00", "score": 72 }
+        "nextAuspicious": {
+          "date": "2026-08-18",
+          "dayLabel": "วันอังคารที่ 18 สิงหาคม",
+          "hourRange": "09:00-11:00",
+          "score": 72
+        }
       }
     ]
   },
@@ -89,24 +378,52 @@
     "date": "2026-08-15",
     "api": {
       "ok": true,
-      "active_profile": { "id": "30000000-0000-4000-8000-000000000701" },
+      "active_profile": {
+        "id": "30000000-0000-4000-8000-000000000701"
+      },
       "people": [
         {
           "id": "30000000-0000-4000-8000-000000000702",
           "name": "Contact A",
-          "scores": { "day": 42 },
-          "reading": { "th": "เกื้อหนุน", "en": "supportive", "zh": "助力" },
-          "guidance": { "primary_i18n": { "th": "ประสานงาน", "en": "coordinate", "zh": "協調" } }
+          "scores": {
+            "day": 42
+          },
+          "reading": {
+            "th": "เกื้อหนุน",
+            "en": "supportive",
+            "zh": "助力"
+          },
+          "guidance": {
+            "primary_i18n": {
+              "th": "ประสานงาน",
+              "en": "coordinate",
+              "zh": "協調"
+            }
+          }
         },
         {
           "id": "30000000-0000-4000-8000-000000000703",
           "name": "Contact B",
-          "scores": { "day": -31 },
-          "reading": { "th": "ขัดแย้ง", "en": "friction", "zh": "摩擦" },
-          "guidance": { "primary_i18n": { "th": "ตั้งขอบเขต", "en": "set boundaries", "zh": "設定界線" } }
+          "scores": {
+            "day": -31
+          },
+          "reading": {
+            "th": "ขัดแย้ง",
+            "en": "friction",
+            "zh": "摩擦"
+          },
+          "guidance": {
+            "primary_i18n": {
+              "th": "ตั้งขอบเขต",
+              "en": "set boundaries",
+              "zh": "設定界線"
+            }
+          }
         }
       ]
     }
   },
-  "monthly": { "date": "2026-08-01" }
+  "monthly": {
+    "date": "2026-08-01"
+  }
 }

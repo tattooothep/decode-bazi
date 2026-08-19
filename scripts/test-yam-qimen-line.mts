@@ -1,58 +1,81 @@
-/**
- * ทดสอบท่อนทิศ+องค์เทพในใบแจ้งเตือนยามดี (31 ก.ค. 69)
- *
- * เจ้าของสั่ง "เพิ่มชื่อเทพไปหน่อยสิ ว่าฤกษ์นี้เทพอะไร รองรับทุกภาษานะ"
- * 🔴 ก่อนหน้านี้ใบยามไม่มีฉีเหมินเลยสักบรรทัด ข้อความเป็นคำตายตัวเหมือนกันทุกใบ
- */
-import { readFileSync } from "node:fs";
+import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
 
-let pass = 0, fail = 0;
-const ok = (n: string, c: boolean) => { if (c) pass += 1; else { fail += 1; console.error(`❌ ${n}`); } };
+const require = createRequire(import.meta.url);
+const yam = require("./mobile-yam-push-cron.cjs");
+const qimen = require("../src/lib/qimen-notification-advisory.cjs");
+const fixture = JSON.parse(readFileSync("test-fixtures/notifications/task3-source-results.sanitized.json", "utf8"));
 
-const cron = readFileSync("scripts/mobile-yam-push-cron.cjs", "utf8");
+let pass = 0;
+function ok(name: string, condition: unknown) {
+  assert.ok(condition, name);
+  pass += 1;
+  console.log(`PASS ${name}`);
+}
 
-// ── ① ตัวยิงต่อฉีเหมินจริง ──
-ok("มีตัวดึงผังฉีเหมิน", cron.includes("fetchQimenHighlight"));
-ok("ขอผังของเวลาที่ยามเริ่ม ไม่ใช่เวลาปัจจุบัน", cron.includes("startTime") && cron.includes("ไม่ใช่เวลาปัจจุบัน"));
-ok("อ่านชื่อองค์เทพครบ 3 ภาษา",
-  cron.includes("deity_name_th") && cron.includes("deity_name_en") && cron.includes("deity_zh"));
-ok("อ่านคำแนะนำครบ 3 ภาษา",
-  cron.includes("door_action_advice_th") && cron.includes("door_action_advice_en") && cron.includes("door_action_advice_zh"));
-ok("ชื่อทิศครบ 8 ทิศ", ["N:", "NE:", "E:", "SE:", "S:", "SW:", "W:", "NW:"].every((k) => cron.includes(k)));
-ok("ส่งตามภาษาของแต่ละเครื่อง", cron.includes("raw.locale") && cron.includes("qimenLine(highlight, loc)"));
+const source = readFileSync("scripts/mobile-yam-push-cron.cjs", "utf8");
+const advisorySource = readFileSync("src/lib/qimen-notification-advisory.cjs", "utf8");
+ok("Yam requests the canonical explicit travel-purpose hour chart",
+  source.includes("fetchCanonicalQimenAdvisory") && advisorySource.includes("purpose: PURPOSE")
+    && advisorySource.includes('system_type: "hour"'));
+ok("Yam samples the civil-range midpoint instead of falsely treating its start as a true-solar boundary",
+  yam.qimenSampleTime("09:00-11:00") === "10:00" && yam.qimenSampleTime("23:00-01:00") === "00:00");
 
-// 🔴 ไม่มีผัง = ส่งใบเดิม ไม่ใช่เดาทิศให้ (ผู้ใช้จะหันหน้าไปจริง)
-ok("ไม่มีผังแล้วไม่บอกทิศ", cron.includes('if (highlight === null) return ""'));
-ok("คะแนนต่ำแล้วไม่บอกทิศ", cron.includes("best.score < 50"));
-ok("ตัดกังกลางออก ไม่มีทิศตามตำรา", cron.includes("ตัดกังกลางออก"));
-ok("ล้มแล้วไม่เงียบ", cron.includes("ขอผังฉีเหมินไม่สำเร็จ"));
+const advisory = qimen.buildQimenAdvisory(fixture.yam.qimenApi, {
+  timezone: fixture.yam.qimenRequest.timezone,
+  longitude: fixture.yam.qimenRequest.lng,
+  purpose: fixture.yam.qimenRequest.purpose,
+});
+ok("canonical source output produces a caution advisory", advisory?.recommendation === "caution");
+ok("canonical advisory retains deity, door and star identities",
+  advisory?.deity.zh === "六合" && advisory?.door.zh === "開門" && advisory?.star.zh === "天英");
+ok("canonical advisory retains component base qualities",
+  advisory?.deity.quality === "auspicious"
+    && advisory?.door.quality === "great_auspicious"
+    && advisory?.star.quality === "inauspicious");
+ok("canonical advisory applies 旺相休囚死 to the selected door and star",
+  advisory?.door.element === "金" && advisory?.door.vigor === "相"
+    && advisory?.star.element === "火" && advisory?.star.vigor === "休");
+ok("canonical caution flags are preserved", advisory?.warningCodes.includes("空亡")
+  && advisory?.warningCodes.includes("入墓") && advisory?.warningCodes.includes("伏吟"));
 
-// ── ② ชื่อเทพในฐานข้อมูลต้องครบ 3 ภาษา ──
-const row = execFileSync("docker", ["exec", "-i", "decode-postgres", "psql", "-U", "decode_user", "decode_db",
+for (const locale of ["th", "en", "zh"]) {
+  const line = yam.qimenLine(advisory, locale);
+  ok(`${locale}: line names deity, door and star`, /六合/u.test(line) && /開門/u.test(line) && /天英/u.test(line));
+  ok(`${locale}: caution line does not invent a best direction`, !/ทิศดีสุด|Best direction|最吉方/u.test(line));
+}
+
+const notice = yam.buildYamProducer({
+  id: fixture.accountId,
+  profile_id: fixture.profileId,
+  tokens: [],
+  user_timezone: fixture.timezone,
+}, { ...fixture.yam, highlight: advisory });
+ok("Yam notice stores the exact true-solar Qimen validity window",
+  notice.sourceFacts.qimen.validFrom === advisory.validFrom
+    && notice.sourceFacts.qimen.validUntil === advisory.validUntil);
+ok("Yam occurrence expires at the first ending bounded claim",
+  notice.sourceFacts.eventEndAt === qimen.earliestExpiry(
+    qimen.civilRangeWindow(fixture.yam.date, notice.payload.range, fixture.timezone).endAt,
+    advisory.validUntil,
+  ));
+for (const locale of ["th", "en", "zh"]) {
+  ok(`${locale}: complete Yam provider/history copy fits without truncation`,
+    notice.historyCopies[locale].body.length <= 400 && /六合/u.test(notice.historyCopies[locale].body)
+      && /開門/u.test(notice.historyCopies[locale].body) && /天英/u.test(notice.historyCopies[locale].body));
+}
+
+const deityCounts = execFileSync("docker", ["exec", "-i", "decode-postgres", "psql", "-U", "decode_user", "decode_db",
   "-tAF|", "-c", `SELECT count(*), count(*) FILTER (WHERE btrim(coalesce(name_th,''))<>''),
    count(*) FILTER (WHERE btrim(coalesce(name_en,''))<>''),
    count(*) FILTER (WHERE btrim(coalesce(zh,''))<>'') FROM ref_qimen_deities_dict`],
-  { encoding: "utf8" }).trim().split("|").map(Number);
-ok(`เทพครบ 10 องค์ (พบ ${row[0]})`, row[0] === 10);
-ok(`ชื่อไทยครบ (${row[1]}/10)`, row[1] === 10);
-ok(`ชื่ออังกฤษครบ (${row[2]}/10)`, row[2] === 10);
-ok(`ชื่อจีนครบ (${row[3]}/10)`, row[3] === 10);
+{ encoding: "utf8" }).trim().split("|").map(Number);
+ok("deity dictionary has complete TH/EN/ZH names", deityCounts.length === 4 && deityCounts.every((count) => count === 10));
+const englishNames = execFileSync("docker", ["exec", "-i", "decode-postgres", "psql", "-U", "decode_user", "decode_db",
+  "-tA", "-c", "SELECT name_en FROM ref_qimen_deities_dict ORDER BY name_en"], { encoding: "utf8" }).trim().split("\n");
+ok("English deity names are translated rather than bare pinyin", englishNames.every((name) => name.includes("(") && !/[฀-๿]/u.test(name)));
+ok("forced-clock diagnostics remain dry-run only", source.includes("DRY && /^\\d{2}:\\d{2}$/.test(FORCE_TIME)"));
 
-// 🔴 ชื่ออังกฤษห้ามเป็นพินอินเปล่าๆ ที่คนอ่านไม่รู้ว่าคืออะไร
-const names = execFileSync("docker", ["exec", "-i", "decode-postgres", "psql", "-U", "decode_user", "decode_db",
-  "-tAF|", "-c", "SELECT name_en FROM ref_qimen_deities_dict"], { encoding: "utf8" }).trim().split("\n");
-ok("ชื่ออังกฤษมีคำแปล ไม่ใช่พินอินเปล่า", names.every((n) => n.includes("(")));
-ok("ชื่ออังกฤษไม่มีอักษรไทยปน", names.every((n) => !/[฀-๿]/.test(n)));
-
-// ── ③ ท่อนข้อความครบ 3 ภาษา ──
-ok("ท่อนไทยมี", cron.includes("ทิศดีสุดของยามนี้"));
-ok("ท่อนอังกฤษมี", cron.includes("Best direction this hour"));
-ok("ท่อนจีนมี", cron.includes("此時最吉方"));
-
-// ── ④ เครื่องมือตรวจสอบ ──
-ok("มีโหมดแกล้งเวลาไว้ตรวจ", cron.includes("--force-time="));
-ok("แกล้งเวลาใช้ได้เฉพาะตอนยิงแห้ง", cron.includes("DRY && /^\\d{2}:\\d{2}$/.test(FORCE_TIME)"));
-
-console.log(`[test-yam-qimen-line] ผ่าน ${pass} ตก ${fail}`);
-process.exit(fail === 0 ? 0 : 1);
+console.log(`[test-yam-qimen-line] ผ่าน ${pass}`);

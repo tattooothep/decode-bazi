@@ -3,8 +3,9 @@ import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import pg from "pg";
-import { resolveNotificationPayload } from "../../hourkey-v197-mobile/src/navigation/notificationPayload.ts";
 import { notificationHistoryPayload } from "../src/lib/mobile-notification-history.ts";
 import {
   buildFusionMobileNotice,
@@ -12,7 +13,14 @@ import {
 } from "../src/lib/mobile-fusion-notification.ts";
 
 const require = createRequire(import.meta.url);
+const mobileRoot = process.env.HOURKEY_MOBILE_ROOT
+  ? resolve(process.env.HOURKEY_MOBILE_ROOT)
+  : resolve("..", "hourkey-v197-mobile");
+const { resolveNotificationPayload } = await import(pathToFileURL(
+  resolve(mobileRoot, "src/navigation/notificationPayload.ts"),
+).href);
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 const yam = require("./mobile-yam-push-cron.cjs");
 const daily = require("./mobile-daily-fortune-push-cron.cjs");
 const personal = require("./mobile-personal-reminders-cron.cjs");
@@ -32,6 +40,17 @@ const user = {
   yam_min_quality: "good", yam_lead_minutes: 60,
 };
 const runAt = new Date(fixture.runAt);
+const standaloneAdvisory = qimenAdvisory.buildQimenAdvisory(fixture.qimen.api, {
+  timezone: fixture.qimen.request.timezone,
+  longitude: fixture.qimen.request.lng,
+  purpose: fixture.qimen.request.purpose,
+});
+const yamAdvisory = qimenAdvisory.buildQimenAdvisory(fixture.yam.qimenApi, {
+  timezone: fixture.yam.qimenRequest.timezone,
+  longitude: fixture.yam.qimenRequest.lng,
+  purpose: fixture.yam.qimenRequest.purpose,
+});
+assert.ok(standaloneAdvisory && yamAdvisory, "sanitized canonical Qimen fixtures must produce complete advisories");
 const fusionNotice = buildFusionMobileNotice(
   fixture.accountId,
   "fusion|job|94000000-0000-4000-8000-000000000001",
@@ -51,7 +70,7 @@ assert.equal(notificationHistoryPayload("not-a-uuid", { v: 1 }), null);
 assert.equal(notificationHistoryPayload(historyId, ["not", "a", "payload"]), null);
 
 const notices: Array<{ name: string; accountLocale: string; notice: any; parse: boolean }> = [
-  { name: "yam", accountLocale: "en", notice: yam.buildYamProducer(user, fixture.yam), parse: true },
+  { name: "yam", accountLocale: "en", notice: yam.buildYamProducer(user, { ...fixture.yam, highlight: yamAdvisory }), parse: true },
   { name: "daily", accountLocale: "zh", notice: daily.buildDailyProducer(user, fixture.daily), parse: true },
   { name: "monthly", accountLocale: "ja", notice: monthly.buildMonthlyNotice(user, fixture.monthly.date), parse: true },
   { name: "network", accountLocale: "cn", notice: network.buildNetworkNotice(user, fixture.network.date, fixture.network.api), parse: true },
@@ -75,6 +94,19 @@ for (const item of notices) {
   assert.equal(item.notice.payload.accountId, fixture.accountId);
   assert.equal(item.notice.messages[0].data, item.notice.payload, `${item.name} producer must share one typed payload instance`);
 }
+const yamNotice = notices.find((item) => item.name === "yam")!.notice;
+const qimenNotice = notices.find((item) => item.name === "qimen")!.notice;
+for (const notice of [yamNotice, qimenNotice]) {
+  const rendered = Object.values(notice.historyCopies) as Array<{ title: string; body: string }>;
+  assert.ok(rendered.every((copy) => copy.body.length <= 400), `${notice.kind} copy must fit the real durable/provider bound`);
+  assert.ok(rendered.every((copy) => /(?:玄武|六合)/u.test(copy.body)), `${notice.kind} copy must name the selected deity`);
+  assert.ok(rendered.every((copy) => /開門/u.test(copy.body)), `${notice.kind} copy must name the selected door`);
+  assert.ok(rendered.every((copy) => /(?:天沖|天英)/u.test(copy.body)), `${notice.kind} copy must name the selected star`);
+  assert.ok(Date.parse(notice.sourceFacts.eventEndAt) > Date.parse(notice.sourceFacts.eventStartAt),
+    `${notice.kind} source facts must retain an immutable bounded occurrence`);
+}
+assert.equal(qimenNotice.sourceFacts.qimen.recommendation, "caution",
+  "canonical caution formations must never be promoted to a best-direction claim");
 
 const database = `notification_source_replay_test_${process.pid}`;
 const role = `notification_source_replay_role_${process.pid}`;

@@ -534,6 +534,16 @@ function currentPolicyDecision(row, context, capCount) {
     };
     return { allow: true };
   }
+  if (row.kind === "yam" || row.kind === "qimen") {
+    const expiresAt = new Date(row.source_facts?.eventEndAt);
+    if (!Number.isFinite(expiresAt.valueOf())) {
+      return { allow: false, terminal: true, reason: "policy_missing_occurrence_expiry" };
+    }
+    const queueSafetyMs = push.providerTtlSeconds(row.kind) * 1_000;
+    if (expiresAt.valueOf() <= now.valueOf() + queueSafetyMs) {
+      return { allow: false, terminal: true, reason: "policy_expired_occurrence" };
+    }
+  }
   const timezone = notificationScience.safeTimezone(context.timezone);
   if (notificationScience.zonedClock(timezone, new Date(row.created_at)).date
       !== notificationScience.zonedClock(timezone, now).date) {
@@ -638,7 +648,7 @@ async function processClaim(db, attempt, options = {}) {
       if (options.hooks?.afterClaim) await options.hooks.afterClaim(attempt);
       const started = await transactionOn(client, async (tx) => {
         const current = await tx.query(
-          `SELECT a.*,l.user_id,l.kind,l.payload FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+          `SELECT a.*,l.user_id,l.kind,l.payload,l.source_facts FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
             WHERE a.id=$1 AND a.lease_token=$2 AND a.status IN ('reserved','retry_due') AND a.send_started_at IS NULL
             FOR UPDATE OF a`,
           [attempt.id, attempt.lease_token],

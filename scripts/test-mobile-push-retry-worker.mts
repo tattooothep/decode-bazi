@@ -863,12 +863,17 @@ try {
   });
   check(takeover.dead === 1 && takeoverSends === 0, "an installation transferred to another account never receives the prior owner's reserved message");
 
-  async function reservePolicyAttempt(key: string, options: { privacy?: boolean; transactional?: boolean; kind?: "daily" | "service" } = {}) {
+  async function reservePolicyAttempt(key: string, options: {
+    privacy?: boolean;
+    transactional?: boolean;
+    kind?: "daily" | "service" | "yam" | "qimen";
+    sourceFacts?: Record<string, unknown>;
+  } = {}) {
     const tokenId = crypto.randomUUID();
     const installationId = crypto.randomUUID();
     const kind = options.kind || "daily";
     await pool!.query(
-      `UPDATE mobile_notification_prefs SET daily_enabled=true,service_enabled=true,paused_until=NULL,
+      `UPDATE mobile_notification_prefs SET daily_enabled=true,yam_enabled=true,qimen_enabled=true,service_enabled=true,paused_until=NULL,
          quiet_start=0,quiet_end=0,max_per_day=100,privacy_preview=$2 WHERE user_id=$1`,
       [userId, options.privacy === true],
     );
@@ -878,12 +883,18 @@ try {
        VALUES($1,$2,$3,$4,'apns','ios','en',now())`,
       [tokenId, userId, installationId, `ExponentPushToken[policy-${tokenId}]`],
     );
+    const date = new Date().toISOString().slice(0, 10);
     const payload = kind === "service"
       ? { v: 1, kind, accountId: userId, event: "support_reply", referenceId: `case-${key}`, url: "/support" }
-      : { v: 1, kind, accountId: userId, slot: "morning", date: new Date().toISOString().slice(0, 10), url: "/today" };
+      : kind === "yam"
+        ? { v: 1, kind, accountId: userId, range: "09:00-11:00", quality: "best", date, url: "/today" }
+        : kind === "qimen"
+          ? { v: 1, kind, accountId: userId, date, direction: "SE", score: 67, url: "/qimen/board" }
+          : { v: 1, kind, accountId: userId, slot: "morning", date, url: "/today" };
     const reservation = await delivery.reserve(pool, {
       userId, key, kind, transactional: options.transactional === true,
       title: "Authenticated history detail", body: "Sensitive immutable detail", payload,
+      sourceFacts: options.sourceFacts,
       messages: [{ tokenId, expoToken: `ExponentPushToken[policy-${tokenId}]`, platform: "ios", locale: "en",
         category: kind, title: "Detailed preview", body: "Sensitive preview", url: payload.url, data: payload }],
     });
@@ -895,13 +906,18 @@ try {
     key: string,
     mutate: () => Promise<unknown>,
     expected: string,
-    options: { privacy?: boolean } = {},
+    options: {
+      privacy?: boolean;
+      kind?: "daily" | "service" | "yam" | "qimen";
+      sourceFacts?: Record<string, unknown>;
+      policyNow?: string;
+    } = {},
   ) {
     const attemptIds = await reservePolicyAttempt(key, options);
     await mutate();
     let calls = 0;
     await worker.runRetryBatch(pool, {
-      attemptIds, limit: 1,
+      attemptIds, limit: 1, hooks: options.policyNow ? { policyNow: options.policyNow } : undefined,
       sender: { async sendPrepared() { calls += 1; return { kind: "provider_accepted" }; } },
     });
     const attempt = await row(`SELECT status,last_error FROM mobile_push_attempts WHERE id=$1`, [attemptIds[0]]);
@@ -936,6 +952,26 @@ try {
         WHERE push_log_id=(SELECT id FROM mobile_push_log WHERE yam_key='policy-expired-day')`,
     );
   }, "policy_expired_local_day");
+
+  const occurrenceNow = "2026-08-19T01:00:00.000Z";
+  await assertPolicyBlocked("policy-expired-qimen", async () => {}, "policy_expired_occurrence", {
+    kind: "qimen", policyNow: occurrenceNow,
+    sourceFacts: { eventStartAt: "2026-08-19T00:21:00.000Z", eventEndAt: "2026-08-19T01:04:59.000Z" },
+  });
+  await assertPolicyBlocked("policy-missing-yam-expiry", async () => {}, "policy_missing_occurrence_expiry", {
+    kind: "yam", policyNow: occurrenceNow, sourceFacts: { eventStartAt: "2026-08-19T00:00:00.000Z" },
+  });
+  const validQimenIds = await reservePolicyAttempt("policy-valid-qimen", {
+    kind: "qimen",
+    sourceFacts: { eventStartAt: "2026-08-19T00:21:00.000Z", eventEndAt: "2026-08-19T01:05:01.000Z" },
+  });
+  let validQimenCalls = 0;
+  const validQimen = await worker.runRetryBatch(pool, {
+    attemptIds: validQimenIds, limit: 1, hooks: { policyNow: occurrenceNow },
+    sender: { async sendPrepared() { validQimenCalls += 1; return { kind: "provider_accepted", providerTicketId: "valid-qimen-ticket" }; } },
+  });
+  check(validQimenCalls === 1 && validQimen.accepted === 1,
+    "a Qimen attempt with more than its exact provider TTL remaining may be sent once");
 
   const transactionalIds = await reservePolicyAttempt("policy-transactional", { transactional: true, kind: "service" });
   await pool.query(

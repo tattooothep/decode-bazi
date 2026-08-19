@@ -41,7 +41,7 @@ await check("Qimen scheduler and gate share the same IANA timezone and instant",
     });
     assert.deepEqual(request, {
       date, time, timezone, instant: iso,
-      lat: 13.75, lng: 100.5, school: "chaibu", system_type: "hour",
+      lat: 13.75, lng: 100.5, purpose: "travel", school: "chaibu", system_type: "hour",
     });
     assert.deepEqual(science.qimenGateClock(request.timezone, new Date(request.instant)), { date, time });
   }
@@ -118,6 +118,9 @@ await check("scheduler adapters wire consent, timezone, bound goals, due rows, a
   assert.doesNotMatch(personal, /goals\/custom\$\{user\.profile_id/u);
   assert.match(personal, /timezone:\s*user\.user_timezone/u);
   assert.match(personal, /interval '45 minutes'[\s\S]+interval '75 minutes'[\s\S]+interval '23 hours 45 minutes'/u);
+  assert.match(personal, /fetchCanonicalQimenAdvisory\(request\)/u);
+  assert.doesNotMatch(personal, /getJson\(user, `\$\{BASE\}\/api\/qimen/u);
+  assert.match(yam, /fetchCanonicalQimenAdvisory/u);
   const daily = readFileSync("scripts/mobile-daily-fortune-push-cron.cjs", "utf8");
   assert.match(daily, /withTotalTimeout/u);
   const qimenRoute = readFileSync("src/app/api/qimen/route.ts", "utf8");

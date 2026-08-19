@@ -10,6 +10,7 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 const fs = require("node:fs");
 const { Client } = require("pg");
+const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 
 const DRY = process.argv.includes("--dry");
 /**
@@ -85,77 +86,20 @@ async function fetchHours(user, profileId, dateStr, signal) {
  *
  * ไม่มีผัง = ส่งใบแบบเดิม ไม่ใช่เดาทิศให้ — เพราะผู้ใช้จะหันหน้าไปจริง
  */
-const QIMEN_DIRECTION_NAMES = {
-  N:  { th: "เหนือ", en: "north", zh: "北方" },
-  NE: { th: "ตะวันออกเฉียงเหนือ", en: "northeast", zh: "東北方" },
-  E:  { th: "ตะวันออก", en: "east", zh: "東方" },
-  SE: { th: "ตะวันออกเฉียงใต้", en: "southeast", zh: "東南方" },
-  S:  { th: "ใต้", en: "south", zh: "南方" },
-  SW: { th: "ตะวันตกเฉียงใต้", en: "southwest", zh: "西南方" },
-  W:  { th: "ตะวันตก", en: "west", zh: "西方" },
-  NW: { th: "ตะวันตกเฉียงเหนือ", en: "northwest", zh: "西北方" },
-};
-
 /**
- * ขอผังฉีเหมินของยามที่กำลังจะมาถึง แล้วเลือกกังที่ดีที่สุด
+ * ขอผังฉีเหมิน canonical สำหรับจุดตัวอย่างในช่วงที่กำลังจะมาถึง
+ * แล้วให้ advisory layer ตัดสินจากประตู–ดาว–เทพ–旺衰–格局ร่วมกัน
  *
- * @returns {Promise<null | {direction: object, deity: object, advice: object}>}
+ * @returns {Promise<null | object>}
  */
 async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone, instant, signal) {
   try {
     signal?.throwIfAborted();
-    const token = signSession(user);
-    const res = await fetch(`${BASE}/api/qimen`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
-      body: JSON.stringify({ date: dateStr, time: startTime, lat, lng, timezone, instant: instant.toISOString(), school: "chaibu", system_type: "hour" }),
+    return await qimenAdvisory.fetchCanonicalQimenAdvisory({
+      date: dateStr, time: startTime, lat, lng, timezone, instant: instant.toISOString(),
+    }, {
       signal,
     });
-    if (!res.ok) return null;
-    const data = await res.json().catch(() => null);
-    signal?.throwIfAborted();
-    const palaces = data && data.data && Array.isArray(data.data.palaces) ? data.data.palaces : null;
-    if (!palaces || palaces.length === 0) return null;
-
-    // เลือกกังที่คะแนนสูงสุด และต้องเป็นทิศจริง ไม่ใช่กังกลาง
-    let best = null;
-    for (const p of palaces) {
-      const code = String(p.direction || "").toUpperCase();
-      if (!QIMEN_DIRECTION_NAMES[code]) continue;          // ตัดกังกลางออก
-      const score = Number(p.display_score);
-      if (!Number.isFinite(score)) continue;
-      if (best === null || score > best.score) best = { row: p, score, code };
-    }
-    /**
-     * 🔴 เกณฑ์คะแนน — ตั้งไว้ 70 ตอนแรกแล้วไม่มีทิศไหนผ่านเลยสักยาม
-     * ตรวจของจริง 3 ยามพบคะแนนสูงสุดอยู่ที่ 57-67 เท่านั้น
-     *
-     * มาตรวัดของระบบ (src/app/api/today/route.ts): L1≥80 · L2≥65 · L3≥50 · L4≥35
-     * เอา 50 ขึ้นไป (L3 ขึ้นไป) = ทิศที่ใช้ได้จริง ไม่ใช่ทิศที่ตำราว่าร้าย
-     *
-     * และเราพูดว่า "ทิศที่ดีที่สุดของยามนี้" ซึ่งเป็นการเทียบกันเองใน 8 ทิศ
-     * ไม่ได้พูดว่า "ทิศมงคล" ลอยๆ จึงไม่เกินสิ่งที่ผังบอกจริง
-     */
-    if (best === null || best.score < 50) return null;
-
-    const row = best.row;
-    const deity = {
-      th: String(row.deity_name_th || "").trim(),
-      en: String(row.deity_name_en || "").trim(),
-      zh: String(row.deity_zh || row.deity_name_zh || "").trim(),
-    };
-    if (deity.th === "" && deity.en === "" && deity.zh === "") return null;
-
-    return {
-      direction: QIMEN_DIRECTION_NAMES[best.code],
-      deity,
-      advice: {
-        th: String(row.door_action_advice_th || "").trim(),
-        en: String(row.door_action_advice_en || "").trim(),
-        zh: String(row.door_action_advice_zh || "").trim(),
-      },
-      score: best.score,
-    };
   } catch (error) {
     signal?.throwIfAborted();
     // ห้ามเงียบ — ผังหายแล้วไม่มีใครรู้ว่าเพราะอะไร
@@ -166,17 +110,7 @@ async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone,
 
 /** ท่อนทิศ+องค์เทพ 3 ภาษา — ต่อท้ายเนื้อใบ */
 function qimenLine(highlight, locale) {
-  if (highlight === null) return "";
-  const dir = highlight.direction[locale] || highlight.direction.th;
-  const deity = highlight.deity[locale] || highlight.deity.th || highlight.deity.zh;
-  const advice = highlight.advice[locale] || "";
-  if (locale === "zh") {
-    return `\n🧭 此時最吉方：${dir}（${deity}值位）${advice ? ` · ${advice}` : ""}`;
-  }
-  if (locale === "en") {
-    return `\n🧭 Best direction this hour: ${dir} — ${deity} presides${advice ? ` · ${advice}` : ""}`;
-  }
-  return `\n🧭 ทิศดีสุดของยามนี้: ${dir} — องค์${deity}ประจำทิศ${advice ? ` · ${advice}` : ""}`;
+  return qimenAdvisory.buildQimenYamLine(highlight, locale);
 }
 
 function buildYamCopy(upcoming, branch, highlight, locale) {
@@ -221,6 +155,13 @@ function buildYamProducer(user, input) {
   const date = String(input?.date || "");
   const branch = String(upcoming.branch || "");
   const highlight = input?.highlight || null;
+  let yamWindow;
+  try {
+    yamWindow = qimenAdvisory.civilRangeWindow(date, String(upcoming.range || ""), user.user_timezone);
+  } catch {
+    return null;
+  }
+  const eventEndAt = qimenAdvisory.earliestExpiry(yamWindow.endAt, highlight?.validUntil);
   const build = (locale) => buildYamCopy(upcoming, branch, highlight, locale);
   const historyCopies = delivery.localizedHistoryCopies(build);
   const payload = notificationPayload.buildNotificationPayload("yam", String(user.id), {
@@ -234,12 +175,12 @@ function buildYamProducer(user, input) {
     historyCopies,
     payload,
     sourceFacts: {
+      eventStartAt: yamWindow.startAt,
+      eventEndAt,
       profileId: user.profile_id,
       timezone: user.user_timezone,
       branch,
-      qimen: highlight ? {
-        direction: highlight.direction, deity: highlight.deity, advice: highlight.advice, score: highlight.score,
-      } : null,
+      qimen: highlight ? qimenAdvisory.qimenSourceFacts(highlight).qimen : null,
     },
     messages: (user.tokens || []).map((entry) => {
       const raw = entry && typeof entry === "object" ? entry : { device: entry, locale: "th" };
@@ -251,6 +192,16 @@ function buildYamProducer(user, input) {
       };
     }),
   };
+}
+
+function qimenSampleTime(range) {
+  const match = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/u.exec(String(range || ""));
+  if (!match) return null;
+  const start = Number(match[1]) * 60 + Number(match[2]);
+  let end = Number(match[3]) * 60 + Number(match[4]);
+  if (end <= start) end += 24 * 60;
+  const midpoint = Math.floor((start + end) / 2) % (24 * 60);
+  return `${String(Math.floor(midpoint / 60)).padStart(2, "0")}:${String(midpoint % 60).padStart(2, "0")}`;
 }
 
 const YAM_USERS_SQL = `
@@ -356,12 +307,10 @@ async function runScheduler(db, schedulerSignal) {
         return diff >= 0 && diff <= leadMin;
       });
       if (!upcoming) { skipped++; continue; }
-      /**
-       * ทิศมงคลกับองค์เทพประจำยามนี้ — ขอผังของ **เวลาที่ยามเริ่ม** ไม่ใช่เวลาปัจจุบัน
-       * เพราะผังฉีเหมินเปลี่ยนทุกสองชั่วโมงตามยาม ถ้าใช้เวลาตอนยิงจะได้ผังของยามก่อนหน้า
-       */
-      const startTime = (/^(\d{2}:\d{2})/.exec(String(upcoming.range || "")) || [])[1] || null;
-      const highlight = startTime === null ? null : await science.yamQimenHighlight({
+      // Today Hours เป็นช่วงนาฬิกา แต่ Qimen ใช้เวลาสุริยะจริง จึงสุ่มที่
+      // กึ่งกลางช่วงและแสดงขอบเขต Qimen จริงแยกในข้อความ ห้ามครอบทั้งยาม
+      const sampleTime = qimenSampleTime(upcoming.range);
+      const highlight = sampleTime === null ? null : await science.yamQimenHighlight({
         qimenEnabled: u.qimen_enabled === true,
         location: u.qimen_enabled === true ? {
           fresh: Boolean(u.qimen_location_updated_at)
@@ -370,7 +319,7 @@ async function runScheduler(db, schedulerSignal) {
           longitude: u.qimen_longitude,
         } : null,
         fetchHighlight: (lat, lng) => fetchQimenHighlight(
-          u, dateStr, startTime, lat, lng, u.user_timezone || guard.FALLBACK_TZ, runAt, schedulerSignal,
+          u, dateStr, sampleTime, lat, lng, u.user_timezone || guard.FALLBACK_TZ, runAt, schedulerSignal,
         ),
       });
 
@@ -410,6 +359,6 @@ async function main() {
   }
 }
 
-module.exports = { YAM_USERS_SQL,buildYamCopy,buildYamProducer,fetchHours,fetchQimenHighlight,loadYamUsers,main,runScheduler };
+module.exports = { YAM_USERS_SQL,buildYamCopy,buildYamProducer,fetchHours,fetchQimenHighlight,loadYamUsers,main,qimenLine,qimenSampleTime,runScheduler };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-yam-push] category=yam error_code=scheduler_failed"); process.exit(1); });

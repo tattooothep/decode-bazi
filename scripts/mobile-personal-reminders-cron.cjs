@@ -23,6 +23,7 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
+const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 
 function b64url(value) {
   return Buffer.from(value).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
@@ -162,44 +163,30 @@ async function savedDateNotice(db, user, runAt, sentToday) {
   return notify(db, user, "saved_date", notice, sentToday);
 }
 
-const DIRECTION = {
-  N: { th: "เหนือ", en: "north", zh: "北方" }, NE: { th: "ตะวันออกเฉียงเหนือ", en: "northeast", zh: "東北方" },
-  E: { th: "ตะวันออก", en: "east", zh: "東方" }, SE: { th: "ตะวันออกเฉียงใต้", en: "southeast", zh: "東南方" },
-  S: { th: "ใต้", en: "south", zh: "南方" }, SW: { th: "ตะวันตกเฉียงใต้", en: "southwest", zh: "西南方" },
-  W: { th: "ตะวันตก", en: "west", zh: "西方" }, NW: { th: "ตะวันตกเฉียงเหนือ", en: "northwest", zh: "西北方" },
-};
-
-function buildQimenCopy(best, loc) {
-  return {
-    title: loc === "zh" ? "🧭 今日奇門方位" : loc === "en" ? "🧭 Today's Qimen direction" : "🧭 ทิศเด่นจากผังฉีเหมินวันนี้",
-    body: loc === "zh"
-      ? `${DIRECTION[best.direction].zh} · 分數 ${best.score} · 開啟奇門盤查看時盤背景；並非結果保證`
-      : loc === "en"
-        ? `${DIRECTION[best.direction].en} · score ${best.score} · Open the Qimen board for hour-chart context; outcomes are not guaranteed`
-        : `${DIRECTION[best.direction].th} · คะแนน ${best.score} · เปิดผังฉีเหมินเพื่อดูบริบทของยาม ไม่ใช่คำรับประกันผล`,
-  };
+function buildQimenCopy(advisory, loc) {
+  return qimenAdvisory.buildQimenStandaloneCopy(advisory, loc);
 }
 
 function buildQimenProducer(user, request, result) {
-  const palaces = Array.isArray(result?.data?.palaces) ? result.data.palaces
-    : Array.isArray(result?.data?.data?.palaces) ? result.data.data.palaces : [];
-  const ranked = palaces.map((palace) => ({
-    direction: String(palace?.direction || "").toUpperCase(), score: Number(palace?.display_score),
-  })).filter((row) => DIRECTION[row.direction] && Number.isFinite(row.score)).sort((left, right) => right.score - left.score);
-  const best = ranked[0];
-  if (!user?.id || !best || best.score < 50) return null;
-  const build = (locale) => buildQimenCopy(best, locale);
+  const advisory = result?.version === qimenAdvisory.ADVISORY_VERSION ? result
+    : qimenAdvisory.buildQimenAdvisory(result, {
+      timezone: request?.timezone,
+      longitude: request?.lng,
+      purpose: request?.purpose,
+    });
+  if (!user?.id || !advisory) return null;
+  const build = (locale) => buildQimenCopy(advisory, locale);
   const historyCopies = delivery.localizedHistoryCopies(build);
   const payload = notificationPayload.buildNotificationPayload("qimen", String(user.id), {
-    date: request.date, direction: best.direction, score: best.score, url: "/qimen/board",
+    date: request.date, direction: advisory.direction.code, score: advisory.score, url: "/qimen/board",
   });
   return {
-    userId: user.id, key: `qimen|${request.date}|${String(request.time || "").slice(0, 2)}|${best.direction}`,
+    userId: user.id, key: `qimen|${advisory.validFrom}|${advisory.direction.code}`,
     kind: "qimen", ...historyCopies.th, historyCopies, payload,
-    sourceFacts: {
+    sourceFacts: qimenAdvisory.qimenSourceFacts(advisory, {
       timezone: request.timezone, instant: request.instant, latitude: request.lat, longitude: request.lng,
-      direction: best.direction, score: best.score, engine: "qimen-api",
-    },
+      engine: "qimen-api",
+    }),
     messages: messages(user.tokens, "qimen", "/qimen/board", payload, build),
   };
 }
@@ -221,12 +208,8 @@ async function qimenNotice(db, user, runAt, sentToday) {
     latitude: user.qimen_latitude,
     longitude: user.qimen_longitude,
   });
-  const { date, time } = request;
-  const result = await getJson(user, `${BASE}/api/qimen`, {
-    method: "POST",
-    body: JSON.stringify(request),
-  });
-  const notice = buildQimenProducer(user, request, result);
+  const advisory = await qimenAdvisory.fetchCanonicalQimenAdvisory(request);
+  const notice = buildQimenProducer(user, request, advisory);
   if (!notice) return { status: "skipped", reason: "no_qimen_context_highlight" };
   return notify(db, user, "qimen", notice, sentToday);
 }

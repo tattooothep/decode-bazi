@@ -3,12 +3,19 @@ import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import pg from "pg";
-import { resolveNotificationPayload } from "../../hourkey-v197-mobile/src/navigation/notificationPayload.ts";
 import { buildFusionMobileNotice } from "../src/lib/mobile-fusion-notification.ts";
 import { notificationHistoryPayload } from "../src/lib/mobile-notification-history.ts";
 
 const require = createRequire(import.meta.url);
+const mobileRoot = process.env.HOURKEY_MOBILE_ROOT
+  ? resolve(process.env.HOURKEY_MOBILE_ROOT)
+  : resolve("..", "hourkey-v197-mobile");
+const { resolveNotificationPayload } = await import(pathToFileURL(
+  resolve(mobileRoot, "src/navigation/notificationPayload.ts"),
+).href);
 const yam = require("./mobile-yam-push-cron.cjs");
 const personal = require("./mobile-personal-reminders-cron.cjs");
 const monthly = require("./mobile-monthly-report-push-cron.cjs");
@@ -17,7 +24,25 @@ const daily = require("./mobile-daily-fortune-push-cron.cjs");
 const shrine = require("./mobile-auspicious-push-cron.cjs");
 const payloadRuntime = require("../src/lib/notification-payload.cjs");
 const pushSender = require("../src/lib/push-send.cjs");
+const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 const admin = await import("./workers/admin-notify-watcher.mjs");
+const sourceFixture = JSON.parse(readFileSync("test-fixtures/notifications/task3-source-results.sanitized.json", "utf8"));
+const liveQimenAdvisory = qimenAdvisory.buildQimenAdvisory(sourceFixture.qimen.api, {
+  timezone: sourceFixture.qimen.request.timezone,
+  longitude: sourceFixture.qimen.request.lng,
+  purpose: sourceFixture.qimen.request.purpose,
+});
+assert.ok(liveQimenAdvisory);
+const liveYamAdvisory = qimenAdvisory.buildQimenAdvisory(sourceFixture.yam.qimenApi, {
+  timezone: sourceFixture.yam.qimenRequest.timezone,
+  longitude: sourceFixture.yam.qimenRequest.lng,
+  purpose: sourceFixture.yam.qimenRequest.purpose,
+});
+assert.ok(liveYamAdvisory);
+const liveYamNotice = yam.buildYamProducer({
+  id: "acct-live-001", profile_id: "profile-live-001", tokens: [], user_timezone: "Asia/Bangkok",
+}, { ...sourceFixture.yam, highlight: liveYamAdvisory });
+assert.ok(liveYamNotice);
 
 let checks = 0;
 function check(condition: unknown, message: string) {
@@ -165,19 +190,17 @@ const liveCases: Array<{
   },
   {
     kind: "yam",
-    payload: payloadRuntime.buildNotificationPayload("yam", "acct-live-001", {
-      range: "09:00-11:00", quality: "best", date: "2026-08-15", url: "/today",
-    }),
-    copy: yam.buildYamCopy({ range: "09:00-11:00", quality: "best" }, "巳", null, "en"),
-    sourceFacts: { profileId: "profile-live-001", branch: "巳", qimen: null },
+    payload: liveYamNotice.payload,
+    copy: liveYamNotice.historyCopies.en,
+    sourceFacts: liveYamNotice.sourceFacts,
   },
   {
     kind: "qimen",
     payload: payloadRuntime.buildNotificationPayload("qimen", "acct-live-001", {
-      date: "2026-08-15", direction: "SE", score: 67, url: "/qimen/board",
+      date: "2026-08-15", direction: liveQimenAdvisory.direction.code, score: liveQimenAdvisory.score, url: "/qimen/board",
     }),
-    copy: personal.buildQimenCopy({ direction: "SE", score: 67 }, "en"),
-    sourceFacts: { direction: "SE", score: 67, timezone: "Asia/Bangkok", instant: "2026-08-15T01:00:00.000Z" },
+    copy: personal.buildQimenCopy(liveQimenAdvisory, "en"),
+    sourceFacts: qimenAdvisory.qimenSourceFacts(liveQimenAdvisory),
   },
   {
     kind: "shrine",
@@ -220,6 +243,9 @@ for (const [index, item] of liveCases.entries()) {
   );
   assert.equal(provider.categoryId, item.transactional === true ? undefined : "hourkey_daily",
     `${item.kind}: MUTE category follows transactional policy rather than the broad service kind`);
+  if (item.kind === "yam" || item.kind === "qimen") {
+    assert.equal(provider.ttl, 300, `${item.kind}: provider queue lifetime must not outlive the occurrence`);
+  }
   check(item.copy.title.length >= 4 && item.copy.body.length >= 20 && Object.keys(item.sourceFacts).length > 0,
     `${item.kind}: live source facts produce bounded useful copy, stored payload, provider parity and mobile parsing`);
 }
@@ -252,14 +278,14 @@ for (const locale of locales) {
   const savedCopy = personal.buildSavedDateCopy("1h", "16/08, 08:00", "launch", family);
   const dailyCopy = daily.buildDailyCopy({ loc: family, slot: "morning", dateLabel: "15/08", score: 72,
     label: "good", tongshuYi: family === "th" ? ["เริ่มงาน"] : [], golden: { range: "09:00-11:00", quality: "best" } });
-  const yamCopy = yam.buildYamCopy({ range: "09:00-11:00", quality: "best" }, "巳", null, family);
-  const qimenCopy = personal.buildQimenCopy({ direction: "SE", score: 67 }, family);
+  const yamCopy = yam.buildYamCopy({ range: "09:00-11:00", quality: "best" }, "巳", liveYamAdvisory, family);
+  const qimenCopy = personal.buildQimenCopy(liveQimenAdvisory, family);
   const shrineCopy = shrine.buildMessage({ th: "เทศกาลจงหยวน", en: "Ghost Festival", zh: "中元節", kind: "festival" }, family);
   for (const [kind, rendered, required] of [
     ["saved_date", savedCopy, "16/08, 08:00"],
     ["daily", dailyCopy, "09:00-11:00"],
     ["yam", yamCopy, "09:00-11:00"],
-    ["qimen", qimenCopy, "67"],
+    ["qimen", qimenCopy, "玄武"],
     ["shrine", shrineCopy, family === "th" ? "จงหยวน" : family === "zh" ? "中元" : "Ghost"],
   ] as const) {
     check(rendered.title.length <= 120 && rendered.body.length >= (family === "zh" ? 12 : 20) && rendered.body.length <= 400

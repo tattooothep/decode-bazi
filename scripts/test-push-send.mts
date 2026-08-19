@@ -53,6 +53,17 @@ await check("โหมดไม่ส่งจริงต้องไม่ย�
   assert.equal(r.failed, 0, "โหมดทดสอบไม่ควรยิงจริงแล้วล้ม");
 });
 
+await check("Yam/Qimen ใช้ TTL สั้นและตรงกันทั้ง FCM/Expo เพื่อไม่ค้างข้ามยาม", () => {
+  for (const category of ["yam", "qimen"]) {
+    const item = { title: "ช่วงที่มีผล", body: "รายละเอียด", category, data: { url: "/today" } };
+    assert.equal(S.providerTtlSeconds(category), 300);
+    assert.equal(S.prepareMessage(item, "fcm").android.ttl, "300s");
+    assert.equal(S.prepareMessage(item, "expo").ttl, 300);
+  }
+  assert.equal(S.providerTtlSeconds("daily"), 86_400);
+  assert.equal(S.providerTtlSeconds("security"), 21_600);
+});
+
 await check("provider adapter เก็บ message ID/ticket และไม่เรียก HTTP success ว่า delivered", async () => {
   const originalFetch = globalThis.fetch;
   const requests: Array<{ url: string; body: unknown }> = [];
