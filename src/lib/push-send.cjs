@@ -88,7 +88,8 @@ function providerData(message, stringifyValues) {
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined) continue;
     const approvedZibaiNull = exactZibaiPayload && data.event === "zibai_daily"
-      && (key === "shichenKey" || key === "shichenPalaces") && value === null;
+      && (key === "shichenKey" || key === "shichenPalaces"
+        || (key === "shichen" && data.snapshotSchema === 2)) && value === null;
     if (value === null && !approvedZibaiNull) continue;
     const normalizedKey = String(key).toLowerCase().replace(/[^a-z0-9]+/gu, "");
     const approvedZibaiShichenKey = exactZibaiPayload && key === "shichenKey"

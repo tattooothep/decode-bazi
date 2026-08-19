@@ -196,15 +196,32 @@ async function reserve(db, notice, dry = false) {
     const context = contextResult.rows[0];
     if (!context) return null;
     let zibaiOccurrence = null;
+    let zibaiToken = null;
     if (notice.kind === "zibai") {
+      if (!Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
+      const item = notice.messages[0];
+      const payloadSchema = notice.payload?.snapshotSchema === 2 ? 2 : 1;
+      const messageSchema = item?.data?.snapshotSchema === 2 ? 2 : 1;
+      if (payloadSchema !== messageSchema) throw new TypeError("zibai_notice_schema_mismatch");
+      const tokenResult = await client.query(
+        `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform,zibai_payload_schema
+           FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true FOR UPDATE`,
+        [item?.tokenId, notice.userId],
+      );
+      zibaiToken = tokenResult.rows[0] || null;
+      if (!zibaiToken || Number(zibaiToken.zibai_payload_schema) !== payloadSchema) {
+        throw new Error("zibai_token_capability_changed");
+      }
       const occurrence = await client.query(
         `SELECT id,user_id,installation_id,state,push_log_id FROM mobile_zibai_occurrences
           WHERE id=$1 AND user_id=$2 FOR UPDATE`,
         [zibaiOccurrenceId, notice.userId],
       );
       zibaiOccurrence = occurrence.rows[0] || null;
-      if (!zibaiOccurrence || zibaiOccurrence.state !== "claimed" || zibaiOccurrence.push_log_id !== null
-        || !Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
+      if (!zibaiOccurrence || zibaiOccurrence.state !== "claimed" || zibaiOccurrence.push_log_id !== null) return null;
+      if (zibaiToken.installation_id !== zibaiOccurrence.installation_id) {
+        throw new Error("zibai_token_capability_changed");
+      }
     }
     const historyCopy = historyCopyFor(notice, context.locale);
     if (context.has_prefs === true && notice.transactional !== true && notice.kind !== "zibai") {
@@ -232,12 +249,15 @@ async function reserve(db, notice, dry = false) {
     const attemptIds = [];
     for (const item of (Array.isArray(notice.messages) ? notice.messages.slice(0, 100) : [])) {
       if (!item?.tokenId) continue;
-      const tokenResult = await client.query(
-        `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform
-           FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true`,
-        [item.tokenId, notice.userId],
-      );
-      const token = tokenResult.rows[0];
+      let token = zibaiToken;
+      if (notice.kind !== "zibai") {
+        const tokenResult = await client.query(
+          `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform
+             FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true`,
+          [item.tokenId, notice.userId],
+        );
+        token = tokenResult.rows[0];
+      }
       if (!token) continue;
       if (notice.kind === "zibai" && token.installation_id !== zibaiOccurrence.installation_id) continue;
       const provider = push.providerFor({

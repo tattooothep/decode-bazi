@@ -30,6 +30,7 @@ try {
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY,privacy_preview boolean NOT NULL DEFAULT false);
   `);
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
   psql(database, `
     INSERT INTO users VALUES
       ('00000000-0000-4000-8000-000000000001',NULL),
@@ -69,10 +70,12 @@ try {
   const pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password, max: 4 });
   const originalDeliver = delivery.deliver;
   let providerReservations = 0;
+  const reservedNotices: any[] = [];
   let failDurableReservation = true;
   delivery.deliver = async (_db: unknown, notice: { userId: string }) => {
     if (notice.userId === "00000000-0000-4000-8000-000000000005" && failDurableReservation) throw new Error("synthetic_durable_reservation_failure");
     providerReservations += 1;
+    reservedNotices.push(notice);
     return { status: "pending" };
   };
   try {
@@ -150,7 +153,50 @@ try {
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_occurrences WHERE user_id=$1`, [durableFailureClaim.user_id])).rows[0].n, 1,
       "durable reservation recovery must reuse the original occurrence");
     assert.equal((await scheduler.claimDue(pool, at, 10)).length, 0, "skipped/failed/resumed shichen is never replayed in the same slot");
-    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1");
+
+    await pool.query(`INSERT INTO users VALUES ('00000000-0000-4000-8000-000000000006',NULL)`);
+    await pool.query(`INSERT INTO mobile_notification_prefs VALUES ('00000000-0000-4000-8000-000000000006',false)`);
+    await pool.query(`
+      INSERT INTO mobile_push_tokens
+        (id,user_id,installation_id,enabled,device_push_token,device_token_type,expo_push_token,platform,locale,zibai_payload_schema)
+      VALUES
+        ('20000000-0000-4000-8000-000000000006','00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000006',true,'native-6','fcm','ExponentPushToken[six]','android','en',1),
+        ('20000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007',true,'native-7','fcm','ExponentPushToken[seven]','android','en',2)
+    `);
+    await pool.query(`
+      INSERT INTO mobile_zibai_installations
+        (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)
+      VALUES
+        ('00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000006',true,0,0,'background',13.75,0,'UTC',$1,$2,$3),
+        ('00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007',true,0,0,'background',13.75,0,'UTC',$1,$2,$3)
+    `, [
+      new Date(at.getTime() - 60_000).toISOString(),
+      new Date(at.getTime() + 23 * 3_600_000).toISOString(),
+      new Date(at.getTime() - 1_000).toISOString(),
+    ]);
+    const mixedClaims = await scheduler.claimDue(pool, at, 10);
+    assert.equal(mixedClaims.length, 2, "same-user mixed devices retain separate installation claims");
+    for (const mixedClaim of mixedClaims) {
+      assert.deepEqual(await scheduler.processClaim(pool, mixedClaim, at, workingScience), { reserved: 1, skipped: 0, reason: null });
+    }
+    const mixedNotices = reservedNotices.filter((notice) => notice.userId === "00000000-0000-4000-8000-000000000006");
+    assert.equal(mixedNotices.length, 2);
+    const legacyNotice = mixedNotices.find((notice) => notice.messages[0].tokenId === "20000000-0000-4000-8000-000000000006");
+    const capableNotice = mixedNotices.find((notice) => notice.messages[0].tokenId === "20000000-0000-4000-8000-000000000007");
+    assert.equal(Object.hasOwn(legacyNotice.payload, "snapshotSchema"), false, "legacy installation reserves exact v1");
+    assert.equal(capableNotice.payload.snapshotSchema, 2, "capable installation reserves exact v2");
+    assert.equal(legacyNotice.messages.length, 1);
+    assert.equal(capableNotice.messages.length, 1);
+    assert.notEqual(legacyNotice.key, capableNotice.key, "mixed devices reserve distinct parent keys");
+    const mixedOccurrences = await pool.query(
+      `SELECT installation_id::text FROM mobile_zibai_occurrences WHERE user_id=$1 ORDER BY installation_id`,
+      ["00000000-0000-4000-8000-000000000006"],
+    );
+    assert.deepEqual(mixedOccurrences.rows.map((row) => row.installation_id), [
+      "10000000-0000-4000-8000-000000000006",
+      "10000000-0000-4000-8000-000000000007",
+    ]);
+    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1 mixedSchemas=2");
   } finally {
     delivery.deliver = originalDeliver;
     await pool.end();

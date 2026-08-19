@@ -87,6 +87,7 @@ try {
   `);
   psql(database, readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8"));
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
   psql(database, `
     INSERT INTO users(id)
     SELECT gen_random_uuid() FROM generate_series(1,${INSTALLATIONS});
@@ -214,8 +215,11 @@ try {
 
     const plan = psql(database, `EXPLAIN (COSTS OFF) SELECT user_id,installation_id FROM mobile_zibai_installations WHERE shichen_enabled=true AND next_shichen_at<=now() ORDER BY next_shichen_at LIMIT 500;`);
     assert.match(plan, /ix_mobile_zibai_shichen_due/u);
-    psql(database, `UPDATE mobile_zibai_installations SET lease_token=NULL,lease_expires_at=NULL,location_captured_at=now()-interval '24 hours',location_expires_at=now()-interval '1 second' WHERE user_id=(SELECT id FROM users LIMIT 1);`);
-    assert.equal(await scheduler.purgeExpiredLocations(pool, new Date()), 1);
+    const purgeAt = new Date(startAt.getTime() + 12 * 3_600_000);
+    psql(database, `UPDATE mobile_zibai_installations SET lease_token=NULL,lease_expires_at=NULL,location_captured_at='${new Date(purgeAt.getTime() - 24 * 3_600_000).toISOString()}',location_expires_at='${new Date(purgeAt.getTime() - 1_000).toISOString()}' WHERE user_id=(SELECT id FROM users LIMIT 1);`);
+    assert.equal(psql(database, `SELECT count(*) FROM mobile_zibai_installations WHERE location_expires_at<='${purgeAt.toISOString()}';`), "1",
+      "the deterministic retention fixture expires exactly one installation");
+    assert.equal(await scheduler.purgeExpiredLocations(pool, purgeAt), 1);
     assert.equal(psql(database, `SELECT count(*) FROM mobile_zibai_installations WHERE latitude IS NULL AND longitude IS NULL AND location_expires_at IS NULL;`), "1");
     console.log(`ZIBAI_10K_PIPELINE_OK installations=${INSTALLATIONS} cycles=2 accepted=${INSTALLATIONS * 2} totalMs=${totalMs.toFixed(1)} cpuMs=${cpuMs.toFixed(1)} peakPool=${peakBusy}/${peakTotal} peakWaiting=${peakWaiting} runs=${runStats.map((run) => `${run.durationMs.toFixed(1)}:${run.p95LagMs.toFixed(1)}:${run.p99LagMs.toFixed(1)}:${run.providerMs.toFixed(1)}:${run.errors}`).join(",")}`);
   } finally { await pool.end(); }

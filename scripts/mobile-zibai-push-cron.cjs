@@ -5,6 +5,7 @@ const { Pool } = require("pg");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const copy = require("../src/lib/zibai-notification-copy.cjs");
+const zibaiRuleRuntime = require("../src/lib/zibai-three-layer-runtime.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
 const { ZIBAI_LOCATION_LEASE_MS } = require("../src/lib/zibai-location-policy.cjs");
 
@@ -43,10 +44,51 @@ function occurrenceKey(installationId, event, apparentDate, shichenKey) {
   return `${installationId}|${apparentDate}|${slot}|${CALCULATION_VERSION}`;
 }
 
+function buildZibaiV2Facts(snapshot, event) {
+  const daily = event === "zibai_daily";
+  const shichenKey = daily ? null : snapshot.shichen.meta.key;
+  const referenceId = `zibai|${snapshot.day.meta.apparentSolarDate}|${shichenKey || "daily"}|${CALCULATION_VERSION}`;
+  const sectors = zibaiRuleRuntime.interpretZibaiSectors(snapshot, !daily).map((sector) => Object.freeze({
+    direction: sector.direction,
+    month: sector.month.star,
+    day: sector.day.star,
+    shichen: sector.shichen?.star ?? null,
+    patternCode: sector.patternCode,
+  }));
+  return Object.freeze({
+    snapshotSchema: 2,
+    event,
+    referenceId,
+    calculationVersion: CALCULATION_VERSION,
+    interpretationVersion: snapshot.interpretationVersion,
+    month: Object.freeze({
+      startTermCode: snapshot.month.meta.startTermCode,
+      endTermCode: snapshot.month.meta.endTermCode,
+      palaces: snapshot.month.palaces,
+      startAt: snapshot.month.startAt,
+      endAt: snapshot.month.endAt,
+    }),
+    day: Object.freeze({
+      palaces: snapshot.day.palaces,
+      apparentSolarDate: snapshot.day.meta.apparentSolarDate,
+      startAt: snapshot.day.startAt,
+      endAt: snapshot.day.endAt,
+    }),
+    shichen: daily ? null : Object.freeze({
+      palaces: snapshot.shichen.palaces,
+      key: snapshot.shichen.meta.key,
+      startAt: snapshot.shichen.startAt,
+      endAt: snapshot.shichen.endAt,
+    }),
+    sectors: Object.freeze(sectors),
+    url: "/zibai",
+  });
+}
+
 function buildZibaiNotice(row, event, snapshot, occurrenceId) {
   const shichenKey = event === "zibai_shichen" ? snapshot.shichenKey : null;
   const referenceId = `zibai|${snapshot.apparentSolarDate}|${shichenKey || "daily"}|${CALCULATION_VERSION}`;
-  const facts = {
+  const legacyFacts = {
     event, referenceId, calculationVersion: CALCULATION_VERSION,
     apparentSolarDate: snapshot.apparentSolarDate, shichenKey,
     startAt: snapshot.startAt, endAt: snapshot.endAt,
@@ -58,6 +100,9 @@ function buildZibaiNotice(row, event, snapshot, occurrenceId) {
     })),
     url: "/zibai",
   };
+  const facts = row.zibai_payload_schema === 2
+    ? buildZibaiV2Facts(snapshot, event)
+    : legacyFacts;
   const payload = notificationPayload.buildNotificationPayload("zibai", String(row.user_id), facts);
   const historyCopies = delivery.localizedHistoryCopies((locale) => copy.buildZibaiCopy(locale, event, snapshot));
   const locale = notificationPayload.normalizedLocale(row.token_locale);
@@ -150,6 +195,7 @@ async function purgeOldOccurrences(db, at = new Date(), limit = 10_000) {
 async function loadClaimContext(db, claim) {
   const result = await db.query(
     `SELECT z.*,t.id AS token_id,t.device_push_token,t.device_token_type,t.expo_push_token,t.platform,t.locale AS token_locale,
+            t.zibai_payload_schema,
             COALESCE(np.privacy_preview,false) AS privacy_preview
        FROM mobile_zibai_installations z
        JOIN mobile_push_tokens t ON t.user_id=z.user_id AND t.installation_id=z.installation_id AND t.enabled=true
@@ -294,5 +340,5 @@ async function main() {
   } finally { await db.end(); }
 }
 
-module.exports = { admitOccurrence, buildZibaiNotice, claimDue, claimDueBatches, forEachBounded, inQuietHours, occurrenceKey, processClaim, purgeExpiredLocations, purgeOldOccurrences, runScheduler };
+module.exports = { admitOccurrence, buildZibaiNotice, buildZibaiV2Facts, claimDue, claimDueBatches, forEachBounded, inQuietHours, loadClaimContext, occurrenceKey, processClaim, purgeExpiredLocations, purgeOldOccurrences, runScheduler };
 if (require.main === module) main().catch(() => { console.error("[mobile-zibai-push] error_code=scheduler_failed"); process.exit(1); });

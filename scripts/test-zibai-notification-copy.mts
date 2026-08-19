@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import copy from "../src/lib/zibai-notification-copy.cjs";
 import delivery from "../src/lib/mobile-notification-delivery.cjs";
 import push from "../src/lib/push-send.cjs";
@@ -15,6 +16,67 @@ const snapshot = {
   apparentSolarDate: "2026-08-16", shichenKey: "si",
   startAt: "2026-08-16T02:07:00.000Z", endAt: "2026-08-16T04:07:00.000Z", focus,
 };
+
+const threeLayerFixture = JSON.parse(readFileSync("scripts/fixtures/zibai-three-layer-cases.json", "utf8"));
+function layeredSnapshot(testCase: any) {
+  return {
+    snapshotSchema: 2,
+    apparentSolarDate: "2026-08-16",
+    shichenKey: "si",
+    startAt: "2026-08-16T02:07:00.000Z",
+    endAt: "2026-08-16T04:07:00.000Z",
+    month: {
+      ...testCase.month,
+      startAt: "2026-08-07T11:42:43.000Z",
+      endAt: "2026-09-07T14:41:16.000Z",
+    },
+    day: {
+      ...testCase.day,
+      apparentSolarDate: "2026-08-16",
+      startAt: "2026-08-15T16:00:00.000Z",
+      endAt: "2026-08-16T16:00:00.000Z",
+    },
+    shichen: {
+      ...testCase.shichen,
+      key: "si",
+      startAt: "2026-08-16T02:07:00.000Z",
+      endAt: "2026-08-16T04:07:00.000Z",
+    },
+  };
+}
+
+const tripleSnapshot = layeredSnapshot(threeLayerFixture.cases[0]);
+const mixedSnapshot = layeredSnapshot(threeLayerFixture.cases[1]);
+const differingLayerSnapshot = layeredSnapshot({
+  month: { palaces: { N: 1, NE: 3, E: 4, SE: 9, S: 6, SW: 5, W: 8, NW: 2, C: 7 } },
+  day: { palaces: { N: 1, NE: 3, E: 4, SE: 9, S: 6, SW: 5, W: 8, NW: 7, C: 2 } },
+  shichen: { palaces: { N: 3, NE: 4, E: 5, SE: 1, S: 6, SW: 7, W: 8, NW: 9, C: 2 } },
+});
+const differingLayerCopy = copy.buildZibaiCopy("en", "zibai_shichen", differingLayerSnapshot);
+assert.match(differingLayerCopy.body, /1 White M\/D\/S N\/N\/SE: double repeat not Period 9; plan\/communicate calmly/u,
+  "repeat-nine disclosure follows the kernel's repeated layer evidence, not the current focus star");
+assert.match(differingLayerCopy.body, /9 Purple M\/D\/S SE\/SE\/NW: mixed—caution first; order\/rest; avoid strain/u,
+  "mixed guidance uses the kernel-selected current-layer caution action");
+for (const locale of ["th", "en", "zh"] as const) {
+  const triple = copy.buildZibaiCopy(locale, "zibai_shichen", tripleSnapshot);
+  const mixed = copy.buildZibaiCopy(locale, "zibai_shichen", mixedSnapshot);
+  assert.ok(triple.body.length <= 400 && mixed.body.length <= 400,
+    `${locale} three-layer durable/provider copy stays within 400 characters without truncation`);
+  assert.match(triple.body, locale === "th" ? /ซ้ำ 3 ชั้น/u : locale === "zh" ? /三層重複/u : /triple repeat/u);
+  assert.match(triple.body, locale === "th" ? /ไม่ใช่ยุค 9/u : locale === "zh" ? /並非九運/u : /not Period 9/u,
+    `${locale} Nine Purple repetition explicitly rejects Period-9 conflation`);
+  assert.match(mixed.body, locale === "th" ? /คำเตือนก่อน/u : locale === "zh" ? /警示優先/u : /caution first/u);
+  assert.match(mixed.body, locale === "th" ? /5 ห้าเหลือง/u : locale === "zh" ? /五黃/u : /5 Yellow/u);
+  const hidden = copy.zibaiProviderCopy(locale, false, "zibai_shichen", mixedSnapshot);
+  assert.doesNotMatch(hidden.body, /9|5|north|เหนือ|北方|caution|คำเตือน|警示/iu,
+    `${locale} privacy-off provider copy remains generic`);
+  const dailyLayered = copy.buildZibaiCopy(locale, "zibai_daily", {
+    ...mixedSnapshot,
+    shichen: null,
+  });
+  assert.doesNotMatch(dailyLayered.body, /3 ชั้น|3 layers|三層/u,
+    `${locale} daily copy never implies that a shichen layer was sampled`);
+}
 
 const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"] as const;
 const canonicalMaps = Array.from({ length: 9 }, (_, index) => index + 1)

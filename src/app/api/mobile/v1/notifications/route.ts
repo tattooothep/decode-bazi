@@ -26,6 +26,7 @@ import {
   type NotificationEngagementEvent,
 } from "@/lib/mobile-notification-engagement";
 import { notificationHistoryPayload } from "@/lib/mobile-notification-history";
+import zibaiPayloadProjection from "@/lib/zibai-payload-projection.cjs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -129,6 +130,14 @@ export async function GET(req: Request) {
   const auth = await authorize(req);
   if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   const { session } = auth;
+  let requestedZibaiSchema: 1 | 2;
+  try {
+    requestedZibaiSchema = zibaiPayloadProjection.parseRequestedZibaiSchema(
+      req.headers.get("X-Hourkey-Zibai-Schema"),
+    );
+  } catch {
+    return NextResponse.json({ ok: false, error: "invalid_zibai_schema" }, { status: 400 });
+  }
   const url = new URL(req.url);
   const kindParam = (url.searchParams.get("kind") || "all").trim();
   const kind = kindParam === "all" ? null : KINDS.has(kindParam) ? kindParam : null;
@@ -154,16 +163,21 @@ export async function GET(req: Request) {
   return NextResponse.json(
     {
       ok: true,
-      items: rows.map((r) => ({
-        id: r.id,
-        kind: r.kind,
-        title: r.title || "",
-        body: r.body || "",
-        payload: notificationHistoryPayload(r.id, r.payload),
-        delivery_status: r.delivery_status,
-        sent_at: r.sent_at,
-        read: r.read_at !== null,
-      })),
+      items: rows.map((r) => {
+        const projectedPayload = r.kind === "zibai"
+          ? zibaiPayloadProjection.projectZibaiPayload(r.payload, requestedZibaiSchema)
+          : r.payload;
+        return {
+          id: r.id,
+          kind: r.kind,
+          title: r.title || "",
+          body: r.body || "",
+          payload: notificationHistoryPayload(r.id, projectedPayload),
+          delivery_status: r.delivery_status,
+          sent_at: r.sent_at,
+          read: r.read_at !== null,
+        };
+      }),
       unread: unread?.n || 0,
       prefs: prefsPayload(prefs),
     },
