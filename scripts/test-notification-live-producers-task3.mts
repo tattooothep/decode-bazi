@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 import pg from "pg";
 import { buildFusionMobileNotice } from "../src/lib/mobile-fusion-notification.ts";
 import { notificationHistoryPayload } from "../src/lib/mobile-notification-history.ts";
+import { buildZibaiSnapshot } from "../src/lib/zibai-science.ts";
 
 const require = createRequire(import.meta.url);
 const mobileRootInput = process.env.HOURKEY_MOBILE_ROOT;
@@ -25,6 +26,7 @@ const monthly = require("./mobile-monthly-report-push-cron.cjs");
 const network = require("./mobile-network-morning-push-cron.cjs");
 const daily = require("./mobile-daily-fortune-push-cron.cjs");
 const shrine = require("./mobile-auspicious-push-cron.cjs");
+const zibai = require("./mobile-zibai-push-cron.cjs");
 const payloadRuntime = require("../src/lib/notification-payload.cjs");
 const pushSender = require("../src/lib/push-send.cjs");
 const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
@@ -46,6 +48,22 @@ const liveYamNotice = yam.buildYamProducer({
   id: "acct-live-001", profile_id: "profile-live-001", tokens: [], user_timezone: "Asia/Bangkok",
 }, { ...sourceFixture.yam, highlight: liveYamAdvisory });
 assert.ok(liveYamNotice);
+const liveZibaiSnapshot = buildZibaiSnapshot(new Date("2026-08-16T03:07:00.000Z"), 100.5018);
+const liveZibaiRow = {
+  user_id: "acct-live-001", installation_id: "93000000-0000-4000-8000-000000000001",
+  token_id: "94000000-0000-4000-8000-000000000001", device_push_token: null,
+  device_token_type: null, expo_push_token: "ExponentPushToken[zibai-live]", platform: "ios",
+  token_locale: "en", privacy_preview: true, app_version: "0.0.1",
+};
+const liveZibaiV1 = zibai.buildZibaiNotice(
+  { ...liveZibaiRow, zibai_payload_schema: 1 }, "zibai_shichen", liveZibaiSnapshot,
+  "95000000-0000-4000-8000-000000000001",
+);
+const liveZibaiV2 = zibai.buildZibaiNotice(
+  { ...liveZibaiRow, installation_id: "93000000-0000-4000-8000-000000000002",
+    token_id: "94000000-0000-4000-8000-000000000002", zibai_payload_schema: 2 },
+  "zibai_shichen", liveZibaiSnapshot, "95000000-0000-4000-8000-000000000002",
+);
 
 let checks = 0;
 function check(condition: unknown, message: string) {
@@ -56,6 +74,11 @@ function check(condition: unknown, message: string) {
 
 const locales = ["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"];
 const thai = /[\u0E00-\u0E7F]/u;
+
+check(!Object.hasOwn(liveZibaiV1.payload, "snapshotSchema")
+    && liveZibaiV2.payload.snapshotSchema === 2
+    && liveZibaiV2.payload.sectors.length === 9,
+  "live Zi Bai inventory retains explicit installation-scoped v1/v2 production without app-version inference");
 
 for (const locale of locales) {
   const msg = admin.messageFor("support_admin_reply", locale, {}, "/support");
@@ -171,6 +194,14 @@ const liveCases: Array<{
   sourceFacts: Record<string, any>;
 }> = [
   {
+    kind: "zibai", payload: liveZibaiV1.payload, copy: liveZibaiV1.historyCopies.en,
+    sourceFacts: liveZibaiV1.sourceFacts,
+  },
+  {
+    kind: "zibai", payload: liveZibaiV2.payload, copy: liveZibaiV2.historyCopies.en,
+    sourceFacts: liveZibaiV2.sourceFacts,
+  },
+  {
     kind: "security", transactional: true, payload: securityNotice.payload, copy: securityNotice.messages[0],
     sourceFacts: securityNotice.sourceFacts,
   },
@@ -237,14 +268,30 @@ for (const [index, item] of liveCases.entries()) {
     transactional: item.transactional === true, url: item.payload.url, data: envelope,
   }, "expo");
   assert.deepEqual(provider.data, envelope, `${item.kind}: provider facts differ from live stored payload plus server ID`);
-  assert.deepEqual(resolveNotificationPayload(provider.data, item.kind, "acct-live-001"), envelope,
-    `${item.kind}: mobile parser rejects live provider payload`);
-  assert.deepEqual(
-    resolveNotificationPayload(notificationHistoryPayload(notificationId, item.payload), item.kind, "acct-live-001"),
-    envelope,
-    `${item.kind}: authenticated history envelope is not routable`,
+  const providerParsed = resolveNotificationPayload(
+    JSON.parse(JSON.stringify(provider.data)), item.kind, "acct-live-001",
   );
-  assert.equal(provider.categoryId, item.transactional === true ? undefined : "hourkey_daily",
+  const historyParsed = resolveNotificationPayload(
+    JSON.parse(JSON.stringify(notificationHistoryPayload(notificationId, item.payload))),
+    item.kind,
+    "acct-live-001",
+  );
+  const providerParsedWire = JSON.parse(JSON.stringify(providerParsed));
+  const historyParsedWire = JSON.parse(JSON.stringify(historyParsed));
+  const expectedWire = JSON.parse(JSON.stringify(envelope));
+  if (item.kind === "zibai" && item.payload.snapshotSchema === 2) {
+    const { sectorReadings: providerReadings, ...providerWire } = providerParsedWire;
+    const { sectorReadings: historyReadings, ...historyWire } = historyParsedWire;
+    assert.equal(providerReadings.length, 9);
+    assert.deepEqual(historyReadings, providerReadings);
+    assert.deepEqual(providerWire, expectedWire, `${item.kind}: mobile parser rejects live provider payload`);
+    assert.deepEqual(historyWire, expectedWire, `${item.kind}: authenticated history envelope is not routable`);
+  } else {
+    assert.deepEqual(providerParsedWire, expectedWire, `${item.kind}: mobile parser rejects live provider payload`);
+    assert.deepEqual(historyParsedWire, expectedWire, `${item.kind}: authenticated history envelope is not routable`);
+  }
+  assert.equal(provider.categoryId,
+    item.transactional === true ? undefined : item.kind === "zibai" ? "hourkey_zibai" : "hourkey_daily",
     `${item.kind}: MUTE category follows transactional policy rather than the broad service kind`);
   if (item.kind === "yam" || item.kind === "qimen") {
     assert.equal(provider.ttl, 300, `${item.kind}: provider queue lifetime must not outlive the occurrence`);

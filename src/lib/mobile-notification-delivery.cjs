@@ -599,6 +599,14 @@ function resolvePolicyClock(options = {}) {
   return parsed;
 }
 
+function zibaiOccurrenceEndAt(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  if (payload.snapshotSchema !== 2) return payload.endAt || null;
+  if (payload.event === "zibai_daily") return payload.day?.endAt || null;
+  if (payload.event === "zibai_shichen") return payload.shichen?.endAt || null;
+  return null;
+}
+
 async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
   await tx.query(
     `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
@@ -626,7 +634,7 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     );
     context.zibai_enabled = zibai.rows[0]?.enabled === true;
     context.zibai_expires_at = (event === "zibai_shichen" || event === "zibai_daily")
-      ? row.payload?.endAt || null : null;
+      ? zibaiOccurrenceEndAt(row.payload) : null;
     context.zibai_timezone = zibai.rows[0]?.location_timezone || "UTC";
     context.zibai_quiet_start = zibai.rows[0]?.quiet_start;
     context.zibai_quiet_end = zibai.rows[0]?.quiet_end;

@@ -2,9 +2,14 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import pg from "pg";
 import scheduler from "./mobile-zibai-push-cron.cjs";
 import delivery from "../src/lib/mobile-notification-delivery.cjs";
+
+const require = createRequire(import.meta.url);
+const payloadRuntime = require("../src/lib/notification-payload.cjs");
+const interpretationRuntime = require("../src/lib/zibai-three-layer-runtime.cjs");
 
 const database = `zibai_queue_10k_${process.pid}`;
 const role = `zibai_queue_10k_role_${process.pid}`;
@@ -91,10 +96,14 @@ try {
   psql(database, `
     INSERT INTO users(id)
     SELECT gen_random_uuid() FROM generate_series(1,${INSTALLATIONS});
+    WITH ranked AS (
+      SELECT id,row_number() OVER (ORDER BY id) AS ordinal FROM users
+    )
     INSERT INTO mobile_push_tokens
-      (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,timezone,last_registered_at)
-    SELECT id,gen_random_uuid(),'ExponentPushToken['||id::text||']','fcm-'||id::text,'fcm','android','en','UTC',now()
-      FROM users;
+      (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,timezone,last_registered_at,zibai_payload_schema)
+    SELECT id,gen_random_uuid(),'ExponentPushToken['||id::text||']','fcm-'||id::text,'fcm','android','en','UTC',now(),
+           CASE WHEN ordinal % 4 IN (0,1) THEN 2 ELSE 1 END
+      FROM ranked;
     INSERT INTO mobile_notification_prefs(user_id,privacy_preview,locale)
     SELECT id,true,'en' FROM (
       SELECT id,row_number() OVER (ORDER BY id) AS ordinal FROM users
@@ -126,7 +135,11 @@ try {
     }, 5);
     const cpuStart = process.cpuUsage();
     const testStarted = performance.now();
-    const runStats: Array<{ durationMs: number; p95LagMs: number; p99LagMs: number; errors: number; providerMs: number }> = [];
+    const runStats: Array<{
+      durationMs: number; p95LagMs: number; p99LagMs: number; errors: number;
+      providerMs: number; providerP95LagMs: number; providerP99LagMs: number;
+    }> = [];
+    let validatedV2 = 0;
 
     for (let cycle = 0; cycle < 2; cycle += 1) {
       const at = cycle === 0
@@ -155,20 +168,52 @@ try {
       const p95LagMs = percentile(completionLagMs, 0.95);
       const p99LagMs = percentile(completionLagMs, 0.99);
       const providerStarted = performance.now();
+      const providerCompletionLagMs: number[] = [];
       let providerSequence = cycle * INSTALLATIONS;
       const provider = await delivery.runRetryBatch(pool, {
         limit: INSTALLATIONS,
         concurrency: WORKERS,
         hooks: { policyNow: () => at },
         sender: {
-          async sendPrepared() {
+          async sendPrepared(target: { provider: string; providerMessage: Record<string, any> }) {
+            assert.equal(target.provider, "fcm");
+            const inner = JSON.parse(target.providerMessage.data.body);
+            if (inner.snapshotSchema === 2) {
+              const { notificationId, v, kind, accountId, ...facts } = inner;
+              assert.match(notificationId, /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu);
+              assert.equal(v, 1);
+              assert.equal(kind, "zibai");
+              const canonical = payloadRuntime.buildNotificationPayload("zibai", accountId, facts);
+              assert.deepEqual({ ...canonical, notificationId }, inner,
+                "every load-generated v2 provider envelope passes the exact payload validator");
+              const readings = interpretationRuntime.interpretZibaiSectors({
+                month: inner.month,
+                day: inner.day,
+                shichen: inner.shichen || { palaces: inner.day.palaces },
+              }, inner.event === "zibai_shichen");
+              assert.equal(readings.length, 9);
+              assert.deepEqual(
+                inner.sectors.map((sector: Record<string, any>) => [sector.direction, sector.month, sector.day, sector.shichen, sector.patternCode]),
+                readings.map((reading: Record<string, any>) => [
+                  reading.direction, reading.month.star, reading.day.star,
+                  reading.shichen?.star ?? null, reading.patternCode,
+                ]),
+                "every load-generated v2 compact attestation matches the shared interpretation kernel",
+              );
+              validatedV2 += 1;
+            } else {
+              assert.equal(Object.hasOwn(inner, "snapshotSchema"), false);
+            }
             providerSequence += 1;
+            providerCompletionLagMs.push(performance.now() - providerStarted);
             return { kind: "provider_accepted", providerMessageId: `stub-zibai-${providerSequence}` };
           },
         },
       });
       const providerMs = performance.now() - providerStarted;
-      runStats.push({ durationMs, p95LagMs, p99LagMs, errors, providerMs });
+      const providerP95LagMs = percentile(providerCompletionLagMs, 0.95);
+      const providerP99LagMs = percentile(providerCompletionLagMs, 0.99);
+      runStats.push({ durationMs, p95LagMs, p99LagMs, errors, providerMs, providerP95LagMs, providerP99LagMs });
       assert.equal(errors, 0, `cycle ${cycle + 1} must have zero pipeline errors: ${errorSamples.join(" | ")}`);
       assert.equal(completionLagMs.length, INSTALLATIONS);
       assert.ok(durationMs < RUN_SLO_MS, `cycle ${cycle + 1} full pipeline took ${durationMs.toFixed(1)}ms`);
@@ -177,6 +222,8 @@ try {
       assert.equal(provider.accepted, INSTALLATIONS, `cycle ${cycle + 1} stub provider must accept every exact message`);
       assert.equal(provider.retryDue + provider.dead, 0);
       assert.ok(providerMs < PROVIDER_DRAIN_SLO_MS, `cycle ${cycle + 1} provider-stage drain took ${providerMs.toFixed(1)}ms`);
+      assert.ok(providerP99LagMs < PROVIDER_DRAIN_SLO_MS,
+        `cycle ${cycle + 1} provider p99 acceptance lag took ${providerP99LagMs.toFixed(1)}ms`);
       assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_installations WHERE lease_token IS NOT NULL`)).rows[0].n, 0,
         "full pipeline releases every claimed lease");
       assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_installations WHERE next_shichen_at<=$1`, [at.toISOString()])).rows[0].n, 0,
@@ -190,6 +237,20 @@ try {
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_occurrences WHERE state='reserved'`)).rows[0].n, INSTALLATIONS * 2);
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_log WHERE kind='zibai' AND delivery_status='accepted'`)).rows[0].n, INSTALLATIONS * 2);
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_attempts WHERE status='provider_accepted' AND provider='fcm'`)).rows[0].n, INSTALLATIONS * 2);
+    assert.equal(validatedV2, INSTALLATIONS,
+      "two cycles validate and interpret exactly 10k capable v2 provider envelopes");
+    const schemaSplit = await pool.query(`
+      SELECT CASE WHEN payload ? 'snapshotSchema' THEN 2 ELSE 1 END AS schema,count(*)::int AS n
+        FROM mobile_push_log WHERE kind='zibai' GROUP BY schema ORDER BY schema
+    `);
+    assert.deepEqual(schemaSplit.rows, [{ schema: 1, n: INSTALLATIONS }, { schema: 2, n: INSTALLATIONS }],
+      "20k durable rows retain an exact 10k v1 / 10k v2 capability split");
+    assert.equal((await pool.query(`
+      SELECT count(*)::int AS n FROM mobile_push_log
+       WHERE payload ? 'snapshotSchema'
+         AND ((payload->>'snapshotSchema')::int<>2 OR jsonb_array_length(payload->'sectors')<>9
+              OR payload->'shichen' IS NULL OR jsonb_typeof(payload->'shichen')<>'object')
+    `)).rows[0].n, 0, "all v2 shichen rows retain three layers and nine compact attestations");
     const invalidHistoryCopy = await pool.query(`
       SELECT count(*)::int AS n FROM mobile_push_log
        WHERE length(body)>400 OR body NOT LIKE '%1%' OR body NOT LIKE '%2%' OR body NOT LIKE '%5%' OR body NOT LIKE '%9%'
@@ -221,7 +282,7 @@ try {
       "the deterministic retention fixture expires exactly one installation");
     assert.equal(await scheduler.purgeExpiredLocations(pool, purgeAt), 1);
     assert.equal(psql(database, `SELECT count(*) FROM mobile_zibai_installations WHERE latitude IS NULL AND longitude IS NULL AND location_expires_at IS NULL;`), "1");
-    console.log(`ZIBAI_10K_PIPELINE_OK installations=${INSTALLATIONS} cycles=2 accepted=${INSTALLATIONS * 2} totalMs=${totalMs.toFixed(1)} cpuMs=${cpuMs.toFixed(1)} peakPool=${peakBusy}/${peakTotal} peakWaiting=${peakWaiting} runs=${runStats.map((run) => `${run.durationMs.toFixed(1)}:${run.p95LagMs.toFixed(1)}:${run.p99LagMs.toFixed(1)}:${run.providerMs.toFixed(1)}:${run.errors}`).join(",")}`);
+    console.log(`ZIBAI_10K_PIPELINE_OK installations=${INSTALLATIONS} cycles=2 accepted=${INSTALLATIONS * 2} v2Validated=${validatedV2} totalMs=${totalMs.toFixed(1)} cpuMs=${cpuMs.toFixed(1)} peakPool=${peakBusy}/${peakTotal} peakWaiting=${peakWaiting} runs=${runStats.map((run) => `${run.durationMs.toFixed(1)}:${run.p95LagMs.toFixed(1)}:${run.p99LagMs.toFixed(1)}:${run.providerMs.toFixed(1)}:${run.providerP95LagMs.toFixed(1)}:${run.providerP99LagMs.toFixed(1)}:${run.errors}`).join(",")}`);
   } finally { await pool.end(); }
 } finally {
   try { psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role};`); } catch { /* guarded cleanup */ }
