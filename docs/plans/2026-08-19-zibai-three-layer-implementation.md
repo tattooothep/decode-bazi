@@ -81,8 +81,8 @@ Expected: preserve unrelated dirty files; implementation must use isolated workt
 
 - [ ] **Step 2: Write the shared sanitized fixture**
 
-Use two independent cases so every individual layer remains an exact
-permutation `1–9`:
+Use two independent shichen cases plus one daily projection case so every
+individual present layer remains an exact permutation `1–9`:
 
 ```json
 {
@@ -106,6 +106,16 @@ permutation `1–9`:
       "day": { "palaces": { "C": 9, "NW": 1, "W": 2, "NE": 3, "S": 4, "N": 5, "SW": 6, "E": 7, "SE": 8 } },
       "shichen": { "palaces": { "C": 6, "NW": 7, "W": 8, "NE": 9, "S": 1, "N": 2, "SW": 3, "E": 4, "SE": 5 } },
       "assertion": { "direction": "N", "month": 9, "day": 5, "shichen": 2, "pattern": "mixed_caution_priority" }
+    },
+    {
+      "id": "daily-two-layer-northwest",
+      "snapshotSchema": 2,
+      "calculationVersion": "zibai-zaoming-true-solar-v2",
+      "interpretationVersion": "zibai-3layer-rule-v1",
+      "month": { "startTermCode": "liqiu", "endTermCode": "bailu", "palaces": { "C": 8, "NW": 9, "W": 1, "NE": 2, "S": 3, "N": 4, "SW": 5, "E": 6, "SE": 7 } },
+      "day": { "palaces": { "C": 8, "NW": 9, "W": 1, "NE": 2, "S": 3, "N": 4, "SW": 5, "E": 6, "SE": 7 } },
+      "shichen": null,
+      "assertion": { "direction": "NW", "month": 9, "day": 9, "shichen": null, "pattern": "two_layer_same_star" }
     }
   ]
 }
@@ -113,7 +123,13 @@ permutation `1–9`:
 
 - [ ] **Step 3: Write RED backend and mobile contract tests**
 
-Assertions must require `monthPalaces`, exact month bounds, nine sector records, v2 parser acceptance, and one-grid screen markers.
+Assertions must require `monthPalaces`, exact month bounds, nine sector records,
+v2 parser acceptance, the daily `shichen: null` contract, and continued v1
+payload/parser acceptance. The UI contract must require exactly one neutral
+`3 × 3` table, nine whole-sector accessible buttons, and month/day/shichen rows
+inside every sector; separate day/shichen grids must not satisfy the test.
+Freeze the semantic safeguards that `9–9–9` is a temporal convergence—not
+three-times luck or Period 9—and that `9–5–2` is mixed/caution-first.
 
 - [ ] **Step 4: Run RED tests**
 
@@ -121,7 +137,7 @@ Run:
 
 ```bash
 ./node_modules/.bin/tsx scripts/test-zibai-three-layer-contract.mts
-cd /root/worktrees/zibai-three-layer-mobile && ./node_modules/.bin/tsx scripts/test-zibai-three-layer-contract.mts
+cd /root/worktrees/zibai-three-layer-mobile && node scripts/test-zibai-three-layer-contract.mts
 ```
 
 Expected: FAIL because `monthPalaces`/v2 parser/three-layer grid do not exist.
