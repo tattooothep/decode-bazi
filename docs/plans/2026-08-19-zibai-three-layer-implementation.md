@@ -46,6 +46,7 @@
 
 ### Mobile
 
+- Work from the isolated mobile checkout `/root/worktrees/zibai-three-layer-mobile`.
 - Modify `src/navigation/notificationPayload.ts` — strict dual v1/v2 Zi Bai parser.
 - Modify `src/greenfield/client.ts` — advertise schema 2 and request schema-aware history.
 - Modify `src/components/design/zibaiVisualSemantics.ts` — three-layer sector profiles without scalar scoring.
@@ -60,7 +61,7 @@
 **Files:**
 - Create: `scripts/fixtures/zibai-three-layer-cases.json`
 - Create: `scripts/test-zibai-three-layer-contract.mts`
-- Create: `/root/worktrees/hourkey-v197-mobile/scripts/test-zibai-three-layer-contract.mts`
+- Create: `/root/worktrees/zibai-three-layer-mobile/scripts/test-zibai-three-layer-contract.mts`
 
 **Interfaces:**
 - Consumes: current `buildZibaiSnapshot`, current v1 payload, current `ZibaiScreen`.
@@ -72,8 +73,8 @@ Run:
 
 ```bash
 git rev-parse HEAD && git status --short
-git -C /root/worktrees/hourkey-v197-mobile rev-parse HEAD
-git -C /root/worktrees/hourkey-v197-mobile status --short
+git -C /root/worktrees/zibai-three-layer-mobile rev-parse HEAD
+git -C /root/worktrees/zibai-three-layer-mobile status --short
 ```
 
 Expected: preserve unrelated dirty files; implementation must use isolated worktrees and never reset user changes.
@@ -105,7 +106,7 @@ Run:
 
 ```bash
 ./node_modules/.bin/tsx scripts/test-zibai-three-layer-contract.mts
-cd /root/worktrees/hourkey-v197-mobile && ./node_modules/.bin/tsx scripts/test-zibai-three-layer-contract.mts
+cd /root/worktrees/zibai-three-layer-mobile && ./node_modules/.bin/tsx scripts/test-zibai-three-layer-contract.mts
 ```
 
 Expected: FAIL because `monthPalaces`/v2 parser/three-layer grid do not exist.
@@ -235,15 +236,19 @@ Expected: module-not-found.
 
 - [ ] **Step 3: Implement relation evidence and pattern classification**
 
-Use no numeric scores. Apply this safety order:
+Use no numeric scores. `patternCode` records structure while
+`warningCodes`/`actionCode` carry the caution-first presentation. Apply this
+classification order so a same-star convergence remains visible even when its
+palace relation is contested or the repeated star carries caution:
 
 ```ts
-if (hasFive && repeatCount > 1) return "heightened_caution";
+if (allSameStar) return "three_layer_same_star";
+if (repeatCount === 2 && hasFive) return "heightened_caution";
+if (repeatCount === 2) return "two_layer_same_star";
 if (hasSupport && hasCaution) return "mixed_caution_priority";
 if (hasCaution) return "heightened_caution";
 if (allGuidanceSupported && hasRestrainingRelation) return "supportive_contested";
-if (allSameStar) return "three_layer_same_star";
-if (repeatCount === 2) return "two_layer_same_star";
+if (allGuidanceSupported) return "aligned";
 return "reference_only";
 ```
 
@@ -362,11 +367,11 @@ git commit -m "feat(zibai): deliver three-layer snapshots compatibly"
 ### Task 6: Add Strict Mobile v2 Parser and Capability Wiring
 
 **Files:**
-- Modify: `/root/worktrees/hourkey-v197-mobile/src/navigation/notificationPayload.ts`
-- Modify: `/root/worktrees/hourkey-v197-mobile/src/greenfield/client.ts`
-- Modify: `/root/worktrees/hourkey-v197-mobile/App.tsx`
-- Modify: `/root/worktrees/hourkey-v197-mobile/scripts/test-notification-payload.mts`
-- Modify: `/root/worktrees/hourkey-v197-mobile/scripts/test-account-store-clients.mts`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/src/navigation/notificationPayload.ts`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/src/greenfield/client.ts`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/App.tsx`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/scripts/test-notification-payload.mts`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/scripts/test-account-store-clients.mts`
 
 **Interfaces:**
 - `resolveNotificationPayload` returns a discriminated v1/v2 Zi Bai payload.
@@ -405,10 +410,10 @@ git commit -m "feat(mobile): accept three-layer zibai snapshots"
 ### Task 7: Build the Approved One-Grid Mobile UI
 
 **Files:**
-- Modify: `/root/worktrees/hourkey-v197-mobile/src/components/design/zibaiVisualSemantics.ts`
-- Modify: `/root/worktrees/hourkey-v197-mobile/src/components/design/ZibaiScreen.tsx`
-- Create: `/root/worktrees/hourkey-v197-mobile/scripts/test-zibai-three-layer-ui.mts`
-- Modify: `/root/worktrees/hourkey-v197-mobile/scripts/test-zibai-detail-colors.mts`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/src/components/design/zibaiVisualSemantics.ts`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/src/components/design/ZibaiScreen.tsx`
+- Create: `/root/worktrees/zibai-three-layer-mobile/scripts/test-zibai-three-layer-ui.mts`
+- Modify: `/root/worktrees/zibai-three-layer-mobile/scripts/test-zibai-detail-colors.mts`
 
 **Interfaces:**
 - `buildZibaiDirectionProfilesV2(payload): readonly ZibaiDirectionProfileV2[]` returns exactly nine sectors in Lo Shu order.
