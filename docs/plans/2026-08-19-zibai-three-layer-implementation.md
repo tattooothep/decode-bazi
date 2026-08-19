@@ -315,7 +315,9 @@ git commit -m "feat(zibai): interpret three temporal layers"
 
 **Interfaces:**
 - Add `mobile_push_tokens.zibai_payload_schema smallint NOT NULL DEFAULT 1 CHECK (zibai_payload_schema IN (1,2))`.
-- Registration body accepts only `zibaiPayloadSchema: 1 | 2`; omission preserves/defaults to 1.
+- Registration body accepts only `zibaiPayloadSchema: 1 | 2`; omission writes
+  schema `1` on both insert and re-registration so installing/downgrading to an
+  old APK can never retain a stale schema-2 capability.
 - `buildNotificationPayload("zibai", accountId, facts)` branches on exact `snapshotSchema` and builds v1 or v2.
 
 - [ ] **Step 1: Write RED migration and registration tests**
