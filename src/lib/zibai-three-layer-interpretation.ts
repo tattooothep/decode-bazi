@@ -49,8 +49,8 @@ export type ZibaiSectorReading = Readonly<{
   repeatedLayers: readonly ZibaiLayerName[];
   patternCode: ZibaiPatternCode;
   coherenceCode: ZibaiCoherenceCode;
-  warningCodes: readonly string[];
-  actionCode: string;
+  warningCodes: readonly ZibaiWarningCode[];
+  actionCode: ZibaiActionCode;
 }>;
 
 const DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"] as const satisfies readonly Dir9[];
