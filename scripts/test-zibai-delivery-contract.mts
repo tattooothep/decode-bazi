@@ -68,9 +68,11 @@ assert.match(deliverySource, /providerMessage:\s*started\.provider_message/u,
 assert.doesNotMatch(retryWorkerSource, /mobile-zibai-push-cron|buildZibaiNotice|buildZibaiV2Facts/u,
   "retry worker cannot recompute either v1 or v2 from the scheduler");
 
+const capFixtureNow = new Date("2026-08-16T12:00:00.000Z");
 assert.deepEqual(delivery.currentPolicyDecision(
-  { kind: "zibai", transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
-  { privacy_preview: false, zibai_enabled: true, zibai_expires_at: new Date(Date.now() + 10 * 60_000).toISOString(), now_at: new Date() },
+  { kind: "zibai", transactional: false, privacy_safe: true, created_at: capFixtureNow.toISOString() },
+  { privacy_preview: false, zibai_enabled: true, zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7,
+    zibai_expires_at: new Date(capFixtureNow.valueOf() + 10 * 60_000).toISOString(), now_at: capFixtureNow },
   999,
 ), { allow: true }, "Zi Bai uses its installation occurrence cap, not the generic account cap");
 for (const event of ["zibai_daily", "zibai_shichen"] as const) {

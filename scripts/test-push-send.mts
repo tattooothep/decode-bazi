@@ -53,17 +53,33 @@ await check("โหมดไม่ส่งจริงต้องไม่ย�
   assert.equal(r.failed, 0, "โหมดทดสอบไม่ควรยิงจริงแล้วล้ม");
 });
 
-await check("Yam/Qimen/Zi Bai ใช้ TTL สั้นและตรงกันทั้ง FCM/Expo เพื่อไม่ค้างข้ามช่วง", () => {
+await check("Yam/Qimen/Zi Bai ใช้ช่อง HIGH ใหม่ แต่ TTL ยังสั้นเพื่อไม่ค้างข้ามช่วง", () => {
   for (const category of ["yam", "qimen", "zibai"]) {
     const item = { title: "ช่วงที่มีผล", body: "รายละเอียด", category, data: {
       url: category === "zibai" ? "/zibai" : "/today",
       ...(category === "zibai" ? { kind: "zibai", event: "zibai_shichen" } : {}),
     } };
     assert.equal(S.providerTtlSeconds(category), 300);
-    assert.equal(S.prepareMessage(item, "fcm").android.ttl, "300s");
-    assert.equal(S.prepareMessage(item, "expo").ttl, 300);
+    const fcm = S.prepareMessage(item, "fcm");
+    const expo = S.prepareMessage(item, "expo");
+    assert.equal(fcm.android.priority, "HIGH", `${category}: FCM must wake a sleeping Android device`);
+    assert.equal(fcm.android.ttl, "300s");
+    assert.equal(fcm.android.notification.channel_id, "hourkey-time-alerts-v2");
+    assert.equal(fcm.android.notification.sound, "default");
+    assert.equal(expo.priority, "high", `${category}: Expo fallback must retain the same policy`);
+    assert.equal(expo.ttl, 300);
+    assert.equal(expo.channelId, "hourkey-time-alerts-v2");
+    assert.equal(expo.sound, "default");
     assert.equal(S.providerQueueSafetySeconds(category), category === "zibai" ? 360 : 300);
   }
+  const ordinaryFcm = S.prepareMessage({ title: "Daily", body: "Body", category: "daily" }, "fcm");
+  const ordinaryExpo = S.prepareMessage({ title: "Daily", body: "Body", category: "daily" }, "expo");
+  assert.equal(ordinaryFcm.android.priority, "NORMAL");
+  assert.equal(ordinaryFcm.android.notification.channel_id, "hourkey-reminders");
+  assert.equal(ordinaryFcm.android.notification.sound, undefined);
+  assert.equal(ordinaryExpo.priority, "normal");
+  assert.equal(ordinaryExpo.channelId, "hourkey-reminders");
+  assert.equal(ordinaryExpo.sound, null);
   assert.equal(S.providerTtlSeconds("daily"), 86_400);
   assert.equal(S.providerTtlSeconds("security"), 21_600);
 });

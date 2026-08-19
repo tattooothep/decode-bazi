@@ -12,6 +12,8 @@ const MAX_ATTEMPTS = 3;
 const CONCURRENCY = 10;
 const ACTION_CATEGORY_ID = "hourkey_daily";
 const ZIBAI_ACTION_CATEGORY_ID = "hourkey_zibai";
+const TIME_ALERT_CHANNEL_ID = "hourkey-time-alerts-v2";
+const TIME_ALERT_CATEGORIES = new Set(["yam", "qimen", "zibai"]);
 const TIME_BOUND_TTL_SECONDS = 300;
 const TIME_BOUND_ACCEPTANCE_SAFETY_SECONDS = 60;
 
@@ -66,12 +68,17 @@ function categoryOf(message) {
 function channelOf(category) {
   if (category === "security") return "hourkey-security";
   if (category === "service") return "hourkey-service";
+  if (TIME_ALERT_CATEGORIES.has(category)) return TIME_ALERT_CHANNEL_ID;
   return "hourkey-reminders";
+}
+
+function interruptsImmediately(category) {
+  return category === "security" || category === "service" || TIME_ALERT_CATEGORIES.has(category);
 }
 
 function providerTtlSeconds(categoryInput) {
   const category = categoryOf({ category: categoryInput });
-  if (category === "yam" || category === "qimen" || category === "zibai") return TIME_BOUND_TTL_SECONDS;
+  if (TIME_ALERT_CATEGORIES.has(category)) return TIME_BOUND_TTL_SECONDS;
   if (category === "security" || category === "service") return 21_600;
   return 86_400;
 }
@@ -129,6 +136,7 @@ function providerFor(item) {
 /** Exact provider body without the credential identifying the target device. */
 function prepareMessage(item, provider = providerFor(item)) {
   const category = categoryOf(item);
+  const interruptImmediately = interruptsImmediately(category);
   const ttlSeconds = providerTtlSeconds(category);
   const actionCategoryId = category === "security" || item?.transactional === true
     ? null
@@ -149,10 +157,10 @@ function prepareMessage(item, provider = providerFor(item)) {
         ...(actionCategoryId ? { categoryId: actionCategoryId } : {}),
       },
       android: {
-        priority: category === "security" || category === "service" ? "HIGH" : "NORMAL",
+        priority: interruptImmediately ? "HIGH" : "NORMAL",
         ttl: `${ttlSeconds}s`,
         notification: {
-          sound: category === "security" || category === "service" ? "default" : undefined,
+          sound: interruptImmediately ? "default" : undefined,
           channel_id: channelOf(category),
         },
       },
@@ -163,8 +171,8 @@ function prepareMessage(item, provider = providerFor(item)) {
       title: String(item?.title || "Hourkey").slice(0, 120),
       body: String(item?.body || "").slice(0, 400),
       data: providerData(item, false),
-      sound: category === "security" || category === "service" ? "default" : null,
-      priority: category === "security" || category === "service" ? "high" : "normal",
+      sound: interruptImmediately ? "default" : null,
+      priority: interruptImmediately ? "high" : "normal",
       ttl: ttlSeconds,
       channelId: channelOf(category),
       ...(actionCategoryId ? { categoryId: actionCategoryId } : {}),
