@@ -20,10 +20,16 @@ const SUPPORT_STARS = new Set([1, 9]);
 const CAUTION_STARS = new Set([2, 5]);
 const CONTESTED_RELATIONS = new Set(["palace-controls-star", "controls-palace"]);
 
+function starElementFor(star) {
+  const element = STAR_ELEMENT[star];
+  if (!element) throw new TypeError("zibai_invalid_star");
+  return element;
+}
+
 function starPalaceRelation(star, direction) {
-  const starElement = STAR_ELEMENT[star];
+  const starElement = starElementFor(star);
   const palaceElement = PALACE_ELEMENT[direction];
-  if (!starElement || !palaceElement) throw new TypeError("zibai_invalid_star_or_direction");
+  if (!palaceElement) throw new TypeError("zibai_invalid_star_or_direction");
   if (starElement === palaceElement) return "same-element";
   if (GENERATES[starElement] === palaceElement) return "generates-palace";
   if (GENERATES[palaceElement] === starElement) return "palace-generates-star";
@@ -34,7 +40,7 @@ function starPalaceRelation(star, direction) {
 function evidence(star, direction) {
   return Object.freeze({
     star,
-    starElement: STAR_ELEMENT[star],
+    starElement: starElementFor(star),
     relation: starPalaceRelation(star, direction),
   });
 }
@@ -139,4 +145,4 @@ function interpretZibaiSectors(snapshot, includeShichen) {
   return Object.freeze(DIRECTIONS.map((direction) => readingFor(snapshot, direction, includeShichen)));
 }
 
-module.exports = Object.freeze({ interpretZibaiSectors, starPalaceRelation });
+module.exports = Object.freeze({ interpretZibaiSectors, starElementFor, starPalaceRelation });

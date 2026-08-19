@@ -89,6 +89,10 @@ type CompileTimeContract = WarningFieldIsExact | ActionFieldIsExact | WarningTab
 const COMPILE_TIME_CONTRACT: CompileTimeContract = true;
 assert.equal(COMPILE_TIME_CONTRACT, true);
 
+for (const star of STARS) {
+  assert.equal(ruleRuntime.starElementFor(star), STAR_ELEMENT[star], `${star}: the CJS kernel is the canonical star-element source`);
+}
+
 function relationFor(star: Star, direction: Direction): ZibaiRelation {
   const starElement = STAR_ELEMENT[star];
   const palaceElement = PALACE_ELEMENT[direction];
@@ -514,6 +518,11 @@ const kernelImplementation = readFileSync(new URL("../src/lib/zibai-three-layer-
 assert.match(adapterImplementation, /ruleRuntime\.interpretZibaiSectors/u, "TypeScript is a typed adapter over the canonical CJS kernel");
 assert.doesNotMatch(adapterImplementation, /function (?:patternFor|warningsFor|actionFor|readingFor)/u,
   "the typed adapter never copies interpretation branches");
+const scienceImplementation = readFileSync(new URL("../src/lib/zibai-science.ts", import.meta.url), "utf8");
+assert.match(scienceImplementation, /ruleRuntime\.starElementFor/u,
+  "science focus metadata delegates star elements to the canonical CJS kernel");
+assert.doesNotMatch(scienceImplementation, /(?:const|let|var)\s+STAR_ELEMENT\b/u,
+  "production has no second star-element table");
 const implementation = `${adapterImplementation}\n${kernelImplementation}`;
 assert.doesNotMatch(implementation, /Period\s*9|period[_-]?9|ยุค\s*9/iu, "interpreter imports no Period-9 valuation");
 assert.doesNotMatch(implementation, /\b(?:score|weight|weighted|percentage|percentile)\b/iu, "interpreter has no scalar scoring or weights");

@@ -1,11 +1,10 @@
-import { SolarTerm, SolarTime } from "tyme4ts";
 import {
   computeFlyingLayers,
   type Dir9,
-  type FlyingTermReference,
   type PalaceStars,
 } from "./fengshui-luxing";
 import ruleRuntime from "./zibai-three-layer-runtime.cjs";
+import solarTermRuntime from "./zibai-solar-term-runtime.cjs";
 
 export const ZIBAI_CALCULATION_VERSION = "zibai-zaoming-true-solar-v2" as const;
 export const ZIBAI_INTERPRETATION_VERSION = "zibai-3layer-rule-v1" as const;
@@ -16,10 +15,6 @@ export type ZibaiElement = "water" | "wood" | "fire" | "earth" | "metal";
 export type ZibaiRelation = "generates-palace" | "controls-palace" | "palace-generates-star" | "same-element" | "palace-controls-star";
 
 const DIRECTIONS: Dir9[] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"];
-const STAR_ELEMENT: Record<number, ZibaiElement> = {
-  1: "water", 2: "earth", 3: "wood", 4: "wood", 5: "earth",
-  6: "metal", 7: "metal", 8: "earth", 9: "fire",
-};
 
 export type ApparentSolarParts = Readonly<{
   year: number; month: number; day: number; hour: number; minute: number; second: number;
@@ -73,11 +68,7 @@ export type ZibaiSnapshot = Readonly<ZibaiSnapshotV2 & {
   shichenFlight: "順" | "逆";
 }>;
 
-const SOLAR_SECTION_CODES = [
-  "xiaohan", "lichun", "jingzhe", "qingming", "lixia", "mangzhong",
-  "xiaoshu", "liqiu", "bailu", "hanlu", "lidong", "daxue",
-] as const;
-export type ZibaiSolarSectionCode = (typeof SOLAR_SECTION_CODES)[number];
+export type ZibaiSolarSectionCode = (typeof solarTermRuntime.SOLAR_SECTION_CODES)[number];
 export type ZibaiSolarTermMonthWindow = Readonly<{
   startAt: string;
   endAt: string;
@@ -90,46 +81,9 @@ function validInstant(at: Date): Date {
   return at;
 }
 
-function globalTermReferenceAt(at: Date): Readonly<FlyingTermReference> {
-  // tyme4ts publishes its term wall fields in Chinese standard time (UTC+8).
-  // This projection is global and deliberately has no longitude/time-zone input.
-  const termInstant = new Date(validInstant(at).getTime() + 8 * 3_600_000);
-  return Object.freeze({
-    year: termInstant.getUTCFullYear(), month: termInstant.getUTCMonth() + 1,
-    day: termInstant.getUTCDate(), hour: termInstant.getUTCHours(),
-    minute: termInstant.getUTCMinutes(), second: termInstant.getUTCSeconds(),
-  });
-}
-
-function solarTimeFromReference(reference: FlyingTermReference): SolarTime {
-  return SolarTime.fromYmdHms(
-    reference.year, reference.month, reference.day,
-    reference.hour, reference.minute, reference.second,
-  );
-}
-
-function termUtcIso(term: SolarTerm): string {
-  const p = term.getJulianDay().getSolarTime();
-  return new Date(Date.UTC(
-    p.getYear(), p.getMonth() - 1, p.getDay(), p.getHour() - 8, p.getMinute(), p.getSecond(),
-  )).toISOString();
-}
-
-function solarTermMonthWindowFromReference(reference: FlyingTermReference): ZibaiSolarTermMonthWindow {
-  const currentTerm = solarTimeFromReference(reference).getTerm();
-  const startTerm = currentTerm.isJie() ? currentTerm : currentTerm.next(-1);
-  const endTerm = startTerm.next(2);
-  const startTermCode = SOLAR_SECTION_CODES[(startTerm.getIndex() - 1) / 2];
-  const endTermCode = SOLAR_SECTION_CODES[(endTerm.getIndex() - 1) / 2];
-  if (!startTermCode || !endTermCode) throw new Error("zibai_solar_boundary_unavailable");
-  return Object.freeze({
-    startAt: termUtcIso(startTerm), endAt: termUtcIso(endTerm), startTermCode, endTermCode,
-  });
-}
-
 /** Exact global 節-to-節 month window; independent of longitude and DST. */
 export function solarTermMonthWindow(at: Date): ZibaiSolarTermMonthWindow {
-  return solarTermMonthWindowFromReference(globalTermReferenceAt(at));
+  return solarTermRuntime.solarTermMonthWindow(validInstant(at));
 }
 
 function daysInYear(year: number): number {
@@ -250,8 +204,8 @@ export function starPalaceRelation(star: number, direction: Dir9): ZibaiRelation
 
 export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
   const p = apparentSolarParts(at, longitude);
-  const termReference = globalTermReferenceAt(at);
-  const monthWindow = solarTermMonthWindowFromReference(termReference);
+  const termReference = solarTermRuntime.globalTermReferenceAt(validInstant(at));
+  const monthWindow = solarTermRuntime.solarTermMonthWindowFromReference(termReference);
   const layer = computeFlyingLayers(
     p.year, p.month, p.day, p.hour, p.minute, p.second, "zaoming", undefined,
     termReference,
@@ -293,7 +247,7 @@ export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
     const dayDirection = directionOf(dayPalaces as PalaceStars, star);
     const shichenDirection = directionOf(shichenPalaces as PalaceStars, star);
     return Object.freeze({
-      star, element: STAR_ELEMENT[star], dayDirection,
+      star, element: ruleRuntime.starElementFor(star), dayDirection,
       dayRelation: starPalaceRelation(star, dayDirection), shichenDirection,
       shichenRelation: starPalaceRelation(star, shichenDirection), overlaps: dayDirection === shichenDirection,
     });

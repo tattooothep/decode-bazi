@@ -28,6 +28,7 @@ type RuntimeZibaiSnapshot = Readonly<{
 }>;
 declare const api: Readonly<{
   interpretZibaiSectors(snapshot: RuntimeZibaiSnapshot, includeShichen: boolean): readonly RuntimeZibaiSectorReading[];
+  starElementFor(star: number): RuntimeZibaiElement;
   starPalaceRelation(star: number, direction: RuntimeZibaiDirection): RuntimeZibaiRelation;
 }>;
 export = api;

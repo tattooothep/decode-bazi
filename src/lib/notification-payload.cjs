@@ -10,6 +10,7 @@ const ROUTES = Object.freeze({
   zibai: new Set(["/zibai"]),
 });
 const zibaiRuleRuntime = require("./zibai-three-layer-runtime.cjs");
+const solarTermRuntime = require("./zibai-solar-term-runtime.cjs");
 
 const FACT_KEYS = Object.freeze({
   security: ["event", "url"],
@@ -51,10 +52,6 @@ const ZIBAI_MONTH_KEYS = Object.freeze(["startTermCode", "endTermCode", "palaces
 const ZIBAI_DAY_KEYS = Object.freeze(["palaces", "apparentSolarDate", "startAt", "endAt"]);
 const ZIBAI_SHICHEN_KEYS = Object.freeze(["palaces", "key", "startAt", "endAt"]);
 const ZIBAI_SECTOR_KEYS = Object.freeze(["direction", "month", "day", "shichen", "patternCode"]);
-const ZIBAI_SECTION_TERMS = Object.freeze([
-  "xiaohan", "lichun", "jingzhe", "qingming", "lixia", "mangzhong",
-  "xiaoshu", "liqiu", "bailu", "hanlu", "lidong", "daxue",
-]);
 const ZIBAI_V2_MAX_BYTES = 3.5 * 1_024;
 
 function sameKeys(actual, expected) {
@@ -78,7 +75,8 @@ function readDataRecord(value, expectedKeys) {
   if (ownKeys.some((key) => typeof key !== "string")) return null;
   const stringKeys = ownKeys;
   if (expectedKeys && !sameKeys(stringKeys, expectedKeys)) return null;
-  const captured = {};
+  // A null prototype makes every captured key inert, including `__proto__`.
+  const captured = Object.create(null);
   for (const key of stringKeys) {
     let descriptor;
     try {
@@ -145,19 +143,14 @@ function readZibaiPalaces(value) {
   const numbers = ZIBAI_DIRECTIONS.map((direction) => record[direction]);
   if (!numbers.every((star) => Number.isInteger(star) && star >= 1 && star <= 9)
     || new Set(numbers).size !== 9) return null;
-  return Object.freeze(record);
+  return Object.freeze({ ...record });
 }
 
 function readZibaiMonth(value) {
   const record = readDataRecord(value, ZIBAI_MONTH_KEYS);
   if (!record) return null;
-  const startTermIndex = ZIBAI_SECTION_TERMS.indexOf(record.startTermCode);
-  const expectedEndTerm = startTermIndex >= 0
-    ? ZIBAI_SECTION_TERMS[(startTermIndex + 1) % ZIBAI_SECTION_TERMS.length]
-    : null;
   const palaces = readZibaiPalaces(record.palaces);
-  if (!palaces || record.endTermCode !== expectedEndTerm
-    || !boundedDuration(record.startAt, record.endAt, 25 * 86_400_000, 35 * 86_400_000)) return null;
+  if (!palaces || !solarTermRuntime.isCanonicalSolarTermMonthWindow(record)) return null;
   return Object.freeze({ ...record, palaces });
 }
 
@@ -177,6 +170,18 @@ function readZibaiShichen(value) {
   if (!palaces || !ZIBAI_SHICHEN.has(record.key)
     || !boundedDuration(record.startAt, record.endAt, 90 * 60_000, 150 * 60_000)) return null;
   return Object.freeze({ ...record, palaces });
+}
+
+function apparentDateMatchesDayBounds(apparentSolarDate, startAt, endAt) {
+  const dayMs = 86_400_000;
+  const declared = Date.parse(`${apparentSolarDate}T00:00:00.000Z`);
+  const startUtcDate = Date.parse(`${startAt.slice(0, 10)}T00:00:00.000Z`);
+  const endActiveUtcDate = Date.parse(`${new Date(Date.parse(endAt) - 1).toISOString().slice(0, 10)}T00:00:00.000Z`);
+  // Across the full longitude range (plus equation-of-time displacement), an
+  // apparent-solar date is the UTC start date or its next day; at the exclusive
+  // end it is the UTC active date or its previous day. No wider ±day is physical.
+  return (declared === startUtcDate || declared === startUtcDate + dayMs)
+    && (declared === endActiveUtcDate || declared === endActiveUtcDate - dayMs);
 }
 
 function compactZibaiSectors(value, month, day, shichen, includeShichen) {
@@ -202,7 +207,7 @@ function compactZibaiSectors(value, month, day, shichen, includeShichen) {
       || record.day !== canonical.day.star
       || record.shichen !== (canonical.shichen?.star ?? null)
       || record.patternCode !== canonical.patternCode) return null;
-    compact.push(Object.freeze(record));
+    compact.push(Object.freeze({ ...record }));
   }
   return Object.freeze(compact);
 }
@@ -227,12 +232,17 @@ function readZibaiV2Facts(record) {
   const dayEnd = new Date(day.endAt).getTime();
   const monthStart = new Date(month.startAt).getTime();
   const monthEnd = new Date(month.endAt).getTime();
-  if (dayStart >= monthEnd || dayEnd <= monthStart) return null;
+  if (!apparentDateMatchesDayBounds(day.apparentSolarDate, day.startAt, day.endAt)) return null;
+  const activeStarts = [monthStart, dayStart];
+  const activeEnds = [monthEnd, dayEnd];
   if (shichen) {
     const shichenStart = new Date(shichen.startAt).getTime();
     const shichenEnd = new Date(shichen.endAt).getTime();
     if (shichenStart < dayStart || shichenEnd > dayEnd) return null;
+    activeStarts.push(shichenStart);
+    activeEnds.push(shichenEnd);
   }
+  if (Math.max(...activeStarts) >= Math.min(...activeEnds)) return null;
   const sectors = compactZibaiSectors(record.sectors, month, day, shichen, !isDaily);
   if (!sectors) return null;
   return Object.freeze({ ...record, month, day, shichen, sectors });

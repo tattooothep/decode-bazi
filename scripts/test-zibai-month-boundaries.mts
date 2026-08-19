@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { buildZibaiSnapshot } from "../src/lib/zibai-science.ts";
 
 const DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "C"] as const;
@@ -253,5 +254,14 @@ assert.equal(canonical.apparentSolarDate, canonical.day.meta.apparentSolarDate);
 assert.equal(canonical.shichenKey, canonical.shichen.meta.key);
 assert.equal(canonical.startAt, canonical.shichen.startAt);
 assert.equal(canonical.endAt, canonical.shichen.endAt);
+
+const scienceImplementation = readFileSync(new URL("../src/lib/zibai-science.ts", import.meta.url), "utf8");
+const payloadImplementation = readFileSync(new URL("../src/lib/notification-payload.cjs", import.meta.url), "utf8");
+assert.match(scienceImplementation, /solarTermRuntime\.solarTermMonthWindowFromReference/u,
+  "science delegates month boundaries to the shared canonical helper");
+assert.match(payloadImplementation, /solarTermRuntime\.isCanonicalSolarTermMonthWindow/u,
+  "payload validation delegates named instant truth to the same helper");
+assert.doesNotMatch(`${scienceImplementation}\n${payloadImplementation}`, /(?:const|let|var)\s+(?:SOLAR_SECTION_CODES|ZIBAI_SECTION_TERMS)\b/u,
+  "month boundary names are not copied across production consumers");
 
 console.log("ZIBAI_MONTH_BOUNDARIES_OK");
