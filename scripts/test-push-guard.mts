@@ -117,8 +117,12 @@ check("🔴 ถึงเพดานแล้วห้ามส่งเพิ�
 check("ผู้ใช้ตั้งเพดานเองได้", () => {
   const wide = { ...OPEN, max_per_day: 5 };
   assert.equal(G.mayNotify({ category: "yam", prefs: wide, sentToday: 3, at: DAY }).allow, true);
-  const none = { ...OPEN, max_per_day: 0 };
-  assert.equal(G.mayNotify({ category: "yam", prefs: none, sentToday: 0, at: DAY }).allow, false);
+  const unlimited = { ...OPEN, max_per_day: 0 };
+  assert.equal(
+    G.mayNotify({ category: "yam", prefs: unlimited, sentToday: 999, at: DAY }).allow,
+    true,
+    "ค่า 0 ต้องหมายถึงไม่จำกัด ไม่ใช่ปิดแจ้งเตือนทั้งหมด",
+  );
 });
 
 console.log("── ปิดที่ไหนก็ถือว่าปิด ──");

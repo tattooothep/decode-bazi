@@ -82,6 +82,17 @@ try {
   assert.ok(afterBoundary, "a prior local-calendar-day row must not consume today's cap even inside rolling 24h");
 
   await pool.query(`DELETE FROM mobile_push_log WHERE user_id=$1`, [userId]);
+  await pool.query(`UPDATE mobile_notification_prefs SET max_per_day=0 WHERE user_id=$1`, [userId]);
+  await pool.query(
+    `INSERT INTO mobile_push_log(user_id,yam_key,kind,title,body,payload,delivery_status,attempt_count,accepted_at,sent_at,updated_at)
+     SELECT $1,'unlimited-existing-'||n,'daily','old','old','{}','accepted',1,now(),now(),now()
+       FROM generate_series(1,12) AS n`,
+    [userId],
+  );
+  const unlimited = await delivery.reserve(pool, notice("unlimited-after-twelve"));
+  assert.ok(unlimited, "max_per_day=0 must reserve after any positive daily count");
+
+  await pool.query(`DELETE FROM mobile_push_log WHERE user_id=$1`, [userId]);
   const tokenId = "10000000-0000-4000-8000-000000000099";
   await pool.query(
     `INSERT INTO mobile_push_tokens VALUES($1,$2,'20000000-0000-4000-8000-000000000099',NULL,NULL,'ExponentPushToken[synthetic-cap-test]','android',true)`,

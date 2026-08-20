@@ -944,8 +944,17 @@ try {
     await pool!.query(`UPDATE mobile_notification_prefs SET privacy_preview=false WHERE user_id=$1`, [userId]);
   }, "policy_privacy_changed", { privacy: true });
   await assertPolicyBlocked("policy-cap", async () => {
-    await pool!.query(`UPDATE mobile_notification_prefs SET max_per_day=0 WHERE user_id=$1`, [userId]);
+    await pool!.query(`UPDATE mobile_notification_prefs SET max_per_day=1 WHERE user_id=$1`, [userId]);
   }, "policy_cap_reached");
+  const unlimitedIds = await reservePolicyAttempt("policy-unlimited");
+  await pool.query(`UPDATE mobile_notification_prefs SET max_per_day=0 WHERE user_id=$1`, [userId]);
+  let unlimitedCalls = 0;
+  const unlimitedResult = await worker.runRetryBatch(pool, {
+    attemptIds: unlimitedIds, limit: 1,
+    sender: { async sendPrepared() { unlimitedCalls += 1; return { kind: "provider_accepted" }; } },
+  });
+  check(unlimitedCalls === 1 && unlimitedResult.accepted === 1,
+    "max_per_day=0 keeps an immutable retry eligible after earlier daily notifications");
   await assertPolicyBlocked("policy-expired-day", async () => {
     await pool!.query(
       `UPDATE mobile_push_attempts SET created_at=now()-interval '1 day'
@@ -965,6 +974,11 @@ try {
     kind: "qimen",
     sourceFacts: { eventStartAt: "2026-08-19T00:21:00.000Z", eventEndAt: "2026-08-19T01:05:01.000Z" },
   });
+  await pool.query(
+    `UPDATE mobile_push_attempts SET created_at=$2
+      WHERE id=ANY($1::uuid[])`,
+    [validQimenIds, occurrenceNow],
+  );
   let validQimenCalls = 0;
   const validQimen = await worker.runRetryBatch(pool, {
     attemptIds: validQimenIds, limit: 1, hooks: { policyNow: occurrenceNow },

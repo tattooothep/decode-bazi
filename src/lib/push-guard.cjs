@@ -145,7 +145,7 @@ function mayNotify(input) {
     ? prefs.max_per_day
     : DEFAULTS.max_per_day;
   const already = Number.isInteger(sentToday) ? sentToday : 0;
-  if (already >= cap) {
+  if (cap > 0 && already >= cap) {
     return { allow: false, reason: `ถึงเพดานวันละ ${cap} ใบแล้ว` };
   }
 

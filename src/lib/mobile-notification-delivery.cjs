@@ -234,7 +234,8 @@ async function reserve(db, notice, dry = false) {
                 = (now() AT TIME ZONE $2)::date`,
         [notice.userId, context.timezone],
       );
-      if (Number(cap.rows[0]?.reserved_today || 0) >= Number(context.max_per_day)) return null;
+      const maxPerDay = Number(context.max_per_day);
+      if (maxPerDay > 0 && Number(cap.rows[0]?.reserved_today || 0) >= maxPerDay) return null;
     }
     const parent = await client.query(
       `INSERT INTO mobile_push_log
@@ -586,7 +587,7 @@ function currentPolicyDecision(row, context, capCount) {
   }
   const maxPerDay = Number.isInteger(Number(context.prefs?.max_per_day))
     ? Number(context.prefs.max_per_day) : 2;
-  if (Number(capCount || 0) > maxPerDay) {
+  if (maxPerDay > 0 && Number(capCount || 0) > maxPerDay) {
     return { allow: false, terminal: true, reason: "policy_cap_reached" };
   }
   const quietStart = Number.isInteger(Number(context.prefs?.quiet_start)) ? Number(context.prefs.quiet_start) : 22;
