@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS mobile_qimen_occurrences (
   snapshot_digest text,
   state text NOT NULL DEFAULT 'claimed' CHECK (state IN ('claimed','reserved','skipped')),
   skip_reason text,
-  push_log_id uuid REFERENCES mobile_push_log(id) ON DELETE SET NULL,
+  push_log_id uuid REFERENCES mobile_push_log(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   FOREIGN KEY(user_id,installation_id)
@@ -116,7 +116,8 @@ CREATE TABLE IF NOT EXISTS mobile_qimen_occurrences (
     (state='skipped' AND skip_reason IS NOT NULL AND push_log_id IS NULL)
     OR (state IN ('claimed','reserved') AND skip_reason IS NULL AND selected_direction IS NOT NULL)
   ),
-  UNIQUE(user_id,installation_id,occurrence_key)
+  UNIQUE(user_id,installation_id,occurrence_key),
+  UNIQUE(user_id,installation_id,purpose,hour_valid_from)
 );
 
 CREATE INDEX IF NOT EXISTS ix_mobile_qimen_occurrence_retention
@@ -144,7 +145,7 @@ BEGIN
     OR OLD.created_at IS DISTINCT FROM NEW.created_at THEN
     RAISE EXCEPTION 'mobile_qimen_occurrence_immutable';
   END IF;
-  IF OLD.state <> NEW.state AND NOT (OLD.state='claimed' AND NEW.state='reserved') THEN
+  IF OLD.state <> NEW.state AND NOT (OLD.state='claimed' AND NEW.state IN ('reserved','skipped')) THEN
     RAISE EXCEPTION 'mobile_qimen_occurrence_state_transition_invalid';
   END IF;
   IF OLD.push_log_id IS DISTINCT FROM NEW.push_log_id
@@ -170,7 +171,7 @@ RETURNS SETOF mobile_qimen_installations LANGUAGE sql AS $$
        AND (lease_token IS NULL OR lease_expires_at<=p_at)
      ORDER BY next_due_at,user_id,installation_id
      FOR UPDATE SKIP LOCKED
-     LIMIT LEAST(GREATEST(p_limit,1),1000)
+     LIMIT LEAST(GREATEST(p_limit,1),10000)
   )
   UPDATE mobile_qimen_installations q
      SET lease_token=gen_random_uuid(),lease_expires_at=p_at+interval '5 minutes',updated_at=p_at

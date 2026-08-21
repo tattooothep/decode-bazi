@@ -13,6 +13,7 @@ const migration = readFileSync("migrations/20260815_mobile_notification_integrit
 const observabilityMigration = readFileSync("migrations/20260816_mobile_notification_observability.sql", "utf8");
 const engagementMigration = readFileSync("migrations/20260816_mobile_notification_engagement.sql", "utf8");
 const zibaiMigration = readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8");
+const qimenMigration = readFileSync("migrations/20260821_mobile_qimen_three_layer.sql", "utf8");
 
 assert.match(database, /^notification_observability_test_/u, "test database name must be disposable");
 assert.match(role, /^notification_observability_role_/u, "test role name must be disposable");
@@ -55,6 +56,7 @@ try {
   psql(database, observabilityMigration);
   psql(database, engagementMigration);
   psql(database, zibaiMigration);
+  psql(database, qimenMigration);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
 
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password });
@@ -134,6 +136,17 @@ try {
     INSERT INTO mobile_zibai_occurrences
       (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state,skip_reason)
     VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','observability-quiet','shichen',current_date,'si','zibai-zaoming-true-solar-v2','skipped','quiet_hours');
+    INSERT INTO mobile_qimen_installations
+      (user_id,installation_id,enabled,location_permission,latitude,longitude,location_timezone,
+       location_captured_at,location_expires_at,next_due_at,last_skip_reason,updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002',true,'foreground',13.75,100.5,'Asia/Bangkok',
+      now()-interval '6 days',now()+interval '1 day',now()-interval '20 minutes','QIMEN_SYNTHETIC_ENGINE_FAILURE',now());
+    INSERT INTO mobile_qimen_occurrences
+      (user_id,installation_id,occurrence_key,purpose,hour_valid_from,hour_valid_until,send_deadline,
+       version_tuple,source_tuple,state,skip_reason)
+    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','observability-qimen-quiet','travel',
+      now()-interval '1 hour',now()+interval '1 hour',now()-interval '55 minutes','{}','{}','skipped','quiet_hours');
+    UPDATE mobile_qimen_producer_state SET producer_enabled=true,backend_commit=repeat('a',40),enabled_at=now(),enabled_by='observability-test';
   `);
 
   const observability = require("../src/lib/notification-observability.cjs");
@@ -141,7 +154,7 @@ try {
   const freshSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, new Date().toISOString()]));
   const report = await observability.collectHealth(pool, {
     lookbackHours: 24,
-    thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1, maxZibaiDueLagSeconds: 600, maxZibaiEngineFailureCount: 0 },
+    thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1, maxZibaiDueLagSeconds: 600, maxZibaiEngineFailureCount: 0, maxQimenDueLagSeconds: 600, maxQimenEngineFailureCount: 0 },
     heartbeat: { workerAt: new Date(Date.now() - 10_000).toISOString(), schedulers: freshSchedulers },
     providerReady: { fcm: false, expo: true },
   });
@@ -160,6 +173,14 @@ try {
   assert.ok(report.metrics.zibai.oldestLagSeconds >= 1_200);
   assert.equal(report.reasons.includes("zibai_due_lag"), true);
   assert.equal(report.reasons.includes("zibai_engine_failures"), true);
+  assert.deepEqual(report.metrics.qimen, {
+    producerEnabled: true, overdueCount: 1, oldestLagSeconds: report.metrics.qimen.oldestLagSeconds,
+    locationFreshCount: 1, locationStaleCount: 0, locationAbsentCount: 0, engineFailureCount: 1,
+    reservedCount: 0, skippedCount: 1, quietSkipCount: 1, duplicateCount: 0,
+  }, "health exposes aggregate Qimen queue, location, engine, and occurrence truth without coordinates");
+  assert.ok(report.metrics.qimen.oldestLagSeconds >= 1_200);
+  assert.equal(report.reasons.includes("qimen_due_lag"), true);
+  assert.equal(report.reasons.includes("qimen_engine_failures"), true);
   assert.deepEqual(report.metrics.engagement, {
     targetedCount: 2, appReceivedCount: 1, openedCount: 1, actionCount: 1,
     ackRate: 0.5, openRate: 0.5, actionRate: 0.5,

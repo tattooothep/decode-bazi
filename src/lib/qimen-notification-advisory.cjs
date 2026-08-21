@@ -159,6 +159,47 @@ function trueSolarShichenWindow(input) {
   });
 }
 
+function apparentDayKey(timezone, longitude, instant) {
+  const at = instant instanceof Date ? instant : new Date(instant);
+  const correction = qimenCorrectionMinutes(timezone, longitude, at);
+  return dateKey(zonedParts(timezone, new Date(at.valueOf() + correction * 60_000)));
+}
+
+function apparentDayBoundary(timezone, longitude, instant, direction) {
+  const atMs = instant.valueOf();
+  const current = apparentDayKey(timezone, longitude, instant);
+  const outside = atMs + direction * 30 * 3_600_000;
+  if (apparentDayKey(timezone, longitude, new Date(outside)) === current) {
+    throw new RangeError("qimen_notification_day_boundary_unavailable");
+  }
+  let left = direction < 0 ? outside : atMs;
+  let right = direction < 0 ? atMs : outside;
+  while (right - left > 500) {
+    const middle = Math.floor((left + right) / 2);
+    const same = apparentDayKey(timezone, longitude, new Date(middle)) === current;
+    if (direction < 0) {
+      if (same) right = middle; else left = middle;
+    } else if (same) left = middle; else right = middle;
+  }
+  return new Date(right);
+}
+
+function trueSolarDayWindow(input) {
+  const timezone = validTimezone(input?.timezone);
+  const longitude = Number(input?.longitude);
+  const instant = new Date(input?.instant);
+  if (!timezone || !Number.isFinite(longitude) || !Number.isFinite(instant.valueOf())) {
+    throw new TypeError("qimen_notification_day_window_invalid");
+  }
+  const start = apparentDayBoundary(timezone, longitude, instant, -1);
+  const end = apparentDayBoundary(timezone, longitude, instant, 1);
+  return Object.freeze({
+    startAt: start.toISOString(),
+    endAt: end.toISOString(),
+    apparentDate: apparentDayKey(timezone, longitude, instant),
+  });
+}
+
 function civilInstant(date, time, timezone) {
   if (!/^\d{4}-\d{2}-\d{2}$/u.test(String(date || "")) || !/^\d{2}:\d{2}$/u.test(String(time || ""))) {
     throw new TypeError("qimen_notification_civil_time_invalid");
@@ -375,7 +416,7 @@ function buildQimenAdvisory(result, options = {}) {
   });
 }
 
-async function fetchCanonicalQimenAdvisory(input, options = {}) {
+async function fetchCanonicalQimenEngineSnapshot(input, options = {}) {
   const date = String(input?.date || "");
   const time = String(input?.time || "");
   const timezone = validTimezone(input?.timezone);
@@ -422,7 +463,12 @@ async function fetchCanonicalQimenAdvisory(input, options = {}) {
   if (advisory && Math.abs(new Date(advisory.inputAt).valueOf() - requestedInstant.valueOf()) > 1_500) {
     throw new RangeError("qimen_notification_engine_instant_mismatch");
   }
-  return advisory;
+  return Object.freeze({ advisory, result: normalizedResult(result) });
+}
+
+async function fetchCanonicalQimenAdvisory(input, options = {}) {
+  const snapshot = await fetchCanonicalQimenEngineSnapshot(input, options);
+  return snapshot.advisory;
 }
 
 function localeOf(locale) {
@@ -562,7 +608,9 @@ module.exports = {
   civilRangeWindow,
   earliestExpiry,
   fetchCanonicalQimenAdvisory,
+  fetchCanonicalQimenEngineSnapshot,
   qimenNotificationEntitlement,
   qimenSourceFacts,
   trueSolarShichenWindow,
+  trueSolarDayWindow,
 };

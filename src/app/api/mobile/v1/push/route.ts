@@ -129,6 +129,7 @@ export async function POST(req: Request) {
   const appVersion = String(body.app_version || "").trim().slice(0, 40) || null;
   const timezone = cleanTimezone(body.timezone);
   const zibaiPayloadSchema = body.zibaiPayloadSchema === undefined ? 1 : body.zibaiPayloadSchema;
+  const qimenPayloadSchema = body.qimenPayloadSchema === undefined ? 1 : body.qimenPayloadSchema;
   /**
    * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
    *
@@ -148,6 +149,7 @@ export async function POST(req: Request) {
     || !nativeTokenValid(platform, deviceTokenType, deviceToken)
     || (body.timezone != null && timezone === null)
     || !(zibaiPayloadSchema === 1 || zibaiPayloadSchema === 2)
+    || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2)
   ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
   }
@@ -198,6 +200,13 @@ export async function POST(req: Request) {
           AND (t.installation_id=$2::uuid OR ($3::text IS NOT NULL AND t.device_push_token=$3))`,
       [session.userId, installationId, deviceToken],
     );
+    await client.query(
+      `DELETE FROM mobile_qimen_installations q USING mobile_push_tokens t
+        WHERE q.user_id=t.user_id AND q.installation_id=t.installation_id
+          AND t.user_id<>$1
+          AND (t.installation_id=$2::uuid OR ($3::text IS NOT NULL AND t.device_push_token=$3))`,
+      [session.userId, installationId, deviceToken],
+    );
     // Installation IDs and native push tokens identify a physical app install,
     // not an account. Transfer both identities before the upsert so an old
     // account can never remain enabled for the same device after account switch.
@@ -221,8 +230,8 @@ export async function POST(req: Request) {
     const registered = await client.query<{ id: string }>(
       `INSERT INTO mobile_push_tokens
          (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,app_version,locale,timezone,enabled,
-          fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema)
-       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10)
+          fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema,qimen_payload_schema)
+       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10,$11)
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
@@ -233,15 +242,46 @@ export async function POST(req: Request) {
          locale=EXCLUDED.locale,
          timezone=COALESCE(EXCLUDED.timezone, mobile_push_tokens.timezone),
          zibai_payload_schema=EXCLUDED.zibai_payload_schema,
+         qimen_payload_schema=EXCLUDED.qimen_payload_schema,
          enabled=true,
          fail_count=0,
          last_registered_at=now(),
          disabled_at=NULL,
          updated_at=now()
        RETURNING id`,
-      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone, zibaiPayloadSchema]
+      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone, zibaiPayloadSchema, qimenPayloadSchema]
     );
     row = registered.rows[0];
+    await client.query(
+      `INSERT INTO mobile_qimen_installations
+         (user_id,installation_id,enabled,purpose,quiet_start,quiet_end,location_permission,
+          latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_due_at,updated_at)
+       SELECT $1,$2::uuid,
+              ($3::smallint=2 AND COALESCE(np.qimen_enabled,false)
+                AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
+                AND np.qimen_location_updated_at>now()-interval '7 days'),
+              'travel',COALESCE(np.quiet_start,22),COALESCE(np.quiet_end,7),
+              CASE WHEN np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
+                AND np.qimen_location_updated_at IS NOT NULL THEN 'foreground' ELSE 'unknown' END,
+              CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE np.qimen_latitude END,
+              CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE np.qimen_longitude END,
+              CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE COALESCE(np.timezone,$4,'Asia/Bangkok') END,
+              np.qimen_location_updated_at,
+              CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE np.qimen_location_updated_at+interval '7 days' END,
+              CASE WHEN $3::smallint=2 AND COALESCE(np.qimen_enabled,false)
+                AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
+                AND np.qimen_location_updated_at>now()-interval '7 days' THEN now() ELSE NULL END,
+              now()
+         FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id WHERE u.id=$1
+       ON CONFLICT(user_id,installation_id) DO UPDATE SET
+         enabled=EXCLUDED.enabled,quiet_start=EXCLUDED.quiet_start,quiet_end=EXCLUDED.quiet_end,
+         location_permission=EXCLUDED.location_permission,latitude=EXCLUDED.latitude,longitude=EXCLUDED.longitude,
+         location_timezone=EXCLUDED.location_timezone,location_captured_at=EXCLUDED.location_captured_at,
+         location_expires_at=EXCLUDED.location_expires_at,next_due_at=EXCLUDED.next_due_at,
+         lease_token=NULL,lease_expires_at=NULL,last_skip_reason=NULL,
+         owner_generation=mobile_qimen_installations.owner_generation+1,updated_at=now()`,
+      [session.userId, installationId, qimenPayloadSchema, timezone],
+    );
     // Account notification context follows the most recently authenticated
     // mobile installation. Per-installation locale remains on the token for
     // lock-screen copy; account history/schedulers use this shared context.
@@ -325,6 +365,11 @@ export async function DELETE(req: Request) {
     );
     await client.query(
       `DELETE FROM mobile_zibai_installations
+        WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
+      [session.userId, installationId || null],
+    );
+    await client.query(
+      `DELETE FROM mobile_qimen_installations
         WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
       [session.userId, installationId || null],
     );

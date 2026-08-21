@@ -29,7 +29,7 @@ assert.deepEqual(manifest.source, {
 });
 assert.equal(manifest.layers.month.calculationVersion, "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1");
 assert.equal(manifest.layers.month.decisionRole, "raw_context_only");
-assert.equal(manifest.layers.day.calculationVersion, "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1");
+assert.equal(manifest.layers.day.calculationVersion, "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1");
 assert.equal(manifest.layers.day.decisionRole, "raw_context_only");
 assert.equal(manifest.layers.hour.calculationVersion, "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1");
 assert.equal(manifest.layers.hour.decisionRole, "sole_action_authority");
@@ -44,8 +44,8 @@ assert.equal(
   "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1",
 );
 assert.equal(
-  assertAllowedContextVersion("day", "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1"),
-  "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1",
+  assertAllowedContextVersion("day", "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1"),
+  "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1",
 );
 assert.throws(
   () => assertAllowedContextVersion("month", "preliminary_simplified_dmy"),
@@ -197,5 +197,43 @@ assert.throws(
   }),
   /QIMEN_CENTER_LODGING_POLICY_REQUIRED/u,
 );
+
+const sixJuGoldens = require("./fixtures/qimen-faqiao-six-ju-goldens.cjs") as ReadonlyArray<{
+  dun: "yang" | "yin"; ju: number; subjectPillarZh: string; xunHead: string;
+  directSymbolStar: string; directEnvoyDoor: string;
+  earth: ReadonlyArray<string>; heaven: ReadonlyArray<string>; star: ReadonlyArray<string>;
+  door: ReadonlyArray<string | null>; deity: ReadonlyArray<string | null>;
+}>;
+assert.equal(sixJuGoldens.length, 6, "the release profile pins all six nominal day Ju as literal fixtures");
+for (const golden of sixJuGoldens) {
+  const chart = buildFaqiaoFeipan({
+    dun: golden.dun, ju: golden.ju, subjectPillarZh: golden.subjectPillarZh,
+    centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
+  });
+  assert.equal(chart.xunHead, golden.xunHead);
+  assert.equal(chart.directSymbolStar, golden.directSymbolStar);
+  assert.equal(chart.directEnvoyDoor, golden.directEnvoyDoor);
+  assert.deepEqual(chart.palaces.map((entry) => entry.earthInstrument), golden.earth);
+  assert.deepEqual(chart.palaces.map((entry) => entry.heavenInstrument), golden.heaven);
+  assert.deepEqual(chart.palaces.map((entry) => entry.star), golden.star);
+  assert.deepEqual(chart.palaces.map((entry) => entry.door), golden.door);
+  assert.deepEqual(chart.palaces.map((entry) => entry.deity), golden.deity);
+  assert.ok(Object.isFrozen(chart) && chart.palaces.every(Object.isFrozen));
+}
+
+const sixty = "甲子乙丑丙寅丁卯戊辰己巳庚午辛未壬申癸酉甲戌乙亥丙子丁丑戊寅己卯庚辰辛巳壬午癸未甲申乙酉丙戌丁亥戊子己丑庚寅辛卯壬辰癸巳甲午乙未丙申丁酉戊戌己亥庚子辛丑壬寅癸卯甲辰乙巳丙午丁未戊申己酉庚戌辛亥壬子癸丑甲寅乙卯丙辰丁巳戊午己未庚申辛酉壬戌癸亥".match(/../gu)!;
+const instruments = new Set(["戊", "己", "庚", "辛", "壬", "癸", "丁", "丙", "乙"]);
+for (const { dun, ju } of sixJuGoldens) {
+  for (const subjectPillarZh of sixty) {
+    const chart = buildFaqiaoFeipan({ dun, ju, subjectPillarZh, centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1" });
+    assert.deepEqual(new Set(chart.palaces.map((entry) => entry.earthInstrument)), instruments);
+    assert.deepEqual(new Set(chart.palaces.map((entry) => entry.heavenInstrument)), instruments);
+    assert.equal(new Set(chart.palaces.map((entry) => entry.star)).size, 9);
+    assert.equal(new Set(chart.palaces.filter((entry) => entry.door).map((entry) => entry.door)).size, 8);
+    assert.equal(new Set(chart.palaces.filter((entry) => entry.deity).map((entry) => entry.deity)).size, 8);
+    assert.equal(palace(chart, 5).door, null);
+    assert.equal(palace(chart, 5).deity, null);
+  }
+}
 
 console.log("qimen three-layer science source-manifest tests passed");

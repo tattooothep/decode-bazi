@@ -10,7 +10,7 @@ const directions = ["N", "SW", "E", "SE", "C", "NW", "W", "NE", "S"];
 const instruments = ["戊", "己", "庚", "辛", "壬", "癸", "丁", "丙", "乙"];
 const versions = {
   month: "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1",
-  day: "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1",
+  day: "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1",
   hour: "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1",
 };
 

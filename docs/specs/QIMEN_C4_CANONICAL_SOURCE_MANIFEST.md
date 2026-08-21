@@ -8,7 +8,7 @@ Decision date: 2026-08-21
 | Layer | Calculation version | School/method | Decision role |
 | --- | --- | --- | --- |
 | Month 月家 | `QIMEN_FAQIAO_FEIPAN_YUEJIA_V1` | 《奇門法竅》飛盤月家 | Raw context only |
-| Day 日家 | `QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1` | 《奇門法竅》飛盤日家超接拆補 | Raw context only |
+| Day 日家 | `FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1` | 《奇門法竅》飛盤日家 + explicit nominal four-qi boundary policy (not 拆補) | Raw context only |
 | Shichen 時家 | `QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1`, bound to the allowlisted source-verified engine for `profile_id=1` | 轉盤時家拆補 with true-solar time | Sole send, direction, purpose, and validity authority |
 
 Month/day and hour are intentionally different chart lineages. They may be juxtaposed only by the same compass palace. They are never averaged, overlaid, relabeled as one flight, or used to reorder the hour result.
@@ -40,10 +40,9 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 - Operational count is 24 solar terms: the source text's preserved `四十` is normalized only because the same passage explicitly enumerates two groups of twelve.
 - Nominal Yang Ju sequence is `1, 7, 4`; nominal Yin Ju sequence is `9, 3, 6` exactly as transcribed. A `9, 2, 6` sequence from another work is forbidden in this lineage.
 - Exact astronomical term instants from the repository-pinned calendar runtime are mandatory. Mean dates and fixed civil dates are forbidden.
-- Fu-head is governed by the source's `甲/己` and upper/middle/lower branch classes. Super, receive, split, and supplement transitions must follow a signed decision table and golden boundary fixtures. The 卷六 `冬至丁未` example is a 時家/36-Ju example and is forbidden as proof of a 日家 60-day transition.
-- The selected passages do not yet define how each five-day Fu-head segment deterministically changes the 60-day 日家 state for continuous yearly coverage. Until a signed rule or a complete primary lineage is adopted, the calendar resolver returns `QIMEN_CONTEXT_BOUNDARY_UNRESOLVED`.
-- No nearest-Jia-Zi heuristic, range clamp, or default Ju is permitted. An unresolved or out-of-range boundary returns `QIMEN_CONTEXT_BOUNDARY_UNRESOLVED`.
-- Worked construction fixtures include the source's Yang 1 `庚子` example and Yin 9 `丁卯` example.
+- The pinned source does not continuously resolve Fu-head/超接拆補 for this product. The adopted nominal profile is `[T,U)` at the astronomical instant with no carry: 冬至→陽1, 雨水→陽7, 穀雨→陽4, 夏至→陰9, 處暑→陰3, 霜降→陰6. It must be labeled with its exact version and never as 拆補. The 卷六 `冬至丁未` example is a 時家/36-Ju example and is forbidden as proof of a 日家 60-day transition.
+- The profile intentionally makes no claim about five-day Fu-head state. No nearest-Jia-Zi heuristic, range clamp, or silent default Ju is permitted; an unavailable astronomical boundary fails closed.
+- Literal construction fixtures cover Yang 1 `庚子`, Yang 7 `庚子`, Yang 4 `甲戌`, Yin 9 `丁卯`, Yin 3 `丁卯`, and Yin 6 `甲戌`, including the two source-worked plates.
 
 ### Components and center lodging
 

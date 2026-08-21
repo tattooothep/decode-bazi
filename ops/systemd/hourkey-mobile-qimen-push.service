@@ -12,7 +12,7 @@ EnvironmentFile=-/etc/hourkey/hourkey.env
 StateDirectory=hourkey-notification
 UMask=0027
 ExecStart=/usr/bin/node --import tsx /root/releases/current/scripts/mobile-qimen-push-cron.cjs --batch=500 --workers=20
-TimeoutStartSec=50
+TimeoutStartSec=55
 NoNewPrivileges=true
 PrivateTmp=true
 PrivateDevices=true

@@ -8,6 +8,7 @@ const { Pool } = require("pg");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const payloadRuntime = require("../src/lib/qimen-three-layer-notification.cjs");
 const sourceManifestRuntime = require("../src/lib/qimen-canonical-source-manifest.cjs");
+const canonicalOccurrenceRuntime = require("../src/lib/qimen-canonical-occurrence-builder.cjs");
 const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
@@ -36,6 +37,21 @@ function localMinute(timezone, at) {
     }).formatToParts(at);
     const value = (type) => Number(parts.find((part) => part.type === type)?.value);
     return (value("hour") % 24) * 60 + value("minute");
+  } catch {
+    return null;
+  }
+}
+
+function localDateTime(timezone, at) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(at);
+    const value = (type) => parts.find((part) => part.type === type)?.value;
+    const date = `${value("year")}-${value("month")}-${value("day")}`;
+    const time = `${value("hour")}:${value("minute")}`;
+    return /^\d{4}-\d{2}-\d{2}\|\d{2}:\d{2}$/u.test(`${date}|${time}`) ? { date, time } : null;
   } catch {
     return null;
   }
@@ -103,7 +119,7 @@ function buildQimenCopy(locale, snapshot) {
   });
 }
 
-function buildQimenNotice(row, snapshot, occurrenceId) {
+function buildQimenNotice(row, snapshot, occurrenceId, sendDeadline) {
   if (!payloadRuntime.verifyQimenThreeLayerSnapshot(snapshot)) throw new TypeError("qimen_snapshot_invalid");
   const payload = payloadRuntime.buildQimenV2ProviderData(snapshot);
   const historyCopies = delivery.localizedHistoryCopies((locale) => buildQimenCopy(locale, snapshot));
@@ -119,6 +135,7 @@ function buildQimenNotice(row, snapshot, occurrenceId) {
     payload,
     sourceFacts: Object.freeze({
       eventEndAt: snapshot.layers.hour.validUntil,
+      sendDeadline,
       snapshotDigest: snapshot.snapshotDigest,
       selectedDirection: snapshot.selectedDirection,
       calculationVersion: snapshot.versionTuple.hour,
@@ -139,7 +156,7 @@ function buildQimenNotice(row, snapshot, occurrenceId) {
 }
 
 async function claimDue(db, at, limit = BATCH) {
-  const bounded = Math.max(1, Math.min(1_000, Number(limit) || BATCH));
+  const bounded = Math.max(1, Math.min(10_000, Number(limit) || BATCH));
   const result = await db.query(
     "SELECT * FROM claim_mobile_qimen_installations($1::timestamptz,$2::integer)",
     [at.toISOString(), bounded],
@@ -150,7 +167,8 @@ async function claimDue(db, at, limit = BATCH) {
 async function loadClaimContext(db, claim) {
   const result = await db.query(
     `SELECT q.*,t.id AS token_id,t.device_push_token,t.device_token_type,t.expo_push_token,t.platform,
-            t.locale AS token_locale,t.qimen_payload_schema,COALESCE(np.privacy_preview,false) AS privacy_preview
+            t.locale AS token_locale,t.qimen_payload_schema,COALESCE(np.privacy_preview,false) AS privacy_preview,
+            np.paused_until,u.tier,u.sub_expires_at,u.trial_ends_at
        FROM mobile_qimen_installations q
        JOIN mobile_push_tokens t ON t.user_id=q.user_id AND t.installation_id=q.installation_id AND t.enabled=true
        JOIN users u ON u.id=q.user_id AND u.deleted_at IS NULL
@@ -219,11 +237,8 @@ async function admitOccurrence(db, row, snapshot, sendDeadline) {
   }
 }
 
-async function defaultBuildCanonicalOccurrence() {
-  sourceManifestRuntime.verifyCanonicalSourceEvidence();
-  const error = new Error("QIMEN_CONTEXT_BOUNDARY_UNRESOLVED");
-  error.code = "QIMEN_CONTEXT_BOUNDARY_UNRESOLVED";
-  throw error;
+async function defaultBuildCanonicalOccurrence(row, at) {
+  return canonicalOccurrenceRuntime.buildCanonicalQimenOccurrence(row, at);
 }
 
 async function processClaim(db, claim, at, dependencies = {}) {
@@ -249,8 +264,31 @@ async function processClaim(db, claim, at, dependencies = {}) {
     && Number.isFinite(Number(row.longitude)) && row.location_timezone;
   if (!locationFresh) reason = "location_stale";
   else if (Number(row.qimen_payload_schema) !== 2) reason = "payload_capability_missing";
+  else if (row.paused_until && new Date(row.paused_until) > at) reason = "paused";
   else if (inQuietHours(localMinute(row.location_timezone, at), Number(row.quiet_start), Number(row.quiet_end))) reason = "quiet_hours";
   if (reason) {
+    await finishClaim(db, row, at, next, reason);
+    return { reserved: 0, skipped: 1, reason };
+  }
+
+  const canonicalWindow = qimenAdvisory.trueSolarShichenWindow({
+    timezone: row.location_timezone,
+    longitude: Number(row.longitude),
+    instant: at.toISOString(),
+  });
+  const entitlementClock = localDateTime(row.location_timezone, at);
+  const entitlement = qimenAdvisory.qimenNotificationEntitlement(
+    { id: row.user_id, tier: row.tier, sub_expires_at: row.sub_expires_at, trial_ends_at: row.trial_ends_at },
+    {
+      timezone: row.location_timezone,
+      now: at,
+      instant: at,
+      date: entitlementClock?.date,
+      time: entitlementClock?.time,
+    },
+  );
+  if (!entitlement.allow) {
+    reason = entitlement.reason || "qimen_not_entitled";
     await finishClaim(db, row, at, next, reason);
     return { reserved: 0, skipped: 1, reason };
   }
@@ -274,6 +312,13 @@ async function processClaim(db, claim, at, dependencies = {}) {
     await finishClaim(db, row, at, next, reason);
     return { reserved: 0, skipped: 1, reason };
   }
+  if (snapshot.accountId !== row.user_id || snapshot.purpose !== row.purpose
+    || snapshot.layers.hour.validFrom !== canonicalWindow.startAt
+    || snapshot.layers.hour.validUntil !== canonicalWindow.endAt) {
+    reason = "snapshot_owner_window_mismatch";
+    await finishClaim(db, row, at, next, reason);
+    return { reserved: 0, skipped: 1, reason };
+  }
   const admission = admissionDecision(row, snapshot, at);
   if (!admission.allow) {
     await finishClaim(db, row, at, next, admission.reason);
@@ -284,11 +329,18 @@ async function processClaim(db, claim, at, dependencies = {}) {
     await finishClaim(db, row, at, next, "duplicate");
     return { reserved: 0, skipped: 1, reason: "duplicate" };
   }
-  const notice = buildQimenNotice(row, snapshot, occurrenceId);
+  const notice = buildQimenNotice(row, snapshot, occurrenceId, admission.sendDeadline);
   const deliver = dependencies.deliver || delivery.deliver;
   const result = await deliver(db, notice, { defer: true });
   const reserved = result.status === "pending" ? 1 : 0;
   reason = reserved ? null : result.status === "duplicate" ? "duplicate" : "delivery_reservation_failed";
+  if (!reserved) {
+    await db.query(
+      `UPDATE mobile_qimen_occurrences SET state='skipped',skip_reason=$2,updated_at=$3
+        WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
+      [occurrenceId, reason, at.toISOString()],
+    );
+  }
   await finishClaim(db, row, at, next, reason);
   return { reserved, skipped: reserved ? 0 : 1, reason };
 }
@@ -309,11 +361,13 @@ async function runScheduler(db, signal, at = new Date(), dependencies = {}) {
   signal.throwIfAborted();
   const runtimeProducerEnabled = dependencies.runtimeProducerEnabled
     ?? sourceManifestRuntime.loadCanonicalSourceManifest().producerEnabled;
+  const runtimeCommit = dependencies.backendCommit ?? process.env.HOURKEY_RELEASE_COMMIT ?? "";
   const state = await db.query(
-    "SELECT producer_enabled,source_digest FROM mobile_qimen_producer_state WHERE singleton=true",
+    "SELECT producer_enabled,source_digest,backend_commit FROM mobile_qimen_producer_state WHERE singleton=true",
   );
   const producer = state.rows[0];
-  if (runtimeProducerEnabled !== true || producer?.producer_enabled !== true || producer?.source_digest !== SOURCE_DIGEST) {
+  if (runtimeProducerEnabled !== true || producer?.producer_enabled !== true || producer?.source_digest !== SOURCE_DIGEST
+    || !/^[0-9a-f]{40}$/u.test(runtimeCommit) || producer.backend_commit !== runtimeCommit) {
     return { disabled: true, due: 0, reserved: 0, skipped: 0 };
   }
   const claims = DRY
@@ -360,6 +414,7 @@ module.exports = Object.freeze({
   buildQimenNotice,
   claimDue,
   inQuietHours,
+  localDateTime,
   loadClaimContext,
   nextDueAt,
   occurrenceKey,

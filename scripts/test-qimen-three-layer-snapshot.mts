@@ -24,7 +24,7 @@ function layer(
     calculationVersion: kind === "month"
       ? "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1"
       : kind === "day"
-        ? "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1"
+        ? "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1"
         : "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1",
     sourceCode: faqiao ? "QIMEN_FAQIAO_FEIPAN" : "QIMEN_VERIFIED_ZHUANPAN_SHIJIA",
     schoolCode: faqiao ? "faqiao_feipan" : "zhuanpan_chai_bu",

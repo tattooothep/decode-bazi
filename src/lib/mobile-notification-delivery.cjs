@@ -246,7 +246,10 @@ async function reserve(db, notice, dry = false) {
         throw new Error("qimen_token_capability_changed");
       }
       const occurrence = await client.query(
-        `SELECT id,user_id,installation_id,state,push_log_id FROM mobile_qimen_occurrences
+        `SELECT id,user_id,installation_id,state,push_log_id,selected_direction,snapshot_digest,
+                hour_valid_until,send_deadline,version_tuple,snapshot->>'accountId' AS snapshot_account_id,
+                snapshot->>'purpose' AS snapshot_purpose
+           FROM mobile_qimen_occurrences
           WHERE id=$1 AND user_id=$2 FOR UPDATE`,
         [qimenOccurrenceId, notice.userId],
       );
@@ -254,6 +257,16 @@ async function reserve(db, notice, dry = false) {
       if (!qimenOccurrence || qimenOccurrence.state !== "claimed" || qimenOccurrence.push_log_id !== null) return null;
       if (qimenToken.installation_id !== qimenOccurrence.installation_id) {
         throw new Error("qimen_token_capability_changed");
+      }
+      const iso = (value) => value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+      if (qimenOccurrence.snapshot_account_id !== notice.userId
+        || qimenOccurrence.snapshot_purpose !== "travel"
+        || qimenOccurrence.selected_direction !== notice.sourceFacts?.selectedDirection
+        || qimenOccurrence.snapshot_digest !== notice.sourceFacts?.snapshotDigest
+        || qimenOccurrence.version_tuple?.hour !== notice.sourceFacts?.calculationVersion
+        || iso(qimenOccurrence.hour_valid_until) !== notice.sourceFacts?.eventEndAt
+        || iso(qimenOccurrence.send_deadline) !== notice.sourceFacts?.sendDeadline) {
+        throw new Error("qimen_occurrence_binding_changed");
       }
     }
     const historyCopy = historyCopyFor(notice, context.locale);
@@ -607,6 +620,14 @@ function currentPolicyDecision(row, context, capCount) {
   }
   if (row.kind === "qimen") {
     if (context.qimen_enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
+    const pausedUntil = context.qimen_paused_until ? new Date(context.qimen_paused_until) : null;
+    if (pausedUntil && Number.isFinite(pausedUntil.valueOf()) && pausedUntil > now) {
+      return { allow: false, terminal: true, reason: "policy_paused" };
+    }
+    const sendDeadline = context.qimen_send_deadline ? new Date(context.qimen_send_deadline) : null;
+    if (sendDeadline && (!Number.isFinite(sendDeadline.valueOf()) || sendDeadline <= now)) {
+      return { allow: false, terminal: true, reason: "policy_late_occurrence" };
+    }
     const expiryValue = context.qimen_expires_at;
     const expiresAt = expiryValue instanceof Date
       ? new Date(expiryValue.valueOf())
@@ -731,6 +752,8 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
       context.qimen_quiet_end = context.prefs?.quiet_end;
     }
     context.qimen_expires_at = row.source_facts?.eventEndAt || null;
+    context.qimen_send_deadline = row.source_facts?.sendDeadline || null;
+    context.qimen_paused_until = context.prefs?.paused_until || null;
   }
   let capCount = 0;
   if (!(row.transactional === true && isTransactionalKind(row.kind))

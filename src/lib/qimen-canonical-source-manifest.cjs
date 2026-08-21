@@ -19,9 +19,11 @@ const LAYERS = Object.freeze({
     decisionRole: "raw_context_only",
   }),
   day: Object.freeze({
-    calculationVersion: "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1",
+    calculationVersion: "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1",
     sourceFamily: "QIMEN_FAQIAO_FEIPAN",
-    method: "rijia_chai_bu",
+    method: "rijia_four_qi_term_boundary",
+    boundaryPolicy: "ASTRONOMICAL_TERM_INSTANT_HALF_OPEN_NO_CARRY_V1",
+    sourceLimitation: "nominal_four_qi_transition_profile_not_chai_bu_fu_head",
     decisionRole: "raw_context_only",
   }),
   hour: Object.freeze({

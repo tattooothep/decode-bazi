@@ -233,6 +233,42 @@ export async function updateNotificationPreferences(
         at.toISOString(),
       ],
     );
+    const qimenSchema = await client.query<{ available: boolean }>(
+      `SELECT to_regclass('mobile_qimen_installations') IS NOT NULL AS available`,
+    );
+    if (qimenSchema.rows[0]?.available === true) {
+      await client.query(
+        `INSERT INTO mobile_qimen_installations
+           (user_id,installation_id,enabled,purpose,quiet_start,quiet_end,location_permission,
+            latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_due_at,updated_at)
+         SELECT t.user_id,t.installation_id,
+                (t.qimen_payload_schema=2 AND np.qimen_enabled
+                  AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
+                  AND np.qimen_location_updated_at>$2::timestamptz-interval '7 days'),
+                'travel',np.quiet_start,np.quiet_end,
+                CASE WHEN np.qimen_location_updated_at IS NULL THEN 'unknown' ELSE 'foreground' END,
+                CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE np.qimen_latitude END,
+                CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE np.qimen_longitude END,
+                CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE np.timezone END,
+                np.qimen_location_updated_at,
+                CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL
+                  ELSE np.qimen_location_updated_at+interval '7 days' END,
+                CASE WHEN t.qimen_payload_schema=2 AND np.qimen_enabled
+                  AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
+                  AND np.qimen_location_updated_at>$2::timestamptz-interval '7 days' THEN $2::timestamptz ELSE NULL END,
+                $2::timestamptz
+           FROM mobile_push_tokens t JOIN mobile_notification_prefs np ON np.user_id=t.user_id
+          WHERE t.user_id=$1 AND t.enabled=true
+         ON CONFLICT(user_id,installation_id) DO UPDATE SET
+           enabled=EXCLUDED.enabled,quiet_start=EXCLUDED.quiet_start,quiet_end=EXCLUDED.quiet_end,
+           location_permission=EXCLUDED.location_permission,latitude=EXCLUDED.latitude,longitude=EXCLUDED.longitude,
+           location_timezone=EXCLUDED.location_timezone,location_captured_at=EXCLUDED.location_captured_at,
+           location_expires_at=EXCLUDED.location_expires_at,next_due_at=EXCLUDED.next_due_at,
+           lease_token=NULL,lease_expires_at=NULL,last_skip_reason=NULL,
+           owner_generation=mobile_qimen_installations.owner_generation+1,updated_at=EXCLUDED.updated_at`,
+        [userId, at.toISOString()],
+      );
+    }
     await client.query("COMMIT");
     return saved.rows[0];
   } catch (error) {

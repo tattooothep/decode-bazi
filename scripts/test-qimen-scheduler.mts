@@ -25,7 +25,7 @@ const occurrence = {
   selectedDirection: "SE",
   versionTuple: {
     month: "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1",
-    day: "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1",
+    day: "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1",
     hour: "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1",
   },
   layers: { hour: { validFrom: "2026-08-21T14:00:00.000Z", validUntil: "2026-08-21T16:00:00.000Z" } },
@@ -36,7 +36,7 @@ assert.match(key, /^qimen\|[a-f0-9]{64}$/u);
 assert.notEqual(key, scheduler.occurrenceKey(row, { ...occurrence, selectedDirection: "E" }));
 assert.notEqual(key, scheduler.occurrenceKey(row, {
   ...occurrence,
-  versionTuple: { ...occurrence.versionTuple, day: "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V2" },
+  versionTuple: { ...occurrence.versionTuple, day: "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V2" },
 }));
 
 assert.deepEqual(
@@ -72,6 +72,10 @@ const claimed = await scheduler.claimDue(fakeDb, new Date("2026-08-21T14:00:30.0
 assert.equal(claimed.length, 1);
 assert.match(queries[0], /claim_mobile_qimen_installations/u);
 assert.doesNotMatch(queries[0], /yam|today|personal/iu);
+assert.deepEqual(scheduler.localDateTime("Asia/Bangkok", new Date("2026-08-21T17:30:00.000Z")), {
+  date: "2026-08-22", time: "00:30",
+});
+assert.equal(scheduler.localDateTime("not/a-zone", new Date()), null);
 
 const selectedEvidence = {
   month: { deityZh: "九天", doorZh: "開門", starZh: "天任" },
@@ -133,6 +137,50 @@ assert.deepEqual(
   { allow: false, terminal: true, reason: "policy_quiet_hours" },
   "a queued Qimen attempt is terminal in quiet hours and cannot replay in another shichen",
 );
+assert.deepEqual(
+  delivery.currentPolicyDecision(
+    { kind: "qimen", privacy_safe: true, transactional: false, source_facts: {} },
+    {
+      privacy_preview: false,
+      now_at: new Date("2026-08-21T14:06:00.000Z"),
+      qimen_enabled: true,
+      qimen_expires_at: "2026-08-21T16:00:00.000Z",
+      qimen_send_deadline: "2026-08-21T14:05:00.000Z",
+      qimen_timezone: "Asia/Bangkok",
+      qimen_quiet_start: 22,
+      qimen_quiet_end: 7,
+    },
+    0,
+  ),
+  { allow: false, terminal: true, reason: "policy_late_occurrence" },
+  "a retry can never escape the five-minute occurrence admission window",
+);
+assert.deepEqual(
+  delivery.currentPolicyDecision(
+    { kind: "qimen", privacy_safe: true, transactional: false, source_facts: {} },
+    {
+      privacy_preview: false,
+      now_at: new Date("2026-08-21T14:01:00.000Z"),
+      qimen_enabled: true,
+      qimen_expires_at: "2026-08-21T16:00:00.000Z",
+      qimen_send_deadline: "2026-08-21T14:05:00.000Z",
+      qimen_paused_until: "2026-08-22T00:00:00.000Z",
+      qimen_timezone: "Asia/Bangkok",
+      qimen_quiet_start: 22,
+      qimen_quiet_end: 7,
+    },
+    0,
+  ),
+  { allow: false, terminal: true, reason: "policy_paused" },
+  "pause terminally skips this immutable shichen instead of replaying it later",
+);
+assert.match(source, /snapshot\.accountId !== row\.user_id/u);
+assert.match(source, /snapshot\.purpose !== row\.purpose/u);
+assert.match(source, /snapshot\.layers\.hour\.validFrom !== canonicalWindow\.startAt/u);
+assert.match(source, /qimenNotificationEntitlement/u);
+assert.match(source, /paused_until/u);
+assert.match(source, /HOURKEY_RELEASE_COMMIT/u);
+assert.match(source, /producer\.backend_commit !== runtimeCommit/u);
 
 const disabledQueries: string[] = [];
 const disabledDb = {

@@ -72,6 +72,15 @@ function canonicalSolarTermMonthWindow(year, startTermCode) {
   }
 }
 
+function canonicalSolarTermInstant(year, index) {
+  if (!Number.isInteger(year) || !Number.isInteger(index) || index < 0 || index > 23) return null;
+  try {
+    return termUtcIso(SolarTerm.fromIndex(year, index));
+  } catch {
+    return null;
+  }
+}
+
 function isCanonicalSolarTermMonthWindow(value) {
   if (!value || typeof value !== "object" || typeof value.startAt !== "string") return false;
   const start = new Date(value.startAt);
@@ -88,6 +97,7 @@ module.exports = Object.freeze({
   globalTermReferenceAt,
   solarTermMonthWindowFromReference,
   solarTermMonthWindow,
+  canonicalSolarTermInstant,
   canonicalSolarTermMonthWindow,
   isCanonicalSolarTermMonthWindow,
 });

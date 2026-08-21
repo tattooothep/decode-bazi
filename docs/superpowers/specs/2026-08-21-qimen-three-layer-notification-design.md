@@ -76,19 +76,19 @@ The actionable `時家` notification uses the existing source-verified `拆補 C
 
 `月家` and `日家` must each declare their own canonical source family and calculation school. They may not be fabricated by running the hour `拆補` chart at a representative month/day time, nor may they be relabeled `置閏` context. If the approved sources do not establish a compatible month/day lineage, the feature remains disabled.
 
-### 2.6 Selected context source family; activation pending
+### 2.6 Selected context source family; independent signature pending
 
 The context layers select the pinned Chinese Text Project transcription of 《奇門法竅》 as their source family, subject to the unresolved rulings below:
 
 - `月家`: `QIMEN_FAQIAO_FEIPAN_YUEJIA_V1`, the flying-plate month method in 卷二 `論月奇法`;
-- `日家`: `QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1`, the flying-plate day method in 卷二 `論日奇法`, governed by the same work's 超接拆補 rules; and
+- `日家`: `FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1`, the flying-plate day method in 卷二 `論日奇法`, using an explicitly editorial nominal four-qi boundary profile; it does not claim 超接拆補/Fu-head resolution; and
 - source evidence: `data/library/qmdj/qimen-faqiao-c4-source-excerpts.md`, SHA-256 `987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460`.
 
 The upstream catalog does not identify the base edition. That limitation is disclosed in the runtime manifest and the app's expanded provenance. The transcription is pinned evidence, not a claim of critical-edition status.
 
 `月家` and `日家` are both `奇門法竅 · 飛盤`; the actionable existing `時家` remains the separately source-verified `轉盤時家拆補` profile. The UI may place their same compass palaces next to each other but must preserve those lineage labels and raw component order.
 
-The upstream 日家 line `日奇以四十節氣為准` is preserved verbatim; its immediately following enumeration of twelve Yang terms plus twelve Yin terms governs the explicit editorial normalization to 24 terms. The 卷六 `冬至丁未` worked boundary belongs to 時家/36-Ju discussion and may not be presented as proof of the 60-day 日家 transition. The selected source does not yet provide a worked rule that lifts five-day Fu-head segments into every 60-day 日家 state. Until an independently signed decision table or a complete primary lineage is adopted, 日家 resolution fails closed with `QIMEN_CONTEXT_BOUNDARY_UNRESOLVED`.
+The upstream 日家 line `日奇以四十節氣為准` is preserved verbatim; its immediately following enumeration of twelve Yang terms plus twelve Yin terms governs the explicit editorial normalization to 24 terms. The 卷六 `冬至丁未` worked boundary belongs to 時家/36-Ju discussion and may not be presented as proof of the 60-day 日家 transition. The selected source does not provide a worked rule that lifts five-day Fu-head segments into every 60-day 日家 state. This release therefore adopts a separately versioned nominal profile with half-open astronomical intervals and no carry: 冬至→陽1, 雨水→陽7, 穀雨→陽4, 夏至→陰9, 處暑→陰3, 霜降→陰6. It must never be labeled 拆補.
 
 The work also contains competing center-lodging statements: the 卷二 seasonal four-corner rule and the 卷六 Yang-to-Gen/Yin-to-Kun rule. Raw center evidence must always be retained. This release candidate explicitly selects `FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1` only as an effective display annotation: Yang lodges to Gen 8 and Yin to Kun 2. It never moves, deletes, or duplicates the raw center component, never creates a ninth door/deity, and does not claim that the policy is the work's only position.
 

@@ -37,6 +37,11 @@ assert.match(migration, /CHECK \(state IN \('claimed','reserved','skipped'\)\)/u
 assert.match(migration, /UNIQUE\(user_id,installation_id,occurrence_key\)/u);
 assert.match(migration, /jsonb_typeof\(snapshot\)='object'/u);
 assert.match(migration, /snapshot_digest ~ '\^\[0-9a-f\]\{64\}\$'/u);
+assert.match(migration, /UNIQUE\(user_id,installation_id,purpose,hour_valid_from\)/u,
+  "one logical installation/purpose/shichen slot cannot send twice after a version or direction change");
+assert.match(migration, /push_log_id uuid REFERENCES mobile_push_log\(id\) ON DELETE CASCADE/u,
+  "bounded retention deletes parent and occurrence together instead of silently detaching immutable evidence");
+assert.match(migration, /OLD\.state='claimed' AND NEW\.state IN \('reserved','skipped'\)/u);
 assert.match(migration, /send_deadline <= hour_valid_until/u);
 assert.match(migration, /CREATE TRIGGER mobile_qimen_occurrence_immutable/u);
 assert.match(migration, /OLD\.snapshot IS DISTINCT FROM NEW\.snapshot/u);

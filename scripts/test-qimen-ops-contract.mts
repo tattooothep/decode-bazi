@@ -17,7 +17,7 @@ const preflight = readFileSync("scripts/notification-observability-preflight.cjs
 
 assert.match(service, /^WorkingDirectory=\/root\/releases\/current$/mu);
 assert.match(service, /^ExecStart=\/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-qimen-push-cron\.cjs --batch=500 --workers=20$/mu);
-assert.match(service, /^TimeoutStartSec=50$/mu);
+assert.match(service, /^TimeoutStartSec=55$/mu);
 assert.match(service, /^NoNewPrivileges=true$/mu);
 assert.match(service, /^ProtectSystem=strict$/mu);
 assert.match(service, /^ReadWritePaths=\/var\/lib\/hourkey-notification$/mu);
