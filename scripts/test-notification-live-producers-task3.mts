@@ -38,15 +38,9 @@ const liveQimenAdvisory = qimenAdvisory.buildQimenAdvisory(sourceFixture.qimen.a
   purpose: sourceFixture.qimen.request.purpose,
 });
 assert.ok(liveQimenAdvisory);
-const liveYamAdvisory = qimenAdvisory.buildQimenAdvisory(sourceFixture.yam.qimenApi, {
-  timezone: sourceFixture.yam.qimenRequest.timezone,
-  longitude: sourceFixture.yam.qimenRequest.lng,
-  purpose: sourceFixture.yam.qimenRequest.purpose,
-});
-assert.ok(liveYamAdvisory);
 const liveYamNotice = yam.buildYamProducer({
   id: "acct-live-001", profile_id: "profile-live-001", tokens: [], user_timezone: "Asia/Bangkok",
-}, { ...sourceFixture.yam, highlight: liveYamAdvisory });
+}, sourceFixture.yam);
 assert.ok(liveYamNotice);
 const liveZibaiSnapshot = buildZibaiSnapshot(new Date("2026-08-16T03:07:00.000Z"), 100.5018);
 const liveZibaiRow = {
@@ -328,7 +322,7 @@ for (const locale of locales) {
   const savedCopy = personal.buildSavedDateCopy("1h", "16/08, 08:00", "launch", family);
   const dailyCopy = daily.buildDailyCopy({ loc: family, slot: "morning", dateLabel: "15/08", score: 72,
     label: "good", tongshuYi: family === "th" ? ["เริ่มงาน"] : [], golden: { range: "09:00-11:00", quality: "best" } });
-  const yamCopy = yam.buildYamCopy({ range: "09:00-11:00", quality: "best" }, "巳", liveYamAdvisory, family);
+  const yamCopy = yam.buildYamCopy({ range: "09:00-11:00", quality: "best" }, "巳", family);
   const qimenCopy = personal.buildQimenCopy(liveQimenAdvisory, family);
   const shrineCopy = shrine.buildMessage({ th: "เทศกาลจงหยวน", en: "Ghost Festival", zh: "中元節", kind: "festival" }, family);
   for (const [kind, rendered, required] of [

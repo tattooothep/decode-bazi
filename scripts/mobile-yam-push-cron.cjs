@@ -10,7 +10,6 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 const fs = require("node:fs");
 const { Client } = require("pg");
-const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 
 const DRY = process.argv.includes("--dry");
 /**
@@ -72,72 +71,68 @@ async function fetchHours(user, profileId, dateStr, signal) {
 }
 
 
-/**
- * ── ทิศมงคลกับองค์เทพประจำยาม จากผังฉีเหมินจริง (31 ก.ค. 69) ──
- *
- * เจ้าของสั่งเอง: "เพิ่มชื่อเทพไปหน่อยสิ ว่าฤกษ์นี้เทพอะไร รองรับทุกภาษานะ"
- *
- * 🔴 ก่อนหน้านี้ใบยามไม่มีฉีเหมินเลยสักบรรทัด
- * ข้อความคือ "เหมาะลงมือเรื่องสำคัญของคุณ" ซึ่งเป็นคำตายตัว
- * พูดกับทุกคนเหมือนกันหมดทุกใบ ไม่ได้มาจากศาสตร์ใดเลย
- *
- * 🔴 ข้อจำกัดที่ต้องพูดตรง: ผังฉีเหมินของยามเป็นของ **ทุกคนเหมือนกัน**
- * ไม่ได้ผูกกับดวงผู้ใช้ ข้อความจึงห้ามเขียนให้เข้าใจว่าคำนวณจากดวงเขา
- *
- * ไม่มีผัง = ส่งใบแบบเดิม ไม่ใช่เดาทิศให้ — เพราะผู้ใช้จะหันหน้าไปจริง
- */
-/**
- * ขอผังฉีเหมิน canonical สำหรับจุดตัวอย่างในช่วงที่กำลังจะมาถึง
- * แล้วให้ advisory layer ตัดสินจากประตู–ดาว–เทพ–旺衰–格局ร่วมกัน
- *
- * @returns {Promise<null | object>}
- */
-async function fetchQimenHighlight(user, dateStr, startTime, lat, lng, timezone, instant, signal) {
-  try {
-    signal?.throwIfAborted();
-    return await qimenAdvisory.fetchCanonicalQimenAdvisory({
-      date: dateStr, time: startTime, lat, lng, timezone,
-      instant: instant instanceof Date ? instant.toISOString() : String(instant),
-    }, {
-      signal,
-    });
-  } catch (error) {
-    signal?.throwIfAborted();
-    // ห้ามเงียบ — ผังหายแล้วไม่มีใครรู้ว่าเพราะอะไร
-    console.error("[mobile-yam-push] ขอผังฉีเหมินไม่สำเร็จ category=yam error_code=qimen_fetch_failed");
-    return null;
-  }
-}
-
-/** ท่อนทิศ+องค์เทพ 3 ภาษา — ต่อท้ายเนื้อใบ */
-function qimenLine(highlight, locale) {
-  return qimenAdvisory.buildQimenYamLine(highlight, locale);
-}
-
-function buildYamCopy(upcoming, branch, highlight, locale) {
+function buildYamCopy(upcoming, branch, locale) {
   const raw = String(locale || "th").toLowerCase();
   const loc = raw === "th" ? "th" : raw === "zh" || raw === "cn" || raw.startsWith("zh-") ? "zh" : "en";
   const range = String(upcoming?.range || "");
   const best = upcoming?.quality === "best";
   if (loc === "zh") return {
     title: `🔔 ${best ? "最佳吉時" : "吉時"}即將開始`,
-    body: `${range} ${branch ? `(${branch}) ` : ""}適合處理重要事項 · 開啟今日運勢查看完整時段${qimenLine(highlight, loc)}`,
+    body: `${range} ${branch ? `(${branch}) ` : ""}適合處理重要事項 · 開啟今日運勢查看完整時段`,
   };
   if (loc === "en") return {
     title: `🔔 ${best ? "Best hour" : "Good hour"} starts soon`,
-    body: `${range} ${branch ? `(${branch}) ` : ""}is suitable for important action · Open Today to review the full window${qimenLine(highlight, loc)}`,
+    body: `${range} ${branch ? `(${branch}) ` : ""}is suitable for important action · Open Today to review the full window`,
   };
   return {
     title: `🔔 ${best ? "ยามดีมาก" : "ยามดี"}กำลังมาถึง`,
-    body: `${range} ${branch ? `(${branch}) ` : ""}เหมาะลงมือเรื่องสำคัญ · เปิดดวงวันนี้เพื่อดูช่วงเวลาเต็ม${qimenLine(highlight, loc)}`,
+    body: `${range} ${branch ? `(${branch}) ` : ""}เหมาะลงมือเรื่องสำคัญ · เปิดดวงวันนี้เพื่อดูช่วงเวลาเต็ม`,
   };
 }
 
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
-const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
+
+function civilYamRangeWindow(date, range, timezone) {
+  const match = /^(\d{2}:\d{2})-(\d{2}:\d{2})$/u.exec(String(range || ""));
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(String(date || "")) || !match) throw new TypeError("yam_range_invalid");
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  });
+  const instantFor = (dateKey, time) => {
+    const [year, month, day] = dateKey.split("-").map(Number);
+    const [hour, minute] = time.split(":").map(Number);
+    if (hour > 23 || minute > 59) throw new TypeError("yam_range_invalid");
+    const target = Date.UTC(year, month - 1, day, hour, minute);
+    let candidate = new Date(target);
+    const partsAt = (at) => Object.fromEntries(formatter.formatToParts(at)
+      .filter((part) => part.type !== "literal").map((part) => [part.type, Number(part.value)]));
+    for (let i = 0; i < 4; i += 1) {
+      const parts = partsAt(candidate);
+      candidate = new Date(target - (Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)
+        - Math.floor(candidate.valueOf() / 1_000) * 1_000));
+    }
+    const wanted = `${dateKey}|${time}`;
+    const matches = [candidate.valueOf() - 3_600_000, candidate.valueOf(), candidate.valueOf() + 3_600_000]
+      .map((value) => new Date(value)).filter((value) => {
+        const parts = partsAt(value);
+        return `${String(parts.year).padStart(4, "0")}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}|${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}` === wanted;
+      }).sort((left, right) => left - right);
+    if (!matches.length) throw new RangeError("yam_range_unavailable");
+    return matches[0];
+  };
+  const start = instantFor(date, match[1]);
+  let end = instantFor(date, match[2]);
+  if (end <= start) {
+    const nextDate = new Date(`${date}T12:00:00.000Z`);
+    nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+    end = instantFor(nextDate.toISOString().slice(0, 10), match[2]);
+  }
+  return Object.freeze({ startAt: start.toISOString(), endAt: end.toISOString() });
+}
 
 function buildYamProducer(user, input) {
   const hours = Array.isArray(input?.hoursApi?.hours) ? input.hoursApi.hours : [];
@@ -155,15 +150,14 @@ function buildYamProducer(user, input) {
   if (!upcoming || !user?.id || !user?.profile_id) return null;
   const date = String(input?.date || "");
   const branch = String(upcoming.branch || "");
-  const highlight = input?.highlight || null;
   let yamWindow;
   try {
-    yamWindow = qimenAdvisory.civilRangeWindow(date, String(upcoming.range || ""), user.user_timezone);
+    yamWindow = civilYamRangeWindow(date, String(upcoming.range || ""), user.user_timezone);
   } catch {
     return null;
   }
-  const eventEndAt = qimenAdvisory.earliestExpiry(yamWindow.endAt, highlight?.validUntil);
-  const build = (locale) => buildYamCopy(upcoming, branch, highlight, locale);
+  const eventEndAt = yamWindow.endAt;
+  const build = (locale) => buildYamCopy(upcoming, branch, locale);
   const historyCopies = delivery.localizedHistoryCopies(build);
   const payload = notificationPayload.buildNotificationPayload("yam", String(user.id), {
     range: String(upcoming.range || ""), quality: String(upcoming.quality || ""), date, url: "/today",
@@ -181,7 +175,6 @@ function buildYamProducer(user, input) {
       profileId: user.profile_id,
       timezone: user.user_timezone,
       branch,
-      qimen: highlight ? qimenAdvisory.qimenSourceFacts(highlight).qimen : null,
     },
     messages: (user.tokens || []).map((entry) => {
       const raw = entry && typeof entry === "object" ? entry : { device: entry, locale: "th" };
@@ -193,44 +186,6 @@ function buildYamProducer(user, input) {
       };
     }),
   };
-}
-
-function qimenSampleTime(range) {
-  const match = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/u.exec(String(range || ""));
-  if (!match) return null;
-  const start = Number(match[1]) * 60 + Number(match[2]);
-  let end = Number(match[3]) * 60 + Number(match[4]);
-  if (end <= start) end += 24 * 60;
-  const midpoint = Math.floor((start + end) / 2) % (24 * 60);
-  return `${String(Math.floor(midpoint / 60)).padStart(2, "0")}:${String(midpoint % 60).padStart(2, "0")}`;
-}
-
-function qimenSampleContext(date, range, timezone) {
-  const match = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/u.exec(String(range || ""));
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(String(date || "")) || !match) return null;
-  const start = Number(match[1]) * 60 + Number(match[2]);
-  let end = Number(match[3]) * 60 + Number(match[4]);
-  if (end <= start) end += 24 * 60;
-  const midpoint = Math.floor((start + end) / 2);
-  const sampleDate = new Date(`${date}T12:00:00.000Z`);
-  if (midpoint >= 24 * 60) sampleDate.setUTCDate(sampleDate.getUTCDate() + 1);
-  const sampleDateKey = sampleDate.toISOString().slice(0, 10);
-  const time = `${String(Math.floor((midpoint % (24 * 60)) / 60)).padStart(2, "0")}:${String(midpoint % 60).padStart(2, "0")}`;
-  try {
-    const instant = qimenAdvisory.civilInstant(sampleDateKey, time, timezone);
-    return Object.freeze({ date: sampleDateKey, time, instant: instant.toISOString() });
-  } catch {
-    return null;
-  }
-}
-
-async function loadQimenLocation(db, userId) {
-  const result = await db.query(
-    `SELECT qimen_latitude,qimen_longitude,qimen_location_updated_at
-       FROM mobile_notification_prefs WHERE user_id=$1 AND qimen_enabled=true`,
-    [userId],
-  );
-  return result.rows[0] || null;
 }
 
 const YAM_USERS_SQL = `
@@ -245,7 +200,7 @@ const YAM_USERS_SQL = `
              AND COALESCE(p.is_archived,false)=false
              ORDER BY (p.relationship_type IS NULL OR btrim(p.relationship_type::text)='') DESC, p.created_at ASC LIMIT 1) AS profile_id,
            np.yam_enabled, np.auspicious_enabled, np.daily_enabled,
-           np.qimen_enabled, np.shrine_enabled, np.goal_enabled, np.saved_date_enabled,
+           np.shrine_enabled, np.goal_enabled, np.saved_date_enabled,
            np.yam_min_quality, np.yam_lead_minutes,
            to_jsonb(u)->>'tier' AS tier,
            to_jsonb(u)->>'sub_expires_at' AS sub_expires_at,
@@ -261,7 +216,7 @@ const YAM_USERS_SQL = `
       LEFT JOIN mobile_notification_prefs np ON np.user_id = u.id
      WHERE t.enabled = true AND u.deleted_at IS NULL
      GROUP BY u.id, np.user_id, np.yam_enabled, np.auspicious_enabled,
-              np.daily_enabled, np.qimen_enabled, np.shrine_enabled, np.goal_enabled,
+              np.daily_enabled, np.shrine_enabled, np.goal_enabled,
               np.saved_date_enabled, np.yam_min_quality, np.yam_lead_minutes,
               np.quiet_start, np.quiet_end, np.max_per_day, np.paused_until, np.timezone, u.timezone`;
 
@@ -335,36 +290,15 @@ async function runScheduler(db, schedulerSignal) {
         return diff >= 0 && diff <= leadMin;
       });
       if (!upcoming) { skipped++; continue; }
-      // Today Hours เป็นช่วงนาฬิกา แต่ Qimen ใช้เวลาสุริยะจริง จึงสุ่มที่
-      // กึ่งกลางช่วงและแสดงขอบเขต Qimen จริงแยกในข้อความ ห้ามครอบทั้งยาม
-      const timezone = u.user_timezone || guard.FALLBACK_TZ;
-      const sample = qimenSampleContext(dateStr, upcoming.range, timezone);
-      const entitlement = sample && u.qimen_enabled === true
-        ? qimenAdvisory.qimenNotificationEntitlement(u, { ...sample, timezone, now: runAt })
-        : { allow: false };
-      const qimenLocation = entitlement.allow ? await loadQimenLocation(db, u.id) : null;
-      const highlight = !sample || !entitlement.allow ? null : await science.yamQimenHighlight({
-        qimenEnabled: u.qimen_enabled === true,
-        location: qimenLocation ? {
-          fresh: Boolean(qimenLocation.qimen_location_updated_at)
-            && runAt.getTime() - new Date(qimenLocation.qimen_location_updated_at).getTime() <= 30 * 86_400_000,
-          latitude: qimenLocation.qimen_latitude,
-          longitude: qimenLocation.qimen_longitude,
-        } : null,
-        fetchHighlight: (lat, lng) => fetchQimenHighlight(
-          u, sample.date, sample.time, lat, lng, timezone, sample.instant, schedulerSignal,
-        ),
-      });
-
       const notice = buildYamProducer(u, {
-        date: dateStr, nowMinutes: nowMin, hoursApi: data, upcoming, highlight,
+        date: dateStr, nowMinutes: nowMin, hoursApi: data, upcoming,
       });
       if (!notice) { skipped++; continue; }
       const result = await delivery.deliver(db, notice, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
       else if (result.status === "failed") failed++;
       else skipped++;
-      if (DRY) console.log(`[mobile-yam-push] category=yam dry_candidate=1 qimen=${highlight !== null}`);
+      if (DRY) console.log("[mobile-yam-push] category=yam dry_candidate=1");
       schedulerSignal.throwIfAborted();
     } catch (e) {
       schedulerSignal.throwIfAborted();
@@ -392,6 +326,6 @@ async function main() {
   }
 }
 
-module.exports = { YAM_USERS_SQL,buildYamCopy,buildYamProducer,fetchHours,fetchQimenHighlight,loadQimenLocation,loadYamUsers,main,qimenLine,qimenSampleContext,qimenSampleTime,runScheduler };
+module.exports = { YAM_USERS_SQL,buildYamCopy,buildYamProducer,civilYamRangeWindow,fetchHours,loadYamUsers,main,runScheduler };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-yam-push] category=yam error_code=scheduler_failed"); process.exit(1); });

@@ -13,7 +13,7 @@ function check(name: string, fn: () => void | Promise<void>) {
   });
 }
 
-await check("Yam never fetches Qimen or reads location when qimen consent is false", async () => {
+await check("Qimen highlight support never reads location or fetches when consent is false", async () => {
   let fetches = 0;
   const location = new Proxy({}, {
     get() { throw new Error("disabled Qimen must not read location"); },
@@ -113,18 +113,16 @@ await check("all scheduler entrypoints acquire their named DB run lease", () => 
 
 await check("scheduler adapters wire consent, timezone, bound goals, due rows, and total deadline", () => {
   const yam = readFileSync("scripts/mobile-yam-push-cron.cjs", "utf8");
-  assert.match(yam, /qimenEnabled:\s*u\.qimen_enabled === true/u);
+  assert.doesNotMatch(yam, /qimen-notification-advisory|yamQimenHighlight|qimenNotificationEntitlement|qimen_enabled/u);
   const yamInventory = /const YAM_USERS_SQL = `([\s\S]*?)`;/u.exec(yam)?.[1] || "";
-  assert.doesNotMatch(yamInventory, /qimen_latitude|qimen_longitude|qimen_location_updated_at/u);
-  assert.ok(yam.indexOf("qimenNotificationEntitlement") < yam.indexOf("await loadQimenLocation"),
-    "the product gate must run before precise Qimen location is queried");
+  assert.doesNotMatch(yamInventory, /qimen_/u);
   const personal = readFileSync("scripts/mobile-personal-reminders-cron.cjs", "utf8");
   assert.doesNotMatch(personal, /goals\/custom\$\{user\.profile_id/u);
   assert.match(personal, /timezone:\s*user\.user_timezone/u);
   assert.match(personal, /interval '45 minutes'[\s\S]+interval '75 minutes'[\s\S]+interval '23 hours 45 minutes'/u);
   assert.match(personal, /fetchCanonicalQimenAdvisory\(request\)/u);
   assert.doesNotMatch(personal, /getJson\(user, `\$\{BASE\}\/api\/qimen/u);
-  assert.match(yam, /fetchCanonicalQimenAdvisory/u);
+  assert.doesNotMatch(yam, /fetchCanonicalQimenAdvisory/u);
   const daily = readFileSync("scripts/mobile-daily-fortune-push-cron.cjs", "utf8");
   assert.match(daily, /withTotalTimeout/u);
   const qimenRoute = readFileSync("src/app/api/qimen/route.ts", "utf8");

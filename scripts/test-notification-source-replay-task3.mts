@@ -48,12 +48,7 @@ const standaloneAdvisory = qimenAdvisory.buildQimenAdvisory(fixture.qimen.api, {
   longitude: fixture.qimen.request.lng,
   purpose: fixture.qimen.request.purpose,
 });
-const yamAdvisory = qimenAdvisory.buildQimenAdvisory(fixture.yam.qimenApi, {
-  timezone: fixture.yam.qimenRequest.timezone,
-  longitude: fixture.yam.qimenRequest.lng,
-  purpose: fixture.yam.qimenRequest.purpose,
-});
-assert.ok(standaloneAdvisory && yamAdvisory, "sanitized canonical Qimen fixtures must produce complete advisories");
+assert.ok(standaloneAdvisory, "sanitized canonical Qimen fixture must produce a complete advisory");
 const fusionNotice = buildFusionMobileNotice(
   fixture.accountId,
   "fusion|job|94000000-0000-4000-8000-000000000001",
@@ -73,7 +68,7 @@ assert.equal(notificationHistoryPayload("not-a-uuid", { v: 1 }), null);
 assert.equal(notificationHistoryPayload(historyId, ["not", "a", "payload"]), null);
 
 const notices: Array<{ name: string; accountLocale: string; notice: any; parse: boolean }> = [
-  { name: "yam", accountLocale: "en", notice: yam.buildYamProducer(user, { ...fixture.yam, highlight: yamAdvisory }), parse: true },
+  { name: "yam", accountLocale: "en", notice: yam.buildYamProducer(user, fixture.yam), parse: true },
   { name: "daily", accountLocale: "zh", notice: daily.buildDailyProducer(user, fixture.daily), parse: true },
   { name: "monthly", accountLocale: "ja", notice: monthly.buildMonthlyNotice(user, fixture.monthly.date), parse: true },
   { name: "network", accountLocale: "cn", notice: network.buildNetworkNotice(user, fixture.network.date, fixture.network.api), parse: true },
@@ -102,12 +97,16 @@ const qimenNotice = notices.find((item) => item.name === "qimen")!.notice;
 for (const notice of [yamNotice, qimenNotice]) {
   const rendered = Object.values(notice.historyCopies) as Array<{ title: string; body: string }>;
   assert.ok(rendered.every((copy) => copy.body.length <= 400), `${notice.kind} copy must fit the real durable/provider bound`);
-  assert.ok(rendered.every((copy) => /(?:玄武|六合)/u.test(copy.body)), `${notice.kind} copy must name the selected deity`);
-  assert.ok(rendered.every((copy) => /開門/u.test(copy.body)), `${notice.kind} copy must name the selected door`);
-  assert.ok(rendered.every((copy) => /(?:天沖|天英)/u.test(copy.body)), `${notice.kind} copy must name the selected star`);
   assert.ok(Date.parse(notice.sourceFacts.eventEndAt) > Date.parse(notice.sourceFacts.eventStartAt),
     `${notice.kind} source facts must retain an immutable bounded occurrence`);
 }
+assert.ok(Object.values(yamNotice.historyCopies).every((copy: any) => !/(?:玄武|六合|開門|天沖|天英)/u.test(copy.body)),
+  "Yam copy must not carry Qimen component names");
+assert.ok(!Object.hasOwn(yamNotice.sourceFacts, "qimen"), "Yam source facts must remain independent from Qimen");
+const qimenRendered = Object.values(qimenNotice.historyCopies) as Array<{ title: string; body: string }>;
+assert.ok(qimenRendered.every((copy) => /玄武/u.test(copy.body)), "dedicated Qimen copy must name the selected deity");
+assert.ok(qimenRendered.every((copy) => /開門/u.test(copy.body)), "dedicated Qimen copy must name the selected door");
+assert.ok(qimenRendered.every((copy) => /天沖/u.test(copy.body)), "dedicated Qimen copy must name the selected star");
 assert.equal(qimenNotice.sourceFacts.qimen.recommendation, "caution",
   "canonical caution formations must never be promoted to a best-direction claim");
 
