@@ -6,6 +6,7 @@ const SCHEDULER_NAMES = Object.freeze([
   "monthly-report",
   "network-morning",
   "zibai",
+  "qimen",
 ]);
 const SCHEDULER_LEASE_NAMES = Object.freeze([
   "yam",
@@ -16,6 +17,7 @@ const SCHEDULER_LEASE_NAMES = Object.freeze([
   "monthly-report",
   "network-morning",
   "zibai",
+  "qimen",
 ]);
 
 // Slightly above each reviewed source cadence. Monthly work must not be judged
@@ -28,6 +30,7 @@ const SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS = Object.freeze({
   "monthly-report": 32 * 24 * 60 * 60,
   "network-morning": 26 * 60 * 60,
   zibai: 10 * 60,
+  qimen: 3 * 60,
 });
 
 function safeTimezone(value) {

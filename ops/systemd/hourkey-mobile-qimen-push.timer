@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Hourkey Qimen C4 scheduler every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=1s
+Persistent=true
+Unit=hourkey-mobile-qimen-push.service
+
+[Install]
+WantedBy=timers.target

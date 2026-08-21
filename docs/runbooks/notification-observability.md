@@ -9,7 +9,7 @@ This source-controlled package is read-only for health and reconciliation. It em
   have been reviewed.
 - Source-review gates have approved the exact revision.
 - The service account has only the database access needed by the existing worker and read-only health/reconciliation queries.
-- Each of the six source schedulers writes its own timestamp-only heartbeat
+- Each source scheduler writes its own timestamp-only heartbeat
   under the directory passed as `--scheduler-heartbeat-dir` after a successful,
   lease-owning run. A source file or template is not evidence that its external
   cron/timer is installed or live; missing files therefore fail health closed.

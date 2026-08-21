@@ -151,7 +151,7 @@ try {
   assert.equal(report.metrics.receipts.stalledCount, 3, "Expo provider acceptance without accepted_at is stalled and unhealthy beyond the historical metrics lookback");
   assert.equal(report.metrics.readiness.mismatchCount, 2, "actively routed provider/token and credential readiness mismatches are counted without token output");
   assert.equal(report.metrics.worker.fresh, false, "stale worker heartbeat is visible and unhealthy");
-  assert.equal(report.metrics.schedulers.every((entry: { fresh: boolean }) => entry.fresh), true, "all seven fresh scheduler heartbeats are individually healthy");
+  assert.equal(report.metrics.schedulers.every((entry: { fresh: boolean }) => entry.fresh), true, "all fresh scheduler heartbeats are individually healthy");
   assert.deepEqual(report.metrics.zibai, {
     overdueCount: 1, oldestLagSeconds: report.metrics.zibai.oldestLagSeconds,
     locationFreshCount: 1, locationStaleCount: 0, locationAbsentCount: 0, engineFailureCount: 1,
@@ -179,7 +179,7 @@ try {
   });
   assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_missing:yam"), true, "a missing named scheduler heartbeat has an actionable reason");
   assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_stale:daily-fortune"), true, "a stale named scheduler heartbeat has an actionable reason");
-  assert.equal(schedulerReport.metrics.schedulers.length, 7, "health reports every notification scheduler rather than one generic marker");
+  assert.equal(schedulerReport.metrics.schedulers.length, schedulerNames.length, "health reports every notification scheduler rather than one generic marker");
   const cadenceNow = new Date("2026-08-16T12:00:00.000Z");
   const cadenceSchedulers = Object.fromEntries(schedulerNames.map((name) => [name, cadenceNow.toISOString()]));
   cadenceSchedulers.yam = new Date(cadenceNow.valueOf() - 2 * 3_600_000).toISOString();

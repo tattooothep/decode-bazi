@@ -32,6 +32,7 @@ try {
     "monthly-report": "scripts/mobile-monthly-report-push-cron.cjs",
     "network-morning": "scripts/mobile-network-morning-push-cron.cjs",
     zibai: "scripts/mobile-zibai-push-cron.cjs",
+    qimen: "scripts/mobile-qimen-push-cron.cjs",
   };
   for (const [name, file] of Object.entries(files)) {
     const source = readFileSync(file, "utf8");

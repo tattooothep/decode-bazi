@@ -164,6 +164,11 @@ async function deriveParent(db, pushLogId) {
 
 async function reserve(db, notice, dry = false) {
   assertTransactionalKind(notice);
+  const qimenV2 = notice?.kind === "qimen" && typeof notice?.payload?.qimenV2 === "string";
+  const qimenOccurrenceId = qimenV2 && typeof notice?.qimenOccurrenceId === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.qimenOccurrenceId)
+    ? notice.qimenOccurrenceId : null;
+  if (qimenV2 && qimenOccurrenceId === null) throw new TypeError("qimen occurrence reservation required");
   const zibaiOccurrenceId = notice?.kind === "zibai" && typeof notice?.zibaiOccurrenceId === "string"
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.zibaiOccurrenceId)
     ? notice.zibaiOccurrenceId : null;
@@ -197,6 +202,8 @@ async function reserve(db, notice, dry = false) {
     if (!context) return null;
     let zibaiOccurrence = null;
     let zibaiToken = null;
+    let qimenOccurrence = null;
+    let qimenToken = null;
     if (notice.kind === "zibai") {
       if (!Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
       const item = notice.messages[0];
@@ -223,8 +230,35 @@ async function reserve(db, notice, dry = false) {
         throw new Error("zibai_token_capability_changed");
       }
     }
+    if (qimenV2) {
+      if (!Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
+      const item = notice.messages[0];
+      if (typeof item?.data?.qimenV2 !== "string" || item.data.qimenV2 !== notice.payload.qimenV2) {
+        throw new TypeError("qimen_notice_schema_mismatch");
+      }
+      const tokenResult = await client.query(
+        `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform,qimen_payload_schema
+           FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true FOR UPDATE`,
+        [item?.tokenId, notice.userId],
+      );
+      qimenToken = tokenResult.rows[0] || null;
+      if (!qimenToken || Number(qimenToken.qimen_payload_schema) !== 2) {
+        throw new Error("qimen_token_capability_changed");
+      }
+      const occurrence = await client.query(
+        `SELECT id,user_id,installation_id,state,push_log_id FROM mobile_qimen_occurrences
+          WHERE id=$1 AND user_id=$2 FOR UPDATE`,
+        [qimenOccurrenceId, notice.userId],
+      );
+      qimenOccurrence = occurrence.rows[0] || null;
+      if (!qimenOccurrence || qimenOccurrence.state !== "claimed" || qimenOccurrence.push_log_id !== null) return null;
+      if (qimenToken.installation_id !== qimenOccurrence.installation_id) {
+        throw new Error("qimen_token_capability_changed");
+      }
+    }
     const historyCopy = historyCopyFor(notice, context.locale);
-    if (context.has_prefs === true && notice.transactional !== true && notice.kind !== "zibai") {
+    if (context.has_prefs === true && notice.transactional !== true
+        && notice.kind !== "zibai" && notice.kind !== "qimen") {
       const cap = await client.query(
         `SELECT count(*)::int AS reserved_today
            FROM mobile_push_log l
@@ -250,8 +284,8 @@ async function reserve(db, notice, dry = false) {
     const attemptIds = [];
     for (const item of (Array.isArray(notice.messages) ? notice.messages.slice(0, 100) : [])) {
       if (!item?.tokenId) continue;
-      let token = zibaiToken;
-      if (notice.kind !== "zibai") {
+      let token = notice.kind === "zibai" ? zibaiToken : qimenV2 ? qimenToken : null;
+      if (notice.kind !== "zibai" && !qimenV2) {
         const tokenResult = await client.query(
           `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform
              FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true`,
@@ -261,6 +295,7 @@ async function reserve(db, notice, dry = false) {
       }
       if (!token) continue;
       if (notice.kind === "zibai" && token.installation_id !== zibaiOccurrence.installation_id) continue;
+      if (qimenV2 && token.installation_id !== qimenOccurrence.installation_id) continue;
       const provider = push.providerFor({
         ...item,
         deviceToken: token.device_push_token,
@@ -298,6 +333,13 @@ async function reserve(db, notice, dry = false) {
         `UPDATE mobile_zibai_occurrences SET state='reserved',push_log_id=$2,updated_at=now()
           WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
         [zibaiOccurrenceId, parent.rows[0].id],
+      );
+    }
+    if (qimenV2 && attemptIds.length > 0) {
+      await client.query(
+        `UPDATE mobile_qimen_occurrences SET state='reserved',push_log_id=$2,updated_at=now()
+          WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
+        [qimenOccurrenceId, parent.rows[0].id],
       );
     }
     return { id: parent.rows[0].id, attemptIds };
@@ -563,7 +605,29 @@ function currentPolicyDecision(row, context, capCount) {
     };
     return { allow: true };
   }
-  if (row.kind === "yam" || row.kind === "qimen") {
+  if (row.kind === "qimen") {
+    if (context.qimen_enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
+    const expiryValue = context.qimen_expires_at;
+    const expiresAt = expiryValue instanceof Date
+      ? new Date(expiryValue.valueOf())
+      : typeof expiryValue === "string" && expiryValue.trim() ? new Date(expiryValue) : new Date(Number.NaN);
+    if (!Number.isFinite(expiresAt.valueOf())) {
+      return { allow: false, terminal: true, reason: "policy_missing_occurrence_expiry" };
+    }
+    const queueSafetyMs = push.providerQueueSafetySeconds("qimen") * 1_000;
+    if (expiresAt.valueOf() <= now.valueOf() + queueSafetyMs) {
+      return { allow: false, terminal: true, reason: "policy_expired_occurrence" };
+    }
+    const timezone = notificationScience.safeTimezone(context.qimen_timezone);
+    const hour = Number(notificationScience.zonedClock(timezone, now).time.slice(0, 2));
+    const quietStart = Number.isInteger(Number(context.qimen_quiet_start)) ? Number(context.qimen_quiet_start) : 22;
+    const quietEnd = Number.isInteger(Number(context.qimen_quiet_end)) ? Number(context.qimen_quiet_end) : 7;
+    const quiet = quietStart === quietEnd ? false
+      : quietStart < quietEnd ? hour >= quietStart && hour < quietEnd : hour >= quietStart || hour < quietEnd;
+    if (quiet) return { allow: false, terminal: true, reason: "policy_quiet_hours" };
+    return { allow: true };
+  }
+  if (row.kind === "yam") {
     const expiresAt = new Date(row.source_facts?.eventEndAt);
     if (!Number.isFinite(expiresAt.valueOf())) {
       return { allow: false, terminal: true, reason: "policy_missing_occurrence_expiry" };
@@ -648,8 +712,29 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     context.zibai_quiet_start = zibai.rows[0]?.quiet_start;
     context.zibai_quiet_end = zibai.rows[0]?.quiet_end;
   }
+  if (row.kind === "qimen") {
+    const qimenV2 = typeof row.payload?.qimenV2 === "string";
+    if (qimenV2) {
+      const qimen = await tx.query(
+        `SELECT enabled,location_timezone,quiet_start,quiet_end
+           FROM mobile_qimen_installations WHERE user_id=$1 AND installation_id=$2`,
+        [row.user_id, row.installation_id],
+      );
+      context.qimen_enabled = qimen.rows[0]?.enabled === true;
+      context.qimen_timezone = qimen.rows[0]?.location_timezone || "UTC";
+      context.qimen_quiet_start = qimen.rows[0]?.quiet_start;
+      context.qimen_quiet_end = qimen.rows[0]?.quiet_end;
+    } else {
+      context.qimen_enabled = context.prefs?.qimen_enabled === true;
+      context.qimen_timezone = context.timezone;
+      context.qimen_quiet_start = context.prefs?.quiet_start;
+      context.qimen_quiet_end = context.prefs?.quiet_end;
+    }
+    context.qimen_expires_at = row.source_facts?.eventEndAt || null;
+  }
   let capCount = 0;
-  if (!(row.transactional === true && isTransactionalKind(row.kind)) && row.kind !== "zibai") {
+  if (!(row.transactional === true && isTransactionalKind(row.kind))
+      && row.kind !== "zibai" && row.kind !== "qimen") {
     const cap = await tx.query(
       `SELECT count(*)::int AS reserved_today
          FROM mobile_push_log l

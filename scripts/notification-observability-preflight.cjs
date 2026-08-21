@@ -41,6 +41,9 @@ function inspect(options = {}) {
     "/root/releases/current/scripts/mobile-personal-reminders-cron.cjs",
     "/root/releases/current/scripts/mobile-monthly-report-push-cron.cjs",
     "/root/releases/current/scripts/mobile-network-morning-push-cron.cjs",
+    "/root/releases/current/scripts/mobile-zibai-push-cron.cjs",
+    "/root/releases/current/scripts/mobile-qimen-push-cron.cjs",
+    "/root/releases/current/ops/systemd/hourkey-mobile-qimen-push.service",
   ];
   const releaseReadable = releasePaths.every((target) => canAccess(access, target, constants.R_OK));
   const environmentReadable = canAccess(access, "/etc/hourkey/hourkey.env", constants.R_OK);
@@ -49,7 +52,8 @@ function inspect(options = {}) {
   const stateCreatable = !stateReady && runtimeRoot
     && canAccess(access, "/var/lib", constants.W_OK) && hasStateDirectoryContract(readUnit);
   return {
-    ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable && credentialReadable && (stateReady || stateCreatable),
+    ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable && credentialReadable
+      && (stateReady || stateCreatable),
     runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, credentialReadable, stateReady, stateCreatable,
   };
 }
