@@ -68,3 +68,23 @@ The personal scheduler now runs only saved-date and goal tasks. The rerunnable c
 - `migrations/20260821_mobile_yam_qimen_cutover.rollback.md`
 - `scripts/test-personal-qimen-separation.mts`
 - `scripts/test-yam-qimen-cutover-migration.mts`
+
+## Reviewer blocker follow-up: retention-safe cutover
+
+Implementation commit: `e7a8c71330ea7edc545cd73580eaf4062fd9907c`
+
+### RED evidence
+
+`npx tsx scripts/test-yam-qimen-cutover-migration.mts` failed before the migration edit because the cutover assigned `attempts_retired_at` while keeping child attempts. The new static assertion rejected that premature retirement marker.
+
+### GREEN evidence
+
+- `npx tsx scripts/test-yam-qimen-cutover-migration.mts`
+- `npx tsx scripts/test-personal-qimen-separation.mts`
+- `npx tsx scripts/test-notification-science-task3.mts`
+- `npx tsx scripts/test-qimen-canonical-occurrence-builder.mts`
+- `npx tsx scripts/test-qimen-scheduler.mts`
+
+The disposable migration test proves scoped and clean-row behavior remains idempotent/byte-stable, then runs the real reconciliation and retention modules. Reconciliation is healthy before and after retention; normal retention deletes the dead child attempts and only then sets the parent retirement marker. The migration itself no longer sets that marker, so it cannot create `retiredParentWithAttempts` or permanently bypass retention.
+
+Concerns: none.
