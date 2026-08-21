@@ -149,13 +149,14 @@ function hourLayer(result, version, validFrom, validUntil) {
     const row = byPalace.get(palace);
     const center = direction === "C";
     const heavenInstrumentValid = center
-      ? row?.heaven_stem_zh === null || /^[乙丙丁戊己庚辛壬癸]$/u.test(String(row?.heaven_stem_zh || ""))
+      ? row?.heaven_stem_zh === null
       : /^[乙丙丁戊己庚辛壬癸]$/u.test(String(row?.heaven_stem_zh || ""));
     if (!row || String(row.direction || "").toUpperCase() !== direction
       || !/^[乙丙丁戊己庚辛壬癸]$/u.test(String(row.earth_stem_zh || ""))
       || !heavenInstrumentValid
       || !/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.star_code || ""))
-      || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.star_zh || ""))) throw canonicalError();
+      || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.star_zh || ""))
+      || (center && (row.star_code !== "TIAN_QIN" || row.star_zh !== "天禽"))) throw canonicalError();
     if (!center && (!/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.door_code || ""))
       || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.door_zh || ""))
       || !/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.deity_code || ""))

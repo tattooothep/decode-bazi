@@ -20,6 +20,7 @@ const WORKERS = Math.max(1, Math.min(20, Number((process.argv.find((arg) => arg.
 const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
 const LOCATION_LEASE_MS = 7 * 24 * 60 * 60 * 1_000;
 const PROVIDER_TTL_MS = 5 * 60 * 1_000;
+const BOUNDARY_STABILIZATION_MS = 5 * 60 * 1_000;
 // The engine intentionally marks the first five minutes around a true-solar
 // shichen boundary as caution. Keep a second five-minute interval in which a
 // stable, science-approved direction can actually be admitted for delivery.
@@ -194,6 +195,29 @@ function nextDueAt(row, at) {
   return next;
 }
 
+function retryableEngineFailure(error) {
+  const code = String(error?.code || error?.cause?.code || "");
+  const message = String(error?.message || "");
+  if (/^QIMEN_/u.test(code) || /^QIMEN_/u.test(message)) return false;
+  if (/^(?:ECONNRESET|ECONNREFUSED|EHOSTUNREACH|ENETUNREACH|ETIMEDOUT|UND_ERR_[A-Z_]+)$/u.test(code)) return true;
+  if (/^(?:AbortError|TimeoutError)$/u.test(String(error?.name || ""))) return true;
+  if (/fetch failed|network|socket|timed?\s*out/iu.test(message)) return true;
+  const http = /qimen_notification_engine_http_(\d{1,3})/u.exec(message);
+  return Boolean(http && ([408, 425, 429].includes(Number(http[1])) || Number(http[1]) >= 500));
+}
+
+function engineRetryAt(canonicalWindow, at) {
+  const deadline = Date.parse(canonicalWindow?.startAt) + SEND_GRACE_MS;
+  const retryAt = new Date(at.valueOf() + 60_000);
+  return Number.isFinite(deadline) && retryAt.valueOf() < deadline ? retryAt : null;
+}
+
+function engineFailureReason(error, retrying) {
+  const raw = String(error?.code || error?.cause?.code || error?.message || "engine_unavailable")
+    .replace(/[^A-Za-z0-9_:-]/gu, "_").slice(0, retrying ? 83 : 96) || "engine_unavailable";
+  return retrying ? `engine_retry_${raw}` : raw;
+}
+
 async function finishClaim(db, row, at, next, reason) {
   await db.query(
     `UPDATE mobile_qimen_installations SET next_due_at=$4,last_skip_reason=$5,
@@ -205,63 +229,37 @@ async function finishClaim(db, row, at, next, reason) {
 
 async function admitOccurrence(db, row, snapshot, sendDeadline) {
   const key = occurrenceKey(row, snapshot);
-  const client = typeof db.connect === "function" ? await db.connect() : db;
-  try {
-    await client.query("BEGIN");
-    await client.query("SELECT pg_advisory_xact_lock(hashtextextended('mobile-qimen-occurrence:'||$1::text,0))", [row.installation_id]);
-    const existing = await client.query(
+  // A single INSERT is already atomic and both unique constraints are the
+  // concurrency fence. Avoid wrapping the normal path in an extra BEGIN/
+  // COMMIT round trip; a conflict waits for its winner before returning.
+  const inserted = await db.query(
+    `INSERT INTO mobile_qimen_occurrences
+     (user_id,installation_id,occurrence_key,purpose,hour_valid_from,hour_valid_until,send_deadline,
+      selected_direction,version_tuple,source_tuple,snapshot,snapshot_digest,state)
+     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,'claimed')
+     ON CONFLICT DO NOTHING RETURNING id,snapshot,send_deadline`,
+    [row.user_id, row.installation_id, key, row.purpose,
+      snapshot.layers.hour.validFrom, snapshot.layers.hour.validUntil, sendDeadline,
+      snapshot.selectedDirection, JSON.stringify(snapshot.versionTuple), JSON.stringify(snapshot.sourceTuple),
+      JSON.stringify(snapshot), snapshot.snapshotDigest],
+  );
+  let admitted = inserted.rows[0] || null;
+  if (!admitted) {
+    const logical = await db.query(
       `SELECT id,state,push_log_id,snapshot,send_deadline FROM mobile_qimen_occurrences
-        WHERE user_id=$1 AND installation_id=$2 AND occurrence_key=$3 FOR UPDATE`,
-      [row.user_id, row.installation_id, key],
+        WHERE user_id=$1 AND installation_id=$2 AND purpose=$3 AND hour_valid_from=$4`,
+      [row.user_id, row.installation_id, row.purpose, snapshot.layers.hour.validFrom],
     );
-    if (existing.rows[0]) {
-      const persisted = existing.rows[0];
-      const reusable = persisted.state === "claimed" && persisted.push_log_id === null
-        && payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)
-        ? Object.freeze({
-          id: persisted.id,
-          snapshot: persisted.snapshot,
-          sendDeadline: new Date(persisted.send_deadline).toISOString(),
-          recovered: true,
-        }) : null;
-      await client.query("COMMIT");
-      return reusable;
-    }
-    const inserted = await client.query(
-      `INSERT INTO mobile_qimen_occurrences
-       (user_id,installation_id,occurrence_key,purpose,hour_valid_from,hour_valid_until,send_deadline,
-        selected_direction,version_tuple,source_tuple,snapshot,snapshot_digest,state)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,'claimed')
-       ON CONFLICT DO NOTHING RETURNING id,snapshot,send_deadline`,
-      [row.user_id, row.installation_id, key, row.purpose,
-        snapshot.layers.hour.validFrom, snapshot.layers.hour.validUntil, sendDeadline,
-        snapshot.selectedDirection, JSON.stringify(snapshot.versionTuple), JSON.stringify(snapshot.sourceTuple),
-        JSON.stringify(snapshot), snapshot.snapshotDigest],
-    );
-    let admitted = inserted.rows[0] || null;
-    if (!admitted) {
-      const logical = await client.query(
-        `SELECT id,state,push_log_id,snapshot,send_deadline FROM mobile_qimen_occurrences
-          WHERE user_id=$1 AND installation_id=$2 AND purpose=$3 AND hour_valid_from=$4 FOR UPDATE`,
-        [row.user_id, row.installation_id, row.purpose, snapshot.layers.hour.validFrom],
-      );
-      const persisted = logical.rows[0];
-      if (persisted?.state === "claimed" && persisted.push_log_id === null
-        && payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)) admitted = persisted;
-    }
-    await client.query("COMMIT");
-    return admitted ? Object.freeze({
-      id: admitted.id,
-      snapshot: admitted.snapshot,
-      sendDeadline: new Date(admitted.send_deadline).toISOString(),
-      recovered: !inserted.rows[0],
-    }) : null;
-  } catch (error) {
-    await client.query("ROLLBACK").catch(() => null);
-    throw error;
-  } finally {
-    if (client !== db && typeof client.release === "function") client.release();
+    const persisted = logical.rows[0];
+    if (persisted?.state === "claimed" && persisted.push_log_id === null
+      && payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)) admitted = persisted;
   }
+  return admitted ? Object.freeze({
+    id: admitted.id,
+    snapshot: admitted.snapshot,
+    sendDeadline: new Date(admitted.send_deadline).toISOString(),
+    recovered: !inserted.rows[0],
+  }) : null;
 }
 
 async function loadRecoverableOccurrence(db, row, canonicalWindow) {
@@ -284,7 +282,35 @@ async function loadRecoverableOccurrence(db, row, canonicalWindow) {
 }
 
 async function defaultBuildCanonicalOccurrence(row, at, options = {}) {
-  return canonicalOccurrenceRuntime.buildCanonicalQimenOccurrence(row, at, { signal: options.signal });
+  return canonicalOccurrenceRuntime.buildCanonicalQimenOccurrence(row, at, {
+    signal: options.signal,
+    fetchCanonicalQimenEngineSnapshot: options.fetchCanonicalQimenEngineSnapshot,
+  });
+}
+
+function createEngineSnapshotMemo(fetchSnapshot = qimenAdvisory.fetchCanonicalQimenEngineSnapshot) {
+  if (typeof fetchSnapshot !== "function") throw new TypeError("qimen_engine_fetcher_invalid");
+  const cache = new Map();
+  return async (input, options = {}) => {
+    options.signal?.throwIfAborted();
+    const key = payloadRuntime.canonicalStringify({
+      date: input?.date, time: input?.time, timezone: input?.timezone, instant: input?.instant,
+      lat: input?.lat, lng: input?.lng,
+    });
+    let pending = cache.get(key);
+    if (!pending) {
+      pending = Promise.resolve().then(() => fetchSnapshot(input, options));
+      cache.set(key, pending);
+    }
+    try {
+      const snapshot = await pending;
+      options.signal?.throwIfAborted();
+      return snapshot;
+    } catch (error) {
+      if (cache.get(key) === pending) cache.delete(key);
+      throw error;
+    }
+  };
 }
 
 async function processClaim(db, claim, at, dependencies = {}) {
@@ -346,14 +372,24 @@ async function processClaim(db, claim, at, dependencies = {}) {
   if (!snapshot) {
     try {
       const build = dependencies.buildCanonicalOccurrence || defaultBuildCanonicalOccurrence;
-      snapshot = await build(row, at, { signal: dependencies.signal });
+      snapshot = await build(row, at, {
+        signal: dependencies.signal,
+        fetchCanonicalQimenEngineSnapshot: dependencies.fetchCanonicalQimenEngineSnapshot,
+      });
     } catch (error) {
       if (dependencies.signal?.aborted) throw dependencies.signal.reason || error;
-      reason = String(error?.code || "engine_unavailable").slice(0, 96);
-      await finishClaim(db, row, at, next, reason);
+      const retryAt = retryableEngineFailure(error) ? engineRetryAt(canonicalWindow, at) : null;
+      reason = engineFailureReason(error, retryAt !== null);
+      await finishClaim(db, row, at, retryAt || next, reason);
       return { reserved: 0, skipped: 1, reason };
     }
     if (snapshot === null) {
+      const stabilizationAt = new Date(Date.parse(canonicalWindow.startAt) + BOUNDARY_STABILIZATION_MS);
+      if (Number.isFinite(stabilizationAt.valueOf()) && at < stabilizationAt) {
+        reason = "boundary_stabilizing";
+        await finishClaim(db, row, at, stabilizationAt, reason);
+        return { reserved: 0, skipped: 1, reason };
+      }
       reason = "no_recommendable_direction";
       await finishClaim(db, row, at, next, reason);
       return { reserved: 0, skipped: 1, reason };
@@ -377,7 +413,8 @@ async function processClaim(db, claim, at, dependencies = {}) {
       await finishClaim(db, row, at, next, admission.reason);
       return { reserved: 0, skipped: 1, reason: admission.reason };
     }
-    admitted = await admitOccurrence(db, row, snapshot, admission.sendDeadline);
+    const admit = dependencies.admitOccurrence || admitOccurrence;
+    admitted = await admit(db, row, snapshot, admission.sendDeadline);
     if (!admitted) {
       await finishClaim(db, row, at, next, "duplicate");
       return { reserved: 0, skipped: 1, reason: "duplicate" };
@@ -484,6 +521,12 @@ async function runScheduler(db, signal, at = new Date(), dependencies = {}) {
   }
   const report = { disabled: false, due: 0, reserved: 0, skipped: 0 };
   const processOne = dependencies.processClaim || processClaim;
+  const runDependencies = {
+    ...dependencies,
+    fetchCanonicalQimenEngineSnapshot: createEngineSnapshotMemo(
+      dependencies.fetchCanonicalQimenEngineSnapshot || qimenAdvisory.fetchCanonicalQimenEngineSnapshot,
+    ),
+  };
   while (report.due < maxPerRun) {
     signal.throwIfAborted();
     const claims = await claimDue(db, at, Math.min(batchLimit, maxPerRun - report.due));
@@ -492,7 +535,7 @@ async function runScheduler(db, signal, at = new Date(), dependencies = {}) {
     try {
       await forEachBounded(claims, workerCount, async (claim) => {
         signal.throwIfAborted();
-        const result = await processOne(db, claim, at, { ...dependencies, signal });
+        const result = await processOne(db, claim, at, { ...runDependencies, signal });
         report.reserved += result.reserved;
         report.skipped += result.skipped;
       });
@@ -530,6 +573,7 @@ module.exports = Object.freeze({
   buildQimenCopy,
   buildQimenNotice,
   claimDue,
+  createEngineSnapshotMemo,
   inQuietHours,
   localDateTime,
   loadClaimContext,

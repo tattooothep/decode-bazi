@@ -48,13 +48,18 @@ function layer(kind, validFrom, validUntil, chartInput = {}) {
         rawDeityTargetPalace: chart.rawDeityTarget, effectiveDeityTargetPalace: chart.effectiveDeityTarget,
       },
     },
-    palaces: chart.palaces.map((palace) => ({
+    palaces: chart.palaces.map((palace) => {
+      const centerStar = chart.palaces.find((candidate) => candidate.direction === "C").star;
+      const hourStar = kind !== "hour" ? palace.star
+        : palace.direction === "C" ? "天禽"
+          : palace.star === "天禽" ? centerStar : palace.star;
+      return ({
       palace: palace.palace,
       direction: palace.direction,
       earthInstrument: palace.earthInstrument,
       heavenInstrument: kind === "hour" && palace.direction === "C" ? null : palace.heavenInstrument,
-      starCode: STAR_CODES[palace.star],
-      starZh: palace.star,
+      starCode: STAR_CODES[hourStar],
+      starZh: hourStar,
       doorCode: palace.door === null ? null : DOOR_CODES[palace.door],
       doorZh: palace.door,
       deityCode: palace.deity === null ? null : DEITY_CODES[palace.deity],
@@ -66,7 +71,7 @@ function layer(kind, validFrom, validUntil, chartInput = {}) {
       starVigor: kind === "hour" ? "旺" : null,
       isVoid: false,
       isHorse: false,
-    })),
+    }); }),
   };
 }
 

@@ -11,8 +11,11 @@ const calculation = {
   correction_minutes: -22.01038690158242,
   apparent_solar_coordinate: "2026-08-19T07:37:59.376Z",
   engine_contract: {
-    version: "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4",
-    source_sha256: "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3",
+    version: "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5",
+    source_sha256: "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722",
+    dependency_closure_version: "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1",
+    dependency_closure_sha256: "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6",
+    node_runtime: "v22.22.1",
     reference_data_version: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
     reference_data_sha256: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",
     profile_id: 1,

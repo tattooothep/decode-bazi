@@ -181,10 +181,16 @@ async function reserve(db, notice, dry = false) {
   }
   return transaction(db, async (client) => {
     assertNoCredentialFacts(notice.sourceFacts);
-    await client.query(
-      `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
-      [notice.userId],
-    );
+    // Qimen is excluded from the generic daily cap and owns a separately
+    // locked immutable occurrence row below. Avoid serializing it on the
+    // unrelated per-account cap lock; the occurrence FOR UPDATE plus unique
+    // parent key remain the reservation fence.
+    if (!qimenV2) {
+      await client.query(
+        `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
+        [notice.userId],
+      );
+    }
     const contextResult = await client.query(
       `SELECT COALESCE(to_jsonb(np)->>'timezone',to_jsonb(u)->>'timezone','Asia/Bangkok') AS timezone,
               COALESCE((to_jsonb(np)->>'max_per_day')::int,2) AS max_per_day,
@@ -238,24 +244,47 @@ async function reserve(db, notice, dry = false) {
       if (typeof item?.data?.qimenV2 !== "string" || item.data.qimenV2 !== notice.payload.qimenV2) {
         throw new TypeError("qimen_notice_schema_mismatch");
       }
-      const tokenResult = await client.query(
-        `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform,qimen_payload_schema
-           FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true FOR UPDATE`,
-        [item?.tokenId, notice.userId],
+      const bindingResult = await client.query(
+        `SELECT t.id AS token_id,t.installation_id AS token_installation_id,
+                t.device_push_token,t.device_token_type,t.expo_push_token,t.platform,t.qimen_payload_schema,
+                o.id AS occurrence_id,o.user_id AS occurrence_user_id,
+                o.installation_id AS occurrence_installation_id,o.state,o.push_log_id,
+                o.selected_direction,o.snapshot_digest,o.snapshot,o.hour_valid_until,o.send_deadline,o.version_tuple,
+                o.snapshot->>'accountId' AS snapshot_account_id,o.snapshot->>'purpose' AS snapshot_purpose
+           FROM mobile_push_tokens t
+           JOIN mobile_qimen_occurrences o ON o.id=$3 AND o.user_id=t.user_id
+          WHERE t.id=$1 AND t.user_id=$2 AND t.enabled=true
+          FOR UPDATE OF t,o`,
+        [item?.tokenId, notice.userId, qimenOccurrenceId],
       );
-      qimenToken = tokenResult.rows[0] || null;
+      const binding = bindingResult.rows[0] || null;
+      qimenToken = binding ? {
+        id: binding.token_id,
+        installation_id: binding.token_installation_id,
+        device_push_token: binding.device_push_token,
+        device_token_type: binding.device_token_type,
+        expo_push_token: binding.expo_push_token,
+        platform: binding.platform,
+        qimen_payload_schema: binding.qimen_payload_schema,
+      } : null;
+      qimenOccurrence = binding ? {
+        id: binding.occurrence_id,
+        user_id: binding.occurrence_user_id,
+        installation_id: binding.occurrence_installation_id,
+        state: binding.state,
+        push_log_id: binding.push_log_id,
+        selected_direction: binding.selected_direction,
+        snapshot_digest: binding.snapshot_digest,
+        snapshot: binding.snapshot,
+        hour_valid_until: binding.hour_valid_until,
+        send_deadline: binding.send_deadline,
+        version_tuple: binding.version_tuple,
+        snapshot_account_id: binding.snapshot_account_id,
+        snapshot_purpose: binding.snapshot_purpose,
+      } : null;
       if (!qimenToken || Number(qimenToken.qimen_payload_schema) !== 2) {
         throw new Error("qimen_token_capability_changed");
       }
-      const occurrence = await client.query(
-        `SELECT id,user_id,installation_id,state,push_log_id,selected_direction,snapshot_digest,snapshot,
-                hour_valid_until,send_deadline,version_tuple,snapshot->>'accountId' AS snapshot_account_id,
-                snapshot->>'purpose' AS snapshot_purpose
-           FROM mobile_qimen_occurrences
-          WHERE id=$1 AND user_id=$2 FOR UPDATE`,
-        [qimenOccurrenceId, notice.userId],
-      );
-      qimenOccurrence = occurrence.rows[0] || null;
       if (!qimenOccurrence || qimenOccurrence.state !== "claimed" || qimenOccurrence.push_log_id !== null) return null;
       if (qimenToken.installation_id !== qimenOccurrence.installation_id) {
         throw new Error("qimen_token_capability_changed");

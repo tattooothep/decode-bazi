@@ -6,8 +6,11 @@ const path = require("node:path");
 
 const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
 const SOURCE_BYTE_SIZE = 10629;
-const HOUR_ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4";
-const HOUR_ENGINE_SOURCE_SHA256 = "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3";
+const HOUR_ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5";
+const HOUR_ENGINE_SOURCE_SHA256 = "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722";
+const HOUR_ENGINE_DEPENDENCY_CLOSURE_VERSION = "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1";
+const HOUR_ENGINE_DEPENDENCY_CLOSURE_SHA256 = "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6";
+const HOUR_ENGINE_NODE_RUNTIME = "v22.22.1";
 const HOUR_REFERENCE_DATA_VERSION = "QIMEN_SQLITE_REFERENCE_TABLES_V1";
 const HOUR_REFERENCE_DATA_SHA256 = "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4";
 const DEFAULT_EVIDENCE_PATH = path.resolve(
@@ -36,6 +39,9 @@ const LAYERS = Object.freeze({
     method: "chai_bu_true_solar_time",
     engineContractVersion: HOUR_ENGINE_CONTRACT_VERSION,
     engineSourceDigest: HOUR_ENGINE_SOURCE_SHA256,
+    engineDependencyClosureVersion: HOUR_ENGINE_DEPENDENCY_CLOSURE_VERSION,
+    engineDependencyClosureDigest: HOUR_ENGINE_DEPENDENCY_CLOSURE_SHA256,
+    engineNodeRuntime: HOUR_ENGINE_NODE_RUNTIME,
     engineReferenceDataVersion: HOUR_REFERENCE_DATA_VERSION,
     engineReferenceDataDigest: HOUR_REFERENCE_DATA_SHA256,
     engineProfileId: 1,
@@ -78,6 +84,9 @@ function assertAllowedHourEngineContract(value) {
   if (!value || typeof value !== "object"
     || value.version !== HOUR_ENGINE_CONTRACT_VERSION
     || value.source_sha256 !== HOUR_ENGINE_SOURCE_SHA256
+    || value.dependency_closure_version !== HOUR_ENGINE_DEPENDENCY_CLOSURE_VERSION
+    || value.dependency_closure_sha256 !== HOUR_ENGINE_DEPENDENCY_CLOSURE_SHA256
+    || value.node_runtime !== HOUR_ENGINE_NODE_RUNTIME
     || value.reference_data_version !== HOUR_REFERENCE_DATA_VERSION
     || value.reference_data_sha256 !== HOUR_REFERENCE_DATA_SHA256
     || value.profile_id !== 1

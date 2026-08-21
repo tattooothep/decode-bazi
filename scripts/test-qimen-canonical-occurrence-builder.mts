@@ -45,8 +45,11 @@ const engineSnapshot = {
     calculation: {
       pillars: { yearPillarZh: "丙午", monthPillarZh: "丙申", dayPillarZh: "丁卯", hourPillarZh: "丙午" },
       engine_contract: {
-        version: "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4",
-        source_sha256: "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3",
+        version: "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5",
+        source_sha256: "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722",
+        dependency_closure_version: "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1",
+        dependency_closure_sha256: "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6",
+        node_runtime: "v22.22.1",
         reference_data_version: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
         reference_data_sha256: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",
         profile_id: 1,
@@ -90,8 +93,11 @@ assert.ok(Date.parse(snapshot.layers.day.validFrom) <= Date.parse(hourWindow.sta
 assert.ok(Date.parse(snapshot.layers.day.validUntil) >= Date.parse(hourWindow.endAt));
 assert.deepEqual(snapshot.sourceTuple.hour, {
   code: "QIMEN_VERIFIED_ZHUANPAN_SHIJIA",
-  engineContractVersion: "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4",
-  engineSourceDigest: "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3",
+  engineContractVersion: "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5",
+  engineSourceDigest: "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722",
+  engineDependencyClosureVersion: "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1",
+  engineDependencyClosureDigest: "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6",
+  engineNodeRuntime: "v22.22.1",
   engineReferenceDataVersion: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
   engineReferenceDataDigest: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",
   engineProfile: 1,
@@ -125,6 +131,33 @@ await assert.rejects(
   }),
   /QIMEN_HOUR_ENGINE_CONTRACT_NOT_ALLOWED/u,
   "a valid-looking but unpinned hour engine digest fails closed",
+);
+
+await assert.rejects(
+  builder.buildCanonicalQimenOccurrence(row, at, {
+    fetchCanonicalQimenEngineSnapshot: async () => {
+      const changed = structuredClone(engineSnapshot);
+      changed.result.palaces[4].heaven_stem_zh = "癸";
+      return changed;
+    },
+  }),
+  /QIMEN_CANONICAL_OCCURRENCE_INVALID/u,
+  "the pinned hour engine contract requires an explicit null center heaven instrument",
+);
+
+await assert.rejects(
+  builder.buildCanonicalQimenOccurrence(row, at, {
+    fetchCanonicalQimenEngineSnapshot: async () => {
+      const changed = structuredClone(engineSnapshot);
+      [changed.result.palaces[4].star_code, changed.result.palaces[5].star_code]
+        = [changed.result.palaces[5].star_code, changed.result.palaces[4].star_code];
+      [changed.result.palaces[4].star_zh, changed.result.palaces[5].star_zh]
+        = [changed.result.palaces[5].star_zh, changed.result.palaces[4].star_zh];
+      return changed;
+    },
+  }),
+  /QIMEN_CANONICAL_OCCURRENCE_INVALID/u,
+  "the pinned hour engine contract requires 天禽 in the center palace",
 );
 
 console.log("qimen canonical three-layer occurrence builder tests passed");

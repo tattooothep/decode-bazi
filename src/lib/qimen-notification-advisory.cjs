@@ -6,8 +6,11 @@
  */
 const PURPOSE = "travel";
 const ENGINE_PROFILE_ID = 1;
-const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4";
-const ENGINE_SOURCE_SHA256 = "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3";
+const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5";
+const ENGINE_SOURCE_SHA256 = "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722";
+const ENGINE_DEPENDENCY_CLOSURE_VERSION = "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1";
+const ENGINE_DEPENDENCY_CLOSURE_SHA256 = "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6";
+const ENGINE_NODE_RUNTIME = "v22.22.1";
 const ENGINE_REFERENCE_DATA_VERSION = "QIMEN_SQLITE_REFERENCE_TABLES_V1";
 const ENGINE_REFERENCE_DATA_SHA256 = "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4";
 const ADVISORY_VERSION = "qimen-notification-advisory-v1";
@@ -421,6 +424,9 @@ function buildQimenAdvisory(result, options = {}) {
     || Math.abs(engineCoordinate.valueOf() - expectedCoordinate.valueOf()) > 1_500
     || engineContract?.version !== ENGINE_CONTRACT_VERSION
     || engineContract?.source_sha256 !== ENGINE_SOURCE_SHA256
+    || engineContract?.dependency_closure_version !== ENGINE_DEPENDENCY_CLOSURE_VERSION
+    || engineContract?.dependency_closure_sha256 !== ENGINE_DEPENDENCY_CLOSURE_SHA256
+    || engineContract?.node_runtime !== ENGINE_NODE_RUNTIME
     || engineContract?.reference_data_version !== ENGINE_REFERENCE_DATA_VERSION
     || engineContract?.reference_data_sha256 !== ENGINE_REFERENCE_DATA_SHA256
     || engineContract?.profile_id !== ENGINE_PROFILE_ID

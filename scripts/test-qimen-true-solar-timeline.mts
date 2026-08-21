@@ -29,7 +29,7 @@ const runtime = require("../src/lib/qimen-notification-advisory.cjs") as {
 };
 const enginePath = process.env.QIMEN_ENGINE_SOURCE_PATH || "/root/qimen-api/src/qimenEngine.js";
 const engineSourceDigest = crypto.createHash("sha256").update(fs.readFileSync(enginePath)).digest("hex");
-assert.equal(engineSourceDigest, "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3");
+assert.equal(engineSourceDigest, "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722");
 const engine = require(enginePath) as {
   _internals: {
     parseInputDateTime(input: Date | string, timezone: string): unknown;

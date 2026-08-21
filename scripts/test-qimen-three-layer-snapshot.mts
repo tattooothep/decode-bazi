@@ -86,6 +86,29 @@ assert.throws(
   /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
 );
 
+const inventedHourCenterInstrument = validInput();
+const usedHourInstruments = new Set(inventedHourCenterInstrument.layers.hour.palaces
+  .filter((palace: Record<string, unknown>) => palace.direction !== "C")
+  .map((palace: Record<string, unknown>) => palace.heavenInstrument));
+inventedHourCenterInstrument.layers.hour.palaces[4].heavenInstrument
+  = ["乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"].find((stem) => !usedHourInstruments.has(stem));
+assert.throws(
+  () => buildQimenThreeLayerSnapshot(inventedHourCenterInstrument),
+  /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
+  "hour center must preserve the engine's explicit null heaven instrument",
+);
+
+const inventedHourCenterStar = validInput();
+[inventedHourCenterStar.layers.hour.palaces[4].starCode, inventedHourCenterStar.layers.hour.palaces[5].starCode]
+  = [inventedHourCenterStar.layers.hour.palaces[5].starCode, inventedHourCenterStar.layers.hour.palaces[4].starCode];
+[inventedHourCenterStar.layers.hour.palaces[4].starZh, inventedHourCenterStar.layers.hour.palaces[5].starZh]
+  = [inventedHourCenterStar.layers.hour.palaces[5].starZh, inventedHourCenterStar.layers.hour.palaces[4].starZh];
+assert.throws(
+  () => buildQimenThreeLayerSnapshot(inventedHourCenterStar),
+  /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
+  "hour center must preserve the canonical 天禽 star",
+);
+
 const wrongDecision = validInput();
 wrongDecision.hourDecision.direction = "E";
 assert.throws(

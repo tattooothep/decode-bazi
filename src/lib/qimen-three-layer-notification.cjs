@@ -190,7 +190,7 @@ function readPalace(value, index, layerKind) {
   const record = captureRecord(value, PALACE_KEYS);
   const center = record?.direction === "C";
   const heavenInstrumentValid = layerKind === "hour" && center
-    ? record?.heavenInstrument === null || /^[甲乙丙丁戊己庚辛壬癸]$/u.test(record?.heavenInstrument)
+    ? record?.heavenInstrument === null
     : /^[甲乙丙丁戊己庚辛壬癸]$/u.test(record?.heavenInstrument);
   if (!record || record.palace !== index + 1 || record.direction !== DIRECTIONS[index]
     || !/^[甲乙丙丁戊己庚辛壬癸]$/u.test(record.earthInstrument)
@@ -198,7 +198,8 @@ function readPalace(value, index, layerKind) {
     || !cleanCode(record.starCode) || !cleanText(record.starZh, 1, 24)
     || typeof record.isVoid !== "boolean" || typeof record.isHorse !== "boolean") return null;
   if (center) {
-    if (record.doorCode !== null || record.doorZh !== null || record.deityCode !== null || record.deityZh !== null) return null;
+    if (record.doorCode !== null || record.doorZh !== null || record.deityCode !== null || record.deityZh !== null
+      || (layerKind === "hour" && (record.starCode !== "TIAN_QIN" || record.starZh !== "天禽"))) return null;
   } else if (!cleanCode(record.doorCode) || !cleanText(record.doorZh, 1, 24)
     || !cleanCode(record.deityCode) || !cleanText(record.deityZh, 1, 24)) return null;
   const formationCodes = readCodeArray(record.formationCodes);
@@ -399,6 +400,9 @@ function buildQimenThreeLayerSnapshot(input) {
       code: layers.hour.sourceCode,
       engineContractVersion: manifest.layers.hour.engineContractVersion,
       engineSourceDigest: manifest.layers.hour.engineSourceDigest,
+      engineDependencyClosureVersion: manifest.layers.hour.engineDependencyClosureVersion,
+      engineDependencyClosureDigest: manifest.layers.hour.engineDependencyClosureDigest,
+      engineNodeRuntime: manifest.layers.hour.engineNodeRuntime,
       engineReferenceDataVersion: manifest.layers.hour.engineReferenceDataVersion,
       engineReferenceDataDigest: manifest.layers.hour.engineReferenceDataDigest,
       engineProfile: manifest.layers.hour.engineProfileId,

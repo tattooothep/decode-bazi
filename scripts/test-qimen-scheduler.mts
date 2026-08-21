@@ -83,6 +83,24 @@ assert.deepEqual(scheduler.localDateTime("Asia/Bangkok", new Date("2026-08-21T17
 });
 assert.equal(scheduler.localDateTime("not/a-zone", new Date()), null);
 
+let memoFetchCalls = 0;
+const memoizedEngineFetch = scheduler.createEngineSnapshotMemo(async (input: Record<string, unknown>) => {
+  memoFetchCalls += 1;
+  return { input, sequence: memoFetchCalls };
+});
+const memoInput = {
+  date: "2026-08-21", time: "14:00", timezone: "Asia/Bangkok",
+  instant: "2026-08-21T07:00:00.000Z", lat: 13.7563, lng: 100.5018,
+};
+const [memoFirst, memoSecond] = await Promise.all([
+  memoizedEngineFetch(memoInput, { signal: new AbortController().signal }),
+  memoizedEngineFetch({ ...memoInput }, { signal: new AbortController().signal }),
+]);
+assert.equal(memoFirst, memoSecond, "same run/time/location shares one immutable engine response");
+assert.equal(memoFetchCalls, 1);
+await memoizedEngineFetch({ ...memoInput, lng: 101 }, { signal: new AbortController().signal });
+assert.equal(memoFetchCalls, 2, "a different calculation input never reuses another location's chart");
+
 const selectedEvidence = {
   month: { deityZh: "九天", doorZh: "開門", starZh: "天任" },
   day: { deityZh: "太陰", doorZh: "生門", starZh: "天心" },
@@ -280,6 +298,117 @@ const recoveryRow = {
   platform: "android",
   token_locale: "th",
 };
+
+const boundaryCautionAt = new Date(Date.parse(canonicalWindow.startAt) + 30_000);
+let boundaryRetry: { nextDueAt: string; reason: string } | null = null;
+const boundaryCautionDb = {
+  async query(sql: string, params: unknown[] = []) {
+    if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [{
+      ...recoveryRow,
+      location_captured_at: new Date(boundaryCautionAt.valueOf() - 24 * 60 * 60 * 1_000).toISOString(),
+      location_expires_at: new Date(boundaryCautionAt.valueOf() + 6 * 24 * 60 * 60 * 1_000).toISOString(),
+    }] };
+    if (/SELECT id,state,push_log_id,snapshot,send_deadline/u.test(sql)) return { rows: [] };
+    if (/UPDATE mobile_qimen_installations SET next_due_at/u.test(sql)) {
+      boundaryRetry = { nextDueAt: String(params[3]), reason: String(params[4]) };
+      return { rowCount: 1, rows: [] };
+    }
+    throw new Error(`unexpected boundary-caution SQL: ${sql}`);
+  },
+};
+assert.deepEqual(
+  await scheduler.processClaim(boundaryCautionDb, recoveryClaim, boundaryCautionAt, {
+    signal: new AbortController().signal,
+    async buildCanonicalOccurrence() {
+      return null;
+    },
+  }),
+  { reserved: 0, skipped: 1, reason: "boundary_stabilizing" },
+  "a first-five-minute caution must be retried inside the same shichen",
+);
+assert.deepEqual(boundaryRetry, {
+  nextDueAt: new Date(Date.parse(canonicalWindow.startAt) + 5 * 60_000).toISOString(),
+  reason: "boundary_stabilizing",
+}, "a boundary caution becomes due exactly when the engine's five-minute caution buffer ends");
+
+const transientAt = new Date(Date.parse(canonicalWindow.startAt) + 5.5 * 60_000);
+const transientRecoveryAt = new Date(transientAt.valueOf() + 60_000);
+let transientNextDueAt = "";
+let transientFinishReason = "";
+let transientAdmissionCalls = 0;
+let transientDeliveryCalls = 0;
+const transientDb = {
+  async query(sql: string, params: unknown[] = []) {
+    if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [{
+      ...recoveryRow,
+      location_captured_at: new Date(transientAt.valueOf() - 24 * 60 * 60 * 1_000).toISOString(),
+      location_expires_at: new Date(transientAt.valueOf() + 6 * 24 * 60 * 60 * 1_000).toISOString(),
+    }] };
+    if (/SELECT id,state,push_log_id,snapshot,send_deadline/u.test(sql)) return { rows: [] };
+    if (/UPDATE mobile_qimen_installations SET next_due_at/u.test(sql)) {
+      transientNextDueAt = String(params[3]);
+      transientFinishReason = String(params[4]);
+      return { rowCount: 1, rows: [] };
+    }
+    throw new Error(`unexpected transient SQL: ${sql}`);
+  },
+};
+const transportError = Object.assign(new Error("fetch failed"), { code: "ECONNRESET" });
+assert.deepEqual(
+  await scheduler.processClaim(transientDb, recoveryClaim, transientAt, {
+    signal: new AbortController().signal,
+    async buildCanonicalOccurrence() { throw transportError; },
+  }),
+  { reserved: 0, skipped: 1, reason: "engine_retry_ECONNRESET" },
+  "a retryable engine transport failure stays inside the current admission window",
+);
+assert.equal(transientNextDueAt, transientRecoveryAt.toISOString());
+assert.equal(transientFinishReason, "engine_retry_ECONNRESET");
+
+const recoveredAfterTransient = await scheduler.processClaim(transientDb, recoveryClaim, transientRecoveryAt, {
+  signal: new AbortController().signal,
+  async buildCanonicalOccurrence() { return persistedSnapshot; },
+  async admitOccurrence(_db: unknown, _row: unknown, recoveredSnapshot: unknown, sendDeadline: string) {
+    transientAdmissionCalls += 1;
+    if (transientAdmissionCalls > 1) return null;
+    return { id: "occurrence_after_transient", snapshot: recoveredSnapshot, sendDeadline };
+  },
+  async deliver() {
+    transientDeliveryCalls += 1;
+    return { status: "pending" };
+  },
+});
+assert.deepEqual(recoveredAfterTransient, { reserved: 1, skipped: 0, reason: null });
+assert.equal(transientDeliveryCalls, 1, "recovery reserves one durable delivery");
+assert.deepEqual(
+  await scheduler.processClaim(transientDb, recoveryClaim, transientRecoveryAt, {
+    signal: new AbortController().signal,
+    async buildCanonicalOccurrence() { return persistedSnapshot; },
+    async admitOccurrence() {
+      transientAdmissionCalls += 1;
+      return null;
+    },
+    async deliver() {
+      transientDeliveryCalls += 1;
+      return { status: "pending" };
+    },
+  }),
+  { reserved: 0, skipped: 1, reason: "duplicate" },
+  "a repeated recovery cannot reserve a second occurrence",
+);
+assert.equal(transientDeliveryCalls, 1, "duplicate recovery never reaches delivery");
+
+const contractMismatch = Object.assign(new Error("QIMEN_HOUR_ENGINE_CONTRACT_NOT_ALLOWED"), {
+  code: "QIMEN_HOUR_ENGINE_CONTRACT_NOT_ALLOWED",
+});
+await scheduler.processClaim(transientDb, recoveryClaim, transientAt, {
+  signal: new AbortController().signal,
+  async buildCanonicalOccurrence() { throw contractMismatch; },
+});
+assert.equal(transientNextDueAt, canonicalWindow.endAt,
+  "a deterministic contract mismatch fails closed until the next shichen instead of retrying");
+assert.equal(transientFinishReason, "QIMEN_HOUR_ENGINE_CONTRACT_NOT_ALLOWED");
+
 let recoveryBuildCalls = 0;
 let recoveryDeliverCalls = 0;
 const recoveryDb = {

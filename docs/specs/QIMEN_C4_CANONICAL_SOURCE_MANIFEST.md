@@ -27,9 +27,13 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 
 ## Pinned hour engine contract
 
-- Contract version: `QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3`
+- Contract version: `QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5`
 - Engine profile: `1`
-- Exact `/root/qimen-api/src/qimenEngine.js` SHA-256: `8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1`
+- Exact `/root/qimen-api/src/qimenEngine.js` SHA-256: `fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722`
+- Dependency closure: `QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1`, SHA-256 `a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6`
+- Closure inputs: engine, DB adapter, all six direct interpretation/detector helpers, `package.json`, `package-lock.json`, and Node runtime `v22.22.1`
+- Reference-data contract: `QIMEN_SQLITE_REFERENCE_TABLES_V1`
+- Canonical digest of all rows in the 11 allowlisted SQLite reference tables: `2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4`
 - Apparent-solar coordinate: `UTC + 4 × longitude + equation-of-time`, interpreted as a timezone-free monotonic coordinate
 - Equation of time: `NOAA_CONTINUOUS_TROPICAL_PHASE_V1`, a smooth tropical-year Fourier phase with no UTC-midnight or year-boundary step
 - Shichen policy: half-open `[boundary_n,boundary_n+1)` with no DST gap, overlap, or reversal

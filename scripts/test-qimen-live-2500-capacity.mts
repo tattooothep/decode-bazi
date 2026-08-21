@@ -18,6 +18,8 @@ function loadEnv(): void {
 loadEnv();
 const require = createRequire(import.meta.url);
 const scheduler = require("./mobile-qimen-push-cron.cjs");
+const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const advisory = require("../src/lib/qimen-notification-advisory.cjs");
 const config = process.env.DATABASE_URL
   ? { connectionString: process.env.DATABASE_URL }
   : {
@@ -59,11 +61,49 @@ try {
     platform text,
     locale text
   )`);
-  await admin.query("CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid())");
+  await admin.query(`CREATE TABLE mobile_push_log(
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL,
+    yam_key text NOT NULL,
+    kind text NOT NULL,
+    title text NOT NULL,
+    body text NOT NULL,
+    payload jsonb NOT NULL,
+    source_facts jsonb NOT NULL,
+    delivery_status text NOT NULL,
+    attempt_count integer NOT NULL DEFAULT 0,
+    next_retry_at timestamptz,
+    accepted_at timestamptz,
+    sent_at timestamptz,
+    last_error text,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE(user_id,yam_key)
+  )`);
+  await admin.query(`CREATE TABLE mobile_push_attempts(
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    push_log_id uuid NOT NULL REFERENCES mobile_push_log(id) ON DELETE CASCADE,
+    token_id uuid NOT NULL,
+    installation_id uuid NOT NULL,
+    provider text NOT NULL,
+    provider_message jsonb NOT NULL,
+    message_sha256 text NOT NULL,
+    privacy_safe boolean NOT NULL,
+    transactional boolean NOT NULL,
+    status text NOT NULL,
+    send_count integer NOT NULL DEFAULT 0,
+    next_retry_at timestamptz,
+    send_started_at timestamptz,
+    lease_token text,
+    lease_expires_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE(push_log_id,installation_id)
+  )`);
   await admin.query(`CREATE TABLE mobile_notification_prefs(
     user_id uuid PRIMARY KEY,
     privacy_preview boolean NOT NULL DEFAULT false,
-    paused_until timestamptz
+    paused_until timestamptz,
+    locale text
   )`);
   await admin.query(migration);
 
@@ -101,27 +141,23 @@ try {
     options: `-c search_path=${schema},public`,
   });
   const started = performance.now();
+  let engineFetches = 0;
   const report = await scheduler.runScheduler(pool, new AbortController().signal, at, {
     runtimeProducerEnabled: true,
     backendCommit: releaseCommit,
     batchLimit: 500,
     maxPerRun: 2_500,
     workerCount: 20,
-    async deliver(db: pg.Pool, notice: { qimenOccurrenceId: string }) {
-      const push = await db.query("INSERT INTO mobile_push_log DEFAULT VALUES RETURNING id");
-      const reserved = await db.query(
-        `UPDATE mobile_qimen_occurrences
-            SET state='reserved',push_log_id=$2,updated_at=now()
-          WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
-        [notice.qimenOccurrenceId, push.rows[0].id],
-      );
-      assert.equal(reserved.rowCount, 1);
-      return { status: "pending" };
+    deliver: delivery.deliver,
+    async fetchCanonicalQimenEngineSnapshot(input: unknown, options: unknown) {
+      engineFetches += 1;
+      return advisory.fetchCanonicalQimenEngineSnapshot(input, options);
     },
   });
   const elapsedMs = performance.now() - started;
 
   assert.deepEqual(report, { disabled: false, due: 2_500, reserved: 2_500, skipped: 0 });
+  assert.equal(engineFetches, 1, "one run shares an exact engine result for identical time/location inputs");
   const durable = await pool.query(
     `SELECT count(*)::int AS total,
             count(*) FILTER (WHERE state='reserved' AND push_log_id IS NOT NULL)::int AS reserved,
@@ -130,6 +166,9 @@ try {
   );
   assert.deepEqual(durable.rows, [{ total: 2_500, reserved: 2_500, unique_digests: 2_500 }]);
   assert.equal((await pool.query("SELECT count(*)::int AS n FROM mobile_push_log")).rows[0].n, 2_500);
+  assert.equal((await pool.query(
+    "SELECT count(*)::int AS n FROM mobile_push_attempts WHERE status='reserved' AND provider_message IS NOT NULL",
+  )).rows[0].n, 2_500);
   assert.equal((await pool.query(
     "SELECT count(*)::int AS n FROM mobile_qimen_installations WHERE lease_token IS NULL AND next_due_at>$1",
     [at.toISOString()],
