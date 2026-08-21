@@ -142,12 +142,16 @@ FCM/Expo data must stay safely below the provider limit. It carries only:
 
 The authenticated detail endpoint returns the full immutable snapshot. Provider payload and full snapshot must share a digest or equivalent attestation so a selected-palace mismatch fails closed.
 
+Qimen v2 is transported as one canonical JSON string inside an exact outer provider field. The mobile parser checks duplicate keys while parsing that string before it constructs an object; it must not claim duplicate-key rejection after a native JSON parser has already collapsed duplicates. FCM and Expo carry byte-equivalent canonical Qimen content.
+
 ### 5.3 Compatibility
 
 - Existing Qimen notification payloads and history remain readable as legacy v1.
 - New three-layer notifications use a new strict schema version and exact-key parser.
 - Unknown, accessor, non-enumerable, duplicate, malformed, mismatched, or cross-account fields are rejected before navigation or engagement reporting.
 - A v1 notification opens the legacy hour-only view; it is never backfilled with recomputed month/day charts.
+- Registration negotiates a dedicated `qimenPayloadSchema`. An installation remains schema 1 until the v2 parser, literal route, detail client, and Android time-alert channel are all present and verified. The server never sends v2 to a schema-1 token.
+- Notification Center list responses expose only the compact projection. `GET /api/mobile/v1/notifications/{notificationId}` is account-bound and returns the full immutable snapshot only after strict validation and digest parity.
 
 ## 6. Mobile C4 presentation
 
@@ -162,6 +166,8 @@ The screen shows:
 5. three plain-language rows, one per chart;
 6. deity, door, and star for month, day, and shichen without an expert-mode gate; and
 7. a statement that the hour chart governs action while month/day provide context.
+
+The only v2 navigation target is the literal `/qimen/notification-detail`. It opens the account-bound immutable notification detail and never dispatches to the live `/qimen/board` calculation screen.
 
 Labels and shapes accompany color. Green, amber, gray, or any future palette may not be the only carrier of meaning.
 
@@ -186,6 +192,13 @@ The application explains fixed evidence codes in plain language. It does not use
 - Focus enters the explanation heading and returns to the selected palace after dismissal on Android and iOS.
 - Large-font layouts replace dense grid microcopy with labeled layer rows without hiding evidence.
 - All supported app locales receive native layer labels and explanations; Chinese technical terms remain visible as secondary evidence.
+
+### 6.4 Android interruption readiness
+
+- The application creates and verifies `hourkey-time-alerts-v2` with high importance, default sound, and vibration before it advertises Qimen schema 2.
+- Channel creation is an eager authenticated-app lifecycle responsibility, not only a side effect of requesting a new push token.
+- Packaged-manifest tests verify `POST_NOTIFICATIONS` and the safe fallback channel; runtime/device evidence separately verifies that the time-alert channel exists with the expected importance and sound.
+- A missing, blocked, or downgraded time-alert channel is reported as degraded delivery readiness and blocks the canary; the app does not silently claim that push is ready.
 
 ## 7. Failure behavior
 
@@ -230,7 +243,7 @@ No fallback copies the hour chart into month/day, removes an inconvenient warnin
 
 ## 9. Three-signature release gate
 
-The goal is not complete until three independent reviewers issue `SIGNED APPROVE` for the same exact clean backend and mobile commit pair:
+The goal is not complete until three independent reviewers issue `SIGNED APPROVE` for the same exact clean backend, mobile, and canonical-engine source tuple. If engine source is vendored by the backend commit, its manifest and installed runtime digest are part of that exact backend identity:
 
 1. **Science signature:** verifies sources, school separation, worked examples, boundary truth, and that preliminary formulas cannot reach production.
 2. **Backend/delivery signature:** verifies immutable data, privacy, eligibility, retry/TTL, provider parity, concurrency, and production defaults.
