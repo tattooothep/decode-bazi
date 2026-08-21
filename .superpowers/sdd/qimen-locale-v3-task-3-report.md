@@ -56,3 +56,26 @@ Fixture body sizes were Thai 276, English/fallback 356, and Chinese 88 character
 - The worktree has no `.env.local`, and the long-running shared PostgreSQL role rejects the password recorded in both the checkout and container startup environment. The real DB test therefore used a unique temporary login role and removed it afterward; the shared credential was not modified. This is an environment-maintenance concern, not a Task 3 code failure.
 - No live route call, provider send, deployment, or device canary was authorized or performed; those remain release-task gates.
 - Independent reviewer approval remains for the parent/release review loop because this dispatched task explicitly prohibited spawning reviewers.
+
+## Reviewer follow-up: schema-v3 privacy-safe provider parity
+
+Implementation commit: `ec70cb508396801eaf4862148f7860026f60f348` (`fix: preserve qimen v3 provider copy`).
+
+The review found that default `privacy_preview=false` passed Qimen history copy through the generic redaction path, so schema-v3 provider notification copy did not match the full C4 copy stored in history. The narrow correction gives only attested Qimen schema 3 an explicit privacy-safe full-copy exception: the exact owner-locale history title/body are used for the provider message and the attempt is recorded with `privacy_safe=true`. Other notification kinds and the generic preview setting are unchanged. Schema 2 continues through its legacy item-copy path byte-for-byte, including `privacy_safe=false` when full preview is enabled.
+
+Follow-up RED evidence captured before the correction:
+
+- `npx tsx scripts/test-mobile-push-retry-worker.mts` exited 1 because the schema-v2 full-preview regression exposed the earlier over-broad Qimen history-copy behavior.
+- `npx tsx scripts/test-qimen-scheduler.mts` exited 1 because no schema-3-only privacy-safe exception existed.
+
+Fresh follow-up GREEN evidence:
+
+- `npx tsx scripts/test-qimen-scheduler.mts` — PASS.
+- `npx tsx scripts/test-mobile-push-retry-worker.mts` — PASS, 78/78 checks. The disposable database integration proves that with `privacy_preview=false`, schema-v3 parent history title/body exactly equal the persisted provider-message notification title/body, the attested status and hour-authority text remain present, and the copy contains no coordinates, account identifier, user UUID, or personal-name label. It also proves the explicit schema-v2 legacy-copy regression.
+- `HOURKEY_MOBILE_ROOT=/root/worktrees/zibai-three-layer-mobile HOURKEY_MOBILE_SHA=1c4c228040d67028f116c23b38efc47711fc58db npx tsx scripts/test-notification-source-replay-task3.mts` — PASS (`NOTIFICATION_SOURCE_REPLAY_TASK3_OK notices=10`); the pinned mobile checkout was read only.
+- `npx tsx scripts/test-notification-integrity-contract.mts` — PASS.
+- `npx tsx scripts/test-notification-atomicity-task3.mts` — PASS.
+- `npx tsc --noEmit` — PASS.
+- `git diff --check` and `git diff --cached --check` — PASS.
+
+One unrelated legacy harness remains stale: `scripts/test-notification-cap-task3.mts` creates a reduced `users(id,timezone)` fixture, while the current delivery query requires `users.is_active`, so it fails during setup before reaching its assertions. This follow-up did not broaden scope to rewrite that fixture; the scheduler, retry/disposable-DB, relevant privacy/integrity/atomicity, replay, and type checks above all pass.
