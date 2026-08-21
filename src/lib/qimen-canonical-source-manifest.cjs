@@ -25,7 +25,7 @@ const LAYERS = Object.freeze({
     decisionRole: "raw_context_only",
   }),
   hour: Object.freeze({
-    calculationVersion: "EXISTING_ALLOWLISTED_ZHUANPAN_SHIJIA_CHAIBU",
+    calculationVersion: "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1",
     sourceFamily: "SOURCE_VERIFIED_ZHUANPAN_SHIJIA",
     method: "chai_bu_true_solar_time",
     decisionRole: "sole_action_authority",

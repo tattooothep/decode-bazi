@@ -9,7 +9,7 @@ Decision date: 2026-08-21
 | --- | --- | --- | --- |
 | Month 月家 | `QIMEN_FAQIAO_FEIPAN_YUEJIA_V1` | 《奇門法竅》飛盤月家 | Raw context only |
 | Day 日家 | `QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1` | 《奇門法竅》飛盤日家超接拆補 | Raw context only |
-| Shichen 時家 | existing allowlisted source-verified version for `profile_id=1` | 轉盤時家拆補 with true-solar time | Sole send, direction, purpose, and validity authority |
+| Shichen 時家 | `QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1`, bound to the allowlisted source-verified engine for `profile_id=1` | 轉盤時家拆補 with true-solar time | Sole send, direction, purpose, and validity authority |
 
 Month/day and hour are intentionally different chart lineages. They may be juxtaposed only by the same compass palace. They are never averaged, overlaid, relabeled as one flight, or used to reorder the hour result.
 

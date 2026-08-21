@@ -31,6 +31,7 @@ assert.equal(manifest.layers.month.calculationVersion, "QIMEN_FAQIAO_FEIPAN_YUEJ
 assert.equal(manifest.layers.month.decisionRole, "raw_context_only");
 assert.equal(manifest.layers.day.calculationVersion, "QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1");
 assert.equal(manifest.layers.day.decisionRole, "raw_context_only");
+assert.equal(manifest.layers.hour.calculationVersion, "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1");
 assert.equal(manifest.layers.hour.decisionRole, "sole_action_authority");
 
 const assertAllowedContextVersion = sourceManifest.assertAllowedContextVersion as (
