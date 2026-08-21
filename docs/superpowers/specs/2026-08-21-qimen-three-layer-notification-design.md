@@ -66,11 +66,13 @@ Until all three engines meet this contract, the new producer fails closed and se
 
 Qimen does not have a context-free best direction. Every occurrence stores and displays its purpose. Existing users retain the current `travel` purpose unless they choose another supported purpose. Copy must say what the direction is useful for and must not present a travel result as universally auspicious.
 
-### 2.5 School selection must match the decision scale
+### 2.5 School selection must be explicit and must not invent a decision scale
 
-The actionable `時家` notification uses the existing canonical `拆補 Chai Bu` profile (`profile_id = 1`) with true-solar time. This is the product's immediate-situation/action-hour profile and is the correct authority for the small decision window represented by a shichen push.
+The actionable `時家` notification uses the existing source-verified `拆補 Chai Bu` profile (`profile_id = 1`) with true-solar time for this release. This preserves the already reviewed hour-chart lineage while month/day engines are made canonical.
 
-`置閏 Zhi Run` (`profile_id = 4`) remains the product's major-event/long-cycle profile. It is not substituted into every two-hour notification and is not mixed into the three-layer card merely to provide a “bigger picture.” A future major-event analysis may expose it as a separate user-chosen view with its own provenance and verdict.
+`拆補 Chai Bu` and `置閏 Zhi Run` are methods of establishing/adjusting the Qimen Ju cycle. The classical source reviewed for this feature does not establish the product claim that one method is inherently for “small/immediate” matters and the other for “large/long-cycle” matters. Existing UI labels that make that distinction are product policy, not classical evidence, and must not be repeated as a scientific rationale.
+
+`置閏 Zhi Run` (`profile_id = 4`) is not substituted into the card as a “bigger-picture layer.” A future user-selectable school may calculate the same requested scope through a separately verified `置閏` lineage, but results from different Ju-establishment methods must never be overlaid or compared as month/day/hour layers without an explicit comparison feature.
 
 `月家` and `日家` must each declare their own canonical source family and calculation school. They may not be fabricated by running the hour `拆補` chart at a representative month/day time, nor may they be relabeled `置閏` context. If the approved sources do not establish a compatible month/day lineage, the feature remains disabled.
 
