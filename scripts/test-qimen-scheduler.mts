@@ -101,22 +101,6 @@ assert.equal(memoFetchCalls, 1);
 await memoizedEngineFetch({ ...memoInput, lng: 101 }, { signal: new AbortController().signal });
 assert.equal(memoFetchCalls, 2, "a different calculation input never reuses another location's chart");
 
-const selectedEvidence = {
-  month: { deityZh: "九天", doorZh: "開門", starZh: "天任" },
-  day: { deityZh: "太陰", doorZh: "生門", starZh: "天心" },
-  hour: { deityZh: "六合", doorZh: "開門", starZh: "天心" },
-};
-const copy = scheduler.buildQimenCopy("th", {
-  purpose: "travel",
-  selectedDirection: "SE",
-  layers: { hour: occurrence.layers.hour },
-  selectedEvidence,
-});
-assert.match(copy.title, /ฉีเหมิน/u);
-assert.match(copy.body, /เดือน.*九天.*開門.*天任/u);
-assert.match(copy.body, /วัน.*太陰.*生門.*天心/u);
-assert.match(copy.body, /ยาม.*六合.*開門.*天心/u);
-
 const source = fs.readFileSync(new URL("./mobile-qimen-push-cron.cjs", import.meta.url), "utf8");
 assert.doesNotMatch(source, /mobile-yam-push|mobile-personal-reminders|today_occurrence/iu);
 assert.match(source, /withSchedulerRunLease\(db, "qimen"/u);
@@ -124,11 +108,14 @@ assert.match(source, /writeSchedulerHeartbeat\("qimen"\)/u);
 
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const snapshotRuntime = require("../src/lib/qimen-three-layer-notification.cjs");
-const snapshotFixture = require("./fixtures/qimen-three-layer-valid-snapshot.cjs");
+const snapshotV3Fixture = require("./fixtures/qimen-three-layer-valid-snapshot-v3.cjs");
 const deliverySource = fs.readFileSync(new URL("../src/lib/mobile-notification-delivery.cjs", import.meta.url), "utf8");
 assert.match(deliverySource, /qimenOccurrenceId/u);
 assert.match(deliverySource, /mobile_qimen_occurrences/u);
 assert.match(deliverySource, /qimen_payload_schema/u);
+assert.match(deliverySource, /qimenV3/u, "durable delivery binds schema-v3 Qimen payloads");
+assert.match(deliverySource, /qimenPayload \? historyCopy/u,
+  "Qimen provider delivery uses the exact owner-locale copy persisted in history");
 assert.match(deliverySource, /location_permission,location_captured_at,location_expires_at/u,
   "retry must re-read current location permission and freshness from the installation");
 assert.deepEqual(
@@ -248,6 +235,46 @@ assert.match(source, /paused_until/u);
 assert.match(source, /HOURKEY_RELEASE_COMMIT/u);
 assert.match(source, /producer\.backend_commit !== runtimeCommit/u);
 
+const snapshotV3 = snapshotV3Fixture.build(row.user_id);
+const th = scheduler.buildQimenCopy("th", snapshotV3);
+assert.match(th.body, /เก้าพื้นดิน \(九地\)✓/u);
+assert.match(th.body, /ประตูปิดกั้น \(杜門\)•/u);
+assert.match(th.body, /ดาวเทียนรุ่ย \(天芮\)!/u);
+assert.match(th.body, /เก้าพื้นดิน \(九地\).*✓ ส่งเสริม/u);
+assert.match(th.body, /ดาวเทียนรุ่ย \(天芮\).*! ไม่ส่งเสริม/u);
+assert.match(th.body, /✓ ส่งเสริม.*• ขึ้นกับบริบท.*! ไม่ส่งเสริม.*\? ยังไม่มีข้อมูล/u);
+assert.match(th.body, /ผังยามเป็นผู้ตัดสิน/u);
+assert.ok(th.body.length <= 400, `Thai provider copy exceeds 400 characters: ${th.body.length}`);
+const en = scheduler.buildQimenCopy("en", snapshotV3);
+assert.match(en.body, /Jiu Di \(Nine Earth\) \(九地\)/u);
+assert.ok(en.body.length <= 400, `English provider copy exceeds 400 characters: ${en.body.length}`);
+const zh = scheduler.buildQimenCopy("zh", snapshotV3);
+assert.doesNotMatch(zh.body, /九地 \(九地\)/u);
+assert.ok(zh.body.length <= 400, `Chinese provider copy exceeds 400 characters: ${zh.body.length}`);
+const fallback = scheduler.buildQimenCopy("vi", snapshotV3);
+assert.match(fallback.body, /Jiu Di \(Nine Earth\) \(九地\)/u,
+  "a supported locale without canonical component translations uses the documented English-plus-Han fallback");
+
+const tamperedQuality = structuredClone(snapshotV3);
+tamperedQuality.selectedEvidence.month.deityBaseQuality = "great_auspicious";
+assert.throws(() => scheduler.buildQimenCopy("th", tamperedQuality), /qimen_snapshot_invalid/u,
+  "a mismatched attested quality is rejected instead of rendered supportive");
+const unknownCode = structuredClone(snapshotV3);
+unknownCode.selectedEvidence.month.deityCode = "UNKNOWN";
+assert.throws(() => scheduler.buildQimenCopy("th", unknownCode), /qimen_snapshot_invalid/u,
+  "an unknown component code is rejected instead of rendered supportive or contextual");
+
+const schema3Notice = scheduler.buildQimenNotice(
+  { ...row, token_id: "token-v3", qimen_payload_schema: 3, token_locale: "th", platform: "android" },
+  snapshotV3,
+  "33333333-3333-4333-8333-333333333333",
+  new Date(Date.parse(snapshotV3.layers.hour.validFrom) + 10 * 60_000).toISOString(),
+);
+assert.deepEqual(Object.keys(schema3Notice.payload), ["qimenV3"]);
+assert.equal(schema3Notice.messages[0].data.qimenV3, schema3Notice.payload.qimenV3);
+assert.deepEqual(schema3Notice.historyCopies.th, th,
+  "the durable Thai history copy exactly matches the localized copy used for provider delivery");
+
 const disabledQueries: string[] = [];
 const disabledDb = {
   async query(sql: string) {
@@ -270,11 +297,11 @@ const canonicalWindow = require("../src/lib/qimen-notification-advisory.cjs").tr
   timezone: "Asia/Bangkok", longitude: 100.5018, instant: canonicalSeed,
 });
 const canonicalAt = new Date(Date.parse(canonicalWindow.startAt) + 60_000);
-const recoveredInput = snapshotFixture.input("acct_recovery");
-recoveredInput.createdAt = canonicalAt.toISOString();
-recoveredInput.layers.hour.validFrom = canonicalWindow.startAt;
-recoveredInput.layers.hour.validUntil = canonicalWindow.endAt;
-const persistedSnapshot = snapshotRuntime.buildQimenThreeLayerSnapshot(recoveredInput);
+const recoveredInputV3 = snapshotV3Fixture.input("acct_recovery");
+recoveredInputV3.createdAt = canonicalAt.toISOString();
+recoveredInputV3.layers.hour.validFrom = canonicalWindow.startAt;
+recoveredInputV3.layers.hour.validUntil = canonicalWindow.endAt;
+const persistedSnapshot = snapshotRuntime.buildQimenThreeLayerSnapshotV3(recoveredInputV3);
 const recoveryClaim = { user_id: "acct_recovery", installation_id: "installation_recovery", lease_token: "lease_recovery" };
 const recoveryRow = {
   ...recoveryClaim,
@@ -286,7 +313,7 @@ const recoveryRow = {
   location_captured_at: new Date(canonicalAt.valueOf() - 24 * 60 * 60 * 1_000).toISOString(),
   location_expires_at: new Date(canonicalAt.valueOf() + 6 * 24 * 60 * 60 * 1_000).toISOString(),
   location_permission: "foreground",
-  qimen_payload_schema: 2,
+  qimen_payload_schema: 3,
   tier: "premium",
   sub_expires_at: "2027-08-21T00:00:00.000Z",
   trial_ends_at: null,
@@ -298,6 +325,32 @@ const recoveryRow = {
   platform: "android",
   token_locale: "th",
 };
+
+let schema2BuildCalls = 0;
+let schema2FinishReason = "";
+const schema2Db = {
+  async query(sql: string, params: unknown[] = []) {
+    if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [{ ...recoveryRow, qimen_payload_schema: 2 }] };
+    if (/UPDATE mobile_qimen_installations SET next_due_at/u.test(sql)) {
+      schema2FinishReason = String(params[4]);
+      return { rowCount: 1, rows: [] };
+    }
+    throw new Error(`unexpected schema-2 SQL: ${sql}`);
+  },
+};
+assert.deepEqual(
+  await scheduler.processClaim(schema2Db, recoveryClaim, canonicalAt, {
+    signal: new AbortController().signal,
+    async buildCanonicalOccurrence() {
+      schema2BuildCalls += 1;
+      return persistedSnapshot;
+    },
+  }),
+  { reserved: 0, skipped: 1, reason: "payload_capability_missing" },
+  "a schema-2 token receives no incompatible schema-v3 occurrence",
+);
+assert.equal(schema2BuildCalls, 0, "schema-2 capability is rejected before invoking the engine");
+assert.equal(schema2FinishReason, "payload_capability_missing");
 
 const boundaryCautionAt = new Date(Date.parse(canonicalWindow.startAt) + 30_000);
 let boundaryRetry: { nextDueAt: string; reason: string } | null = null;

@@ -7,6 +7,7 @@ const path = require("node:path");
 const { Pool } = require("pg");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const payloadRuntime = require("../src/lib/qimen-three-layer-notification.cjs");
+const componentCatalog = require("../src/lib/qimen-component-catalog.cjs");
 const sourceManifestRuntime = require("../src/lib/qimen-canonical-source-manifest.cjs");
 const canonicalOccurrenceRuntime = require("../src/lib/qimen-canonical-occurrence-builder.cjs");
 const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
@@ -107,27 +108,62 @@ const DIRECTION = Object.freeze({
   W: { th: "ตะวันตก", en: "west", zh: "西" }, NW: { th: "ตะวันตกเฉียงเหนือ", en: "northwest", zh: "西北" },
 });
 
+const STATE_COPY = Object.freeze({
+  th: Object.freeze({ supportive: "✓ ส่งเสริม", contextual: "• ขึ้นกับบริบท", unsupportive: "! ไม่ส่งเสริม", unavailable: "? ยังไม่มีข้อมูล" }),
+  en: Object.freeze({ supportive: "✓ Supportive", contextual: "• Contextual", unsupportive: "! Unsupportive", unavailable: "? Unavailable" }),
+  zh: Object.freeze({ supportive: "✓ 助", contextual: "• 視情境", unsupportive: "! 不助", unavailable: "? 無資料" }),
+});
+const LAYER_COPY = Object.freeze({
+  th: Object.freeze({ month: "เดือน", day: "วัน", hour: "ยาม" }),
+  en: Object.freeze({ month: "M", day: "D", hour: "H" }),
+  zh: Object.freeze({ month: "月", day: "日", hour: "時" }),
+});
+const AUTHORITY_COPY = Object.freeze({
+  th: "ผังยามเป็นผู้ตัดสิน",
+  en: "Hour governs action",
+  zh: "時家盤主導行動",
+});
+const COMPONENT_KINDS = Object.freeze(["deity", "door", "star"]);
+const LAYER_KINDS = Object.freeze(["month", "day", "hour"]);
+
+function localizedComponent(language, kind, evidence) {
+  const entry = componentCatalog.resolveQimenComponent(kind, evidence[`${kind}Code`]);
+  const quality = evidence[`${kind}BaseQuality`];
+  if (!entry || entry.zh !== evidence[`${kind}Zh`] || entry.baseQuality !== quality) {
+    throw new TypeError("qimen_snapshot_invalid");
+  }
+  const presentation = componentCatalog.componentPresentation(quality);
+  const state = STATE_COPY[language][presentation];
+  if (!state) throw new TypeError("qimen_snapshot_invalid");
+  const name = language === "zh" ? entry.names.zh : `${entry.names[language] || entry.names.en} (${entry.zh})`;
+  return `${name}${state.slice(0, 1)}`;
+}
+
 function buildQimenCopy(locale, snapshot) {
+  if (!payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)) throw new TypeError("qimen_snapshot_invalid");
   const language = locale === "th" || locale === "zh" ? locale : "en";
   const direction = DIRECTION[snapshot.selectedDirection]?.[language] || snapshot.selectedDirection;
-  const evidence = snapshot.selectedEvidence;
-  if (language === "th") return Object.freeze({
-    title: `ฉีเหมิน · ทิศ${direction}`,
-    body: `เดือน ${evidence.month.deityZh} · ${evidence.month.doorZh} · ${evidence.month.starZh}\nวัน ${evidence.day.deityZh} · ${evidence.day.doorZh} · ${evidence.day.starZh}\nยาม ${evidence.hour.deityZh} · ${evidence.hour.doorZh} · ${evidence.hour.starZh} — ผังยามเป็นคำแนะนำหลัก`,
+  const lines = LAYER_KINDS.map((layer) => {
+    const components = COMPONENT_KINDS.map((kind) => localizedComponent(
+      language,
+      kind,
+      snapshot.selectedEvidence[layer],
+    ));
+    return `${LAYER_COPY[language][layer]} ${components.join(" · ")}`;
   });
-  if (language === "zh") return Object.freeze({
-    title: `奇門 · ${direction}方`,
-    body: `月 ${evidence.month.deityZh} · ${evidence.month.doorZh} · ${evidence.month.starZh}\n日 ${evidence.day.deityZh} · ${evidence.day.doorZh} · ${evidence.day.starZh}\n時 ${evidence.hour.deityZh} · ${evidence.hour.doorZh} · ${evidence.hour.starZh} — 時家主行動`,
+  const legend = Object.values(STATE_COPY[language]).join(" ");
+  const copy = Object.freeze({
+    title: language === "th" ? `ฉีเหมิน · ทิศ${direction}`
+      : language === "zh" ? `奇門 · ${direction}方` : `Qimen · ${direction}`,
+    body: `${lines.join(" | ")} | ${legend}\n${AUTHORITY_COPY[language]}`,
   });
-  return Object.freeze({
-    title: `Qimen · ${direction}`,
-    body: `Month ${evidence.month.deityZh} · ${evidence.month.doorZh} · ${evidence.month.starZh}\nDay ${evidence.day.deityZh} · ${evidence.day.doorZh} · ${evidence.day.starZh}\nHour ${evidence.hour.deityZh} · ${evidence.hour.doorZh} · ${evidence.hour.starZh} — the hour chart governs action`,
-  });
+  if (copy.body.length > 400) throw new RangeError("qimen_copy_too_long");
+  return copy;
 }
 
 function buildQimenNotice(row, snapshot, occurrenceId, sendDeadline) {
-  if (!payloadRuntime.verifyQimenThreeLayerSnapshot(snapshot)) throw new TypeError("qimen_snapshot_invalid");
-  const payload = payloadRuntime.buildQimenV2ProviderData(snapshot);
+  if (!payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)) throw new TypeError("qimen_snapshot_invalid");
+  const payload = payloadRuntime.buildQimenV3ProviderData(snapshot);
   const historyCopies = delivery.localizedHistoryCopies((locale) => buildQimenCopy(locale, snapshot));
   const locale = notificationPayload.normalizedLocale(row.token_locale);
   const providerCopy = buildQimenCopy(locale, snapshot);
@@ -253,7 +289,7 @@ async function admitOccurrence(db, row, snapshot, sendDeadline) {
     );
     const persisted = logical.rows[0];
     if (persisted?.state === "claimed" && persisted.push_log_id === null
-      && payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)) admitted = persisted;
+      && payloadRuntime.verifyQimenThreeLayerSnapshotV3(persisted.snapshot)) admitted = persisted;
   }
   return admitted ? Object.freeze({
     id: admitted.id,
@@ -273,7 +309,7 @@ async function loadRecoverableOccurrence(db, row, canonicalWindow) {
   );
   const persisted = result.rows[0];
   if (persisted?.state !== "claimed" || persisted.push_log_id !== null
-    || !payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)) return null;
+    || !payloadRuntime.verifyQimenThreeLayerSnapshotV3(persisted.snapshot)) return null;
   return Object.freeze({
     id: persisted.id,
     snapshot: persisted.snapshot,
@@ -338,7 +374,7 @@ async function processClaim(db, claim, at, dependencies = {}) {
     && (row.location_permission === "foreground" || row.location_permission === "background")
     && Number.isFinite(Number(row.longitude)) && row.location_timezone;
   if (!locationFresh) reason = "location_stale";
-  else if (Number(row.qimen_payload_schema) !== 2) reason = "payload_capability_missing";
+  else if (Number(row.qimen_payload_schema) !== 3) reason = "payload_capability_missing";
   else if (row.paused_until && new Date(row.paused_until) > at) reason = "paused";
   else if (inQuietHours(localMinute(row.location_timezone, at), Number(row.quiet_start), Number(row.quiet_end))) reason = "quiet_hours";
   if (reason) {
@@ -396,7 +432,7 @@ async function processClaim(db, claim, at, dependencies = {}) {
       return { reserved: 0, skipped: 1, reason };
     }
   }
-  if (!payloadRuntime.verifyQimenThreeLayerSnapshot(snapshot)) {
+  if (!payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)) {
     reason = "snapshot_invalid";
     await finishClaim(db, row, at, next, reason);
     return { reserved: 0, skipped: 1, reason };

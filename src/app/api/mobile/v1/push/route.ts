@@ -149,7 +149,7 @@ export async function POST(req: Request) {
     || !nativeTokenValid(platform, deviceTokenType, deviceToken)
     || (body.timezone != null && timezone === null)
     || !(zibaiPayloadSchema === 1 || zibaiPayloadSchema === 2)
-    || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2)
+    || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2 || qimenPayloadSchema === 3)
   ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
   }
@@ -257,7 +257,7 @@ export async function POST(req: Request) {
          (user_id,installation_id,enabled,purpose,quiet_start,quiet_end,location_permission,
           latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_due_at,updated_at)
        SELECT $1,$2::uuid,
-              ($3::smallint=2 AND COALESCE(np.qimen_enabled,false)
+              ($3::smallint=3 AND COALESCE(np.qimen_enabled,false)
                 AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
                 AND np.qimen_location_updated_at>now()-interval '7 days'),
               'travel',COALESCE(np.quiet_start,22),COALESCE(np.quiet_end,7),
@@ -268,7 +268,7 @@ export async function POST(req: Request) {
               CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE COALESCE(np.timezone,$4,'Asia/Bangkok') END,
               np.qimen_location_updated_at,
               CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL ELSE np.qimen_location_updated_at+interval '7 days' END,
-              CASE WHEN $3::smallint=2 AND COALESCE(np.qimen_enabled,false)
+              CASE WHEN $3::smallint=3 AND COALESCE(np.qimen_enabled,false)
                 AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
                 AND np.qimen_location_updated_at>now()-interval '7 days' THEN now() ELSE NULL END,
               now()

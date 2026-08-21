@@ -242,7 +242,7 @@ export async function updateNotificationPreferences(
            (user_id,installation_id,enabled,purpose,quiet_start,quiet_end,location_permission,
             latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_due_at,updated_at)
          SELECT t.user_id,t.installation_id,
-                (t.qimen_payload_schema=2 AND np.qimen_enabled
+                (t.qimen_payload_schema=3 AND np.qimen_enabled
                   AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
                   AND np.qimen_location_updated_at>$2::timestamptz-interval '7 days'),
                 'travel',np.quiet_start,np.quiet_end,
@@ -253,7 +253,7 @@ export async function updateNotificationPreferences(
                 np.qimen_location_updated_at,
                 CASE WHEN np.qimen_location_updated_at IS NULL THEN NULL
                   ELSE np.qimen_location_updated_at+interval '7 days' END,
-                CASE WHEN t.qimen_payload_schema=2 AND np.qimen_enabled
+                CASE WHEN t.qimen_payload_schema=3 AND np.qimen_enabled
                   AND np.qimen_latitude IS NOT NULL AND np.qimen_longitude IS NOT NULL
                   AND np.qimen_location_updated_at>$2::timestamptz-interval '7 days' THEN $2::timestamptz ELSE NULL END,
                 $2::timestamptz

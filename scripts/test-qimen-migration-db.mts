@@ -28,6 +28,8 @@ if (!/^qimen_migration_[a-z0-9_]+$/u.test(schema)) throw new Error("QIMEN_DB_TES
 const quotedSchema = `"${schema}"`;
 const migration = fs.readFileSync(new URL("../migrations/20260821_mobile_qimen_three_layer.sql", import.meta.url), "utf8");
 const rollback = fs.readFileSync(new URL("../migrations/20260821_mobile_qimen_three_layer.rollback.sql", import.meta.url), "utf8");
+const v3Migration = fs.readFileSync(new URL("../migrations/20260821_mobile_qimen_component_quality_v3.sql", import.meta.url), "utf8");
+const v3Rollback = fs.readFileSync(new URL("../migrations/20260821_mobile_qimen_component_quality_v3.rollback.sql", import.meta.url), "utf8");
 const admin = new pg.Client(config);
 const workerA = new pg.Client(config);
 const workerB = new pg.Client(config);
@@ -44,6 +46,25 @@ try {
   await admin.query("CREATE TABLE mobile_push_tokens(id uuid PRIMARY KEY DEFAULT gen_random_uuid())");
   await admin.query("CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid())");
   await admin.query(migration);
+  await admin.query(v3Migration);
+  await admin.query("INSERT INTO mobile_push_tokens(qimen_payload_schema) VALUES(1),(2),(3)");
+  await assert.rejects(
+    admin.query("INSERT INTO mobile_push_tokens(qimen_payload_schema) VALUES(4)"),
+    (error: any) => error?.code === "23514",
+    "schema 3 is accepted while unknown future capabilities fail closed",
+  );
+  await admin.query(v3Rollback);
+  assert.deepEqual(
+    (await admin.query("SELECT qimen_payload_schema FROM mobile_push_tokens ORDER BY qimen_payload_schema")).rows,
+    [{ qimen_payload_schema: 1 }, { qimen_payload_schema: 2 }, { qimen_payload_schema: 2 }],
+    "v3 rollback safely maps registered schema-3 tokens to the still-readable schema 2",
+  );
+  await assert.rejects(
+    admin.query("INSERT INTO mobile_push_tokens(qimen_payload_schema) VALUES(3)"),
+    (error: any) => error?.code === "23514",
+    "v3 rollback restores the schema-2 capability ceiling",
+  );
+  await admin.query(v3Migration);
 
   // Recreate the two defects from the earlier draft, then prove the release
   // migration upgrades an existing database rather than only a fresh schema.
@@ -59,6 +80,7 @@ try {
     REFERENCES mobile_push_log(id) ON DELETE SET NULL`);
   await admin.query("DROP INDEX ux_mobile_qimen_logical_shichen");
   await admin.query(migration);
+  await admin.query(v3Migration);
   const upgradedFk = await admin.query(
     `SELECT conname,confdeltype
        FROM pg_constraint
@@ -174,7 +196,10 @@ try {
   assert.equal((await admin.query("SELECT 1 FROM mobile_qimen_occurrences WHERE id=$1", [second.rows[0].id])).rowCount, 0,
     "retention cascades parent and immutable occurrence together");
 
-  await admin.query("INSERT INTO mobile_push_tokens(qimen_payload_schema) VALUES(2)");
+  await admin.query("TRUNCATE mobile_push_tokens");
+  await admin.query("INSERT INTO mobile_push_tokens(qimen_payload_schema) VALUES(3)");
+  await admin.query(v3Rollback);
+  assert.equal((await admin.query("SELECT qimen_payload_schema FROM mobile_push_tokens")).rows[0].qimen_payload_schema, 2);
   await admin.query("UPDATE mobile_qimen_producer_state SET producer_enabled=true,backend_commit=$1,enabled_at=now(),enabled_by='db-test'", ["a".repeat(40)]);
   await admin.query(rollback);
   assert.equal((await admin.query("SELECT producer_enabled FROM mobile_qimen_producer_state")).rows[0].producer_enabled, false);
