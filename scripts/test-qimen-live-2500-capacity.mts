@@ -20,6 +20,7 @@ const require = createRequire(import.meta.url);
 const scheduler = require("./mobile-qimen-push-cron.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const advisory = require("../src/lib/qimen-notification-advisory.cjs");
+const localEngine = require("../src/lib/qimen-local-engine-pool.cjs");
 const config = process.env.DATABASE_URL
   ? { connectionString: process.env.DATABASE_URL }
   : {
@@ -35,6 +36,7 @@ const quotedSchema = `"${schema}"`;
 const migration = fs.readFileSync(new URL("../migrations/20260821_mobile_qimen_three_layer.sql", import.meta.url), "utf8");
 const admin = new pg.Client(config);
 let pool: pg.Pool | null = null;
+let enginePool: ReturnType<typeof localEngine.createQimenLocalEnginePool> | null = null;
 let schemaCreated = false;
 
 try {
@@ -118,7 +120,8 @@ try {
     `INSERT INTO mobile_qimen_installations
        (user_id,installation_id,enabled,purpose,quiet_start,quiet_end,location_permission,
         latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_due_at)
-     SELECT id,gen_random_uuid(),true,'travel',0,0,'foreground',13.7563,100.5018,'Asia/Bangkok',
+     SELECT id,gen_random_uuid(),true,'travel',0,0,'foreground',13.7563,
+            100.5018 + row_number() OVER () * 0.0000001,'Asia/Bangkok',
             $1::timestamptz-interval '1 day',$1::timestamptz+interval '6 days',$1::timestamptz
        FROM users`,
     [at.toISOString()],
@@ -142,6 +145,7 @@ try {
   });
   const started = performance.now();
   let engineFetches = 0;
+  enginePool = localEngine.createQimenLocalEnginePool({ size: 8 });
   const report = await scheduler.runScheduler(pool, new AbortController().signal, at, {
     runtimeProducerEnabled: true,
     backendCommit: releaseCommit,
@@ -151,13 +155,16 @@ try {
     deliver: delivery.deliver,
     async fetchCanonicalQimenEngineSnapshot(input: unknown, options: unknown) {
       engineFetches += 1;
-      return advisory.fetchCanonicalQimenEngineSnapshot(input, options);
+      return advisory.fetchCanonicalQimenEngineSnapshot(input, {
+        ...(options as object),
+        calculateImpl: enginePool!.calculate,
+      });
     },
   });
   const elapsedMs = performance.now() - started;
 
   assert.deepEqual(report, { disabled: false, due: 2_500, reserved: 2_500, skipped: 0 });
-  assert.equal(engineFetches, 1, "one run shares an exact engine result for identical time/location inputs");
+  assert.equal(engineFetches, 2_500, "production-like GPS coordinates must exercise 2,500 governed engine calculations");
   const durable = await pool.query(
     `SELECT count(*)::int AS total,
             count(*) FILTER (WHERE state='reserved' AND push_log_id IS NOT NULL)::int AS reserved,
@@ -175,8 +182,9 @@ try {
   )).rows[0].n, 2_500);
   assert.ok(elapsedMs < 50_000, `live 2500 scheduler run exceeded lease budget: ${Math.round(elapsedMs)}ms`);
 
-  console.log(`QIMEN_LIVE_2500_CAPACITY_OK due=2500 reserved=2500 durable=2500 elapsedMs=${Math.round(elapsedMs)} workers=20`);
+  console.log(`QIMEN_LIVE_2500_CAPACITY_OK due=2500 reserved=2500 durable=2500 distinctGps=2500 engineFetches=${engineFetches} elapsedMs=${Math.round(elapsedMs)} workers=20 engineWorkers=8`);
 } finally {
+  if (enginePool) await enginePool.close();
   if (pool) await pool.end();
   if (schemaCreated) {
     await admin.query("SET search_path TO public");

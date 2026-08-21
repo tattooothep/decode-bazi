@@ -6,10 +6,10 @@
  */
 const PURPOSE = "travel";
 const ENGINE_PROFILE_ID = 1;
-const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5";
-const ENGINE_SOURCE_SHA256 = "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722";
-const ENGINE_DEPENDENCY_CLOSURE_VERSION = "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1";
-const ENGINE_DEPENDENCY_CLOSURE_SHA256 = "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6";
+const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_NOTIFICATION_PIPELINE_CLOSURE_V6";
+const ENGINE_SOURCE_SHA256 = "d0abb00d9d6cff7dfb72471441eb038f9eddd1d01930d2c7e9079d1e9b4caa63";
+const ENGINE_DEPENDENCY_CLOSURE_VERSION = "QIMEN_NOTIFICATION_PIPELINE_CLOSURE_V2";
+const ENGINE_DEPENDENCY_CLOSURE_SHA256 = "2abc0ddfb0fe05854db335a9f44b93a4902f50cb839473b7cbcc3ba358210d5a";
 const ENGINE_NODE_RUNTIME = "v22.22.1";
 const ENGINE_REFERENCE_DATA_VERSION = "QIMEN_SQLITE_REFERENCE_TABLES_V1";
 const ENGINE_REFERENCE_DATA_SHA256 = "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4";
@@ -498,22 +498,28 @@ async function fetchCanonicalQimenEngineSnapshot(input, options = {}) {
     throw new RangeError("qimen_notification_engine_instant_mismatch");
   }
   options.signal?.throwIfAborted();
-  const fetchImpl = options.fetchImpl || fetch;
-  const baseUrl = String(options.baseUrl || process.env.QIMEN_API_URL || "http://127.0.0.1:4090").replace(/\/+$/u, "");
-  const timeout = AbortSignal.timeout(8_000);
-  const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
-  const response = await fetchImpl(`${baseUrl}/api/qimen/calculate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "User-Agent": "hourkey-mobile-notification/1.0" },
-    body: JSON.stringify({
-      datetime: requestedInstant.toISOString(), timezone, instant: requestedInstant.toISOString(),
-      latitude, longitude, profile_id: ENGINE_PROFILE_ID, purpose: PURPOSE,
-      system_type: "hour", skip_save: true, source_endpoint: "mobile-notification",
-    }),
-    signal,
-  });
-  if (!response?.ok) throw new Error(`qimen_notification_engine_http_${Number(response?.status) || 0}`);
-  const result = await response.json();
+  const request = {
+    datetime: requestedInstant.toISOString(), timezone, instant: requestedInstant.toISOString(),
+    latitude, longitude, profile_id: ENGINE_PROFILE_ID, purpose: PURPOSE,
+    system_type: "hour", skip_save: true, source_endpoint: "mobile-notification",
+  };
+  let result;
+  if (typeof options.calculateImpl === "function") {
+    result = { data: await options.calculateImpl(request, { signal: options.signal }) };
+  } else {
+    const fetchImpl = options.fetchImpl || fetch;
+    const baseUrl = String(options.baseUrl || process.env.QIMEN_API_URL || "http://127.0.0.1:4090").replace(/\/+$/u, "");
+    const timeout = AbortSignal.timeout(8_000);
+    const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
+    const response = await fetchImpl(`${baseUrl}/api/qimen/calculate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "User-Agent": "hourkey-mobile-notification/1.0" },
+      body: JSON.stringify(request),
+      signal,
+    });
+    if (!response?.ok) throw new Error(`qimen_notification_engine_http_${Number(response?.status) || 0}`);
+    result = await response.json();
+  }
   options.signal?.throwIfAborted();
   const engineInputAt = new Date(normalizedResult(result)?.calculation?.input_datetime);
   if (!Number.isFinite(engineInputAt.valueOf())

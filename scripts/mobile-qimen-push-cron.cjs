@@ -10,6 +10,7 @@ const payloadRuntime = require("../src/lib/qimen-three-layer-notification.cjs");
 const sourceManifestRuntime = require("../src/lib/qimen-canonical-source-manifest.cjs");
 const canonicalOccurrenceRuntime = require("../src/lib/qimen-canonical-occurrence-builder.cjs");
 const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
+const localEngineRuntime = require("../src/lib/qimen-local-engine-pool.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
@@ -521,30 +522,42 @@ async function runScheduler(db, signal, at = new Date(), dependencies = {}) {
   }
   const report = { disabled: false, due: 0, reserved: 0, skipped: 0 };
   const processOne = dependencies.processClaim || processClaim;
+  const enginePool = dependencies.fetchCanonicalQimenEngineSnapshot
+    ? null
+    : localEngineRuntime.createQimenLocalEnginePool({ size: dependencies.engineWorkerCount });
+  const engineFetcher = dependencies.fetchCanonicalQimenEngineSnapshot
+    || ((input, options) => qimenAdvisory.fetchCanonicalQimenEngineSnapshot(input, {
+      ...options,
+      calculateImpl: enginePool.calculate,
+    }));
   const runDependencies = {
     ...dependencies,
     fetchCanonicalQimenEngineSnapshot: createEngineSnapshotMemo(
-      dependencies.fetchCanonicalQimenEngineSnapshot || qimenAdvisory.fetchCanonicalQimenEngineSnapshot,
+      engineFetcher,
     ),
   };
-  while (report.due < maxPerRun) {
-    signal.throwIfAborted();
-    const claims = await claimDue(db, at, Math.min(batchLimit, maxPerRun - report.due));
-    if (claims.length === 0) break;
-    report.due += claims.length;
-    try {
-      await forEachBounded(claims, workerCount, async (claim) => {
-        signal.throwIfAborted();
-        const result = await processOne(db, claim, at, { ...runDependencies, signal });
-        report.reserved += result.reserved;
-        report.skipped += result.skipped;
-      });
-    } finally {
-      await releaseClaims(db, claims, at);
+  try {
+    while (report.due < maxPerRun) {
+      signal.throwIfAborted();
+      const claims = await claimDue(db, at, Math.min(batchLimit, maxPerRun - report.due));
+      if (claims.length === 0) break;
+      report.due += claims.length;
+      try {
+        await forEachBounded(claims, workerCount, async (claim) => {
+          signal.throwIfAborted();
+          const result = await processOne(db, claim, at, { ...runDependencies, signal });
+          report.reserved += result.reserved;
+          report.skipped += result.skipped;
+        });
+      } finally {
+        await releaseClaims(db, claims, at);
+      }
+      if (claims.length < batchLimit) break;
     }
-    if (claims.length < batchLimit) break;
+    return report;
+  } finally {
+    if (enginePool) await enginePool.close();
   }
-  return report;
 }
 
 async function main() {

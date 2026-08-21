@@ -14,6 +14,7 @@ const timer = readFileSync("ops/systemd/hourkey-mobile-qimen-push.timer", "utf8"
 const scheduler = readFileSync("scripts/mobile-qimen-push-cron.cjs", "utf8");
 const migration = readFileSync("migrations/20260821_mobile_qimen_three_layer.sql", "utf8");
 const preflight = readFileSync("scripts/notification-observability-preflight.cjs", "utf8");
+const engineWorker = readFileSync("src/lib/qimen-local-engine-worker.cjs", "utf8");
 
 assert.match(service, /^WorkingDirectory=\/root\/releases\/current$/mu);
 assert.match(service, /^ExecStart=\/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-qimen-push-cron\.cjs --batch=500 --max-per-run=2500 --workers=20$/mu);
@@ -27,6 +28,9 @@ assert.match(timer, /^Persistent=true$/mu);
 assert.match(migration, /FOR UPDATE SKIP LOCKED/u);
 assert.match(scheduler, /withSchedulerRunLease\(db, "qimen"/u);
 assert.match(scheduler, /writeSchedulerHeartbeat\("qimen"\)/u);
+assert.match(scheduler, /createQimenLocalEnginePool/u);
+assert.match(scheduler, /calculateImpl: enginePool\.calculate/u);
+assert.match(engineWorker, /calculateQimenNotificationChart/u);
 assert.doesNotMatch(scheduler, /mobile-(?:yam|zibai|personal-reminders)-push/iu);
 assert.doesNotMatch(scheduler, /console\.(?:log|error)\([^\n]*(?:latitude|longitude)/u);
 assert.match(preflight, /mobile-qimen-push-cron\.cjs/u);

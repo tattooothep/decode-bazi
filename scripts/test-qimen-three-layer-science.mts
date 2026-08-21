@@ -38,10 +38,10 @@ assert.equal(manifest.layers.day.calculationVersion, "FAQIAO_RIJIA_FOUR_QI_TERM_
 assert.equal(manifest.layers.day.decisionRole, "raw_context_only");
 assert.equal(manifest.layers.hour.calculationVersion, "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1");
 assert.equal(manifest.layers.hour.decisionRole, "sole_action_authority");
-assert.equal(manifest.layers.hour.engineContractVersion, "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5");
-assert.equal(manifest.layers.hour.engineSourceDigest, "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722");
-assert.equal(manifest.layers.hour.engineDependencyClosureVersion, "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1");
-assert.equal(manifest.layers.hour.engineDependencyClosureDigest, "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6");
+assert.equal(manifest.layers.hour.engineContractVersion, "QIMEN_HOUR_NOTIFICATION_PIPELINE_CLOSURE_V6");
+assert.equal(manifest.layers.hour.engineSourceDigest, "d0abb00d9d6cff7dfb72471441eb038f9eddd1d01930d2c7e9079d1e9b4caa63");
+assert.equal(manifest.layers.hour.engineDependencyClosureVersion, "QIMEN_NOTIFICATION_PIPELINE_CLOSURE_V2");
+assert.equal(manifest.layers.hour.engineDependencyClosureDigest, "2abc0ddfb0fe05854db335a9f44b93a4902f50cb839473b7cbcc3ba358210d5a");
 assert.equal(manifest.layers.hour.engineNodeRuntime, "v22.22.1");
 assert.equal(manifest.layers.hour.engineReferenceDataVersion, "QIMEN_SQLITE_REFERENCE_TABLES_V1");
 assert.equal(manifest.layers.hour.engineReferenceDataDigest, "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4");
@@ -51,10 +51,10 @@ const canonicalManifestDocument = readFileSync(
   new URL("../docs/specs/QIMEN_C4_CANONICAL_SOURCE_MANIFEST.md", import.meta.url),
   "utf8",
 );
-assert.match(canonicalManifestDocument, /`QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5`/u);
-assert.match(canonicalManifestDocument, /`fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722`/u);
-assert.match(canonicalManifestDocument, /`QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1`/u);
-assert.match(canonicalManifestDocument, /`a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6`/u);
+assert.match(canonicalManifestDocument, /`QIMEN_HOUR_NOTIFICATION_PIPELINE_CLOSURE_V6`/u);
+assert.match(canonicalManifestDocument, /`d0abb00d9d6cff7dfb72471441eb038f9eddd1d01930d2c7e9079d1e9b4caa63`/u);
+assert.match(canonicalManifestDocument, /`QIMEN_NOTIFICATION_PIPELINE_CLOSURE_V2`/u);
+assert.match(canonicalManifestDocument, /`2abc0ddfb0fe05854db335a9f44b93a4902f50cb839473b7cbcc3ba358210d5a`/u);
 assert.match(canonicalManifestDocument, /`QIMEN_SQLITE_REFERENCE_TABLES_V1`/u);
 assert.match(canonicalManifestDocument, /`2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4`/u);
 assert.doesNotMatch(canonicalManifestDocument, /QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3/u);

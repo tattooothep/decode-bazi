@@ -45,10 +45,10 @@ const engineSnapshot = {
     calculation: {
       pillars: { yearPillarZh: "丙午", monthPillarZh: "丙申", dayPillarZh: "丁卯", hourPillarZh: "丙午" },
       engine_contract: {
-        version: "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5",
-        source_sha256: "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722",
-        dependency_closure_version: "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1",
-        dependency_closure_sha256: "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6",
+        version: "QIMEN_HOUR_NOTIFICATION_PIPELINE_CLOSURE_V6",
+        source_sha256: "d0abb00d9d6cff7dfb72471441eb038f9eddd1d01930d2c7e9079d1e9b4caa63",
+        dependency_closure_version: "QIMEN_NOTIFICATION_PIPELINE_CLOSURE_V2",
+        dependency_closure_sha256: "2abc0ddfb0fe05854db335a9f44b93a4902f50cb839473b7cbcc3ba358210d5a",
         node_runtime: "v22.22.1",
         reference_data_version: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
         reference_data_sha256: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",
@@ -93,10 +93,10 @@ assert.ok(Date.parse(snapshot.layers.day.validFrom) <= Date.parse(hourWindow.sta
 assert.ok(Date.parse(snapshot.layers.day.validUntil) >= Date.parse(hourWindow.endAt));
 assert.deepEqual(snapshot.sourceTuple.hour, {
   code: "QIMEN_VERIFIED_ZHUANPAN_SHIJIA",
-  engineContractVersion: "QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5",
-  engineSourceDigest: "fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722",
-  engineDependencyClosureVersion: "QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1",
-  engineDependencyClosureDigest: "a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6",
+  engineContractVersion: "QIMEN_HOUR_NOTIFICATION_PIPELINE_CLOSURE_V6",
+  engineSourceDigest: "d0abb00d9d6cff7dfb72471441eb038f9eddd1d01930d2c7e9079d1e9b4caa63",
+  engineDependencyClosureVersion: "QIMEN_NOTIFICATION_PIPELINE_CLOSURE_V2",
+  engineDependencyClosureDigest: "2abc0ddfb0fe05854db335a9f44b93a4902f50cb839473b7cbcc3ba358210d5a",
   engineNodeRuntime: "v22.22.1",
   engineReferenceDataVersion: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
   engineReferenceDataDigest: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",

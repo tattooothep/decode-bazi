@@ -27,13 +27,13 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 
 ## Pinned hour engine contract
 
-- Contract version: `QIMEN_HOUR_ENGINE_DEPENDENCY_CLOSURE_V5`
+- Contract version: `QIMEN_HOUR_NOTIFICATION_PIPELINE_CLOSURE_V6`
 - Engine profile: `1`
-- Exact `/root/qimen-api/src/qimenEngine.js` SHA-256: `fd78e805bde1e454fa901084acb3bd8a0d466cfc21c6523caecb295ef2ee5722`
-- Dependency closure: `QIMEN_ENGINE_DEPENDENCY_CLOSURE_V1`, SHA-256 `a870f5b34ba5d7b9de90c2b13c93de88b07bdf0a0609e913c49556b8f02679e6`
-- Closure inputs: engine, DB adapter, all six direct interpretation/detector helpers, `package.json`, `package-lock.json`, and Node runtime `v22.22.1`
+- Exact `/root/qimen-api/src/qimenEngine.js` SHA-256: `d0abb00d9d6cff7dfb72471441eb038f9eddd1d01930d2c7e9079d1e9b4caa63`
+- Dependency closure: `QIMEN_NOTIFICATION_PIPELINE_CLOSURE_V2`, SHA-256 `2abc0ddfb0fe05854db335a9f44b93a4902f50cb839473b7cbcc3ba358210d5a`
+- Closure inputs: engine, producer-facing notification pipeline, live route delegation, scoring engine, chart-quality logic, activity-profile JSON, DB adapter, all six direct interpretation/detector helpers, `package.json`, `package-lock.json`, and Node runtime `v22.22.1`
 - Reference-data contract: `QIMEN_SQLITE_REFERENCE_TABLES_V1`
-- Canonical digest of all rows in the 11 allowlisted SQLite reference tables: `2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4`
+- Canonical digest of all rows in the 12 allowlisted SQLite reference tables: `2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4`
 - Apparent-solar coordinate: `UTC + 4 × longitude + equation-of-time`, interpreted as a timezone-free monotonic coordinate
 - Equation of time: `NOAA_CONTINUOUS_TROPICAL_PHASE_V1`, a smooth tropical-year Fourier phase with no UTC-midnight or year-boundary step
 - Shichen policy: half-open `[boundary_n,boundary_n+1)` with no DST gap, overlap, or reversal
