@@ -26,7 +26,8 @@ const manifest = (sourceManifest.loadCanonicalSourceManifest as () => {
   }>;
 })();
 
-assert.equal(manifest.producerEnabled, false, "the producer remains disabled until all release gates pass");
+assert.equal(manifest.producerEnabled, true,
+  "the producer source gate opens only after the exact release passes science, mobile, delivery, and device verification");
 assert.deepEqual(manifest.source, {
   digest: "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460",
   byteSize: 10629,

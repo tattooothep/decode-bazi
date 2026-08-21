@@ -51,7 +51,7 @@ const LAYERS = Object.freeze({
 
 const MANIFEST = Object.freeze({
   schemaVersion: 1,
-  producerEnabled: false,
+  producerEnabled: true,
   source: Object.freeze({
     digest: SOURCE_DIGEST,
     byteSize: SOURCE_BYTE_SIZE,

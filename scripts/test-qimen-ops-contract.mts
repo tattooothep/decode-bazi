@@ -6,8 +6,8 @@ import sourceManifest from "../src/lib/qimen-canonical-source-manifest.cjs";
 assert.ok(science.SCHEDULER_NAMES.includes("qimen"));
 assert.ok(science.SCHEDULER_LEASE_NAMES.includes("qimen"));
 assert.equal(science.SCHEDULER_HEARTBEAT_MAX_AGE_SECONDS.qimen, 180);
-assert.equal(sourceManifest.loadCanonicalSourceManifest().producerEnabled, false,
-  "source-incomplete Qimen production remains disabled even when the timer is installed");
+assert.equal(sourceManifest.loadCanonicalSourceManifest().producerEnabled, true,
+  "the signed and device-verified Qimen release declares the producer build ready");
 
 const service = readFileSync("ops/systemd/hourkey-mobile-qimen-push.service", "utf8");
 const timer = readFileSync("ops/systemd/hourkey-mobile-qimen-push.timer", "utf8");
