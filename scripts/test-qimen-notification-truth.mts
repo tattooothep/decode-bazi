@@ -7,14 +7,15 @@ const qimen = require("../src/lib/qimen-notification-advisory.cjs");
 const calculation = {
   input_datetime: "2026-08-19T08:00:00.000+07:00",
   input_timezone: "Asia/Bangkok",
-  corrected_datetime: "2026-08-19T07:38:48.779+07:00",
-  correction_minutes: -21.187005305031846,
-  apparent_solar_coordinate: "2026-08-19T07:38:48.779Z",
+  corrected_datetime: "2026-08-19T07:37:59.376+07:00",
+  correction_minutes: -22.01038690158242,
+  apparent_solar_coordinate: "2026-08-19T07:37:59.376Z",
   engine_contract: {
-    version: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2",
-    source_sha256: "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84",
+    version: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3",
+    source_sha256: "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1",
     profile_id: 1,
     apparent_timeline: "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1",
+    equation_of_time: "NOAA_CONTINUOUS_TROPICAL_PHASE_V1",
     year_month_clock: "PINNED_TYME4TS_BJT_JIE_GLOBAL_V1",
     day_boundary_policy: "TRUE_SOLAR_MIDNIGHT_ZI_HOUR_23_V1",
   },
@@ -104,8 +105,8 @@ assert.equal(advisory.star.zh, "天輔");
 assert.equal(advisory.deity.quality, "auspicious");
 assert.equal(advisory.door.quality, "auspicious");
 assert.equal(advisory.star.quality, "auspicious");
-assert.match(advisory.validFrom, /^2026-08-19T00:2[01]:/u);
-assert.match(advisory.validUntil, /^2026-08-19T02:2[12]:/u);
+assert.equal(advisory.validFrom, "2026-08-19T00:22:00.985Z");
+assert.equal(advisory.validUntil, "2026-08-19T02:21:59.842Z");
 assert.ok(Date.parse(advisory.validFrom) <= Date.parse("2026-08-19T01:00:00.000Z"));
 assert.ok(Date.parse(advisory.validUntil) > Date.parse("2026-08-19T01:00:00.000Z"));
 

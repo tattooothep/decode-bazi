@@ -52,6 +52,11 @@ try {
     ADD CONSTRAINT mobile_qimen_occurrences_installation_old_fkey
     FOREIGN KEY(user_id,installation_id)
     REFERENCES mobile_qimen_installations(user_id,installation_id) ON DELETE SET NULL`);
+  await admin.query("ALTER TABLE mobile_qimen_occurrences DROP CONSTRAINT mobile_qimen_occurrences_push_log_fkey");
+  await admin.query(`ALTER TABLE mobile_qimen_occurrences
+    ADD CONSTRAINT mobile_qimen_occurrences_push_log_old_fkey
+    FOREIGN KEY(push_log_id)
+    REFERENCES mobile_push_log(id) ON DELETE SET NULL`);
   await admin.query("DROP INDEX ux_mobile_qimen_logical_shichen");
   await admin.query(migration);
   const upgradedFk = await admin.query(
@@ -62,6 +67,14 @@ try {
         AND contype='f'`,
   );
   assert.deepEqual(upgradedFk.rows, [{ conname: "mobile_qimen_occurrences_installation_fkey", confdeltype: "c" }]);
+  const upgradedPushLogFk = await admin.query(
+    `SELECT conname,confdeltype
+       FROM pg_constraint
+      WHERE conrelid='mobile_qimen_occurrences'::regclass
+        AND confrelid='mobile_push_log'::regclass
+        AND contype='f'`,
+  );
+  assert.deepEqual(upgradedPushLogFk.rows, [{ conname: "mobile_qimen_occurrences_push_log_fkey", confdeltype: "c" }]);
   const logicalIndex = await admin.query(
     `SELECT indexdef FROM pg_indexes
       WHERE schemaname=current_schema() AND indexname='ux_mobile_qimen_logical_shichen'`,

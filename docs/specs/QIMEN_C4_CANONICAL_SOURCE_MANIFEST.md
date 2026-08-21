@@ -27,10 +27,11 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 
 ## Pinned hour engine contract
 
-- Contract version: `QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2`
+- Contract version: `QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3`
 - Engine profile: `1`
-- Exact `/root/qimen-api/src/qimenEngine.js` SHA-256: `7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84`
+- Exact `/root/qimen-api/src/qimenEngine.js` SHA-256: `8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1`
 - Apparent-solar coordinate: `UTC + 4 × longitude + equation-of-time`, interpreted as a timezone-free monotonic coordinate
+- Equation of time: `NOAA_CONTINUOUS_TROPICAL_PHASE_V1`, a smooth tropical-year Fourier phase with no UTC-midnight or year-boundary step
 - Shichen policy: half-open `[boundary_n,boundary_n+1)` with no DST gap, overlap, or reversal
 - Year/month pillars: pinned astronomical Jie instants on the global Beijing-time lineage; day/hour pillars: canonical apparent-solar date with Zi beginning at 23:00
 

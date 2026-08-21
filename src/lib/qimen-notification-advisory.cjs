@@ -6,8 +6,8 @@
  */
 const PURPOSE = "travel";
 const ENGINE_PROFILE_ID = 1;
-const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2";
-const ENGINE_SOURCE_SHA256 = "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84";
+const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3";
+const ENGINE_SOURCE_SHA256 = "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1";
 const ADVISORY_VERSION = "qimen-notification-advisory-v1";
 const DIRECTION = Object.freeze({
   N: Object.freeze({ th: "เหนือ", en: "north", zh: "北方" }),
@@ -90,18 +90,22 @@ function timezoneOffsetMinutes(timezone, instant) {
   return Math.round((localAsUtc - Math.floor(at.valueOf() / 1_000) * 1_000) / 60_000);
 }
 
-function dayOfYear(parts) {
-  return Math.floor((Date.UTC(parts.year, parts.month - 1, parts.day) - Date.UTC(parts.year, 0, 1)) / 86_400_000) + 1;
-}
-
 function equationOfTimeMinutes(instant) {
   const at = instant instanceof Date ? instant : new Date(instant);
   if (!Number.isFinite(at.valueOf())) throw new TypeError("qimen_notification_instant_invalid");
-  const parts = {
-    year: at.getUTCFullYear(), month: at.getUTCMonth() + 1, day: at.getUTCDate(),
-  };
-  const b = (2 * Math.PI * (dayOfYear(parts) - 81)) / 364;
-  return 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+  // Smooth tropical-year phase avoids the UTC-midnight step produced by an
+  // integer day-of-year approximation. The NOAA Fourier series is periodic,
+  // so A(t) remains continuous across civil days, leap days, and year ends.
+  const tropicalYearMs = 365.2422 * 86_400_000;
+  const j2000NoonUtc = Date.UTC(2000, 0, 1, 12);
+  const gamma = 2 * Math.PI * ((at.valueOf() - j2000NoonUtc) / tropicalYearMs);
+  return 229.18 * (
+    0.000075
+    + 0.001868 * Math.cos(gamma)
+    - 0.032077 * Math.sin(gamma)
+    - 0.014615 * Math.cos(2 * gamma)
+    - 0.040849 * Math.sin(2 * gamma)
+  );
 }
 
 /**
@@ -417,6 +421,7 @@ function buildQimenAdvisory(result, options = {}) {
     || engineContract?.source_sha256 !== ENGINE_SOURCE_SHA256
     || engineContract?.profile_id !== ENGINE_PROFILE_ID
     || engineContract?.apparent_timeline !== "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1"
+    || engineContract?.equation_of_time !== "NOAA_CONTINUOUS_TROPICAL_PHASE_V1"
     || engineContract?.year_month_clock !== "PINNED_TYME4TS_BJT_JIE_GLOBAL_V1"
     || engineContract?.day_boundary_policy !== "TRUE_SOLAR_MIDNIGHT_ZI_HOUR_23_V1") return null;
   const warningValues = [...warningCodes(selected.row, root.warnings)];

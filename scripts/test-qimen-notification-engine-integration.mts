@@ -29,11 +29,14 @@ for (const fixture of fixtures) {
   assert.ok(durationMinutes >= 59 && durationMinutes <= 181, `${fixture.timezone}: DST-aware true-solar shichen must remain bounded`);
   assert.ok(Math.abs(Date.parse(advisory.correctedAt) - Date.parse(advisory.inputAt)
     - advisory.correctionMinutes * 60_000) < 1_500);
-  const correctedHour = Number(new Intl.DateTimeFormat("en-CA", {
-    timeZone: fixture.timezone, hour: "2-digit", hourCycle: "h23",
-  }).format(new Date(advisory.correctedAt)));
-  assert.equal(advisory.shichenKey, shichen[correctedHour === 23 ? 0 : Math.floor((correctedHour + 1) / 2)],
-    `${fixture.timezone}: validity window must use the engine's corrected true-solar hour`);
+  const canonicalWindow = qimen.trueSolarShichenWindow({
+    timezone: fixture.timezone, longitude: fixture.lng, instant: fixture.instant,
+  });
+  const apparentHour = Number(canonicalWindow.apparentTime.slice(0, 2));
+  assert.equal(advisory.shichenKey, shichen[apparentHour === 23 ? 0 : Math.floor((apparentHour + 1) / 2)],
+    `${fixture.timezone}: validity window must use the timezone-free apparent-solar coordinate`);
+  assert.equal(canonicalWindow.shichenKey,
+    advisory.shichenKey);
   assert.equal(qimen.trueSolarShichenWindow({
     timezone: fixture.timezone, longitude: fixture.lng, instant: new Date(Date.parse(advisory.validFrom) + 1_000),
   }).shichenKey, advisory.shichenKey);

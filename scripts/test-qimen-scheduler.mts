@@ -217,10 +217,11 @@ const report = await scheduler.runScheduler(
 assert.deepEqual(report, { disabled: true, due: 0, reserved: 0, skipped: 0 });
 assert.equal(disabledQueries.length, 1);
 
-const canonicalAt = new Date("2026-08-21T12:21:10.000Z");
+const canonicalSeed = new Date("2026-08-21T12:30:00.000Z");
 const canonicalWindow = require("../src/lib/qimen-notification-advisory.cjs").trueSolarShichenWindow({
-  timezone: "Asia/Bangkok", longitude: 100.5018, instant: canonicalAt,
+  timezone: "Asia/Bangkok", longitude: 100.5018, instant: canonicalSeed,
 });
+const canonicalAt = new Date(Date.parse(canonicalWindow.startAt) + 60_000);
 const recoveredInput = snapshotFixture.input("acct_recovery");
 recoveredInput.createdAt = canonicalAt.toISOString();
 recoveredInput.layers.hour.validFrom = canonicalWindow.startAt;

@@ -140,6 +140,28 @@ BEGIN
     REFERENCES mobile_qimen_installations(user_id,installation_id) ON DELETE CASCADE;
 END $$;
 
+-- Earlier drafts linked push_log_id with ON DELETE SET NULL. That action is
+-- incompatible with the immutable occurrence trigger once a delivery has
+-- been reserved. Upgrade every old FK to the release CASCADE contract so
+-- retention removes the push record and its occurrence atomically.
+DO $$
+DECLARE fk_name text;
+BEGIN
+  FOR fk_name IN
+    SELECT conname
+      FROM pg_constraint
+     WHERE conrelid='mobile_qimen_occurrences'::regclass
+       AND confrelid='mobile_push_log'::regclass
+       AND contype='f'
+  LOOP
+    EXECUTE format('ALTER TABLE mobile_qimen_occurrences DROP CONSTRAINT %I',fk_name);
+  END LOOP;
+  ALTER TABLE mobile_qimen_occurrences
+    ADD CONSTRAINT mobile_qimen_occurrences_push_log_fkey
+    FOREIGN KEY(push_log_id)
+    REFERENCES mobile_push_log(id) ON DELETE CASCADE;
+END $$;
+
 -- A named index also upgrades older tables whose only uniqueness was the
 -- opaque occurrence key. One installation can reserve at most one purpose in
 -- the same canonical true-solar shichen.

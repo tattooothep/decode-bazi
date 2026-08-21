@@ -45,10 +45,11 @@ const engineSnapshot = {
     calculation: {
       pillars: { yearPillarZh: "丙午", monthPillarZh: "丙申", dayPillarZh: "丁卯", hourPillarZh: "丙午" },
       engine_contract: {
-        version: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2",
-        source_sha256: "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84",
+        version: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3",
+        source_sha256: "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1",
         profile_id: 1,
         apparent_timeline: "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1",
+        equation_of_time: "NOAA_CONTINUOUS_TROPICAL_PHASE_V1",
         year_month_clock: "PINNED_TYME4TS_BJT_JIE_GLOBAL_V1",
         day_boundary_policy: "TRUE_SOLAR_MIDNIGHT_ZI_HOUR_23_V1",
       },
@@ -85,8 +86,8 @@ assert.ok(Date.parse(snapshot.layers.day.validFrom) <= Date.parse(hourWindow.sta
 assert.ok(Date.parse(snapshot.layers.day.validUntil) >= Date.parse(hourWindow.endAt));
 assert.deepEqual(snapshot.sourceTuple.hour, {
   code: "QIMEN_VERIFIED_ZHUANPAN_SHIJIA",
-  engineContractVersion: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2",
-  engineSourceDigest: "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84",
+  engineContractVersion: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3",
+  engineSourceDigest: "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1",
   engineProfile: 1,
 });
 
