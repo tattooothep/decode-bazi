@@ -41,9 +41,9 @@ The UI may align the same compass palace across the three charts for comparison,
 
 `時家` determines whether a notification exists, the recommended direction, the purpose, and the actionable validity window. `月家` and `日家` are contextual evidence only.
 
-Month or day evidence may be described as supportive, cautionary, neutral, conflicting, or unavailable only through versioned deterministic rules backed by approved sources. It cannot add to, subtract from, or average the hour score. It cannot manufacture an auspicious hour or silently cancel a hard hour-chart warning.
+For the first release, month and day evidence is raw context only. The product must not label a layer supportive, cautionary, neutral, or conflicting because the approved source does not define a deterministic cross-lineage interpretation scale. A future version may add such labels only through separately versioned rules backed by approved sources. Month/day evidence cannot add to, subtract from, or average the hour score. It cannot manufacture an auspicious hour or silently cancel a hard hour-chart warning.
 
-If the three layers disagree, the card says so explicitly. It does not collapse disagreement into a scalar score.
+The card keeps all three raw tuples separate so an experienced user can identify a disagreement. The application itself does not declare a cross-layer verdict and never collapses the evidence into a scalar score.
 
 ### 2.3 Preliminary engines are forbidden in production notifications
 
@@ -76,6 +76,20 @@ The actionable `時家` notification uses the existing source-verified `拆補 C
 
 `月家` and `日家` must each declare their own canonical source family and calculation school. They may not be fabricated by running the hour `拆補` chart at a representative month/day time, nor may they be relabeled `置閏` context. If the approved sources do not establish a compatible month/day lineage, the feature remains disabled.
 
+### 2.6 Approved context lineage for this release
+
+The context layers use the pinned Chinese Text Project transcription of 《奇門法竅》 as one internally consistent source family:
+
+- `月家`: `QIMEN_FAQIAO_FEIPAN_YUEJIA_V1`, the flying-plate month method in 卷二 `論月奇法`;
+- `日家`: `QIMEN_FAQIAO_FEIPAN_RIJIA_CHAIBU_V1`, the flying-plate day method in 卷二 `論日奇法`, governed by the same work's 超接拆補 rules; and
+- source evidence: `data/library/qmdj/qimen-faqiao-c4-source-excerpts.md`, SHA-256 `846e4e9f7393f6451e78f9daa87bea1202ab4b36b6161ba60c570f9f7bd9e690`.
+
+The upstream catalog does not identify the base edition. That limitation is disclosed in the runtime manifest and the app's expanded provenance. The transcription is pinned evidence, not a claim of critical-edition status.
+
+`月家` and `日家` are both `奇門法竅 · 飛盤`; the actionable existing `時家` remains the separately source-verified `轉盤時家拆補` profile. The UI may place their same compass palaces next to each other but must preserve those lineage labels and raw component order.
+
+The upstream 日家 line `日奇以四十節氣為准` is preserved verbatim; its immediately following enumeration of twelve Yang terms plus twelve Yin terms governs the explicit editorial normalization to 24 terms. Any unresolved Fu-head, split, or supplement boundary fails closed with `QIMEN_CONTEXT_BOUNDARY_UNRESOLVED`; it is never approximated from a mean solar-term date or nearest Jia-Zi guess.
+
 ## 3. Notification cadence and eligibility
 
 - Run a dedicated indexed-installation Qimen scheduler every minute. Qimen must not depend on the Today/Yam producer, a Yam-good occurrence, or another category's timer.
@@ -107,7 +121,7 @@ The message must:
 - state a bounded hour window and purpose;
 - name deity, door, and star for month, day, and shichen;
 - distinguish plain-language interpretation from raw evidence;
-- disclose conflict or unavailable context rather than hiding it; and
+- disclose unavailable context rather than hiding it; and
 - avoid certainty, fear language, medical claims, and generic “best direction” copy.
 
 When lock-screen privacy preview is disabled, the provider body is generic. The authenticated Notification Center detail still exposes the immutable non-location chart evidence.
@@ -236,7 +250,7 @@ No fallback copies the hour chart into month/day, removes an inconvenient warnin
 ### 8.3 Mobile
 
 - Strict v1/v2 parsing and exact route dispatch.
-- C4 rendering for supportive, cautionary, conflicting, neutral, and unavailable context.
+- C4 rendering for complete raw context and explicitly unavailable context; the first release does not invent cross-layer verdict labels.
 - Every layer visibly and accessibly names deity, door, and star.
 - Full-evidence expansion, large text, dark/light theme, screen-reader order, focus restoration, and back navigation.
 - Backend snapshot to provider to history to mobile parity.
