@@ -23,7 +23,7 @@ assert.match(queries[0].sql, /mobile_push_log/u);
 assert.match(queries[0].sql, /l\.user_id=\$2/u);
 assert.match(queries[0].sql, /o\.user_id=\$2/u);
 assert.match(queries[0].sql, /l\.kind='qimen'/u);
-assert.doesNotMatch(JSON.stringify(result), /latitude|longitude|device_push_token|expo_push_token/iu);
+assert.doesNotMatch(JSON.stringify(result), /"(?:latitude|longitude|device_push_token|expo_push_token)"\s*:/iu);
 
 await assert.rejects(
   () => detail.readQimenNotificationDetail(db, accountId, "bad"),

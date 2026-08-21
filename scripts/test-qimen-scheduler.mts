@@ -19,6 +19,7 @@ const row = {
   longitude: 100.5018,
   quiet_start: 22,
   quiet_end: 7,
+  location_permission: "foreground",
 };
 const occurrence = {
   snapshotDigest: "a".repeat(64),
@@ -105,6 +106,8 @@ const deliverySource = fs.readFileSync(new URL("../src/lib/mobile-notification-d
 assert.match(deliverySource, /qimenOccurrenceId/u);
 assert.match(deliverySource, /mobile_qimen_occurrences/u);
 assert.match(deliverySource, /qimen_payload_schema/u);
+assert.match(deliverySource, /location_permission,location_captured_at,location_expires_at/u,
+  "retry must re-read current location permission and freshness from the installation");
 assert.deepEqual(
   delivery.currentPolicyDecision(
     { user_id: "11111111-1111-4111-8111-111111111111", kind: "qimen", privacy_safe: true, transactional: false, source_facts: { eventEndAt: "2026-08-21T16:00:00.000Z" } },
@@ -126,6 +129,28 @@ assert.deepEqual(
   { allow: true },
   "Qimen retry policy uses its own installation consent and ignores the unrelated generic daily cap",
 );
+for (const [contextPatch, reason] of [
+  [{ qimen_location_permission: "denied" }, "policy_location_permission_revoked"],
+  [{ qimen_location_expires_at: "2026-08-21T14:00:00.000Z" }, "policy_location_expired"],
+] as const) {
+  assert.deepEqual(
+    delivery.currentPolicyDecision(
+      { user_id: "11111111-1111-4111-8111-111111111111", kind: "qimen", privacy_safe: true, transactional: false, source_facts: {} },
+      {
+        privacy_preview: false, account_active: true, account_tier: "premium",
+        account_sub_expires_at: "2027-08-21T00:00:00.000Z", account_trial_ends_at: null,
+        now_at: new Date("2026-08-21T14:00:30.000Z"), qimen_enabled: true,
+        qimen_location_required: true, qimen_location_permission: "foreground",
+        qimen_location_captured_at: "2026-08-20T14:00:30.000Z",
+        qimen_location_expires_at: "2026-08-27T14:00:30.000Z",
+        qimen_expires_at: "2026-08-21T16:00:00.000Z", qimen_timezone: "Asia/Bangkok",
+        qimen_quiet_start: 22, qimen_quiet_end: 7, ...contextPatch,
+      },
+      0,
+    ),
+    { allow: false, terminal: true, reason },
+  );
+}
 assert.deepEqual(
   delivery.currentPolicyDecision(
     { user_id: "11111111-1111-4111-8111-111111111111", kind: "qimen", privacy_safe: true, transactional: false, source_facts: { eventEndAt: "2026-08-21T16:00:00.000Z" } },
@@ -237,6 +262,7 @@ const recoveryRow = {
   quiet_end: 7,
   location_captured_at: new Date(canonicalAt.valueOf() - 24 * 60 * 60 * 1_000).toISOString(),
   location_expires_at: new Date(canonicalAt.valueOf() + 6 * 24 * 60 * 60 * 1_000).toISOString(),
+  location_permission: "foreground",
   qimen_payload_schema: 2,
   tier: "premium",
   sub_expires_at: "2027-08-21T00:00:00.000Z",
@@ -286,7 +312,7 @@ assert.equal(recoveryDeliverCalls, 1, "the recovered occurrence is reserved exac
 
 const abortController = new AbortController();
 const abortReason = new Error("bounded scheduler abort");
-const tenThousandClaims = Array.from({ length: 200 }, (_, index) => ({
+const boundedClaims = Array.from({ length: 500 }, (_, index) => ({
   user_id: `acct_${index}`, installation_id: `installation_${index}`, lease_token: `lease_${index}`,
 }));
 let claimedLimit = 0;
@@ -301,7 +327,7 @@ const abortDb = {
     }] };
     if (/claim_mobile_qimen_installations/u.test(sql)) {
       claimedLimit = Number(params[1]);
-      return { rows: tenThousandClaims };
+      return { rows: boundedClaims };
     }
     if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [{
       ...recoveryRow,
@@ -330,9 +356,9 @@ await assert.rejects(
   }),
   abortReason,
 );
-assert.equal(claimedLimit, 200, "a run can claim at most 200 of a 10k due cohort within its 50-second lease");
+assert.equal(claimedLimit, 500, "one in-memory chunk is bounded to 500 claims within the 50-second lease");
 assert.equal(abortBuildCalls, 1, "aborting stops the scheduler from starting another claim");
-assert.equal(releasedClaims, 200, "abort cleanup releases every claimed lease, including work not started");
+assert.equal(releasedClaims, 500, "abort cleanup releases every claimed lease, including work not started");
 
 let cleanupAttempts = 0;
 await assert.rejects(
@@ -342,7 +368,7 @@ await assert.rejects(
       if (cleanupAttempts === 2) throw new Error("one cleanup failed");
       return { rowCount: 1, rows: [] };
     },
-  }, tenThousandClaims.slice(0, 3), canonicalAt),
+  }, boundedClaims.slice(0, 3), canonicalAt),
   /one cleanup failed/u,
 );
 assert.equal(cleanupAttempts, 3, "one cleanup failure never strands the remaining leases");

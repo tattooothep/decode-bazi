@@ -640,6 +640,23 @@ function currentPolicyDecision(row, context, capCount) {
     if (context.account_active !== true) {
       return { allow: false, terminal: true, reason: "policy_account_inactive" };
     }
+    if (context.qimen_location_required === true) {
+      if (context.qimen_location_permission !== "foreground"
+          && context.qimen_location_permission !== "background") {
+        return { allow: false, terminal: true, reason: "policy_location_permission_revoked" };
+      }
+      const capturedAt = new Date(context.qimen_location_captured_at);
+      const locationExpiresAt = new Date(context.qimen_location_expires_at);
+      const locationLeaseMs = 7 * 24 * 60 * 60 * 1_000;
+      if (!Number.isFinite(capturedAt.valueOf()) || !Number.isFinite(locationExpiresAt.valueOf())
+          || capturedAt > now || locationExpiresAt <= capturedAt
+          || locationExpiresAt.valueOf() - capturedAt.valueOf() > locationLeaseMs) {
+        return { allow: false, terminal: true, reason: "policy_location_unavailable" };
+      }
+      if (locationExpiresAt <= now || now.valueOf() - capturedAt.valueOf() > locationLeaseMs) {
+        return { allow: false, terminal: true, reason: "policy_location_expired" };
+      }
+    }
     const entitlementClock = notificationScience.zonedClock(
       notificationScience.safeTimezone(context.qimen_timezone),
       new Date(context.now_at),
@@ -779,16 +796,22 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     const qimenV2 = typeof row.payload?.qimenV2 === "string";
     if (qimenV2) {
       const qimen = await tx.query(
-        `SELECT enabled,location_timezone,quiet_start,quiet_end
+        `SELECT enabled,location_permission,location_captured_at,location_expires_at,
+                location_timezone,quiet_start,quiet_end
            FROM mobile_qimen_installations WHERE user_id=$1 AND installation_id=$2`,
         [row.user_id, row.installation_id],
       );
       context.qimen_enabled = qimen.rows[0]?.enabled === true;
+      context.qimen_location_required = true;
+      context.qimen_location_permission = qimen.rows[0]?.location_permission;
+      context.qimen_location_captured_at = qimen.rows[0]?.location_captured_at;
+      context.qimen_location_expires_at = qimen.rows[0]?.location_expires_at;
       context.qimen_timezone = qimen.rows[0]?.location_timezone || "UTC";
       context.qimen_quiet_start = qimen.rows[0]?.quiet_start;
       context.qimen_quiet_end = qimen.rows[0]?.quiet_end;
     } else {
       context.qimen_enabled = context.prefs?.qimen_enabled === true;
+      context.qimen_location_required = false;
       context.qimen_timezone = context.timezone;
       context.qimen_quiet_start = context.prefs?.quiet_start;
       context.qimen_quiet_end = context.prefs?.quiet_end;

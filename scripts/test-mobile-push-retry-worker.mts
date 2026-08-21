@@ -261,6 +261,28 @@ try {
   const boundOccurrence = await row("SELECT state,push_log_id IS NOT NULL AS linked FROM mobile_qimen_occurrences WHERE id=$1", [qimenOccurrenceId]);
   check(boundOccurrence.state === "reserved" && boundOccurrence.linked === true,
     "Qimen occurrence and provider attempt become reserved in the same transaction");
+  await pool.query(
+    `UPDATE mobile_qimen_installations
+        SET enabled=true,location_permission='foreground',latitude=13.7563,longitude=100.5018,
+            location_timezone='Asia/Bangkok',location_captured_at='2026-08-14T14:00:00.000Z',
+            location_expires_at='2026-08-21T14:00:00.000Z'
+      WHERE user_id=$1 AND installation_id=$2`,
+    [userId, fcmInstallation],
+  );
+  const boundQimenAttempt = await row(
+    `SELECT a.id FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+      WHERE l.yam_key='qimen-bound'`,
+  );
+  let expiredLocationSends = 0;
+  await worker.runRetryBatch(pool, {
+    attemptIds: [boundQimenAttempt.id], limit: 1,
+    hooks: { policyNow: "2026-08-21T14:00:30.000Z" },
+    sender: { async sendPrepared() { expiredLocationSends += 1; return { kind: "provider_accepted" }; } },
+  });
+  const expiredLocationAttempt = await row("SELECT status,last_error FROM mobile_push_attempts WHERE id=$1", [boundQimenAttempt.id]);
+  check(expiredLocationSends === 0 && expiredLocationAttempt.status === "dead"
+    && expiredLocationAttempt.last_error === "policy_location_expired",
+  "Qimen V2 retry re-reads the installation and blocks an expired seven-day location before provider delivery");
   await pool.query("DELETE FROM mobile_push_log WHERE yam_key='qimen-bound'");
 
   const mixed = await delivery.deliver(pool, notice("mixed", [fcmMessage, expoMessage]), {

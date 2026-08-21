@@ -16,7 +16,7 @@ const migration = readFileSync("migrations/20260821_mobile_qimen_three_layer.sql
 const preflight = readFileSync("scripts/notification-observability-preflight.cjs", "utf8");
 
 assert.match(service, /^WorkingDirectory=\/root\/releases\/current$/mu);
-assert.match(service, /^ExecStart=\/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-qimen-push-cron\.cjs --batch=500 --workers=20$/mu);
+assert.match(service, /^ExecStart=\/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-qimen-push-cron\.cjs --batch=500 --max-per-run=2500 --workers=20$/mu);
 assert.match(service, /^TimeoutStartSec=55$/mu);
 assert.match(service, /^NoNewPrivileges=true$/mu);
 assert.match(service, /^ProtectSystem=strict$/mu);

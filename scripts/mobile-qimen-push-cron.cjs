@@ -14,7 +14,8 @@ const notificationPayload = require("../src/lib/notification-payload.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 const DRY = process.argv.includes("--dry");
-const BATCH = Math.max(1, Math.min(200, Number((process.argv.find((arg) => arg.startsWith("--batch=")) || "--batch=80").slice(8))));
+const BATCH = Math.max(1, Math.min(500, Number((process.argv.find((arg) => arg.startsWith("--batch=")) || "--batch=500").slice(8))));
+const MAX_PER_RUN = Math.max(1, Math.min(10_000, Number((process.argv.find((arg) => arg.startsWith("--max-per-run=")) || "--max-per-run=2500").slice(14))));
 const WORKERS = Math.max(1, Math.min(20, Number((process.argv.find((arg) => arg.startsWith("--workers=")) || "--workers=1").slice(10))));
 const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
 const LOCATION_LEASE_MS = 7 * 24 * 60 * 60 * 1_000;
@@ -304,6 +305,7 @@ async function processClaim(db, claim, at, dependencies = {}) {
   const expiresAt = row.location_expires_at ? new Date(row.location_expires_at) : null;
   const locationFresh = capturedAt && expiresAt && capturedAt <= at && expiresAt > at
     && at.valueOf() - capturedAt.valueOf() <= LOCATION_LEASE_MS
+    && (row.location_permission === "foreground" || row.location_permission === "background")
     && Number.isFinite(Number(row.longitude)) && row.location_timezone;
   if (!locationFresh) reason = "location_stale";
   else if (Number(row.qimen_payload_schema) !== 2) reason = "payload_capability_missing";
@@ -453,25 +455,34 @@ async function runScheduler(db, signal, at = new Date(), dependencies = {}) {
     || !/^[0-9a-f]{40}$/u.test(runtimeCommit) || producer.backend_commit !== runtimeCommit) {
     return { disabled: true, due: 0, reserved: 0, skipped: 0 };
   }
-  const batchLimit = Math.max(1, Math.min(200, Number(dependencies.batchLimit) || BATCH));
+  const batchLimit = Math.max(1, Math.min(500, Number(dependencies.batchLimit) || BATCH));
+  const maxPerRun = Math.max(1, Math.min(10_000, Number(dependencies.maxPerRun) || MAX_PER_RUN));
   const workerCount = Math.max(1, Math.min(20, Number(dependencies.workerCount) || WORKERS));
-  const claims = DRY
-    ? (await db.query(
+  if (DRY) {
+    const claims = (await db.query(
       "SELECT * FROM mobile_qimen_installations WHERE enabled=true AND next_due_at<=$1 ORDER BY next_due_at LIMIT $2",
       [at.toISOString(), batchLimit],
-    )).rows
-    : await claimDue(db, at, batchLimit);
-  const report = { disabled: false, due: claims.length, reserved: 0, skipped: 0 };
-  if (DRY) return report;
-  try {
-    await forEachBounded(claims, workerCount, async (claim) => {
-      signal.throwIfAborted();
-      const result = await processClaim(db, claim, at, { ...dependencies, signal });
-      report.reserved += result.reserved;
-      report.skipped += result.skipped;
-    });
-  } finally {
-    await releaseClaims(db, claims, at);
+    )).rows;
+    return { disabled: false, due: claims.length, reserved: 0, skipped: 0 };
+  }
+  const report = { disabled: false, due: 0, reserved: 0, skipped: 0 };
+  const processOne = dependencies.processClaim || processClaim;
+  while (report.due < maxPerRun) {
+    signal.throwIfAborted();
+    const claims = await claimDue(db, at, Math.min(batchLimit, maxPerRun - report.due));
+    if (claims.length === 0) break;
+    report.due += claims.length;
+    try {
+      await forEachBounded(claims, workerCount, async (claim) => {
+        signal.throwIfAborted();
+        const result = await processOne(db, claim, at, { ...dependencies, signal });
+        report.reserved += result.reserved;
+        report.skipped += result.skipped;
+      });
+    } finally {
+      await releaseClaims(db, claims, at);
+    }
+    if (claims.length < batchLimit) break;
   }
   return report;
 }
