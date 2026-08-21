@@ -9,6 +9,7 @@ const { resolveMonthYearJu } = require("./qimen-canonical-tables.cjs");
 const { buildFaqiaoFeipan } = require("./qimen-canonical-context-engine.cjs");
 const { solarTermMonthWindow } = require("./zibai-solar-term-runtime.cjs");
 const snapshotRuntime = require("./qimen-three-layer-notification.cjs");
+const componentCatalog = require("./qimen-component-catalog.cjs");
 
 const DIRECTIONS = Object.freeze(["N", "SW", "E", "SE", "C", "NW", "W", "NE", "S"]);
 const STAR_CODES = Object.freeze({
@@ -38,6 +39,20 @@ function canonicalError(code = "QIMEN_CANONICAL_OCCURRENCE_INVALID") {
   const error = new TypeError(code);
   error.code = code;
   return error;
+}
+
+function componentZh(kind, code) {
+  const entry = componentCatalog.resolveQimenComponent(kind, code);
+  if (!entry) throw canonicalError();
+  return entry.zh;
+}
+
+function sourceComponentMatches(kind, code, zh) {
+  const entry = componentCatalog.resolveQimenComponent(kind, code);
+  if (!entry || entry.code !== code) return false;
+  if (entry.zh === zh) return true;
+  return (kind === "deity" && entry.code === "ZHI_FU" && zh === "直符")
+    || (kind === "star" && entry.code === "TIAN_CHONG" && zh === "天衝");
 }
 
 function civilClock(timezone, at) {
@@ -81,25 +96,30 @@ function layerEvidence(kind) {
 }
 
 function contextLayer(kind, chart, calculationVersion, validFrom, validUntil, pillars) {
-  const palaces = chart.palaces.map((palace) => Object.freeze({
-    palace: palace.palace,
-    direction: palace.direction,
-    earthInstrument: palace.earthInstrument,
-    heavenInstrument: palace.heavenInstrument,
-    starCode: STAR_CODES[palace.star],
-    starZh: palace.star,
-    doorCode: palace.door === null ? null : DOOR_CODES[palace.door],
-    doorZh: palace.door,
-    deityCode: palace.deity === null ? null : DEITY_CODES[palace.deity],
-    deityZh: palace.deity,
-    formationCodes: Object.freeze([]),
-    warningCodes: Object.freeze([]),
-    clashCodes: Object.freeze([]),
-    doorVigor: null,
-    starVigor: null,
-    isVoid: false,
-    isHorse: false,
-  }));
+  const palaces = chart.palaces.map((palace) => {
+    const starCode = STAR_CODES[palace.star];
+    const doorCode = palace.door === null ? null : DOOR_CODES[palace.door];
+    const deityCode = palace.deity === null ? null : DEITY_CODES[palace.deity];
+    return Object.freeze({
+      palace: palace.palace,
+      direction: palace.direction,
+      earthInstrument: palace.earthInstrument,
+      heavenInstrument: palace.heavenInstrument,
+      starCode,
+      starZh: componentZh("star", starCode),
+      doorCode,
+      doorZh: doorCode === null ? null : componentZh("door", doorCode),
+      deityCode,
+      deityZh: deityCode === null ? null : componentZh("deity", deityCode),
+      formationCodes: Object.freeze([]),
+      warningCodes: Object.freeze([]),
+      clashCodes: Object.freeze([]),
+      doorVigor: null,
+      starVigor: null,
+      isVoid: false,
+      isHorse: false,
+    });
+  });
   if (palaces.some((palace) => !palace.starCode
     || (palace.direction !== "C" && (!palace.doorCode || !palace.deityCode)))) {
     throw canonicalError();
@@ -148,6 +168,9 @@ function hourLayer(result, version, validFrom, validUntil) {
     const palace = index + 1;
     const row = byPalace.get(palace);
     const center = direction === "C";
+    const starCode = String(row?.star_code || "");
+    const doorCode = center ? null : String(row?.door_code || "");
+    const deityCode = center ? null : String(row?.deity_code || "");
     const heavenInstrumentValid = center
       ? row?.heaven_stem_zh === null
       : /^[乙丙丁戊己庚辛壬癸]$/u.test(String(row?.heaven_stem_zh || ""));
@@ -156,11 +179,14 @@ function hourLayer(result, version, validFrom, validUntil) {
       || !heavenInstrumentValid
       || !/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.star_code || ""))
       || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.star_zh || ""))
+      || !sourceComponentMatches("star", row.star_code, row.star_zh)
       || (center && (row.star_code !== "TIAN_QIN" || row.star_zh !== "天禽"))) throw canonicalError();
     if (!center && (!/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.door_code || ""))
       || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.door_zh || ""))
       || !/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.deity_code || ""))
-      || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.deity_zh || "")))) throw canonicalError();
+      || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.deity_zh || ""))
+      || !sourceComponentMatches("door", row.door_code, row.door_zh)
+      || !sourceComponentMatches("deity", row.deity_code, row.deity_zh))) throw canonicalError();
     const classical = Array.isArray(row.classical_flags) ? row.classical_flags : [];
     const ui = Array.isArray(row.ui_flags) ? row.ui_flags : [];
     const reasons = Array.isArray(row?.beginner_reading?.reasons) ? row.beginner_reading.reasons : [];
@@ -168,12 +194,12 @@ function hourLayer(result, version, validFrom, validUntil) {
       palace, direction,
       earthInstrument: row.earth_stem_zh,
       heavenInstrument: row.heaven_stem_zh,
-      starCode: row.star_code,
-      starZh: row.star_zh,
-      doorCode: center ? null : row.door_code,
-      doorZh: center ? null : row.door_zh,
-      deityCode: center ? null : row.deity_code,
-      deityZh: center ? null : row.deity_zh,
+      starCode,
+      starZh: componentZh("star", starCode),
+      doorCode,
+      doorZh: doorCode === null ? null : componentZh("door", doorCode),
+      deityCode,
+      deityZh: deityCode === null ? null : componentZh("deity", deityCode),
       formationCodes: cleanEngineCodes([...classical, ...ui]
         .filter((flag) => flag?.active !== false && !["caution", "warning", "warn", "danger", "severe", "hard_caution"].includes(String(flag?.severity || "").toLowerCase()))
         .map((flag) => flag?.code)),
@@ -265,7 +291,7 @@ async function buildCanonicalQimenOccurrence(row, value, options = {}) {
   const referenceHash = crypto.createHash("sha256").update(snapshotRuntime.canonicalStringify({
     accountId, installationId, purpose, hourValidFrom: canonicalHourWindow.startAt,
   })).digest("hex");
-  return snapshotRuntime.buildQimenThreeLayerSnapshot({
+  return snapshotRuntime.buildQimenThreeLayerSnapshotV3({
     event: "qimen_three_layer",
     notificationId: `qimen_ref_${referenceHash}`,
     accountId,

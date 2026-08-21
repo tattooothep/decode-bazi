@@ -2,17 +2,19 @@
 
 const crypto = require("node:crypto");
 const sourceManifestRuntime = require("./qimen-canonical-source-manifest.cjs");
+const componentCatalog = require("./qimen-component-catalog.cjs");
 const { buildFaqiaoFeipan } = require("./qimen-canonical-context-engine.cjs");
 
 const TOP_INPUT_KEYS = Object.freeze([
   "event", "notificationId", "accountId", "purpose", "selectedDirection",
   "createdAt", "route", "hourDecision", "layers",
 ]);
-const TOP_OUTPUT_KEYS = Object.freeze([
+const V2_TOP_OUTPUT_KEYS = Object.freeze([
   "snapshotSchema", "event", "notificationId", "accountId", "purpose",
   "selectedDirection", "createdAt", "route", "hourDecision", "versionTuple",
   "sourceTuple", "layers", "selectedEvidence", "snapshotDigest",
 ]);
+const V3_TOP_OUTPUT_KEYS = Object.freeze([...V2_TOP_OUTPUT_KEYS]);
 const DECISION_KEYS = Object.freeze(["direction", "purpose", "recommendationCode", "reasonCodes"]);
 const LAYER_KEYS = Object.freeze([
   "kind", "calculationVersion", "sourceCode", "schoolCode", "validFrom", "validUntil",
@@ -28,10 +30,18 @@ const CENTER_EVIDENCE_KEYS = Object.freeze([
   "policy", "sourceConflictCode", "rawCenterPalace", "effectiveLodgingPalace",
   "rawDoorTargetPalace", "effectiveDoorTargetPalace", "rawDeityTargetPalace", "effectiveDeityTargetPalace",
 ]);
-const PALACE_KEYS = Object.freeze([
+const V2_PALACE_KEYS = Object.freeze([
   "palace", "direction", "earthInstrument", "heavenInstrument", "starCode", "starZh",
   "doorCode", "doorZh", "deityCode", "deityZh", "formationCodes", "warningCodes",
   "clashCodes", "doorVigor", "starVigor", "isVoid", "isHorse",
+]);
+const V3_LAYER_KEYS = Object.freeze([...LAYER_KEYS, "decisionRole"]);
+const V3_PALACE_KEYS = Object.freeze([
+  ...V2_PALACE_KEYS, "deityBaseQuality", "doorBaseQuality", "starBaseQuality",
+]);
+const V3_SELECTED_EVIDENCE_KEYS = Object.freeze([
+  "direction", "deityCode", "deityZh", "deityBaseQuality",
+  "doorCode", "doorZh", "doorBaseQuality", "starCode", "starZh", "starBaseQuality",
 ]);
 const LAYER_KINDS = Object.freeze(["month", "day", "hour"]);
 const DIRECTIONS = Object.freeze(["N", "SW", "E", "SE", "C", "NW", "W", "NE", "S"]);
@@ -88,13 +98,17 @@ const LAYER_EVIDENCE = Object.freeze({
     }),
   }),
 });
-const PROVIDER_KEYS = Object.freeze([
+const V2_PROVIDER_KEYS = Object.freeze([
   "v", "event", "accountId", "notificationId", "purpose", "direction",
   "hourStart", "hourEnd", "layers", "snapshotDigest", "url",
 ]);
-const PROVIDER_LAYER_KEYS = Object.freeze([
+const V3_PROVIDER_KEYS = Object.freeze([...V2_PROVIDER_KEYS]);
+const V2_PROVIDER_LAYER_KEYS = Object.freeze([
   "version", "sourceCode", "stateCode", "explanationCodes", "conflictCodes", "unavailableCodes",
   "deityCode", "deityZh", "doorCode", "doorZh", "starCode", "starZh",
+]);
+const V3_PROVIDER_LAYER_KEYS = Object.freeze([
+  ...V2_PROVIDER_LAYER_KEYS, "deityBaseQuality", "doorBaseQuality", "starBaseQuality",
 ]);
 const PROVIDER_MAX_BYTES = 3_500;
 
@@ -107,6 +121,12 @@ function invalid() {
 function invalidProvider() {
   const error = new TypeError("QIMEN_V2_PROVIDER_PAYLOAD_INVALID");
   error.code = "QIMEN_V2_PROVIDER_PAYLOAD_INVALID";
+  return error;
+}
+
+function invalidProviderV3() {
+  const error = new TypeError("QIMEN_V3_PROVIDER_PAYLOAD_INVALID");
+  error.code = "QIMEN_V3_PROVIDER_PAYLOAD_INVALID";
   return error;
 }
 
@@ -187,7 +207,7 @@ function readCodeArray(value) {
 }
 
 function readPalace(value, index, layerKind) {
-  const record = captureRecord(value, PALACE_KEYS);
+  const record = captureRecord(value, V2_PALACE_KEYS);
   const center = record?.direction === "C";
   const heavenInstrumentValid = layerKind === "hour" && center
     ? record?.heavenInstrument === null
@@ -429,7 +449,7 @@ function buildQimenThreeLayerSnapshot(input) {
 
 function verifyQimenThreeLayerSnapshot(snapshot) {
   const clone = canonicalClone(snapshot);
-  if (!clone || !sameKeys(Object.keys(clone), TOP_OUTPUT_KEYS)
+  if (!clone || !sameKeys(Object.keys(clone), V2_TOP_OUTPUT_KEYS)
     || clone.snapshotSchema !== 2 || !/^[a-f0-9]{64}$/u.test(clone.snapshotDigest)) return false;
   try {
     const input = {
@@ -447,6 +467,146 @@ function verifyQimenThreeLayerSnapshot(snapshot) {
       })),
     };
     const rebuilt = buildQimenThreeLayerSnapshot(input);
+    return canonicalStringify(rebuilt) === canonicalStringify(clone);
+  } catch {
+    return false;
+  }
+}
+
+function qualityFor(kind, code, zh, allowUnavailable) {
+  if (allowUnavailable && code === null && zh === null) return "unavailable";
+  const entry = componentCatalog.resolveQimenComponent(kind, code);
+  if (!entry || entry.code !== code || entry.zh !== zh) throw invalid();
+  return entry.baseQuality;
+}
+
+function v3Palace(palace) {
+  const deity = palace.deityCode === null ? null : componentCatalog.resolveQimenComponent("deity", palace.deityCode);
+  const door = palace.doorCode === null ? null : componentCatalog.resolveQimenComponent("door", palace.doorCode);
+  const star = componentCatalog.resolveQimenComponent("star", palace.starCode);
+  if ((!deity && palace.deityCode !== null) || (!door && palace.doorCode !== null) || !star) throw invalid();
+  return Object.freeze({
+    ...palace,
+    deityZh: deity?.zh ?? null,
+    deityBaseQuality: deity?.baseQuality ?? "unavailable",
+    doorZh: door?.zh ?? null,
+    doorBaseQuality: door?.baseQuality ?? "unavailable",
+    starZh: star.zh,
+    starBaseQuality: star.baseQuality,
+  });
+}
+
+function v2ValidationZh(kind, code, zh) {
+  if (kind === "deity" && code === "ZHI_FU") return "直符";
+  if (kind === "star" && code === "TIAN_CHONG") return "天衝";
+  return zh;
+}
+
+function selectedTupleV3(layer, direction) {
+  const palace = layer.palaces.find((candidate) => candidate.direction === direction);
+  if (!palace || palace.deityBaseQuality === "unavailable" || palace.doorBaseQuality === "unavailable") return null;
+  return Object.freeze({
+    direction,
+    deityCode: palace.deityCode,
+    deityZh: palace.deityZh,
+    deityBaseQuality: palace.deityBaseQuality,
+    doorCode: palace.doorCode,
+    doorZh: palace.doorZh,
+    doorBaseQuality: palace.doorBaseQuality,
+    starCode: palace.starCode,
+    starZh: palace.starZh,
+    starBaseQuality: palace.starBaseQuality,
+  });
+}
+
+function buildQimenThreeLayerSnapshotV3(input) {
+  const clone = canonicalClone(input);
+  const top = clone ? captureRecord(clone, TOP_INPUT_KEYS) : null;
+  const layersRecord = top ? captureRecord(top.layers, LAYER_KINDS) : null;
+  if (!top || !layersRecord) throw invalid();
+  for (const kind of LAYER_KINDS) {
+    const layer = captureRecord(layersRecord[kind], LAYER_KEYS);
+    const palaces = layer ? captureArray(layer.palaces, 9, 9) : null;
+    if (!layer || !palaces) throw invalid();
+    for (const palaceValue of palaces) {
+      const palace = captureRecord(palaceValue, V2_PALACE_KEYS);
+      if (!palace) throw invalid();
+      qualityFor("deity", palace.deityCode, palace.deityZh, true);
+      qualityFor("door", palace.doorCode, palace.doorZh, true);
+      qualityFor("star", palace.starCode, palace.starZh, false);
+    }
+  }
+  const validationInput = {
+    ...top,
+    layers: Object.fromEntries(LAYER_KINDS.map((kind) => [kind, {
+      ...layersRecord[kind],
+      palaces: layersRecord[kind].palaces.map((palace) => ({
+        ...palace,
+        deityZh: v2ValidationZh("deity", palace.deityCode, palace.deityZh),
+        starZh: v2ValidationZh("star", palace.starCode, palace.starZh),
+      })),
+    }])),
+  };
+  const v2 = buildQimenThreeLayerSnapshot(validationInput);
+  const layers = Object.fromEntries(LAYER_KINDS.map((kind) => [kind, Object.freeze({
+    ...v2.layers[kind],
+    palaces: Object.freeze(v2.layers[kind].palaces.map(v3Palace)),
+  })]));
+  const selectedEvidence = Object.fromEntries(LAYER_KINDS.map((kind) => [
+    kind, selectedTupleV3(layers[kind], v2.selectedDirection),
+  ]));
+  if (Object.values(selectedEvidence).some((evidence) => !evidence)) throw invalid();
+  const { snapshotDigest: _snapshotDigest, ...v2Base } = v2;
+  const base = {
+    ...v2Base,
+    snapshotSchema: 3,
+    layers: Object.freeze(layers),
+    selectedEvidence: Object.freeze(selectedEvidence),
+  };
+  const snapshotDigest = crypto.createHash("sha256").update(canonicalStringify(base)).digest("hex");
+  return deepFreeze({ ...base, snapshotDigest });
+}
+
+function verifyQimenThreeLayerSnapshotV3(snapshot) {
+  const clone = canonicalClone(snapshot);
+  if (!clone || !sameKeys(Object.keys(clone), V3_TOP_OUTPUT_KEYS)
+    || clone.snapshotSchema !== 3 || !/^[a-f0-9]{64}$/u.test(clone.snapshotDigest)) return false;
+  const layersRecord = captureRecord(clone.layers, LAYER_KINDS);
+  const selectedRecord = captureRecord(clone.selectedEvidence, LAYER_KINDS);
+  if (!layersRecord || !selectedRecord) return false;
+  try {
+    for (const kind of LAYER_KINDS) {
+      const layer = captureRecord(layersRecord[kind], V3_LAYER_KEYS);
+      const palaces = layer ? captureArray(layer.palaces, 9, 9) : null;
+      if (!layer || !palaces || palaces.some((palace) => !captureRecord(palace, V3_PALACE_KEYS))
+        || !captureRecord(selectedRecord[kind], V3_SELECTED_EVIDENCE_KEYS)) return false;
+    }
+    const input = {
+      event: clone.event,
+      notificationId: clone.notificationId,
+      accountId: clone.accountId,
+      purpose: clone.purpose,
+      selectedDirection: clone.selectedDirection,
+      createdAt: clone.createdAt,
+      route: clone.route,
+      hourDecision: clone.hourDecision,
+      layers: Object.fromEntries(LAYER_KINDS.map((kind) => {
+        const { decisionRole: _decisionRole, palaces, ...layer } = layersRecord[kind];
+        return [kind, {
+          ...layer,
+          palaces: palaces.map((palace) => {
+            const {
+              deityBaseQuality: _deityBaseQuality,
+              doorBaseQuality: _doorBaseQuality,
+              starBaseQuality: _starBaseQuality,
+              ...v2Palace
+            } = palace;
+            return v2Palace;
+          }),
+        }];
+      })),
+    };
+    const rebuilt = buildQimenThreeLayerSnapshotV3(input);
     return canonicalStringify(rebuilt) === canonicalStringify(clone);
   } catch {
     return false;
@@ -585,6 +745,16 @@ function providerLayer(snapshot, kind) {
   });
 }
 
+function providerLayerV3(snapshot, kind) {
+  const evidence = snapshot.selectedEvidence[kind];
+  return Object.freeze({
+    ...providerLayer(snapshot, kind),
+    deityBaseQuality: evidence.deityBaseQuality,
+    doorBaseQuality: evidence.doorBaseQuality,
+    starBaseQuality: evidence.starBaseQuality,
+  });
+}
+
 function buildQimenV2ProviderData(snapshot) {
   if (!verifyQimenThreeLayerSnapshot(snapshot)) throw invalidProvider();
   const compact = Object.freeze({
@@ -607,8 +777,30 @@ function buildQimenV2ProviderData(snapshot) {
   return outer;
 }
 
+function buildQimenV3ProviderData(snapshot) {
+  if (!verifyQimenThreeLayerSnapshotV3(snapshot)) throw invalidProviderV3();
+  const compact = Object.freeze({
+    v: 3,
+    event: "qimen_three_layer",
+    accountId: snapshot.accountId,
+    notificationId: snapshot.notificationId,
+    purpose: snapshot.purpose,
+    direction: snapshot.selectedDirection,
+    hourStart: snapshot.layers.hour.validFrom,
+    hourEnd: snapshot.layers.hour.validUntil,
+    layers: Object.freeze(Object.fromEntries(LAYER_KINDS.map((kind) => [kind, providerLayerV3(snapshot, kind)]))),
+    snapshotDigest: snapshot.snapshotDigest,
+    url: "/qimen/notification-detail",
+  });
+  const qimenV3 = canonicalStringify(compact);
+  if (Buffer.byteLength(qimenV3, "utf8") >= PROVIDER_MAX_BYTES) throw invalidProviderV3();
+  const outer = Object.freeze({ qimenV3 });
+  parseQimenV3ProviderData(outer);
+  return outer;
+}
+
 function parseProviderLayer(value, kind, manifest) {
-  const record = captureRecord(value, PROVIDER_LAYER_KEYS);
+  const record = captureRecord(value, V2_PROVIDER_LAYER_KEYS);
   const explanationCodes = record ? readCodeArray(record.explanationCodes) : null;
   const conflictCodes = record ? readCodeArray(record.conflictCodes) : null;
   const unavailableCodes = record ? readCodeArray(record.unavailableCodes) : null;
@@ -626,6 +818,27 @@ function parseProviderLayer(value, kind, manifest) {
   return Object.freeze({ ...record, explanationCodes, conflictCodes, unavailableCodes });
 }
 
+function parseProviderLayerV3(value, kind, manifest) {
+  const record = captureRecord(value, V3_PROVIDER_LAYER_KEYS);
+  if (!record) return null;
+  const {
+    deityBaseQuality,
+    doorBaseQuality,
+    starBaseQuality,
+    ...v2Layer
+  } = record;
+  const parsed = parseProviderLayer(v2Layer, kind, manifest);
+  if (!parsed) return null;
+  try {
+    if (deityBaseQuality !== qualityFor("deity", parsed.deityCode, parsed.deityZh, false)
+      || doorBaseQuality !== qualityFor("door", parsed.doorCode, parsed.doorZh, false)
+      || starBaseQuality !== qualityFor("star", parsed.starCode, parsed.starZh, false)) return null;
+  } catch {
+    return null;
+  }
+  return Object.freeze({ ...parsed, deityBaseQuality, doorBaseQuality, starBaseQuality });
+}
+
 function parseQimenV2ProviderData(value) {
   const outer = captureRecord(value, ["qimenV2"]);
   if (!outer || typeof outer.qimenV2 !== "string"
@@ -636,7 +849,7 @@ function parseQimenV2ProviderData(value) {
   } catch {
     throw invalidProvider();
   }
-  const record = captureRecord(parsed, PROVIDER_KEYS);
+  const record = captureRecord(parsed, V2_PROVIDER_KEYS);
   const layersRecord = record ? captureRecord(record.layers, LAYER_KINDS) : null;
   if (!record || !layersRecord || canonicalStringify(parsed) !== outer.qimenV2
     || record.v !== 2 || record.event !== "qimen_three_layer"
@@ -656,10 +869,44 @@ function parseQimenV2ProviderData(value) {
   return deepFreeze({ ...record, layers: { ...layers } });
 }
 
+function parseQimenV3ProviderData(value) {
+  const outer = captureRecord(value, ["qimenV3"]);
+  if (!outer || typeof outer.qimenV3 !== "string"
+    || Buffer.byteLength(outer.qimenV3, "utf8") >= PROVIDER_MAX_BYTES) throw invalidProviderV3();
+  let parsed;
+  try {
+    parsed = parseJsonWithoutDuplicateKeys(outer.qimenV3);
+  } catch {
+    throw invalidProviderV3();
+  }
+  const record = captureRecord(parsed, V3_PROVIDER_KEYS);
+  const layersRecord = record ? captureRecord(record.layers, LAYER_KINDS) : null;
+  if (!record || !layersRecord || canonicalStringify(parsed) !== outer.qimenV3
+    || record.v !== 3 || record.event !== "qimen_three_layer"
+    || !cleanCode(record.accountId, 128) || !cleanCode(record.notificationId, 128)
+    || !cleanCode(record.purpose, 48) || !ACTION_DIRECTIONS.has(record.direction)
+    || !validIso(record.hourStart) || !validIso(record.hourEnd)
+    || Date.parse(record.hourEnd) - Date.parse(record.hourStart) < 90 * 60_000
+    || Date.parse(record.hourEnd) - Date.parse(record.hourStart) > 150 * 60_000
+    || !/^[a-f0-9]{64}$/u.test(record.snapshotDigest) || /^0{64}$/u.test(record.snapshotDigest)
+    || record.url !== "/qimen/notification-detail") throw invalidProviderV3();
+  const manifest = sourceManifestRuntime.loadCanonicalSourceManifest();
+  const layers = Object.create(null);
+  for (const kind of LAYER_KINDS) {
+    layers[kind] = parseProviderLayerV3(layersRecord[kind], kind, manifest);
+    if (!layers[kind]) throw invalidProviderV3();
+  }
+  return deepFreeze({ ...record, layers: { ...layers } });
+}
+
 module.exports = Object.freeze({
   buildQimenV2ProviderData,
+  buildQimenV3ProviderData,
   buildQimenThreeLayerSnapshot,
+  buildQimenThreeLayerSnapshotV3,
   canonicalStringify,
   parseQimenV2ProviderData,
+  parseQimenV3ProviderData,
   verifyQimenThreeLayerSnapshot,
+  verifyQimenThreeLayerSnapshotV3,
 });

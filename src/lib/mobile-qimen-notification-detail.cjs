@@ -33,7 +33,12 @@ async function readQimenNotificationDetail(db, userId, notificationId) {
   const row = result.rows[0];
   if (!row) throw new QimenNotificationDetailError("qimen_notification_not_found", 404);
   const snapshot = row.snapshot;
-  if (!snapshotRuntime.verifyQimenThreeLayerSnapshot(snapshot)
+  const validSnapshot = snapshot?.snapshotSchema === 2
+    ? snapshotRuntime.verifyQimenThreeLayerSnapshot(snapshot)
+    : snapshot?.snapshotSchema === 3
+      ? snapshotRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)
+      : false;
+  if (!validSnapshot
       || snapshot.accountId !== userId
       || snapshot.snapshotDigest !== row.snapshot_digest) {
     throw new QimenNotificationDetailError("qimen_notification_snapshot_invalid", 409);

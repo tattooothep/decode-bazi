@@ -38,6 +38,7 @@ const verifyQimenThreeLayerSnapshot = runtime.verifyQimenThreeLayerSnapshot as (
 
 const snapshot = buildQimenThreeLayerSnapshot(validInput());
 assert.equal(snapshot.snapshotSchema, 2);
+assert.equal(snapshot.snapshotDigest, "ab8f6b35bfb1c82ff01e403525f8ef188e150b0704c675c2ec1af9cc3bbc7f41");
 assert.equal(snapshot.event, "qimen_three_layer");
 assert.equal(snapshot.route, "/qimen/notification-detail");
 assert.match(snapshot.snapshotDigest, /^[a-f0-9]{64}$/u);
@@ -54,6 +55,7 @@ assert.ok(snapshot.selectedEvidence.hour.starCode);
 assert.equal(verifyQimenThreeLayerSnapshot(snapshot), true);
 assert.equal(Object.isFrozen(snapshot), true);
 assert.equal(Object.isFrozen(snapshot.layers.month.palaces), true);
+assert.equal("deityBaseQuality" in snapshot.layers.month.palaces[0], false, "stored v2 shape stays unchanged");
 function collectKeys(value: unknown, output = new Set<string>()) {
   if (value && typeof value === "object") {
     for (const [key, child] of Object.entries(value)) {

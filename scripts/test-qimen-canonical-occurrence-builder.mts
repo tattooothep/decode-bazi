@@ -74,7 +74,8 @@ const engineSnapshot = {
 const snapshot = await builder.buildCanonicalQimenOccurrence(row, at, {
   fetchCanonicalQimenEngineSnapshot: async () => engineSnapshot,
 });
-assert.ok(snapshotRuntime.verifyQimenThreeLayerSnapshot(snapshot));
+assert.equal(snapshot.snapshotSchema, 3);
+assert.ok(snapshotRuntime.verifyQimenThreeLayerSnapshotV3(snapshot));
 assert.equal(snapshot.accountId, row.user_id);
 assert.equal(snapshot.selectedDirection, "SE");
 assert.equal(snapshot.layers.hour.validFrom, hourWindow.startAt);
@@ -84,6 +85,9 @@ assert.equal(snapshot.layers.day.decisionRole, "raw_context_only");
 assert.equal(snapshot.layers.hour.decisionRole, "sole_action_authority");
 assert.equal(snapshot.layers.day.palaces[4].doorZh, null);
 assert.equal(snapshot.layers.hour.palaces[4].deityZh, null);
+assert.equal(snapshot.layers.hour.palaces[4].deityBaseQuality, "unavailable");
+assert.equal(snapshot.layers.hour.palaces[0].deityZh, "值符");
+assert.equal(snapshot.layers.hour.palaces[2].starZh, "天沖");
 assert.equal(snapshot.layers.hour.palaces[4].heavenInstrument, null,
   "the hour engine's empty center heaven instrument remains explicit null");
 assert.equal(snapshot.selectedEvidence.hour.doorZh, "杜門");
@@ -158,6 +162,18 @@ await assert.rejects(
   }),
   /QIMEN_CANONICAL_OCCURRENCE_INVALID/u,
   "the pinned hour engine contract requires 天禽 in the center palace",
+);
+
+await assert.rejects(
+  builder.buildCanonicalQimenOccurrence(row, at, {
+    fetchCanonicalQimenEngineSnapshot: async () => {
+      const changed = structuredClone(engineSnapshot);
+      changed.result.palaces[2].star_zh = "天蓬";
+      return changed;
+    },
+  }),
+  /QIMEN_CANONICAL_OCCURRENCE_INVALID/u,
+  "an hour component code/name mismatch fails before catalog attestation",
 );
 
 console.log("qimen canonical three-layer occurrence builder tests passed");

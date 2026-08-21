@@ -6,12 +6,15 @@ const runtime = require("../src/lib/qimen-three-layer-notification.cjs");
 const fixture = require("./fixtures/qimen-three-layer-valid-snapshot.cjs");
 assert.equal(typeof runtime.buildQimenV2ProviderData, "function", "Qimen v2 provider projection must exist");
 assert.equal(typeof runtime.parseQimenV2ProviderData, "function", "Qimen v2 provider parser must exist");
+assert.equal(typeof runtime.buildQimenV3ProviderData, "function", "Qimen v3 provider projection coexists with v2");
+assert.equal(typeof runtime.parseQimenV3ProviderData, "function", "Qimen v3 provider parser coexists with v2");
 
 const snapshot = fixture.build("acct_test_owner");
 
 const provider = runtime.buildQimenV2ProviderData(snapshot);
 assert.deepEqual(Object.keys(provider), ["qimenV2"]);
 assert.equal(typeof provider.qimenV2, "string");
+assert.equal("qimenV3" in provider, false, "v2 projection shape stays unchanged");
 assert.ok(Buffer.byteLength(provider.qimenV2, "utf8") < 3_500, "compact payload stays below safety cap");
 const parsed = runtime.parseQimenV2ProviderData(provider);
 assert.equal(parsed.v, 2);
