@@ -13,18 +13,8 @@ function check(name: string, fn: () => void | Promise<void>) {
   });
 }
 
-await check("Qimen highlight support never reads location or fetches when consent is false", async () => {
-  let fetches = 0;
-  const location = new Proxy({}, {
-    get() { throw new Error("disabled Qimen must not read location"); },
-  });
-  const result = await science.yamQimenHighlight({
-    qimenEnabled: false,
-    location,
-    fetchHighlight: async () => { fetches += 1; return { direction: "N" }; },
-  });
-  assert.equal(result, null);
-  assert.equal(fetches, 0);
+await check("notification science no longer exposes the retired generic Yam/Qimen highlight helper", () => {
+  assert.equal(Object.hasOwn(science, "yamQimenHighlight"), false);
 });
 
 await check("Qimen scheduler and gate share the same IANA timezone and instant", () => {
@@ -120,8 +110,7 @@ await check("scheduler adapters wire consent, timezone, bound goals, due rows, a
   assert.doesNotMatch(personal, /goals\/custom\$\{user\.profile_id/u);
   assert.match(personal, /timezone:\s*user\.user_timezone/u);
   assert.match(personal, /interval '45 minutes'[\s\S]+interval '75 minutes'[\s\S]+interval '23 hours 45 minutes'/u);
-  assert.match(personal, /fetchCanonicalQimenAdvisory\(request\)/u);
-  assert.doesNotMatch(personal, /getJson\(user, `\$\{BASE\}\/api\/qimen/u);
+  assert.doesNotMatch(personal, /qimen-notification-advisory|buildQimen|qimenNotice|qimen_enabled|qimen_latitude|qimen_longitude/u);
   assert.doesNotMatch(yam, /fetchCanonicalQimenAdvisory/u);
   const daily = readFileSync("scripts/mobile-daily-fortune-push-cron.cjs", "utf8");
   assert.match(daily, /withTotalTimeout/u);

@@ -137,16 +137,6 @@ function qimenGateClock(timezone, instant) {
   return zonedClock(timezone, instant);
 }
 
-async function yamQimenHighlight(input) {
-  if (input?.qimenEnabled !== true) return null;
-  const location = input.location;
-  if (!location || location.fresh !== true) return null;
-  const latitude = Number(location.latitude);
-  const longitude = Number(location.longitude);
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
-  return input.fetchHighlight(latitude, longitude);
-}
-
 function buildGoalScienceRequests(goals, timezone, instant = new Date()) {
   const timeZone = safeTimezone(timezone);
   const date = zonedClock(timeZone, instant).date;
@@ -236,6 +226,5 @@ module.exports = {
   selectDueSavedDate,
   withFencedTotalTimeout,
   withTotalTimeout,
-  yamQimenHighlight,
   zonedClock,
 };

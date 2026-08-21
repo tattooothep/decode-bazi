@@ -29,15 +29,8 @@ const shrine = require("./mobile-auspicious-push-cron.cjs");
 const zibai = require("./mobile-zibai-push-cron.cjs");
 const payloadRuntime = require("../src/lib/notification-payload.cjs");
 const pushSender = require("../src/lib/push-send.cjs");
-const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 const admin = await import("./workers/admin-notify-watcher.mjs");
 const sourceFixture = JSON.parse(readFileSync("test-fixtures/notifications/task3-source-results.sanitized.json", "utf8"));
-const liveQimenAdvisory = qimenAdvisory.buildQimenAdvisory(sourceFixture.qimen.api, {
-  timezone: sourceFixture.qimen.request.timezone,
-  longitude: sourceFixture.qimen.request.lng,
-  purpose: sourceFixture.qimen.request.purpose,
-});
-assert.ok(liveQimenAdvisory);
 const liveYamNotice = yam.buildYamProducer({
   id: "acct-live-001", profile_id: "profile-live-001", tokens: [], user_timezone: "Asia/Bangkok",
 }, sourceFixture.yam);
@@ -223,14 +216,6 @@ const liveCases: Array<{
     sourceFacts: liveYamNotice.sourceFacts,
   },
   {
-    kind: "qimen",
-    payload: payloadRuntime.buildNotificationPayload("qimen", "acct-live-001", {
-      date: "2026-08-15", direction: liveQimenAdvisory.direction.code, score: liveQimenAdvisory.score, url: "/qimen/board",
-    }),
-    copy: personal.buildQimenCopy(liveQimenAdvisory, "en"),
-    sourceFacts: qimenAdvisory.qimenSourceFacts(liveQimenAdvisory),
-  },
-  {
     kind: "shrine",
     payload: payloadRuntime.buildNotificationPayload("shrine", "acct-live-001", {
       date: "2026-08-16", festival: "中元節", url: "/shrine",
@@ -287,7 +272,7 @@ for (const [index, item] of liveCases.entries()) {
   assert.equal(provider.categoryId,
     item.transactional === true ? undefined : item.kind === "zibai" ? "hourkey_zibai" : "hourkey_daily",
     `${item.kind}: MUTE category follows transactional policy rather than the broad service kind`);
-  if (item.kind === "yam" || item.kind === "qimen" || item.kind === "zibai") {
+  if (item.kind === "yam" || item.kind === "zibai") {
     assert.equal(provider.ttl, 300, `${item.kind}: provider queue lifetime must not outlive the occurrence`);
   }
   check(item.copy.title.length >= 4 && item.copy.body.length >= 20 && Object.keys(item.sourceFacts).length > 0,
@@ -323,13 +308,11 @@ for (const locale of locales) {
   const dailyCopy = daily.buildDailyCopy({ loc: family, slot: "morning", dateLabel: "15/08", score: 72,
     label: "good", tongshuYi: family === "th" ? ["เริ่มงาน"] : [], golden: { range: "09:00-11:00", quality: "best" } });
   const yamCopy = yam.buildYamCopy({ range: "09:00-11:00", quality: "best" }, "巳", family);
-  const qimenCopy = personal.buildQimenCopy(liveQimenAdvisory, family);
   const shrineCopy = shrine.buildMessage({ th: "เทศกาลจงหยวน", en: "Ghost Festival", zh: "中元節", kind: "festival" }, family);
   for (const [kind, rendered, required] of [
     ["saved_date", savedCopy, "16/08, 08:00"],
     ["daily", dailyCopy, "09:00-11:00"],
     ["yam", yamCopy, "09:00-11:00"],
-    ["qimen", qimenCopy, "玄武"],
     ["shrine", shrineCopy, family === "th" ? "จงหยวน" : family === "zh" ? "中元" : "Ghost"],
   ] as const) {
     check(rendered.title.length <= 120 && rendered.body.length >= (family === "zh" ? 12 : 20) && rendered.body.length <= 400
@@ -339,28 +322,10 @@ for (const locale of locales) {
   }
 }
 
-let qimenFetches = 0;
-const disabledQimenUser = new Proxy({ qimen_enabled: false }, {
-  get(target, key) {
-    if (["qimen_latitude", "qimen_longitude", "qimen_location_updated_at"].includes(String(key))) {
-      throw new Error("disabled personal Qimen read location");
-    }
-    return Reflect.get(target, key);
-  },
-});
 const originalFetch = globalThis.fetch;
-globalThis.fetch = async () => { qimenFetches += 1; throw new Error("disabled Qimen fetched API"); };
-try {
-  const skipped = await personal.qimenNotice({}, disabledQimenUser, new Date("2026-08-15T01:05:00Z"), 0);
-  check(skipped.reason === "qimen_disabled" && qimenFetches === 0,
-    "live personal Qimen scheduler checks consent before reading coordinates or fetching the API");
-} finally {
-  globalThis.fetch = originalFetch;
-}
-
-check(!/qimen_latitude|qimen_longitude|qimen_location_updated_at/u.test(personal.personalUsersSql())
+check(!/qimen-notification-advisory|buildQimen|qimenNotice|qimen_enabled|qimen_latitude|qimen_longitude|qimen_location_updated_at/u.test(personal.personalUsersSql())
     && !/qimen_latitude|qimen_longitude|qimen_location_updated_at/u.test(yam.YAM_USERS_SQL),
-  "live Qimen producer inventories do not read precise coordinates before the product gate");
+  "generic producer inventories contain no legacy Qimen path");
 
 process.env.AUTH_SECRET = process.env.AUTH_SECRET || "task3-abort-test-secret";
 const aborted = new AbortController();
@@ -374,7 +339,7 @@ globalThis.fetch = async (_input: any, init?: RequestInit) => {
 const abortUser = {
   id: "acct-abort-001", email: "private@example.test", current_org_id: null, session_version: 0,
   profile_id: "profile-abort-001", has_prefs: true, yam_enabled: true, service_enabled: true,
-  qimen_enabled: false, user_timezone: "Asia/Bangkok", sent_today: 0, quiet_start: 0,
+  user_timezone: "Asia/Bangkok", sent_today: 0, quiet_start: 0,
   quiet_end: 0, max_per_day: 10, paused_until: null, yam_min_quality: "best", yam_lead_minutes: 60,
   tokens: [],
 };
@@ -440,12 +405,12 @@ try {
   `);
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password, max: 2 });
   const users = await yam.loadYamUsers(pool);
-  check(users.length === 1 && users[0].qimen_enabled === false
+  check(users.length === 1 && !("qimen_enabled" in users[0])
       && !("qimen_latitude" in users[0]) && !("qimen_longitude" in users[0])
       && !("lat" in users[0]) && !("lng" in users[0]),
     "live Yam inventory executes without permission to any precise coordinates before its product gate");
   const personalUsers = await personal.loadPersonalUsers(pool);
-  check(personalUsers.rows.length === 1 && personalUsers.rows[0].qimen_enabled === false
+  check(personalUsers.rows.length === 1 && !("qimen_enabled" in personalUsers.rows[0])
       && !("qimen_latitude" in personalUsers.rows[0]) && !("qimen_longitude" in personalUsers.rows[0]),
     "live personal-reminder inventory exposes no precise coordinates before consent and product gates");
 } finally {

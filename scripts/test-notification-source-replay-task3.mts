@@ -23,7 +23,6 @@ const { resolveNotificationPayload } = await import(pathToFileURL(
   resolve(mobileRoot, "src/navigation/notificationPayload.ts"),
 ).href);
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
-const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 const yam = require("./mobile-yam-push-cron.cjs");
 const daily = require("./mobile-daily-fortune-push-cron.cjs");
 const personal = require("./mobile-personal-reminders-cron.cjs");
@@ -43,12 +42,6 @@ const user = {
   yam_min_quality: "good", yam_lead_minutes: 60,
 };
 const runAt = new Date(fixture.runAt);
-const standaloneAdvisory = qimenAdvisory.buildQimenAdvisory(fixture.qimen.api, {
-  timezone: fixture.qimen.request.timezone,
-  longitude: fixture.qimen.request.lng,
-  purpose: fixture.qimen.request.purpose,
-});
-assert.ok(standaloneAdvisory, "sanitized canonical Qimen fixture must produce a complete advisory");
 const fusionNotice = buildFusionMobileNotice(
   fixture.accountId,
   "fusion|job|94000000-0000-4000-8000-000000000001",
@@ -73,7 +66,6 @@ const notices: Array<{ name: string; accountLocale: string; notice: any; parse: 
   { name: "monthly", accountLocale: "ja", notice: monthly.buildMonthlyNotice(user, fixture.monthly.date), parse: true },
   { name: "network", accountLocale: "cn", notice: network.buildNetworkNotice(user, fixture.network.date, fixture.network.api), parse: true },
   { name: "saved_date", accountLocale: "en", notice: personal.buildSavedDateProducer(user, fixture.savedDate, runAt), parse: true },
-  { name: "qimen", accountLocale: "zh", notice: personal.buildQimenProducer(user, fixture.qimen.request, fixture.qimen.api), parse: true },
   { name: "shrine", accountLocale: "cn", notice: shrine.buildShrineProducer(user, fixture.shrine), parse: true },
   { name: "goal", accountLocale: "vi", notice: personal.buildGoalProducer(user, fixture.goal), parse: true },
   { name: "security", accountLocale: "th", notice: admin.buildAdminMobileNotice({
@@ -93,8 +85,7 @@ for (const item of notices) {
   assert.equal(item.notice.messages[0].data, item.notice.payload, `${item.name} producer must share one typed payload instance`);
 }
 const yamNotice = notices.find((item) => item.name === "yam")!.notice;
-const qimenNotice = notices.find((item) => item.name === "qimen")!.notice;
-for (const notice of [yamNotice, qimenNotice]) {
+for (const notice of [yamNotice]) {
   const rendered = Object.values(notice.historyCopies) as Array<{ title: string; body: string }>;
   assert.ok(rendered.every((copy) => copy.body.length <= 400), `${notice.kind} copy must fit the real durable/provider bound`);
   assert.ok(Date.parse(notice.sourceFacts.eventEndAt) > Date.parse(notice.sourceFacts.eventStartAt),
@@ -103,12 +94,6 @@ for (const notice of [yamNotice, qimenNotice]) {
 assert.ok(Object.values(yamNotice.historyCopies).every((copy: any) => !/(?:玄武|六合|開門|天沖|天英)/u.test(copy.body)),
   "Yam copy must not carry Qimen component names");
 assert.ok(!Object.hasOwn(yamNotice.sourceFacts, "qimen"), "Yam source facts must remain independent from Qimen");
-const qimenRendered = Object.values(qimenNotice.historyCopies) as Array<{ title: string; body: string }>;
-assert.ok(qimenRendered.every((copy) => /玄武/u.test(copy.body)), "dedicated Qimen copy must name the selected deity");
-assert.ok(qimenRendered.every((copy) => /開門/u.test(copy.body)), "dedicated Qimen copy must name the selected door");
-assert.ok(qimenRendered.every((copy) => /天沖/u.test(copy.body)), "dedicated Qimen copy must name the selected star");
-assert.equal(qimenNotice.sourceFacts.qimen.recommendation, "caution",
-  "canonical caution formations must never be promoted to a best-direction claim");
 
 const database = `notification_source_replay_test_${process.pid}`;
 const role = `notification_source_replay_role_${process.pid}`;
@@ -124,7 +109,7 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text,deleted_at timestamptz);
+    CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text,is_active boolean NOT NULL DEFAULT true,deleted_at timestamptz);
     CREATE TABLE mobile_notification_prefs(
       user_id uuid PRIMARY KEY,timezone text,max_per_day int,privacy_preview boolean,locale text,
       service_enabled boolean,quiet_start int,quiet_end int,paused_until timestamptz
@@ -132,7 +117,7 @@ try {
     CREATE TABLE mobile_push_tokens(id uuid PRIMARY KEY,user_id uuid,installation_id uuid,device_push_token text,device_token_type text,expo_push_token text,platform text,enabled boolean,locale text);
     CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid,yam_key text,kind text,title text,body text,payload jsonb,source_facts jsonb,delivery_status text,attempt_count int,next_retry_at timestamptz,accepted_at timestamptz,sent_at timestamptz,last_error text,updated_at timestamptz,delivery_model_generation smallint NOT NULL DEFAULT 0,UNIQUE(user_id,yam_key));
     CREATE TABLE mobile_push_attempts(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),push_log_id uuid,token_id uuid,installation_id uuid,provider text,provider_message jsonb,message_sha256 text,privacy_safe boolean,transactional boolean,status text,next_retry_at timestamptz,updated_at timestamptz,UNIQUE(push_log_id,installation_id));
-    INSERT INTO users VALUES('${fixture.accountId}','${fixture.timezone}','th',NULL);
+    INSERT INTO users VALUES('${fixture.accountId}','${fixture.timezone}','th',true,NULL);
     INSERT INTO mobile_notification_prefs VALUES('${fixture.accountId}','${fixture.timezone}',100,false,'en',true,0,0,NULL);
     INSERT INTO mobile_push_tokens VALUES('${fixture.tokenId}','${fixture.accountId}','${fixture.installationId}',NULL,'apns','ExponentPushToken[source-replay]','ios',true,'en');
     GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};

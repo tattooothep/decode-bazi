@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** V192: saved dates, Qimen context and personal-goal reminders (every 15 min). */
+/** V192: saved-date and personal-goal reminders (every 15 min). */
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -23,7 +23,6 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
-const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
 
 function b64url(value) {
   return Buffer.from(value).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
@@ -163,72 +162,6 @@ async function savedDateNotice(db, user, runAt, sentToday) {
   return notify(db, user, "saved_date", notice, sentToday);
 }
 
-function buildQimenCopy(advisory, loc) {
-  return qimenAdvisory.buildQimenStandaloneCopy(advisory, loc);
-}
-
-function buildQimenProducer(user, request, result) {
-  const advisory = result?.version === qimenAdvisory.ADVISORY_VERSION ? result
-    : qimenAdvisory.buildQimenAdvisory(result, {
-      timezone: request?.timezone,
-      longitude: request?.lng,
-      purpose: request?.purpose,
-    });
-  if (!user?.id || !advisory) return null;
-  const build = (locale) => buildQimenCopy(advisory, locale);
-  const historyCopies = delivery.localizedHistoryCopies(build);
-  const payload = notificationPayload.buildNotificationPayload("qimen", String(user.id), {
-    date: request.date, direction: advisory.direction.code, score: advisory.score, url: "/qimen/board",
-  });
-  return {
-    userId: user.id, key: `qimen|${advisory.validFrom}|${advisory.direction.code}`,
-    kind: "qimen", ...historyCopies.th, historyCopies, payload,
-    sourceFacts: qimenAdvisory.qimenSourceFacts(advisory, {
-      timezone: request.timezone, instant: request.instant, latitude: request.lat, longitude: request.lng,
-      engine: "qimen-api",
-    }),
-    messages: messages(user.tokens, "qimen", "/qimen/board", payload, build),
-  };
-}
-
-async function loadQimenLocation(db, userId) {
-  const result = await db.query(
-    `SELECT qimen_latitude,qimen_longitude,qimen_location_updated_at
-       FROM mobile_notification_prefs WHERE user_id=$1 AND qimen_enabled=true`,
-    [userId],
-  );
-  return result.rows[0] || null;
-}
-
-async function qimenNotice(db, user, runAt, sentToday) {
-  if (user.qimen_enabled !== true) return { status: "skipped", reason: "qimen_disabled" };
-  const minute = guard.localMinutes(user.user_timezone, runAt);
-  if (!DRY && (minute === null || minute < 8 * 60 || minute >= 8 * 60 + 15)) {
-    return { status: "skipped", reason: "outside_qimen_window" };
-  }
-  const clock = science.zonedClock(user.user_timezone, runAt);
-  const entitlement = qimenAdvisory.qimenNotificationEntitlement(user, {
-    date: clock.date, time: clock.time, timezone: user.user_timezone, now: runAt,
-  });
-  if (!entitlement.allow) return { status: "skipped", reason: entitlement.reason };
-  const location = await loadQimenLocation(db, user.id);
-  const fresh = location?.qimen_location_updated_at
-    && runAt.getTime() - new Date(location.qimen_location_updated_at).getTime() <= 30 * 86_400_000;
-  if (!fresh || !Number.isFinite(Number(location?.qimen_latitude)) || !Number.isFinite(Number(location?.qimen_longitude))) {
-    return { status: "skipped", reason: "no_fresh_current_location" };
-  }
-  const request = science.buildQimenSchedulerRequest({
-    timezone: user.user_timezone,
-    instant: runAt,
-    latitude: location.qimen_latitude,
-    longitude: location.qimen_longitude,
-  });
-  const advisory = await qimenAdvisory.fetchCanonicalQimenAdvisory(request);
-  const notice = buildQimenProducer(user, request, advisory);
-  if (!notice) return { status: "skipped", reason: "no_qimen_context_highlight" };
-  return notify(db, user, "qimen", notice, sentToday);
-}
-
 function formatGoalDayLabel(date, loc) {
   const parsed = new Date(`${date}T12:00:00.000Z`);
   if (!Number.isFinite(parsed.valueOf())) return String(date || "");
@@ -297,7 +230,7 @@ function personalUsersSql(onlyEmail = false) {
              'expo',t.expo_push_token,'platform',t.platform,'locale',COALESCE(t.locale,'th')
            )) AS tokens,
            np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
-           np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
+           np.shrine_enabled,np.goal_enabled,np.service_enabled,
            np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
            to_jsonb(u)->>'tier' AS tier,
            to_jsonb(u)->>'sub_expires_at' AS sub_expires_at,
@@ -313,7 +246,7 @@ function personalUsersSql(onlyEmail = false) {
       LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
      WHERE u.deleted_at IS NULL ${onlyEmail ? "AND u.email=$1" : ""}
      GROUP BY u.id,np.user_id,np.security_enabled,np.saved_date_enabled,np.daily_enabled,np.yam_enabled,
-              np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
+              np.shrine_enabled,np.goal_enabled,np.service_enabled,
               np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
               np.timezone,u.timezone`;
 }
@@ -338,7 +271,7 @@ async function main() {
   const totals = { accepted: 0, failed: 0, skipped: 0, duplicate: 0 };
   for (const user of users.rows) {
     let sentToday = Number(user.sent_today || 0);
-    for (const task of [savedDateNotice, qimenNotice, goalNotice]) {
+    for (const task of [savedDateNotice, goalNotice]) {
       try {
         const outcome = await task(db, user, runAt, sentToday);
         if (outcome.status === "accepted" || outcome.status === "dry") {
@@ -360,8 +293,8 @@ async function main() {
 }
 
 module.exports = {
-  buildGoalCopy,buildGoalProducer,buildQimenCopy,buildQimenProducer,buildSavedDateCopy,buildSavedDateProducer,formatGoalDayLabel,getJson,
-  goalNotice,loadPersonalUsers,loadQimenLocation,main,personalUsersSql,qimenNotice,savedDateNotice,
+  buildGoalCopy,buildGoalProducer,buildSavedDateCopy,buildSavedDateProducer,formatGoalDayLabel,getJson,
+  goalNotice,loadPersonalUsers,main,personalUsersSql,savedDateNotice,
 };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-personal-reminders] category=personal error_code=scheduler_failed"); process.exit(1); });
