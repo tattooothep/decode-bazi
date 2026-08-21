@@ -105,6 +105,10 @@ const source = fs.readFileSync(new URL("./mobile-qimen-push-cron.cjs", import.me
 assert.doesNotMatch(source, /mobile-yam-push|mobile-personal-reminders|today_occurrence/iu);
 assert.match(source, /withSchedulerRunLease\(db, "qimen"/u);
 assert.match(source, /writeSchedulerHeartbeat\("qimen"\)/u);
+assert.match(source, /if \(!DRY\) await writeSchedulerHeartbeat\("qimen"\)/u,
+  "a successful guarded scheduler tick must still publish liveness while the producer is disabled");
+assert.doesNotMatch(source, /report\.disabled[^\n]*writeSchedulerHeartbeat/u,
+  "producer enablement must not control scheduler liveness evidence");
 
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const snapshotRuntime = require("../src/lib/qimen-three-layer-notification.cjs");

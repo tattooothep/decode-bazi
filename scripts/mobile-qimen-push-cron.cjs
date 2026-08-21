@@ -610,7 +610,7 @@ async function main() {
     if (!leased.acquired) return;
     const report = leased.result;
     console.log(`[mobile-qimen-push] disabled=${report.disabled} due=${report.due} reserved=${report.reserved} skipped=${report.skipped} dry=${DRY}`);
-    if (!DRY && report.disabled !== true) await writeSchedulerHeartbeat("qimen");
+    if (!DRY) await writeSchedulerHeartbeat("qimen");
   } finally {
     await db.end();
   }
