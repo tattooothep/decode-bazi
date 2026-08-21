@@ -6,8 +6,10 @@ const path = require("node:path");
 
 const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
 const SOURCE_BYTE_SIZE = 10629;
-const HOUR_ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3";
-const HOUR_ENGINE_SOURCE_SHA256 = "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1";
+const HOUR_ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4";
+const HOUR_ENGINE_SOURCE_SHA256 = "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3";
+const HOUR_REFERENCE_DATA_VERSION = "QIMEN_SQLITE_REFERENCE_TABLES_V1";
+const HOUR_REFERENCE_DATA_SHA256 = "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4";
 const DEFAULT_EVIDENCE_PATH = path.resolve(
   __dirname,
   "../../data/library/qmdj/qimen-faqiao-c4-source-excerpts.md",
@@ -34,6 +36,8 @@ const LAYERS = Object.freeze({
     method: "chai_bu_true_solar_time",
     engineContractVersion: HOUR_ENGINE_CONTRACT_VERSION,
     engineSourceDigest: HOUR_ENGINE_SOURCE_SHA256,
+    engineReferenceDataVersion: HOUR_REFERENCE_DATA_VERSION,
+    engineReferenceDataDigest: HOUR_REFERENCE_DATA_SHA256,
     engineProfileId: 1,
     decisionRole: "sole_action_authority",
   }),
@@ -74,6 +78,8 @@ function assertAllowedHourEngineContract(value) {
   if (!value || typeof value !== "object"
     || value.version !== HOUR_ENGINE_CONTRACT_VERSION
     || value.source_sha256 !== HOUR_ENGINE_SOURCE_SHA256
+    || value.reference_data_version !== HOUR_REFERENCE_DATA_VERSION
+    || value.reference_data_sha256 !== HOUR_REFERENCE_DATA_SHA256
     || value.profile_id !== 1
     || value.apparent_timeline !== "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1"
     || value.equation_of_time !== "NOAA_CONTINUOUS_TROPICAL_PHASE_V1"

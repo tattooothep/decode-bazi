@@ -36,8 +36,10 @@ assert.equal(manifest.layers.day.calculationVersion, "FAQIAO_RIJIA_FOUR_QI_TERM_
 assert.equal(manifest.layers.day.decisionRole, "raw_context_only");
 assert.equal(manifest.layers.hour.calculationVersion, "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1");
 assert.equal(manifest.layers.hour.decisionRole, "sole_action_authority");
-assert.equal(manifest.layers.hour.engineContractVersion, "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3");
-assert.equal(manifest.layers.hour.engineSourceDigest, "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1");
+assert.equal(manifest.layers.hour.engineContractVersion, "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4");
+assert.equal(manifest.layers.hour.engineSourceDigest, "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3");
+assert.equal(manifest.layers.hour.engineReferenceDataVersion, "QIMEN_SQLITE_REFERENCE_TABLES_V1");
+assert.equal(manifest.layers.hour.engineReferenceDataDigest, "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4");
 assert.equal(manifest.layers.hour.engineProfileId, 1);
 
 const assertAllowedContextVersion = sourceManifest.assertAllowedContextVersion as (

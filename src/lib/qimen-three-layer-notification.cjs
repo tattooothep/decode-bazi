@@ -93,7 +93,8 @@ const PROVIDER_KEYS = Object.freeze([
   "hourStart", "hourEnd", "layers", "snapshotDigest", "url",
 ]);
 const PROVIDER_LAYER_KEYS = Object.freeze([
-  "version", "sourceCode", "deityCode", "deityZh", "doorCode", "doorZh", "starCode", "starZh",
+  "version", "sourceCode", "stateCode", "explanationCodes", "conflictCodes", "unavailableCodes",
+  "deityCode", "deityZh", "doorCode", "doorZh", "starCode", "starZh",
 ]);
 const PROVIDER_MAX_BYTES = 3_500;
 
@@ -187,12 +188,15 @@ function readCodeArray(value) {
 
 function readPalace(value, index, layerKind) {
   const record = captureRecord(value, PALACE_KEYS);
+  const center = record?.direction === "C";
+  const heavenInstrumentValid = layerKind === "hour" && center
+    ? record?.heavenInstrument === null || /^[甲乙丙丁戊己庚辛壬癸]$/u.test(record?.heavenInstrument)
+    : /^[甲乙丙丁戊己庚辛壬癸]$/u.test(record?.heavenInstrument);
   if (!record || record.palace !== index + 1 || record.direction !== DIRECTIONS[index]
     || !/^[甲乙丙丁戊己庚辛壬癸]$/u.test(record.earthInstrument)
-    || !/^[甲乙丙丁戊己庚辛壬癸]$/u.test(record.heavenInstrument)
+    || !heavenInstrumentValid
     || !cleanCode(record.starCode) || !cleanText(record.starZh, 1, 24)
     || typeof record.isVoid !== "boolean" || typeof record.isHorse !== "boolean") return null;
-  const center = record.direction === "C";
   if (center) {
     if (record.doorCode !== null || record.doorZh !== null || record.deityCode !== null || record.deityZh !== null) return null;
   } else if (!cleanCode(record.doorCode) || !cleanText(record.doorZh, 1, 24)
@@ -395,6 +399,8 @@ function buildQimenThreeLayerSnapshot(input) {
       code: layers.hour.sourceCode,
       engineContractVersion: manifest.layers.hour.engineContractVersion,
       engineSourceDigest: manifest.layers.hour.engineSourceDigest,
+      engineReferenceDataVersion: manifest.layers.hour.engineReferenceDataVersion,
+      engineReferenceDataDigest: manifest.layers.hour.engineReferenceDataDigest,
       engineProfile: manifest.layers.hour.engineProfileId,
     }),
   });
@@ -562,6 +568,10 @@ function providerLayer(snapshot, kind) {
   return Object.freeze({
     version: snapshot.versionTuple[kind],
     sourceCode: snapshot.sourceTuple[kind].code,
+    stateCode: snapshot.layers[kind].stateCode,
+    explanationCodes: snapshot.layers[kind].explanationCodes,
+    conflictCodes: snapshot.layers[kind].conflictCodes,
+    unavailableCodes: snapshot.layers[kind].unavailableCodes,
     deityCode: evidence.deityCode,
     deityZh: evidence.deityZh,
     doorCode: evidence.doorCode,
@@ -595,12 +605,21 @@ function buildQimenV2ProviderData(snapshot) {
 
 function parseProviderLayer(value, kind, manifest) {
   const record = captureRecord(value, PROVIDER_LAYER_KEYS);
+  const explanationCodes = record ? readCodeArray(record.explanationCodes) : null;
+  const conflictCodes = record ? readCodeArray(record.conflictCodes) : null;
+  const unavailableCodes = record ? readCodeArray(record.unavailableCodes) : null;
+  const evidence = LAYER_EVIDENCE[kind];
   if (!record || record.version !== manifest.layers[kind].calculationVersion
     || record.sourceCode !== SOURCE_CODES[kind]
+    || record.stateCode !== evidence.stateCode
+    || !explanationCodes || !conflictCodes || !unavailableCodes
+    || canonicalStringify(explanationCodes) !== canonicalStringify(evidence.explanationCodes)
+    || canonicalStringify(conflictCodes) !== canonicalStringify(evidence.conflictCodes)
+    || canonicalStringify(unavailableCodes) !== canonicalStringify(evidence.unavailableCodes)
     || !cleanCode(record.deityCode) || !cleanText(record.deityZh, 1, 24)
     || !cleanCode(record.doorCode) || !cleanText(record.doorZh, 1, 24)
     || !cleanCode(record.starCode) || !cleanText(record.starZh, 1, 24)) return null;
-  return Object.freeze({ ...record });
+  return Object.freeze({ ...record, explanationCodes, conflictCodes, unavailableCodes });
 }
 
 function parseQimenV2ProviderData(value) {

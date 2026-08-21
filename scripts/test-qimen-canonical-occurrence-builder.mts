@@ -45,8 +45,10 @@ const engineSnapshot = {
     calculation: {
       pillars: { yearPillarZh: "丙午", monthPillarZh: "丙申", dayPillarZh: "丁卯", hourPillarZh: "丙午" },
       engine_contract: {
-        version: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3",
-        source_sha256: "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1",
+        version: "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4",
+        source_sha256: "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3",
+        reference_data_version: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
+        reference_data_sha256: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",
         profile_id: 1,
         apparent_timeline: "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1",
         equation_of_time: "NOAA_CONTINUOUS_TROPICAL_PHASE_V1",
@@ -56,7 +58,7 @@ const engineSnapshot = {
     },
     palaces: directions.map((direction, index) => ({
       palace_id: index + 1, direction,
-      earth_stem_zh: instruments[index], heaven_stem_zh: instruments[(index + 1) % 9],
+      earth_stem_zh: instruments[index], heaven_stem_zh: direction === "C" ? null : instruments[(index + 1) % 9],
       star_code: stars[index][0], star_zh: stars[index][1],
       door_code: doors[index][0], door_zh: doors[index][1],
       deity_code: deities[index][0], deity_zh: deities[index][1],
@@ -79,6 +81,8 @@ assert.equal(snapshot.layers.day.decisionRole, "raw_context_only");
 assert.equal(snapshot.layers.hour.decisionRole, "sole_action_authority");
 assert.equal(snapshot.layers.day.palaces[4].doorZh, null);
 assert.equal(snapshot.layers.hour.palaces[4].deityZh, null);
+assert.equal(snapshot.layers.hour.palaces[4].heavenInstrument, null,
+  "the hour engine's empty center heaven instrument remains explicit null");
 assert.equal(snapshot.selectedEvidence.hour.doorZh, "杜門");
 assert.ok(Date.parse(snapshot.layers.month.validFrom) <= Date.parse(hourWindow.startAt));
 assert.ok(Date.parse(snapshot.layers.month.validUntil) >= Date.parse(hourWindow.endAt));
@@ -86,8 +90,10 @@ assert.ok(Date.parse(snapshot.layers.day.validFrom) <= Date.parse(hourWindow.sta
 assert.ok(Date.parse(snapshot.layers.day.validUntil) >= Date.parse(hourWindow.endAt));
 assert.deepEqual(snapshot.sourceTuple.hour, {
   code: "QIMEN_VERIFIED_ZHUANPAN_SHIJIA",
-  engineContractVersion: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3",
-  engineSourceDigest: "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1",
+  engineContractVersion: "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4",
+  engineSourceDigest: "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3",
+  engineReferenceDataVersion: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
+  engineReferenceDataDigest: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",
   engineProfile: 1,
 });
 

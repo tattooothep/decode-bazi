@@ -24,6 +24,9 @@ assert.equal(parsed.snapshotDigest, snapshot.snapshotDigest);
 assert.equal(parsed.layers.month.deityCode, snapshot.selectedEvidence.month.deityCode);
 assert.equal(parsed.layers.day.doorCode, snapshot.selectedEvidence.day.doorCode);
 assert.equal(parsed.layers.hour.starCode, snapshot.selectedEvidence.hour.starCode);
+assert.deepEqual(parsed.layers.month.conflictCodes, ["CENTER_LODGING_SOURCE_CONFLICT_DECLARED"]);
+assert.deepEqual(parsed.layers.day.unavailableCodes, ["CONTEXT_VIGOR_NOT_DEFINED", "CONTEXT_CLASH_NOT_EVALUATED"]);
+assert.deepEqual(parsed.layers.hour.explanationCodes, ["HOUR_SOLE_ACTION_AUTHORITY"]);
 assert.equal(Object.isFrozen(parsed), true);
 
 const duplicateTopKey = provider.qimenV2.replace(

@@ -148,9 +148,12 @@ function hourLayer(result, version, validFrom, validUntil) {
     const palace = index + 1;
     const row = byPalace.get(palace);
     const center = direction === "C";
+    const heavenInstrumentValid = center
+      ? row?.heaven_stem_zh === null || /^[乙丙丁戊己庚辛壬癸]$/u.test(String(row?.heaven_stem_zh || ""))
+      : /^[乙丙丁戊己庚辛壬癸]$/u.test(String(row?.heaven_stem_zh || ""));
     if (!row || String(row.direction || "").toUpperCase() !== direction
       || !/^[乙丙丁戊己庚辛壬癸]$/u.test(String(row.earth_stem_zh || ""))
-      || !/^[乙丙丁戊己庚辛壬癸]$/u.test(String(row.heaven_stem_zh || ""))
+      || !heavenInstrumentValid
       || !/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.star_code || ""))
       || !/^[\u3400-\u9fff]{2,8}$/u.test(String(row.star_zh || ""))) throw canonicalError();
     if (!center && (!/^[A-Za-z0-9_:-]{1,96}$/u.test(String(row.door_code || ""))

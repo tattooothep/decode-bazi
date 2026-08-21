@@ -42,10 +42,15 @@ assert.notEqual(key, scheduler.occurrenceKey(row, {
 
 assert.deepEqual(
   scheduler.admissionDecision(row, occurrence, new Date("2026-08-21T14:00:30.000Z")),
-  { allow: true, sendDeadline: "2026-08-21T14:05:00.000Z" },
+  { allow: true, sendDeadline: "2026-08-21T14:10:00.000Z" },
 );
 assert.deepEqual(
   scheduler.admissionDecision(row, occurrence, new Date("2026-08-21T14:05:00.000Z")),
+  { allow: true, sendDeadline: "2026-08-21T14:10:00.000Z" },
+  "the scheduler must still admit a science-approved direction after the five-minute boundary buffer",
+);
+assert.deepEqual(
+  scheduler.admissionDecision(row, occurrence, new Date("2026-08-21T14:10:00.000Z")),
   { allow: false, reason: "late_occurrence" },
 );
 assert.deepEqual(
@@ -192,7 +197,7 @@ assert.deepEqual(
     0,
   ),
   { allow: false, terminal: true, reason: "policy_late_occurrence" },
-  "a retry can never escape the five-minute occurrence admission window",
+  "a retry can never escape the immutable occurrence admission deadline",
 );
 assert.deepEqual(
   delivery.currentPolicyDecision(
@@ -285,7 +290,7 @@ const recoveryDb = {
       state: "claimed",
       push_log_id: null,
       snapshot: persistedSnapshot,
-      send_deadline: new Date(Date.parse(canonicalWindow.startAt) + 5 * 60_000).toISOString(),
+      send_deadline: new Date(Date.parse(canonicalWindow.startAt) + 10 * 60_000).toISOString(),
     }] };
     if (/UPDATE mobile_qimen_installations SET next_due_at/u.test(sql)) return { rowCount: 1, rows: [] };
     throw new Error(`unexpected recovery SQL: ${sql}`);
@@ -318,6 +323,7 @@ const boundedClaims = Array.from({ length: 500 }, (_, index) => ({
 let claimedLimit = 0;
 let abortBuildCalls = 0;
 let releasedClaims = 0;
+let releaseQueries = 0;
 const abortDb = {
   async query(sql: string, params: unknown[] = []) {
     if (/mobile_qimen_producer_state/u.test(sql)) return { rows: [{
@@ -335,8 +341,10 @@ const abortDb = {
     }] };
     if (/SELECT id,state,push_log_id,snapshot,send_deadline/u.test(sql)) return { rows: [] };
     if (/SET lease_token=NULL,lease_expires_at=NULL/u.test(sql)) {
-      releasedClaims += 1;
-      return { rowCount: 1, rows: [] };
+      assert.ok(Array.isArray(params[0]), "lease cleanup must use bounded UUID arrays instead of one SQL round-trip per claim");
+      releaseQueries += 1;
+      releasedClaims += params[0].length;
+      return { rowCount: params[0].length, rows: [] };
     }
     throw new Error(`unexpected abort SQL: ${sql}`);
   },
@@ -359,6 +367,7 @@ await assert.rejects(
 assert.equal(claimedLimit, 500, "one in-memory chunk is bounded to 500 claims within the 50-second lease");
 assert.equal(abortBuildCalls, 1, "aborting stops the scheduler from starting another claim");
 assert.equal(releasedClaims, 500, "abort cleanup releases every claimed lease, including work not started");
+assert.equal(releaseQueries, 5, "a 500-claim cleanup uses five bounded 100-row updates");
 
 let cleanupAttempts = 0;
 await assert.rejects(
@@ -368,10 +377,10 @@ await assert.rejects(
       if (cleanupAttempts === 2) throw new Error("one cleanup failed");
       return { rowCount: 1, rows: [] };
     },
-  }, boundedClaims.slice(0, 3), canonicalAt),
+  }, boundedClaims.slice(0, 250), canonicalAt),
   /one cleanup failed/u,
 );
-assert.equal(cleanupAttempts, 3, "one cleanup failure never strands the remaining leases");
+assert.equal(cleanupAttempts, 3, "one cleanup chunk failure never strands later cleanup chunks");
 
 assert.deepEqual(
   delivery.currentPolicyDecision(

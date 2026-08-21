@@ -6,8 +6,10 @@
  */
 const PURPOSE = "travel";
 const ENGINE_PROFILE_ID = 1;
-const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3";
-const ENGINE_SOURCE_SHA256 = "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1";
+const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4";
+const ENGINE_SOURCE_SHA256 = "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3";
+const ENGINE_REFERENCE_DATA_VERSION = "QIMEN_SQLITE_REFERENCE_TABLES_V1";
+const ENGINE_REFERENCE_DATA_SHA256 = "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4";
 const ADVISORY_VERSION = "qimen-notification-advisory-v1";
 const DIRECTION = Object.freeze({
   N: Object.freeze({ th: "เหนือ", en: "north", zh: "北方" }),
@@ -419,6 +421,8 @@ function buildQimenAdvisory(result, options = {}) {
     || Math.abs(engineCoordinate.valueOf() - expectedCoordinate.valueOf()) > 1_500
     || engineContract?.version !== ENGINE_CONTRACT_VERSION
     || engineContract?.source_sha256 !== ENGINE_SOURCE_SHA256
+    || engineContract?.reference_data_version !== ENGINE_REFERENCE_DATA_VERSION
+    || engineContract?.reference_data_sha256 !== ENGINE_REFERENCE_DATA_SHA256
     || engineContract?.profile_id !== ENGINE_PROFILE_ID
     || engineContract?.apparent_timeline !== "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1"
     || engineContract?.equation_of_time !== "NOAA_CONTINUOUS_TROPICAL_PHASE_V1"

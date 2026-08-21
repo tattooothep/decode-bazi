@@ -52,7 +52,7 @@ function layer(kind, validFrom, validUntil, chartInput = {}) {
       palace: palace.palace,
       direction: palace.direction,
       earthInstrument: palace.earthInstrument,
-      heavenInstrument: palace.heavenInstrument,
+      heavenInstrument: kind === "hour" && palace.direction === "C" ? null : palace.heavenInstrument,
       starCode: STAR_CODES[palace.star],
       starZh: palace.star,
       doorCode: palace.door === null ? null : DOOR_CODES[palace.door],

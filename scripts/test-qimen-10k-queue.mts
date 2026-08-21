@@ -13,6 +13,7 @@ const queue = Array.from({ length: 10_000 }, (_, index) => ({
 const claimSizes: number[] = [];
 let reservations = 0;
 let released = 0;
+let releaseQueries = 0;
 let deviceDeliveries = 0;
 
 const db = {
@@ -28,8 +29,10 @@ const db = {
       return { rows: claims };
     }
     if (/SET lease_token=NULL,lease_expires_at=NULL/u.test(sql)) {
-      released += 1;
-      return { rowCount: 1, rows: [] };
+      assert.ok(Array.isArray(params[0]), "cleanup must be batched by claim UUID arrays");
+      releaseQueries += 1;
+      released += params[0].length;
+      return { rowCount: params[0].length, rows: [] };
     }
     throw new Error(`unexpected 10k queue SQL: ${sql}`);
   },
@@ -55,9 +58,10 @@ for (let minute = 0; minute < 4; minute += 1) {
   ));
 }
 
-assert.equal(queue.length, 0, "four one-minute runs drain the full 10k due cohort before the five-minute admission closes");
+assert.equal(queue.length, 0, "four one-minute runs drain the full 10k due cohort inside the occurrence admission window");
 assert.equal(reservations, 10_000, "every due installation reaches an immutable reservation decision");
 assert.equal(released, 10_000, "every claimed installation lease is released after its reservation decision");
+assert.equal(releaseQueries, 100, "10k cleanup uses bounded 100-row updates instead of 10k sequential round-trips");
 assert.ok(claimSizes.every((size) => size === 500), "10k drain uses twenty bounded 500-row chunks");
 assert.deepEqual(reports.map((report: { due: number; reserved: number }) => [report.due, report.reserved]),
   Array.from({ length: 4 }, () => [2_500, 2_500]));

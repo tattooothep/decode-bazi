@@ -11,8 +11,10 @@ const calculation = {
   correction_minutes: -22.01038690158242,
   apparent_solar_coordinate: "2026-08-19T07:37:59.376Z",
   engine_contract: {
-    version: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V3",
-    source_sha256: "8b7bc051f9532cde59cf578af1034ef6626a8350c1d43b5549f9fe92098d1ed1",
+    version: "QIMEN_HOUR_ENGINE_REFERENCE_DATA_V4",
+    source_sha256: "7f1ed330f88d625fb48171b30f17d84190f691310c3f5e78274791418096e5b3",
+    reference_data_version: "QIMEN_SQLITE_REFERENCE_TABLES_V1",
+    reference_data_sha256: "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4",
     profile_id: 1,
     apparent_timeline: "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1",
     equation_of_time: "NOAA_CONTINUOUS_TROPICAL_PHASE_V1",

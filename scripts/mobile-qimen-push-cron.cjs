@@ -20,7 +20,10 @@ const WORKERS = Math.max(1, Math.min(20, Number((process.argv.find((arg) => arg.
 const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
 const LOCATION_LEASE_MS = 7 * 24 * 60 * 60 * 1_000;
 const PROVIDER_TTL_MS = 5 * 60 * 1_000;
-const SEND_GRACE_MS = 5 * 60 * 1_000;
+// The engine intentionally marks the first five minutes around a true-solar
+// shichen boundary as caution. Keep a second five-minute interval in which a
+// stable, science-approved direction can actually be admitted for delivery.
+const SEND_GRACE_MS = 10 * 60 * 1_000;
 
 (function loadEnv() {
   const envPath = path.join(__dirname, "..", ".env.local");
@@ -427,13 +430,27 @@ async function forEachBounded(items, concurrency, handler) {
 }
 
 async function releaseClaims(db, claims, at) {
+  const cleanupBatchSize = 100;
   let firstFailure;
-  for (const claim of claims) {
+  for (let offset = 0; offset < claims.length; offset += cleanupBatchSize) {
+    const batch = claims.slice(offset, offset + cleanupBatchSize);
     try {
       await db.query(
-        `UPDATE mobile_qimen_installations SET lease_token=NULL,lease_expires_at=NULL,updated_at=$4
-          WHERE user_id=$1 AND installation_id=$2 AND lease_token=$3`,
-        [claim.user_id, claim.installation_id, claim.lease_token, at.toISOString()],
+        `WITH claimed AS (
+           SELECT * FROM unnest($1::uuid[],$2::uuid[],$3::uuid[])
+             AS item(user_id,installation_id,lease_token)
+         )
+         UPDATE mobile_qimen_installations q
+            SET lease_token=NULL,lease_expires_at=NULL,updated_at=$4
+           FROM claimed c
+          WHERE q.user_id=c.user_id AND q.installation_id=c.installation_id
+            AND q.lease_token=c.lease_token`,
+        [
+          batch.map((claim) => claim.user_id),
+          batch.map((claim) => claim.installation_id),
+          batch.map((claim) => claim.lease_token),
+          at.toISOString(),
+        ],
       );
     } catch (error) {
       if (firstFailure === undefined) firstFailure = error;
