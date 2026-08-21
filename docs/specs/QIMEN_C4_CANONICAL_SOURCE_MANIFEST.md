@@ -1,6 +1,6 @@
 # Qimen C4 canonical source manifest
 
-Status: source family selected; 日家 boundary and center-lodging rulings unresolved; producer disabled
+Status: editorial 日家 boundary and center-lodging rulings adopted; independent signatures pending; producer disabled
 Decision date: 2026-08-21
 
 ## Release lineages
@@ -25,6 +25,17 @@ Month/day and hour are intentionally different chart lineages. They may be juxta
 
 Runtime activation must verify the local evidence digest byte-for-byte. A missing or changed file returns `QIMEN_CANONICAL_SOURCE_DIGEST_MISMATCH` and disables the producer.
 
+## Pinned hour engine contract
+
+- Contract version: `QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2`
+- Engine profile: `1`
+- Exact `/root/qimen-api/src/qimenEngine.js` SHA-256: `7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84`
+- Apparent-solar coordinate: `UTC + 4 × longitude + equation-of-time`, interpreted as a timezone-free monotonic coordinate
+- Shichen policy: half-open `[boundary_n,boundary_n+1)` with no DST gap, overlap, or reversal
+- Year/month pillars: pinned astronomical Jie instants on the global Beijing-time lineage; day/hour pillars: canonical apparent-solar date with Zi beginning at 23:00
+
+The occurrence builder compares the independent canonical pillars and the exact engine contract tuple with the engine response. Any mismatch fails closed before an occurrence can be reserved.
+
 ## Source-governed rules
 
 ### Month 月家
@@ -40,7 +51,7 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 - Operational count is 24 solar terms: the source text's preserved `四十` is normalized only because the same passage explicitly enumerates two groups of twelve.
 - Nominal Yang Ju sequence is `1, 7, 4`; nominal Yin Ju sequence is `9, 3, 6` exactly as transcribed. A `9, 2, 6` sequence from another work is forbidden in this lineage.
 - Exact astronomical term instants from the repository-pinned calendar runtime are mandatory. Mean dates and fixed civil dates are forbidden.
-- The pinned source does not continuously resolve Fu-head/超接拆補 for this product. The adopted nominal profile is `[T,U)` at the astronomical instant with no carry: 冬至→陽1, 雨水→陽7, 穀雨→陽4, 夏至→陰9, 處暑→陰3, 霜降→陰6. It must be labeled with its exact version and never as 拆補. The 卷六 `冬至丁未` example is a 時家/36-Ju example and is forbidden as proof of a 日家 60-day transition.
+- The pinned source does not continuously resolve Fu-head/超接拆補 for this product. The adopted nominal profile is `[T,next selected four-Qi boundary)` at the astronomical instant with no carry: 冬至→陽1, 雨水→陽7, 穀雨→陽4, 夏至→陰9, 處暑→陰3, 霜降→陰6. It must be labeled with its exact version and never as 拆補. The 卷六 `冬至丁未` example is a 時家/36-Ju example and is forbidden as proof of a 日家 60-day transition.
 - The profile intentionally makes no claim about five-day Fu-head state. No nearest-Jia-Zi heuristic, range clamp, or silent default Ju is permitted; an unavailable astronomical boundary fails closed.
 - Literal construction fixtures cover Yang 1 `庚子`, Yang 7 `庚子`, Yang 4 `甲戌`, Yin 9 `丁卯`, Yin 3 `丁卯`, and Yin 6 `甲戌`, including the two source-worked plates.
 
@@ -58,6 +69,7 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 - Month/day validity windows and notification snapshot boundaries are product contracts and must be versioned.
 - The first release exposes month/day raw evidence only. It does not call them supportive, cautionary, neutral, or conflicting.
 - The hour chart alone selects eligibility and direction.
+- Every immutable layer records its state, deterministic explanation codes, declared source conflicts, explicitly unavailable fields, boundary policy, and all nine palaces. Month/day retain raw and effective center-lodging targets separately. Hour palaces retain available vigor and clash evidence.
 - Provider TTL is five minutes; late/quiet occurrences are terminal skips and are never replayed in a later shichen.
 - Any missing/preliminary/malformed layer fails closed. The old `preliminary_simplified_dmy` engine is permanently forbidden from Qimen C4 notifications.
 

@@ -13,6 +13,7 @@ assert.match(database, /^notification_integrity_retry_test_/u, "retry tests may 
 assert.match(databaseRole, /^notification_integrity_retry_role_/u, "retry tests may only create an explicitly disposable role");
 
 const migration = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
+const qimenMigration = readFileSync("migrations/20260821_mobile_qimen_three_layer.sql", "utf8");
 const workerSource = readFileSync("scripts/mobile-push-retry-worker.cjs", "utf8");
 assert.match(workerSource, /FOR UPDATE SKIP LOCKED/u, "retry claims must use PostgreSQL skip-locked leasing");
 
@@ -38,6 +39,8 @@ function loadLocalEnv() {
 loadLocalEnv();
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const worker = require("./mobile-push-retry-worker.cjs");
+const qimenRuntime = require("../src/lib/qimen-three-layer-notification.cjs");
+const qimenFixture = require("./fixtures/qimen-three-layer-valid-snapshot.cjs");
 const userId = "00000000-0000-4000-8000-000000000001";
 const fcmTokenId = "10000000-0000-4000-8000-000000000001";
 const expoTokenId = "10000000-0000-4000-8000-000000000002";
@@ -96,7 +99,12 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${databaseRole}; CREATE ROLE ${databaseRole} LOGIN PASSWORD '${databasePassword}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users (id uuid PRIMARY KEY, timezone text DEFAULT 'Asia/Bangkok');
+    CREATE TABLE users (
+      id uuid PRIMARY KEY, timezone text DEFAULT 'Asia/Bangkok',
+      is_active boolean NOT NULL DEFAULT true, deleted_at timestamptz,
+      tier text NOT NULL DEFAULT 'premium', sub_expires_at timestamptz DEFAULT '2099-01-01T00:00:00Z',
+      trial_ends_at timestamptz
+    );
     CREATE TABLE mobile_push_tokens (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES users(id),
@@ -153,6 +161,7 @@ try {
       ('${expoTokenId}','${userId}','${expoInstallation}','ExponentPushToken[secret-not-persisted]',NULL,'apns','ios','th',now());
   `);
   psql(database, migration);
+  psql(database, qimenMigration);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${databaseRole}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${databaseRole};`);
 
   pool = new pg.Pool({
@@ -178,6 +187,81 @@ try {
         : { kind: "provider_accepted", provider: "expo", providerTicketId: "expo-ticket-1" };
     },
   };
+
+  const qimenOccurrenceId = "30000000-0000-4000-8000-000000000001";
+  const qimenInput = qimenFixture.input(userId);
+  const qimenSnapshot = qimenRuntime.buildQimenThreeLayerSnapshot(qimenInput);
+  const qimenPayload = qimenRuntime.buildQimenV2ProviderData(qimenSnapshot);
+  await pool.query("UPDATE mobile_push_tokens SET qimen_payload_schema=2 WHERE id=$1", [fcmTokenId]);
+  await pool.query(
+    `INSERT INTO mobile_qimen_installations(user_id,installation_id,enabled,location_permission)
+     VALUES($1,$2,false,'unknown')`,
+    [userId, fcmInstallation],
+  );
+  await pool.query(
+    `INSERT INTO mobile_qimen_occurrences
+       (id,user_id,installation_id,occurrence_key,purpose,hour_valid_from,hour_valid_until,send_deadline,
+        selected_direction,version_tuple,source_tuple,snapshot,snapshot_digest,state)
+     VALUES($1,$2,$3,'qimen|delivery-binding','travel',$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11,'claimed')`,
+    [qimenOccurrenceId, userId, fcmInstallation,
+      qimenSnapshot.layers.hour.validFrom, qimenSnapshot.layers.hour.validUntil,
+      new Date(Date.parse(qimenSnapshot.layers.hour.validFrom) + 5 * 60_000).toISOString(),
+      qimenSnapshot.selectedDirection, JSON.stringify(qimenSnapshot.versionTuple), JSON.stringify(qimenSnapshot.sourceTuple),
+      JSON.stringify(qimenSnapshot), qimenSnapshot.snapshotDigest],
+  );
+  function qimenNotice(payload: Record<string, unknown>, key: string) {
+    return {
+      userId,
+      key,
+      kind: "qimen",
+      qimenOccurrenceId,
+      title: "ฉีเหมิน",
+      body: "สามชั้น",
+      historyCopies: {
+        th: { title: "ฉีเหมิน", body: "สามชั้น" },
+        en: { title: "Qimen", body: "three layers" },
+        zh: { title: "奇門", body: "三層" },
+      },
+      payload,
+      sourceFacts: {
+        eventEndAt: qimenSnapshot.layers.hour.validUntil,
+        sendDeadline: new Date(Date.parse(qimenSnapshot.layers.hour.validFrom) + 5 * 60_000).toISOString(),
+        snapshotDigest: qimenSnapshot.snapshotDigest,
+        selectedDirection: qimenSnapshot.selectedDirection,
+        calculationVersion: qimenSnapshot.versionTuple.hour,
+      },
+      messages: [{
+        ...fcmMessage,
+        category: "qimen",
+        title: "Qimen",
+        body: "Month Day Hour",
+        url: "/qimen/notification-detail",
+        data: payload,
+      }],
+    };
+  }
+  const mutatedCompact = JSON.parse(qimenPayload.qimenV2);
+  mutatedCompact.direction = mutatedCompact.direction === "SE" ? "E" : "SE";
+  const mutatedPayload = { ...qimenPayload, qimenV2: JSON.stringify(mutatedCompact) };
+  await assert.rejects(
+    delivery.deliver(pool, qimenNotice(mutatedPayload, "qimen-mutated"), { defer: true }),
+    /qimen_occurrence_binding_changed/u,
+  );
+  check(
+    (await pool.query("SELECT 1 FROM mobile_push_log WHERE yam_key='qimen-mutated'")).rowCount === 0,
+    "a one-field qimenV2 mutation rolls back before any durable provider attempt",
+  );
+  const boundQimen = await delivery.deliver(pool, qimenNotice(qimenPayload, "qimen-bound"), { defer: true });
+  const boundQimenAttemptCount = (await row(
+    `SELECT count(*)::int AS n FROM mobile_push_attempts a
+      JOIN mobile_push_log l ON l.id=a.push_log_id WHERE l.yam_key='qimen-bound'`,
+  )).n;
+  check(boundQimen.status === "pending" && boundQimenAttemptCount === 1,
+    "the exact qimenV2 bytes are bound to the immutable occurrence before reservation");
+  const boundOccurrence = await row("SELECT state,push_log_id IS NOT NULL AS linked FROM mobile_qimen_occurrences WHERE id=$1", [qimenOccurrenceId]);
+  check(boundOccurrence.state === "reserved" && boundOccurrence.linked === true,
+    "Qimen occurrence and provider attempt become reserved in the same transaction");
+  await pool.query("DELETE FROM mobile_push_log WHERE yam_key='qimen-bound'");
 
   const mixed = await delivery.deliver(pool, notice("mixed", [fcmMessage, expoMessage]), {
     sender: mixedSender,

@@ -3,67 +3,11 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const runtime = require("../src/lib/qimen-three-layer-notification.cjs");
+const fixture = require("./fixtures/qimen-three-layer-valid-snapshot.cjs");
 assert.equal(typeof runtime.buildQimenV2ProviderData, "function", "Qimen v2 provider projection must exist");
 assert.equal(typeof runtime.parseQimenV2ProviderData, "function", "Qimen v2 provider parser must exist");
 
-const directions = ["N", "SW", "E", "SE", "C", "NW", "W", "NE", "S"];
-const instruments = ["戊", "己", "庚", "辛", "壬", "癸", "丁", "丙", "乙"];
-const versions = {
-  month: "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1",
-  day: "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1",
-  hour: "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1",
-};
-
-function layer(kind: "month" | "day" | "hour", validFrom: string, validUntil: string) {
-  return {
-    kind,
-    calculationVersion: versions[kind],
-    sourceCode: kind === "hour" ? "QIMEN_VERIFIED_ZHUANPAN_SHIJIA" : "QIMEN_FAQIAO_FEIPAN",
-    schoolCode: kind === "hour" ? "zhuanpan_chai_bu" : "faqiao_feipan",
-    validFrom,
-    validUntil,
-    centerLodgingPolicy: kind === "hour"
-      ? "hour_engine_source_policy"
-      : "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
-    palaces: directions.map((direction, index) => ({
-      palace: index + 1,
-      direction,
-      earthInstrument: instruments[index],
-      heavenInstrument: instruments[(index + 1) % 9],
-      starCode: `STAR_${kind}_${index + 1}`,
-      starZh: `星${index + 1}`,
-      doorCode: direction === "C" ? null : `DOOR_${kind}_${index + 1}`,
-      doorZh: direction === "C" ? null : `門${index + 1}`,
-      deityCode: direction === "C" ? null : `DEITY_${kind}_${index + 1}`,
-      deityZh: direction === "C" ? null : `神${index + 1}`,
-      formationCodes: [],
-      warningCodes: [],
-      isVoid: false,
-      isHorse: false,
-    })),
-  };
-}
-
-const snapshot = runtime.buildQimenThreeLayerSnapshot({
-  event: "qimen_three_layer",
-  notificationId: "notif_qimen_20260821_2100",
-  accountId: "acct_test_owner",
-  purpose: "travel",
-  selectedDirection: "SE",
-  createdAt: "2026-08-21T13:59:00.000Z",
-  route: "/qimen/notification-detail",
-  hourDecision: {
-    direction: "SE",
-    purpose: "travel",
-    recommendationCode: "recommended",
-    reasonCodes: ["hour_clear_direction"],
-  },
-  layers: {
-    month: layer("month", "2026-08-07T12:00:00.000Z", "2026-09-07T15:00:00.000Z"),
-    day: layer("day", "2026-08-20T17:00:00.000Z", "2026-08-21T17:00:00.000Z"),
-    hour: layer("hour", "2026-08-21T14:00:00.000Z", "2026-08-21T16:00:00.000Z"),
-  },
-});
+const snapshot = fixture.build("acct_test_owner");
 
 const provider = runtime.buildQimenV2ProviderData(snapshot);
 assert.deepEqual(Object.keys(provider), ["qimenV2"]);
@@ -77,9 +21,9 @@ assert.equal(parsed.direction, "SE");
 assert.equal(parsed.hourStart, snapshot.layers.hour.validFrom);
 assert.equal(parsed.hourEnd, snapshot.layers.hour.validUntil);
 assert.equal(parsed.snapshotDigest, snapshot.snapshotDigest);
-assert.equal(parsed.layers.month.deityCode, "DEITY_month_4");
-assert.equal(parsed.layers.day.doorCode, "DOOR_day_4");
-assert.equal(parsed.layers.hour.starCode, "STAR_hour_4");
+assert.equal(parsed.layers.month.deityCode, snapshot.selectedEvidence.month.deityCode);
+assert.equal(parsed.layers.day.doorCode, snapshot.selectedEvidence.day.doorCode);
+assert.equal(parsed.layers.hour.starCode, snapshot.selectedEvidence.hour.starCode);
 assert.equal(Object.isFrozen(parsed), true);
 
 const duplicateTopKey = provider.qimenV2.replace(

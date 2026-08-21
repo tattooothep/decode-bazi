@@ -41,7 +41,18 @@ const engineSnapshot = {
     readingCode: "usable", warningCodes: [], validFrom: hourWindow.startAt, validUntil: hourWindow.endAt,
   },
   result: {
-    calculation: { pillars: { yearPillarZh: "丙午", monthPillarZh: "丙申", dayPillarZh: "丁卯", hourPillarZh: "丙午" } },
+    chart: { wang_xiang_status: ["木", "金", "土", "水", "火"] },
+    calculation: {
+      pillars: { yearPillarZh: "丙午", monthPillarZh: "丙申", dayPillarZh: "丁卯", hourPillarZh: "丙午" },
+      engine_contract: {
+        version: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2",
+        source_sha256: "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84",
+        profile_id: 1,
+        apparent_timeline: "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1",
+        year_month_clock: "PINNED_TYME4TS_BJT_JIE_GLOBAL_V1",
+        day_boundary_policy: "TRUE_SOLAR_MIDNIGHT_ZI_HOUR_23_V1",
+      },
+    },
     palaces: directions.map((direction, index) => ({
       palace_id: index + 1, direction,
       earth_stem_zh: instruments[index], heaven_stem_zh: instruments[(index + 1) % 9],
@@ -72,6 +83,12 @@ assert.ok(Date.parse(snapshot.layers.month.validFrom) <= Date.parse(hourWindow.s
 assert.ok(Date.parse(snapshot.layers.month.validUntil) >= Date.parse(hourWindow.endAt));
 assert.ok(Date.parse(snapshot.layers.day.validFrom) <= Date.parse(hourWindow.startAt));
 assert.ok(Date.parse(snapshot.layers.day.validUntil) >= Date.parse(hourWindow.endAt));
+assert.deepEqual(snapshot.sourceTuple.hour, {
+  code: "QIMEN_VERIFIED_ZHUANPAN_SHIJIA",
+  engineContractVersion: "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2",
+  engineSourceDigest: "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84",
+  engineProfile: 1,
+});
 
 assert.equal(await builder.buildCanonicalQimenOccurrence(row, at, {
   fetchCanonicalQimenEngineSnapshot: async () => ({
@@ -84,6 +101,23 @@ await assert.rejects(
     fetchCanonicalQimenEngineSnapshot: async () => engineSnapshot,
   }),
   /QIMEN_CANONICAL_OCCURRENCE_INVALID/u,
+);
+
+await assert.rejects(
+  builder.buildCanonicalQimenOccurrence(row, at, {
+    fetchCanonicalQimenEngineSnapshot: async () => ({
+      ...engineSnapshot,
+      result: {
+        ...engineSnapshot.result,
+        calculation: {
+          ...engineSnapshot.result.calculation,
+          engine_contract: { ...engineSnapshot.result.calculation.engine_contract, source_sha256: "0".repeat(64) },
+        },
+      },
+    }),
+  }),
+  /QIMEN_HOUR_ENGINE_CONTRACT_NOT_ALLOWED/u,
+  "a valid-looking but unpinned hour engine digest fails closed",
 );
 
 console.log("qimen canonical three-layer occurrence builder tests passed");

@@ -45,8 +45,54 @@ try {
   await admin.query("CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid())");
   await admin.query(migration);
 
+  // Recreate the two defects from the earlier draft, then prove the release
+  // migration upgrades an existing database rather than only a fresh schema.
+  await admin.query("ALTER TABLE mobile_qimen_occurrences DROP CONSTRAINT mobile_qimen_occurrences_installation_fkey");
+  await admin.query(`ALTER TABLE mobile_qimen_occurrences
+    ADD CONSTRAINT mobile_qimen_occurrences_installation_old_fkey
+    FOREIGN KEY(user_id,installation_id)
+    REFERENCES mobile_qimen_installations(user_id,installation_id) ON DELETE SET NULL`);
+  await admin.query("DROP INDEX ux_mobile_qimen_logical_shichen");
+  await admin.query(migration);
+  const upgradedFk = await admin.query(
+    `SELECT conname,confdeltype
+       FROM pg_constraint
+      WHERE conrelid='mobile_qimen_occurrences'::regclass
+        AND confrelid='mobile_qimen_installations'::regclass
+        AND contype='f'`,
+  );
+  assert.deepEqual(upgradedFk.rows, [{ conname: "mobile_qimen_occurrences_installation_fkey", confdeltype: "c" }]);
+  const logicalIndex = await admin.query(
+    `SELECT indexdef FROM pg_indexes
+      WHERE schemaname=current_schema() AND indexname='ux_mobile_qimen_logical_shichen'`,
+  );
+  assert.equal(logicalIndex.rowCount, 1);
+  assert.match(logicalIndex.rows[0].indexdef, /user_id, installation_id, purpose, hour_valid_from/u);
+
   const userId = "11111111-1111-4111-8111-111111111111";
   await admin.query("INSERT INTO users(id) VALUES($1)", [userId]);
+
+  const cascadeInstallation = "33333333-3333-4333-8333-333333333333";
+  await admin.query(
+    `INSERT INTO mobile_qimen_installations
+       (user_id,installation_id,enabled,location_permission)
+     VALUES($1,$2,false,'unknown')`,
+    [userId, cascadeInstallation],
+  );
+  const cascadeOccurrence = await admin.query(
+    `INSERT INTO mobile_qimen_occurrences
+       (user_id,installation_id,occurrence_key,purpose,hour_valid_from,hour_valid_until,send_deadline,
+        selected_direction,version_tuple,source_tuple,snapshot,snapshot_digest,state)
+     VALUES($1,$2,'qimen|upgrade-cascade','travel','2026-08-21T00:00:00Z','2026-08-21T02:00:00Z',
+       '2026-08-21T00:05:00Z','SE','{}'::jsonb,'{}'::jsonb,$3::jsonb,$4,'claimed') RETURNING id`,
+    [userId, cascadeInstallation, JSON.stringify({ accountId: userId, purpose: "travel" }), "c".repeat(64)],
+  );
+  await admin.query("DELETE FROM mobile_qimen_installations WHERE user_id=$1 AND installation_id=$2", [userId, cascadeInstallation]);
+  assert.equal(
+    (await admin.query("SELECT 1 FROM mobile_qimen_occurrences WHERE id=$1", [cascadeOccurrence.rows[0].id])).rowCount,
+    0,
+    "the upgraded installation FK cascades instead of attempting SET NULL on immutable identity",
+  );
   await admin.query(
     `INSERT INTO mobile_qimen_installations
        (user_id,installation_id,enabled,location_permission,latitude,longitude,location_timezone,

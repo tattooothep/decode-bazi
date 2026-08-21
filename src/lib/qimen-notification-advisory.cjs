@@ -6,6 +6,8 @@
  */
 const PURPOSE = "travel";
 const ENGINE_PROFILE_ID = 1;
+const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2";
+const ENGINE_SOURCE_SHA256 = "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84";
 const ADVISORY_VERSION = "qimen-notification-advisory-v1";
 const DIRECTION = Object.freeze({
   N: Object.freeze({ th: "เหนือ", en: "north", zh: "北方" }),
@@ -92,23 +94,57 @@ function dayOfYear(parts) {
   return Math.floor((Date.UTC(parts.year, parts.month - 1, parts.day) - Date.UTC(parts.year, 0, 1)) / 86_400_000) + 1;
 }
 
+function equationOfTimeMinutes(instant) {
+  const at = instant instanceof Date ? instant : new Date(instant);
+  if (!Number.isFinite(at.valueOf())) throw new TypeError("qimen_notification_instant_invalid");
+  const parts = {
+    year: at.getUTCFullYear(), month: at.getUTCMonth() + 1, day: at.getUTCDate(),
+  };
+  const b = (2 * Math.PI * (dayOfYear(parts) - 81)) / 364;
+  return 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+}
+
+/**
+ * Apparent-solar time is a monotonic, timezone-free coordinate:
+ *   A(t) = UTC instant + (4 × longitude + equation-of-time(t)) minutes.
+ *
+ * Never resolve the shifted instant through an IANA timezone. Doing so applies
+ * a DST offset for a second time and can reverse/overlap shichen at a gap/fold.
+ */
+function apparentSolarCoordinate(longitude, instant) {
+  const at = instant instanceof Date ? new Date(instant.valueOf()) : new Date(instant);
+  const lng = Number(longitude);
+  if (!Number.isFinite(at.valueOf())) throw new TypeError("qimen_notification_instant_invalid");
+  if (!Number.isFinite(lng) || lng < -180 || lng > 180) throw new TypeError("qimen_notification_longitude_invalid");
+  const equationOfTime = equationOfTimeMinutes(at);
+  const coordinate = new Date(at.valueOf() + (4 * lng + equationOfTime) * 60_000);
+  return Object.freeze({
+    coordinate,
+    equationOfTimeMinutes: equationOfTime,
+    longitudeMinutes: 4 * lng,
+    parts: Object.freeze({
+      year: coordinate.getUTCFullYear(), month: coordinate.getUTCMonth() + 1,
+      day: coordinate.getUTCDate(), hour: coordinate.getUTCHours(),
+      minute: coordinate.getUTCMinutes(), second: coordinate.getUTCSeconds(),
+    }),
+  });
+}
+
 // Same deterministic equation used by the canonical Qimen engine. This helper
 // determines only the validity boundary; it never calculates a chart.
 function qimenCorrectionMinutes(timezone, longitude, instant) {
   const lng = Number(longitude);
   if (!Number.isFinite(lng) || lng < -180 || lng > 180) throw new TypeError("qimen_notification_longitude_invalid");
-  const parts = zonedParts(timezone, instant);
-  const b = (2 * Math.PI * (dayOfYear(parts) - 81)) / 364;
-  const equationOfTime = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
-  const standardMeridian = (timezoneOffsetMinutes(timezone, instant) / 60) * 15;
-  return 4 * (lng - standardMeridian) + equationOfTime;
+  const apparent = apparentSolarCoordinate(lng, instant);
+  return apparent.longitudeMinutes
+    + apparent.equationOfTimeMinutes
+    - timezoneOffsetMinutes(timezone, instant);
 }
 
 function apparentShichen(timezone, longitude, instant) {
   const at = instant instanceof Date ? instant : new Date(instant);
   const correction = qimenCorrectionMinutes(timezone, longitude, at);
-  const apparent = new Date(at.valueOf() + correction * 60_000);
-  const parts = zonedParts(timezone, apparent);
+  const parts = apparentSolarCoordinate(longitude, at).parts;
   const index = parts.hour === 23 ? 0 : Math.floor((parts.hour + 1) / 2);
   const startDate = parts.hour === 0 ? previousDateKey(parts) : dateKey(parts);
   return Object.freeze({
@@ -129,7 +165,7 @@ function boundary(timezone, longitude, instant, direction) {
   }
   let left = direction < 0 ? outside : atMs;
   let right = direction < 0 ? atMs : outside;
-  while (right - left > 500) {
+  while (right - left > 1) {
     const middle = Math.floor((left + right) / 2);
     const same = apparentShichen(timezone, longitude, new Date(middle)).key === current;
     if (direction < 0) {
@@ -161,8 +197,7 @@ function trueSolarShichenWindow(input) {
 
 function apparentDayKey(timezone, longitude, instant) {
   const at = instant instanceof Date ? instant : new Date(instant);
-  const correction = qimenCorrectionMinutes(timezone, longitude, at);
-  return dateKey(zonedParts(timezone, new Date(at.valueOf() + correction * 60_000)));
+  return dateKey(apparentSolarCoordinate(longitude, at).parts);
 }
 
 function apparentDayBoundary(timezone, longitude, instant, direction) {
@@ -174,7 +209,7 @@ function apparentDayBoundary(timezone, longitude, instant, direction) {
   }
   let left = direction < 0 ? outside : atMs;
   let right = direction < 0 ? atMs : outside;
-  while (right - left > 500) {
+  while (right - left > 1) {
     const middle = Math.floor((left + right) / 2);
     const same = apparentDayKey(timezone, longitude, new Date(middle)) === current;
     if (direction < 0) {
@@ -369,11 +404,21 @@ function buildQimenAdvisory(result, options = {}) {
   if (!selected) return null;
   const window = trueSolarShichenWindow({ timezone, longitude, instant: inputAt });
   const corrected = new Date(calculation.corrected_datetime);
+  const engineCoordinate = new Date(calculation.apparent_solar_coordinate);
+  const expectedCoordinate = apparentSolarCoordinate(longitude, inputAt).coordinate;
   const engineCorrection = Number(calculation.correction_minutes);
   const expectedCorrection = qimenCorrectionMinutes(timezone, longitude, inputAt);
+  const engineContract = calculation.engine_contract;
   if (!Number.isFinite(corrected.valueOf()) || !Number.isFinite(engineCorrection)
     || Math.abs(engineCorrection - expectedCorrection) > 0.02
-    || Math.abs(corrected.valueOf() - (inputAt.valueOf() + engineCorrection * 60_000)) > 1_500) return null;
+    || !Number.isFinite(engineCoordinate.valueOf())
+    || Math.abs(engineCoordinate.valueOf() - expectedCoordinate.valueOf()) > 1_500
+    || engineContract?.version !== ENGINE_CONTRACT_VERSION
+    || engineContract?.source_sha256 !== ENGINE_SOURCE_SHA256
+    || engineContract?.profile_id !== ENGINE_PROFILE_ID
+    || engineContract?.apparent_timeline !== "UTC_PLUS_LONGITUDE_EOT_MONOTONIC_V1"
+    || engineContract?.year_month_clock !== "PINNED_TYME4TS_BJT_JIE_GLOBAL_V1"
+    || engineContract?.day_boundary_policy !== "TRUE_SOLAR_MIDNIGHT_ZI_HOUR_23_V1") return null;
   const warningValues = [...warningCodes(selected.row, root.warnings)];
   for (const [kind, item] of [["DOOR", selected.door], ["STAR", selected.star]]) {
     if (!ACTION_SUPPORTING_VIGOR.has(item.vigor)) {
@@ -408,6 +453,7 @@ function buildQimenAdvisory(result, options = {}) {
     inputAt: inputAt.toISOString(),
     correctedAt: corrected.toISOString(),
     correctionMinutes: engineCorrection,
+    engineContract: Object.freeze({ ...engineContract }),
     hourPillarZh: String(calculation?.pillars?.hourPillarZh || "").trim() || null,
     shichenKey: window.shichenKey,
     validFrom: window.startAt,
@@ -599,11 +645,14 @@ function earliestExpiry(...values) {
 
 module.exports = {
   ADVISORY_VERSION,
+  ENGINE_CONTRACT_VERSION,
+  ENGINE_SOURCE_SHA256,
   PURPOSE,
   QIMEN_PLAN_CAPS,
   buildQimenAdvisory,
   buildQimenStandaloneCopy,
   buildQimenYamLine,
+  apparentSolarCoordinate,
   civilInstant,
   civilRangeWindow,
   earliestExpiry,

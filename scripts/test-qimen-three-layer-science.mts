@@ -18,7 +18,10 @@ assert.ok(
 const manifest = (sourceManifest.loadCanonicalSourceManifest as () => {
   producerEnabled: boolean;
   source: { digest: string; byteSize: number; editionStatus: string };
-  layers: Record<string, { calculationVersion: string; decisionRole: string }>;
+  layers: Record<string, {
+    calculationVersion: string; decisionRole: string;
+    engineContractVersion?: string; engineSourceDigest?: string; engineProfileId?: number;
+  }>;
 })();
 
 assert.equal(manifest.producerEnabled, false, "the producer remains disabled until all release gates pass");
@@ -33,6 +36,9 @@ assert.equal(manifest.layers.day.calculationVersion, "FAQIAO_RIJIA_FOUR_QI_TERM_
 assert.equal(manifest.layers.day.decisionRole, "raw_context_only");
 assert.equal(manifest.layers.hour.calculationVersion, "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1");
 assert.equal(manifest.layers.hour.decisionRole, "sole_action_authority");
+assert.equal(manifest.layers.hour.engineContractVersion, "QIMEN_HOUR_ENGINE_CANONICAL_CLOCKS_V2");
+assert.equal(manifest.layers.hour.engineSourceDigest, "7848711e49126054883a37b53e229d2e294eff07ba5eb0db38b08bb824e0db84");
+assert.equal(manifest.layers.hour.engineProfileId, 1);
 
 const assertAllowedContextVersion = sourceManifest.assertAllowedContextVersion as (
   layer: string,

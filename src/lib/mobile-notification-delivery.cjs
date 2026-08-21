@@ -3,6 +3,8 @@ const { createHash } = require("node:crypto");
 const push = require("./push-send.cjs");
 const notificationPayload = require("./notification-payload.cjs");
 const notificationScience = require("./notification-science.cjs");
+const qimenRuntime = require("./qimen-three-layer-notification.cjs");
+const qimenAdvisory = require("./qimen-notification-advisory.cjs");
 
 const DEFAULT_MAX_ATTEMPTS = 5;
 const DEFAULT_BASE_DELAY_SECONDS = 300;
@@ -195,7 +197,7 @@ async function reserve(db, notice, dry = false) {
               END AS locale,
               np.user_id IS NOT NULL AS has_prefs
          FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
-        WHERE u.id=$1`,
+        WHERE u.id=$1 AND u.is_active=true AND u.deleted_at IS NULL`,
       [notice.userId],
     );
     const context = contextResult.rows[0];
@@ -246,7 +248,7 @@ async function reserve(db, notice, dry = false) {
         throw new Error("qimen_token_capability_changed");
       }
       const occurrence = await client.query(
-        `SELECT id,user_id,installation_id,state,push_log_id,selected_direction,snapshot_digest,
+        `SELECT id,user_id,installation_id,state,push_log_id,selected_direction,snapshot_digest,snapshot,
                 hour_valid_until,send_deadline,version_tuple,snapshot->>'accountId' AS snapshot_account_id,
                 snapshot->>'purpose' AS snapshot_purpose
            FROM mobile_qimen_occurrences
@@ -258,9 +260,25 @@ async function reserve(db, notice, dry = false) {
       if (qimenToken.installation_id !== qimenOccurrence.installation_id) {
         throw new Error("qimen_token_capability_changed");
       }
+      let compact;
+      try {
+        compact = qimenRuntime.parseQimenV2ProviderData(notice.payload);
+      } catch {
+        throw new TypeError("qimen_notice_schema_mismatch");
+      }
+      if (!qimenRuntime.verifyQimenThreeLayerSnapshot(qimenOccurrence.snapshot)
+        || qimenRuntime.buildQimenV2ProviderData(qimenOccurrence.snapshot).qimenV2 !== notice.payload.qimenV2) {
+        throw new Error("qimen_occurrence_binding_changed");
+      }
       const iso = (value) => value instanceof Date ? value.toISOString() : new Date(value).toISOString();
       if (qimenOccurrence.snapshot_account_id !== notice.userId
         || qimenOccurrence.snapshot_purpose !== "travel"
+        || compact.accountId !== notice.userId
+        || compact.purpose !== "travel"
+        || compact.direction !== qimenOccurrence.selected_direction
+        || compact.hourStart !== qimenOccurrence.snapshot.layers.hour.validFrom
+        || compact.hourEnd !== iso(qimenOccurrence.hour_valid_until)
+        || compact.snapshotDigest !== qimenOccurrence.snapshot_digest
         || qimenOccurrence.selected_direction !== notice.sourceFacts?.selectedDirection
         || qimenOccurrence.snapshot_digest !== notice.sourceFacts?.snapshotDigest
         || qimenOccurrence.version_tuple?.hour !== notice.sourceFacts?.calculationVersion
@@ -619,6 +637,26 @@ function currentPolicyDecision(row, context, capCount) {
     return { allow: true };
   }
   if (row.kind === "qimen") {
+    if (context.account_active !== true) {
+      return { allow: false, terminal: true, reason: "policy_account_inactive" };
+    }
+    const entitlementClock = notificationScience.zonedClock(
+      notificationScience.safeTimezone(context.qimen_timezone),
+      new Date(context.now_at),
+    );
+    const entitlement = qimenAdvisory.qimenNotificationEntitlement({
+      id: row.user_id,
+      tier: context.account_tier,
+      sub_expires_at: context.account_sub_expires_at,
+      trial_ends_at: context.account_trial_ends_at,
+    }, {
+      timezone: notificationScience.safeTimezone(context.qimen_timezone),
+      now: new Date(context.now_at),
+      instant: new Date(context.now_at),
+      date: entitlementClock.date,
+      time: entitlementClock.time,
+    });
+    if (!entitlement.allow) return { allow: false, terminal: true, reason: entitlement.reason || "qimen_not_entitled" };
     if (context.qimen_enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
     const pausedUntil = context.qimen_paused_until ? new Date(context.qimen_paused_until) : null;
     if (pausedUntil && Number.isFinite(pausedUntil.valueOf()) && pausedUntil > now) {
@@ -709,13 +747,17 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
   const contextResult = await tx.query(
     `SELECT COALESCE(to_jsonb(np)->>'timezone',to_jsonb(u)->>'timezone','Asia/Bangkok') AS timezone,
             COALESCE((to_jsonb(np)->>'privacy_preview')::boolean,false) AS privacy_preview,
-            np.user_id IS NOT NULL AS has_prefs,to_jsonb(np) AS prefs,now() AS now_at
+            np.user_id IS NOT NULL AS has_prefs,to_jsonb(np) AS prefs,now() AS now_at,
+            COALESCE(u.is_active,false) AND u.deleted_at IS NULL AS account_active,
+            u.tier AS account_tier,u.sub_expires_at AS account_sub_expires_at,
+            u.trial_ends_at AS account_trial_ends_at
        FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
       WHERE u.id=$1`,
     [row.user_id],
   );
   const context = contextResult.rows[0] || {
-    timezone: "Asia/Bangkok", privacy_preview: false, has_prefs: false, prefs: null, now_at: new Date(),
+    timezone: "Asia/Bangkok", privacy_preview: false, has_prefs: false, prefs: null,
+    now_at: new Date(), account_active: false,
   };
   if (policyNow) context.now_at = policyNow;
   if (row.kind === "zibai") {

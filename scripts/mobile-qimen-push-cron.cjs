@@ -14,7 +14,7 @@ const notificationPayload = require("../src/lib/notification-payload.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 const DRY = process.argv.includes("--dry");
-const BATCH = Math.max(1, Math.min(1_000, Number((process.argv.find((arg) => arg.startsWith("--batch=")) || "--batch=250").slice(8))));
+const BATCH = Math.max(1, Math.min(200, Number((process.argv.find((arg) => arg.startsWith("--batch=")) || "--batch=80").slice(8))));
 const WORKERS = Math.max(1, Math.min(20, Number((process.argv.find((arg) => arg.startsWith("--workers=")) || "--workers=1").slice(10))));
 const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
 const LOCATION_LEASE_MS = 7 * 24 * 60 * 60 * 1_000;
@@ -171,7 +171,7 @@ async function loadClaimContext(db, claim) {
             np.paused_until,u.tier,u.sub_expires_at,u.trial_ends_at
        FROM mobile_qimen_installations q
        JOIN mobile_push_tokens t ON t.user_id=q.user_id AND t.installation_id=q.installation_id AND t.enabled=true
-       JOIN users u ON u.id=q.user_id AND u.deleted_at IS NULL
+       JOIN users u ON u.id=q.user_id AND u.deleted_at IS NULL AND u.is_active=true
        LEFT JOIN mobile_notification_prefs np ON np.user_id=q.user_id
       WHERE q.user_id=$1 AND q.installation_id=$2 AND q.lease_token=$3`,
     [claim.user_id, claim.installation_id, claim.lease_token],
@@ -206,13 +206,20 @@ async function admitOccurrence(db, row, snapshot, sendDeadline) {
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended('mobile-qimen-occurrence:'||$1::text,0))", [row.installation_id]);
     const existing = await client.query(
-      `SELECT id,state,push_log_id FROM mobile_qimen_occurrences
+      `SELECT id,state,push_log_id,snapshot,send_deadline FROM mobile_qimen_occurrences
         WHERE user_id=$1 AND installation_id=$2 AND occurrence_key=$3 FOR UPDATE`,
       [row.user_id, row.installation_id, key],
     );
     if (existing.rows[0]) {
-      const reusable = existing.rows[0].state === "claimed" && existing.rows[0].push_log_id === null
-        ? existing.rows[0].id : null;
+      const persisted = existing.rows[0];
+      const reusable = persisted.state === "claimed" && persisted.push_log_id === null
+        && payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)
+        ? Object.freeze({
+          id: persisted.id,
+          snapshot: persisted.snapshot,
+          sendDeadline: new Date(persisted.send_deadline).toISOString(),
+          recovered: true,
+        }) : null;
       await client.query("COMMIT");
       return reusable;
     }
@@ -221,14 +228,30 @@ async function admitOccurrence(db, row, snapshot, sendDeadline) {
        (user_id,installation_id,occurrence_key,purpose,hour_valid_from,hour_valid_until,send_deadline,
         selected_direction,version_tuple,source_tuple,snapshot,snapshot_digest,state)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,'claimed')
-       ON CONFLICT(user_id,installation_id,occurrence_key) DO NOTHING RETURNING id`,
+       ON CONFLICT DO NOTHING RETURNING id,snapshot,send_deadline`,
       [row.user_id, row.installation_id, key, row.purpose,
         snapshot.layers.hour.validFrom, snapshot.layers.hour.validUntil, sendDeadline,
         snapshot.selectedDirection, JSON.stringify(snapshot.versionTuple), JSON.stringify(snapshot.sourceTuple),
         JSON.stringify(snapshot), snapshot.snapshotDigest],
     );
+    let admitted = inserted.rows[0] || null;
+    if (!admitted) {
+      const logical = await client.query(
+        `SELECT id,state,push_log_id,snapshot,send_deadline FROM mobile_qimen_occurrences
+          WHERE user_id=$1 AND installation_id=$2 AND purpose=$3 AND hour_valid_from=$4 FOR UPDATE`,
+        [row.user_id, row.installation_id, row.purpose, snapshot.layers.hour.validFrom],
+      );
+      const persisted = logical.rows[0];
+      if (persisted?.state === "claimed" && persisted.push_log_id === null
+        && payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)) admitted = persisted;
+    }
     await client.query("COMMIT");
-    return inserted.rows[0]?.id || null;
+    return admitted ? Object.freeze({
+      id: admitted.id,
+      snapshot: admitted.snapshot,
+      sendDeadline: new Date(admitted.send_deadline).toISOString(),
+      recovered: !inserted.rows[0],
+    }) : null;
   } catch (error) {
     await client.query("ROLLBACK").catch(() => null);
     throw error;
@@ -237,11 +260,31 @@ async function admitOccurrence(db, row, snapshot, sendDeadline) {
   }
 }
 
-async function defaultBuildCanonicalOccurrence(row, at) {
-  return canonicalOccurrenceRuntime.buildCanonicalQimenOccurrence(row, at);
+async function loadRecoverableOccurrence(db, row, canonicalWindow) {
+  const result = await db.query(
+    `SELECT id,state,push_log_id,snapshot,send_deadline
+       FROM mobile_qimen_occurrences
+      WHERE user_id=$1 AND installation_id=$2 AND purpose=$3 AND hour_valid_from=$4
+      LIMIT 1`,
+    [row.user_id, row.installation_id, row.purpose, canonicalWindow.startAt],
+  );
+  const persisted = result.rows[0];
+  if (persisted?.state !== "claimed" || persisted.push_log_id !== null
+    || !payloadRuntime.verifyQimenThreeLayerSnapshot(persisted.snapshot)) return null;
+  return Object.freeze({
+    id: persisted.id,
+    snapshot: persisted.snapshot,
+    sendDeadline: new Date(persisted.send_deadline).toISOString(),
+    recovered: true,
+  });
+}
+
+async function defaultBuildCanonicalOccurrence(row, at, options = {}) {
+  return canonicalOccurrenceRuntime.buildCanonicalQimenOccurrence(row, at, { signal: options.signal });
 }
 
 async function processClaim(db, claim, at, dependencies = {}) {
+  dependencies.signal?.throwIfAborted();
   const row = await loadClaimContext(db, claim);
   if (!row) {
     await db.query(
@@ -293,19 +336,23 @@ async function processClaim(db, claim, at, dependencies = {}) {
     return { reserved: 0, skipped: 1, reason };
   }
 
-  let snapshot;
-  try {
-    const build = dependencies.buildCanonicalOccurrence || defaultBuildCanonicalOccurrence;
-    snapshot = await build(row, at);
-  } catch (error) {
-    reason = String(error?.code || "engine_unavailable").slice(0, 96);
-    await finishClaim(db, row, at, next, reason);
-    return { reserved: 0, skipped: 1, reason };
-  }
-  if (snapshot === null) {
-    reason = "no_recommendable_direction";
-    await finishClaim(db, row, at, next, reason);
-    return { reserved: 0, skipped: 1, reason };
+  let admitted = await loadRecoverableOccurrence(db, row, canonicalWindow);
+  let snapshot = admitted?.snapshot || null;
+  if (!snapshot) {
+    try {
+      const build = dependencies.buildCanonicalOccurrence || defaultBuildCanonicalOccurrence;
+      snapshot = await build(row, at, { signal: dependencies.signal });
+    } catch (error) {
+      if (dependencies.signal?.aborted) throw dependencies.signal.reason || error;
+      reason = String(error?.code || "engine_unavailable").slice(0, 96);
+      await finishClaim(db, row, at, next, reason);
+      return { reserved: 0, skipped: 1, reason };
+    }
+    if (snapshot === null) {
+      reason = "no_recommendable_direction";
+      await finishClaim(db, row, at, next, reason);
+      return { reserved: 0, skipped: 1, reason };
+    }
   }
   if (!payloadRuntime.verifyQimenThreeLayerSnapshot(snapshot)) {
     reason = "snapshot_invalid";
@@ -319,26 +366,40 @@ async function processClaim(db, claim, at, dependencies = {}) {
     await finishClaim(db, row, at, next, reason);
     return { reserved: 0, skipped: 1, reason };
   }
-  const admission = admissionDecision(row, snapshot, at);
-  if (!admission.allow) {
-    await finishClaim(db, row, at, next, admission.reason);
-    return { reserved: 0, skipped: 1, reason: admission.reason };
+  if (!admitted) {
+    const admission = admissionDecision(row, snapshot, at);
+    if (!admission.allow) {
+      await finishClaim(db, row, at, next, admission.reason);
+      return { reserved: 0, skipped: 1, reason: admission.reason };
+    }
+    admitted = await admitOccurrence(db, row, snapshot, admission.sendDeadline);
+    if (!admitted) {
+      await finishClaim(db, row, at, next, "duplicate");
+      return { reserved: 0, skipped: 1, reason: "duplicate" };
+    }
   }
-  const occurrenceId = await admitOccurrence(db, row, snapshot, admission.sendDeadline);
-  if (!occurrenceId) {
-    await finishClaim(db, row, at, next, "duplicate");
-    return { reserved: 0, skipped: 1, reason: "duplicate" };
+  snapshot = admitted.snapshot;
+  const recoveredAdmission = admissionDecision(row, snapshot, at);
+  if (!recoveredAdmission.allow || recoveredAdmission.sendDeadline !== admitted.sendDeadline) {
+    await db.query(
+      `UPDATE mobile_qimen_occurrences SET state='skipped',skip_reason=$2,updated_at=$3
+        WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
+      [admitted.id, recoveredAdmission.reason || "persisted_deadline_mismatch", at.toISOString()],
+    );
+    await finishClaim(db, row, at, next, recoveredAdmission.reason || "persisted_deadline_mismatch");
+    return { reserved: 0, skipped: 1, reason: recoveredAdmission.reason || "persisted_deadline_mismatch" };
   }
-  const notice = buildQimenNotice(row, snapshot, occurrenceId, admission.sendDeadline);
+  const notice = buildQimenNotice(row, snapshot, admitted.id, admitted.sendDeadline);
   const deliver = dependencies.deliver || delivery.deliver;
   const result = await deliver(db, notice, { defer: true });
-  const reserved = result.status === "pending" ? 1 : 0;
-  reason = reserved ? null : result.status === "duplicate" ? "duplicate" : "delivery_reservation_failed";
+  const deliveryStatus = result?.status;
+  const reserved = deliveryStatus === "pending" ? 1 : 0;
+  reason = reserved ? null : deliveryStatus === "duplicate" ? "duplicate" : "delivery_reservation_failed";
   if (!reserved) {
     await db.query(
       `UPDATE mobile_qimen_occurrences SET state='skipped',skip_reason=$2,updated_at=$3
         WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
-      [occurrenceId, reason, at.toISOString()],
+      [admitted.id, reason, at.toISOString()],
     );
   }
   await finishClaim(db, row, at, next, reason);
@@ -348,13 +409,35 @@ async function processClaim(db, claim, at, dependencies = {}) {
 async function forEachBounded(items, concurrency, handler) {
   const bounded = Math.max(1, Math.min(20, Number(concurrency) || 1));
   let cursor = 0;
+  let firstFailure;
   await Promise.all(Array.from({ length: Math.min(bounded, items.length) }, async () => {
-    while (cursor < items.length) {
+    while (cursor < items.length && firstFailure === undefined) {
       const index = cursor;
       cursor += 1;
-      await handler(items[index]);
+      try {
+        await handler(items[index]);
+      } catch (error) {
+        if (firstFailure === undefined) firstFailure = error;
+      }
     }
   }));
+  if (firstFailure !== undefined) throw firstFailure;
+}
+
+async function releaseClaims(db, claims, at) {
+  let firstFailure;
+  for (const claim of claims) {
+    try {
+      await db.query(
+        `UPDATE mobile_qimen_installations SET lease_token=NULL,lease_expires_at=NULL,updated_at=$4
+          WHERE user_id=$1 AND installation_id=$2 AND lease_token=$3`,
+        [claim.user_id, claim.installation_id, claim.lease_token, at.toISOString()],
+      );
+    } catch (error) {
+      if (firstFailure === undefined) firstFailure = error;
+    }
+  }
+  if (firstFailure !== undefined) throw firstFailure;
 }
 
 async function runScheduler(db, signal, at = new Date(), dependencies = {}) {
@@ -370,20 +453,26 @@ async function runScheduler(db, signal, at = new Date(), dependencies = {}) {
     || !/^[0-9a-f]{40}$/u.test(runtimeCommit) || producer.backend_commit !== runtimeCommit) {
     return { disabled: true, due: 0, reserved: 0, skipped: 0 };
   }
+  const batchLimit = Math.max(1, Math.min(200, Number(dependencies.batchLimit) || BATCH));
+  const workerCount = Math.max(1, Math.min(20, Number(dependencies.workerCount) || WORKERS));
   const claims = DRY
     ? (await db.query(
       "SELECT * FROM mobile_qimen_installations WHERE enabled=true AND next_due_at<=$1 ORDER BY next_due_at LIMIT $2",
-      [at.toISOString(), BATCH * WORKERS],
+      [at.toISOString(), batchLimit],
     )).rows
-    : await claimDue(db, at, BATCH * WORKERS);
+    : await claimDue(db, at, batchLimit);
   const report = { disabled: false, due: claims.length, reserved: 0, skipped: 0 };
   if (DRY) return report;
-  await forEachBounded(claims, WORKERS, async (claim) => {
-    signal.throwIfAborted();
-    const result = await processClaim(db, claim, at, dependencies);
-    report.reserved += result.reserved;
-    report.skipped += result.skipped;
-  });
+  try {
+    await forEachBounded(claims, workerCount, async (claim) => {
+      signal.throwIfAborted();
+      const result = await processClaim(db, claim, at, { ...dependencies, signal });
+      report.reserved += result.reserved;
+      report.skipped += result.skipped;
+    });
+  } finally {
+    await releaseClaims(db, claims, at);
+  }
   return report;
 }
 
@@ -416,9 +505,11 @@ module.exports = Object.freeze({
   inQuietHours,
   localDateTime,
   loadClaimContext,
+  loadRecoverableOccurrence,
   nextDueAt,
   occurrenceKey,
   processClaim,
+  releaseClaims,
   runScheduler,
 });
 

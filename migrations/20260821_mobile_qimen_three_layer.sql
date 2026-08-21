@@ -116,9 +116,37 @@ CREATE TABLE IF NOT EXISTS mobile_qimen_occurrences (
     (state='skipped' AND skip_reason IS NOT NULL AND push_log_id IS NULL)
     OR (state IN ('claimed','reserved') AND skip_reason IS NULL AND selected_direction IS NOT NULL)
   ),
-  UNIQUE(user_id,installation_id,occurrence_key),
-  UNIQUE(user_id,installation_id,purpose,hour_valid_from)
+  UNIQUE(user_id,installation_id,occurrence_key)
 );
+
+-- Upgrade safety: CREATE TABLE IF NOT EXISTS does not rewrite constraints on
+-- installations that already applied an earlier draft. Replace every old FK
+-- from occurrences to installations with the release CASCADE contract.
+DO $$
+DECLARE fk_name text;
+BEGIN
+  FOR fk_name IN
+    SELECT conname
+      FROM pg_constraint
+     WHERE conrelid='mobile_qimen_occurrences'::regclass
+       AND confrelid='mobile_qimen_installations'::regclass
+       AND contype='f'
+  LOOP
+    EXECUTE format('ALTER TABLE mobile_qimen_occurrences DROP CONSTRAINT %I',fk_name);
+  END LOOP;
+  ALTER TABLE mobile_qimen_occurrences
+    ADD CONSTRAINT mobile_qimen_occurrences_installation_fkey
+    FOREIGN KEY(user_id,installation_id)
+    REFERENCES mobile_qimen_installations(user_id,installation_id) ON DELETE CASCADE;
+END $$;
+
+-- A named index also upgrades older tables whose only uniqueness was the
+-- opaque occurrence key. One installation can reserve at most one purpose in
+-- the same canonical true-solar shichen.
+ALTER TABLE mobile_qimen_occurrences
+  DROP CONSTRAINT IF EXISTS mobile_qimen_occurrences_user_id_installation_id_purpose_hour_valid_from_key;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_qimen_logical_shichen
+  ON mobile_qimen_occurrences(user_id,installation_id,purpose,hour_valid_from);
 
 CREATE INDEX IF NOT EXISTS ix_mobile_qimen_occurrence_retention
   ON mobile_qimen_occurrences(created_at,id);

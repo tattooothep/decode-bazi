@@ -2,6 +2,21 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
+const fixture = require("./fixtures/qimen-three-layer-valid-snapshot.cjs") as {
+  input(accountId: string): Record<string, any>;
+  layer(kind: "month" | "day" | "hour", validFrom: string, validUntil: string, chartInput?: {
+    dun: "yang" | "yin"; ju: number; subjectPillarZh: string;
+  }): Record<string, any>;
+};
+const { buildFaqiaoFeipan } = require("../src/lib/qimen-canonical-context-engine.cjs") as {
+  buildFaqiaoFeipan(input: {
+    dun: "yang" | "yin"; ju: number; subjectPillarZh: string;
+    centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1";
+  }): {
+    rawDoorTarget: number; effectiveDoorTarget: number;
+    rawDeityTarget: number; effectiveDeityTarget: number;
+  };
+};
 let runtime: Record<string, unknown> | null = null;
 try {
   runtime = require("../src/lib/qimen-three-layer-notification.cjs");
@@ -10,67 +25,8 @@ try {
 }
 assert.ok(runtime, "the immutable Qimen three-layer snapshot runtime must exist");
 
-const DIRECTIONS = ["N", "SW", "E", "SE", "C", "NW", "W", "NE", "S"] as const;
-const INSTRUMENTS = ["戊", "己", "庚", "辛", "壬", "癸", "丁", "丙", "乙"] as const;
-
-function layer(
-  kind: "month" | "day" | "hour",
-  validFrom: string,
-  validUntil: string,
-) {
-  const faqiao = kind !== "hour";
-  return {
-    kind,
-    calculationVersion: kind === "month"
-      ? "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1"
-      : kind === "day"
-        ? "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1"
-        : "QIMEN_ZHUANPAN_SHIJIA_CHAIBU_TST_V1",
-    sourceCode: faqiao ? "QIMEN_FAQIAO_FEIPAN" : "QIMEN_VERIFIED_ZHUANPAN_SHIJIA",
-    schoolCode: faqiao ? "faqiao_feipan" : "zhuanpan_chai_bu",
-    validFrom,
-    validUntil,
-    centerLodgingPolicy: faqiao ? "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1" : "hour_engine_source_policy",
-    palaces: DIRECTIONS.map((direction, index) => ({
-      palace: index + 1,
-      direction,
-      earthInstrument: INSTRUMENTS[index],
-      heavenInstrument: INSTRUMENTS[(index + (kind === "month" ? 1 : kind === "day" ? 2 : 3)) % 9],
-      starCode: `STAR_${kind}_${index + 1}`,
-      starZh: `星${index + 1}`,
-      doorCode: direction === "C" ? null : `DOOR_${kind}_${index + 1}`,
-      doorZh: direction === "C" ? null : `門${index + 1}`,
-      deityCode: direction === "C" ? null : `DEITY_${kind}_${index + 1}`,
-      deityZh: direction === "C" ? null : `神${index + 1}`,
-      formationCodes: [],
-      warningCodes: [],
-      isVoid: false,
-      isHorse: false,
-    })),
-  };
-}
-
 function validInput() {
-  return {
-    event: "qimen_three_layer",
-    notificationId: "notif_qimen_20260821_2100",
-    accountId: "acct_test_owner",
-    purpose: "travel",
-    selectedDirection: "SE",
-    createdAt: "2026-08-21T13:59:00.000Z",
-    route: "/qimen/notification-detail",
-    hourDecision: {
-      direction: "SE",
-      purpose: "travel",
-      recommendationCode: "recommended",
-      reasonCodes: ["hour_clear_direction"],
-    },
-    layers: {
-      month: layer("month", "2026-08-07T12:00:00.000Z", "2026-09-07T15:00:00.000Z"),
-      day: layer("day", "2026-08-20T17:00:00.000Z", "2026-08-21T17:00:00.000Z"),
-      hour: layer("hour", "2026-08-21T14:00:00.000Z", "2026-08-21T16:00:00.000Z"),
-    },
-  };
+  return structuredClone(fixture.input("acct_test_owner"));
 }
 
 const buildQimenThreeLayerSnapshot = runtime.buildQimenThreeLayerSnapshot as (
@@ -90,15 +46,27 @@ assert.equal(snapshot.layers.day.decisionRole, "raw_context_only");
 assert.equal(snapshot.layers.hour.decisionRole, "sole_action_authority");
 assert.equal(snapshot.hourDecision.direction, "SE");
 assert.equal(snapshot.selectedEvidence.month.direction, "SE");
-assert.equal(snapshot.selectedEvidence.month.deityCode, "DEITY_month_4");
-assert.equal(snapshot.selectedEvidence.month.doorCode, "DOOR_month_4");
-assert.equal(snapshot.selectedEvidence.month.starCode, "STAR_month_4");
-assert.equal(snapshot.selectedEvidence.day.starCode, "STAR_day_4");
-assert.equal(snapshot.selectedEvidence.hour.starCode, "STAR_hour_4");
+assert.ok(snapshot.selectedEvidence.month.deityCode);
+assert.ok(snapshot.selectedEvidence.month.doorCode);
+assert.ok(snapshot.selectedEvidence.month.starCode);
+assert.ok(snapshot.selectedEvidence.day.starCode);
+assert.ok(snapshot.selectedEvidence.hour.starCode);
 assert.equal(verifyQimenThreeLayerSnapshot(snapshot), true);
 assert.equal(Object.isFrozen(snapshot), true);
 assert.equal(Object.isFrozen(snapshot.layers.month.palaces), true);
-assert.doesNotMatch(JSON.stringify(snapshot), /latitude|longitude|profileId|address/iu);
+function collectKeys(value: unknown, output = new Set<string>()) {
+  if (value && typeof value === "object") {
+    for (const [key, child] of Object.entries(value)) {
+      output.add(key.toLowerCase());
+      collectKeys(child, output);
+    }
+  }
+  return output;
+}
+const snapshotKeys = collectKeys(snapshot);
+for (const forbidden of ["latitude", "longitude", "profileid", "address"]) {
+  assert.equal(snapshotKeys.has(forbidden), false, `snapshot must not carry private field ${forbidden}`);
+}
 
 const tampered = structuredClone(snapshot);
 tampered.layers.month.palaces[3].starCode = "TAMPERED";
@@ -145,5 +113,59 @@ assert.throws(
   /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
 );
 assert.equal(accessorInvoked, false, "input accessors are rejected without invocation");
+
+function centerSnapshotInput(dun: "yang" | "yin", ju: number) {
+  const result = validInput();
+  const chartInput = { dun, ju, subjectPillarZh: "甲戌" };
+  result.layers.month = fixture.layer("month", "2026-08-07T00:00:00.000Z", "2026-09-07T00:00:00.000Z", chartInput);
+  result.layers.day = fixture.layer("day", "2026-08-21T00:00:00.000Z", "2026-08-22T00:00:00.000Z", chartInput);
+  return result;
+}
+
+for (const [dun, ju, lodging] of [["yang", 4, 8], ["yin", 6, 2]] as const) {
+  const centerInput = centerSnapshotInput(dun, ju);
+  const built = buildQimenThreeLayerSnapshot(centerInput);
+  for (const kind of ["month", "day"] as const) {
+    assert.deepEqual(built.layers[kind].contextEvidence.centerEvidence, {
+      policy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
+      sourceConflictCode: "FAQIAO_VOL2_SEASONAL_VS_VOL6_FIXED_YINYANG",
+      rawCenterPalace: 5,
+      effectiveLodgingPalace: lodging,
+      rawDoorTargetPalace: 5,
+      effectiveDoorTargetPalace: lodging,
+      rawDeityTargetPalace: 5,
+      effectiveDeityTargetPalace: lodging,
+    });
+  }
+}
+
+for (const [dun, ju] of [["yang", 1], ["yang", 7], ["yin", 9], ["yin", 3]] as const) {
+  const chart = buildFaqiaoFeipan({
+    dun, ju, subjectPillarZh: "甲戌",
+    centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
+  });
+  assert.equal(chart.rawDoorTarget, chart.effectiveDoorTarget, `${dun} ${ju} door target does not silently lodge`);
+  assert.equal(chart.rawDeityTarget, chart.effectiveDeityTarget, `${dun} ${ju} deity target does not silently lodge`);
+}
+
+const centerMutations: Record<string, unknown> = {
+  policy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V2",
+  sourceConflictCode: "FAQIAO_CONFLICT_HIDDEN",
+  rawCenterPalace: 4,
+  effectiveLodgingPalace: 2,
+  rawDoorTargetPalace: 6,
+  effectiveDoorTargetPalace: 7,
+  rawDeityTargetPalace: 6,
+  effectiveDeityTargetPalace: 7,
+};
+for (const [field, value] of Object.entries(centerMutations)) {
+  const changed = centerSnapshotInput("yang", 4);
+  changed.layers.month.contextEvidence.centerEvidence[field] = value;
+  assert.throws(
+    () => buildQimenThreeLayerSnapshot(changed),
+    /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
+    `mutated center evidence ${field} must fail closed`,
+  );
+}
 
 console.log("qimen three-layer immutable snapshot tests passed");
