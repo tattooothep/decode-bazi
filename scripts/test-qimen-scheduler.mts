@@ -114,8 +114,8 @@ assert.match(deliverySource, /qimenOccurrenceId/u);
 assert.match(deliverySource, /mobile_qimen_occurrences/u);
 assert.match(deliverySource, /qimen_payload_schema/u);
 assert.match(deliverySource, /qimenV3/u, "durable delivery binds schema-v3 Qimen payloads");
-assert.match(deliverySource, /qimenPayload \? historyCopy/u,
-  "Qimen provider delivery uses the exact owner-locale copy persisted in history");
+assert.match(deliverySource, /qimenPayload\?\.schema === 3/u,
+  "only schema-v3 Qimen delivery receives the explicit privacy-safe full-copy exception");
 assert.match(deliverySource, /location_permission,location_captured_at,location_expires_at/u,
   "retry must re-read current location permission and freshness from the installation");
 assert.deepEqual(

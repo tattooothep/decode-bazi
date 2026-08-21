@@ -14,6 +14,7 @@ assert.match(databaseRole, /^notification_integrity_retry_role_/u, "retry tests 
 
 const migration = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
 const qimenMigration = readFileSync("migrations/20260821_mobile_qimen_three_layer.sql", "utf8");
+const qimenV3Migration = readFileSync("migrations/20260821_mobile_qimen_component_quality_v3.sql", "utf8");
 const workerSource = readFileSync("scripts/mobile-push-retry-worker.cjs", "utf8");
 assert.match(workerSource, /FOR UPDATE SKIP LOCKED/u, "retry claims must use PostgreSQL skip-locked leasing");
 
@@ -41,6 +42,8 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const worker = require("./mobile-push-retry-worker.cjs");
 const qimenRuntime = require("../src/lib/qimen-three-layer-notification.cjs");
 const qimenFixture = require("./fixtures/qimen-three-layer-valid-snapshot.cjs");
+const qimenV3Fixture = require("./fixtures/qimen-three-layer-valid-snapshot-v3.cjs");
+const qimenScheduler = require("./mobile-qimen-push-cron.cjs");
 const userId = "00000000-0000-4000-8000-000000000001";
 const fcmTokenId = "10000000-0000-4000-8000-000000000001";
 const expoTokenId = "10000000-0000-4000-8000-000000000002";
@@ -162,6 +165,7 @@ try {
   `);
   psql(database, migration);
   psql(database, qimenMigration);
+  psql(database, qimenV3Migration);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${databaseRole}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${databaseRole};`);
 
   pool = new pg.Pool({
@@ -251,6 +255,7 @@ try {
     (await pool.query("SELECT 1 FROM mobile_push_log WHERE yam_key='qimen-mutated'")).rowCount === 0,
     "a one-field qimenV2 mutation rolls back before any durable provider attempt",
   );
+  await pool.query("UPDATE mobile_notification_prefs SET privacy_preview=true WHERE user_id=$1", [userId]);
   const boundQimen = await delivery.deliver(pool, qimenNotice(qimenPayload, "qimen-bound"), { defer: true });
   const boundQimenAttemptCount = (await row(
     `SELECT count(*)::int AS n FROM mobile_push_attempts a
@@ -258,6 +263,16 @@ try {
   )).n;
   check(boundQimen.status === "pending" && boundQimenAttemptCount === 1,
     "the exact qimenV2 bytes are bound to the immutable occurrence before reservation");
+  const boundQimenCopy = await row(
+    `SELECT l.title,l.body,a.provider_message,a.privacy_safe
+       FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id
+      WHERE l.yam_key='qimen-bound'`,
+  );
+  check(boundQimenCopy.title === "ฉีเหมิน" && boundQimenCopy.body === "สามชั้น"
+    && boundQimenCopy.provider_message.notification.title === "Qimen"
+    && boundQimenCopy.provider_message.notification.body === "Month Day Hour"
+    && boundQimenCopy.privacy_safe === false,
+  "schema-v2 full-preview reservation preserves its legacy item copy and privacy flag byte-for-byte");
   const boundOccurrence = await row("SELECT state,push_log_id IS NOT NULL AS linked FROM mobile_qimen_occurrences WHERE id=$1", [qimenOccurrenceId]);
   check(boundOccurrence.state === "reserved" && boundOccurrence.linked === true,
     "Qimen occurrence and provider attempt become reserved in the same transaction");
@@ -284,6 +299,55 @@ try {
     && expiredLocationAttempt.last_error === "policy_location_expired",
   "Qimen V2 retry re-reads the installation and blocks an expired seven-day location before provider delivery");
   await pool.query("DELETE FROM mobile_push_log WHERE yam_key='qimen-bound'");
+
+  await pool.query("UPDATE mobile_notification_prefs SET privacy_preview=false WHERE user_id=$1", [userId]);
+  await pool.query("UPDATE mobile_push_tokens SET qimen_payload_schema=3 WHERE id=$1", [fcmTokenId]);
+  const qimenV3OccurrenceId = "30000000-0000-4000-8000-000000000003";
+  const qimenV3Snapshot = qimenV3Fixture.build(userId);
+  const qimenV3SendDeadline = new Date(Date.parse(qimenV3Snapshot.layers.hour.validFrom) + 10 * 60_000).toISOString();
+  await pool.query(
+    `INSERT INTO mobile_qimen_occurrences
+       (id,user_id,installation_id,occurrence_key,purpose,hour_valid_from,hour_valid_until,send_deadline,
+        selected_direction,version_tuple,source_tuple,snapshot,snapshot_digest,state)
+     VALUES($1,$2,$3,'qimen|delivery-binding-v3','travel',$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11,'claimed')`,
+    [qimenV3OccurrenceId, userId, fcmInstallation,
+      qimenV3Snapshot.layers.hour.validFrom, qimenV3Snapshot.layers.hour.validUntil, qimenV3SendDeadline,
+      qimenV3Snapshot.selectedDirection, JSON.stringify(qimenV3Snapshot.versionTuple),
+      JSON.stringify(qimenV3Snapshot.sourceTuple), JSON.stringify(qimenV3Snapshot), qimenV3Snapshot.snapshotDigest],
+  );
+  const qimenV3Notice = qimenScheduler.buildQimenNotice({
+    user_id: userId,
+    installation_id: fcmInstallation,
+    purpose: "travel",
+    token_id: fcmTokenId,
+    device_push_token: "fcm-secret-not-persisted",
+    device_token_type: "fcm",
+    expo_push_token: null,
+    platform: "android",
+    token_locale: "th",
+    qimen_payload_schema: 3,
+  }, qimenV3Snapshot, qimenV3OccurrenceId, qimenV3SendDeadline);
+  const reservedQimenV3 = await delivery.deliver(pool, qimenV3Notice, { defer: true });
+  const qimenV3Copy = await row(
+    `SELECT l.title,l.body,a.provider_message,a.privacy_safe
+       FROM mobile_push_log l JOIN mobile_push_attempts a ON a.push_log_id=l.id
+      WHERE l.yam_key=$1`,
+    [qimenV3Notice.key],
+  );
+  const qimenV3ProviderCopy = qimenV3Copy.provider_message.notification;
+  check(reservedQimenV3.status === "pending"
+    && qimenV3Copy.title === qimenV3ProviderCopy.title
+    && qimenV3Copy.body === qimenV3ProviderCopy.body
+    && qimenV3Copy.privacy_safe === true,
+  "schema-v3 C4 default-private reservation persists and sends the exact owner-locale privacy-safe copy");
+  check(/✓ ส่งเสริม/u.test(qimenV3ProviderCopy.body)
+    && /! ไม่ส่งเสริม/u.test(qimenV3ProviderCopy.body)
+    && /ผังยามเป็นผู้ตัดสิน/u.test(qimenV3ProviderCopy.body),
+  "schema-v3 provider copy retains attested component status text and hour authority");
+  check(!qimenV3ProviderCopy.body.includes(userId)
+    && !/13\.7563|100\.5018|account(?:Id)?|ชื่อผู้ใช้/iu.test(`${qimenV3ProviderCopy.title}\n${qimenV3ProviderCopy.body}`),
+  "schema-v3 privacy-safe chart copy contains no coordinates, account identifier, or personal-name label");
+  await pool.query("DELETE FROM mobile_push_log WHERE yam_key=$1", [qimenV3Notice.key]);
 
   const mixed = await delivery.deliver(pool, notice("mixed", [fcmMessage, expoMessage]), {
     sender: mixedSender,

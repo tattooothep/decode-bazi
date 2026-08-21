@@ -378,12 +378,12 @@ async function reserve(db, notice, dry = false) {
         platform: token.platform,
       });
       if (!provider) continue;
-      const fullCopy = qimenPayload ? historyCopy : { title: item.title, body: item.body };
-      const providerCopy = notificationPayload.previewCopy(
+      const qimenV3PrivacySafeCopy = qimenPayload?.schema === 3;
+      const providerCopy = qimenV3PrivacySafeCopy ? historyCopy : notificationPayload.previewCopy(
         notice.kind,
         context.privacy_preview === true,
-        fullCopy,
-        qimenPayload ? context.locale : item.locale || context.locale,
+        { title: item.title, body: item.body },
+        item.locale || context.locale,
       );
       const itemData = item.data && typeof item.data === "object" && !Array.isArray(item.data) ? item.data : {};
       const providerMessage = cleanJson(push.prepareMessage({
@@ -399,7 +399,8 @@ async function reserve(db, notice, dry = false) {
          VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,'reserved',now(),now())
          ON CONFLICT(push_log_id,installation_id) DO NOTHING RETURNING id`,
         [parent.rows[0].id, token.id, token.installation_id, provider, JSON.stringify(providerMessage),
-          messageSha256(providerMessage), context.privacy_preview !== true, notice.transactional === true],
+          messageSha256(providerMessage), qimenV3PrivacySafeCopy || context.privacy_preview !== true,
+          notice.transactional === true],
       );
       if (inserted.rows[0]) attemptIds.push(inserted.rows[0].id);
     }
