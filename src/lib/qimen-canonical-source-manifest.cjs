@@ -4,8 +4,8 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const SOURCE_DIGEST = "846e4e9f7393f6451e78f9daa87bea1202ab4b36b6161ba60c570f9f7bd9e690";
-const SOURCE_BYTE_SIZE = 8597;
+const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
+const SOURCE_BYTE_SIZE = 10629;
 const DEFAULT_EVIDENCE_PATH = path.resolve(
   __dirname,
   "../../data/library/qmdj/qimen-faqiao-c4-source-excerpts.md",

@@ -1,6 +1,6 @@
 # Qimen C4 canonical source manifest
 
-Status: source family selected; producer remains disabled until golden fixtures, three signatures, and the real-device canary pass  
+Status: source family selected; 日家 boundary and center-lodging rulings unresolved; producer disabled
 Decision date: 2026-08-21
 
 ## Release lineages
@@ -16,8 +16,8 @@ Month/day and hour are intentionally different chart lineages. They may be juxta
 ## Pinned primary transcription
 
 - Local evidence: `data/library/qmdj/qimen-faqiao-c4-source-excerpts.md`
-- Exact byte size: `8597`
-- SHA-256: `846e4e9f7393f6451e78f9daa87bea1202ab4b36b6161ba60c570f9f7bd9e690`
+- Exact byte size: `10629`
+- SHA-256: `987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460`
 - Upstream 卷二: `https://ctext.org/wiki.pl?chapter=118328&if=en`
 - Upstream 卷六: `https://ctext.org/wiki.pl?chapter=600483&if=en`
 - Work record: `https://ctext.org/wiki.pl?if=en&res=562001`
@@ -40,7 +40,8 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 - Operational count is 24 solar terms: the source text's preserved `四十` is normalized only because the same passage explicitly enumerates two groups of twelve.
 - Nominal Yang Ju sequence is `1, 7, 4`; nominal Yin Ju sequence is `9, 3, 6` exactly as transcribed. A `9, 2, 6` sequence from another work is forbidden in this lineage.
 - Exact astronomical term instants from the repository-pinned calendar runtime are mandatory. Mean dates and fixed civil dates are forbidden.
-- Fu-head is governed by the source's `甲/己` and upper/middle/lower branch classes. Super, receive, split, and supplement transitions must follow a signed decision table and golden boundary fixtures.
+- Fu-head is governed by the source's `甲/己` and upper/middle/lower branch classes. Super, receive, split, and supplement transitions must follow a signed decision table and golden boundary fixtures. The 卷六 `冬至丁未` example is a 時家/36-Ju example and is forbidden as proof of a 日家 60-day transition.
+- The selected passages do not yet define how each five-day Fu-head segment deterministically changes the 60-day 日家 state for continuous yearly coverage. Until a signed rule or a complete primary lineage is adopted, the calendar resolver returns `QIMEN_CONTEXT_BOUNDARY_UNRESOLVED`.
 - No nearest-Jia-Zi heuristic, range clamp, or default Ju is permitted. An unresolved or out-of-range boundary returns `QIMEN_CONTEXT_BOUNDARY_UNRESOLVED`.
 - Worked construction fixtures include the source's Yang 1 `庚子` example and Yin 9 `丁卯` example.
 
@@ -49,7 +50,8 @@ Runtime activation must verify the local evidence digest byte-for-byte. A missin
 - Nine-star order: `蓬芮衝輔禽心柱任英`.
 - Eight-door order: `休死傷杜開驚生景`; a raw door never occupies center five.
 - Instruments/wonders order: `戊己庚辛壬癸丁丙乙`, flown in the source-governed Yin/Yang direction.
-- Yang center lodging is Gen 8; Yin center lodging is Kun 2. Raw and effective center evidence are retained separately.
+- Raw center evidence and effective lodging evidence are retained separately. The work contains a 卷二 seasonal-four-corner lodging statement and a competing 卷六 Yang-to-Gen/Yin-to-Kun statement.
+- The release candidate explicitly selects `FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1`: Yang effective lodging is Gen 8 and Yin effective lodging is Kun 2. This is a versioned product policy, not a claim of unanimity inside the work. It may annotate an effective display palace but may not move, delete, or duplicate palace-5 raw data or create a ninth raw door/deity.
 - A raw deity never occupies center five. Effective lodging must remain explicit and testable.
 
 ## Product rulings, not source quotations

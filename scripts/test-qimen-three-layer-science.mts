@@ -23,8 +23,8 @@ const manifest = (sourceManifest.loadCanonicalSourceManifest as () => {
 
 assert.equal(manifest.producerEnabled, false, "the producer remains disabled until all release gates pass");
 assert.deepEqual(manifest.source, {
-  digest: "846e4e9f7393f6451e78f9daa87bea1202ab4b36b6161ba60c570f9f7bd9e690",
-  byteSize: 8597,
+  digest: "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460",
+  byteSize: 10629,
   editionStatus: "pinned_ctext_transcription_base_edition_unknown",
 });
 assert.equal(manifest.layers.month.calculationVersion, "QIMEN_FAQIAO_FEIPAN_YUEJIA_V1");
@@ -96,5 +96,105 @@ for (const [yuan, pillars] of Object.entries(expectedMonthGroups)) {
 assert.equal(new Set(Object.values(expectedMonthGroups).flat()).size, 60, "the primary month table covers all 60 pillars exactly once");
 assert.throws(() => resolveMonthYearJu("子"), /QIMEN_MONTH_YEAR_PILLAR_INVALID/u);
 assert.throws(() => resolveMonthYearJu("甲子x"), /QIMEN_MONTH_YEAR_PILLAR_INVALID/u);
+
+let contextEngine: Record<string, unknown> | null = null;
+try {
+  contextEngine = require("../src/lib/qimen-canonical-context-engine.cjs");
+} catch (error) {
+  if ((error as NodeJS.ErrnoException).code !== "MODULE_NOT_FOUND") throw error;
+}
+assert.ok(contextEngine, "the canonical flying-plate context engine must exist");
+const buildFaqiaoFeipan = contextEngine.buildFaqiaoFeipan as (input: {
+  dun: "yang" | "yin";
+  ju: number;
+  subjectPillarZh: string;
+  centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1";
+}) => {
+  xunHead: string;
+  directSymbolStar: string;
+  directEnvoyDoor: string;
+  centerLodgingPalace: number;
+  palaces: ReadonlyArray<{
+    palace: number;
+    earthInstrument: string;
+    heavenInstrument: string;
+    star: string;
+    door: string | null;
+    deity: string | null;
+  }>;
+};
+
+function palace(chart: ReturnType<typeof buildFaqiaoFeipan>, palaceNumber: number) {
+  return chart.palaces.find((item) => item.palace === palaceNumber)!;
+}
+
+// 《奇門法竅》卷二 worked example: 冬至上元陽遁一局 · 庚子日.
+const yangOneGengZi = buildFaqiaoFeipan({
+  dun: "yang", ju: 1, subjectPillarZh: "庚子",
+  centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
+});
+assert.equal(yangOneGengZi.xunHead, "甲午");
+assert.equal(yangOneGengZi.directSymbolStar, "天輔");
+assert.equal(yangOneGengZi.directEnvoyDoor, "杜門");
+assert.equal(yangOneGengZi.centerLodgingPalace, 8);
+assert.deepEqual(
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => palace(yangOneGengZi, number).earthInstrument),
+  ["戊", "己", "庚", "辛", "壬", "癸", "丁", "丙", "乙"],
+);
+assert.deepEqual(
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => palace(yangOneGengZi, number).heavenInstrument),
+  ["己", "庚", "辛", "壬", "癸", "丁", "丙", "乙", "戊"],
+);
+assert.equal(palace(yangOneGengZi, 3).star, "天輔");
+assert.equal(palace(yangOneGengZi, 3).deity, "直符");
+assert.equal(palace(yangOneGengZi, 1).door, "杜門");
+assert.equal(palace(yangOneGengZi, 7).door, "休門");
+assert.equal(palace(yangOneGengZi, 5).door, null);
+assert.equal(palace(yangOneGengZi, 5).deity, null);
+
+// 《奇門法竅》卷二 worked example: 夏至上元陰遁九局 · 丁卯日.
+const yinNineDingMao = buildFaqiaoFeipan({
+  dun: "yin", ju: 9, subjectPillarZh: "丁卯",
+  centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
+});
+assert.equal(yinNineDingMao.xunHead, "甲子");
+assert.equal(yinNineDingMao.directSymbolStar, "天英");
+assert.equal(yinNineDingMao.directEnvoyDoor, "景門");
+assert.equal(yinNineDingMao.centerLodgingPalace, 2);
+assert.deepEqual(
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => palace(yinNineDingMao, number).earthInstrument),
+  ["乙", "丙", "丁", "癸", "壬", "辛", "庚", "己", "戊"],
+);
+assert.deepEqual(
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => palace(yinNineDingMao, number).heavenInstrument),
+  ["庚", "己", "戊", "乙", "丙", "丁", "癸", "壬", "辛"],
+);
+assert.equal(palace(yinNineDingMao, 3).star, "天英");
+assert.equal(palace(yinNineDingMao, 3).deity, "直符");
+assert.equal(palace(yinNineDingMao, 6).door, "景門");
+assert.equal(palace(yinNineDingMao, 7).door, "休門");
+assert.equal(palace(yinNineDingMao, 5).door, null);
+assert.equal(palace(yinNineDingMao, 5).deity, null);
+assert.throws(
+  () => buildFaqiaoFeipan({
+    dun: "yang", ju: 0, subjectPillarZh: "庚子",
+    centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
+  }),
+  /QIMEN_FEIPAN_INPUT_INVALID/u,
+);
+assert.throws(
+  () => buildFaqiaoFeipan({
+    dun: "yin", ju: 9, subjectPillarZh: "丁",
+    centerLodgingPolicy: "FAQIAO_VOL6_FIXED_YINYANG_LODGING_V1",
+  }),
+  /QIMEN_FEIPAN_INPUT_INVALID/u,
+);
+assert.throws(
+  () => buildFaqiaoFeipan({
+    dun: "yin", ju: 9, subjectPillarZh: "丁卯",
+    centerLodgingPolicy: "silent_default" as never,
+  }),
+  /QIMEN_CENTER_LODGING_POLICY_REQUIRED/u,
+);
 
 console.log("qimen three-layer science source-manifest tests passed");
