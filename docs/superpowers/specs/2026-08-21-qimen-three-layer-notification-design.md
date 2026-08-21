@@ -76,6 +76,7 @@ The actionable `時家` notification uses the existing canonical `拆補 Chai Bu
 
 ## 3. Notification cadence and eligibility
 
+- Run a dedicated indexed-installation Qimen scheduler every minute. Qimen must not depend on the Today/Yam producer, a Yam-good occurrence, or another category's timer.
 - Evaluate once for each canonical true-solar shichen occurrence.
 - Send only when `時家` produces at least one direction that satisfies the existing canonical suitability, actionability, warning, door-vigor, and star-vigor gates for the configured purpose.
 - Select the direction using the canonical hour-chart policy. Month/day context cannot reorder candidates.
@@ -83,6 +84,7 @@ The actionable `時家` notification uses the existing canonical `拆補 Chai Bu
 - Provider TTL remains five minutes. Delivery is blocked when less than or equal to one TTL remains in the immutable hour window.
 - Deduplicate by account, installation, purpose, hour occurrence, calculation-version tuple, and selected direction.
 - Existing entitlement, consent, owner isolation, location freshness, pause, quiet-hours, and installation-token checks remain mandatory.
+- The dedicated scheduler writes a `qimen` heartbeat after every successful production run. Aggregate notification health fails when that heartbeat is stale, when the timer is disabled/inactive, or when the runtime command does not resolve through the exact current release.
 
 ## 4. One-card copy contract
 
@@ -209,6 +211,7 @@ No fallback copies the hour chart into month/day, removes an inconvenient warnin
 ### 8.2 Delivery and data
 
 - Only good hour occurrences reserve notifications.
+- A due Qimen occurrence is discovered without any Today/Yam row, profile, or scheduler being present.
 - Month/day do not reorder the canonical hour direction.
 - FCM and Expo compact payloads are equivalent and below the size budget.
 - Full authenticated history replays the exact immutable three-chart snapshot after source/location expiry.
@@ -240,6 +243,8 @@ Three source signatures alone do not prove that a phone receives a notification.
 3. Android displays the notification in the system tray with the expected channel, sound, and visible lock-screen copy while the app is backgrounded or closed;
 4. tapping it opens the matching immutable C4 detail, with the same occurrence, direction, purpose, and three selected-palace evidence tuples; and
 5. backend receipt/history evidence ties the device result to the exact signed backend/mobile commit pair and artifact digest.
+
+The canary record also captures the dedicated Qimen systemd timer/service state, scheduler heartbeat age, worker heartbeat age, provider attempt identifier, notification channel, and device installation identifier hash. A green device canary with a disabled or stale production scheduler is not release evidence.
 
 An in-app history row, provider acceptance, source test, emulator notification, or manually injected local notification is not sufficient by itself. A failed canary blocks completion and triggers diagnosis before any deployment/store approval.
 
