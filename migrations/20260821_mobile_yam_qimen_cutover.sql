@@ -8,8 +8,8 @@ WITH scoped AS (
     FROM mobile_push_log l
    WHERE l.kind='yam' AND l.source_facts ? 'qimen'
    FOR UPDATE
-), retired_attempts AS (
-  UPDATE mobile_push_attempts a
+)
+UPDATE mobile_push_attempts a
      SET status='dead',
          next_retry_at=NULL,
          lease_token=NULL,
@@ -19,18 +19,20 @@ WITH scoped AS (
          updated_at=now()
     FROM scoped s
    WHERE a.push_log_id=s.id
-     AND a.status IN ('reserved','retry_due','provider_accepted')
-  RETURNING a.id
-)
+     AND a.status IN ('reserved','retry_due','provider_accepted');
+
 UPDATE mobile_push_log l
    SET body=split_part(body, E'\n', 1),
        source_facts=source_facts-'qimen',
-       delivery_status=CASE WHEN delivery_status='pending' THEN 'failed' ELSE delivery_status END,
+       delivery_status=CASE
+         WHEN EXISTS (SELECT 1 FROM mobile_push_attempts a WHERE a.push_log_id=l.id AND a.status='delivered') THEN 'delivered'
+         WHEN EXISTS (SELECT 1 FROM mobile_push_attempts a WHERE a.push_log_id=l.id AND a.status='provider_accepted') THEN 'accepted'
+         WHEN EXISTS (SELECT 1 FROM mobile_push_attempts a WHERE a.push_log_id=l.id AND a.status IN ('reserved','retry_due')) THEN 'pending'
+         ELSE 'failed'
+       END,
        next_retry_at=NULL,
        last_error='legacy_yam_qimen_cutover_retired',
-       attempts_retired_at=COALESCE(attempts_retired_at, now()),
        updated_at=now()
-  FROM scoped s
- WHERE l.id=s.id;
+ WHERE l.kind='yam' AND l.source_facts ? 'qimen';
 
 COMMIT;
