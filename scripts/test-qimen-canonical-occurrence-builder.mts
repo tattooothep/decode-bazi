@@ -141,6 +141,20 @@ assert.deepEqual(warningSnapshot.hourDecision.reasonCodes, [
 ]);
 
 await assert.rejects(
+  builder.buildCanonicalQimenOccurrence(row, at, {
+    fetchCanonicalQimenEngineSnapshot: async () => ({
+      ...engineSnapshot,
+      advisory: {
+        ...engineSnapshot.advisory,
+        decisionClass: "conditional", readingCode: "suitable", canonicalWarningCodes: [],
+      },
+    }),
+  }),
+  /QIMEN_CANONICAL_OCCURRENCE_INVALID/u,
+  "backend must reject the conditional+suitable+zero-warning tuple that mobile rejects",
+);
+
+await assert.rejects(
   builder.buildCanonicalQimenOccurrence({ ...row, user_id: "" }, at, {
     fetchCanonicalQimenEngineSnapshot: async () => engineSnapshot,
   }),

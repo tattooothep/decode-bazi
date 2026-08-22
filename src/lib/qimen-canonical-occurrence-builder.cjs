@@ -80,7 +80,8 @@ function advisoryReasonCodes(advisory) {
     || !Array.isArray(warnings) || warnings.length > 2
     || warnings.some((code) => !/^[A-Z0-9_]{2,80}$/u.test(String(code || "")))
     || new Set(warnings).size !== warnings.length
-    || (decisionClass === "clear" && (readingCode !== "suitable" || warnings.length !== 0))) {
+    || (decisionClass === "clear" && (readingCode !== "suitable" || warnings.length !== 0))
+    || (decisionClass === "conditional" && readingCode === "suitable" && warnings.length === 0)) {
     throw canonicalError();
   }
   return Object.freeze([

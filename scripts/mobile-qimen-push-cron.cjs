@@ -121,9 +121,9 @@ const LAYER_COPY = Object.freeze({
 const COMPONENT_KINDS = Object.freeze(["deity", "door", "star"]);
 const LAYER_KINDS = Object.freeze(["month", "day", "hour"]);
 const DECISION_COPY = Object.freeze({
-  th: Object.freeze({ clear: "ดีชัดเจน", conditional: "ดีแบบมีเงื่อนไข", usable: "ใช้ได้ แต่ยังไม่ใช่ดีชัดเจน", authority: "ผังยามเป็นผู้ตัดสิน" }),
-  en: Object.freeze({ clear: "Clearly good", conditional: "Good with conditions", usable: "Usable, not clearly good", authority: "Hour governs" }),
-  zh: Object.freeze({ clear: "明確吉方", conditional: "有條件的吉方", usable: "可用，但非明確吉方", authority: "時家盤主導行動" }),
+  th: Object.freeze({ clear: "ทิศเดินทางดีชัดเจน", conditional: "ทิศเดินทางดีแบบมีเงื่อนไข", usable: "ใช้ได้ แต่ยังไม่ใช่ดีชัดเจน", authority: "ผังยามเป็นผู้ตัดสิน" }),
+  en: Object.freeze({ clear: "Clearly good travel direction", conditional: "Conditional travel direction", usable: "Usable, not clearly good", authority: "Hour governs" }),
+  zh: Object.freeze({ clear: "明確出行吉方", conditional: "有條件的出行吉方", usable: "可用，但非明確吉方", authority: "時家盤主導行動" }),
 });
 
 function localizedComponent(language, kind, evidence) {
@@ -153,7 +153,8 @@ function parsedHourDecision(snapshot) {
   });
   if (!decisionClass || !reading || warnings.some((value) => value === null)
     || new Set(warnings).size !== warnings.length
-    || (decisionClass === "clear" && (reading[1] !== "suitable" || warnings.length !== 0))) {
+    || (decisionClass === "clear" && (reading[1] !== "suitable" || warnings.length !== 0))
+    || (decisionClass === "conditional" && reading[1] === "suitable" && warnings.length === 0)) {
     throw new TypeError("qimen_snapshot_invalid");
   }
   return Object.freeze({ decisionClass, readingCode: reading[1], warnings: Object.freeze(warnings) });
@@ -170,6 +171,7 @@ function localizedDecisionWarning(language, code) {
     NEAR_HOUR_BOUNDARY: { th: "ใกล้ขอบยาม", en: "near hour boundary", zh: "近時辰交界" },
     LARGE_TIME_CORRECTION: { th: "ควรตรวจพิกัด", en: "check location", zh: "請核對位置" },
     NEAR_SOLAR_TERM_START: { th: "ใกล้จุดเปลี่ยนฤดูกาล", en: "near solar-term change", zh: "近節氣交界" },
+    TENG_SHE_YAO_JIAO: { th: "เส้นทางอาจสับสนหรือติดขัด", en: "route may be confusing or delayed", zh: "行程可能迷亂或受阻" },
   }[code];
   if (fixed) return fixed[language];
   const stem = {
@@ -187,6 +189,27 @@ function localizedDecisionWarning(language, code) {
     },
     STEM_RESPONSE_JI_OVER_DING: {
       th: "ข่าวหรือเอกสารอาจติดขัด", en: "news/documents may be delayed", zh: "消息或文書恐受阻",
+    },
+    STEM_RESPONSE_BING_OVER_XIN: {
+      th: "มีทางสำเร็จเมื่อแผนและข้อมูลพร้อม", en: "may succeed with sound planning", zh: "規劃與資料周全時較有機會成",
+    },
+    STEM_RESPONSE_GUI_OVER_GENG: {
+      th: "เสี่ยงพิพาทกับกฎหรือฝ่ายแข็ง", en: "rules or a stronger party may cause disputes", zh: "與規則或強勢一方恐生爭議",
+    },
+    STEM_RESPONSE_JI_OVER_BING: {
+      th: "เอกสารอาจติดเงื่อนไข อย่าเร่งเซ็น", en: "documents constrained; do not rush", zh: "文書恐受牽制，不宜急簽",
+    },
+    STEM_RESPONSE_JI_OVER_WU: {
+      th: "เรื่องอาจสับสน ควรจัดข้อมูลก่อน", en: "may be tangled; simplify information first", zh: "事情恐紛亂，宜先整理資訊",
+    },
+    STEM_RESPONSE_REN_OVER_GUI: {
+      th: "ระวังข่าวลือหรือขอบเขตความสัมพันธ์", en: "watch rumors and relationship boundaries", zh: "須留意流言與關係界線",
+    },
+    STEM_RESPONSE_XIN_OVER_WU: {
+      th: "อาจเสียเปรียบในข้อพิพาท", en: "may be disadvantaged in disputes", zh: "在爭議中可能較為不利",
+    },
+    STEM_RESPONSE_YI_OVER_WU: {
+      th: "เหมาะงานเบื้องหลังมากกว่างานเปิดเผย", en: "behind-the-scenes work is better supported", zh: "幕後事務較公開行動有利",
     },
   }[code];
   if (stem) return stem[language];
@@ -213,7 +236,7 @@ function buildQimenCopy(locale, snapshot) {
     : warningText ? `△ ${warningText}` : DECISION_COPY[language].usable;
   const copy = Object.freeze({
     title: language === "th"
-      ? `${decision.decisionClass === "clear" ? "✓" : "△"} ฉีเหมิน · ${DECISION_COPY.th[decision.decisionClass]} · ทิศ${direction}`
+      ? `${decision.decisionClass === "clear" ? "✓" : "△"} ฉีเหมิน · ${DECISION_COPY.th[decision.decisionClass]} · ${direction}`
       : language === "zh"
         ? `${decision.decisionClass === "clear" ? "✓" : "△"} 奇門 · ${DECISION_COPY.zh[decision.decisionClass]} · ${direction}方`
         : `${decision.decisionClass === "clear" ? "✓" : "△"} Qimen · ${DECISION_COPY.en[decision.decisionClass]} · ${direction}`,

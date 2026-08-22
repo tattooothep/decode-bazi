@@ -481,6 +481,21 @@ for (const hardSource of [
   assert.equal(vetoed.recommendation, "caution", `${hardSource.code}/${hardSource.label_zh} must hard-veto`);
 }
 
+for (const quality of ["hard_caution"]) {
+  const vetoed = qimen.buildQimenAdvisory({
+    data: { ...response.data, palaces: [palace({ deity_quality: quality })] },
+  }, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+  assert.equal(vetoed.recommendation, "caution", `hard quality alias ${quality} must veto`);
+}
+for (const quality of ["xiong", "avoid", "danger"]) {
+  const conditionalAlias = qimen.buildQimenAdvisory({
+    data: { ...response.data, palaces: [palace({ deity_quality: quality })] },
+  }, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+  assert.equal(conditionalAlias.recommendation, "recommended", `soft quality alias ${quality} remains conditional`);
+  assert.equal(conditionalAlias.decisionClass, "conditional");
+  assert.deepEqual(conditionalAlias.canonicalWarningCodes, ["INTRINSIC_DEITY_BAD"]);
+}
+
 const restingVigor = qimen.buildQimenAdvisory({
   data: { ...response.data, chart: { wang_xiang_status: ["土", "金", "木", "水", "火"] }, palaces: [palace({})] },
 }, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });

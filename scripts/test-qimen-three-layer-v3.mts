@@ -38,6 +38,14 @@ assert.throws(
   "catalog lookup must not silently normalize a non-canonical component code",
 );
 
+const contradictoryDecision = fixture.input("acct_test_owner");
+contradictoryDecision.hourDecision.reasonCodes = ["hour_conditional_good", "hour_reading_suitable"];
+assert.throws(
+  () => runtime.buildQimenThreeLayerSnapshotV3(contradictoryDecision),
+  /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
+  "snapshot trust boundary rejects conditional+suitable without a warning",
+);
+
 const provider = runtime.buildQimenV3ProviderData(snapshot);
 assert.deepEqual(Object.keys(provider), ["qimenV3"]);
 const compact = runtime.parseQimenV3ProviderData(provider);

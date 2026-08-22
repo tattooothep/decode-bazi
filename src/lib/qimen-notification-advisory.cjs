@@ -32,8 +32,8 @@ const MAX_NOTIFICATION_SOFT_WARNINGS = 2;
 const ASCII_EVIDENCE_CODE = /^[A-Z0-9_]{2,80}$/u;
 const HARD_SEVERITIES = new Set(["danger", "severe", "hard_caution"]);
 const SOFT_SEVERITIES = new Set(["caution", "warning", "warn", "bad", "inauspicious"]);
-const HARD_QUALITIES = new Set(["severe", "great_inauspicious", "da_xiong"]);
-const SOFT_QUALITIES = new Set(["bad", "inauspicious"]);
+const HARD_QUALITIES = new Set(["severe", "great_inauspicious", "da_xiong", "hard_caution"]);
+const SOFT_QUALITIES = new Set(["bad", "inauspicious", "xiong", "avoid", "danger"]);
 const ENGINE_SOFT_WARNING_CODES = new Set([
   "NEAR_HOUR_BOUNDARY", "LARGE_TIME_CORRECTION", "NEAR_SOLAR_TERM_START",
 ]);

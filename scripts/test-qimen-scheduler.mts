@@ -241,7 +241,7 @@ assert.match(source, /producer\.backend_commit !== runtimeCommit/u);
 
 const snapshotV3 = snapshotV3Fixture.build(row.user_id);
 const th = scheduler.buildQimenCopy("th", snapshotV3);
-assert.match(th.title, /^△ ฉีเหมิน · ดีแบบมีเงื่อนไข · ทิศ/u,
+assert.match(th.title, /^△ ฉีเหมิน · ทิศเดินทางดีแบบมีเงื่อนไข · /u,
   "raw usable with no warnings is conditional, never clear-good");
 assert.match(th.body, /ใช้ได้ แต่ยังไม่ใช่ดีชัดเจน/u);
 assert.match(th.body, /เก้าพื้นดิน \(九地\)✓/u);
@@ -289,6 +289,14 @@ for (const [code, thPattern, enPattern, zhPattern] of [
   ["STEM_RESPONSE_XIN_OVER_BING", /เงินหรือผลประโยชน์อาจพิพาท/u, /money\/interests may cause disputes/u, /錢財或利益恐生爭議/u],
   ["STEM_RESPONSE_BING_OVER_GUI", /ข้อมูลซ่อนอาจทำให้ยุ่งยาก/u, /hidden information may complicate matters/u, /隱藏資訊恐添紛擾/u],
   ["STEM_RESPONSE_JI_OVER_DING", /ข่าวหรือเอกสารอาจติดขัด/u, /news\/documents may be delayed/u, /消息或文書恐受阻/u],
+  ["STEM_RESPONSE_BING_OVER_XIN", /มีทางสำเร็จเมื่อแผนและข้อมูลพร้อม/u, /may succeed with sound planning/u, /規劃與資料周全時較有機會成/u],
+  ["STEM_RESPONSE_GUI_OVER_GENG", /เสี่ยงพิพาทกับกฎหรือฝ่ายแข็ง/u, /rules or a stronger party may cause disputes/u, /與規則或強勢一方恐生爭議/u],
+  ["STEM_RESPONSE_JI_OVER_BING", /เอกสารอาจติดเงื่อนไข อย่าเร่งเซ็น/u, /documents constrained; do not rush/u, /文書恐受牽制，不宜急簽/u],
+  ["STEM_RESPONSE_JI_OVER_WU", /เรื่องอาจสับสน ควรจัดข้อมูลก่อน/u, /may be tangled; simplify information first/u, /事情恐紛亂，宜先整理資訊/u],
+  ["STEM_RESPONSE_REN_OVER_GUI", /ระวังข่าวลือหรือขอบเขตความสัมพันธ์/u, /watch rumors and relationship boundaries/u, /須留意流言與關係界線/u],
+  ["STEM_RESPONSE_XIN_OVER_WU", /อาจเสียเปรียบในข้อพิพาท/u, /may be disadvantaged in disputes/u, /在爭議中可能較為不利/u],
+  ["STEM_RESPONSE_YI_OVER_WU", /เหมาะงานเบื้องหลังมากกว่างานเปิดเผย/u, /behind-the-scenes work is better supported/u, /幕後事務較公開行動有利/u],
+  ["TENG_SHE_YAO_JIAO", /เส้นทางอาจสับสนหรือติดขัด/u, /route may be confusing or delayed/u, /行程可能迷亂或受阻/u],
 ] as const) {
   const localizedStemSnapshot = snapshotRuntime.buildQimenThreeLayerSnapshotV3({
     ...snapshotV3Fixture.input(row.user_id),
@@ -309,9 +317,18 @@ const clearSnapshotV3 = snapshotRuntime.buildQimenThreeLayerSnapshotV3({
     reasonCodes: ["hour_clear_good", "hour_reading_suitable"],
   },
 });
-assert.match(scheduler.buildQimenCopy("th", clearSnapshotV3).title, /^✓ ฉีเหมิน · ดีชัดเจน · ทิศ/u);
-assert.match(scheduler.buildQimenCopy("en", clearSnapshotV3).title, /^✓ Qimen · Clearly good · /u);
-assert.match(scheduler.buildQimenCopy("zh", clearSnapshotV3).title, /^✓ 奇門 · 明確吉方 · /u);
+assert.match(scheduler.buildQimenCopy("th", clearSnapshotV3).title, /^✓ ฉีเหมิน · ทิศเดินทางดีชัดเจน · /u);
+assert.match(scheduler.buildQimenCopy("en", clearSnapshotV3).title, /^✓ Qimen · Clearly good travel direction · /u);
+assert.match(scheduler.buildQimenCopy("zh", clearSnapshotV3).title, /^✓ 奇門 · 明確出行吉方 · /u);
+
+assert.throws(() => snapshotRuntime.buildQimenThreeLayerSnapshotV3({
+  ...snapshotV3Fixture.input(row.user_id),
+  hourDecision: {
+    direction: "N", purpose: "travel", recommendationCode: "recommended",
+    reasonCodes: ["hour_conditional_good", "hour_reading_suitable"],
+  },
+}), /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
+"provider trust boundary must reject a decision tuple rejected by the mobile parser");
 
 const tamperedQuality = structuredClone(snapshotV3);
 tamperedQuality.selectedEvidence.month.deityBaseQuality = "great_auspicious";

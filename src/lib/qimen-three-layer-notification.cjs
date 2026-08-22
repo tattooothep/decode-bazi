@@ -325,8 +325,23 @@ function readDecision(value, purpose, selectedDirection) {
   const record = captureRecord(value, DECISION_KEYS);
   const reasonCodes = record ? readCodeArray(record.reasonCodes) : null;
   if (!record || record.direction !== selectedDirection || record.purpose !== purpose
-    || record.recommendationCode !== "recommended" || !reasonCodes || reasonCodes.length === 0) return null;
+    || record.recommendationCode !== "recommended" || !reasonCodes || !validDecisionReasons(reasonCodes)) return null;
   return Object.freeze({ ...record, reasonCodes });
+}
+
+function validDecisionReasons(reasonCodes) {
+  if (reasonCodes.length === 1) {
+    return ["hour_good", "hour_suitable", "hour_usable"].includes(reasonCodes[0]);
+  }
+  if (reasonCodes[0] === "hour_clear_good") {
+    return reasonCodes.length === 2 && reasonCodes[1] === "hour_reading_suitable";
+  }
+  if (reasonCodes[0] !== "hour_conditional_good" || reasonCodes.length < 2 || reasonCodes.length > 4
+    || !/^hour_reading_[A-Za-z0-9_:-]{1,64}$/u.test(reasonCodes[1])) return false;
+  const readingCode = reasonCodes[1].slice("hour_reading_".length);
+  const warnings = reasonCodes.slice(2).map((code) => /^hour_warning_([A-Z0-9_]{2,80})$/u.exec(code)?.[1] || null);
+  return !(readingCode === "suitable" && warnings.length === 0)
+    && warnings.every(Boolean) && new Set(warnings).size === warnings.length;
 }
 
 function selectedTuple(layer, direction) {
