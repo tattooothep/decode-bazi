@@ -135,7 +135,12 @@ function localizedComponent(language, kind, evidence) {
   const presentation = componentCatalog.componentPresentation(quality);
   const state = STATE_COPY[language][presentation];
   if (!state) throw new TypeError("qimen_snapshot_invalid");
-  const name = language === "zh" ? entry.names.zh : `${entry.names[language] || entry.names.en} (${entry.zh})`;
+  let name;
+  if (language === "zh") name = entry.names.zh;
+  else if (language === "en") {
+    const plainEnglish = /\(([^()]+)\)\s*$/u.exec(entry.names.en)?.[1] || entry.names.en;
+    name = `${plainEnglish} (${entry.zh})`;
+  } else name = `${entry.names.th} (${entry.zh})`;
   return `${name}${state.slice(0, 1)}`;
 }
 

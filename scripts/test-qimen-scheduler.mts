@@ -253,13 +253,13 @@ assert.match(th.body, /✓ ส่งเสริม.*• ขึ้นกับ�
 assert.match(th.body, /ผังยามเป็นผู้ตัดสิน/u);
 assert.ok(th.body.length <= 400, `Thai provider copy exceeds 400 characters: ${th.body.length}`);
 const en = scheduler.buildQimenCopy("en", snapshotV3);
-assert.match(en.body, /Jiu Di \(Nine Earth\) \(九地\)/u);
+assert.match(en.body, /Nine Earth \(九地\)/u);
 assert.ok(en.body.length <= 400, `English provider copy exceeds 400 characters: ${en.body.length}`);
 const zh = scheduler.buildQimenCopy("zh", snapshotV3);
 assert.doesNotMatch(zh.body, /九地 \(九地\)/u);
 assert.ok(zh.body.length <= 400, `Chinese provider copy exceeds 400 characters: ${zh.body.length}`);
 const fallback = scheduler.buildQimenCopy("vi", snapshotV3);
-assert.match(fallback.body, /Jiu Di \(Nine Earth\) \(九地\)/u,
+assert.match(fallback.body, /Nine Earth \(九地\)/u,
   "a supported locale without canonical component translations uses the documented English-plus-Han fallback");
 
 const warningSnapshotV3 = snapshotRuntime.buildQimenThreeLayerSnapshotV3({
@@ -320,6 +320,20 @@ const clearSnapshotV3 = snapshotRuntime.buildQimenThreeLayerSnapshotV3({
 assert.match(scheduler.buildQimenCopy("th", clearSnapshotV3).title, /^✓ ฉีเหมิน · ทิศเดินทางดีชัดเจน · /u);
 assert.match(scheduler.buildQimenCopy("en", clearSnapshotV3).title, /^✓ Qimen · Clearly good travel direction · /u);
 assert.match(scheduler.buildQimenCopy("zh", clearSnapshotV3).title, /^✓ 奇門 · 明確出行吉方 · /u);
+
+const canonicalBuilder = require("../src/lib/qimen-canonical-occurrence-builder.cjs");
+for (const instant of [
+  "2026-08-22T05:00:00.000Z", "2026-08-22T09:00:00.000Z", "2026-08-23T21:00:00.000Z",
+  "2026-08-27T05:00:00.000Z", "2026-08-28T03:00:00.000Z", "2026-08-29T13:00:00.000Z",
+  "2026-08-30T11:00:00.000Z", "2026-09-01T21:00:00.000Z",
+]) {
+  const actual = await canonicalBuilder.buildCanonicalQimenOccurrence({ ...row, latitude: 13.7563 }, new Date(instant));
+  assert.ok(actual, `${instant} remains an accepted canonical cohort occurrence`);
+  for (const locale of ["th", "en", "zh"]) {
+    const actualCopy = scheduler.buildQimenCopy(locale, actual);
+    assert.ok(actualCopy.body.length <= 400, `${instant}/${locale} provider copy exceeds 400 characters`);
+  }
+}
 
 assert.throws(() => snapshotRuntime.buildQimenThreeLayerSnapshotV3({
   ...snapshotV3Fixture.input(row.user_id),
