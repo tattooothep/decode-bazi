@@ -93,6 +93,13 @@ function providerQueueSafetySeconds(categoryInput) {
 
 function providerData(message, stringifyValues) {
   const data = message?.data && typeof message.data === "object" ? message.data : {};
+  const dataKeys = Object.keys(data).sort();
+  const exactQimenEnvelope = categoryOf(message) === "qimen"
+    && typeof data.notificationId === "string"
+    && ((typeof data.qimenV2 === "string"
+      && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "qimenV2")
+      || (typeof data.qimenV3 === "string"
+        && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "qimenV3"));
   const out = {};
   const zibaiShichenKeys = new Set(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
   const exactZibaiPayload = data.kind === "zibai"
@@ -115,7 +122,7 @@ function providerData(message, stringifyValues) {
       || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) continue;
     out[String(key).slice(0, 80)] = stringifyValues ? String(value).slice(0, 500) : value;
   }
-  if (typeof out.url !== "string") out.url = safeUrl(message?.url || data.url);
+  if (!exactQimenEnvelope && typeof out.url !== "string") out.url = safeUrl(message?.url || data.url);
   return out;
 }
 

@@ -15,6 +15,7 @@
     "test:mobile-internal-origin": "tsx scripts/test-mobile-internal-origin.mts",
     "test:mobile-qimen-parity": "node scripts/test-mobile-qimen-parity.mjs",
     "test:qimen-component-catalog": "tsx scripts/test-qimen-component-catalog.mts",
+    "test:qimen-v223-transport": "node --no-warnings --experimental-strip-types scripts/test-qimen-v223-transport-contract.mts",
     "test:mobile-export-parity": "node scripts/test-mobile-export-parity.mjs",
     "test:mobile-luopan-workflow": "node scripts/test-mobile-luopan-workflow-parity.mjs",
     "test:luopan-focused-rings": "tsx scripts/test-luopan-focused-rings.mts",
