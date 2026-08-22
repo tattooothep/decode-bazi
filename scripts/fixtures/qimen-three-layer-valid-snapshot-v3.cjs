@@ -8,6 +8,7 @@ function input(accountId) {
   const value = v2Fixture.input(accountId);
   value.selectedDirection = "N";
   value.hourDecision.direction = "N";
+  value.hourDecision.reasonCodes = ["hour_conditional_good", "hour_reading_usable"];
   for (const layer of Object.values(value.layers)) {
     for (const palace of layer.palaces) {
       for (const kind of ["deity", "door", "star"]) {

@@ -103,6 +103,8 @@ const advisory = qimen.buildQimenAdvisory(response, {
 assert.ok(advisory, "a complete engine snapshot must produce a deterministic advisory");
 assert.equal(advisory.direction.code, "SE", "a caution palace must not beat a lower usable palace by score alone");
 assert.equal(advisory.recommendation, "recommended");
+assert.equal(advisory.decisionClass, "conditional", "raw usable is supportive but never clear-good");
+assert.deepEqual(advisory.canonicalWarningCodes, []);
 assert.equal(advisory.purpose, "travel");
 assert.equal(advisory.deity.zh, "太陰");
 assert.equal(advisory.door.zh, "開門");
@@ -205,7 +207,9 @@ const allCaution = {
 const caution = qimen.buildQimenAdvisory(allCaution, {
   timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel",
 });
-assert.equal(caution.recommendation, "caution");
+assert.equal(caution.recommendation, "recommended", "two approved soft warnings remain deliverable");
+assert.equal(caution.decisionClass, "conditional");
+assert.deepEqual(caution.canonicalWarningCodes, ["KONG_WANG", "MEN_PO"]);
 assert.deepEqual(caution.warningCodes, ["空亡", "門迫"]);
 for (const locale of ["th", "en", "zh"] as const) {
   const copy = qimen.buildQimenStandaloneCopy(caution, locale);
@@ -218,7 +222,9 @@ for (const locale of ["th", "en", "zh"] as const) {
 const boundaryWarning = qimen.buildQimenAdvisory({
   data: { ...response.data, warnings: [{ type: "near_hour_boundary", severity: "medium" }], palaces: [palace({})] },
 }, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
-assert.equal(boundaryWarning.recommendation, "caution");
+assert.equal(boundaryWarning.recommendation, "recommended");
+assert.equal(boundaryWarning.decisionClass, "conditional");
+assert.deepEqual(boundaryWarning.canonicalWarningCodes, ["NEAR_HOUR_BOUNDARY"]);
 assert.deepEqual(boundaryWarning.warningCodes, ["NEAR_HOUR_BOUNDARY"]);
 assert.match(qimen.buildQimenStandaloneCopy(boundaryWarning, "th").body, /ใกล้ขอบยาม/u);
 assert.match(qimen.buildQimenStandaloneCopy(boundaryWarning, "en").body, /near an hour boundary/u);
@@ -242,6 +248,238 @@ const strongVigor = qimen.buildQimenAdvisory({
 assert.equal(strongVigor.star.vigor, "旺");
 assert.equal(strongVigor.door.vigor, "相");
 assert.equal(strongVigor.recommendation, "recommended");
+
+const clearGood = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "suitable", tone: "good",
+      is_actionable: true, hard_count: 0, caution_count: 0, reasons: [],
+    },
+  })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(clearGood.recommendation, "recommended");
+assert.equal(clearGood.decisionClass, "clear");
+assert.deepEqual(clearGood.canonicalWarningCodes, []);
+
+const clearBeatsHigherConditional = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [
+    palace({ palace_id: 3, direction: "E", display_score: 88 }),
+    palace({
+      palace_id: 4, direction: "SE", display_score: 61,
+      beginner_reading: {
+        version: "qimen-beginner-reading-20260605", code: "suitable", tone: "good",
+        is_actionable: true, hard_count: 0, caution_count: 0, reasons: [],
+      },
+    }),
+  ] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(clearBeatsHigherConditional.direction.code, "SE",
+  "CLEAR wins before score-ranked CONDITIONAL candidates");
+assert.equal(clearBeatsHigherConditional.decisionClass, "clear");
+
+const dedupedSoft = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({
+    is_void_any: true,
+    classical_flags: [
+      { code: "RU_MU_HEAVEN_STEM", label_zh: "入墓", severity: "caution" },
+      { code: "RU_MU", label_zh: "入墓", severity: "caution" },
+    ],
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+      is_actionable: true, hard_count: 0, caution_count: 3,
+      reasons: [
+        { kind: "void", code: "KONG_WANG", label_zh: "空亡", tone: "warn" },
+        { kind: "flag", code: "入墓", label_zh: "入墓", tone: "warn" },
+        { kind: "source_trace", code: "RU_MU_HEAVEN_STEM", label_zh: "入墓", tone: "warn" },
+        { kind: "source_trace", code: "RU_MU", label_zh: "入墓", tone: "warn" },
+      ],
+    },
+  })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(dedupedSoft.recommendation, "recommended", "semantic aliases dedupe before the two-warning cap");
+assert.deepEqual(dedupedSoft.canonicalWarningCodes, ["KONG_WANG", "RU_MU"]);
+
+const typedStemSoft = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({
+    stem_response: {
+      is_source_governed: true, code: "GUI_OVER_REN", notation_zh: "癸加壬",
+      title_zh: "復見螣蛇", quality: "inauspicious", severity: "bad", rating_zh: "凶",
+    },
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+      is_actionable: true, hard_count: 0, caution_count: 1,
+      reasons: [{ kind: "stem_response", code: "癸加壬", label_zh: "復見螣蛇", tone: "warn" }],
+    },
+  })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(typedStemSoft.recommendation, "recommended");
+assert.deepEqual(typedStemSoft.canonicalWarningCodes, ["STEM_RESPONSE_GUI_OVER_REN"]);
+
+const exactLabelSoft = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({
+    qimen_trace: [
+      { code: "RI_QI_FU_YIN", name_zh: "日奇伏吟", severity: "caution" },
+      { code: "FU_YIN_TIAN_TING", name_zh: "伏吟天庭", severity: "warning" },
+    ],
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+      is_actionable: true, hard_count: 0, caution_count: 2,
+      reasons: [
+        { kind: "source_trace", code: "RI_QI_FU_YIN", label_zh: "日奇伏吟", tone: "warn" },
+        { kind: "source_trace", code: "FU_YIN_TIAN_TING", label_zh: "伏吟天庭", tone: "warn" },
+      ],
+    },
+  })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(exactLabelSoft.recommendation, "recommended",
+  "hard Han aliases are exact labels; longer typed formation names remain soft");
+assert.deepEqual(exactLabelSoft.canonicalWarningCodes, ["RI_QI_FU_YIN", "FU_YIN_TIAN_TING"]);
+
+const derivativeReasonsIgnored = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "suitable", tone: "good",
+      is_actionable: true, hard_count: 0, caution_count: 2,
+      reasons: [
+        { kind: "yongshen", code: "YONGSHEN_WARNING", label_zh: "用神", tone: "warn" },
+        { kind: "score", code: "ENGINE_SCORE", label_zh: "分數", tone: "warn" },
+      ],
+    },
+  })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(derivativeReasonsIgnored.decisionClass, "clear");
+assert.deepEqual(derivativeReasonsIgnored.canonicalWarningCodes, [],
+  "derivative yongshen/score explanations are not independently counted warnings");
+
+const displayOnlyUiFlagsIgnored = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({
+    display_score: 75,
+    is_men_po: true,
+    ui_flags: [
+      { active: true, code: "GUI_REN", tone: "good" },
+      { active: true, code: "MEN_PO", tone: "warn" },
+      { active: true, code: "RI_SHI_CHONG", tone: "warn" },
+    ],
+    stem_response: {
+      is_source_governed: true, code: "JI_OVER_DING", notation_zh: "己加丁",
+      title_zh: "朱雀入墓", quality: "inauspicious", severity: "bad", rating_zh: "凶",
+    },
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+      is_actionable: true, hard_count: 0, caution_count: 4,
+      reasons: [
+        { kind: "flag", code: "MEN_PO", label_zh: "門迫", tone: "warn" },
+        { kind: "stem_response", code: "己加丁", label_zh: "朱雀入墓", tone: "warn" },
+        { kind: "yongshen", code: "YONGSHEN", label_zh: "用神", tone: "warn" },
+        { kind: "yongshen_warning", code: "YONGSHEN_WARNING", label_zh: "用神警示", tone: "warn" },
+      ],
+    },
+  })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(displayOnlyUiFlagsIgnored.recommendation, "recommended",
+  "display-only ui/context flags and derivative Yongshen explanations must not create extra vetoes");
+assert.deepEqual(displayOnlyUiFlagsIgnored.canonicalWarningCodes, ["MEN_PO", "STEM_RESPONSE_JI_OVER_DING"],
+  "the normalized source gate keeps exactly the two independent typed warnings");
+
+const directBooleanSoft = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({ is_men_po: true, is_ru_mu: true })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(directBooleanSoft.recommendation, "recommended");
+assert.deepEqual(directBooleanSoft.canonicalWarningCodes, ["MEN_PO", "RU_MU"]);
+
+const directBooleanHard = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({ is_fu_yin: true })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(directBooleanHard.recommendation, "caution",
+  "direct engine hard booleans veto even when beginner reasons omit them");
+
+const rawNonActionableStillEligible = qimen.buildQimenAdvisory({
+  data: { ...response.data, palaces: [palace({
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "usable", tone: "ok",
+      is_actionable: false, hard_count: 0, caution_count: 0, reasons: [],
+    },
+  })] },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(rawNonActionableStillEligible.recommendation, "recommended",
+  "notification eligibility is score/vigor/hard/soft only; raw actionability is retained evidence, not a gate");
+
+const fifthStoredFormationHard = qimen.buildQimenAdvisory({
+  data: {
+    ...response.data,
+    stored_formations: [
+      { scope: "palace", scope_ref: 4, formation_code: "GOOD_ONE", base_quality: "auspicious" },
+      { scope: "palace", scope_ref: 4, formation_code: "GOOD_TWO", base_quality: "auspicious" },
+      { scope: "palace", scope_ref: 4, formation_code: "GOOD_THREE", base_quality: "auspicious" },
+      { scope: "palace", scope_ref: 4, formation_code: "GOOD_FOUR", base_quality: "auspicious" },
+      { scope: "palace", scope_ref: 4, formation_code: "TIAN_WANG", base_quality: "severe", name_zh: "天網四張" },
+    ],
+    palaces: [palace({})],
+  },
+}, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+assert.equal(fifthStoredFormationHard.recommendation, "caution",
+  "a fifth hard source item must veto before any display truncation");
+
+for (const blocked of [
+  palace({ display_score: 59 }),
+  palace({
+    classical_flags: [{ code: "FU_YIN", label_zh: "伏吟", severity: "caution" }],
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+      is_actionable: true, hard_count: 0, caution_count: 1,
+      reasons: [{ kind: "source_trace", code: "FU_YIN", label_zh: "伏吟", tone: "warn" }],
+    },
+  }),
+  palace({
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+      is_actionable: true, hard_count: 0, caution_count: 1,
+      reasons: [{ kind: "mystery", code: "未知", label_zh: "未知", tone: "warn" }],
+    },
+  }),
+  palace({
+    is_void_any: true,
+    classical_flags: [
+      { code: "MEN_PO", label_zh: "門迫", severity: "caution" },
+      { code: "RU_MU", label_zh: "入墓", severity: "caution" },
+    ],
+    beginner_reading: {
+      version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+      is_actionable: true, hard_count: 0, caution_count: 3,
+      reasons: [
+        { kind: "void", code: "KONG_WANG", label_zh: "空亡", tone: "warn" },
+        { kind: "source_trace", code: "MEN_PO", label_zh: "門迫", tone: "warn" },
+        { kind: "source_trace", code: "RU_MU", label_zh: "入墓", tone: "warn" },
+      ],
+    },
+  }),
+]) {
+  const rejected = qimen.buildQimenAdvisory({ data: { ...response.data, palaces: [blocked] } }, {
+    timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel",
+  });
+  assert.equal(rejected.recommendation, "caution", "score, hard-veto, unknown, and >2-warning candidates fail closed");
+}
+
+for (const hardSource of [
+  { code: "FU_YIN_DOOR", label_zh: "門伏吟" },
+  { code: "FAN_YIN_STAR", label_zh: "星反吟" },
+  { code: "JI_XING", label_zh: "六儀擊刑" },
+  { code: "FIVE_NOT_MEET", label_zh: "五不遇時" },
+  { code: "SOURCE_TRACE", label_zh: "三奇入墓" },
+  { code: "SOURCE_TRACE", label_zh: "天網四張" },
+]) {
+  const vetoed = qimen.buildQimenAdvisory({
+    data: { ...response.data, palaces: [palace({
+      qimen_trace: [{ ...hardSource, severity: "caution" }],
+      beginner_reading: {
+        version: "qimen-beginner-reading-20260605", code: "caution", tone: "warn",
+        is_actionable: true, hard_count: 0, caution_count: 1,
+        reasons: [{ kind: "source_trace", ...hardSource, tone: "warn" }],
+      },
+    })] },
+  }, { timezone: "Asia/Bangkok", longitude: 100.5018, purpose: "travel" });
+  assert.equal(vetoed.recommendation, "caution", `${hardSource.code}/${hardSource.label_zh} must hard-veto`);
+}
 
 const restingVigor = qimen.buildQimenAdvisory({
   data: { ...response.data, chart: { wang_xiang_status: ["土", "金", "木", "水", "火"] }, palaces: [palace({})] },

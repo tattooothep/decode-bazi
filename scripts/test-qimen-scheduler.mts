@@ -241,6 +241,9 @@ assert.match(source, /producer\.backend_commit !== runtimeCommit/u);
 
 const snapshotV3 = snapshotV3Fixture.build(row.user_id);
 const th = scheduler.buildQimenCopy("th", snapshotV3);
+assert.match(th.title, /^△ ฉีเหมิน · ดีแบบมีเงื่อนไข · ทิศ/u,
+  "raw usable with no warnings is conditional, never clear-good");
+assert.match(th.body, /ใช้ได้ แต่ยังไม่ใช่ดีชัดเจน/u);
 assert.match(th.body, /เก้าพื้นดิน \(九地\)✓/u);
 assert.match(th.body, /ประตูปิดกั้น \(杜門\)•/u);
 assert.match(th.body, /ดาวเทียนรุ่ย \(天芮\)!/u);
@@ -258,6 +261,57 @@ assert.ok(zh.body.length <= 400, `Chinese provider copy exceeds 400 characters: 
 const fallback = scheduler.buildQimenCopy("vi", snapshotV3);
 assert.match(fallback.body, /Jiu Di \(Nine Earth\) \(九地\)/u,
   "a supported locale without canonical component translations uses the documented English-plus-Han fallback");
+
+const warningSnapshotV3 = snapshotRuntime.buildQimenThreeLayerSnapshotV3({
+  ...snapshotV3Fixture.input(row.user_id),
+  hourDecision: {
+    direction: "N", purpose: "travel", recommendationCode: "recommended",
+    reasonCodes: [
+      "hour_conditional_good", "hour_reading_caution",
+      "hour_warning_KONG_WANG", "hour_warning_STEM_RESPONSE_GUI_OVER_REN",
+    ],
+  },
+});
+for (const [locale, pattern] of [
+  ["th", /ช่องว่าง.*เรื่องเดิมหรือความสับสนอาจย้อนกลับ/u],
+  ["en", /void.*old issues\/confusion may return/iu],
+  ["zh", /空亡.*舊事或混亂可能反覆/u],
+] as const) {
+  const copy = scheduler.buildQimenCopy(locale, warningSnapshotV3);
+  assert.match(copy.body, pattern, `${locale} conditional copy surfaces every canonical warning`);
+  assert.doesNotMatch(copy.body, /STEM_RESPONSE|GUI_OVER_REN/u,
+    `${locale} provider copy must not expose an internal stem-response code`);
+  assert.ok(copy.body.length <= 400, `${locale} conditional warning copy exceeds 400 characters`);
+}
+
+for (const [code, thPattern, enPattern, zhPattern] of [
+  ["STEM_RESPONSE_GUI_OVER_JI", /เหมาะงานเงียบ ไม่เหมาะเปิดเผย/u, /quiet work favored; avoid publicity/u, /宜靜務，不宜公開/u],
+  ["STEM_RESPONSE_XIN_OVER_BING", /เงินหรือผลประโยชน์อาจพิพาท/u, /money\/interests may cause disputes/u, /錢財或利益恐生爭議/u],
+  ["STEM_RESPONSE_BING_OVER_GUI", /ข้อมูลซ่อนอาจทำให้ยุ่งยาก/u, /hidden information may complicate matters/u, /隱藏資訊恐添紛擾/u],
+  ["STEM_RESPONSE_JI_OVER_DING", /ข่าวหรือเอกสารอาจติดขัด/u, /news\/documents may be delayed/u, /消息或文書恐受阻/u],
+] as const) {
+  const localizedStemSnapshot = snapshotRuntime.buildQimenThreeLayerSnapshotV3({
+    ...snapshotV3Fixture.input(row.user_id),
+    hourDecision: {
+      direction: "N", purpose: "travel", recommendationCode: "recommended",
+      reasonCodes: ["hour_conditional_good", "hour_reading_caution", `hour_warning_${code}`],
+    },
+  });
+  assert.match(scheduler.buildQimenCopy("th", localizedStemSnapshot).body, thPattern);
+  assert.match(scheduler.buildQimenCopy("en", localizedStemSnapshot).body, enPattern);
+  assert.match(scheduler.buildQimenCopy("zh", localizedStemSnapshot).body, zhPattern);
+}
+
+const clearSnapshotV3 = snapshotRuntime.buildQimenThreeLayerSnapshotV3({
+  ...snapshotV3Fixture.input(row.user_id),
+  hourDecision: {
+    direction: "N", purpose: "travel", recommendationCode: "recommended",
+    reasonCodes: ["hour_clear_good", "hour_reading_suitable"],
+  },
+});
+assert.match(scheduler.buildQimenCopy("th", clearSnapshotV3).title, /^✓ ฉีเหมิน · ดีชัดเจน · ทิศ/u);
+assert.match(scheduler.buildQimenCopy("en", clearSnapshotV3).title, /^✓ Qimen · Clearly good · /u);
+assert.match(scheduler.buildQimenCopy("zh", clearSnapshotV3).title, /^✓ 奇門 · 明確吉方 · /u);
 
 const tamperedQuality = structuredClone(snapshotV3);
 tamperedQuality.selectedEvidence.month.deityBaseQuality = "great_auspicious";

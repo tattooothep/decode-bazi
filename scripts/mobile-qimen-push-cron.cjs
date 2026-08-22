@@ -118,13 +118,13 @@ const LAYER_COPY = Object.freeze({
   en: Object.freeze({ month: "M", day: "D", hour: "H" }),
   zh: Object.freeze({ month: "月", day: "日", hour: "時" }),
 });
-const AUTHORITY_COPY = Object.freeze({
-  th: "ผังยามเป็นผู้ตัดสิน",
-  en: "Hour governs action",
-  zh: "時家盤主導行動",
-});
 const COMPONENT_KINDS = Object.freeze(["deity", "door", "star"]);
 const LAYER_KINDS = Object.freeze(["month", "day", "hour"]);
+const DECISION_COPY = Object.freeze({
+  th: Object.freeze({ clear: "ดีชัดเจน", conditional: "ดีแบบมีเงื่อนไข", usable: "ใช้ได้ แต่ยังไม่ใช่ดีชัดเจน", authority: "ผังยามเป็นผู้ตัดสิน" }),
+  en: Object.freeze({ clear: "Clearly good", conditional: "Good with conditions", usable: "Usable, not clearly good", authority: "Hour governs" }),
+  zh: Object.freeze({ clear: "明確吉方", conditional: "有條件的吉方", usable: "可用，但非明確吉方", authority: "時家盤主導行動" }),
+});
 
 function localizedComponent(language, kind, evidence) {
   const entry = componentCatalog.resolveQimenComponent(kind, evidence[`${kind}Code`]);
@@ -139,9 +139,65 @@ function localizedComponent(language, kind, evidence) {
   return `${name}${state.slice(0, 1)}`;
 }
 
+function parsedHourDecision(snapshot) {
+  const reasonCodes = snapshot?.hourDecision?.reasonCodes;
+  if (!Array.isArray(reasonCodes) || reasonCodes.length < 2 || reasonCodes.length > 4) {
+    throw new TypeError("qimen_snapshot_invalid");
+  }
+  const decisionClass = reasonCodes[0] === "hour_clear_good" ? "clear"
+    : reasonCodes[0] === "hour_conditional_good" ? "conditional" : null;
+  const reading = /^hour_reading_([A-Za-z0-9_:-]{1,64})$/u.exec(String(reasonCodes[1] || ""));
+  const warnings = reasonCodes.slice(2).map((value) => {
+    const match = /^hour_warning_([A-Z0-9_]{2,80})$/u.exec(String(value || ""));
+    return match?.[1] || null;
+  });
+  if (!decisionClass || !reading || warnings.some((value) => value === null)
+    || new Set(warnings).size !== warnings.length
+    || (decisionClass === "clear" && (reading[1] !== "suitable" || warnings.length !== 0))) {
+    throw new TypeError("qimen_snapshot_invalid");
+  }
+  return Object.freeze({ decisionClass, readingCode: reading[1], warnings: Object.freeze(warnings) });
+}
+
+function localizedDecisionWarning(language, code) {
+  const fixed = {
+    KONG_WANG: { th: "ช่องว่าง", en: "void", zh: "空亡" },
+    MEN_PO: { th: "ประตูถูกบีบ", en: "gate pressure", zh: "門迫" },
+    RU_MU: { th: "เข้าคลัง", en: "tomb state", zh: "入墓" },
+    INTRINSIC_DEITY_BAD: { th: "เทพไม่ส่งเสริม", en: "unsupportive deity", zh: "神不助" },
+    INTRINSIC_DOOR_BAD: { th: "ประตูไม่ส่งเสริม", en: "unsupportive gate", zh: "門不助" },
+    INTRINSIC_STAR_BAD: { th: "ดาวไม่ส่งเสริม", en: "unsupportive star", zh: "星不助" },
+    NEAR_HOUR_BOUNDARY: { th: "ใกล้ขอบยาม", en: "near hour boundary", zh: "近時辰交界" },
+    LARGE_TIME_CORRECTION: { th: "ควรตรวจพิกัด", en: "check location", zh: "請核對位置" },
+    NEAR_SOLAR_TERM_START: { th: "ใกล้จุดเปลี่ยนฤดูกาล", en: "near solar-term change", zh: "近節氣交界" },
+  }[code];
+  if (fixed) return fixed[language];
+  const stem = {
+    STEM_RESPONSE_GUI_OVER_REN: {
+      th: "เรื่องเดิมหรือความสับสนอาจย้อนกลับ", en: "old issues/confusion may return", zh: "舊事或混亂可能反覆",
+    },
+    STEM_RESPONSE_GUI_OVER_JI: {
+      th: "เหมาะงานเงียบ ไม่เหมาะเปิดเผย", en: "quiet work favored; avoid publicity", zh: "宜靜務，不宜公開",
+    },
+    STEM_RESPONSE_XIN_OVER_BING: {
+      th: "เงินหรือผลประโยชน์อาจพิพาท", en: "money/interests may cause disputes", zh: "錢財或利益恐生爭議",
+    },
+    STEM_RESPONSE_BING_OVER_GUI: {
+      th: "ข้อมูลซ่อนอาจทำให้ยุ่งยาก", en: "hidden information may complicate matters", zh: "隱藏資訊恐添紛擾",
+    },
+    STEM_RESPONSE_JI_OVER_DING: {
+      th: "ข่าวหรือเอกสารอาจติดขัด", en: "news/documents may be delayed", zh: "消息或文書恐受阻",
+    },
+  }[code];
+  if (stem) return stem[language];
+  return language === "th" ? `คำเตือนผัง ${code}`
+    : language === "zh" ? `盤局提醒 ${code}` : `chart warning ${code}`;
+}
+
 function buildQimenCopy(locale, snapshot) {
   if (!payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)) throw new TypeError("qimen_snapshot_invalid");
   const language = locale === "th" || locale === "zh" ? locale : "en";
+  const decision = parsedHourDecision(snapshot);
   const direction = DIRECTION[snapshot.selectedDirection]?.[language] || snapshot.selectedDirection;
   const lines = LAYER_KINDS.map((layer) => {
     const components = COMPONENT_KINDS.map((kind) => localizedComponent(
@@ -152,10 +208,16 @@ function buildQimenCopy(locale, snapshot) {
     return `${LAYER_COPY[language][layer]} ${components.join(" · ")}`;
   });
   const legend = Object.values(STATE_COPY[language]).join(" ");
+  const warningText = decision.warnings.map((code) => localizedDecisionWarning(language, code)).join("; ");
+  const decisionText = decision.decisionClass === "clear" ? DECISION_COPY[language].clear
+    : warningText ? `△ ${warningText}` : DECISION_COPY[language].usable;
   const copy = Object.freeze({
-    title: language === "th" ? `ฉีเหมิน · ทิศ${direction}`
-      : language === "zh" ? `奇門 · ${direction}方` : `Qimen · ${direction}`,
-    body: `${lines.join(" | ")} | ${legend}\n${AUTHORITY_COPY[language]}`,
+    title: language === "th"
+      ? `${decision.decisionClass === "clear" ? "✓" : "△"} ฉีเหมิน · ${DECISION_COPY.th[decision.decisionClass]} · ทิศ${direction}`
+      : language === "zh"
+        ? `${decision.decisionClass === "clear" ? "✓" : "△"} 奇門 · ${DECISION_COPY.zh[decision.decisionClass]} · ${direction}方`
+        : `${decision.decisionClass === "clear" ? "✓" : "△"} Qimen · ${DECISION_COPY.en[decision.decisionClass]} · ${direction}`,
+    body: `${lines.join(" | ")} | ${legend}\n${decisionText} · ${DECISION_COPY[language].authority}`,
   });
   if (copy.body.length > 400) throw new RangeError("qimen_copy_too_long");
   return copy;

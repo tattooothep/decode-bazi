@@ -25,9 +25,21 @@ const DIRECTION = Object.freeze({
   NW: Object.freeze({ th: "ตะวันตกเฉียงเหนือ", en: "northwest", zh: "西北方" }),
 });
 const SHICHEN = Object.freeze(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
-const RECOMMENDED_CODES = new Set(["suitable", "usable"]);
 const VIGOR_LABELS = Object.freeze(["旺", "相", "休", "囚", "死"]);
 const ACTION_SUPPORTING_VIGOR = new Set(["旺", "相"]);
+const MIN_NOTIFICATION_SCORE = 60;
+const MAX_NOTIFICATION_SOFT_WARNINGS = 2;
+const ASCII_EVIDENCE_CODE = /^[A-Z0-9_]{2,80}$/u;
+const HARD_SEVERITIES = new Set(["danger", "severe", "hard_caution"]);
+const SOFT_SEVERITIES = new Set(["caution", "warning", "warn", "bad", "inauspicious"]);
+const HARD_QUALITIES = new Set(["severe", "great_inauspicious", "da_xiong"]);
+const SOFT_QUALITIES = new Set(["bad", "inauspicious"]);
+const ENGINE_SOFT_WARNING_CODES = new Set([
+  "NEAR_HOUR_BOUNDARY", "LARGE_TIME_CORRECTION", "NEAR_SOLAR_TERM_START",
+]);
+const HARD_WARNING_CODES = new Set([
+  "FU_YIN", "FAN_YIN", "LIU_YI_JI_XING", "WU_BU_YU_TIME", "SAN_QI_RU_MU", "TIAN_WANG",
+]);
 const QIMEN_PLAN_CAPS = Object.freeze({
   free: Object.freeze({ timeWindowDays: 0, hoursPerDay: 1 }),
   trial: Object.freeze({ timeWindowDays: 0, hoursPerDay: 12 }),
@@ -353,34 +365,213 @@ function component(row, kind, vigor) {
   return Object.freeze({ code, zh, th, en, quality, element, vigor: element && vigor ? vigor[element] || null : null });
 }
 
-function warningCode(reason) {
-  const zh = String(reason?.label_zh || "").trim();
-  if (zh && /[\u3400-\u9fff]/u.test(zh)) return zh.slice(0, 20);
-  const code = String(reason?.code || "").trim().toUpperCase();
-  const known = {
-    KONG_WANG: "空亡", MEN_PO: "門迫", FAN_YIN: "反吟", FU_YIN: "伏吟",
-    RU_MU: "入墓", JI_XING: "擊刑", LIU_YI_JI_XING: "六儀擊刑", WU_BU_YU_TIME: "五不遇時",
-  };
-  return known[code] || (/^[A-Z0-9_]{2,40}$/u.test(code) ? code : null);
+function asciiCode(value) {
+  const code = String(value || "").normalize("NFKC").trim().toUpperCase().replace(/[\s-]+/gu, "_");
+  return ASCII_EVIDENCE_CODE.test(code) ? code : null;
 }
 
-function warningCodes(row, engineWarnings) {
-  const values = [];
+function evidenceIdentityValues(item) {
+  return [
+    item?.code, item?.formation_code, item?.type, item?.rule_id, item?.detector, item?.flag,
+    item?.label_zh, item?.name_zh, item?.title_zh, item?.notation_zh,
+  ].map((value) => String(value || "").trim()).filter(Boolean);
+}
+
+function normalizedSemanticCode(value) {
+  const raw = String(value || "").normalize("NFKC").trim();
+  if (!raw) return null;
+  const code = asciiCode(raw);
+  const text = raw.replace(/\s+/gu, "");
+  const exactHan = new Map([
+    ["三奇入墓", "SAN_QI_RU_MU"], ["三奇入庫", "SAN_QI_RU_MU"], ["三奇入库", "SAN_QI_RU_MU"],
+    ["時干入墓", "SHI_GAN_RU_MU"], ["时干入墓", "SHI_GAN_RU_MU"],
+    ["六儀擊刑", "LIU_YI_JI_XING"], ["六仪击刑", "LIU_YI_JI_XING"],
+    ["五不遇時", "WU_BU_YU_TIME"], ["五不遇时", "WU_BU_YU_TIME"], ["五不遇", "WU_BU_YU_TIME"],
+    ["伏吟", "FU_YIN"], ["反吟", "FAN_YIN"],
+    ["天網四張", "TIAN_WANG"], ["天网四张", "TIAN_WANG"],
+    ["大格", "DA_GE"], ["刑格", "XING_GE"], ["上格", "SHANG_GE"],
+    ["白入熒", "BAI_RU_YING"], ["白入荧", "BAI_RU_YING"],
+    ["熒入白", "YING_RU_BAI"], ["荧入白", "YING_RU_BAI"],
+  ]);
+  if (exactHan.has(text)) return exactHan.get(text);
+  if (["SAN_QI_RU_MU", "SAN_QI_RU_MU_HEAVEN", "SAN_QI_RU_MU_EARTH"].includes(code)) return "SAN_QI_RU_MU";
+  if (["SHI_GAN_RU_MU", "SHI_GAN_RU_MU_HEAVEN", "SHI_GAN_RU_MU_EARTH"].includes(code)) return "SHI_GAN_RU_MU";
+  if (["JI_XING", "LIU_YI_JI_XING", "LIU_YI_JI_XING_HEAVEN", "LIU_YI_JI_XING_EARTH", "YS_LIU_YI_JI_XING"].includes(code)) return "LIU_YI_JI_XING";
+  if (["WU_BU_YU", "WU_BU_YU_TIME", "WU_BU_YU_SHI", "FIVE_NO_MEET", "FIVE_NOT_MEET"].includes(code)) return "WU_BU_YU_TIME";
+  if (["FU_YIN", "FU_YIN_STAR", "FU_YIN_DOOR"].includes(code)) return "FU_YIN";
+  if (["FAN_YIN", "FAN_YIN_STAR", "FAN_YIN_DOOR"].includes(code)) return "FAN_YIN";
+  if (code === "TIAN_WANG") return "TIAN_WANG";
+  if (code === "DA_GE") return "DA_GE";
+  if (code === "XING_GE") return "XING_GE";
+  if (code === "SHANG_GE") return "SHANG_GE";
+  if (code === "GENG_OVER_SAN_QI") return code;
+  if (code === "BAI_RU_YING") return "BAI_RU_YING";
+  if (code === "YING_RU_BAI") return "YING_RU_BAI";
+  if (code === "FOUR_OMINOUS") return code;
+  if (text === "空亡" || code?.startsWith("KONG_WANG")) return "KONG_WANG";
+  if (["門迫", "门迫"].includes(text) || code?.startsWith("MEN_PO")) return "MEN_PO";
+  if (text === "入墓" || code?.startsWith("RU_MU")) return "RU_MU";
+  return code;
+}
+
+function hardSemanticCode(item) {
+  for (const value of evidenceIdentityValues(item)) {
+    const code = normalizedSemanticCode(value);
+    if (code && HARD_WARNING_CODES.has(code)) return code;
+  }
+  return null;
+}
+
+function zhEvidenceLabel(item, fallback) {
+  const value = [item?.label_zh, item?.name_zh, item?.title_zh, item?.notation_zh]
+    .map((entry) => String(entry || "").trim())
+    .find((entry) => /[\u3400-\u9fff]/u.test(entry));
+  return value ? value.slice(0, 24) : fallback;
+}
+
+function palaceFormationApplies(item, palaceId) {
+  const scope = String(item?.scope || "").toLowerCase();
+  if (!scope || scope === "chart") return true;
+  if (scope !== "palace") return false;
+  return Number(item?.scope_ref) === palaceId;
+}
+
+function softWarningRank(code) {
+  if (code === "KONG_WANG") return 0;
+  if (code === "MEN_PO") return 1;
+  if (code === "RU_MU") return 2;
+  if (code === "YONGSHEN_WARNING") return 3;
+  if (code.startsWith("INTRINSIC_")) return 4;
+  if (code.startsWith("STEM_RESPONSE_")) return 5;
+  if (ENGINE_SOFT_WARNING_CODES.has(code)) return 6;
+  return 7;
+}
+
+function warningEvidence(root, row, components) {
+  const soft = new Map();
+  const hard = new Set();
+  const structured = new Set();
+  let invalid = false;
+  const addSoft = (code, label = code) => {
+    if (!code || !ASCII_EVIDENCE_CODE.test(code)) {
+      invalid = true;
+      return;
+    }
+    if (!soft.has(code)) soft.set(code, label || code);
+  };
+  const addHard = (code) => hard.add(code || "UNCLASSIFIED_HARD_WARNING");
+
+  for (const [kind, item] of Object.entries(components)) {
+    const quality = String(item?.quality || "").trim().toLowerCase();
+    if (HARD_QUALITIES.has(quality)) addHard(`INTRINSIC_${kind.toUpperCase()}_SEVERE`);
+    else if (SOFT_QUALITIES.has(quality)) {
+      addSoft(`INTRINSIC_${kind.toUpperCase()}_BAD`, item.zh);
+      structured.add(`INTRINSIC_${kind.toUpperCase()}_BAD`);
+    }
+  }
+
+  const palaceId = Number(row?.palace_id);
+  const structuredItems = [
+    ...(Array.isArray(row?.classical_flags) ? row.classical_flags : []),
+    ...(Array.isArray(row?.qimen_trace) ? row.qimen_trace : []),
+    ...[root?.stored_formations, root?.compound_formations, root?.source_formations]
+      .flatMap((items) => Array.isArray(items) ? items.filter((item) => palaceFormationApplies(item, palaceId)) : []),
+  ];
+  for (const item of structuredItems) {
+    if (!item || typeof item !== "object" || item.active === false) continue;
+    const hardCode = hardSemanticCode(item);
+    const severities = [item.severity, item.tone].map((value) => String(value || "").trim().toLowerCase());
+    const qualities = [item.quality, item.effective_quality, item.base_quality]
+      .map((value) => String(value || "").trim().toLowerCase());
+    const rating = String(item.rating_zh || "").trim();
+    const isHard = Boolean(hardCode) || severities.some((value) => HARD_SEVERITIES.has(value))
+      || qualities.some((value) => HARD_QUALITIES.has(value)) || rating === "大凶";
+    if (isHard) {
+      addHard(hardCode || evidenceIdentityValues(item).map(normalizedSemanticCode).find(Boolean));
+      continue;
+    }
+    const isSoft = severities.some((value) => SOFT_SEVERITIES.has(value))
+      || qualities.some((value) => SOFT_QUALITIES.has(value));
+    if (!isSoft) continue;
+    const code = evidenceIdentityValues(item).map(normalizedSemanticCode).find(Boolean);
+    if (!code) {
+      invalid = true;
+      continue;
+    }
+    structured.add(code);
+    addSoft(code, zhEvidenceLabel(item, code));
+  }
+
+  const stem = row?.stem_response;
+  let stemCode = null;
+  if (stem && typeof stem === "object") {
+    const severity = String(stem.severity || "").trim().toLowerCase();
+    const quality = String(stem.quality || "").trim().toLowerCase();
+    const rating = String(stem.rating_zh || "").trim();
+    const negative = HARD_SEVERITIES.has(severity) || SOFT_SEVERITIES.has(severity)
+      || HARD_QUALITIES.has(quality) || SOFT_QUALITIES.has(quality) || rating === "大凶";
+    if (negative) {
+      const rawCode = asciiCode(stem.code);
+      if (stem.is_source_governed !== true || !rawCode) invalid = true;
+      else {
+        stemCode = `STEM_RESPONSE_${rawCode}`;
+        if (HARD_SEVERITIES.has(severity) || HARD_QUALITIES.has(quality) || rating === "大凶") addHard(stemCode);
+        else {
+          structured.add(stemCode);
+          addSoft(stemCode, zhEvidenceLabel(stem, stemCode));
+        }
+      }
+    }
+  }
+
+  if (row?.is_void_any === true) addSoft("KONG_WANG", "空亡");
+  if (row?.is_men_po === true) addSoft("MEN_PO", "門迫");
+  if (row?.is_ru_mu === true) addSoft("RU_MU", "入墓");
+  for (const [field, code] of [
+    ["is_fu_yin", "FU_YIN"], ["is_fan_yin", "FAN_YIN"],
+    ["is_liu_yi_ji_xing", "LIU_YI_JI_XING"], ["is_wu_bu_yu_time", "WU_BU_YU_TIME"],
+  ]) {
+    if (row?.[field] === true) addHard(code);
+  }
   for (const reason of row?.beginner_reading?.reasons || []) {
-    if (!["warn", "bad"].includes(String(reason?.tone || ""))) continue;
-    const code = warningCode(reason);
-    if (code && !values.includes(code)) values.push(code);
+    if (!["warn", "bad"].includes(String(reason?.tone || "").trim().toLowerCase())) continue;
+    const hardCode = hardSemanticCode(reason);
+    if (hardCode) {
+      addHard(hardCode);
+      continue;
+    }
+    const kind = String(reason?.kind || "").trim().toLowerCase();
+    const code = evidenceIdentityValues(reason).map(normalizedSemanticCode).find(Boolean);
+    if (["KONG_WANG", "MEN_PO", "RU_MU"].includes(code)) {
+      addSoft(code, zhEvidenceLabel(reason, code));
+    } else if (kind.includes("yongshen") || code === "YONGSHEN" || code === "YONGSHEN_WARNING"
+      || kind.includes("score") || code === "ENGINE_SCORE") {
+      // Beginner-layer derivative explanations are not independent science warnings.
+      // A typed source with the same canonical code was already counted above.
+    } else if (kind === "stem_response" && stemCode) {
+      // The structured, source-governed stem response above is authoritative.
+    } else if (["deity", "door", "star"].includes(kind)
+      && structured.has(`INTRINSIC_${kind.toUpperCase()}_BAD`)) {
+      // The component quality above is authoritative and already counted once.
+    } else if (code && structured.has(code)) {
+      // A beginner explanation may repeat a typed structured source item.
+    } else {
+      invalid = true;
+    }
   }
-  for (const flag of row?.classical_flags || []) {
-    if (!["caution", "warning", "warn", "danger", "severe", "hard_caution"].includes(String(flag?.severity || "").toLowerCase())) continue;
-    const code = warningCode(flag);
-    if (code && !values.includes(code)) values.push(code);
+
+  for (const warning of root?.warnings || []) {
+    const code = asciiCode(warning?.type || warning?.code);
+    if (!code || !ENGINE_SOFT_WARNING_CODES.has(code)) invalid = true;
+    else addSoft(code, code);
   }
-  for (const warning of engineWarnings || []) {
-    const code = String(warning?.type || "").trim().toUpperCase();
-    if (code && !values.includes(code)) values.push(code);
-  }
-  return Object.freeze(values.slice(0, 4));
+  const canonicalSoftCodes = [...soft.keys()].sort((left, right) => softWarningRank(left) - softWarningRank(right));
+  return Object.freeze({
+    invalid,
+    hardCodes: Object.freeze([...hard]),
+    canonicalSoftCodes: Object.freeze(canonicalSoftCodes),
+    displaySoftCodes: Object.freeze(canonicalSoftCodes.map((code) => soft.get(code))),
+  });
 }
 
 function buildQimenAdvisory(result, options = {}) {
@@ -403,13 +594,19 @@ function buildQimenAdvisory(result, options = {}) {
     if (!DIRECTION[code] || !Number.isFinite(score) || !deity || !door || !star) return null;
     const readingCode = String(row?.beginner_reading?.code || "context");
     const weakVigor = [door.vigor, star.vigor].some((value) => !ACTION_SUPPORTING_VIGOR.has(value));
-    const recommended = RECOMMENDED_CODES.has(readingCode)
-      && row?.beginner_reading?.is_actionable === true
-      && Number(row?.beginner_reading?.hard_count || 0) === 0
-      && !weakVigor;
-    return { row, code, score, deity, door, star, readingCode, recommended, weakVigor };
+    const evidence = warningEvidence(root, row, { deity, door, star });
+    const hardCount = Number(row?.beginner_reading?.hard_count);
+    const eligible = score >= MIN_NOTIFICATION_SCORE
+      && hardCount === 0
+      && !weakVigor
+      && !evidence.invalid
+      && evidence.hardCodes.length === 0
+      && evidence.canonicalSoftCodes.length <= MAX_NOTIFICATION_SOFT_WARNINGS;
+    return { row, code, score, deity, door, star, readingCode, eligible, weakVigor, evidence };
   }).filter(Boolean).sort((left, right) => right.score - left.score || Number(left.row.palace_id) - Number(right.row.palace_id));
-  const selected = rows.find((row) => row.recommended) || rows[0];
+  const selected = rows.find((row) => row.eligible
+    && row.readingCode === "suitable" && row.evidence.canonicalSoftCodes.length === 0)
+    || rows.find((row) => row.eligible) || rows[0];
   if (!selected) return null;
   const window = trueSolarShichenWindow({ timezone, longitude, instant: inputAt });
   const corrected = new Date(calculation.corrected_datetime);
@@ -434,7 +631,7 @@ function buildQimenAdvisory(result, options = {}) {
     || engineContract?.equation_of_time !== "NOAA_CONTINUOUS_TROPICAL_PHASE_V1"
     || engineContract?.year_month_clock !== "PINNED_TYME4TS_BJT_JIE_GLOBAL_V1"
     || engineContract?.day_boundary_policy !== "TRUE_SOLAR_MIDNIGHT_ZI_HOUR_23_V1") return null;
-  const warningValues = [...warningCodes(selected.row, root.warnings)];
+  const warningValues = [...selected.evidence.displaySoftCodes];
   for (const [kind, item] of [["DOOR", selected.door], ["STAR", selected.star]]) {
     if (!ACTION_SUPPORTING_VIGOR.has(item.vigor)) {
       const suffix = item.vigor === "休" ? "XIU" : item.vigor === "囚" ? "QIU" : "SI";
@@ -442,7 +639,11 @@ function buildQimenAdvisory(result, options = {}) {
     }
   }
   const warnings = Object.freeze([...new Set(warningValues)].slice(0, 4));
-  const recommendation = selected.recommended && warnings.length === 0 ? "recommended" : "caution";
+  const recommendation = selected.eligible ? "recommended" : "caution";
+  const canonicalWarningCodes = Object.freeze([...selected.evidence.canonicalSoftCodes]);
+  const decisionClass = selected.eligible
+    ? (selected.readingCode === "suitable" && canonicalWarningCodes.length === 0 ? "clear" : "conditional")
+    : null;
   return Object.freeze({
     version: ADVISORY_VERSION,
     purpose,
@@ -450,6 +651,7 @@ function buildQimenAdvisory(result, options = {}) {
     school: "chaibu",
     systemType: "hour",
     recommendation,
+    decisionClass,
     direction: Object.freeze({ code: selected.code, ...DIRECTION[selected.code] }),
     score: selected.score,
     palaceId: Number(selected.row.palace_id),
@@ -462,6 +664,7 @@ function buildQimenAdvisory(result, options = {}) {
       zh: String(selected.row.door_action_advice_zh || "").trim(),
     }),
     warningCodes: warnings,
+    canonicalWarningCodes,
     readingCode: selected.readingCode,
     readingVersion: String(selected.row?.beginner_reading?.version || "").trim() || null,
     wangXiangOrder: vigor ? Object.freeze([...root.chart.wang_xiang_status]) : null,
@@ -588,23 +791,34 @@ function buildQimenStandaloneCopy(advisory, localeInput) {
   const period = windowLabel(advisory);
   const componentNames = names(advisory, locale);
   const warnings = warningLabels(advisory, locale);
-  if (locale === "zh") return advisory.recommendation === "recommended" ? {
+  const clear = advisory.recommendation === "recommended" && advisory.decisionClass === "clear";
+  const conditional = advisory.recommendation === "recommended" && advisory.decisionClass === "conditional";
+  if (locale === "zh") return clear ? {
     title: "🧭 奇門時盤 · 出行方位",
     body: `${period} · ${advisory.direction.zh} · ${componentNames} · 系統出行分 ${advisory.score}/100 · 點開查看完整時盤；不保證結果`,
+  } : conditional ? {
+    title: "🟠 奇門時盤 · 條件可用出行方位",
+    body: `${period} · 出行${advisory.direction.zh} · ${componentNames} · 條件 ${warnings || advisory.readingCode} · 點開查看完整時盤`,
   } : {
     title: "⚠️ 奇門時盤 · 暫無明確推薦方位",
     body: `${period} · 最高候選 ${advisory.direction.zh} · ${componentNames} · 注意 ${warnings || "格局條件"} · 點開查看完整時盤`,
   };
-  if (locale === "en") return advisory.recommendation === "recommended" ? {
+  if (locale === "en") return clear ? {
     title: "🧭 Qimen hour chart · travel direction",
     body: `${period} · ${advisory.direction.en} · ${componentNames} · system travel score ${advisory.score}/100 · Open the full hour chart; outcomes are not guaranteed`,
+  } : conditional ? {
+    title: "🟠 Qimen hour chart · conditional travel direction",
+    body: `${period} · travel ${advisory.direction.en} · ${componentNames} · Conditions ${warnings || advisory.readingCode} · Open the full hour chart`,
   } : {
     title: "⚠️ Qimen hour chart · no clear travel direction",
     body: `${period} · top candidate ${advisory.direction.en} · ${componentNames} · Caution ${warnings || "chart conditions"} · Open the full hour chart`,
   };
-  return advisory.recommendation === "recommended" ? {
+  return clear ? {
     title: "🧭 ผังฉีเหมินยาม · ทิศเดินทาง",
     body: `${period} · ${advisory.direction.th} · ${componentNames} · คะแนนระบบด้านการเดินทาง ${advisory.score}/100 · เปิดดูผังยามเต็ม ผลลัพธ์ไม่รับประกัน`,
+  } : conditional ? {
+    title: "🟠 ผังฉีเหมินยาม · ทิศเดินทางแบบมีเงื่อนไข",
+    body: `${period} · การเดินทาง ${advisory.direction.th} · ${componentNames} · เงื่อนไข ${warnings || advisory.readingCode} · เปิดดูผังยามเต็ม`,
   } : {
     title: "⚠️ ผังฉีเหมินยาม · ยังไม่มีทิศแนะนำชัด",
     body: `${period} · ตัวเลือกคะแนนสูงสุด ${advisory.direction.th} · ${componentNames} · ระวัง ${warnings || "เงื่อนไขของผัง"} · เปิดดูผังยามเต็ม`,
@@ -617,14 +831,19 @@ function buildQimenYamLine(advisory, localeInput) {
   const period = windowLabel(advisory);
   const componentNames = names(advisory, locale);
   const warnings = warningLabels(advisory, locale);
-  if (locale === "zh") return advisory.recommendation === "recommended"
+  const clear = advisory.recommendation === "recommended" && advisory.decisionClass === "clear";
+  const conditional = advisory.recommendation === "recommended" && advisory.decisionClass === "conditional";
+  if (locale === "zh") return clear
     ? `\n🧭 奇門出行 ${period}: ${advisory.direction.zh} · ${componentNames}`
+    : conditional ? `\n🟠 奇門出行 ${period}: 條件可用 ${advisory.direction.zh} · ${componentNames} · ${warnings || advisory.readingCode}`
     : `\n⚠️ 奇門 ${period}: 暫無明確推薦 · 候選${advisory.direction.zh} · ${componentNames} · ${warnings || "需看局"}`;
-  if (locale === "en") return advisory.recommendation === "recommended"
+  if (locale === "en") return clear
     ? `\n🧭 Qimen travel ${period}: ${advisory.direction.en} · ${componentNames}`
+    : conditional ? `\n🟠 Qimen travel ${period}: conditional ${advisory.direction.en} · ${componentNames} · ${warnings || advisory.readingCode}`
     : `\n⚠️ Qimen ${period}: no clear travel direction · candidate ${advisory.direction.en} · ${componentNames} · ${warnings || "check chart"}`;
-  return advisory.recommendation === "recommended"
+  return clear
     ? `\n🧭 ฉีเหมินด้านการเดินทาง ${period}: ${advisory.direction.th} · ${componentNames}`
+    : conditional ? `\n🟠 ฉีเหมินเดินทาง ${period}: มีเงื่อนไข ${advisory.direction.th} · ${componentNames} · ${warnings || advisory.readingCode}`
     : `\n⚠️ ฉีเหมิน ${period}: ยังไม่มีทิศแนะนำชัด · ตัวเลือก ${advisory.direction.th} · ${componentNames} · ${warnings || "ต้องดูผัง"}`;
 }
 
@@ -636,6 +855,7 @@ function qimenSourceFacts(advisory, extra = {}) {
     school: advisory.school,
     systemType: advisory.systemType,
     recommendation: advisory.recommendation,
+    decisionClass: advisory.decisionClass,
     palaceId: advisory.palaceId,
     direction: advisory.direction.code,
     score: advisory.score,
@@ -643,6 +863,7 @@ function qimenSourceFacts(advisory, extra = {}) {
     door: advisory.door,
     star: advisory.star,
     warningCodes: advisory.warningCodes,
+    canonicalWarningCodes: advisory.canonicalWarningCodes,
     readingCode: advisory.readingCode,
     readingVersion: advisory.readingVersion,
     wangXiangOrder: advisory.wangXiangOrder,

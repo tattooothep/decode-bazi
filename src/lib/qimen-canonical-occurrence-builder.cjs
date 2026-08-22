@@ -71,6 +71,25 @@ function cleanEngineCodes(values) {
     .filter((value) => /^[A-Za-z0-9_:-]{1,96}$/u.test(value)))].slice(0, 16));
 }
 
+function advisoryReasonCodes(advisory) {
+  const decisionClass = String(advisory?.decisionClass || "");
+  const readingCode = String(advisory?.readingCode || "").trim();
+  const warnings = advisory?.canonicalWarningCodes;
+  if (!["clear", "conditional"].includes(decisionClass)
+    || !/^[A-Za-z0-9_:-]{1,64}$/u.test(readingCode)
+    || !Array.isArray(warnings) || warnings.length > 2
+    || warnings.some((code) => !/^[A-Z0-9_]{2,80}$/u.test(String(code || "")))
+    || new Set(warnings).size !== warnings.length
+    || (decisionClass === "clear" && (readingCode !== "suitable" || warnings.length !== 0))) {
+    throw canonicalError();
+  }
+  return Object.freeze([
+    decisionClass === "clear" ? "hour_clear_good" : "hour_conditional_good",
+    `hour_reading_${readingCode}`,
+    ...warnings.map((code) => `hour_warning_${code}`),
+  ]);
+}
+
 function layerEvidence(kind) {
   if (kind === "hour") return Object.freeze({
     stateCode: "action_authority",
@@ -301,7 +320,7 @@ async function buildCanonicalQimenOccurrence(row, value, options = {}) {
     route: "/qimen/notification-detail",
     hourDecision: {
       direction: selectedDirection, purpose, recommendationCode: "recommended",
-      reasonCodes: [`hour_${String(engine.advisory.readingCode || "recommended").replace(/[^A-Za-z0-9_:-]/gu, "_")}`],
+      reasonCodes: advisoryReasonCodes(engine.advisory),
     },
     layers,
   });

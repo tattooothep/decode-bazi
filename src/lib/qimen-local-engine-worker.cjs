@@ -18,7 +18,9 @@ const PALACE_FIELDS = Object.freeze([
   "door_code", "door_zh", "door_name_th", "door_name_en", "door_quality",
   "door_action_advice_th", "door_action_advice_en", "door_action_advice_zh",
   "star_code", "star_zh", "star_name_th", "star_name_en", "star_quality",
-  "beginner_reading", "classical_flags", "ui_flags", "is_void_any", "is_traveling_horse",
+  "beginner_reading", "classical_flags", "qimen_trace", "ui_flags", "stem_response",
+  "is_void_any", "is_men_po", "is_ru_mu", "is_fu_yin", "is_fan_yin",
+  "is_liu_yi_ji_xing", "is_wu_bu_yu_time", "is_traveling_horse",
 ]);
 
 function projectResult(result) {
@@ -42,6 +44,9 @@ function projectResult(result) {
     palaces: (result?.palaces || []).map((palace) => Object.fromEntries(
       PALACE_FIELDS.filter((field) => palace[field] !== undefined).map((field) => [field, palace[field]]),
     )),
+    stored_formations: result?.stored_formations || [],
+    compound_formations: result?.compound_formations || [],
+    source_formations: result?.source_formations || [],
     warnings: result?.warnings || [],
   };
 }

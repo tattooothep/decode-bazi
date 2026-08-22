@@ -38,7 +38,8 @@ const deities = [
 const engineSnapshot = {
   advisory: {
     purpose: "travel", recommendation: "recommended", direction: { code: "SE" },
-    readingCode: "usable", warningCodes: [], validFrom: hourWindow.startAt, validUntil: hourWindow.endAt,
+    decisionClass: "conditional", readingCode: "usable", warningCodes: [], canonicalWarningCodes: [],
+    validFrom: hourWindow.startAt, validUntil: hourWindow.endAt,
   },
   result: {
     chart: { wang_xiang_status: ["木", "金", "土", "水", "火"] },
@@ -83,6 +84,7 @@ assert.equal(snapshot.layers.hour.validUntil, hourWindow.endAt);
 assert.equal(snapshot.layers.day.calculationVersion, "FAQIAO_RIJIA_FOUR_QI_TERM_BOUNDARY_V1");
 assert.equal(snapshot.layers.day.decisionRole, "raw_context_only");
 assert.equal(snapshot.layers.hour.decisionRole, "sole_action_authority");
+assert.deepEqual(snapshot.hourDecision.reasonCodes, ["hour_conditional_good", "hour_reading_usable"]);
 assert.equal(snapshot.layers.day.palaces[4].doorZh, null);
 assert.equal(snapshot.layers.hour.palaces[4].deityZh, null);
 assert.equal(snapshot.layers.hour.palaces[4].deityBaseQuality, "unavailable");
@@ -112,6 +114,31 @@ assert.equal(await builder.buildCanonicalQimenOccurrence(row, at, {
     ...engineSnapshot, advisory: { ...engineSnapshot.advisory, recommendation: "caution" },
   }),
 }), null, "only an auspicious hour direction may create C4");
+
+const clearSnapshot = await builder.buildCanonicalQimenOccurrence(row, at, {
+  fetchCanonicalQimenEngineSnapshot: async () => ({
+    ...engineSnapshot,
+    advisory: {
+      ...engineSnapshot.advisory, decisionClass: "clear", readingCode: "suitable", canonicalWarningCodes: [],
+    },
+  }),
+});
+assert.deepEqual(clearSnapshot.hourDecision.reasonCodes, ["hour_clear_good", "hour_reading_suitable"]);
+
+const warningSnapshot = await builder.buildCanonicalQimenOccurrence(row, at, {
+  fetchCanonicalQimenEngineSnapshot: async () => ({
+    ...engineSnapshot,
+    advisory: {
+      ...engineSnapshot.advisory,
+      decisionClass: "conditional", readingCode: "caution",
+      canonicalWarningCodes: ["KONG_WANG", "STEM_RESPONSE_GUI_OVER_REN"],
+    },
+  }),
+});
+assert.deepEqual(warningSnapshot.hourDecision.reasonCodes, [
+  "hour_conditional_good", "hour_reading_caution",
+  "hour_warning_KONG_WANG", "hour_warning_STEM_RESPONSE_GUI_OVER_REN",
+]);
 
 await assert.rejects(
   builder.buildCanonicalQimenOccurrence({ ...row, user_id: "" }, at, {
