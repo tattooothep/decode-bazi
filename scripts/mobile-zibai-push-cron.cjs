@@ -227,18 +227,24 @@ async function finishClaim(db, row, updates) {
 }
 
 async function admitOccurrence(db, row, event, snapshot, state = "claimed", reason = null) {
+  const calculationVersion = snapshotCalculationVersion(snapshot);
   const key = occurrenceKey(row.installation_id, event, snapshot.apparentSolarDate, snapshot.shichenKey);
+  const occurrenceType = event === "zibai_shichen" ? "shichen" : "daily";
+  const shichenKey = occurrenceType === "shichen" ? snapshot.shichenKey : null;
   const client = typeof db.connect === "function" ? await db.connect() : db;
   await client.query("BEGIN");
   try {
     await client.query(`SELECT pg_advisory_xact_lock(hashtextextended('mobile-zibai-cap:'||$1::text,0))`, [row.installation_id]);
     const existing = await client.query(
-      `SELECT id,state,push_log_id FROM mobile_zibai_occurrences
-        WHERE user_id=$1 AND installation_id=$2 AND occurrence_key=$3 FOR UPDATE`,
-      [row.user_id, row.installation_id, key],
+      `SELECT id,state,push_log_id,calculation_version FROM mobile_zibai_occurrences
+        WHERE user_id=$1 AND installation_id=$2 AND occurrence_type=$3 AND apparent_solar_date=$4
+          AND (($3='daily' AND shichen_key IS NULL) OR ($3='shichen' AND shichen_key=$5))
+        ORDER BY created_at,id LIMIT 1 FOR UPDATE`,
+      [row.user_id, row.installation_id, occurrenceType, snapshot.apparentSolarDate, shichenKey],
     );
     if (existing.rows[0]) {
-      const reusableId = existing.rows[0].state === "claimed" && existing.rows[0].push_log_id === null
+      const reusableId = existing.rows[0].calculation_version === calculationVersion
+        && existing.rows[0].state === "claimed" && existing.rows[0].push_log_id === null
         ? existing.rows[0].id
         : null;
       await client.query("COMMIT");
@@ -250,8 +256,8 @@ async function admitOccurrence(db, row, event, snapshot, state = "claimed", reas
     }
     const inserted = await client.query(
       `INSERT INTO mobile_zibai_occurrences(user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state,skip_reason)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(user_id,installation_id,occurrence_key) DO NOTHING RETURNING id`,
-      [row.user_id, row.installation_id, key, event === "zibai_shichen" ? "shichen" : "daily", snapshot.apparentSolarDate, event === "zibai_shichen" ? snapshot.shichenKey : null, CALCULATION_VERSION, state, reason],
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING RETURNING id`,
+      [row.user_id, row.installation_id, key, occurrenceType, snapshot.apparentSolarDate, shichenKey, calculationVersion, state, reason],
     );
     await client.query("COMMIT");
     return inserted.rows[0]?.id || null;

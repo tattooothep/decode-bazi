@@ -23,7 +23,7 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users(id uuid PRIMARY KEY,deleted_at timestamptz,timezone text DEFAULT 'UTC',locale text DEFAULT 'en');
+    CREATE TABLE users(id uuid PRIMARY KEY,is_active boolean NOT NULL DEFAULT true,deleted_at timestamptz,timezone text DEFAULT 'UTC',locale text DEFAULT 'en');
     CREATE TABLE mobile_push_tokens(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES users(id),installation_id uuid NOT NULL,
       expo_push_token text NOT NULL UNIQUE,device_push_token text,device_token_type text,platform text NOT NULL,app_version text,
@@ -48,6 +48,7 @@ try {
   psql(database, readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8"));
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
   psql(database, `
     INSERT INTO users(id) VALUES('${userId}'),('${nextUserId}');
     INSERT INTO mobile_notification_prefs(user_id) VALUES('${userId}');
@@ -55,7 +56,7 @@ try {
       VALUES('${tokenId}','${userId}','${installationId}','ExponentPushToken[zibaischemafence]','fcm-schema-fence','fcm','android','en',2);
     INSERT INTO mobile_zibai_installations(user_id,installation_id) VALUES('${userId}','${installationId}');
     INSERT INTO mobile_zibai_occurrences(user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state)
-      VALUES('${userId}','${installationId}','schema-fence','shichen','2026-08-16','si','zibai-zaoming-true-solar-v2','claimed');
+      VALUES('${userId}','${installationId}','schema-fence','shichen','2026-08-16','si','zibai-zaoming-true-solar-v3','claimed');
     GRANT USAGE ON SCHEMA public TO ${role};
     GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
   `);
@@ -71,6 +72,11 @@ try {
       platform: "android",token_locale: "en",privacy_preview: false,
     }, "zibai_shichen", snapshot, occurrenceId);
     assert.equal(notice.payload.snapshotSchema, 2, "producer builds v2 from the capability observed before reservation");
+
+    await pool.query(`UPDATE mobile_zibai_occurrences SET calculation_version='zibai-zaoming-true-solar-v2' WHERE id=$1`, [occurrenceId]);
+    await assert.rejects(() => delivery.reserve(pool, notice), /zibai_occurrence_binding_changed/u,
+      "a v3 notice can never reserve against a v2 occurrence row");
+    await pool.query(`UPDATE mobile_zibai_occurrences SET calculation_version='zibai-zaoming-true-solar-v3' WHERE id=$1`, [occurrenceId]);
 
     await registration.query("BEGIN");
     registrationOpen = true;
