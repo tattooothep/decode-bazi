@@ -123,7 +123,11 @@ try {
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     CREATE TABLE users (
       id uuid PRIMARY KEY,
+      is_active boolean NOT NULL DEFAULT true,
       deleted_at timestamptz,
+      tier text,
+      sub_expires_at timestamptz,
+      trial_ends_at timestamptz,
       timezone text DEFAULT 'UTC',
       locale text DEFAULT 'en'
     );
@@ -178,6 +182,7 @@ try {
   psql(database, readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8"));
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
   psql(database, `
     INSERT INTO users(id) VALUES
       ('${ids.dailyV1}'),('${ids.dailyV2}'),('${ids.shichenV1}'),('${ids.shichenV2}');
