@@ -65,12 +65,18 @@ for (const fixture of [
   assert.ok(p.minute === 0 && p.second <= 1);
 }
 
-// Solar terms are global instants. Longitude changes apparent day/hour
-// pillars, but cannot move the 夏至/冬至 flight-direction boundary itself.
+// Solar terms are global instants for the month layer. Day and shichen adopt
+// their active regime at their own apparent-solar starts, so the same UTC
+// instant can legitimately belong to different latched local windows.
 for (const at of ["2026-06-21T12:00:00.000Z", "2026-06-21T20:00:00.000Z", "2026-12-21T20:00:00.000Z"]) {
   const snapshots = [-74.006, 0, 100.5018, 151.2093].map((longitude) => buildZibaiSnapshot(new Date(at), longitude));
-  assert.equal(new Set(snapshots.map((snapshot) => snapshot.dayFlight)).size, 1, `${at} day flight must be longitude-independent`);
-  assert.equal(new Set(snapshots.map((snapshot) => snapshot.shichenFlight)).size, 1, `${at} shichen flight must be longitude-independent`);
+  assert.equal(new Set(snapshots.map((snapshot) => snapshot.month.startAt)).size, 1, `${at} month start remains global`);
+  assert.equal(new Set(snapshots.map((snapshot) => snapshot.month.endAt)).size, 1, `${at} month end remains global`);
+  for (const snapshot of snapshots) {
+    const instant = Date.parse(at);
+    assert.ok(Date.parse(snapshot.day.startAt) <= instant && instant < Date.parse(snapshot.day.endAt));
+    assert.ok(Date.parse(snapshot.shichen.startAt) <= instant && instant < Date.parse(snapshot.shichen.endAt));
+  }
 }
 
 // Canonical tyme4ts / 造命 engine output; never the legacy day_branch % 9 shortcut.

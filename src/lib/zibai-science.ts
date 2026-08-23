@@ -202,29 +202,36 @@ export function starPalaceRelation(star: number, direction: Dir9): ZibaiRelation
   return ruleRuntime.starPalaceRelation(star, direction);
 }
 
-export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
+function flyingLayersAt(at: Date, longitude: number) {
   const p = apparentSolarParts(at, longitude);
   const termReference = solarTermRuntime.globalTermReferenceAt(validInstant(at));
-  const monthWindow = solarTermRuntime.solarTermMonthWindowFromReference(termReference);
-  const layer = computeFlyingLayers(
+  return computeFlyingLayers(
     p.year, p.month, p.day, p.hour, p.minute, p.second, "zaoming", undefined,
     termReference,
   );
-  const monthPalaces = exactPermutation(layer.month_stars.palaces);
-  const dayPalaces = exactPermutation(layer.day_stars.palaces);
-  const shichenPalaces = exactPermutation(layer.hour_stars.palaces);
+}
+
+export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
+  const termReference = solarTermRuntime.globalTermReferenceAt(validInstant(at));
+  const monthWindow = solarTermRuntime.solarTermMonthWindowFromReference(termReference);
   const dayWindow = solarDayWindow(at, longitude);
   const shichen = shichenAt(at, longitude);
+  const monthLayer = flyingLayersAt(at, longitude);
+  const dayLayer = flyingLayersAt(dayWindow.start, longitude);
+  const shichenCalculation = flyingLayersAt(shichen.start, longitude);
+  const monthPalaces = exactPermutation(monthLayer.month_stars.palaces);
+  const dayPalaces = exactPermutation(dayLayer.day_stars.palaces);
+  const shichenPalaces = exactPermutation(shichenCalculation.hour_stars.palaces);
   const apparentSolarDate = solarDayKey(at, longitude);
   const month = Object.freeze({
     palaces: monthPalaces,
     startAt: monthWindow.startAt,
     endAt: monthWindow.endAt,
-    flight: layer.month_stars.direction,
+    flight: monthLayer.month_stars.direction,
     meta: Object.freeze({
-      yearBranch: layer.month_stars.year_branch,
-      monthBranch: layer.month_stars.month_branch,
-      jieqiMonth: layer.month_stars.jieqi_month,
+      yearBranch: monthLayer.month_stars.year_branch,
+      monthBranch: monthLayer.month_stars.month_branch,
+      jieqiMonth: monthLayer.month_stars.jieqi_month,
       startTermCode: monthWindow.startTermCode,
       endTermCode: monthWindow.endTermCode,
     }),
@@ -233,14 +240,14 @@ export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
     palaces: dayPalaces,
     startAt: dayWindow.start.toISOString(),
     endAt: dayWindow.end.toISOString(),
-    flight: layer.day_stars.direction,
-    meta: Object.freeze({ apparentSolarDate, dayPillar: layer.day_stars.day_pillar }),
+    flight: dayLayer.day_stars.direction,
+    meta: Object.freeze({ apparentSolarDate, dayPillar: dayLayer.day_stars.day_pillar }),
   });
   const shichenLayer = Object.freeze({
     palaces: shichenPalaces,
     startAt: shichen.start.toISOString(),
     endAt: shichen.end.toISOString(),
-    flight: layer.hour_stars.direction,
+    flight: shichenCalculation.hour_stars.direction,
     meta: Object.freeze({ key: shichen.key }),
   });
   const focus = Object.freeze(([1, 2, 5, 9] as const).map((star) => {
@@ -261,7 +268,7 @@ export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
     shichen: shichenLayer,
     apparentSolarDate, shichenKey: shichen.key,
     startAt: shichenLayer.startAt, endAt: shichenLayer.endAt,
-    monthPalaces, dayPalaces, shichenPalaces, focus, dayPillar: layer.day_stars.day_pillar,
-    dayFlight: layer.day_stars.direction, shichenFlight: layer.hour_stars.direction,
+    monthPalaces, dayPalaces, shichenPalaces, focus, dayPillar: dayLayer.day_stars.day_pillar,
+    dayFlight: dayLayer.day_stars.direction, shichenFlight: shichenCalculation.hour_stars.direction,
   });
 }
