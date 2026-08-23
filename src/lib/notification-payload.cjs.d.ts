@@ -13,7 +13,7 @@ export type ZibaiNotificationFactsV2 = Readonly<{
   snapshotSchema: 2;
   event: "zibai_daily" | "zibai_shichen";
   referenceId: string;
-  calculationVersion: "zibai-zaoming-true-solar-v2";
+  calculationVersion: "zibai-zaoming-true-solar-v2" | "zibai-zaoming-true-solar-v3";
   interpretationVersion: "zibai-3layer-rule-v1";
   month: Readonly<{
     startTermCode: string;

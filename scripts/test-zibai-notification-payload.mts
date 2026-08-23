@@ -94,6 +94,15 @@ function v2FactsFor(testCase: any) {
   };
 }
 
+function withCalculationVersion(candidate: any, calculationVersion: string) {
+  const cloned = structuredClone(candidate);
+  return {
+    ...cloned,
+    calculationVersion,
+    referenceId: cloned.referenceId.replace(/zibai-zaoming-true-solar-v\d+$/u, calculationVersion),
+  };
+}
+
 function invalidV2(candidate: unknown, message: string) {
   assert.throws(
     () => runtime.buildNotificationPayload("zibai", payload.accountId, candidate),
@@ -104,6 +113,7 @@ function invalidV2(candidate: unknown, message: string) {
 
 const mixedFacts = v2FactsFor(fixture.cases[1]);
 const dailyFacts = v2FactsFor(fixture.cases[2]);
+const mixedFactsV3 = withCalculationVersion(mixedFacts, "zibai-zaoming-true-solar-v3");
 let shichenWireBytes = 0;
 let dailyWireBytes = 0;
 const SECTION_CODES = [
@@ -149,6 +159,29 @@ v2Contract("exact daily v2 excludes shichen from every attestation", () => {
   });
   dailyWireBytes = Buffer.byteLength(JSON.stringify(built), "utf8");
   assert.ok(dailyWireBytes <= 3.5 * 1_024);
+});
+v2Contract("v3 calculation snapshots are accepted without changing wire schema 2", () => {
+  const built = runtime.buildNotificationPayload("zibai", payload.accountId, mixedFactsV3);
+  assert.equal(built.snapshotSchema, 2);
+  assert.equal(built.calculationVersion, "zibai-zaoming-true-solar-v3");
+  assert.match(built.referenceId, /\|zibai-zaoming-true-solar-v3$/u);
+});
+v2Contract("calculation version and reference suffix must be an exact matched pair", () => {
+  invalidV2({ ...mixedFactsV3, referenceId: mixedFacts.referenceId }, "v3 body with v2 reference rejects");
+  invalidV2({ ...mixedFacts, referenceId: mixedFactsV3.referenceId }, "v2 body with v3 reference rejects");
+  invalidV2(
+    withCalculationVersion(mixedFacts, "zibai-zaoming-true-solar-v4"),
+    "unknown future calculation versions fail closed",
+  );
+});
+v2Contract("legacy wire schema accepts v3 only as an exact matched pair", () => {
+  const legacyV3 = withCalculationVersion(facts, "zibai-zaoming-true-solar-v3");
+  const built = runtime.buildNotificationPayload("zibai", payload.accountId, legacyV3);
+  assert.equal(built.calculationVersion, "zibai-zaoming-true-solar-v3");
+  assert.throws(
+    () => runtime.buildNotificationPayload("zibai", payload.accountId, { ...legacyV3, referenceId: facts.referenceId }),
+    /invalid zibai/u,
+  );
 });
 v2Contract("top-level data fields are enumerated exactly once", () => {
   let ownKeysCalls = 0;

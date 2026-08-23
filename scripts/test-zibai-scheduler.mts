@@ -8,6 +8,8 @@ assert.equal(scheduler.inQuietHours(10 * 60, 8, 8), false);
 
 const at = new Date("2026-08-16T03:00:00.000Z");
 const snapshot = buildZibaiSnapshot(at, 100.5018);
+assert.equal(snapshot.calculationVersion, "zibai-zaoming-true-solar-v3",
+  "boundary-latched snapshots must carry the new immutable calculation version");
 const row = {
   user_id: "00000000-0000-4000-8000-000000000001",
   installation_id: "10000000-0000-4000-8000-000000000001",
@@ -18,6 +20,16 @@ const row = {
 };
 const occurrenceId = "30000000-0000-4000-8000-000000000001";
 const notice = scheduler.buildZibaiNotice(row, "zibai_shichen", snapshot, occurrenceId);
+assert.throws(
+  () => scheduler.buildZibaiNotice(
+    row,
+    "zibai_shichen",
+    { ...snapshot, calculationVersion: "zibai-zaoming-true-solar-v2" },
+    occurrenceId,
+  ),
+  /zibai_snapshot_calculation_version_mismatch/u,
+  "the active scheduler fails closed instead of relabelling an older snapshot as v3",
+);
 assert.equal(notice.kind, "zibai");
 assert.equal(notice.messages.length, 1);
 assert.equal(notice.messages[0].category, "zibai");
@@ -36,7 +48,10 @@ assert.equal(optedInPreview.messages[0].body, notice.historyCopies.th.body,
 assert.deepEqual(Object.keys(notice.sourceFacts).sort(), ["apparentSolarDate", "calculationVersion", "occurrenceType", "shichen"],
   "science audit facts retain the branch without a credential-like key name");
 assert.equal(/latitude|longitude|100\.5018|13\.7/iu.test(JSON.stringify(notice)), false);
-assert.equal(scheduler.occurrenceKey(row.installation_id, "zibai_shichen", snapshot.apparentSolarDate, snapshot.shichenKey), `${row.installation_id}|${snapshot.apparentSolarDate}|${snapshot.shichenKey}|zibai-zaoming-true-solar-v2`);
+assert.equal(scheduler.occurrenceKey(row.installation_id, "zibai_shichen", snapshot.apparentSolarDate, snapshot.shichenKey), `${row.installation_id}|${snapshot.apparentSolarDate}|${snapshot.shichenKey}|zibai-zaoming-true-solar-v3`);
+assert.equal(notice.payload.calculationVersion, "zibai-zaoming-true-solar-v3");
+assert.match(notice.payload.referenceId, /\|zibai-zaoming-true-solar-v3$/u);
+assert.equal(notice.sourceFacts.calculationVersion, "zibai-zaoming-true-solar-v3");
 
 assert.equal(typeof scheduler.buildZibaiV2Facts, "function", "producer must expose the exact v2 facts builder");
 const capableRow = {
@@ -52,6 +67,8 @@ assert.equal(Object.hasOwn(notice.payload, "snapshotSchema"), false,
   "a legacy installation stays exact v1 even when its app-version string looks new");
 assert.equal(capableNotice.payload.snapshotSchema, 2,
   "the exact capable installation receives v2 even when its app-version string looks old");
+assert.equal(capableNotice.payload.calculationVersion, "zibai-zaoming-true-solar-v3",
+  "wire schema 2 carries the new boundary-latched calculation version");
 assert.equal(notice.messages.length, 1);
 assert.equal(capableNotice.messages.length, 1);
 assert.notEqual(notice.key, capableNotice.key,
