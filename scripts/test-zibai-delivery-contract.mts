@@ -88,6 +88,16 @@ const internalBoundaryPayloads = [
     shichen: { endAt: "2026-08-23T03:30:00.000Z" },
   },
 ] as const;
+const legacyV3BoundaryPayload = {
+  event: "zibai_shichen", calculationVersion: policyCalculationVersion,
+  endAt: "2026-08-23T03:30:00.000Z",
+} as const;
+const legacyV3BoundaryFacts = {
+  calculationVersion: policyCalculationVersion, occurrenceType: "shichen",
+  apparentSolarDate: "2026-08-23", shichen: "si",
+  monthEndAt: "2026-08-23T02:18:49.000Z", dayEndAt: "2026-08-23T15:30:00.000Z",
+  shichenEndAt: "2026-08-23T03:30:00.000Z",
+} as const;
 assert.equal(delivery.zibaiOccurrenceEndAt(internalBoundaryPayloads[0]), "2026-08-23T02:18:49.000Z",
   "daily queue validity ends at the earlier month/Jie boundary, not only at day end");
 assert.equal(delivery.zibaiOccurrenceEndAt(internalBoundaryPayloads[1]), "2026-08-23T02:18:49.000Z",
@@ -98,6 +108,23 @@ assert.equal(delivery.zibaiOccurrenceEndAt({
   event: "zibai_daily", snapshotSchema: 2, calculationVersion: policyCalculationVersion,
   month: {}, day: { endAt: "2026-08-23T15:30:00.000Z" },
 }), null, "three-layer provider validity fails closed when a required layer end is absent");
+assert.equal(delivery.zibaiOccurrenceEndAt(legacyV3BoundaryPayload, legacyV3BoundaryFacts),
+  "2026-08-23T02:18:49.000Z",
+  "a V3 legacy envelope is bounded by its immutable month/day/shichen source facts, not only legacy endAt");
+assert.equal(delivery.zibaiOccurrenceEndAt(legacyV3BoundaryPayload, {
+  ...legacyV3BoundaryFacts, monthEndAt: undefined,
+}), null, "a V3 legacy envelope fails closed without every immutable layer end");
+const legacyBoundaryNow = new Date("2026-08-23T02:17:00.000Z");
+assert.deepEqual(delivery.currentPolicyDecision(
+  { kind: "zibai", payload: legacyV3BoundaryPayload, source_facts: legacyV3BoundaryFacts,
+    zibai_token_calculation_version: policyCalculationVersion, transactional: false, privacy_safe: true,
+    created_at: legacyBoundaryNow.toISOString() },
+  { privacy_preview: false, zibai_enabled: true, zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7,
+    zibai_calculation_version: policyCalculationVersion,
+    zibai_expires_at: delivery.zibaiOccurrenceEndAt(legacyV3BoundaryPayload, legacyV3BoundaryFacts), now_at: legacyBoundaryNow },
+  0,
+), { allow: false, terminal: true, reason: "policy_expired_occurrence" },
+"a V3 legacy envelope cannot enter the provider queue across an internal month boundary");
 for (const payload of internalBoundaryPayloads) {
   const boundaryNow = new Date("2026-08-23T02:17:00.000Z");
   assert.deepEqual(delivery.currentPolicyDecision(

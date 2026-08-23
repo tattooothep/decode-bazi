@@ -140,6 +140,9 @@ function buildZibaiNotice(row, event, snapshot, occurrenceId) {
       // Avoid the generic credential-key sentinel while retaining the
       // non-sensitive branch name needed for science audit replay.
       shichen: shichenKey,
+      monthEndAt: snapshot.month.endAt,
+      dayEndAt: snapshot.day.endAt,
+      shichenEndAt: event === "zibai_shichen" ? snapshot.shichen.endAt : null,
     },
     messages: [{
       tokenId: row.token_id, deviceToken: row.device_push_token, deviceTokenType: row.device_token_type,
