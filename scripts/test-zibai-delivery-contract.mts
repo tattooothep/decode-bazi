@@ -98,6 +98,16 @@ const legacyV3BoundaryFacts = {
   monthEndAt: "2026-08-23T02:18:49.000Z", dayEndAt: "2026-08-23T15:30:00.000Z",
   shichenEndAt: "2026-08-23T03:30:00.000Z",
 } as const;
+const legacyV3DailyBoundaryPayload = {
+  event: "zibai_daily", calculationVersion: policyCalculationVersion,
+  endAt: "2026-08-23T15:30:00.000Z",
+} as const;
+const legacyV3DailyBoundaryFacts = {
+  calculationVersion: policyCalculationVersion, occurrenceType: "daily",
+  apparentSolarDate: "2026-08-23", shichen: null,
+  monthEndAt: "2026-08-23T02:18:49.000Z", dayEndAt: "2026-08-23T15:30:00.000Z",
+  shichenEndAt: null,
+} as const;
 assert.equal(delivery.zibaiOccurrenceEndAt(internalBoundaryPayloads[0]), "2026-08-23T02:18:49.000Z",
   "daily queue validity ends at the earlier month/Jie boundary, not only at day end");
 assert.equal(delivery.zibaiOccurrenceEndAt(internalBoundaryPayloads[1]), "2026-08-23T02:18:49.000Z",
@@ -111,6 +121,19 @@ assert.equal(delivery.zibaiOccurrenceEndAt({
 assert.equal(delivery.zibaiOccurrenceEndAt(legacyV3BoundaryPayload, legacyV3BoundaryFacts),
   "2026-08-23T02:18:49.000Z",
   "a V3 legacy envelope is bounded by its immutable month/day/shichen source facts, not only legacy endAt");
+assert.equal(delivery.zibaiOccurrenceEndAt(legacyV3DailyBoundaryPayload, legacyV3DailyBoundaryFacts),
+  "2026-08-23T02:18:49.000Z",
+  "a V3 legacy daily envelope is bounded by the earlier immutable Jie boundary");
+assert.equal(delivery.zibaiOccurrenceEndAt(
+  { ...legacyV3BoundaryPayload, calculationVersion: "zibai-zaoming-true-solar-v2" },
+  { ...legacyV3BoundaryFacts, calculationVersion: "zibai-zaoming-true-solar-v2" },
+), "2026-08-23T02:18:49.000Z",
+"a newly produced V2 legacy envelope also uses its available immutable layer bounds at Jie");
+assert.equal(delivery.zibaiOccurrenceEndAt(
+  { ...legacyV3BoundaryPayload, calculationVersion: "zibai-zaoming-true-solar-v2" },
+  { calculationVersion: "zibai-zaoming-true-solar-v2", occurrenceType: "shichen" },
+), "2026-08-23T03:30:00.000Z",
+"a historical V2 envelope created before layer attestation retains its bounded legacy expiry during rollout");
 assert.equal(delivery.zibaiOccurrenceEndAt(legacyV3BoundaryPayload, {
   ...legacyV3BoundaryFacts, monthEndAt: undefined,
 }), null, "a V3 legacy envelope fails closed without every immutable layer end");
