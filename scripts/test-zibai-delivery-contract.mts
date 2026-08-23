@@ -71,16 +71,22 @@ assert.doesNotMatch(retryWorkerSource, /mobile-zibai-push-cron|buildZibaiNotice|
   "retry worker cannot recompute either v1 or v2 from the scheduler");
 
 const capFixtureNow = new Date("2026-08-16T12:00:00.000Z");
+const policyCalculationVersion = "zibai-zaoming-true-solar-v3";
 assert.deepEqual(delivery.currentPolicyDecision(
-  { kind: "zibai", transactional: false, privacy_safe: true, created_at: capFixtureNow.toISOString() },
+  { kind: "zibai", payload: { calculationVersion: policyCalculationVersion }, source_facts: { calculationVersion: policyCalculationVersion },
+    zibai_token_calculation_version: policyCalculationVersion, transactional: false, privacy_safe: true, created_at: capFixtureNow.toISOString() },
   { privacy_preview: false, zibai_enabled: true, zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7,
+    zibai_calculation_version: policyCalculationVersion,
     zibai_expires_at: new Date(capFixtureNow.valueOf() + 10 * 60_000).toISOString(), now_at: capFixtureNow },
   999,
 ), { allow: true }, "Zi Bai uses its installation occurrence cap, not the generic account cap");
 for (const event of ["zibai_daily", "zibai_shichen"] as const) {
   const now = new Date("2026-08-16T12:00:00.000Z");
-  const row = { kind: "zibai", payload: { event }, transactional: false, privacy_safe: true, created_at: now.toISOString() };
-  const context = { privacy_preview: false, zibai_enabled: true, zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7, now_at: now };
+  const row = { kind: "zibai", payload: { event, calculationVersion: policyCalculationVersion },
+    source_facts: { calculationVersion: policyCalculationVersion }, zibai_token_calculation_version: policyCalculationVersion,
+    transactional: false, privacy_safe: true, created_at: now.toISOString() };
+  const context = { privacy_preview: false, zibai_enabled: true, zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7,
+    zibai_calculation_version: policyCalculationVersion, now_at: now };
   assert.deepEqual(delivery.currentPolicyDecision(row,
     { ...context, zibai_expires_at: new Date(now.valueOf() + 361_000).toISOString() }, 0), { allow: true },
   `${event} may enter the provider queue only with TTL plus acceptance headroom remaining`);
@@ -95,29 +101,44 @@ for (const event of ["zibai_daily", "zibai_shichen"] as const) {
   }
 }
 assert.equal(delivery.currentPolicyDecision(
-  { kind: "zibai", transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
-  { privacy_preview: false, zibai_enabled: false, now_at: new Date() },
+  { kind: "zibai", payload: { calculationVersion: policyCalculationVersion }, source_facts: { calculationVersion: policyCalculationVersion },
+    zibai_token_calculation_version: policyCalculationVersion, transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
+  { privacy_preview: false, zibai_enabled: false, zibai_calculation_version: policyCalculationVersion, now_at: new Date() },
   0,
 ).reason, "policy_consent_revoked");
 const quietContext = {
   privacy_preview: false, zibai_enabled: true, zibai_expires_at: "2026-08-17T01:00:00.000Z",
+  zibai_calculation_version: policyCalculationVersion,
   now_at: new Date("2026-08-16T23:30:00.000Z"), zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7,
 };
 assert.deepEqual(delivery.currentPolicyDecision(
-  { kind: "zibai", payload: { event: "zibai_shichen" }, transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
+  { kind: "zibai", payload: { event: "zibai_shichen", calculationVersion: policyCalculationVersion },
+    source_facts: { calculationVersion: policyCalculationVersion }, zibai_token_calculation_version: policyCalculationVersion,
+    transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
   quietContext,
   0,
 ), { allow: false, terminal: true, reason: "policy_quiet_hours" }, "a queued shichen crossing into quiet hours is discarded, never replayed");
 assert.deepEqual(delivery.currentPolicyDecision(
-  { kind: "zibai", payload: { event: "zibai_daily" }, transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
+  { kind: "zibai", payload: { event: "zibai_daily", calculationVersion: policyCalculationVersion },
+    source_facts: { calculationVersion: policyCalculationVersion }, zibai_token_calculation_version: policyCalculationVersion,
+    transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
   { ...quietContext, zibai_expires_at: "2026-08-17T01:00:00.000Z" },
   0,
 ), { allow: false, terminal: false, reason: "policy_quiet_hours" }, "a queued daily summary waits through quiet hours");
 assert.deepEqual(delivery.currentPolicyDecision(
-  { kind: "zibai", payload: { event: "zibai_daily" }, transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
+  { kind: "zibai", payload: { event: "zibai_daily", calculationVersion: policyCalculationVersion },
+    source_facts: { calculationVersion: policyCalculationVersion }, zibai_token_calculation_version: policyCalculationVersion,
+    transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
   { ...quietContext, now_at: new Date("2026-08-17T01:00:00.000Z"), zibai_expires_at: "2026-08-17T01:00:00.000Z" },
   0,
 ), { allow: false, terminal: true, reason: "policy_expired_occurrence" }, "a delayed daily chart expires at its immutable solar-day end and cannot replay later");
+assert.equal(delivery.currentPolicyDecision(
+  { kind: "zibai", payload: { event: "zibai_daily", calculationVersion: policyCalculationVersion },
+    source_facts: { calculationVersion: policyCalculationVersion }, zibai_token_calculation_version: "zibai-zaoming-true-solar-v2",
+    transactional: false, privacy_safe: true, created_at: new Date().toISOString() },
+  quietContext,
+  0,
+).reason, "policy_calculation_version_changed", "a V2-only client cannot cross the final V3 provider boundary");
 
 await assert.rejects(
   () => delivery.reserve({ query: async () => ({ rows: [] }) }, { userId: "a", key: "k", kind: "zibai", messages: [] }),

@@ -79,6 +79,11 @@ try {
     if (notice.userId === "00000000-0000-4000-8000-000000000005" && failDurableReservation) throw new Error("synthetic_durable_reservation_failure");
     providerReservations += 1;
     reservedNotices.push(notice);
+    if (notice.userId === "00000000-0000-4000-8000-000000000009") {
+      await pool.query(`UPDATE mobile_zibai_installations
+        SET calculation_version='zibai-zaoming-true-solar-v2',updated_at=now()
+        WHERE user_id=$1`, [notice.userId]);
+    }
     return { status: "pending" };
   };
   try {
@@ -264,7 +269,35 @@ try {
       "inactive capability rejection never advances the due timestamp");
     assert.equal(inactive.lease_token, null);
     assert.equal(inactive.last_skip_reason, "calculation_version_inactive");
-    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1 mixedSchemas=2 crossVersionDedupe=1 mixedFleetFence=1");
+
+    const rollbackUser = "00000000-0000-4000-8000-000000000009";
+    const rollbackInstallation = "10000000-0000-4000-8000-000000000010";
+    await pool.query(`INSERT INTO users VALUES($1,NULL)`, [rollbackUser]);
+    await pool.query(`INSERT INTO mobile_notification_prefs VALUES($1,false)`, [rollbackUser]);
+    await pool.query(`INSERT INTO mobile_push_tokens
+      (id,user_id,installation_id,enabled,device_push_token,device_token_type,expo_push_token,platform,locale,zibai_payload_schema,zibai_calculation_version)
+      VALUES('20000000-0000-4000-8000-000000000010',$1,$2,true,'native-10','fcm','ExponentPushToken[ten]','android','en',2,'zibai-zaoming-true-solar-v3')`,
+    [rollbackUser, rollbackInstallation]);
+    await pool.query(`INSERT INTO mobile_zibai_installations
+      (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,
+       location_captured_at,location_expires_at,next_shichen_at,calculation_version)
+      VALUES($1,$2,true,0,0,'background',13.75,0,'UTC',$3,$4,$5,'zibai-zaoming-true-solar-v3')`, [
+      rollbackUser, rollbackInstallation, new Date(at.getTime() - 60_000).toISOString(),
+      new Date(at.getTime() + 23 * 3_600_000).toISOString(), legacyDue,
+    ]);
+    const rollbackClaim = (await scheduler.claimDue(pool, at, 10)).find((claim: { user_id: string }) => claim.user_id === rollbackUser);
+    assert.ok(rollbackClaim, "active V3 row is leased before the rollback race");
+    assert.deepEqual(await scheduler.processClaim(pool, rollbackClaim, at, workingScience),
+      { reserved: 1, skipped: 0, reason: null });
+    const rollbackFenced = (await pool.query(`SELECT calculation_version,next_shichen_at,lease_token,last_skip_reason
+      FROM mobile_zibai_installations WHERE user_id=$1`, [rollbackUser])).rows[0];
+    assert.equal(rollbackFenced.calculation_version, "zibai-zaoming-true-solar-v2");
+    assert.equal(new Date(rollbackFenced.next_shichen_at).toISOString(), legacyDue,
+      "a V3 worker cannot advance a due timestamp after rollback activates V2");
+    assert.equal(rollbackFenced.lease_token, null,
+      "the stale worker releases only its matching lease without consuming the V2 due slot");
+    assert.equal(rollbackFenced.last_skip_reason, "calculation_version_inactive");
+    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1 mixedSchemas=2 crossVersionDedupe=1 mixedFleetFence=1 finishClaimVersionFence=1");
   } finally {
     delivery.deliver = originalDeliver;
     await pool.end();

@@ -227,12 +227,21 @@ async function loadClaimContext(db, claim) {
 }
 
 async function finishClaim(db, row, updates) {
-  await db.query(
+  const updated = await db.query(
     `UPDATE mobile_zibai_installations SET next_daily_at=COALESCE($4,next_daily_at),next_shichen_at=COALESCE($5,next_shichen_at),
        last_skip_reason=$6,lease_token=NULL,lease_expires_at=NULL,updated_at=$7
-      WHERE user_id=$1 AND installation_id=$2 AND lease_token=$3`,
-    [row.user_id, row.installation_id, row.lease_token, updates.nextDailyAt ?? null, updates.nextShichenAt ?? null, updates.reason ?? null, updates.at.toISOString()],
+      WHERE user_id=$1 AND installation_id=$2 AND lease_token=$3 AND calculation_version=$8`,
+    [row.user_id, row.installation_id, row.lease_token, updates.nextDailyAt ?? null, updates.nextShichenAt ?? null, updates.reason ?? null, updates.at.toISOString(), row.calculation_version],
   );
+  if (updated.rowCount === 0) {
+    return db.query(
+      `UPDATE mobile_zibai_installations SET lease_token=NULL,lease_expires_at=NULL,
+         last_skip_reason='calculation_version_inactive',updated_at=$4
+        WHERE user_id=$1 AND installation_id=$2 AND lease_token=$3`,
+      [row.user_id, row.installation_id, row.lease_token, updates.at.toISOString()],
+    );
+  }
+  return updated;
 }
 
 async function admitOccurrence(db, row, event, snapshot, state = "claimed", reason = null) {
