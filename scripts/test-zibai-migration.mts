@@ -193,7 +193,8 @@ try {
     assert.match(post, /INSERT INTO mobile_push_tokens[\s\S]*zibai_payload_schema/u);
     assert.match(post, /zibai_payload_schema=EXCLUDED\.zibai_payload_schema/u,
       "re-registration must overwrite, not COALESCE, stale capability");
-    assert.match(post, /zibaiPayloadSchema\]/u, "the negotiated value must be bound to the upsert");
+    assert.match(post, /\[[^\]]*\bzibaiPayloadSchema\b[^\]]*\]/u,
+      "the negotiated value must be bound to the upsert even when later capabilities follow it");
     assert.doesNotMatch(post, /(?:INSERT INTO|UPDATE) mobile_zibai_installations/u,
       "push registration must not opt into or rewrite Zi Bai consent/location state");
   });
