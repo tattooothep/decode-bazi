@@ -830,9 +830,15 @@ function resolvePolicyClock(options = {}) {
 function zibaiOccurrenceEndAt(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
   if (payload.snapshotSchema !== 2) return payload.endAt || null;
-  if (payload.event === "zibai_daily") return payload.day?.endAt || null;
-  if (payload.event === "zibai_shichen") return payload.shichen?.endAt || null;
-  return null;
+  const layerEnds = payload.event === "zibai_daily"
+    ? [payload.month?.endAt, payload.day?.endAt]
+    : payload.event === "zibai_shichen"
+      ? [payload.month?.endAt, payload.day?.endAt, payload.shichen?.endAt]
+      : [];
+  if (layerEnds.length === 0) return null;
+  const instants = layerEnds.map((value) => new Date(value));
+  if (instants.some((instant) => !Number.isFinite(instant.valueOf()))) return null;
+  return new Date(Math.min(...instants.map((instant) => instant.valueOf()))).toISOString();
 }
 
 async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
@@ -1164,4 +1170,5 @@ module.exports = {
   claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
   messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
   currentPolicyDecision,historyCopyFor,localizedHistoryCopies,trySchedulerRunLease,withInstallationLock,withSchedulerRunLease,
+  zibaiOccurrenceEndAt,
 };
