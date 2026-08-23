@@ -48,15 +48,16 @@ try {
   psql(database, readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8"));
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
-  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_compatibility.sql", "utf8"));
   psql(database, `
     INSERT INTO users(id) VALUES('${userId}'),('${nextUserId}');
     INSERT INTO mobile_notification_prefs(user_id) VALUES('${userId}');
-    INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,zibai_payload_schema)
-      VALUES('${tokenId}','${userId}','${installationId}','ExponentPushToken[zibaischemafence]','fcm-schema-fence','fcm','android','en',2);
-    INSERT INTO mobile_zibai_installations(user_id,installation_id) VALUES('${userId}','${installationId}');
+    INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,zibai_payload_schema,zibai_calculation_version)
+      VALUES('${tokenId}','${userId}','${installationId}','ExponentPushToken[zibaischemafence]','fcm-schema-fence','fcm','android','en',2,'zibai-zaoming-true-solar-v2');
+    INSERT INTO mobile_zibai_installations(user_id,installation_id,calculation_version)
+      VALUES('${userId}','${installationId}','zibai-zaoming-true-solar-v2');
     INSERT INTO mobile_zibai_occurrences(user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state)
-      VALUES('${userId}','${installationId}','schema-fence','shichen','2026-08-16','si','zibai-zaoming-true-solar-v3','claimed');
+      VALUES('${userId}','${installationId}','schema-fence','shichen','2026-08-16','si','zibai-zaoming-true-solar-v2','claimed');
     GRANT USAGE ON SCHEMA public TO ${role};
     GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
   `);
@@ -68,29 +69,32 @@ try {
     const snapshot = buildZibaiSnapshot(new Date("2026-08-16T03:00:00.000Z"), 100.5018);
     const notice = scheduler.buildZibaiNotice({
       user_id: userId,installation_id: installationId,token_id: tokenId,zibai_payload_schema: 2,
+      calculation_version: "zibai-zaoming-true-solar-v2",zibai_calculation_version: "zibai-zaoming-true-solar-v2",
       device_push_token: "fcm-schema-fence",device_token_type: "fcm",expo_push_token: "ExponentPushToken[zibaischemafence]",
       platform: "android",token_locale: "en",privacy_preview: false,
     }, "zibai_shichen", snapshot, occurrenceId);
     assert.equal(notice.payload.snapshotSchema, 2, "producer builds v2 from the capability observed before reservation");
 
-    await pool.query(`UPDATE mobile_zibai_occurrences SET calculation_version='zibai-zaoming-true-solar-v2' WHERE id=$1`, [occurrenceId]);
-    await assert.rejects(() => delivery.reserve(pool, notice), /zibai_occurrence_binding_changed/u,
-      "a v3 notice can never reserve against a v2 occurrence row");
     await pool.query(`UPDATE mobile_zibai_occurrences SET calculation_version='zibai-zaoming-true-solar-v3' WHERE id=$1`, [occurrenceId]);
+    await assert.rejects(() => delivery.reserve(pool, notice), /zibai_occurrence_binding_changed/u,
+      "a v2 notice can never reserve against a v3 occurrence row");
+    await pool.query(`UPDATE mobile_zibai_occurrences SET calculation_version='zibai-zaoming-true-solar-v2' WHERE id=$1`, [occurrenceId]);
 
     await registration.query("BEGIN");
     registrationOpen = true;
-    await registration.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v2',updated_at=now() WHERE id=$1`, [tokenId]);
-    const calculationDowngradeReservation = delivery.reserve(pool, notice);
+    await registration.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v3',updated_at=now() WHERE id=$1`, [tokenId]);
+    await registration.query(`UPDATE mobile_zibai_installations SET calculation_version='zibai-zaoming-true-solar-v3',updated_at=now() WHERE user_id=$1 AND installation_id=$2`, [userId, installationId]);
+    const calculationActivationReservation = delivery.reserve(pool, notice);
     assert.equal(await Promise.race([
-      calculationDowngradeReservation.then(() => "settled", () => "settled"),
+      calculationActivationReservation.then(() => "settled", () => "settled"),
       new Promise<string>((resolve) => setTimeout(() => resolve("blocked"), 100)),
     ]), "blocked", "durable reservation waits for the concurrent calculation-capability row lock");
     await registration.query("COMMIT");
     registrationOpen = false;
-    await assert.rejects(() => calculationDowngradeReservation, /zibai_token_calculation_capability_changed/u,
-      "reservation rejects a prebuilt v3 notice after a concurrent V224 to V223 downgrade");
-    await pool.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v3' WHERE id=$1`, [tokenId]);
+    await assert.rejects(() => calculationActivationReservation, /zibai_token_calculation_capability_changed/u,
+      "the V2 compatibility producer rejects a stale prebuilt notice after concurrent V3 activation");
+    await pool.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v2' WHERE id=$1`, [tokenId]);
+    await pool.query(`UPDATE mobile_zibai_installations SET calculation_version='zibai-zaoming-true-solar-v2' WHERE user_id=$1 AND installation_id=$2`, [userId, installationId]);
 
     await registration.query("BEGIN");
     registrationOpen = true;
@@ -113,33 +117,33 @@ try {
     await pool.query(`UPDATE mobile_push_tokens SET zibai_payload_schema=2 WHERE id=$1`, [tokenId]);
 
     await pool.query(`INSERT INTO mobile_zibai_occurrences(user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state)
-      VALUES($1,$2,'delivery-capability-fence','daily',$3,NULL,'zibai-zaoming-true-solar-v3','claimed')`,
+      VALUES($1,$2,'delivery-capability-fence','daily',$3,NULL,'zibai-zaoming-true-solar-v2','claimed')`,
     [userId, installationId, snapshot.day.meta.apparentSolarDate]);
     const deliveryOccurrenceId = (await pool.query(`SELECT id::text FROM mobile_zibai_occurrences WHERE occurrence_key='delivery-capability-fence'`)).rows[0].id;
     const deliveryNotice = scheduler.buildZibaiNotice({
       user_id: userId,installation_id: installationId,token_id: tokenId,zibai_payload_schema: 2,
-      calculation_version: "zibai-zaoming-true-solar-v3",zibai_calculation_version: "zibai-zaoming-true-solar-v3",
+      calculation_version: "zibai-zaoming-true-solar-v2",zibai_calculation_version: "zibai-zaoming-true-solar-v2",
       device_push_token: "fcm-schema-fence",device_token_type: "fcm",expo_push_token: "ExponentPushToken[zibaischemafence]",
       platform: "android",token_locale: "en",privacy_preview: false,
     }, "zibai_daily", snapshot, deliveryOccurrenceId);
     const durable = await delivery.reserve(pool, deliveryNotice);
-    assert.equal(durable?.attemptIds.length, 1, "v3 notice reserves exactly one immutable provider attempt");
-    await pool.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v2',updated_at=now() WHERE id=$1`, [tokenId]);
-    await pool.query(`UPDATE mobile_zibai_installations SET calculation_version='zibai-zaoming-true-solar-v2',updated_at=now() WHERE user_id=$1 AND installation_id=$2`, [userId, installationId]);
+    assert.equal(durable?.attemptIds.length, 1, "v2 notice reserves exactly one immutable provider attempt");
+    await pool.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v3',updated_at=now() WHERE id=$1`, [tokenId]);
+    await pool.query(`UPDATE mobile_zibai_installations SET calculation_version='zibai-zaoming-true-solar-v3',updated_at=now() WHERE user_id=$1 AND installation_id=$2`, [userId, installationId]);
     let providerSends = 0;
     const fencedDelivery = await delivery.runRetryBatch(pool, {
       attemptIds: durable?.attemptIds, limit: 1,
       hooks: { policyNow: new Date("2026-08-16T03:00:00.000Z") },
       sender: { sendPrepared: async () => { providerSends += 1; return { kind: "provider_accepted" }; } },
     });
-    assert.equal(providerSends, 0, "a durable v3 attempt is never sent after rollback or client downgrade");
+    assert.equal(providerSends, 0, "a durable v2 attempt is never sent after the installation activates v3");
     assert.equal(fencedDelivery.dead, 1, "the stale cross-version attempt terminates without replay");
     assert.deepEqual(fencedDelivery.outcomes,
       [{ kind: "policy_blocked", reason: "policy_calculation_version_changed", retryable: false }]);
     assert.equal((await pool.query(`SELECT send_count::int AS n,last_error FROM mobile_push_attempts WHERE id=$1`, [durable?.attemptIds[0]])).rows[0].n, 0,
       "the capability fence runs before the irreversible provider-send boundary");
-    await pool.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v3' WHERE id=$1`, [tokenId]);
-    await pool.query(`UPDATE mobile_zibai_installations SET calculation_version='zibai-zaoming-true-solar-v3' WHERE user_id=$1 AND installation_id=$2`, [userId, installationId]);
+    await pool.query(`UPDATE mobile_push_tokens SET zibai_calculation_version='zibai-zaoming-true-solar-v2' WHERE id=$1`, [tokenId]);
+    await pool.query(`UPDATE mobile_zibai_installations SET calculation_version='zibai-zaoming-true-solar-v2' WHERE user_id=$1 AND installation_id=$2`, [userId, installationId]);
     const parentsBeforeTransfer = (await pool.query(`SELECT count(*)::int AS n FROM mobile_push_log`)).rows[0].n;
     const attemptsBeforeTransfer = (await pool.query(`SELECT count(*)::int AS n FROM mobile_push_attempts`)).rows[0].n;
 
@@ -166,7 +170,7 @@ try {
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_log`)).rows[0].n, parentsBeforeTransfer);
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_push_attempts`)).rows[0].n, attemptsBeforeTransfer);
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_occurrences`)).rows[0].n, 0);
-    console.log("ZIBAI_RESERVATION_SCHEMA_FENCE_OK concurrentSchemaDowngrade=1 concurrentCalculationDowngrade=1 postReservationDowngrade=1 crossAccountTransfer=1 staleV3Sends=0");
+    console.log("ZIBAI_RESERVATION_SCHEMA_FENCE_OK concurrentSchemaDowngrade=1 concurrentVersionActivation=1 postReservationVersionFlip=1 crossAccountTransfer=1 staleCrossVersionSends=0");
   } finally {
     if (registrationOpen) await registration.query("ROLLBACK").catch(() => null);
     registration.release();

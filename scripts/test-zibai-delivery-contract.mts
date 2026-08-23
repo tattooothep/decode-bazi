@@ -28,6 +28,8 @@ const row = {
   token_id: "00000000-0000-4000-8000-000000000005", device_push_token: "fcm-fixture",
   device_token_type: "fcm", expo_push_token: "ExponentPushToken[zibaiparityfixture]",
   platform: "android", token_locale: "th", privacy_preview: true, zibai_payload_schema: 1,
+  calculation_version: "zibai-zaoming-true-solar-v2",
+  zibai_calculation_version: "zibai-zaoming-true-solar-v2",
 };
 const window = solarDayWindow(at, 100.5018);
 const exactDailySnapshot = {
