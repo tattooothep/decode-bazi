@@ -844,7 +844,7 @@ function zibaiOccurrenceEndAt(payload, sourceFacts = null) {
   const validSourceLayerEnds = sourceFacts && sourceFacts.occurrenceType === occurrenceType
     && parsedSourceLayerEnds.every((instant) => Number.isFinite(instant.valueOf()));
   if (payload.snapshotSchema !== 2) {
-    if (payload.calculationVersion !== zibaiVersionRuntime.ACTIVE_CALCULATION_VERSION) {
+    if (payload.calculationVersion !== "zibai-zaoming-true-solar-v3") {
       const legacyEnd = new Date(payload.endAt);
       return Number.isFinite(legacyEnd.valueOf()) ? legacyEnd.toISOString() : null;
     }
