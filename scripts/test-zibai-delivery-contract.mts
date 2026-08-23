@@ -72,6 +72,44 @@ assert.doesNotMatch(retryWorkerSource, /mobile-zibai-push-cron|buildZibaiNotice|
 
 const capFixtureNow = new Date("2026-08-16T12:00:00.000Z");
 const policyCalculationVersion = "zibai-zaoming-true-solar-v3";
+const internalBoundaryPayloads = [
+  {
+    event: "zibai_daily", snapshotSchema: 2, calculationVersion: policyCalculationVersion,
+    month: { endAt: "2026-08-23T02:18:49.000Z" }, day: { endAt: "2026-08-23T15:30:00.000Z" }, shichen: null,
+  },
+  {
+    event: "zibai_shichen", snapshotSchema: 2, calculationVersion: policyCalculationVersion,
+    month: { endAt: "2026-08-23T02:18:49.000Z" }, day: { endAt: "2026-08-23T15:30:00.000Z" },
+    shichen: { endAt: "2026-08-23T03:30:00.000Z" },
+  },
+  {
+    event: "zibai_shichen", snapshotSchema: 2, calculationVersion: policyCalculationVersion,
+    month: { endAt: "2026-08-24T02:18:49.000Z" }, day: { endAt: "2026-08-23T02:18:00.000Z" },
+    shichen: { endAt: "2026-08-23T03:30:00.000Z" },
+  },
+] as const;
+assert.equal(delivery.zibaiOccurrenceEndAt(internalBoundaryPayloads[0]), "2026-08-23T02:18:49.000Z",
+  "daily queue validity ends at the earlier month/Jie boundary, not only at day end");
+assert.equal(delivery.zibaiOccurrenceEndAt(internalBoundaryPayloads[1]), "2026-08-23T02:18:49.000Z",
+  "shichen queue validity ends at the earliest month/day/shichen boundary");
+assert.equal(delivery.zibaiOccurrenceEndAt(internalBoundaryPayloads[2]), "2026-08-23T02:18:00.000Z",
+  "an internal apparent-solar day boundary also expires a shichen payload");
+assert.equal(delivery.zibaiOccurrenceEndAt({
+  event: "zibai_daily", snapshotSchema: 2, calculationVersion: policyCalculationVersion,
+  month: {}, day: { endAt: "2026-08-23T15:30:00.000Z" },
+}), null, "three-layer provider validity fails closed when a required layer end is absent");
+for (const payload of internalBoundaryPayloads) {
+  const boundaryNow = new Date("2026-08-23T02:17:00.000Z");
+  assert.deepEqual(delivery.currentPolicyDecision(
+    { kind: "zibai", payload, source_facts: { calculationVersion: policyCalculationVersion },
+      zibai_token_calculation_version: policyCalculationVersion, transactional: false, privacy_safe: true,
+      created_at: boundaryNow.toISOString() },
+    { privacy_preview: false, zibai_enabled: true, zibai_timezone: "UTC", zibai_quiet_start: 22, zibai_quiet_end: 7,
+      zibai_calculation_version: policyCalculationVersion, zibai_expires_at: delivery.zibaiOccurrenceEndAt(payload), now_at: boundaryNow },
+    0,
+  ), { allow: false, terminal: true, reason: "policy_expired_occurrence" },
+  `${payload.event} is rejected when any visible layer expires inside the provider safety window`);
+}
 assert.deepEqual(delivery.currentPolicyDecision(
   { kind: "zibai", payload: { calculationVersion: policyCalculationVersion }, source_facts: { calculationVersion: policyCalculationVersion },
     zibai_token_calculation_version: policyCalculationVersion, transactional: false, privacy_safe: true, created_at: capFixtureNow.toISOString() },
