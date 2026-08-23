@@ -47,7 +47,9 @@ assert.doesNotMatch(notice.historyCopies.th.body, /วางแผน|งาน�
 const optedInPreview = scheduler.buildZibaiNotice({ ...row, privacy_preview: true }, "zibai_shichen", snapshot, occurrenceId);
 assert.equal(optedInPreview.messages[0].body, notice.historyCopies.th.body,
   "privacy-preview provider copy is the exact bounded history copy without truncation");
-assert.deepEqual(Object.keys(notice.sourceFacts).sort(), ["apparentSolarDate", "calculationVersion", "occurrenceType", "shichen"],
+assert.deepEqual(Object.keys(notice.sourceFacts).sort(), [
+  "apparentSolarDate", "calculationVersion", "dayEndAt", "monthEndAt", "occurrenceType", "shichen", "shichenEndAt",
+],
   "science audit facts retain the branch without a credential-like key name");
 assert.equal(/latitude|longitude|100\.5018|13\.7/iu.test(JSON.stringify(notice)), false);
 assert.equal(scheduler.occurrenceKey(row.installation_id, "zibai_shichen", snapshot.apparentSolarDate, snapshot.shichenKey), `${row.installation_id}|${snapshot.apparentSolarDate}|${snapshot.shichenKey}|zibai-zaoming-true-solar-v2`);

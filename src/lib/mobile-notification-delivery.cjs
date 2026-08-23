@@ -189,6 +189,9 @@ async function reserve(db, notice, dry = false) {
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.zibaiOccurrenceId)
     ? notice.zibaiOccurrenceId : null;
   if (notice?.kind === "zibai" && zibaiOccurrenceId === null) throw new TypeError("zibai occurrence reservation required");
+  if (notice?.kind === "zibai" && zibaiOccurrenceEndAt(notice.payload, notice.sourceFacts) === null) {
+    throw new TypeError("zibai occurrence expiry attestation required");
+  }
   if (dry) {
     const existing = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [notice.userId, notice.key]);
     return existing.rows[0] ? null : { id: null, attemptIds: [] };
@@ -827,9 +830,29 @@ function resolvePolicyClock(options = {}) {
   return parsed;
 }
 
-function zibaiOccurrenceEndAt(payload) {
+function zibaiOccurrenceEndAt(payload, sourceFacts = null) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
-  if (payload.snapshotSchema !== 2) return payload.endAt || null;
+  const event = payload.event;
+  const occurrenceType = event === "zibai_daily" ? "daily"
+    : event === "zibai_shichen" ? "shichen" : null;
+  if (occurrenceType === null) return null;
+  const sourceLayerEnds = occurrenceType === "daily"
+    ? [sourceFacts?.monthEndAt, sourceFacts?.dayEndAt]
+    : [sourceFacts?.monthEndAt, sourceFacts?.dayEndAt, sourceFacts?.shichenEndAt];
+  const hasSourceLayerEnds = sourceLayerEnds.some((value) => value !== undefined && value !== null);
+  const parsedSourceLayerEnds = sourceLayerEnds.map((value) => new Date(value));
+  const validSourceLayerEnds = sourceFacts && sourceFacts.occurrenceType === occurrenceType
+    && parsedSourceLayerEnds.every((instant) => Number.isFinite(instant.valueOf()));
+  if (payload.snapshotSchema !== 2) {
+    if (payload.calculationVersion !== zibaiVersionRuntime.ACTIVE_CALCULATION_VERSION) {
+      const legacyEnd = new Date(payload.endAt);
+      return Number.isFinite(legacyEnd.valueOf()) ? legacyEnd.toISOString() : null;
+    }
+    if (!validSourceLayerEnds) return null;
+    const legacyVisibleEnd = occurrenceType === "daily" ? sourceFacts.dayEndAt : sourceFacts.shichenEndAt;
+    if (new Date(legacyVisibleEnd).valueOf() !== new Date(payload.endAt).valueOf()) return null;
+    return new Date(Math.min(...parsedSourceLayerEnds.map((instant) => instant.valueOf()))).toISOString();
+  }
   const layerEnds = payload.event === "zibai_daily"
     ? [payload.month?.endAt, payload.day?.endAt]
     : payload.event === "zibai_shichen"
@@ -838,6 +861,8 @@ function zibaiOccurrenceEndAt(payload) {
   if (layerEnds.length === 0) return null;
   const instants = layerEnds.map((value) => new Date(value));
   if (instants.some((instant) => !Number.isFinite(instant.valueOf()))) return null;
+  if (hasSourceLayerEnds && (!validSourceLayerEnds
+    || parsedSourceLayerEnds.some((instant, index) => instant.valueOf() !== instants[index].valueOf()))) return null;
   return new Date(Math.min(...instants.map((instant) => instant.valueOf()))).toISOString();
 }
 
@@ -872,7 +897,7 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     );
     context.zibai_enabled = zibai.rows[0]?.enabled === true;
     context.zibai_expires_at = (event === "zibai_shichen" || event === "zibai_daily")
-      ? zibaiOccurrenceEndAt(row.payload) : null;
+      ? zibaiOccurrenceEndAt(row.payload, row.source_facts) : null;
     context.zibai_timezone = zibai.rows[0]?.location_timezone || "UTC";
     context.zibai_quiet_start = zibai.rows[0]?.quiet_start;
     context.zibai_quiet_end = zibai.rows[0]?.quiet_end;
