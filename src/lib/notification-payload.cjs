@@ -11,6 +11,7 @@ const ROUTES = Object.freeze({
 });
 const zibaiRuleRuntime = require("./zibai-three-layer-runtime.cjs");
 const solarTermRuntime = require("./zibai-solar-term-runtime.cjs");
+const zibaiVersionRuntime = require("./zibai-version-runtime.cjs");
 
 const FACT_KEYS = Object.freeze({
   security: ["event", "url"],
@@ -216,7 +217,7 @@ function readZibaiV2Facts(record) {
   if (!sameKeys(Object.keys(record), ZIBAI_V2_KEYS)
     || record.snapshotSchema !== 2
     || !["zibai_daily", "zibai_shichen"].includes(record.event)
-    || record.calculationVersion !== "zibai-zaoming-true-solar-v2"
+    || !zibaiVersionRuntime.isReadableCalculationVersion(record.calculationVersion)
     || record.interpretationVersion !== "zibai-3layer-rule-v1"
     || typeof record.referenceId !== "string"
     || record.url !== "/zibai") return null;
@@ -225,9 +226,10 @@ function readZibaiV2Facts(record) {
   const day = readZibaiDay(record.day);
   const shichen = isDaily ? (record.shichen === null ? null : undefined) : readZibaiShichen(record.shichen);
   if (!month || !day || shichen === undefined || (!isDaily && !shichen)) return null;
-  const reference = /^zibai\|(\d{4}-\d{2}-\d{2})\|(daily|zi|chou|yin|mao|chen|si|wu|wei|shen|you|xu|hai)\|zibai-zaoming-true-solar-v2$/u.exec(record.referenceId);
+  const reference = zibaiVersionRuntime.parseReferenceId(record.referenceId);
   const expectedSlot = isDaily ? "daily" : shichen.key;
-  if (!reference || reference[1] !== day.apparentSolarDate || reference[2] !== expectedSlot) return null;
+  if (!reference || reference.apparentSolarDate !== day.apparentSolarDate || reference.slot !== expectedSlot
+    || reference.calculationVersion !== record.calculationVersion) return null;
   const dayStart = new Date(day.startAt).getTime();
   const dayEnd = new Date(day.endAt).getTime();
   const monthStart = new Date(month.startAt).getTime();
@@ -260,13 +262,13 @@ function directionForStar(palaces, star) {
 
 function validZibaiFacts(facts) {
   const isDaily = facts.event === "zibai_daily";
-  const referenceMatch = /^zibai\|(\d{4}-\d{2}-\d{2})\|(daily|zi|chou|yin|mao|chen|si|wu|wei|shen|you|xu|hai)\|zibai-zaoming-true-solar-v2$/u.exec(String(facts.referenceId || ""));
+  const referenceMatch = zibaiVersionRuntime.parseReferenceId(facts.referenceId);
   const durationMs = validIso(facts.startAt) && validIso(facts.endAt)
     ? new Date(facts.endAt).getTime() - new Date(facts.startAt).getTime()
     : NaN;
   if (!["zibai_daily", "zibai_shichen"].includes(facts.event)
     || referenceMatch === null
-    || facts.calculationVersion !== "zibai-zaoming-true-solar-v2"
+    || !zibaiVersionRuntime.isReadableCalculationVersion(facts.calculationVersion)
     || !validDate(facts.apparentSolarDate)
     || !validIso(facts.startAt) || !validIso(facts.endAt)
     || durationMs <= 0
@@ -277,7 +279,8 @@ function validZibaiFacts(facts) {
     || !Array.isArray(facts.focus) || facts.focus.length !== 4) return false;
   if (isDaily ? facts.shichenKey !== null || facts.shichenPalaces !== null : !ZIBAI_SHICHEN.has(facts.shichenKey) || !validZibaiPalaces(facts.shichenPalaces)) return false;
   const expectedReferencePart = isDaily ? "daily" : facts.shichenKey;
-  if (referenceMatch[1] !== facts.apparentSolarDate || referenceMatch[2] !== expectedReferencePart) return false;
+  if (referenceMatch.apparentSolarDate !== facts.apparentSolarDate || referenceMatch.slot !== expectedReferencePart
+    || referenceMatch.calculationVersion !== facts.calculationVersion) return false;
   const stars = [];
   for (const item of facts.focus) {
     if (!item || typeof item !== "object" || Array.isArray(item) || !exactKeys(item, ZIBAI_FOCUS_KEYS)

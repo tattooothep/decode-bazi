@@ -6,13 +6,14 @@ const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const copy = require("../src/lib/zibai-notification-copy.cjs");
 const zibaiRuleRuntime = require("../src/lib/zibai-three-layer-runtime.cjs");
+const zibaiVersionRuntime = require("../src/lib/zibai-version-runtime.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
 const { ZIBAI_LOCATION_LEASE_MS } = require("../src/lib/zibai-location-policy.cjs");
 
 const DRY = process.argv.includes("--dry");
 const BATCH = Math.max(1, Math.min(1_000, Number((process.argv.find((arg) => arg.startsWith("--batch=")) || "--batch=250").slice(8))));
 const WORKERS = Math.max(1, Math.min(20, Number((process.argv.find((arg) => arg.startsWith("--workers=")) || "--workers=1").slice(10))));
-const CALCULATION_VERSION = "zibai-zaoming-true-solar-v2";
+const CALCULATION_VERSION = zibaiVersionRuntime.ACTIVE_CALCULATION_VERSION;
 
 (function loadEnv() {
   const envPath = path.join(__dirname, "..", ".env.local");
@@ -44,10 +45,18 @@ function occurrenceKey(installationId, event, apparentDate, shichenKey) {
   return `${installationId}|${apparentDate}|${slot}|${CALCULATION_VERSION}`;
 }
 
+function snapshotCalculationVersion(snapshot) {
+  if (snapshot?.calculationVersion !== CALCULATION_VERSION) {
+    throw new TypeError("zibai_snapshot_calculation_version_mismatch");
+  }
+  return snapshot.calculationVersion;
+}
+
 function buildZibaiV2Facts(snapshot, event) {
+  const calculationVersion = snapshotCalculationVersion(snapshot);
   const daily = event === "zibai_daily";
   const shichenKey = daily ? null : snapshot.shichen.meta.key;
-  const referenceId = `zibai|${snapshot.day.meta.apparentSolarDate}|${shichenKey || "daily"}|${CALCULATION_VERSION}`;
+  const referenceId = `zibai|${snapshot.day.meta.apparentSolarDate}|${shichenKey || "daily"}|${calculationVersion}`;
   const sectors = zibaiRuleRuntime.interpretZibaiSectors(snapshot, !daily).map((sector) => Object.freeze({
     direction: sector.direction,
     month: sector.month.star,
@@ -59,7 +68,7 @@ function buildZibaiV2Facts(snapshot, event) {
     snapshotSchema: 2,
     event,
     referenceId,
-    calculationVersion: CALCULATION_VERSION,
+    calculationVersion,
     interpretationVersion: snapshot.interpretationVersion,
     month: Object.freeze({
       startTermCode: snapshot.month.meta.startTermCode,
@@ -86,10 +95,11 @@ function buildZibaiV2Facts(snapshot, event) {
 }
 
 function buildZibaiNotice(row, event, snapshot, occurrenceId) {
+  const calculationVersion = snapshotCalculationVersion(snapshot);
   const shichenKey = event === "zibai_shichen" ? snapshot.shichenKey : null;
-  const referenceId = `zibai|${snapshot.apparentSolarDate}|${shichenKey || "daily"}|${CALCULATION_VERSION}`;
+  const referenceId = `zibai|${snapshot.apparentSolarDate}|${shichenKey || "daily"}|${calculationVersion}`;
   const legacyFacts = {
-    event, referenceId, calculationVersion: CALCULATION_VERSION,
+    event, referenceId, calculationVersion,
     apparentSolarDate: snapshot.apparentSolarDate, shichenKey,
     startAt: snapshot.startAt, endAt: snapshot.endAt,
     dayPalaces: snapshot.dayPalaces,
@@ -116,7 +126,7 @@ function buildZibaiNotice(row, event, snapshot, occurrenceId) {
     historyCopies,
     payload,
     sourceFacts: {
-      calculationVersion: CALCULATION_VERSION,
+      calculationVersion,
       occurrenceType: event === "zibai_shichen" ? "shichen" : "daily",
       apparentSolarDate: snapshot.apparentSolarDate,
       // Avoid the generic credential-key sentinel while retaining the

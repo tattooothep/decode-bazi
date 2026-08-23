@@ -5,8 +5,9 @@ import {
 } from "./fengshui-luxing";
 import ruleRuntime from "./zibai-three-layer-runtime.cjs";
 import solarTermRuntime from "./zibai-solar-term-runtime.cjs";
+import versionRuntime from "./zibai-version-runtime.cjs";
 
-export const ZIBAI_CALCULATION_VERSION = "zibai-zaoming-true-solar-v2" as const;
+export const ZIBAI_CALCULATION_VERSION = versionRuntime.ACTIVE_CALCULATION_VERSION;
 export const ZIBAI_INTERPRETATION_VERSION = "zibai-3layer-rule-v1" as const;
 
 const SHICHEN = ["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"] as const;
