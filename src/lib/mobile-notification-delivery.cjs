@@ -836,22 +836,24 @@ function zibaiOccurrenceEndAt(payload, sourceFacts = null) {
   const occurrenceType = event === "zibai_daily" ? "daily"
     : event === "zibai_shichen" ? "shichen" : null;
   if (occurrenceType === null) return null;
-  const sourceLayerEnds = occurrenceType === "daily"
-    ? [sourceFacts?.monthEndAt, sourceFacts?.dayEndAt]
-    : [sourceFacts?.monthEndAt, sourceFacts?.dayEndAt, sourceFacts?.shichenEndAt];
-  const hasSourceLayerEnds = sourceLayerEnds.some((value) => value !== undefined && value !== null);
+  const sourceLayerKeys = occurrenceType === "daily"
+    ? ["monthEndAt", "dayEndAt"] : ["monthEndAt", "dayEndAt", "shichenEndAt"];
+  const sourceLayerEnds = sourceLayerKeys.map((key) => sourceFacts?.[key]);
+  const hasSourceLayerEnds = sourceFacts && typeof sourceFacts === "object"
+    && sourceLayerKeys.some((key) => Object.prototype.hasOwnProperty.call(sourceFacts, key));
   const parsedSourceLayerEnds = sourceLayerEnds.map((value) => new Date(value));
   const validSourceLayerEnds = sourceFacts && sourceFacts.occurrenceType === occurrenceType
     && parsedSourceLayerEnds.every((instant) => Number.isFinite(instant.valueOf()));
   if (payload.snapshotSchema !== 2) {
-    if (payload.calculationVersion !== "zibai-zaoming-true-solar-v3") {
-      const legacyEnd = new Date(payload.endAt);
-      return Number.isFinite(legacyEnd.valueOf()) ? legacyEnd.toISOString() : null;
+    if (hasSourceLayerEnds) {
+      if (!validSourceLayerEnds) return null;
+      const legacyVisibleEnd = occurrenceType === "daily" ? sourceFacts.dayEndAt : sourceFacts.shichenEndAt;
+      if (new Date(legacyVisibleEnd).valueOf() !== new Date(payload.endAt).valueOf()) return null;
+      return new Date(Math.min(...parsedSourceLayerEnds.map((instant) => instant.valueOf()))).toISOString();
     }
-    if (!validSourceLayerEnds) return null;
-    const legacyVisibleEnd = occurrenceType === "daily" ? sourceFacts.dayEndAt : sourceFacts.shichenEndAt;
-    if (new Date(legacyVisibleEnd).valueOf() !== new Date(payload.endAt).valueOf()) return null;
-    return new Date(Math.min(...parsedSourceLayerEnds.map((instant) => instant.valueOf()))).toISOString();
+    if (payload.calculationVersion === "zibai-zaoming-true-solar-v3") return null;
+    const legacyEnd = new Date(payload.endAt);
+    return Number.isFinite(legacyEnd.valueOf()) ? legacyEnd.toISOString() : null;
   }
   const layerEnds = payload.event === "zibai_daily"
     ? [payload.month?.endAt, payload.day?.endAt]

@@ -109,12 +109,15 @@ function buildZibaiNotice(row, event, snapshot, occurrenceId) {
   const legacyFacts = {
     event, referenceId, calculationVersion,
     apparentSolarDate: snapshot.apparentSolarDate, shichenKey,
-    startAt: snapshot.startAt, endAt: snapshot.endAt,
+    startAt: event === "zibai_daily" ? snapshot.day.startAt : snapshot.shichen.startAt,
+    endAt: event === "zibai_daily" ? snapshot.day.endAt : snapshot.shichen.endAt,
     dayPalaces: snapshot.dayPalaces,
     shichenPalaces: event === "zibai_shichen" ? snapshot.shichenPalaces : null,
     focus: snapshot.focus.map((item) => ({
       star: item.star, dayDirection: item.dayDirection, dayRelation: item.dayRelation,
-      shichenDirection: item.shichenDirection, shichenRelation: item.shichenRelation, overlaps: item.overlaps,
+      shichenDirection: event === "zibai_shichen" ? item.shichenDirection : null,
+      shichenRelation: event === "zibai_shichen" ? item.shichenRelation : null,
+      overlaps: event === "zibai_shichen" ? item.overlaps : false,
     })),
     url: "/zibai",
   };

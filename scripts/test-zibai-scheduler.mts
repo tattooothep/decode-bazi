@@ -22,6 +22,15 @@ const row = {
 };
 const occurrenceId = "30000000-0000-4000-8000-000000000001";
 const notice = scheduler.buildZibaiNotice(row, "zibai_shichen", snapshot, occurrenceId);
+const dailyNotice = scheduler.buildZibaiNotice(
+  row, "zibai_daily", snapshot, "30000000-0000-4000-8000-000000000003",
+);
+assert.equal(dailyNotice.payload.startAt, snapshot.day.startAt,
+  "schema1 daily uses the apparent-solar day start even when the input snapshot top level is the current shichen");
+assert.equal(dailyNotice.payload.endAt, snapshot.day.endAt,
+  "schema1 daily uses the apparent-solar day end required by its 23–25 hour wire contract");
+assert.equal(dailyNotice.sourceFacts.shichenEndAt, null,
+  "daily expiry attestation contains only its required month/day layers");
 assert.throws(
   () => scheduler.buildZibaiNotice(
     row,
