@@ -5,6 +5,7 @@ const notificationPayload = require("./notification-payload.cjs");
 const notificationScience = require("./notification-science.cjs");
 const qimenRuntime = require("./qimen-three-layer-notification.cjs");
 const qimenAdvisory = require("./qimen-notification-advisory.cjs");
+const zibaiVersionRuntime = require("./zibai-version-runtime.cjs");
 
 const DEFAULT_MAX_ATTEMPTS = 5;
 const DEFAULT_BASE_DELAY_SECONDS = 300;
@@ -232,13 +233,27 @@ async function reserve(db, notice, dry = false) {
       const messageSchema = item?.data?.snapshotSchema === 2 ? 2 : 1;
       if (payloadSchema !== messageSchema) throw new TypeError("zibai_notice_schema_mismatch");
       const tokenResult = await client.query(
-        `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform,zibai_payload_schema
-           FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true FOR UPDATE`,
+        `SELECT t.id,t.installation_id,t.device_push_token,t.device_token_type,t.expo_push_token,t.platform,
+                t.zibai_payload_schema,to_jsonb(t)->>'zibai_calculation_version' AS zibai_calculation_version
+           FROM mobile_push_tokens t WHERE t.id=$1 AND t.user_id=$2 AND t.enabled=true FOR UPDATE`,
         [item?.tokenId, notice.userId],
       );
       zibaiToken = tokenResult.rows[0] || null;
       if (!zibaiToken || Number(zibaiToken.zibai_payload_schema) !== payloadSchema) {
         throw new Error("zibai_token_capability_changed");
+      }
+      const installationResult = await client.query(
+        `SELECT calculation_version FROM mobile_zibai_installations
+          WHERE user_id=$1 AND installation_id=$2 FOR UPDATE`,
+        [notice.userId, zibaiToken.installation_id],
+      );
+      const reservedCalculationVersion = notice.payload?.calculationVersion;
+      if (installationResult.rows[0]?.calculation_version !== reservedCalculationVersion
+        || !zibaiVersionRuntime.supportsCalculationVersion(
+          zibaiToken.zibai_calculation_version,
+          reservedCalculationVersion,
+        )) {
+        throw new Error("zibai_token_calculation_capability_changed");
       }
       const occurrence = await client.query(
         `SELECT id,user_id,installation_id,state,push_log_id,occurrence_type,
@@ -665,6 +680,16 @@ function currentPolicyDecision(row, context, capCount) {
   if (row.transactional === true) return { allow: true };
   const now = new Date(context.now_at);
   if (row.kind === "zibai") {
+    const payloadCalculationVersion = row.payload?.calculationVersion;
+    if (!zibaiVersionRuntime.isReadableCalculationVersion(payloadCalculationVersion)
+      || row.source_facts?.calculationVersion !== payloadCalculationVersion
+      || context.zibai_calculation_version !== payloadCalculationVersion
+      || !zibaiVersionRuntime.supportsCalculationVersion(
+        row.zibai_token_calculation_version,
+        payloadCalculationVersion,
+      )) {
+      return { allow: false, terminal: true, reason: "policy_calculation_version_changed" };
+    }
     if (context.zibai_enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
     const expiryValue = context.zibai_expires_at;
     const expiresAt = expiryValue instanceof Date
@@ -835,8 +860,8 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     const event = row.payload && typeof row.payload === "object" ? row.payload.event : null;
     const zibai = await tx.query(
       `SELECT CASE WHEN $3='zibai_shichen' THEN shichen_enabled ELSE daily_enabled END AS enabled,
-              location_timezone,quiet_start,quiet_end
-         FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2`,
+              location_timezone,quiet_start,quiet_end,calculation_version
+         FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2 FOR UPDATE`,
       [row.user_id, row.installation_id, event],
     );
     context.zibai_enabled = zibai.rows[0]?.enabled === true;
@@ -845,6 +870,7 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     context.zibai_timezone = zibai.rows[0]?.location_timezone || "UTC";
     context.zibai_quiet_start = zibai.rows[0]?.quiet_start;
     context.zibai_quiet_end = zibai.rows[0]?.quiet_end;
+    context.zibai_calculation_version = zibai.rows[0]?.calculation_version;
   }
   if (row.kind === "qimen") {
     const qimenAttested = typeof row.payload?.qimenV2 === "string" || typeof row.payload?.qimenV3 === "string";
@@ -919,17 +945,32 @@ async function processClaim(db, attempt, options = {}) {
         );
         const row = current.rows[0];
         if (!row) return null;
-        const policy = await applyCurrentPolicyLocked(tx, row, resolvePolicyClock(options));
-        if (policy) return { ...row, policyBlocked: true, policy };
+        await tx.query(
+          `SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))`,
+          [row.user_id],
+        );
+        // Match reserve()'s cap -> token lock order. The later re-entrant cap
+        // acquisition inside applyCurrentPolicyLocked remains transaction-local.
+        await tx.query(
+          `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
+          [row.user_id],
+        );
         const token = await tx.query(
-          `SELECT id,device_push_token,expo_push_token FROM mobile_push_tokens
-            WHERE user_id=$1 AND installation_id=$2 AND enabled=true
-              AND (($3='fcm' AND device_push_token IS NOT NULL AND platform<>'ios' AND COALESCE(device_token_type,'')<>'apns')
-                OR ($3='expo' AND expo_push_token IS NOT NULL))
-            ORDER BY (id=$4) DESC,last_registered_at DESC NULLS LAST,updated_at DESC,id DESC LIMIT 1 FOR UPDATE`,
+          `SELECT t.id,t.device_push_token,t.expo_push_token,
+                  to_jsonb(t)->>'zibai_calculation_version' AS zibai_calculation_version
+             FROM mobile_push_tokens t
+            WHERE t.user_id=$1 AND t.installation_id=$2 AND t.enabled=true
+              AND (($3='fcm' AND t.device_push_token IS NOT NULL AND t.platform<>'ios' AND COALESCE(t.device_token_type,'')<>'apns')
+                OR ($3='expo' AND t.expo_push_token IS NOT NULL))
+            ORDER BY (t.id=$4) DESC,t.last_registered_at DESC NULLS LAST,t.updated_at DESC,t.id DESC LIMIT 1 FOR UPDATE`,
           [row.user_id, row.installation_id, row.provider, row.token_id],
         );
         if (!token.rows[0]) return { ...row, targetUnavailable: true };
+        const policyRow = row.kind === "zibai"
+          ? { ...row, zibai_token_calculation_version: token.rows[0].zibai_calculation_version }
+          : row;
+        const policy = await applyCurrentPolicyLocked(tx, policyRow, resolvePolicyClock(options));
+        if (policy) return { ...policyRow, policyBlocked: true, policy };
         const marked = await tx.query(
           `UPDATE mobile_push_attempts SET token_id=$3,send_count=send_count+1,send_started_at=now(),
              accepted_at=NULL,delivered_at=NULL,provider_message_id=NULL,provider_ticket_id=NULL,
