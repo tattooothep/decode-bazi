@@ -31,6 +31,7 @@ try {
   `);
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
   psql(database, `
     INSERT INTO users VALUES
       ('00000000-0000-4000-8000-000000000001',NULL),
@@ -196,7 +197,33 @@ try {
       "10000000-0000-4000-8000-000000000006",
       "10000000-0000-4000-8000-000000000007",
     ]);
-    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1 mixedSchemas=2");
+
+    await pool.query(`INSERT INTO users VALUES ('00000000-0000-4000-8000-000000000007',NULL)`);
+    await pool.query(`INSERT INTO mobile_zibai_installations(user_id,installation_id)
+      VALUES('00000000-0000-4000-8000-000000000007','10000000-0000-4000-8000-000000000008')`);
+    const crossVersionRow = {
+      user_id: "00000000-0000-4000-8000-000000000007",
+      installation_id: "10000000-0000-4000-8000-000000000008",
+    };
+    const crossVersionSnapshot = workingScience.buildZibaiSnapshot(at, 0);
+    await pool.query(`INSERT INTO mobile_zibai_occurrences
+      (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state)
+      VALUES($1,$2,$3,'shichen',$4,$5,'zibai-zaoming-true-solar-v2','claimed')`, [
+      crossVersionRow.user_id,
+      crossVersionRow.installation_id,
+      `${crossVersionRow.installation_id}|${crossVersionSnapshot.apparentSolarDate}|${crossVersionSnapshot.shichenKey}|zibai-zaoming-true-solar-v2`,
+      crossVersionSnapshot.apparentSolarDate,
+      crossVersionSnapshot.shichenKey,
+    ]);
+    assert.equal(await scheduler.admitOccurrence(
+      pool,
+      crossVersionRow,
+      "zibai_shichen",
+      crossVersionSnapshot,
+    ), null, "a prior v2 logical slot suppresses v3 instead of raising or sending twice");
+    assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_occurrences
+      WHERE user_id=$1`, [crossVersionRow.user_id])).rows[0].n, 1);
+    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1 mixedSchemas=2 crossVersionDedupe=1");
   } finally {
     delivery.deliver = originalDeliver;
     await pool.end();

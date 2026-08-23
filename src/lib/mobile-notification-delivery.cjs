@@ -241,7 +241,9 @@ async function reserve(db, notice, dry = false) {
         throw new Error("zibai_token_capability_changed");
       }
       const occurrence = await client.query(
-        `SELECT id,user_id,installation_id,state,push_log_id FROM mobile_zibai_occurrences
+        `SELECT id,user_id,installation_id,state,push_log_id,occurrence_type,
+                apparent_solar_date::text,shichen_key,calculation_version
+           FROM mobile_zibai_occurrences
           WHERE id=$1 AND user_id=$2 FOR UPDATE`,
         [zibaiOccurrenceId, notice.userId],
       );
@@ -249,6 +251,13 @@ async function reserve(db, notice, dry = false) {
       if (!zibaiOccurrence || zibaiOccurrence.state !== "claimed" || zibaiOccurrence.push_log_id !== null) return null;
       if (zibaiToken.installation_id !== zibaiOccurrence.installation_id) {
         throw new Error("zibai_token_capability_changed");
+      }
+      if (zibaiOccurrence.calculation_version !== notice.payload?.calculationVersion
+        || zibaiOccurrence.calculation_version !== notice.sourceFacts?.calculationVersion
+        || zibaiOccurrence.occurrence_type !== notice.sourceFacts?.occurrenceType
+        || zibaiOccurrence.apparent_solar_date !== notice.sourceFacts?.apparentSolarDate
+        || (zibaiOccurrence.shichen_key ?? null) !== (notice.sourceFacts?.shichen ?? null)) {
+        throw new Error("zibai_occurrence_binding_changed");
       }
     }
     if (qimenPayload) {
