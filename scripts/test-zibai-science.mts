@@ -16,7 +16,7 @@ function permutation(values: Record<string, number>) {
   assert.deepEqual([...Object.values(values)].sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
 }
 
-assert.equal(ZIBAI_CALCULATION_VERSION, "zibai-zaoming-true-solar-v3");
+assert.equal(ZIBAI_CALCULATION_VERSION, "zibai-zaoming-true-solar-v2");
 assert.equal(ZIBAI_INTERPRETATION_VERSION, "zibai-3layer-rule-v1");
 
 // Worked five-element relations. 宮生星 nourishes the star; 星生宮 expends

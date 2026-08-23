@@ -15,6 +15,13 @@ const BATCH = Math.max(1, Math.min(1_000, Number((process.argv.find((arg) => arg
 const WORKERS = Math.max(1, Math.min(20, Number((process.argv.find((arg) => arg.startsWith("--workers=")) || "--workers=1").slice(10))));
 const CALCULATION_VERSION = zibaiVersionRuntime.ACTIVE_CALCULATION_VERSION;
 
+function assertActiveInstallation(row) {
+  if (row?.calculation_version !== CALCULATION_VERSION
+    || !zibaiVersionRuntime.supportsCalculationVersion(row?.zibai_calculation_version, CALCULATION_VERSION)) {
+    throw new TypeError("zibai_installation_calculation_version_mismatch");
+  }
+}
+
 (function loadEnv() {
   const envPath = path.join(__dirname, "..", ".env.local");
   if (!fs.existsSync(envPath)) return;
@@ -95,6 +102,7 @@ function buildZibaiV2Facts(snapshot, event) {
 }
 
 function buildZibaiNotice(row, event, snapshot, occurrenceId) {
+  assertActiveInstallation(row);
   const calculationVersion = snapshotCalculationVersion(snapshot);
   const shichenKey = event === "zibai_shichen" ? snapshot.shichenKey : null;
   const referenceId = `zibai|${snapshot.apparentSolarDate}|${shichenKey || "daily"}|${calculationVersion}`;
@@ -145,14 +153,15 @@ async function claimDue(db, at, limit = BATCH) {
   const result = await db.query(
     `WITH candidate AS (
        SELECT user_id,installation_id FROM mobile_zibai_installations
-        WHERE ((daily_enabled=true AND next_daily_at<=$1) OR (shichen_enabled=true AND next_shichen_at<=$1))
+        WHERE calculation_version=$3
+          AND ((daily_enabled=true AND next_daily_at<=$1) OR (shichen_enabled=true AND next_shichen_at<=$1))
           AND (lease_token IS NULL OR lease_expires_at<=$1)
         ORDER BY LEAST(COALESCE(next_daily_at,'infinity'),COALESCE(next_shichen_at,'infinity')),user_id,installation_id
         FOR UPDATE SKIP LOCKED LIMIT $2
      )
      UPDATE mobile_zibai_installations z SET lease_token=gen_random_uuid(),lease_expires_at=$1+interval '5 minutes',updated_at=$1
       FROM candidate c WHERE z.user_id=c.user_id AND z.installation_id=c.installation_id RETURNING z.*`,
-    [at.toISOString(), limit],
+    [at.toISOString(), limit, CALCULATION_VERSION],
   );
   return result.rows;
 }
@@ -205,7 +214,7 @@ async function purgeOldOccurrences(db, at = new Date(), limit = 10_000) {
 async function loadClaimContext(db, claim) {
   const result = await db.query(
     `SELECT z.*,t.id AS token_id,t.device_push_token,t.device_token_type,t.expo_push_token,t.platform,t.locale AS token_locale,
-            t.zibai_payload_schema,
+            t.zibai_payload_schema,t.zibai_calculation_version,
             COALESCE(np.privacy_preview,false) AS privacy_preview
        FROM mobile_zibai_installations z
        JOIN mobile_push_tokens t ON t.user_id=z.user_id AND t.installation_id=z.installation_id AND t.enabled=true
@@ -227,6 +236,7 @@ async function finishClaim(db, row, updates) {
 }
 
 async function admitOccurrence(db, row, event, snapshot, state = "claimed", reason = null) {
+  assertActiveInstallation(row);
   const calculationVersion = snapshotCalculationVersion(snapshot);
   const key = occurrenceKey(row.installation_id, event, snapshot.apparentSolarDate, snapshot.shichenKey);
   const occurrenceType = event === "zibai_shichen" ? "shichen" : "daily";
@@ -270,6 +280,12 @@ async function processClaim(db, claim, at, science) {
   if (!row) {
     await db.query(`DELETE FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2 AND lease_token=$3`, [claim.user_id, claim.installation_id, claim.lease_token]);
     return { reserved: 0, skipped: 1, reason: "owner_invalid" };
+  }
+  try {
+    assertActiveInstallation(row);
+  } catch {
+    await finishClaim(db, row, { at, nextDailyAt: null, nextShichenAt: null, reason: "calculation_version_inactive" });
+    return { reserved: 0, skipped: 1, reason: "calculation_version_inactive" };
   }
   const next = { at, nextDailyAt: null, nextShichenAt: null, reason: null };
   const locationAt = row.location_captured_at ? new Date(row.location_captured_at) : null;
@@ -333,7 +349,7 @@ async function runScheduler(db, signal, at = new Date()) {
     await purgeOldOccurrences(db, at);
   }
   const claims = DRY
-    ? (await db.query(`SELECT * FROM mobile_zibai_installations WHERE ((daily_enabled AND next_daily_at<=$1) OR (shichen_enabled AND next_shichen_at<=$1)) ORDER BY LEAST(COALESCE(next_daily_at,'infinity'),COALESCE(next_shichen_at,'infinity')) LIMIT $2`, [at.toISOString(), BATCH * WORKERS])).rows
+    ? (await db.query(`SELECT * FROM mobile_zibai_installations WHERE calculation_version=$3 AND ((daily_enabled AND next_daily_at<=$1) OR (shichen_enabled AND next_shichen_at<=$1)) ORDER BY LEAST(COALESCE(next_daily_at,'infinity'),COALESCE(next_shichen_at,'infinity')) LIMIT $2`, [at.toISOString(), BATCH * WORKERS, CALCULATION_VERSION])).rows
     : await claimDueBatches(db, at, BATCH, WORKERS);
   const report = { due: claims.length, reserved: 0, skipped: 0 };
   if (DRY) return report;
