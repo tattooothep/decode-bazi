@@ -141,7 +141,34 @@ function solveUtcForApparentMs(targetApparentMs: number, longitude: number): Dat
     const projected = apparentSolarInstant(new Date(guess), longitude).getTime();
     guess += targetApparentMs - projected;
   }
-  const result = new Date(Math.round(guess));
+  // Date stores integer milliseconds while the apparent-solar offset is
+  // fractional.  Rounding the inverse can therefore return the millisecond
+  // *after* an exact wall-clock boundary.  Select the first integer UTC
+  // millisecond whose projected apparent time belongs to the incoming
+  // half-open interval instead.
+  const projectedAt = (utcMs: number) => apparentSolarInstant(new Date(utcMs), longitude).getTime();
+  let span = 2;
+  let lower = Math.floor(guess) - span;
+  let upper = Math.ceil(guess) + span;
+  for (let i = 0; projectedAt(lower) >= targetApparentMs && i < 32; i += 1) {
+    upper = lower;
+    span *= 2;
+    lower -= span;
+  }
+  for (let i = 0; projectedAt(upper) < targetApparentMs && i < 32; i += 1) {
+    lower = upper;
+    span *= 2;
+    upper += span;
+  }
+  if (projectedAt(lower) >= targetApparentMs || projectedAt(upper) < targetApparentMs) {
+    throw new Error("zibai_solar_boundary_unavailable");
+  }
+  while (upper - lower > 1) {
+    const middle = lower + Math.floor((upper - lower) / 2);
+    if (projectedAt(middle) >= targetApparentMs) upper = middle;
+    else lower = middle;
+  }
+  const result = new Date(upper);
   if (!Number.isFinite(result.getTime())) throw new Error("zibai_solar_boundary_unavailable");
   return result;
 }
@@ -213,17 +240,24 @@ function flyingLayersAt(at: Date, longitude: number) {
 }
 
 export function buildZibaiSnapshot(at: Date, longitude: number): ZibaiSnapshot {
-  const termReference = solarTermRuntime.globalTermReferenceAt(validInstant(at));
+  const requestedAt = validInstant(at);
+  const termReference = solarTermRuntime.globalTermReferenceAt(requestedAt);
   const monthWindow = solarTermRuntime.solarTermMonthWindowFromReference(termReference);
-  const dayWindow = solarDayWindow(at, longitude);
-  const shichen = shichenAt(at, longitude);
-  const monthLayer = flyingLayersAt(at, longitude);
+  const dayWindow = solarDayWindow(requestedAt, longitude);
+  const shichen = shichenAt(requestedAt, longitude);
+  const requestedMs = requestedAt.getTime();
+  if (!(Date.parse(monthWindow.startAt) <= requestedMs && requestedMs < Date.parse(monthWindow.endAt))
+    || !(dayWindow.start.getTime() <= requestedMs && requestedMs < dayWindow.end.getTime())
+    || !(shichen.start.getTime() <= requestedMs && requestedMs < shichen.end.getTime())) {
+    throw new Error("zibai_snapshot_active_interval_mismatch");
+  }
+  const monthLayer = flyingLayersAt(requestedAt, longitude);
   const dayLayer = flyingLayersAt(dayWindow.start, longitude);
   const shichenCalculation = flyingLayersAt(shichen.start, longitude);
   const monthPalaces = exactPermutation(monthLayer.month_stars.palaces);
   const dayPalaces = exactPermutation(dayLayer.day_stars.palaces);
   const shichenPalaces = exactPermutation(shichenCalculation.hour_stars.palaces);
-  const apparentSolarDate = solarDayKey(at, longitude);
+  const apparentSolarDate = solarDayKey(requestedAt, longitude);
   const month = Object.freeze({
     palaces: monthPalaces,
     startAt: monthWindow.startAt,

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import zibaiVersionRuntime from "@/lib/zibai-version-runtime.cjs";
 import type { PoolClient } from "pg";
 import { pool, q, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
@@ -129,6 +130,9 @@ export async function POST(req: Request) {
   const appVersion = String(body.app_version || "").trim().slice(0, 40) || null;
   const timezone = cleanTimezone(body.timezone);
   const zibaiPayloadSchema = body.zibaiPayloadSchema === undefined ? 1 : body.zibaiPayloadSchema;
+  const zibaiCalculationVersion = body.zibaiCalculationVersion === undefined
+    ? zibaiVersionRuntime.LEGACY_CALCULATION_VERSION
+    : body.zibaiCalculationVersion;
   const qimenPayloadSchema = body.qimenPayloadSchema === undefined ? 1 : body.qimenPayloadSchema;
   /**
    * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
@@ -149,6 +153,7 @@ export async function POST(req: Request) {
     || !nativeTokenValid(platform, deviceTokenType, deviceToken)
     || (body.timezone != null && timezone === null)
     || !(zibaiPayloadSchema === 1 || zibaiPayloadSchema === 2)
+    || !zibaiVersionRuntime.isReadableCalculationVersion(zibaiCalculationVersion)
     || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2 || qimenPayloadSchema === 3)
   ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
@@ -230,8 +235,8 @@ export async function POST(req: Request) {
     const registered = await client.query<{ id: string }>(
       `INSERT INTO mobile_push_tokens
          (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,app_version,locale,timezone,enabled,
-          fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema,qimen_payload_schema)
-       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10,$11)
+          fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema,qimen_payload_schema,zibai_calculation_version)
+       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10,$11,$12)
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
@@ -242,6 +247,7 @@ export async function POST(req: Request) {
          locale=EXCLUDED.locale,
          timezone=COALESCE(EXCLUDED.timezone, mobile_push_tokens.timezone),
          zibai_payload_schema=EXCLUDED.zibai_payload_schema,
+         zibai_calculation_version=EXCLUDED.zibai_calculation_version,
          qimen_payload_schema=EXCLUDED.qimen_payload_schema,
          enabled=true,
          fail_count=0,
@@ -249,9 +255,21 @@ export async function POST(req: Request) {
          disabled_at=NULL,
          updated_at=now()
        RETURNING id`,
-      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone, zibaiPayloadSchema, qimenPayloadSchema]
+      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone, zibaiPayloadSchema, qimenPayloadSchema, zibaiCalculationVersion]
     );
     row = registered.rows[0];
+    const installationCalculationVersion = zibaiVersionRuntime.supportsCalculationVersion(
+      zibaiCalculationVersion,
+      zibaiVersionRuntime.ACTIVE_CALCULATION_VERSION,
+    )
+      ? zibaiVersionRuntime.ACTIVE_CALCULATION_VERSION
+      : zibaiVersionRuntime.LEGACY_CALCULATION_VERSION;
+    await client.query(
+      `UPDATE mobile_zibai_installations
+          SET calculation_version=$3,updated_at=now()
+        WHERE user_id=$1 AND installation_id=$2::uuid`,
+      [session.userId, installationId, installationCalculationVersion],
+    );
     await client.query(
       `INSERT INTO mobile_qimen_installations
          (user_id,installation_id,enabled,purpose,quiet_start,quiet_end,location_permission,

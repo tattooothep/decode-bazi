@@ -1,6 +1,7 @@
 import type { Pool, PoolClient } from "pg";
 import { apparentSolarParts, nextShichenBoundary } from "./zibai-science";
 import locationPolicy from "./zibai-location-policy.cjs";
+import versionRuntime from "./zibai-version-runtime.cjs";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const MAX_LOCATION_AGE_MS = locationPolicy.ZIBAI_LOCATION_LEASE_MS;
@@ -161,10 +162,16 @@ export async function mutateZibaiInstallation(pool: Pool, userId: string, mutati
     await client.query("BEGIN");
     await client.query(`SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))`, [userId]);
     await client.query(`SELECT pg_advisory_xact_lock(hashtextextended('mobile-zibai-installation:'||$1::text,0))`, [mutation.installationId]);
-    const token = await client.query(`SELECT id FROM mobile_push_tokens WHERE user_id=$1 AND installation_id=$2 AND enabled=true FOR UPDATE`, [userId, mutation.installationId]);
+    const token = await client.query(`SELECT id,zibai_calculation_version FROM mobile_push_tokens WHERE user_id=$1 AND installation_id=$2 AND enabled=true FOR UPDATE`, [userId, mutation.installationId]);
     if (!token.rows[0]) throw new ZibaiStateError("zibai_installation_not_found", 404);
+    const calculationVersion = versionRuntime.supportsCalculationVersion(
+      token.rows[0].zibai_calculation_version,
+      versionRuntime.ACTIVE_CALCULATION_VERSION,
+    ) ? versionRuntime.ACTIVE_CALCULATION_VERSION : versionRuntime.LEGACY_CALCULATION_VERSION;
     await client.query(`DELETE FROM mobile_zibai_installations WHERE installation_id=$2 AND user_id<>$1`, [userId, mutation.installationId]);
-    await client.query(`INSERT INTO mobile_zibai_installations(user_id,installation_id) VALUES($1,$2) ON CONFLICT(user_id,installation_id) DO NOTHING`, [userId, mutation.installationId]);
+    await client.query(`INSERT INTO mobile_zibai_installations(user_id,installation_id,calculation_version)
+      VALUES($1,$2,$3) ON CONFLICT(user_id,installation_id) DO UPDATE
+      SET calculation_version=EXCLUDED.calculation_version,updated_at=now()`, [userId, mutation.installationId, calculationVersion]);
     const selected = await client.query<ZibaiRow>(`SELECT * FROM mobile_zibai_installations WHERE user_id=$1 AND installation_id=$2 FOR UPDATE`, [userId, mutation.installationId]);
     const current = selected.rows[0];
     if (mutation.action === "location" || mutation.action === "background_location") {

@@ -31,6 +31,7 @@ try {
   `);
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_compatibility.sql", "utf8"));
   psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
   psql(database, `
     INSERT INTO users VALUES
@@ -39,12 +40,13 @@ try {
       ('00000000-0000-4000-8000-000000000003',NULL),
       ('00000000-0000-4000-8000-000000000004',NULL),
       ('00000000-0000-4000-8000-000000000005',NULL);
-    INSERT INTO mobile_push_tokens VALUES
-      ('20000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',true,'native-1','fcm','ExponentPushToken[one]','android','th'),
-      ('20000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',true,'native-2','fcm','ExponentPushToken[two]','android','en'),
-      ('20000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000003',true,'native-3','fcm','ExponentPushToken[three]','android','en'),
-      ('20000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000004','10000000-0000-4000-8000-000000000004',true,'native-4','fcm','ExponentPushToken[four]','android','en'),
-      ('20000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000005',true,'native-5','fcm','ExponentPushToken[five]','android','en');
+    INSERT INTO mobile_push_tokens
+      (id,user_id,installation_id,enabled,device_push_token,device_token_type,expo_push_token,platform,locale,zibai_payload_schema,zibai_calculation_version) VALUES
+      ('20000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',true,'native-1','fcm','ExponentPushToken[one]','android','th',2,'zibai-zaoming-true-solar-v3'),
+      ('20000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',true,'native-2','fcm','ExponentPushToken[two]','android','en',2,'zibai-zaoming-true-solar-v3'),
+      ('20000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000003',true,'native-3','fcm','ExponentPushToken[three]','android','en',2,'zibai-zaoming-true-solar-v3'),
+      ('20000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000004','10000000-0000-4000-8000-000000000004',true,'native-4','fcm','ExponentPushToken[four]','android','en',2,'zibai-zaoming-true-solar-v3'),
+      ('20000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000005',true,'native-5','fcm','ExponentPushToken[five]','android','en',2,'zibai-zaoming-true-solar-v3');
     INSERT INTO mobile_notification_prefs VALUES
       ('00000000-0000-4000-8000-000000000001',false),
       ('00000000-0000-4000-8000-000000000002',false),
@@ -52,19 +54,19 @@ try {
       ('00000000-0000-4000-8000-000000000004',false),
       ('00000000-0000-4000-8000-000000000005',false);
     INSERT INTO mobile_zibai_installations
-      (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)
+      (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at,calculation_version)
     VALUES
-      ('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',true,22,7,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}'),
-      ('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - (7 * 24 * 3_600_000 - 60_000)).toISOString()}','${new Date(at.getTime() + 60_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}'),
-      ('00000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000003',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}');
+      ('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',true,22,7,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}','zibai-zaoming-true-solar-v3'),
+      ('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - (7 * 24 * 3_600_000 - 60_000)).toISOString()}','${new Date(at.getTime() + 60_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}','zibai-zaoming-true-solar-v3'),
+      ('00000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000003',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}','zibai-zaoming-true-solar-v3');
     INSERT INTO mobile_zibai_installations
-      (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)
+      (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at,calculation_version)
     VALUES
-      ('00000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000005',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}');
+      ('00000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000005',true,0,0,'background',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}','zibai-zaoming-true-solar-v3');
     INSERT INTO mobile_zibai_installations
-      (user_id,installation_id,daily_enabled,daily_minute,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_daily_at)
+      (user_id,installation_id,daily_enabled,daily_minute,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_daily_at,calculation_version)
     VALUES
-      ('00000000-0000-4000-8000-000000000004','10000000-0000-4000-8000-000000000004',true,419,22,7,'foreground',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}');
+      ('00000000-0000-4000-8000-000000000004','10000000-0000-4000-8000-000000000004',true,419,22,7,'foreground',13.75,0,'UTC','${new Date(at.getTime() - 60_000).toISOString()}','${new Date(at.getTime() + 23 * 3_600_000).toISOString()}','${new Date(at.getTime() - 1_000).toISOString()}','zibai-zaoming-true-solar-v3');
     GRANT USAGE ON SCHEMA public TO ${role};
     GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
   `);
@@ -112,7 +114,12 @@ try {
     assert.ok(new Date(failureState.rows[0].next_shichen_at).getTime() > at.getTime());
 
     const recoverySnapshot = workingScience.buildZibaiSnapshot(at, Number(recoveryClaim.longitude));
-    const strandedOccurrenceId = await scheduler.admitOccurrence(pool, recoveryClaim, "zibai_shichen", recoverySnapshot);
+    const strandedOccurrenceId = await scheduler.admitOccurrence(
+      pool,
+      { ...recoveryClaim, zibai_calculation_version: "zibai-zaoming-true-solar-v3" },
+      "zibai_shichen",
+      recoverySnapshot,
+    );
     assert.ok(strandedOccurrenceId, "fixture must persist the occurrence before simulating a process crash");
     const recoveryResult = await scheduler.processClaim(pool, recoveryClaim, at, workingScience);
     assert.deepEqual(recoveryResult, { reserved: 1, skipped: 0, reason: null }, "a crash-stranded claimed occurrence must resume its durable reservation");
@@ -159,17 +166,17 @@ try {
     await pool.query(`INSERT INTO mobile_notification_prefs VALUES ('00000000-0000-4000-8000-000000000006',false)`);
     await pool.query(`
       INSERT INTO mobile_push_tokens
-        (id,user_id,installation_id,enabled,device_push_token,device_token_type,expo_push_token,platform,locale,zibai_payload_schema)
+        (id,user_id,installation_id,enabled,device_push_token,device_token_type,expo_push_token,platform,locale,zibai_payload_schema,zibai_calculation_version)
       VALUES
-        ('20000000-0000-4000-8000-000000000006','00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000006',true,'native-6','fcm','ExponentPushToken[six]','android','en',1),
-        ('20000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007',true,'native-7','fcm','ExponentPushToken[seven]','android','en',2)
+        ('20000000-0000-4000-8000-000000000006','00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000006',true,'native-6','fcm','ExponentPushToken[six]','android','en',1,'zibai-zaoming-true-solar-v3'),
+        ('20000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007',true,'native-7','fcm','ExponentPushToken[seven]','android','en',2,'zibai-zaoming-true-solar-v3')
     `);
     await pool.query(`
       INSERT INTO mobile_zibai_installations
-        (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at)
+        (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_shichen_at,calculation_version)
       VALUES
-        ('00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000006',true,0,0,'background',13.75,0,'UTC',$1,$2,$3),
-        ('00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007',true,0,0,'background',13.75,0,'UTC',$1,$2,$3)
+        ('00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000006',true,0,0,'background',13.75,0,'UTC',$1,$2,$3,'zibai-zaoming-true-solar-v3'),
+        ('00000000-0000-4000-8000-000000000006','10000000-0000-4000-8000-000000000007',true,0,0,'background',13.75,0,'UTC',$1,$2,$3,'zibai-zaoming-true-solar-v3')
     `, [
       new Date(at.getTime() - 60_000).toISOString(),
       new Date(at.getTime() + 23 * 3_600_000).toISOString(),
@@ -204,6 +211,8 @@ try {
     const crossVersionRow = {
       user_id: "00000000-0000-4000-8000-000000000007",
       installation_id: "10000000-0000-4000-8000-000000000008",
+      calculation_version: "zibai-zaoming-true-solar-v3",
+      zibai_calculation_version: "zibai-zaoming-true-solar-v3",
     };
     const crossVersionSnapshot = workingScience.buildZibaiSnapshot(at, 0);
     await pool.query(`INSERT INTO mobile_zibai_occurrences
@@ -223,7 +232,39 @@ try {
     ), null, "a prior v2 logical slot suppresses v3 instead of raising or sending twice");
     assert.equal((await pool.query(`SELECT count(*)::int AS n FROM mobile_zibai_occurrences
       WHERE user_id=$1`, [crossVersionRow.user_id])).rows[0].n, 1);
-    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1 mixedSchemas=2 crossVersionDedupe=1");
+
+    const legacyUser = "00000000-0000-4000-8000-000000000008";
+    const legacyInstallation = "10000000-0000-4000-8000-000000000009";
+    const legacyDue = new Date(at.getTime() - 1_000).toISOString();
+    await pool.query(`INSERT INTO users VALUES($1,NULL)`, [legacyUser]);
+    await pool.query(`INSERT INTO mobile_notification_prefs VALUES($1,false)`, [legacyUser]);
+    await pool.query(`INSERT INTO mobile_push_tokens
+      (id,user_id,installation_id,enabled,device_push_token,device_token_type,expo_push_token,platform,locale,zibai_payload_schema,zibai_calculation_version)
+      VALUES('20000000-0000-4000-8000-000000000009',$1,$2,true,'native-9','fcm','ExponentPushToken[nine]','android','en',2,'zibai-zaoming-true-solar-v2')`,
+    [legacyUser, legacyInstallation]);
+    await pool.query(`INSERT INTO mobile_zibai_installations
+      (user_id,installation_id,shichen_enabled,quiet_start,quiet_end,location_permission,latitude,longitude,location_timezone,
+       location_captured_at,location_expires_at,next_shichen_at,calculation_version)
+      VALUES($1,$2,true,0,0,'background',13.75,0,'UTC',$3,$4,$5,'zibai-zaoming-true-solar-v2')`, [
+      legacyUser, legacyInstallation, new Date(at.getTime() - 60_000).toISOString(),
+      new Date(at.getTime() + 23 * 3_600_000).toISOString(), legacyDue,
+    ]);
+    assert.equal((await scheduler.claimDue(pool, at, 10)).length, 0,
+      "active V3 claim query never leases a V223/V2 installation");
+    const manualLease = "40000000-0000-4000-8000-000000000009";
+    await pool.query(`UPDATE mobile_zibai_installations SET lease_token=$3,lease_expires_at=$4
+      WHERE user_id=$1 AND installation_id=$2`, [legacyUser, legacyInstallation, manualLease, new Date(at.getTime() + 60_000).toISOString()]);
+    assert.deepEqual(await scheduler.processClaim(pool, {
+      user_id: legacyUser, installation_id: legacyInstallation, lease_token: manualLease,
+    }, at, workingScience), { reserved: 0, skipped: 1, reason: "calculation_version_inactive" },
+    "defense-in-depth rejects a stale leased V2 row");
+    const inactive = (await pool.query(`SELECT next_shichen_at,lease_token,last_skip_reason FROM mobile_zibai_installations
+      WHERE user_id=$1 AND installation_id=$2`, [legacyUser, legacyInstallation])).rows[0];
+    assert.equal(new Date(inactive.next_shichen_at).toISOString(), legacyDue,
+      "inactive capability rejection never advances the due timestamp");
+    assert.equal(inactive.lease_token, null);
+    assert.equal(inactive.last_skip_reason, "calculation_version_inactive");
+    console.log("ZIBAI_SCHEDULER_DB_OK quietSkip=1 dailyDelay=1 engineFailureReleased=1 crashRecovery=1 durableRecovery=1 mixedSchemas=2 crossVersionDedupe=1 mixedFleetFence=1");
   } finally {
     delivery.deliver = originalDeliver;
     await pool.end();

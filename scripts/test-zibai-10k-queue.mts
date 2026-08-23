@@ -97,6 +97,7 @@ try {
   psql(database, readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8"));
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_compatibility.sql", "utf8"));
   psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
   psql(database, `
     INSERT INTO users(id)
@@ -105,9 +106,9 @@ try {
       SELECT id,row_number() OVER (ORDER BY id) AS ordinal FROM users
     )
     INSERT INTO mobile_push_tokens
-      (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,timezone,last_registered_at,zibai_payload_schema)
+      (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,timezone,last_registered_at,zibai_payload_schema,zibai_calculation_version)
     SELECT id,gen_random_uuid(),'ExponentPushToken['||id::text||']','fcm-'||id::text,'fcm','android','en','UTC',now(),
-           CASE WHEN ordinal % 4 IN (0,1) THEN 2 ELSE 1 END
+           CASE WHEN ordinal % 4 IN (0,1) THEN 2 ELSE 1 END,'zibai-zaoming-true-solar-v3'
       FROM ranked;
     INSERT INTO mobile_notification_prefs(user_id,privacy_preview,locale)
     SELECT id,true,'en' FROM (
@@ -115,11 +116,11 @@ try {
     ) ranked WHERE ordinal % 2 = 0;
     INSERT INTO mobile_zibai_installations
       (user_id,installation_id,daily_enabled,shichen_enabled,quiet_start,quiet_end,location_permission,
-       latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_daily_at,next_shichen_at)
+       latitude,longitude,location_timezone,location_captured_at,location_expires_at,next_daily_at,next_shichen_at,calculation_version)
     SELECT t.user_id,t.installation_id,false,true,0,0,'background',13.75,0,'UTC',
            '${new Date(startAt.getTime() - 60_000).toISOString()}',
            '${new Date(startAt.getTime() + 23 * 3_600_000).toISOString()}',NULL,
-           '${new Date(startAt.getTime() - 1_000).toISOString()}'
+           '${new Date(startAt.getTime() - 1_000).toISOString()}','zibai-zaoming-true-solar-v3'
       FROM mobile_push_tokens t;
     ANALYZE mobile_zibai_installations;
     GRANT USAGE ON SCHEMA public TO ${role};

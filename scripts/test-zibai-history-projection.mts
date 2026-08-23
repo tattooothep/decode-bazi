@@ -34,6 +34,8 @@ const row = {
   platform: "android",
   token_locale: "en",
   privacy_preview: true,
+  calculation_version: "zibai-zaoming-true-solar-v3",
+  zibai_calculation_version: "zibai-zaoming-true-solar-v3",
 };
 const occurrenceId = "30000000-0000-4000-8000-000000000001";
 const v1 = scheduler.buildZibaiNotice({ ...row, zibai_payload_schema: 1 }, "zibai_shichen", snapshot, occurrenceId).payload;

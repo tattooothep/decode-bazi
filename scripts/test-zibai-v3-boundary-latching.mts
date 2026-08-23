@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import solarTermRuntime from "../src/lib/zibai-solar-term-runtime.cjs";
 import {
+  apparentSolarInstant,
   buildZibaiSnapshot,
+  shichenAt,
   solarDayWindow,
 } from "../src/lib/zibai-science.ts";
 
@@ -80,6 +82,32 @@ for (const termIndex of [0, 12] as const) {
       sameShichenMap(before, after, `solstice ${termIndex} +1ms at longitude ${longitude}`);
     }
   }
+}
+
+// Exact solstice/layer coincidences that previously returned T+1ms because
+// the fractional apparent-solar inverse was rounded instead of selected as a
+// discrete half-open boundary.
+const exactCoincidences = [
+  { kind: "day", at: new Date("2025-12-21T15:03:05.000Z"), longitude: 118.701318, target: Date.UTC(2025, 11, 21, 23) },
+  { kind: "shichen", at: new Date("2025-12-21T15:03:05.000Z"), longitude: -151.298682, target: Date.UTC(2025, 11, 21, 5) },
+] as const;
+for (const fixture of exactCoincidences) {
+  const window = fixture.kind === "day"
+    ? solarDayWindow(fixture.at, fixture.longitude)
+    : shichenAt(fixture.at, fixture.longitude);
+  assert.ok(window.start.getTime() <= fixture.at.getTime(), `${fixture.kind}: exact boundary start includes T`);
+  assert.ok(fixture.at.getTime() < window.end.getTime(), `${fixture.kind}: exact boundary end excludes T`);
+  assert.ok(
+    apparentSolarInstant(new Date(window.start.getTime() - 1), fixture.longitude).getTime() < fixture.target,
+    `${fixture.kind}: T-1ms projects to the outgoing interval`,
+  );
+  assert.ok(
+    apparentSolarInstant(window.start, fixture.longitude).getTime() >= fixture.target,
+    `${fixture.kind}: start projects to the incoming interval`,
+  );
+  const snapshot = buildZibaiSnapshot(fixture.at, fixture.longitude);
+  const layer = fixture.kind === "day" ? snapshot.day : snapshot.shichen;
+  assert.equal(layer.startAt, window.start.toISOString(), `${fixture.kind}: snapshot uses the exact solved boundary`);
 }
 
 console.log("ZIBAI_V3_BOUNDARY_LATCHING_OK");

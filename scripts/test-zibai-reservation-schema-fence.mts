@@ -48,13 +48,15 @@ try {
   psql(database, readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8"));
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_compatibility.sql", "utf8"));
   psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
   psql(database, `
     INSERT INTO users(id) VALUES('${userId}'),('${nextUserId}');
     INSERT INTO mobile_notification_prefs(user_id) VALUES('${userId}');
-    INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,zibai_payload_schema)
-      VALUES('${tokenId}','${userId}','${installationId}','ExponentPushToken[zibaischemafence]','fcm-schema-fence','fcm','android','en',2);
-    INSERT INTO mobile_zibai_installations(user_id,installation_id) VALUES('${userId}','${installationId}');
+    INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,zibai_payload_schema,zibai_calculation_version)
+      VALUES('${tokenId}','${userId}','${installationId}','ExponentPushToken[zibaischemafence]','fcm-schema-fence','fcm','android','en',2,'zibai-zaoming-true-solar-v3');
+    INSERT INTO mobile_zibai_installations(user_id,installation_id,calculation_version)
+      VALUES('${userId}','${installationId}','zibai-zaoming-true-solar-v3');
     INSERT INTO mobile_zibai_occurrences(user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state)
       VALUES('${userId}','${installationId}','schema-fence','shichen','2026-08-16','si','zibai-zaoming-true-solar-v3','claimed');
     GRANT USAGE ON SCHEMA public TO ${role};
@@ -68,6 +70,7 @@ try {
     const snapshot = buildZibaiSnapshot(new Date("2026-08-16T03:00:00.000Z"), 100.5018);
     const notice = scheduler.buildZibaiNotice({
       user_id: userId,installation_id: installationId,token_id: tokenId,zibai_payload_schema: 2,
+      calculation_version: "zibai-zaoming-true-solar-v3",zibai_calculation_version: "zibai-zaoming-true-solar-v3",
       device_push_token: "fcm-schema-fence",device_token_type: "fcm",expo_push_token: "ExponentPushToken[zibaischemafence]",
       platform: "android",token_locale: "en",privacy_preview: false,
     }, "zibai_shichen", snapshot, occurrenceId);

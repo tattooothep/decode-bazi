@@ -41,6 +41,8 @@ const liveZibaiRow = {
   token_id: "94000000-0000-4000-8000-000000000001", device_push_token: null,
   device_token_type: null, expo_push_token: "ExponentPushToken[zibai-live]", platform: "ios",
   token_locale: "en", privacy_preview: true, app_version: "0.0.1",
+  calculation_version: "zibai-zaoming-true-solar-v3",
+  zibai_calculation_version: "zibai-zaoming-true-solar-v3",
 };
 const liveZibaiV1 = zibai.buildZibaiNotice(
   { ...liveZibaiRow, zibai_payload_schema: 1 }, "zibai_shichen", liveZibaiSnapshot,

@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 const database = `zibai_v3_migration_${process.pid}`;
 const base = readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8");
+const compatibility = readFileSync("migrations/20260823_mobile_zibai_v3_compatibility.sql", "utf8");
 const forward = readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8");
 const rollback = readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.rollback.sql", "utf8");
 
@@ -25,12 +26,20 @@ try {
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     CREATE TABLE users(id uuid PRIMARY KEY);
     CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid());
-    INSERT INTO users VALUES('00000000-0000-4000-8000-000000000001');
+    CREATE TABLE mobile_push_tokens(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL,installation_id uuid NOT NULL,
+      enabled boolean NOT NULL DEFAULT true
+    );
+    INSERT INTO users VALUES
+      ('00000000-0000-4000-8000-000000000001'),
+      ('00000000-0000-4000-8000-000000000002');
   `);
   psql(database, base);
   psql(database, `
     INSERT INTO mobile_zibai_installations(user_id,installation_id)
-    VALUES('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001');
+    VALUES
+      ('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001'),
+      ('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002');
     INSERT INTO mobile_zibai_occurrences
       (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,calculation_version)
     VALUES
@@ -40,13 +49,21 @@ try {
     VALUES
       ('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','old-si-v2','shichen','2026-08-22','si','zibai-zaoming-true-solar-v2');
   `);
+  psql(database, compatibility);
+  psql(database, `INSERT INTO mobile_push_tokens(user_id,installation_id,zibai_calculation_version)
+    VALUES
+      ('00000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','zibai-zaoming-true-solar-v3'),
+      ('00000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002','zibai-zaoming-true-solar-v2');`);
 
   psql(database, forward);
   assert.equal(psql(database, `SELECT column_default FROM information_schema.columns
     WHERE table_name='mobile_zibai_installations' AND column_name='calculation_version';`),
-  "'zibai-zaoming-true-solar-v3'::text");
-  assert.equal(psql(database, `SELECT calculation_version FROM mobile_zibai_installations;`),
-    "zibai-zaoming-true-solar-v3");
+  "'zibai-zaoming-true-solar-v2'::text",
+  "new installations remain fail-closed until their client capability is known");
+  assert.equal(psql(database, `SELECT string_agg(calculation_version,',' ORDER BY user_id)
+    FROM mobile_zibai_installations;`),
+  "zibai-zaoming-true-solar-v3,zibai-zaoming-true-solar-v2",
+  "V224 activates V3 while an omitted/V223 capability remains on V2");
   assert.equal(psql(database, `SELECT string_agg(calculation_version,',' ORDER BY occurrence_key)
     FROM mobile_zibai_occurrences;`),
   "zibai-zaoming-true-solar-v2,zibai-zaoming-true-solar-v2",
@@ -73,8 +90,9 @@ try {
   assert.equal(psql(database, `SELECT column_default FROM information_schema.columns
     WHERE table_name='mobile_zibai_installations' AND column_name='calculation_version';`),
   "'zibai-zaoming-true-solar-v2'::text");
-  assert.equal(psql(database, `SELECT calculation_version FROM mobile_zibai_installations;`),
-    "zibai-zaoming-true-solar-v2");
+  assert.equal(psql(database, `SELECT string_agg(calculation_version,',' ORDER BY user_id)
+    FROM mobile_zibai_installations;`),
+  "zibai-zaoming-true-solar-v2,zibai-zaoming-true-solar-v2");
   assert.equal(psql(database, `SELECT count(*) FROM mobile_zibai_occurrences
     WHERE calculation_version='zibai-zaoming-true-solar-v3';`), "1",
   "rollback preserves v3 audit history");

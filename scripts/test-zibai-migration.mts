@@ -187,6 +187,12 @@ try {
       "only exact integer capability values 1 and 2 are valid");
     assert.match(beforeMutation, /invalid_push_registration[\s\S]*status: 400/u,
       "invalid capability must return 400 before pool.connect/mutation");
+    assert.match(beforeMutation,
+      /body\.zibaiCalculationVersion === undefined[\s\S]*LEGACY_CALCULATION_VERSION/u,
+      "older clients default to the exact V2 calculation capability");
+    assert.match(beforeMutation,
+      /isReadableCalculationVersion\(zibaiCalculationVersion\)/u,
+      "unknown calculation capabilities fail closed before mutation");
   });
   capabilityContract("route persists negotiated capability on insert and every re-registration", () => {
     const post = pushRoute.slice(pushRoute.indexOf("export async function POST"), pushRoute.indexOf("export async function DELETE"));
@@ -195,8 +201,12 @@ try {
       "re-registration must overwrite, not COALESCE, stale capability");
     assert.match(post, /\[[^\]]*\bzibaiPayloadSchema\b[^\]]*\]/u,
       "the negotiated value must be bound to the upsert even when later capabilities follow it");
-    assert.doesNotMatch(post, /(?:INSERT INTO|UPDATE) mobile_zibai_installations/u,
-      "push registration must not opt into or rewrite Zi Bai consent/location state");
+    assert.match(post,
+      /UPDATE mobile_zibai_installations[\s\S]*SET calculation_version=\$3,updated_at=now\(\)[\s\S]*WHERE user_id=\$1 AND installation_id=\$2::uuid/u,
+      "registration synchronizes only the producer version to the exact client capability");
+    const versionSync = post.slice(post.indexOf("`UPDATE mobile_zibai_installations"), post.indexOf("`,", post.indexOf("`UPDATE mobile_zibai_installations")));
+    assert.doesNotMatch(versionSync, /daily_enabled|shichen_enabled|latitude|longitude|location_|quiet_/u,
+      "calculation capability synchronization cannot opt into or rewrite consent/location state");
   });
   if (capabilityFailures.length > 0) {
     throw new AggregateError(capabilityFailures, "Zi Bai capability migration/registration contract is RED");

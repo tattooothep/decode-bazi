@@ -17,6 +17,8 @@ const row = {
   device_push_token: "fixture-native-token", device_token_type: "fcm", expo_push_token: "ExponentPushToken[fixture]",
   platform: "android", token_locale: "th",
   privacy_preview: false, zibai_payload_schema: 1, app_version: "999.0.0",
+  calculation_version: "zibai-zaoming-true-solar-v3",
+  zibai_calculation_version: "zibai-zaoming-true-solar-v3",
 };
 const occurrenceId = "30000000-0000-4000-8000-000000000001";
 const notice = scheduler.buildZibaiNotice(row, "zibai_shichen", snapshot, occurrenceId);

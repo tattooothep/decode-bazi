@@ -105,6 +105,8 @@ function boundaryRoundTrip(instant: Date, longitude: number, event: "zibai_daily
     token_locale: "en",
     privacy_preview: true,
     zibai_payload_schema: 2,
+    calculation_version: "zibai-zaoming-true-solar-v3",
+    zibai_calculation_version: "zibai-zaoming-true-solar-v3",
   }, event, snapshot, occurrenceId);
   const exactData = { ...notice.messages[0].data, notificationId };
   const prepared = push.prepareMessage({ ...notice.messages[0], data: exactData }, "expo");
@@ -182,29 +184,30 @@ try {
   psql(database, readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8"));
   psql(database, readFileSync("migrations/20260816_mobile_zibai_notifications.sql", "utf8"));
   psql(database, readFileSync("migrations/20260819_mobile_zibai_three_layer.sql", "utf8"));
+  psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_compatibility.sql", "utf8"));
   psql(database, readFileSync("migrations/20260823_mobile_zibai_v3_boundary_latch.sql", "utf8"));
   psql(database, `
     INSERT INTO users(id) VALUES
       ('${ids.dailyV1}'),('${ids.dailyV2}'),('${ids.shichenV1}'),('${ids.shichenV2}');
     INSERT INTO mobile_push_tokens
-      (id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,timezone,last_registered_at,zibai_payload_schema)
+      (id,user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,locale,timezone,last_registered_at,zibai_payload_schema,zibai_calculation_version)
     VALUES
-      ('10000000-0000-4000-8000-000000000101','${ids.dailyV1}','20000000-0000-4000-8000-000000000101','ExponentPushToken[daily-v1]','fcm-daily-v1','fcm','android','en','UTC',now(),1),
-      ('10000000-0000-4000-8000-000000000102','${ids.dailyV2}','20000000-0000-4000-8000-000000000102','ExponentPushToken[daily-v2]',NULL,NULL,'ios','en','UTC',now(),2),
-      ('10000000-0000-4000-8000-000000000103','${ids.shichenV1}','20000000-0000-4000-8000-000000000103','ExponentPushToken[shichen-v1]',NULL,NULL,'ios','en','UTC',now(),1),
-      ('10000000-0000-4000-8000-000000000104','${ids.shichenV2}','20000000-0000-4000-8000-000000000104','ExponentPushToken[shichen-v2]','fcm-shichen-v2','fcm','android','en','UTC',now(),2);
+      ('10000000-0000-4000-8000-000000000101','${ids.dailyV1}','20000000-0000-4000-8000-000000000101','ExponentPushToken[daily-v1]','fcm-daily-v1','fcm','android','en','UTC',now(),1,'zibai-zaoming-true-solar-v3'),
+      ('10000000-0000-4000-8000-000000000102','${ids.dailyV2}','20000000-0000-4000-8000-000000000102','ExponentPushToken[daily-v2]',NULL,NULL,'ios','en','UTC',now(),2,'zibai-zaoming-true-solar-v3'),
+      ('10000000-0000-4000-8000-000000000103','${ids.shichenV1}','20000000-0000-4000-8000-000000000103','ExponentPushToken[shichen-v1]',NULL,NULL,'ios','en','UTC',now(),1,'zibai-zaoming-true-solar-v3'),
+      ('10000000-0000-4000-8000-000000000104','${ids.shichenV2}','20000000-0000-4000-8000-000000000104','ExponentPushToken[shichen-v2]','fcm-shichen-v2','fcm','android','en','UTC',now(),2,'zibai-zaoming-true-solar-v3');
     INSERT INTO mobile_notification_prefs(user_id,privacy_preview,locale) VALUES
       ('${ids.dailyV1}',false,'en'),('${ids.dailyV2}',true,'en'),
       ('${ids.shichenV1}',false,'en'),('${ids.shichenV2}',true,'en');
     INSERT INTO mobile_zibai_installations
       (user_id,installation_id,daily_enabled,shichen_enabled,daily_minute,quiet_start,quiet_end,
        location_permission,latitude,longitude,location_timezone,location_captured_at,location_expires_at,
-       next_daily_at,next_shichen_at)
+       next_daily_at,next_shichen_at,calculation_version)
     VALUES
-      ('${ids.dailyV1}','20000000-0000-4000-8000-000000000101',true,false,415,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z','2026-08-16T06:54:59.000Z',NULL),
-      ('${ids.dailyV2}','20000000-0000-4000-8000-000000000102',true,false,415,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z','2026-08-16T06:54:59.000Z',NULL),
-      ('${ids.shichenV1}','20000000-0000-4000-8000-000000000103',false,true,415,0,0,'background',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z',NULL,'2026-08-16T06:54:59.000Z'),
-      ('${ids.shichenV2}','20000000-0000-4000-8000-000000000104',false,true,415,0,0,'background',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z',NULL,'2026-08-16T06:54:59.000Z');
+      ('${ids.dailyV1}','20000000-0000-4000-8000-000000000101',true,false,415,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z','2026-08-16T06:54:59.000Z',NULL,'zibai-zaoming-true-solar-v3'),
+      ('${ids.dailyV2}','20000000-0000-4000-8000-000000000102',true,false,415,0,0,'foreground',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z','2026-08-16T06:54:59.000Z',NULL,'zibai-zaoming-true-solar-v3'),
+      ('${ids.shichenV1}','20000000-0000-4000-8000-000000000103',false,true,415,0,0,'background',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z',NULL,'2026-08-16T06:54:59.000Z','zibai-zaoming-true-solar-v3'),
+      ('${ids.shichenV2}','20000000-0000-4000-8000-000000000104',false,true,415,0,0,'background',13.75,0,'UTC','2026-08-16T06:54:00.000Z','2026-08-22T06:54:00.000Z',NULL,'2026-08-16T06:54:59.000Z','zibai-zaoming-true-solar-v3');
     GRANT USAGE ON SCHEMA public TO ${role};
     GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
   `);
