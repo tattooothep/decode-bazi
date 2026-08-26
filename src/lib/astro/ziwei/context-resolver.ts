@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
 import { zoneOffsetMinutes } from "../../birth-timezone";
-import { resolveUnambiguousBirthWallClock } from "./hourly-preview";
+import {
+  resolveEligibleZiweiBirthWallClock,
+  resolveUnambiguousBirthWallClock,
+} from "./hourly-preview";
 import { ZIWEI_HOURLY_LINEAGE, ZIWEI_HOURLY_LINEAGE_MANIFEST } from "./hourly-lineage";
 
 export const ZIWEI_CANONICAL_CONTEXT_VERSION = "ziwei-canonical-context-v1" as const;
@@ -12,6 +15,8 @@ export type CanonicalZiweiBlockedReason =
   | "birth_timezone_missing"
   | "birth_timezone_invalid"
   | "birth_wall_clock_ambiguous"
+  | "birth_calendar_range_unsupported"
+  | "birth_late_zi_unsupported"
   | "reference_instant_invalid"
   | "reference_timezone_invalid";
 
@@ -26,7 +31,7 @@ export type CanonicalZiweiContextInput = Readonly<{
   legacyReferenceUsesBirthOffset?: true;
 }>;
 
-type CanonicalTimezone = Readonly<{
+export type CanonicalZiweiTimezone = Readonly<{
   timezone: string;
   kind: "fixed_offset" | "iana";
   offsetMinutes?: number;
@@ -42,7 +47,7 @@ type CanonicalZiweiLineage = Readonly<{
 type CanonicalZiweiBirth = Readonly<{
   wallClock: string;
   timezone: string;
-  timezoneKind: CanonicalTimezone["kind"];
+  timezoneKind: CanonicalZiweiTimezone["kind"];
   timezoneSource: CanonicalZiweiTimezoneSource;
   instant: string;
   utcOffsetMinutes: number;
@@ -51,7 +56,7 @@ type CanonicalZiweiBirth = Readonly<{
 type CanonicalZiweiReference = Readonly<{
   instant: string;
   timezone: string;
-  timezoneKind: CanonicalTimezone["kind"];
+  timezoneKind: CanonicalZiweiTimezone["kind"];
   utcOffsetMinutes: number;
 }>;
 
@@ -64,6 +69,7 @@ export type CanonicalZiweiResolvedContext = CanonicalZiweiContextBase & Readonly
   status: "resolved";
   birth: CanonicalZiweiBirth;
   reference: CanonicalZiweiReference;
+  birthFingerprint: string;
   fingerprint: string;
 }>;
 
@@ -72,6 +78,7 @@ export type CanonicalZiweiCompatibilityContext = CanonicalZiweiContextBase & Rea
   reason: "birth_timezone_missing_legacy_bangkok" | "reference_timezone_legacy_birth_offset";
   birth: CanonicalZiweiBirth;
   reference: CanonicalZiweiReference;
+  birthFingerprint: string;
   fingerprint: string;
 }>;
 
@@ -121,7 +128,7 @@ function validWallClock(value: string): boolean {
     && roundTrip.getUTCMinutes() === minute && roundTrip.getUTCSeconds() === second;
 }
 
-function canonicalTimezone(value: unknown): CanonicalTimezone | null {
+export function strictCanonicalZiweiTimezone(value: unknown): CanonicalZiweiTimezone | null {
   if (typeof value !== "string" || value.length === 0 || value.trim() !== value || value.length > 64) return null;
   const offset = FIXED_OFFSET.exec(value);
   if (offset) {
@@ -144,12 +151,12 @@ function canonicalTimezone(value: unknown): CanonicalTimezone | null {
   } catch { return null; }
 }
 
-function offsetAt(timezone: CanonicalTimezone, instant: Date): number | null {
+function offsetAt(timezone: CanonicalZiweiTimezone, instant: Date): number | null {
   if (timezone.kind === "fixed_offset") return timezone.offsetMinutes ?? null;
   return zoneOffsetMinutes(instant.valueOf(), timezone.timezone);
 }
 
-function fixedOffsetTimezone(offsetMinutes: number): CanonicalTimezone {
+function fixedOffsetTimezone(offsetMinutes: number): CanonicalZiweiTimezone {
   const absolute = Math.abs(offsetMinutes);
   return Object.freeze({
     timezone: `${offsetMinutes < 0 ? "-" : "+"}${String(Math.floor(absolute / 60)).padStart(2, "0")}:${String(absolute % 60).padStart(2, "0")}`,
@@ -174,6 +181,16 @@ function fingerprint(
   return createHash("sha256").update(facts).digest("hex");
 }
 
+function birthFingerprint(birth: CanonicalZiweiBirth): string {
+  const facts = JSON.stringify({
+    contractVersion: ZIWEI_CANONICAL_CONTEXT_VERSION,
+    birth,
+    lineage: LINEAGE,
+    natalPolicy: ZIWEI_HOURLY_LINEAGE_MANIFEST.natalInputPolicy,
+  });
+  return createHash("sha256").update(facts).digest("hex");
+}
+
 export function resolveCanonicalZiweiContext(
   input: CanonicalZiweiContextInput,
 ): CanonicalZiweiContextResult {
@@ -186,10 +203,10 @@ export function resolveCanonicalZiweiContext(
   const birthTimezoneMissing = input.birthTimezone === null || input.birthTimezone === undefined || input.birthTimezone === "";
   if (birthTimezoneMissing && input.mode !== "legacy_chart") return blocked("birth_timezone_missing");
   const birthTimezone = birthTimezoneMissing
-    ? canonicalTimezone("+07:00")
-    : canonicalTimezone(input.birthTimezone);
+    ? strictCanonicalZiweiTimezone("+07:00")
+    : strictCanonicalZiweiTimezone(input.birthTimezone);
   if (!birthTimezone) return blocked("birth_timezone_invalid");
-  const explicitReferenceTimezone = canonicalTimezone(input.referenceTimezone);
+  const explicitReferenceTimezone = strictCanonicalZiweiTimezone(input.referenceTimezone);
   if (!explicitReferenceTimezone) return blocked("reference_timezone_invalid");
 
   let birthInstant: Date;
@@ -230,6 +247,7 @@ export function resolveCanonicalZiweiContext(
       lineage: LINEAGE,
       birth,
       reference,
+      birthFingerprint: birthFingerprint(birth),
       fingerprint: fingerprint("compatibility_only", birth, reference),
     });
   }
@@ -241,6 +259,7 @@ export function resolveCanonicalZiweiContext(
       lineage: LINEAGE,
       birth,
       reference,
+      birthFingerprint: birthFingerprint(birth),
       fingerprint: fingerprint("compatibility_only", birth, reference),
     });
   }
@@ -250,6 +269,51 @@ export function resolveCanonicalZiweiContext(
     lineage: LINEAGE,
     birth,
     reference,
+    birthFingerprint: birthFingerprint(birth),
     fingerprint: fingerprint("resolved", birth, reference),
   });
+}
+
+/**
+ * Strict notification/preview context for the supported hourly lineage.
+ * The ordinary chart keeps its explicit legacy compatibility domain; every
+ * hourly consumer must pass this narrower gate before consent or scheduling.
+ */
+export function resolveCanonicalZiweiHourlyContext(
+  input: CanonicalZiweiContextInput,
+): CanonicalZiweiContextResult {
+  const wallMatch = typeof input.birthWallClock === "string"
+    ? WALL_CLOCK.exec(input.birthWallClock)
+    : null;
+  if (wallMatch && validWallClock(input.birthWallClock)) {
+    const date = `${wallMatch[1]}-${wallMatch[2]}-${wallMatch[3]}`;
+    if (date < "1900-01-31" || date > "2100-12-31") {
+      return blocked("birth_calendar_range_unsupported");
+    }
+    if (Number(wallMatch[4]) === 23) return blocked("birth_late_zi_unsupported");
+  }
+  const context = resolveCanonicalZiweiContext(input);
+  if (context.status !== "resolved") return context;
+  try {
+    const eligibleInstant = resolveEligibleZiweiBirthWallClock(
+      context.birth.wallClock,
+      context.birth.timezone,
+    );
+    if (eligibleInstant.toISOString() !== context.birth.instant) {
+      return blocked("birth_wall_clock_ambiguous");
+    }
+    return context;
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "";
+    if (reason === "ziwei_hourly_calendar_range_unsupported") {
+      return blocked("birth_calendar_range_unsupported");
+    }
+    if (reason === "ziwei_hourly_late_zi_birth_unsupported") {
+      return blocked("birth_late_zi_unsupported");
+    }
+    if (reason === "ziwei_hourly_invalid_birth_timezone") {
+      return blocked("birth_timezone_invalid");
+    }
+    return blocked("birth_wall_clock_ambiguous");
+  }
 }

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { q, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
-import { upsertSelfProfile } from "@/lib/self-profile";
-import { parseTz } from "@/lib/birth-timezone";
+import { parseBirthCoordinatePatch, upsertSelfProfile, type UpsertSelfFields } from "@/lib/self-profile";
+import { strictCanonicalZiweiTimezone } from "@/lib/astro/ziwei/context-resolver";
 
 export const dynamic = "force-dynamic";
 
@@ -33,21 +33,19 @@ function cleanString(value: unknown, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
-function cleanNumber(value: unknown): number | null {
-  if (value === null || value === undefined || value === "") return null;
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
 function cleanGender(value: unknown): "M" | "F" | null {
   return value === "M" || value === "F" ? value : null;
 }
+
+const hasOwn = (value: object, key: string) => Object.prototype.hasOwnProperty.call(value, key);
 
 async function loadProfile(orgId: string, userId: string, profileId: string) {
   return q1<MobileProfileRow>(
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
-            birth_lat, birth_lng, birth_location_name, gender,
+            birth_lat::double precision AS birth_lat,
+            birth_lng::double precision AS birth_lng,
+            birth_location_name, gender,
             relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars,
             birth_time_known, day_boundary, birth_tz, birth_tz_source,
@@ -69,7 +67,9 @@ export async function GET(req: Request) {
   const rows = await q<MobileProfileRow>(
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
-            birth_lat, birth_lng, birth_location_name, gender,
+            birth_lat::double precision AS birth_lat,
+            birth_lng::double precision AS birth_lng,
+            birth_location_name, gender,
             relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars,
             birth_time_known, day_boundary, birth_tz, birth_tz_source,
@@ -107,8 +107,12 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const birthDate = cleanString(body.birthDate);
-  const birthTimeKnown = body.birthTimeKnown !== false;
-  const birthTime = birthTimeKnown ? cleanString(body.birthTime, "12:00") : "12:00";
+  const birthTimeKnownProvided = hasOwn(body, "birthTimeKnown");
+  if (birthTimeKnownProvided && typeof body.birthTimeKnown !== "boolean") {
+    return NextResponse.json({ ok: false, error: "birthTimeKnown invalid" }, { status: 400 });
+  }
+  const birthTimeKnown = birthTimeKnownProvided ? body.birthTimeKnown : undefined;
+  const birthTime = birthTimeKnown !== false ? cleanString(body.birthTime, "12:00") : "12:00";
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
     return NextResponse.json({ ok: false, error: "กรอกวันเกิดเป็น YYYY-MM-DD" }, { status: 400 });
@@ -118,35 +122,59 @@ export async function POST(req: Request) {
   }
 
   const name = cleanString(body.name, "เจ้าของบัญชี").slice(0, 120);
-  const nickname = cleanString(body.nickname) ? cleanString(body.nickname).slice(0, 80) : null;
-  const locationName = cleanString(body.locationName, "ประเทศไทย").slice(0, 120);
-  const birthLat = cleanNumber(body.birthLat);
-  const birthLng = cleanNumber(body.birthLng);
-  const dayBoundary = body.dayBoundary === "00:00" ? "00:00" : "23:00";
-  const birthTzProvided = Object.prototype.hasOwnProperty.call(body, "birthTz");
+  const nicknameProvided = hasOwn(body, "nickname");
+  if (nicknameProvided && body.nickname !== null && typeof body.nickname !== "string") {
+    return NextResponse.json({ ok: false, error: "nickname invalid" }, { status: 400 });
+  }
+  const locationNameProvided = hasOwn(body, "locationName");
+  if (locationNameProvided && body.locationName !== null && typeof body.locationName !== "string") {
+    return NextResponse.json({ ok: false, error: "locationName invalid" }, { status: 400 });
+  }
+  const genderProvided = hasOwn(body, "gender");
+  if (genderProvided && !["M", "F", null, ""].includes(body.gender)) {
+    return NextResponse.json({ ok: false, error: "gender invalid" }, { status: 400 });
+  }
+  const dayBoundaryProvided = hasOwn(body, "dayBoundary");
+  if (dayBoundaryProvided && body.dayBoundary !== "23:00" && body.dayBoundary !== "00:00") {
+    return NextResponse.json({ ok: false, error: "dayBoundary invalid" }, { status: 400 });
+  }
+
+  let coordinatePatch;
+  try {
+    coordinatePatch = parseBirthCoordinatePatch(body);
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, error: error instanceof Error ? error.message : "birth coordinates invalid" },
+      { status: 400 },
+    );
+  }
+
+  const birthTzProvided = hasOwn(body, "birthTz");
   const birthTzValue = typeof body.birthTz === "string" ? body.birthTz.trim() : "";
-  const birthTzSpec = parseTz(typeof body.birthTz === "string" ? body.birthTz : null);
+  const birthTzSpec = strictCanonicalZiweiTimezone(
+    typeof body.birthTz === "string" ? body.birthTz.trim() : null,
+  );
   if ((body.birthTz !== undefined && body.birthTz !== null && typeof body.birthTz !== "string")
     || (birthTzValue && !birthTzSpec)) {
     return NextResponse.json({ ok: false, error: "birth timezone invalid" }, { status: 400 });
   }
 
   try {
+    const fields: UpsertSelfFields = { name, birthDate, birthTime };
+    if (nicknameProvided) fields.nickname = cleanString(body.nickname).slice(0, 80) || null;
+    if (coordinatePatch.provided) {
+      fields.birthLat = coordinatePatch.birthLat;
+      fields.birthLng = coordinatePatch.birthLng;
+    }
+    if (locationNameProvided) fields.locationName = cleanString(body.locationName).slice(0, 120) || null;
+    if (genderProvided) fields.gender = cleanGender(body.gender);
+    if (dayBoundaryProvided) fields.dayBoundary = body.dayBoundary;
+    if (birthTimeKnownProvided) fields.birthTimeKnown = birthTimeKnown;
+    if (birthTzProvided) fields.birthTz = birthTzSpec?.timezone ?? null;
+
     const result = await upsertSelfProfile(
       { orgId: session.orgId, userId: session.userId },
-      {
-        name,
-        nickname,
-        birthDate,
-        birthTime,
-        birthLat,
-        birthLng,
-        locationName,
-        gender: cleanGender(body.gender),
-        dayBoundary,
-        birthTimeKnown,
-        birthTz: birthTzProvided ? (birthTzSpec?.label ?? null) : undefined,
-      }
+      fields,
     );
     const profile = await loadProfile(session.orgId, session.userId, result.id);
 

@@ -9,7 +9,7 @@ import {
 import {
   buildZiweiHourlyPreview, ZIWEI_HOURLY_LINEAGE,
 } from "@/lib/astro/ziwei/hourly-preview";
-import { resolveCanonicalZiweiContext } from "@/lib/astro/ziwei/context-resolver";
+import { resolveCanonicalZiweiHourlyContext } from "@/lib/astro/ziwei/context-resolver";
 import type { Gender } from "@/lib/astro/ziwei/engine";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     : null;
 
   try {
-    const ziweiContext = resolveCanonicalZiweiContext({
+    const ziweiContext = resolveCanonicalZiweiHourlyContext({
       mode: "strict",
       birthWallClock: row.birth_wall,
       birthTimezone: row.birth_tz,

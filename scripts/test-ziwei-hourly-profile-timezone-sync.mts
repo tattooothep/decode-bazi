@@ -13,14 +13,14 @@ assert.match(route, /birth_tz:\s*string \| null/u);
 assert.match(route, /birth_tz_source:\s*string \| null/u);
 assert.match(route, /birth_tz, birth_tz_source/u,
   "mobile profile reads must return the server-owned birth timezone");
-assert.match(route, /parseTz\(typeof body\.birthTz === "string" \? body\.birthTz : null\)/u,
-  "mobile profile writes must validate the birth timezone with the shared parser");
-assert.match(route, /birthTzProvided \? \(birthTzSpec\?\.label \?\? null\) : undefined/u,
+assert.match(route, /strictCanonicalZiweiTimezone\([\s\S]*typeof body\.birthTz === "string"/u,
+  "mobile profile writes must validate the birth timezone with the canonical strict parser");
+assert.match(route, /if \(birthTzProvided\) fields\.birthTz = birthTzSpec\?\.timezone \?\? null/u,
   "the normalized timezone must cross the API boundary while an older client omission preserves the durable value");
 assert.match(selfProfile, /birthTz\?: string \| null/u);
-assert.match(selfProfile, /SELECT id,birth_tz FROM profiles/u,
+assert.match(selfProfile, /SELECT id,birth_tz,birth_lat,birth_lng,gender,birth_time_known,day_boundary FROM profiles/u,
   "the domain layer must read the locked existing timezone before recalculating an older profile update");
-assert.match(selfProfile, /requestedBirthTz !== undefined \? requestedBirthTz : parseTz\(existing\?\.birth_tz/u,
+assert.match(selfProfile, /requestedBirthTz !== undefined[\s\S]*\? requestedBirthTz[\s\S]*: strictCanonicalZiweiTimezone\(existing\?\.birth_tz/u,
   "omitted timezone must recalculate with the existing durable timezone, not Bangkok");
 assert.match(selfProfile, /birth_tz=CASE WHEN \$\d+::boolean THEN \$\d+ ELSE birth_tz END/u,
   "self-profile updates must durably replace timezone and provenance");

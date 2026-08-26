@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS mobile_ziwei_hourly_producer_state (
   )
 );
 INSERT INTO mobile_ziwei_hourly_producer_state(singleton,producer_enabled,source_digest)
-VALUES(true,false,'1da9d5d7f78e4bcfb3cff35c0764fc502384292f8ab5c5a3da0228f763d7f9db')
+VALUES(true,false,'b311fc6a4ff531c7b97ac80ae9d586c95008b929151b2b5115aabd0b49486b0a')
 ON CONFLICT(singleton) DO UPDATE
   SET source_digest=EXCLUDED.source_digest,updated_at=now()
   WHERE mobile_ziwei_hourly_producer_state.producer_enabled=false;

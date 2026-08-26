@@ -22,8 +22,11 @@ assert.match(prefs, /relationship_type IS NULL OR btrim\(relationship_type\) = '
 assert.match(prefs, /gender IN \('M','F'\)/u);
 assert.doesNotMatch(prefs, /birth_lat BETWEEN -90 AND 90|birth_lng BETWEEN -180 AND 180/u,
   "Ziwei consent must not require metadata-only coordinates when birth timezone is explicit");
-assert.match(prefs, /parseTz\(owned\.rows\[0\]\.birth_tz\)/u,
-  "consent must validate the durable birth timezone with the shared parser");
+assert.match(prefs, /resolveCanonicalZiweiHourlyContext\(/u,
+  "consent must validate durable time evidence and the hourly natal domain with the canonical resolver");
+assert.match(prefs, /hourkey_ziwei_birth_wall_eligible\(birth_datetime,birth_tz\)/u,
+  "SQL consent filtering must mirror the canonical hourly natal-domain gate");
+assert.match(prefs, /canonicalContext\.status !== "resolved"/u);
 assert.match(prefs, /if \(ziweiHourly \|\| body\.ziweiProfileId !== undefined\)/u,
   "enabling/changing selection is strict while disabling always remains reachable");
 assert.match(prefs, /mobile_ziwei_hourly_installations/u);
@@ -67,7 +70,7 @@ assert.doesNotMatch(push, /DELETE FROM mobile_ziwei_hourly_installations/u,
   "push unregister and account transfer must preserve Ziwei occurrence attestations");
 assert.match(push, /last_skip_reason='installation_(?:transferred|unregistered)'/u,
   "push identity changes deactivate Ziwei scheduling without deleting its evidence parent");
-assert.match(push, /COALESCE\(\$4,np\.timezone,u\.timezone,'Asia\/Bangkok'\)/u,
+assert.match(push, /COALESCE\(\$2,np\.timezone,u\.timezone,'Asia\/Bangkok'\)/u,
   "authenticated device timezone wins immediately when refreshing the Ziwei installation");
 assert.doesNotMatch(push, /last_skip_reason='registration_refresh'/u,
   "an idempotent foreground registration must not invalidate the current Ziwei occurrence");
@@ -79,10 +82,15 @@ assert.match(push, /OR mobile_ziwei_hourly_installations\.reference_timezone IS 
 for (const source of [push, scheduler]) {
   assert.match(source, /p\.gender IN \('M','F'\)/u);
   assert.doesNotMatch(source, /p\.birth_lat BETWEEN -90 AND 90|p\.birth_lng BETWEEN -180 AND 180/u);
-  assert.match(source, /NULLIF\(btrim\(p\.birth_tz\),''\) IS NOT NULL/u);
-  assert.match(source, /hourkey_ziwei_birth_wall_eligible\(p\.birth_datetime,p\.birth_tz\)/u,
-    "registration and scheduling must share the exact natal wall-clock eligibility gate");
+  assert.match(source, /resolveCanonicalZiweiHourlyContext/u,
+    "registration and scheduling must share the backend-owned canonical hourly resolver");
+  assert.match(source, /p\.birth_tz_source IN \('user_confirmed_iana','user_confirmed_exact_offset','verified_import'\)/u);
+  assert.match(source, /p\.birth_tz_confirmed_at IS NOT NULL/u);
 }
+assert.match(push, /hourkey_ziwei_birth_wall_eligible\(p\.birth_datetime,p\.birth_tz\)/u,
+  "registration must not enroll a natal domain that the scheduler will reject");
+assert.match(scheduler, /hourkey_ziwei_birth_wall_eligible\(p\.birth_datetime,p\.birth_tz\)/u,
+  "SQL is a fail-closed prefilter while the backend resolver remains authoritative");
 assert.match(scheduler, /const birthLocation =[\s\S]*?\? \{ lat: latitude, lng: longitude \}[\s\S]*?: null/u,
   "missing metadata coordinates must remain explicit null, never invented as a real birthplace");
 assert.match(migration, /hourkey_reconcile_ziwei_hourly_profile/u);

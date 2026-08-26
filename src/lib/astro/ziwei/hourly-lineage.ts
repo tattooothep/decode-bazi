@@ -28,6 +28,7 @@ export const ZIWEI_HOURLY_LINEAGE_MANIFEST = Object.freeze({
       Object.freeze({ path: "src/lib/astro/ziwei/tables.ts", sha256: "b77d14dea17ac91b646c5711515dcff4a72179540f3162098d3ebb8b8e4e4c8c" }),
       Object.freeze({ path: "src/lib/astro/ziwei/hourly-preview.ts", sha256: "6e8f11f27f75442d06419e4111aa5269a1dd1fd82183cdadd903ea014dfba60a" }),
       Object.freeze({ path: "src/lib/birth-timezone.ts", sha256: "fbe1ac54f179a575c088d1d9e6722dda4b414b7fdf85b842c681f296474398c1" }),
+      Object.freeze({ path: "src/lib/astro/ziwei/context-resolver.ts", sha256: "d2d6759c52c7b9b3637f1591bdd3c52b1e6662396f2cc9abefac0ba2230fee0f" }),
     ]),
   }),
   config: Object.freeze({

@@ -7,7 +7,11 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
-import { upsertSelfProfile } from "@/lib/self-profile";
+import { strictCanonicalZiweiTimezone } from "@/lib/astro/ziwei/context-resolver";
+import { lookupZiweiBirthTimezoneAtCoordinates } from "@/lib/astro/ziwei/birth-context-recovery";
+import { parseBirthCoordinatePatch, upsertSelfProfile, type UpsertSelfFields } from "@/lib/self-profile";
+
+const hasOwn = (value: object, key: string) => Object.prototype.hasOwnProperty.call(value, key);
 
 export async function GET() {
   const s = await getSession();
@@ -63,28 +67,91 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const {
-    name, nickname, birthDate, birthTime = "12:00",
-    birthLat, birthLng, locationName, gender,
-    dayBoundary,
-    birthTimeKnown: birthTimeKnownRaw,
+    name, birthDate, birthTime = "12:00",
   } = body;
   if (!name || !birthDate)
     return NextResponse.json({ error: "name + birthDate required" }, { status: 400 });
 
+  let coordinatePatch;
+  try {
+    coordinatePatch = parseBirthCoordinatePatch(body);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "birth coordinates invalid" },
+      { status: 400 },
+    );
+  }
+
+  const nicknameProvided = hasOwn(body, "nickname");
+  if (nicknameProvided && body.nickname !== null && typeof body.nickname !== "string") {
+    return NextResponse.json({ error: "nickname invalid" }, { status: 400 });
+  }
+  const locationNameProvided = hasOwn(body, "locationName");
+  if (locationNameProvided && body.locationName !== null && typeof body.locationName !== "string") {
+    return NextResponse.json({ error: "locationName invalid" }, { status: 400 });
+  }
+  const genderProvided = hasOwn(body, "gender");
+  if (genderProvided && !["M", "F", null, ""].includes(body.gender)) {
+    return NextResponse.json({ error: "gender invalid" }, { status: 400 });
+  }
+  const dayBoundaryProvided = hasOwn(body, "dayBoundary");
+  if (dayBoundaryProvided && body.dayBoundary !== "23:00" && body.dayBoundary !== "00:00") {
+    return NextResponse.json({ error: "dayBoundary invalid" }, { status: 400 });
+  }
+  const birthTimeKnownProvided = hasOwn(body, "birthTimeKnown");
+  if (birthTimeKnownProvided && typeof body.birthTimeKnown !== "boolean") {
+    return NextResponse.json({ error: "birthTimeKnown invalid" }, { status: 400 });
+  }
+  const birthTzProvided = hasOwn(body, "birthTz");
+  const birthTzText = typeof body.birthTz === "string" ? body.birthTz.trim() : "";
+  const birthTzSpec = birthTzProvided ? strictCanonicalZiweiTimezone(birthTzText || null) : undefined;
+  if (birthTzProvided
+    && ((body.birthTz !== null && typeof body.birthTz !== "string") || (birthTzText && !birthTzSpec))) {
+    return NextResponse.json({ error: "birth timezone invalid" }, { status: 400 });
+  }
+  const birthPlaceId = typeof body.birthPlaceId === "string" ? body.birthPlaceId.trim() : "";
+  if (birthPlaceId.length > 255) {
+    return NextResponse.json({ error: "birthPlaceId invalid" }, { status: 400 });
+  }
+  if (birthPlaceId && (!coordinatePatch.provided
+    || coordinatePatch.birthLat === null || coordinatePatch.birthLng === null
+    || !locationNameProvided || typeof body.locationName !== "string" || !body.locationName.trim())) {
+    return NextResponse.json({ error: "birth place evidence incomplete" }, { status: 400 });
+  }
+
+  const fields: UpsertSelfFields = { name, birthDate, birthTime };
+  if (nicknameProvided) fields.nickname = body.nickname?.trim() || null;
+  if (coordinatePatch.provided) {
+    fields.birthLat = coordinatePatch.birthLat;
+    fields.birthLng = coordinatePatch.birthLng;
+  }
+  if (locationNameProvided) fields.locationName = body.locationName?.trim() || null;
+  if (genderProvided) fields.gender = body.gender || null;
+  if (dayBoundaryProvided) fields.dayBoundary = body.dayBoundary;
+  if (birthTimeKnownProvided) fields.birthTimeKnown = body.birthTimeKnown;
+  if (birthTzProvided) fields.birthTz = birthTzSpec?.timezone ?? null;
+  if (birthPlaceId && coordinatePatch.provided
+    && coordinatePatch.birthLat !== null && coordinatePatch.birthLng !== null) {
+    fields.birthPlaceId = birthPlaceId;
+    fields.birthLocationConfirmed = true;
+    if (!birthTzProvided && (birthTimeKnownProvided ? body.birthTimeKnown !== false : true)) {
+      try {
+        fields.birthTz = await lookupZiweiBirthTimezoneAtCoordinates({
+          latitude: coordinatePatch.birthLat,
+          longitude: coordinatePatch.birthLng,
+          birthWallClock: `${birthDate}T${birthTime}:00`,
+          apiKey: process.env.GOOGLE_MAPS_SERVER_KEY || "",
+        });
+      } catch {
+        // Profile creation remains available. Confirmed place evidence is
+        // preserved so the recovery endpoint can retry without re-entry.
+      }
+    }
+  }
+
   // Codex direction: self-profile upsert · one per user · derived columns recomputed via shared calcBazi
   // 19 พ.ค. Option α · birthTimeKnown=false → 3p mode
-  const result = await upsertSelfProfile(s, {
-    name,
-    nickname: nickname ?? null,
-    birthDate,
-    birthTime,
-    birthLat: birthLat != null ? Number(birthLat) : null,
-    birthLng: birthLng != null ? Number(birthLng) : null,
-    locationName: locationName ?? null,
-    gender: gender ?? null,
-    dayBoundary: dayBoundary === "00:00" ? "00:00" : "23:00",
-    birthTimeKnown: typeof birthTimeKnownRaw === 'boolean' ? birthTimeKnownRaw : undefined,
-  });
+  const result = await upsertSelfProfile(s, fields);
 
   const row = await q1(
     `SELECT id, name, nickname, day_master, day_master_strength, yongshen, bazi_pillars,

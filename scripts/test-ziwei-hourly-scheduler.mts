@@ -94,7 +94,8 @@ assert.doesNotMatch(`${notice.title} ${notice.body}`, /lucky|auspicious|best|ม
 
 const source = readFileSync(new URL("./mobile-ziwei-hourly-push-cron.mts", import.meta.url), "utf8");
 assert.match(source, /to_char\(p\.birth_datetime AT TIME ZONE 'Asia\/Bangkok','YYYY-MM-DD"T"HH24:MI:SS'\) AS birth_wall/u);
-assert.match(source, /resolveEligibleZiweiBirthWallClock\(row\.birth_wall, row\.birth_tz\)/u);
+assert.match(source, /resolveCanonicalZiweiHourlyContext\(/u);
+assert.match(source, /canonicalContext\.birthFingerprint !== row\.birth_context_fingerprint/u);
 assert.match(source, /AS account_locale/u);
 assert.match(source, /t\.enabled=true AND t\.ziwei_payload_schema=2/u);
 assert.match(source, /owner_generation/u);

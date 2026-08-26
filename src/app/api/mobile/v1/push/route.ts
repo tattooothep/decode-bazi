@@ -5,6 +5,10 @@ import type { PoolClient } from "pg";
 import { pool, q, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import {
+  resolveCanonicalZiweiHourlyContext,
+  type CanonicalZiweiContextResult,
+} from "@/lib/astro/ziwei/context-resolver";
 
 export const dynamic = "force-dynamic";
 
@@ -92,7 +96,13 @@ export async function GET(req: Request) {
    * (ทางบริการกลางพิสูจน์แล้วว่าใช้ไม่ได้ ตอบ InvalidCredentials 480 รอบติด)
    * ผลคือหน้าแอพขึ้นว่า "พร้อมรับแล้ว" ทั้งที่ส่งไปไม่มีวันถึง แล้วซ่อนปุ่มแก้ทิ้ง
    */
-  const count = await q1<{ n: number; current: boolean; native_deliverable: boolean; ios_current: boolean }>(
+  const count = await q1<{
+    n: number;
+    current: boolean;
+    native_deliverable: boolean;
+    ios_current: boolean;
+    ziwei_enrolled: boolean;
+  }>(
     `SELECT count(*)::int AS n,
             bool_or(installation_id=$2::uuid) AS current,
             bool_or(installation_id=$2::uuid
@@ -100,7 +110,13 @@ export async function GET(req: Request) {
                     AND device_token_type='fcm'
                     AND device_push_token IS NOT NULL
                     AND device_push_token <> '') AS native_deliverable,
-            bool_or(installation_id=$2::uuid AND platform='ios') AS ios_current
+            bool_or(installation_id=$2::uuid AND platform='ios') AS ios_current,
+            bool_or(installation_id=$2::uuid AND EXISTS(
+              SELECT 1 FROM mobile_ziwei_hourly_installations i
+               WHERE i.user_id=mobile_push_tokens.user_id
+                 AND i.installation_id=mobile_push_tokens.installation_id
+                 AND i.enabled=true AND i.birth_context_fingerprint IS NOT NULL
+            )) AS ziwei_enrolled
        FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`,
     [session.userId, installationId || null]
   );
@@ -108,6 +124,9 @@ export async function GET(req: Request) {
     {
       ok: true,
       subscribed: installationId ? count?.current === true : (count?.n || 0) > 0,
+      pushSubscribed: installationId ? count?.current === true : (count?.n || 0) > 0,
+      ziweiEnrolled: count?.ziwei_enrolled === true,
+      ziweiEnrollmentStatus: count?.ziwei_enrolled === true ? "enrolled" : "not_enrolled",
       /** ส่งถึงเครื่องนี้ได้จริงไหม — มีกุญแจส่งตรงหรือยัง */
       deliverable: installationId
         ? count?.native_deliverable === true
@@ -124,6 +143,7 @@ export async function POST(req: Request) {
   if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   const { session } = auth;
   const body = await req.json().catch(() => ({}));
+  const registrationAt = new Date();
   const token = String(body.expo_push_token || "").trim();
   const installationId = String(body.installation_id || "").trim();
   const platform = String(body.platform || "").trim();
@@ -169,6 +189,8 @@ export async function POST(req: Request) {
 
   const client = await pool.connect();
   let row: { id: string } | undefined;
+  let ziweiCanonicalContext: CanonicalZiweiContextResult | null = null;
+  let ziweiEnrolled = false;
   try {
     await client.query("BEGIN");
     const discovered = await client.query<PushIdentity>(
@@ -339,37 +361,84 @@ export async function POST(req: Request) {
         [session.userId, installationId],
       );
     }
-    await client.query(
-      `INSERT INTO mobile_ziwei_hourly_installations
-         (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,next_due_at,updated_at)
-       SELECT $1,$2::uuid,np.ziwei_profile_id,
-              ($3::smallint=2 AND np.ziwei_hourly_enabled),
-              COALESCE($4,np.timezone,u.timezone,'Asia/Bangkok'),np.quiet_start,np.quiet_end,
-              CASE WHEN $3::smallint=2 AND np.ziwei_hourly_enabled THEN now() ELSE NULL END,now()
+    const ziweiEnrollment = await client.query<{
+      profile_id: string;
+      birth_wall: string;
+      birth_tz: string;
+      birth_tz_source: string;
+      birth_tz_confirmed_at: string | Date;
+      reference_timezone: string;
+      quiet_start: number;
+      quiet_end: number;
+    }>(
+      `SELECT np.ziwei_profile_id AS profile_id,
+              to_char(p.birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall,
+              p.birth_tz,p.birth_tz_source,p.birth_tz_confirmed_at,
+              COALESCE($2,np.timezone,u.timezone,'Asia/Bangkok') AS reference_timezone,
+              np.quiet_start,np.quiet_end
          FROM users u JOIN mobile_notification_prefs np ON np.user_id=u.id
-         JOIN profiles p ON p.id=np.ziwei_profile_id
-          AND p.created_by_user_id=u.id AND COALESCE(p.is_archived,false)=false
-          AND p.birth_time_known=true
-          AND NULLIF(btrim(p.birth_tz),'') IS NOT NULL
+         JOIN profiles p ON p.id=np.ziwei_profile_id AND p.created_by_user_id=u.id
+        WHERE u.id=$1 AND np.ziwei_hourly_enabled=true
+          AND COALESCE(p.is_archived,false)=false AND p.birth_time_known=true
           AND hourkey_birth_timezone_valid(p.birth_tz)
           AND hourkey_ziwei_birth_wall_eligible(p.birth_datetime,p.birth_tz)
+          AND p.birth_tz_source IN ('user_confirmed_iana','user_confirmed_exact_offset','verified_import')
+          AND p.birth_tz_confirmed_at IS NOT NULL
           AND p.gender IN ('M','F')
-          AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
-        WHERE u.id=$1
+          AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')`,
+      [session.userId, timezone],
+    );
+    const ziweiProfile = ziweiEnrollment.rows[0];
+    if (ziweiProfile) {
+      ziweiCanonicalContext = resolveCanonicalZiweiHourlyContext({
+        mode: "strict",
+        birthWallClock: ziweiProfile.birth_wall,
+        birthTimezone: ziweiProfile.birth_tz,
+        birthTimezoneSource: "profile",
+        referenceInstant: registrationAt,
+        referenceTimezone: ziweiProfile.reference_timezone,
+      });
+    }
+    if (ziweiProfile && ziweiCanonicalContext && ziweiCanonicalContext.status === "resolved") {
+      ziweiEnrolled = ziweiPayloadSchema === 2;
+      await client.query(
+        `INSERT INTO mobile_ziwei_hourly_installations
+           (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,
+            next_due_at,birth_context_fingerprint,updated_at)
+         VALUES($1,$2::uuid,$3::uuid,$4,$5,$6,$7,
+                CASE WHEN $4 THEN $8::timestamptz ELSE NULL END,$9,$8::timestamptz)
          ON CONFLICT(user_id,installation_id) DO UPDATE SET
            profile_id=EXCLUDED.profile_id,enabled=EXCLUDED.enabled,
            reference_timezone=EXCLUDED.reference_timezone,quiet_start=EXCLUDED.quiet_start,
            quiet_end=EXCLUDED.quiet_end,next_due_at=EXCLUDED.next_due_at,
+           birth_context_fingerprint=EXCLUDED.birth_context_fingerprint,
            lease_token=NULL,lease_expires_at=NULL,last_skip_reason=NULL,
-           owner_generation=mobile_ziwei_hourly_installations.owner_generation+1,updated_at=now()
+           owner_generation=mobile_ziwei_hourly_installations.owner_generation+1,updated_at=EXCLUDED.updated_at
          WHERE mobile_ziwei_hourly_installations.profile_id IS DISTINCT FROM EXCLUDED.profile_id
             OR mobile_ziwei_hourly_installations.enabled IS DISTINCT FROM EXCLUDED.enabled
             OR mobile_ziwei_hourly_installations.reference_timezone IS DISTINCT FROM EXCLUDED.reference_timezone
             OR mobile_ziwei_hourly_installations.quiet_start IS DISTINCT FROM EXCLUDED.quiet_start
             OR mobile_ziwei_hourly_installations.quiet_end IS DISTINCT FROM EXCLUDED.quiet_end
-            OR $5::boolean`,
-      [session.userId, installationId, ziweiPayloadSchema, timezone, accountLocaleChanged],
-    );
+            OR mobile_ziwei_hourly_installations.birth_context_fingerprint IS DISTINCT FROM EXCLUDED.birth_context_fingerprint
+            OR $10::boolean`,
+        [
+          session.userId, installationId, ziweiProfile.profile_id, ziweiEnrolled,
+          ziweiProfile.reference_timezone, ziweiProfile.quiet_start, ziweiProfile.quiet_end,
+          registrationAt.toISOString(), ziweiCanonicalContext.birthFingerprint, accountLocaleChanged,
+        ],
+      );
+    } else {
+      await client.query(
+        `UPDATE mobile_ziwei_hourly_installations
+            SET enabled=false,next_due_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+                birth_context_fingerprint=NULL,last_skip_reason='birth_context_unconfirmed',
+                owner_generation=owner_generation+1,updated_at=$3
+          WHERE user_id=$1 AND installation_id=$2::uuid
+            AND (enabled=true OR next_due_at IS NOT NULL OR lease_token IS NOT NULL
+              OR birth_context_fingerprint IS NOT NULL)`,
+        [session.userId, installationId, registrationAt.toISOString()],
+      );
+    }
     // Account notification context follows the most recently authenticated
     // mobile installation. Per-installation locale remains on the token for
     // lock-screen copy; account history/schedulers use this shared context.
@@ -403,7 +472,15 @@ export async function POST(req: Request) {
   const deliverable = platform === "android"
     ? deviceTokenType === "fcm" && deviceToken !== null
     : expoIosPushReady(process.env);
-  return NextResponse.json({ ok: true, subscribed: true, deliverable, registration_id: row.id });
+  return NextResponse.json({
+    ok: true,
+    subscribed: true,
+    deliverable,
+    pushSubscribed: true,
+    ziweiEnrolled,
+    ziweiEnrollmentStatus: ziweiEnrolled ? "enrolled" : "not_enrolled",
+    registration_id: row.id,
+  });
 }
 
 export async function DELETE(req: Request) {

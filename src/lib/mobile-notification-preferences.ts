@@ -1,6 +1,5 @@
 import type { Pool, PoolClient } from "pg";
-import { parseTz } from "./birth-timezone";
-import { resolveEligibleZiweiBirthWallClock } from "./astro/ziwei/hourly-preview";
+import { resolveCanonicalZiweiHourlyContext } from "./astro/ziwei/context-resolver";
 
 export type MobileNotificationPreferenceRow = {
   security_enabled: boolean;
@@ -225,9 +224,16 @@ export async function updateNotificationPreferences(
       throw new TypeError("ziwei_profile_invalid");
     }
     if (ziweiHourly && ziweiProfileId === null) throw new TypeError("ziwei_profile_required");
+    let canonicalContextFingerprint: string | null = null;
     if (ziweiHourly || body.ziweiProfileId !== undefined) {
-      const owned = await client.query<{ id: string; birth_tz: string; birth_wall: string }>(
-        `SELECT id,birth_tz,
+      const owned = await client.query<{
+        id: string;
+        birth_tz: string;
+        birth_tz_source: string;
+        birth_tz_confirmed_at: string | Date;
+        birth_wall: string;
+      }>(
+        `SELECT id,birth_tz,birth_tz_source,birth_tz_confirmed_at,
                 to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall
            FROM profiles
           WHERE id=$1 AND created_by_user_id=$2 AND COALESCE(is_archived,false)=false
@@ -235,16 +241,24 @@ export async function updateNotificationPreferences(
             AND birth_time_known=true
             AND NULLIF(btrim(birth_tz),'') IS NOT NULL
             AND hourkey_birth_timezone_valid(birth_tz)
+            AND hourkey_ziwei_birth_wall_eligible(birth_datetime,birth_tz)
+            AND birth_tz_source IN ('user_confirmed_iana','user_confirmed_exact_offset','verified_import')
+            AND birth_tz_confirmed_at IS NOT NULL
             AND gender IN ('M','F')
             AND (relationship_type IS NULL OR btrim(relationship_type) = '')`,
         [ziweiProfileId, userId],
       );
-      if (!owned.rows[0] || !parseTz(owned.rows[0].birth_tz)) throw new TypeError("ziwei_profile_invalid");
-      try {
-        resolveEligibleZiweiBirthWallClock(owned.rows[0].birth_wall, owned.rows[0].birth_tz);
-      } catch {
-        throw new TypeError("ziwei_profile_invalid");
-      }
+      if (!owned.rows[0]) throw new TypeError("ziwei_profile_invalid");
+      const canonicalContext = resolveCanonicalZiweiHourlyContext({
+        mode: "strict",
+        birthWallClock: owned.rows[0].birth_wall,
+        birthTimezone: owned.rows[0].birth_tz,
+        birthTimezoneSource: "profile",
+        referenceInstant: at,
+        referenceTimezone: timezoneInput,
+      });
+      if (canonicalContext.status !== "resolved") throw new TypeError("ziwei_profile_invalid");
+      canonicalContextFingerprint = canonicalContext.birthFingerprint;
     }
     const quietStart = intInRange(body.quietStart, 0, 23) ?? current.quiet_start;
     const quietEnd = intInRange(body.quietEnd, 0, 23) ?? current.quiet_end;
@@ -375,19 +389,21 @@ export async function updateNotificationPreferences(
       if (ziweiHourly && ziweiProfileId) {
         await client.query(
           `INSERT INTO mobile_ziwei_hourly_installations
-             (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,next_due_at,updated_at)
+             (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,
+              next_due_at,birth_context_fingerprint,updated_at)
            SELECT t.user_id,t.installation_id,$3::uuid,
                   (t.ziwei_payload_schema=2),$4,np.quiet_start,np.quiet_end,
-                  CASE WHEN t.ziwei_payload_schema=2 THEN $2::timestamptz ELSE NULL END,$2::timestamptz
+                  CASE WHEN t.ziwei_payload_schema=2 THEN $2::timestamptz ELSE NULL END,$5,$2::timestamptz
              FROM mobile_push_tokens t JOIN mobile_notification_prefs np ON np.user_id=t.user_id
             WHERE t.user_id=$1 AND t.enabled=true
            ON CONFLICT(user_id,installation_id) DO UPDATE SET
              profile_id=EXCLUDED.profile_id,enabled=EXCLUDED.enabled,
              reference_timezone=EXCLUDED.reference_timezone,quiet_start=EXCLUDED.quiet_start,
              quiet_end=EXCLUDED.quiet_end,next_due_at=EXCLUDED.next_due_at,
+             birth_context_fingerprint=EXCLUDED.birth_context_fingerprint,
              lease_token=NULL,lease_expires_at=NULL,last_skip_reason=NULL,
              owner_generation=mobile_ziwei_hourly_installations.owner_generation+1,updated_at=EXCLUDED.updated_at`,
-          [userId, at.toISOString(), ziweiProfileId, timezoneInput],
+          [userId, at.toISOString(), ziweiProfileId, timezoneInput, canonicalContextFingerprint],
         );
       } else {
         await client.query(

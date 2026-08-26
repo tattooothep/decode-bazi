@@ -4,6 +4,7 @@ import { ziweiChart } from "../src/lib/astro/ziwei/engine";
 import { ZIWEI_HOURLY_LINEAGE } from "../src/lib/astro/ziwei/hourly-lineage";
 import {
   resolveCanonicalZiweiContext,
+  resolveCanonicalZiweiHourlyContext,
   type CanonicalZiweiContextResult,
 } from "../src/lib/astro/ziwei/context-resolver";
 
@@ -37,6 +38,7 @@ assert.equal(canonical.reference.instant, referenceInstant.toISOString());
 assert.equal(canonical.reference.timezone, "Asia/Tokyo");
 assert.equal(canonical.reference.utcOffsetMinutes, 540);
 assert.match(canonical.fingerprint, /^[0-9a-f]{64}$/u);
+assert.match(canonical.birthFingerprint, /^[0-9a-f]{64}$/u);
 assert.equal(resolve().status, "resolved");
 assert.equal((resolve() as typeof canonical).fingerprint, canonical.fingerprint,
   "the same scientific inputs and locked lineage have one stable identity");
@@ -48,6 +50,13 @@ assert.equal(differentReferenceZone.birth.instant, canonical.birth.instant,
   "reference timezone must never reinterpret the birth wall clock");
 assert.notEqual(differentReferenceZone.reference.timezone, canonical.reference.timezone);
 assert.notEqual(differentReferenceZone.fingerprint, canonical.fingerprint);
+assert.equal(differentReferenceZone.birthFingerprint, canonical.birthFingerprint,
+  "birth-context identity must remain stable across later reference times/zones");
+const laterReference = resolve({ referenceInstant: new Date("2026-08-26T14:30:00.000Z") });
+assert.equal(laterReference.status, "resolved");
+if (laterReference.status !== "resolved") throw new Error("later reference did not resolve");
+assert.equal(laterReference.birthFingerprint, canonical.birthFingerprint);
+assert.notEqual(laterReference.fingerprint, canonical.fingerprint);
 
 for (const value of ["0", "7", "+7", "0700", "CET", "EST"]) {
   const result = resolve({ birthTimezone: value });
@@ -75,6 +84,28 @@ assert.deepEqual(
   { status: missingStrict.status, reason: missingStrict.status === "blocked" ? missingStrict.reason : null },
   { status: "blocked", reason: "birth_timezone_missing" },
 );
+
+for (const [wallClock, reason] of [
+  ["1984-12-31T23:30:00", "birth_late_zi_unsupported"],
+  ["1900-01-30T12:00:00", "birth_calendar_range_unsupported"],
+  ["2101-01-01T12:00:00", "birth_calendar_range_unsupported"],
+] as const) {
+  const hourly = resolveCanonicalZiweiHourlyContext({
+    mode: "strict",
+    birthWallClock: wallClock,
+    birthTimezone: "Asia/Bangkok",
+    birthTimezoneSource: "profile",
+    referenceInstant,
+    referenceTimezone: "Asia/Tokyo",
+  });
+  assert.deepEqual(
+    { status: hourly.status, reason: hourly.status === "blocked" ? hourly.reason : null },
+    { status: "blocked", reason },
+    "hourly enrollment must reject a natal domain the locked engine cannot calculate",
+  );
+}
+assert.equal(resolve({ birthWallClock: "1984-12-31T23:30:00" }).status, "resolved",
+  "the hourly capability gate must not silently change the established ordinary chart domain");
 
 const compatibility = resolve({
   mode: "legacy_chart",
@@ -171,7 +202,7 @@ assert.match(chartRoute, /ziweiContext/u);
 assert.doesNotMatch(chartRoute, /wallClockToUtc/u);
 
 const previewRoute = readFileSync("src/app/api/mobile/v1/ziwei/hourly-preview/route.ts", "utf8");
-assert.match(previewRoute, /resolveCanonicalZiweiContext/u);
+assert.match(previewRoute, /resolveCanonicalZiweiHourlyContext/u);
 assert.doesNotMatch(previewRoute, /row\.birth_lat === null \|\| row\.birth_lng === null/u,
   "coordinates cannot gate a timezone-resolved Ziwei preview");
 assert.match(previewRoute, /birthLocation:\s*birthLocation/u);

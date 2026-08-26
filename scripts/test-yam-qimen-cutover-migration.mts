@@ -65,6 +65,9 @@ try {
       UNIQUE(push_log_id,installation_id)
     );
     CREATE TABLE mobile_notification_engagements(user_id uuid,installation_id uuid,push_log_id uuid,event text,action_id text,recorded_at timestamptz);
+    CREATE FUNCTION purge_mobile_ziwei_hourly_occurrences(integer,integer)
+      RETURNS TABLE(deleted_id uuid) LANGUAGE sql
+      AS $$ SELECT NULL::uuid WHERE false $$;
     INSERT INTO mobile_push_log(id,yam_key,kind,body,source_facts,delivery_status,next_retry_at,last_error) VALUES
       ('00000000-0000-4000-8000-000000000001','legacy-yam','yam',E'Yam core copy\\nLegacy Qimen direction','{"qimen":{"direction":"SE"},"branch":"巳"}','pending',now(),'old'),
       ('00000000-0000-4000-8000-000000000002','clean-yam','yam',E'Clean Yam\\nsecond line','{"branch":"午"}','pending',NULL,'clean-error'),

@@ -1326,7 +1326,7 @@ async function processClaim(db, attempt, options = {}) {
         const token = await tx.query(
           `SELECT t.id,t.device_push_token,t.expo_push_token,
                   to_jsonb(t)->>'zibai_calculation_version' AS zibai_calculation_version,
-                  t.ziwei_payload_schema
+                  to_jsonb(t)->>'ziwei_payload_schema' AS ziwei_payload_schema
              FROM mobile_push_tokens t
             WHERE t.user_id=$1 AND t.installation_id=$2 AND t.enabled=true
               AND (($3='fcm' AND t.device_push_token IS NOT NULL AND t.platform<>'ios' AND COALESCE(t.device_token_type,'')<>'apns')

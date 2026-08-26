@@ -6,9 +6,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   buildZiweiHourlyNotificationFacts,
-  resolveEligibleZiweiBirthWallClock,
 } from "../src/lib/astro/ziwei/hourly-preview";
 import { ZIWEI_HOURLY_LINEAGE_MANIFEST } from "../src/lib/astro/ziwei/hourly-lineage";
+import { resolveCanonicalZiweiHourlyContext } from "../src/lib/astro/ziwei/context-resolver";
 
 const require = createRequire(import.meta.url);
 const sourceContract = require("../src/lib/ziwei-hourly-source-contract.cjs");
@@ -196,7 +196,7 @@ async function loadClaimContext(db: Db, claim: SchedulerRow): Promise<SchedulerR
             END AS account_locale,
             p.name,p.nickname,
             to_char(p.birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall,
-            p.birth_tz,p.birth_lat,p.birth_lng,p.gender
+            p.birth_tz,p.birth_tz_source,p.birth_tz_confirmed_at,p.birth_lat,p.birth_lng,p.gender
        FROM mobile_ziwei_hourly_installations i
        JOIN mobile_notification_prefs np ON np.user_id=i.user_id
          AND np.ziwei_hourly_enabled=true AND np.ziwei_profile_id=i.profile_id
@@ -208,6 +208,8 @@ async function loadClaimContext(db: Db, claim: SchedulerRow): Promise<SchedulerR
          AND NULLIF(btrim(p.birth_tz),'') IS NOT NULL
          AND hourkey_birth_timezone_valid(p.birth_tz)
          AND hourkey_ziwei_birth_wall_eligible(p.birth_datetime,p.birth_tz)
+         AND p.birth_tz_source IN ('user_confirmed_iana','user_confirmed_exact_offset','verified_import')
+         AND p.birth_tz_confirmed_at IS NOT NULL
          AND p.gender IN ('M','F')
          AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
       WHERE i.user_id=$1 AND i.installation_id=$2 AND i.lease_token=$3 AND i.enabled=true
@@ -223,7 +225,19 @@ function buildSnapshot(row: SchedulerRow, at: Date): any {
   if (!row.birth_wall || !row.birth_tz || !gender) {
     throw new TypeError("ziwei_hourly_profile_inputs_unavailable");
   }
-  const birthInstant = resolveEligibleZiweiBirthWallClock(row.birth_wall, row.birth_tz);
+  const canonicalContext = resolveCanonicalZiweiHourlyContext({
+    mode: "strict",
+    birthWallClock: row.birth_wall,
+    birthTimezone: row.birth_tz,
+    birthTimezoneSource: "profile",
+    referenceInstant: at,
+    referenceTimezone: row.reference_timezone,
+  });
+  if (canonicalContext.status !== "resolved"
+    || canonicalContext.birthFingerprint !== row.birth_context_fingerprint) {
+    throw new TypeError("ziwei_hourly_birth_context_mismatch");
+  }
+  const birthInstant = new Date(canonicalContext.birth.instant);
   const latitude = Number(row.birth_lat);
   const longitude = Number(row.birth_lng);
   const birthLocation = row.birth_lat != null && row.birth_lng != null

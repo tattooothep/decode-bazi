@@ -721,7 +721,7 @@
           </div>
         </div>
         <div class="hk-place-coord-box">
-          <div class="hk-place-coord-num"><span class="hk-coord-lat">13.7°N</span> · <span class="hk-coord-lng">100.5°E</span></div>
+          <div class="hk-place-coord-num"><span class="hk-coord-lat">—</span> · <span class="hk-coord-lng">—</span></div>
           <div class="hk-place-coord-lbl" data-i18n="in.place.coord_lbl">TST · เส้นแวง</div>
         </div>
       </div>
@@ -729,9 +729,10 @@
         <svg class="hk-place-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
         <input type="text" id="hk-place-input" placeholder="พิมพ์ชื่อ เช่น กรุงเทพ, เชียงใหม่, Tokyo" autocomplete="off" />
       </div>
-      <input type="hidden" id="hk-place-lat" value="13.7563"/>
-      <input type="hidden" id="hk-place-lng" value="100.5018"/>
-      <input type="hidden" id="hk-place-name" value="Bangkok"/>
+      <input type="hidden" id="hk-place-lat" value=""/>
+      <input type="hidden" id="hk-place-lng" value=""/>
+      <input type="hidden" id="hk-place-name" value=""/>
+      <input type="hidden" id="hk-place-id" value=""/>
       <div class="hk-place-note" data-i18n="in.place.note">
         <span class="hk-place-note-i">ⓘ</span>
         <span>กรุณาเลือกจังหวัดที่เกิด · ระบบใช้พิกัดเพื่อคำนวณ <b>เวลาเกิดจริง (True Solar Time)</b> · ต่างจังหวัดเวลาเกิดอาจต่างได้ถึง <b>ครึ่งชั่วโมง</b> · ผลต่อชั่วยามที่แม่นยำ</span>
@@ -781,6 +782,12 @@
           types: ['(cities)'],
           fields: ['name','geometry','formatted_address','place_id'],
         });
+        inp.addEventListener('input', function(){
+          ['hk-place-id','hk-place-lat','hk-place-lng','hk-place-name'].forEach(function(id){
+            var evidence = document.getElementById(id);
+            if (evidence) evidence.value = '';
+          });
+        });
         ac.addListener('place_changed', function(){
           var p = ac.getPlace();
           if (!p.geometry || !p.geometry.location) return;
@@ -789,6 +796,7 @@
           document.getElementById('hk-place-lat').value = lat.toFixed(4);
           document.getElementById('hk-place-lng').value = lng.toFixed(4);
           document.getElementById('hk-place-name').value = p.name || p.formatted_address || '';
+          document.getElementById('hk-place-id').value = p.place_id || '';
           var latEl = document.querySelector('.hk-coord-lat');
           var lngEl = document.querySelector('.hk-coord-lng');
           var box = document.querySelector('.hk-place-coord-num');
@@ -1348,15 +1356,25 @@
         const time = (window.hkGetBirthTime && window.hkGetBirthTime()) || ((document.getElementById('hk-birth-time')||{}).value || '02:35');
         const gender = (document.getElementById('hk-gender')||{}).value || 'M';
         const dayBoundary = (document.getElementById('hk-day-boundary')||{}).value || '23:00';
-        const lat = parseFloat((document.getElementById('hk-place-lat')||{}).value || '13.7563');
-        const lng = parseFloat((document.getElementById('hk-place-lng')||{}).value || '100.5018');
-        const place = (document.getElementById('hk-place-name')||{}).value || (document.getElementById('hk-place-input')||{}).value || 'กรุงเทพมหานคร';
+        const lat = parseFloat((document.getElementById('hk-place-lat')||{}).value || '');
+        const lng = parseFloat((document.getElementById('hk-place-lng')||{}).value || '');
+        const place = (document.getElementById('hk-place-name')||{}).value || '';
+        const placeId = (document.getElementById('hk-place-id')||{}).value || '';
+        if (!placeId || !place || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+          const message = window._intx
+            ? window._intx('in.place.required','กรุณาเลือกสถานที่เกิดจากรายการที่ระบบแสดง')
+            : 'กรุณาเลือกสถานที่เกิดจากรายการที่ระบบแสดง';
+          window.alert(message);
+          const placeInput = document.getElementById('hk-place-input');
+          if (placeInput) placeInput.focus();
+          return;
+        }
         const profileName = (document.getElementById('hk-profile-name')||{}).value?.trim() || 'ตัวเอง';
 
         /* 19 พ.ค. Option α · birthTimeKnown=false ถ้าไม่ทราบเวลา · ส่งใน localStorage + downstream API */
         const noTimeChk = document.getElementById('hk-no-birth-time');
         const birthTimeKnown = !(noTimeChk && noTimeChk.checked);
-        const birth = { name: profileName, date: yyyy + '-' + mo + '-' + String(day).padStart(2,'0'), time: time, place: place, latitude: lat, longitude: lng, gender: gender, dayBoundary: dayBoundary, birthTimeKnown: birthTimeKnown };
+        const birth = { name: profileName, date: yyyy + '-' + mo + '-' + String(day).padStart(2,'0'), time: time, place: place, placeId: placeId, latitude: lat, longitude: lng, gender: gender, dayBoundary: dayBoundary, birthTimeKnown: birthTimeKnown };
         localStorage.setItem('hk_birth', JSON.stringify(birth));
         sessionStorage.setItem('hk_pending_birth', JSON.stringify({ birth: birth, createdAt: Date.now() }));
         localStorage.setItem('hk_profile_name', profileName);
@@ -1412,6 +1430,7 @@ window.HK_I18N = {
   'in.notime.hint': { th:'ตามตำราคลาสสิก · ถ้าไม่ทราบเวลาเกิด คำนวณเฉพาะ ปี เดือน วัน · แม่นยำกว่าการเดาเวลา', en:'Classical method · without birth time we compute Year/Month/Day only · more honest than guessing hour', zh:'依循古法 · 不知時辰時只推年月日 · 比猜測時辰更誠實' },
   'in.place.label': { th:'สถานที่เกิด · <b>出生地</b>', en:'Place of birth · <b>出生地</b>', zh:'出生地 · <b>出生地</b>' },
   'in.place.hint':  { th:'พิมพ์จังหวัด/เมือง · ระบบหาพิกัดให้', en:'Type city/province · we fetch coordinates', zh:'輸入城市/省份 · 系統自動取得座標' },
+  'in.place.required': { th:'กรุณาเลือกสถานที่เกิดจากรายการที่ระบบแสดง', en:'Please select your birth place from the suggestions', zh:'請從建議清單中選擇出生地' },
   'in.place.note':  { th:'<span class="hk-place-note-i">ⓘ</span><span>กรุณาเลือกจังหวัดที่เกิด · ระบบใช้พิกัดเพื่อคำนวณ <b>เวลาเกิดจริง (True Solar Time)</b> · ต่างจังหวัดเวลาเกิดอาจต่างได้ถึง <b>ครึ่งชั่วโมง</b> · ผลต่อชั่วยามที่แม่นยำ</span>', en:'<span class="hk-place-note-i">ⓘ</span><span>Please pick your birth city · we use coordinates to compute <b>True Solar Time</b> · cities can differ by up to <b>30 minutes</b> · affects accurate shichen</span>', zh:'<span class="hk-place-note-i">ⓘ</span><span>請選擇出生城市 · 系統依座標計算 <b>真太陽時</b> · 各城市出生時間可相差達 <b>半小時</b> · 影響時辰精度</span>' },
   'in.cta.back':    { th:'← ย้อนกลับ', en:'← Back', zh:'← 返回' },
   'in.cta.next':    { th:'ต่อไป · เป้าหมาย <span class="arrow">→</span>', en:'Next · goal <span class="arrow">→</span>', zh:'下一步 · 目標 <span class="arrow">→</span>' },

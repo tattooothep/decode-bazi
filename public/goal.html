@@ -775,11 +775,15 @@
                 birthDate: birth.date,
                 birthTime: birth.time,
                 locationName: birth.place,
+                birthPlaceId: birth.placeId,
+                birthLat: birth.latitude,
                 birthLng: birth.longitude,
                 gender: birth.gender || null,
+                dayBoundary: birth.dayBoundary,
                 goals: aims,
                 /* 19 พ.ค. Option α · ส่ง birthTimeKnown ไปยัง /api/profile · ถ้า user ติ๊ก "ไม่ทราบเวลาเกิด" */
                 birthTimeKnown: birth.birthTimeKnown !== false,
+                birthTz: birth.birthTz,
               }),
             });
             if (r.ok) {
