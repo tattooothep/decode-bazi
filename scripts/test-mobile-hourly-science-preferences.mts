@@ -90,6 +90,10 @@ assert.doesNotMatch(migration, /GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_ziwe
   "the shared runtime role cannot cascade-delete occurrences through an installation");
 assert.match(migration, /REVOKE DELETE ON TABLE users\s*,\s*profiles FROM hourkey_app/u,
   "the shared runtime role cannot cascade-delete Ziwei evidence through an account or profile parent");
+assert.match(migration, /COALESCE\(OLD\.sent_at,OLD\.accepted_at,OLD\.updated_at\)<now\(\)-interval '180 days'/u,
+  "the parent DELETE gate enforces the ordinary history age");
+assert.match(migration, /mobile_push_attempts[\s\S]+mobile_ziwei_hourly_occurrences WHERE push_log_id=\$1/u,
+  "the parent DELETE gate refuses to cascade a linked Ziwei occurrence");
 assert.match(migration, /WHERE enabled=true/u,
   "the global installation identity fence applies only to active Ziwei scheduling ownership");
 assert.match(migration, /last_skip_reason='profile_ineligible'/u);

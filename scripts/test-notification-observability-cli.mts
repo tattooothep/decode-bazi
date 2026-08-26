@@ -108,7 +108,8 @@ try {
       async query() {
         return { rows: [{
           exact_runtime_role: true, producer_read_only: true, ziwei_parent_update: true,
-          ziwei_attempt_update: true, ziwei_occurrence_delete_denied: true,
+          ziwei_attempt_update: true, ziwei_parent_delete_guarded: true,
+          ziwei_occurrence_delete_denied: true,
           ziwei_installation_delete_denied: true, ziwei_user_delete_denied: true,
           ziwei_profile_delete_denied: true, ziwei_purge_executable: true,
           ziwei_purge_hardened: true, ziwei_integrity_triggers: true,
@@ -119,7 +120,7 @@ try {
   });
   assert.deepEqual(databaseProof, {
     databaseConnected: true, exactRuntimeRole: true, producerReadOnly: true,
-    ziweiParentUpdate: true, ziweiAttemptUpdate: true,
+    ziweiParentUpdate: true, ziweiAttemptUpdate: true, ziweiParentDeleteGuarded: true,
     ziweiOccurrenceDeleteDenied: true, ziweiInstallationDeleteDenied: true,
     ziweiUserDeleteDenied: true, ziweiProfileDeleteDenied: true,
     ziweiPurgeExecutable: true, ziweiPurgeHardened: true,
@@ -138,6 +139,8 @@ try {
   });
   assert.match(databaseSql.join("\n"), /mobile_ziwei_hourly_occurrences[\s\S]+?DELETE/u,
     "preflight queries effective occurrence DELETE denial");
+  assert.match(databaseSql.join("\n"), /mobile_push_log[\s\S]+?DELETE[\s\S]+?mobile_ziwei_push_parent_integrity[\s\S]+?180 days/u,
+    "preflight proves production's inherited parent DELETE remains behind the hardened Ziwei trigger");
   assert.match(databaseSql.join("\n"), /mobile_ziwei_hourly_installations[\s\S]+?DELETE/u,
     "preflight queries the installation cascade boundary");
   assert.match(databaseSql.join("\n"), /public\.users[\s\S]+?DELETE/u,

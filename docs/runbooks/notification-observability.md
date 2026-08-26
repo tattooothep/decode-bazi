@@ -88,8 +88,10 @@ neither paths nor credential data. It also connects through the dedicated
 settings and proves `current_user=session_user=hourkey_app`, read-only effective
 access to the Ziwei producer row, required parent/attempt UPDATE capabilities,
 no direct DELETE on occurrence/installation/user/profile cascade boundaries,
-the executable and hardened bounded purge function, and all four required
-integrity triggers. A pre-existing writable state directory is `stateReady`.
+the executable and hardened bounded purge function, the inherited shared-parent
+DELETE only behind a trigger that protects linked Ziwei occurrences and the
+180-day history boundary, and all four required integrity triggers. A
+pre-existing writable state directory is `stateReady`.
 Before the first service start, an absent directory is accepted only as
 `stateCreatable` when root can write `/var/lib` and the reviewed tmpfiles
 contract declares `/var/lib/hourkey-notification` with the single owner

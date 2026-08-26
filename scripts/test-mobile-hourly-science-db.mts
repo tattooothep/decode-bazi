@@ -104,7 +104,10 @@ try {
   await admin.query(migration);
   await admin.query(migration);
   await admin.query(`GRANT USAGE ON SCHEMA ${quotedSchema} TO hourkey_app`);
-  await admin.query("GRANT SELECT,INSERT,UPDATE ON mobile_push_log TO hourkey_app");
+  // Production inherited DELETE on this shared parent before the Ziwei
+  // migration. Keep that exact privilege in the fixture so the Ziwei trigger,
+  // not an accidental permission denial, proves the cascade boundary.
+  await admin.query("GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_push_log TO hourkey_app");
   await admin.query("GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_push_attempts TO hourkey_app");
 
   async function assertHourkeyAppRejects(sql: string, params: unknown[], label: string): Promise<void> {
@@ -549,6 +552,55 @@ try {
     "DELETE FROM mobile_push_log WHERE id=$1",
     [reservation.id],
     "SET ROLE hourkey_app cannot delete and reconstruct a live-audit Ziwei parent",
+  );
+  assert.equal((await admin.query(
+    "SELECT has_table_privilege('hourkey_app','mobile_push_log','DELETE') AS allowed",
+  )).rows[0].allowed, true,
+  "the fixture models production's inherited parent DELETE used by bounded history retention");
+
+  const craftedParentId = crypto.randomUUID();
+  const craftedOccurrenceId = crypto.randomUUID();
+  await admin.query(
+    `INSERT INTO mobile_push_log
+       (id,user_id,yam_key,kind,title,body,payload,source_facts,delivery_status,attempt_count,
+        next_retry_at,last_error,delivery_model_generation,created_at,updated_at)
+     VALUES($1,$2,'ziwei-crafted-linked','ziwei','crafted','crafted','{}','{}',
+            'failed',0,NULL,'no_deliverable_installation',1,now(),now())`,
+    [craftedParentId, userId],
+  );
+  await admin.query(
+    `INSERT INTO mobile_ziwei_hourly_occurrences
+       (id,user_id,installation_id,profile_id,owner_generation,occurrence_key,lineage,calculation_version,
+        window_valid_from,window_valid_until,send_deadline,snapshot,snapshot_digest,state,push_log_id)
+     VALUES($1,$2,$3,$4,$5,'ziwei-crafted-linked','lineage','version',
+            now()-interval '1 minute',now()+interval '119 minutes',now()+interval '9 minutes',
+            '{}',$6,'reserved',$7)`,
+    [craftedOccurrenceId, userId, installationId, profileId, ownerGeneration,
+      "8".repeat(64), craftedParentId],
+  );
+  await assertHourkeyAppRejects(
+    "DELETE FROM mobile_push_log WHERE id=$1",
+    [craftedParentId],
+    "a crafted zero-attempt parent cannot cascade-delete a linked Ziwei occurrence before retention",
+  );
+  assert.equal((await admin.query(
+    "SELECT count(*)::int AS n FROM mobile_ziwei_hourly_occurrences WHERE id=$1",
+    [craftedOccurrenceId],
+  )).rows[0].n, 1, "the guarded parent delete leaves the linked immutable snapshot intact");
+
+  const recentNoDeliveryParentId = crypto.randomUUID();
+  await admin.query(
+    `INSERT INTO mobile_push_log
+       (id,user_id,yam_key,kind,title,body,payload,source_facts,delivery_status,attempt_count,
+        next_retry_at,last_error,delivery_model_generation,created_at,updated_at)
+     VALUES($1,$2,'ziwei-recent-no-deliverable','ziwei','recent','recent','{}','{}',
+            'failed',0,NULL,'no_deliverable_installation',1,now(),now())`,
+    [recentNoDeliveryParentId, userId],
+  );
+  await assertHourkeyAppRejects(
+    "DELETE FROM mobile_push_log WHERE id=$1",
+    [recentNoDeliveryParentId],
+    "runtime parent DELETE cannot bypass the ordinary 180-day history window",
   );
   await assertHourkeyAppRejects(
     "UPDATE mobile_push_log SET attempts_retired_at=now() WHERE id=$1",

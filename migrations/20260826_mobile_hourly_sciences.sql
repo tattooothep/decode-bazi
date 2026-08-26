@@ -322,10 +322,12 @@ BEGIN
       AND OLD.attempt_count=0
       AND OLD.next_retry_at IS NULL
       AND OLD.accepted_at IS NULL
-      AND OLD.sent_at IS NULL;
+      AND OLD.sent_at IS NULL
+      AND COALESCE(OLD.sent_at,OLD.accepted_at,OLD.updated_at)<now()-interval '180 days';
     IF zero_attempt_terminal THEN
       EXECUTE format(
-        'SELECT NOT EXISTS (SELECT 1 FROM %I.mobile_push_attempts WHERE push_log_id=$1)',
+        'SELECT NOT EXISTS (SELECT 1 FROM %1$I.mobile_push_attempts WHERE push_log_id=$1)
+            AND NOT EXISTS (SELECT 1 FROM %1$I.mobile_ziwei_hourly_occurrences WHERE push_log_id=$1)',
         TG_TABLE_SCHEMA
       ) INTO zero_attempt_terminal USING OLD.id;
     END IF;

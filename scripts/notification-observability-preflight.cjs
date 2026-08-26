@@ -38,7 +38,7 @@ function hasStateDirectoryContract(readUnit) {
 function emptyDatabaseProof() {
   return {
     databaseConnected: false, exactRuntimeRole: false, producerReadOnly: false,
-    ziweiParentUpdate: false, ziweiAttemptUpdate: false,
+    ziweiParentUpdate: false, ziweiAttemptUpdate: false, ziweiParentDeleteGuarded: false,
     ziweiOccurrenceDeleteDenied: false, ziweiInstallationDeleteDenied: false,
     ziweiUserDeleteDenied: false, ziweiProfileDeleteDenied: false,
     ziweiPurgeExecutable: false, ziweiPurgeHardened: false,
@@ -68,6 +68,18 @@ async function inspectDatabaseAccess(options = {}) {
                 AND NOT has_table_privilege(current_user,'mobile_ziwei_hourly_producer_state','DELETE') AS producer_read_only,
               has_table_privilege(current_user,'mobile_push_log','UPDATE') AS ziwei_parent_update,
               has_table_privilege(current_user,'mobile_push_attempts','UPDATE') AS ziwei_attempt_update,
+              has_table_privilege(current_user,'mobile_push_log','DELETE')
+                AND EXISTS(
+                  SELECT 1 FROM pg_catalog.pg_trigger t
+                  JOIN pg_catalog.pg_class c ON c.oid=t.tgrelid
+                  JOIN pg_catalog.pg_proc p ON p.oid=t.tgfoid
+                   WHERE c.oid='mobile_push_log'::regclass
+                     AND t.tgname='mobile_ziwei_push_parent_integrity'
+                     AND t.tgenabled='O' AND NOT t.tgisinternal
+                     AND (t.tgtype::integer & 8)=8
+                     AND position('mobile_ziwei_hourly_occurrences' IN p.prosrc)>0
+                     AND position('interval ''180 days''' IN p.prosrc)>0
+                ) AS ziwei_parent_delete_guarded,
               NOT has_table_privilege(current_user,'mobile_ziwei_hourly_occurrences','DELETE')
                 AS ziwei_occurrence_delete_denied,
               NOT has_table_privilege(current_user,'mobile_ziwei_hourly_installations','DELETE')
@@ -118,6 +130,7 @@ async function inspectDatabaseAccess(options = {}) {
       producerReadOnly: row.producer_read_only === true,
       ziweiParentUpdate: row.ziwei_parent_update === true,
       ziweiAttemptUpdate: row.ziwei_attempt_update === true,
+      ziweiParentDeleteGuarded: row.ziwei_parent_delete_guarded === true,
       ziweiOccurrenceDeleteDenied: row.ziwei_occurrence_delete_denied === true,
       ziweiInstallationDeleteDenied: row.ziwei_installation_delete_denied === true,
       ziweiUserDeleteDenied: row.ziwei_user_delete_denied === true,
@@ -209,6 +222,7 @@ async function runPreflight(options = {}) {
     ...filesystem, ...database,
     ok: filesystem.ok && database.databaseConnected && database.exactRuntimeRole
       && database.producerReadOnly && database.ziweiParentUpdate && database.ziweiAttemptUpdate
+      && database.ziweiParentDeleteGuarded
       && database.ziweiOccurrenceDeleteDenied && database.ziweiInstallationDeleteDenied
       && database.ziweiUserDeleteDenied && database.ziweiProfileDeleteDenied
       && database.ziweiPurgeExecutable && database.ziweiPurgeHardened

@@ -46,7 +46,10 @@ running on a host. Installation remains behind the release and signature gates.
   can invoke only the `SECURITY DEFINER` purge function, which pins
   `pg_catalog,public` and independently enforces the age, state, linkage,
   provider-finality, expiry, batch-size, and retention-window bounds inside
-  PostgreSQL.
+  PostgreSQL. The shared runtime retains parent `mobile_push_log` DELETE only
+  for generic bounded history retention. Its Ziwei parent trigger rejects every
+  linked occurrence and permits a zero-attempt/no-deliverable parent only after
+  the ordinary 180-day history boundary with no provider attempt remaining.
 - The parent payload remains available while authenticated history remains.
   Payload and copy are therefore bounded by the 180/365-day parent windows.
 
