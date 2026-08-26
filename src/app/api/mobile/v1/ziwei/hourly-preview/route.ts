@@ -7,8 +7,9 @@ import {
   sciencePreviewEnabledForUser, strictIanaTimezone, strictRfc3339Instant, strictUuid,
 } from "@/lib/mobile-science-preview-route";
 import {
-  buildZiweiHourlyPreview, resolveUnambiguousBirthWallClock, ZIWEI_HOURLY_LINEAGE,
+  buildZiweiHourlyPreview, ZIWEI_HOURLY_LINEAGE,
 } from "@/lib/astro/ziwei/hourly-preview";
+import { resolveCanonicalZiweiContext } from "@/lib/astro/ziwei/context-resolver";
 import type { Gender } from "@/lib/astro/ziwei/engine";
 
 export const dynamic = "force-dynamic";
@@ -64,27 +65,40 @@ export async function POST(req: Request) {
         AND (relationship_type IS NULL OR btrim(relationship_type) = '')`,
     [profileId, session.orgId, session.userId],
   );
-  if (!row || !row.birth_wall || !row.birth_tz || !row.gender || row.birth_lat === null || row.birth_lng === null) {
+  if (!row || !row.birth_wall || !row.birth_tz || !row.gender) {
     return NextResponse.json({ ok: false, error: "profile_not_found" }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
   }
   const gender = row.gender === "M" || row.gender === "F" ? row.gender as Gender : null;
   const lat = Number(row.birth_lat);
   const lng = Number(row.birth_lng);
-  if (!gender || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+  if (!gender) {
     return NextResponse.json({ ok: false, error: "profile_not_found" }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
   }
+  const birthLocation = row.birth_lat !== null && row.birth_lng !== null
+    && Number.isFinite(lat) && Number.isFinite(lng)
+    && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180
+    ? { lat, lng }
+    : null;
 
   try {
-    const birthInstant = resolveUnambiguousBirthWallClock(row.birth_wall, row.birth_tz);
-    const preview = buildZiweiHourlyPreview({
-      birthInstant,
+    const ziweiContext = resolveCanonicalZiweiContext({
+      mode: "strict",
+      birthWallClock: row.birth_wall,
       birthTimezone: row.birth_tz,
-      birthLocation: { lat, lng },
-      gender,
+      birthTimezoneSource: "profile",
       referenceInstant,
       referenceTimezone,
     });
-    return NextResponse.json({ ok: true, profile: { id: row.id, name: row.nickname || row.name || "", isSelf: true }, preview }, { headers: PRIVATE_NO_STORE_HEADERS });
+    if (ziweiContext.status !== "resolved") throw new Error(ziweiContext.reason);
+    const preview = buildZiweiHourlyPreview({
+      birthInstant: new Date(ziweiContext.birth.instant),
+      birthTimezone: ziweiContext.birth.timezone,
+      birthLocation: birthLocation,
+      gender,
+      referenceInstant: new Date(ziweiContext.reference.instant),
+      referenceTimezone: ziweiContext.reference.timezone,
+    });
+    return NextResponse.json({ ok: true, profile: { id: row.id, name: row.nickname || row.name || "", isSelf: true }, ziweiContext, preview }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch {
     return NextResponse.json({ ok: false, error: "preview_inputs_unavailable" }, { status: 422, headers: PRIVATE_NO_STORE_HEADERS });
   }

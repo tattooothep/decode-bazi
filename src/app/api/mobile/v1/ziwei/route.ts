@@ -6,7 +6,8 @@ import { getMobileSession } from "@/lib/mobile-auth";
 import { q1 } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { ziweiChart, type Gender } from "@/lib/astro/ziwei/engine";
-import { birthTimezoneMeta, parseTz, resolveBirthTz, tzOffsetHoursAt, wallClockToUtc } from "@/lib/birth-timezone";
+import { resolveCanonicalZiweiContext } from "@/lib/astro/ziwei/context-resolver";
+import { birthTimezoneMeta } from "@/lib/birth-timezone";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -32,7 +33,6 @@ export async function GET(req: Request) {
   const profileId = cleanId(url.searchParams.get("profileId"));
   if (!profileId) return NextResponse.json({ ok: false, error: "profile_required" }, { status: 400 });
 
-  // สัญญาเดียวกับ fusion5: เวลาเกิดใน DB = เวลากำแพงกรุงเทพ → UTC ด้วย +07:00 · gender charAt(0)==="f"
   const row = await q1<{
     id: string; name: string | null; nickname: string | null; birth_datetime: string | null;
     birth_lat: string | null; birth_lng: string | null; gender: string | null; birth_time_known: boolean | null;
@@ -47,34 +47,54 @@ export async function GET(req: Request) {
   if (!row || !row.birth_datetime) {
     return NextResponse.json({ ok: false, error: "profile not found" }, { status: 404 });
   }
-  /* เขตเวลาเกิด: รับ ?tz= จากแอพ · ไม่ส่งมา = ใช้ +07:00 เหมือนเดิมแต่ติดธงบอกตรงๆ
-   * (DB ยังไม่มีคอลัมน์เขตเวลาเกิด — เหตุผลเต็มใน src/lib/birth-timezone.ts)
-   * เดิม route ไม่เคยส่ง gmtOffsetHours ให้ engine เลย engine จึงเดาเองจาก Math.round(lng/15)
-   * → ดวงเกิดต่างประเทศได้ยามผิด → 命宮 ผิด → ทั้งผังผิด */
-  /* ลำดับความน่าเชื่อถือ: เขตเวลาที่บันทึกในโปรไฟล์ > ที่ส่งมากับคำขอ > ค่าตั้งต้นกรุงเทพ
-   * (โปรไฟล์มาก่อน เพราะเป็นข้อมูลที่เจ้าของดวงกรอกเอง ไม่ใช่ค่าที่หน้าจอเดา) */
-  const tzFromProfile = parseTz(row.birth_tz);
-  const tzFromQuery = parseTz(url.searchParams.get("tz"));
-  const tzParam = tzFromProfile || tzFromQuery;
-  const tz = resolveBirthTz(tzParam);
-  const dtUTC = wallClockToUtc(row.birth_datetime, tz);
-  if (!dtUTC || isNaN(dtUTC.getTime())) {
-    return NextResponse.json({ ok: false, error: "bad birth datetime" }, { status: 422 });
+  const profileHasTimezone = row.birth_tz !== null && row.birth_tz !== "";
+  const requestedTimezone = url.searchParams.get("tz");
+  const birthTimezone = profileHasTimezone ? row.birth_tz : requestedTimezone;
+  const referenceInstant = new Date();
+  const ziweiContext = resolveCanonicalZiweiContext({
+    mode: "legacy_chart",
+    birthWallClock: row.birth_datetime,
+    birthTimezone,
+    birthTimezoneSource: profileHasTimezone ? "profile" : requestedTimezone ? "request" : undefined,
+    referenceInstant,
+    // The established chart evaluates reference facts in the birth offset. Keep that
+    // compatibility explicit until the chart API accepts a separate reference zone.
+    referenceTimezone: birthTimezone || "+07:00",
+    legacyReferenceUsesBirthOffset: true,
+  });
+  if (ziweiContext.status === "blocked") {
+    return NextResponse.json(
+      { ok: false, error: "ziwei_context_blocked", reason: ziweiContext.reason, ziweiContext },
+      { status: 422 },
+    );
   }
   const gender: Gender = String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M";
   const chart = ziweiChart(
-    dtUTC,
+    new Date(ziweiContext.birth.instant),
     Number(row.birth_lat || 13.7563),
     Number(row.birth_lng || 100.5018),
     gender,
     row.birth_time_known !== false,
-    { refDate: new Date(), gmtOffsetHours: tzOffsetHoursAt(tz, dtUTC) }
+    {
+      refDate: referenceInstant,
+      gmtOffsetHours: ziweiContext.birth.utcOffsetMinutes / 60,
+      refGmtOffsetHours: ziweiContext.reference.utcOffsetMinutes / 60,
+    },
   );
+  const timezone = ziweiContext.status === "compatibility_only"
+      && ziweiContext.reason === "birth_timezone_missing_legacy_bangkok"
+    ? birthTimezoneMeta(null)
+    : birthTimezoneMeta({
+      label: ziweiContext.birth.timezone,
+      kind: ziweiContext.birth.timezoneKind === "iana" ? "zone" : "offset",
+      offsetMin: ziweiContext.birth.utcOffsetMinutes,
+    }, ziweiContext.birth.timezoneSource === "profile");
   return NextResponse.json(
     {
       ok: true,
       profile: { id: row.id, name: row.nickname || row.name || "" },
-      timezone: birthTimezoneMeta(tzParam, !!tzFromProfile),
+      timezone,
+      ziweiContext,
       chart,
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
