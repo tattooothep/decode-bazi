@@ -21,6 +21,15 @@ const sharedStateUnits = [
   "ops/systemd/hourkey-mobile-qimen-push.service",
   "ops/systemd/hourkey-mobile-ziwei-hourly-push.service",
 ];
+for (const unit of [
+  "ops/systemd/hourkey-mobile-push-retry-receipts.service",
+  "ops/systemd/hourkey-mobile-push-health.service",
+]) {
+  const unitSource = readFileSync(unit, "utf8");
+  assert.match(unitSource, /^User=hourkey-notify$/mu);
+  assert.match(unitSource, /^Group=hourkey-notify$/mu);
+  assert.doesNotMatch(unitSource, /^(?:User|Group)=root$/mu);
+}
 
 assert.match(service, /^WorkingDirectory=\/root\/releases\/current$/mu);
 assert.match(service, /^ExecStart=\/usr\/bin\/env FCM_SERVICE_ACCOUNT_PATH=\/etc\/hourkey\/credentials\/fcm-service-account\.json \/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-ziwei-hourly-push-cron\.mts$/mu);

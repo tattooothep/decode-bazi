@@ -19,7 +19,7 @@ function optionsFor(input = {}) {
     engagementDays: integerOption(input.engagementDays, 90, 1, 3650, "engagementDays"),
     historyDays: integerOption(input.historyDays, 180, 30, 3650, "historyDays"),
     securityHistoryDays: integerOption(input.securityHistoryDays, 365, 30, 3650, "securityHistoryDays"),
-    ziweiOccurrenceDays: integerOption(input.ziweiOccurrenceDays, 30, 1, 3650, "ziweiOccurrenceDays"),
+    ziweiOccurrenceDays: integerOption(input.ziweiOccurrenceDays, 30, 30, 3650, "ziweiOccurrenceDays"),
     batchSize: integerOption(input.batchSize, 500, 1, 5000, "batchSize"),
     maxBatches: integerOption(input.maxBatches, 20, 1, 100, "maxBatches"),
   };

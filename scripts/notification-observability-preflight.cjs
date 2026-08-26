@@ -38,7 +38,11 @@ function hasStateDirectoryContract(readUnit) {
 function emptyDatabaseProof() {
   return {
     databaseConnected: false, exactRuntimeRole: false, producerReadOnly: false,
-    ziweiParentUpdate: false, ziweiAttemptUpdate: false, ziweiIntegrityTriggers: false,
+    ziweiParentUpdate: false, ziweiAttemptUpdate: false,
+    ziweiOccurrenceDeleteDenied: false, ziweiInstallationDeleteDenied: false,
+    ziweiUserDeleteDenied: false, ziweiProfileDeleteDenied: false,
+    ziweiPurgeExecutable: false, ziweiPurgeHardened: false,
+    ziweiIntegrityTriggers: false,
   };
 }
 
@@ -64,7 +68,37 @@ async function inspectDatabaseAccess(options = {}) {
                 AND NOT has_table_privilege(current_user,'mobile_ziwei_hourly_producer_state','DELETE') AS producer_read_only,
               has_table_privilege(current_user,'mobile_push_log','UPDATE') AS ziwei_parent_update,
               has_table_privilege(current_user,'mobile_push_attempts','UPDATE') AS ziwei_attempt_update,
-              (SELECT count(*)=3 FROM pg_catalog.pg_trigger t
+              NOT has_table_privilege(current_user,'mobile_ziwei_hourly_occurrences','DELETE')
+                AS ziwei_occurrence_delete_denied,
+              NOT has_table_privilege(current_user,'mobile_ziwei_hourly_installations','DELETE')
+                AS ziwei_installation_delete_denied,
+              NOT has_table_privilege(current_user,'public.users','DELETE')
+                AS ziwei_user_delete_denied,
+              NOT has_table_privilege(current_user,'public.profiles','DELETE')
+                AS ziwei_profile_delete_denied,
+              EXISTS(
+                SELECT 1 FROM pg_catalog.pg_proc p
+                 WHERE p.oid=pg_catalog.to_regprocedure(
+                   'public.purge_mobile_ziwei_hourly_occurrences(integer,integer)'
+                 ) AND has_function_privilege(current_user,p.oid,'EXECUTE')
+              ) AS ziwei_purge_executable,
+              EXISTS(
+                SELECT 1 FROM pg_catalog.pg_proc p
+                 WHERE p.oid=pg_catalog.to_regprocedure(
+                   'public.purge_mobile_ziwei_hourly_occurrences(integer,integer)'
+                 )
+                   AND p.prosecdef=true
+                   AND pg_catalog.pg_get_userbyid(p.proowner)<>current_user
+                   AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
+                   AND NOT EXISTS(
+                     SELECT 1
+                       FROM pg_catalog.aclexplode(
+                         COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))
+                       ) acl
+                      WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'
+                   )
+              ) AS ziwei_purge_hardened,
+              (SELECT count(*)=4 FROM pg_catalog.pg_trigger t
                 JOIN pg_catalog.pg_class c ON c.oid=t.tgrelid
                WHERE t.tgenabled='O' AND NOT t.tgisinternal AND (
                  (c.oid='mobile_ziwei_hourly_producer_state'::regclass
@@ -73,6 +107,8 @@ async function inspectDatabaseAccess(options = {}) {
                    AND t.tgname='mobile_ziwei_push_parent_integrity')
                  OR (c.oid='mobile_push_attempts'::regclass
                    AND t.tgname='mobile_ziwei_push_attempt_integrity')
+                 OR (c.oid='mobile_ziwei_hourly_occurrences'::regclass
+                   AND t.tgname='mobile_ziwei_hourly_occurrence_immutable')
                )) AS ziwei_integrity_triggers`,
     );
     const row = result.rows[0] || {};
@@ -82,6 +118,12 @@ async function inspectDatabaseAccess(options = {}) {
       producerReadOnly: row.producer_read_only === true,
       ziweiParentUpdate: row.ziwei_parent_update === true,
       ziweiAttemptUpdate: row.ziwei_attempt_update === true,
+      ziweiOccurrenceDeleteDenied: row.ziwei_occurrence_delete_denied === true,
+      ziweiInstallationDeleteDenied: row.ziwei_installation_delete_denied === true,
+      ziweiUserDeleteDenied: row.ziwei_user_delete_denied === true,
+      ziweiProfileDeleteDenied: row.ziwei_profile_delete_denied === true,
+      ziweiPurgeExecutable: row.ziwei_purge_executable === true,
+      ziweiPurgeHardened: row.ziwei_purge_hardened === true,
       ziweiIntegrityTriggers: row.ziwei_integrity_triggers === true,
     };
   } catch {
@@ -137,6 +179,8 @@ function inspect(options = {}) {
     ["/usr/bin/node", constants.X_OK],
     ["/root/releases/current", constants.X_OK],
     ["/root/releases/current/scripts/mobile-ziwei-hourly-push-cron.mts", constants.R_OK],
+    ["/root/releases/current/scripts/notification-retry-receipt-runner.cjs", constants.R_OK],
+    ["/root/releases/current/scripts/notification-health.cjs", constants.R_OK],
     ["/etc/hourkey/credentials/fcm-service-account.json", constants.R_OK],
     ["/var/lib/hourkey-notification", constants.W_OK],
     ["/var/log/hourkey", constants.W_OK],
@@ -165,6 +209,9 @@ async function runPreflight(options = {}) {
     ...filesystem, ...database,
     ok: filesystem.ok && database.databaseConnected && database.exactRuntimeRole
       && database.producerReadOnly && database.ziweiParentUpdate && database.ziweiAttemptUpdate
+      && database.ziweiOccurrenceDeleteDenied && database.ziweiInstallationDeleteDenied
+      && database.ziweiUserDeleteDenied && database.ziweiProfileDeleteDenied
+      && database.ziweiPurgeExecutable && database.ziweiPurgeHardened
       && database.ziweiIntegrityTriggers,
   };
 }

@@ -31,6 +31,7 @@ try {
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text);
+    CREATE TABLE profiles(id uuid PRIMARY KEY);
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY REFERENCES users(id));
     CREATE TABLE mobile_ziwei_hourly_installations(
       user_id uuid NOT NULL,installation_id uuid NOT NULL,enabled boolean NOT NULL DEFAULT false,

@@ -76,9 +76,11 @@ try {
   }
   for (const file of [retryUnit, healthUnit]) {
     const source = await readFile(file, "utf8");
-    assert.match(source, /^User=root$/mu, `${file} uses the existing validated runtime account`);
-    assert.match(source, /^Group=root$/mu, `${file} uses the existing validated runtime group`);
-    assert.doesNotMatch(source, /^User=hourkey$/mu, `${file} does not name a nonexistent service account`);
+    assert.match(source, /^User=hourkey-notify$/mu, `${file} uses the dedicated notification account`);
+    assert.match(source, /^Group=hourkey-notify$/mu, `${file} uses the dedicated notification group`);
+    assert.doesNotMatch(source, /^(?:User|Group)=root$/mu, `${file} has no root provider runtime`);
+    assert.match(source, /^CapabilityBoundingSet=$/mu, `${file} receives no Linux capabilities`);
+    assert.match(source, /^ProtectProc=invisible$/mu, `${file} cannot inspect unrelated process metadata`);
     assert.doesNotMatch(source, /^StateDirectory=/mu,
       `${file} must not recursively change ownership of the shared tmpfiles-owned state tree`);
   }
@@ -106,7 +108,10 @@ try {
       async query() {
         return { rows: [{
           exact_runtime_role: true, producer_read_only: true, ziwei_parent_update: true,
-          ziwei_attempt_update: true, ziwei_integrity_triggers: true,
+          ziwei_attempt_update: true, ziwei_occurrence_delete_denied: true,
+          ziwei_installation_delete_denied: true, ziwei_user_delete_denied: true,
+          ziwei_profile_delete_denied: true, ziwei_purge_executable: true,
+          ziwei_purge_hardened: true, ziwei_integrity_triggers: true,
         }] };
       },
       async end() {},
@@ -114,8 +119,35 @@ try {
   });
   assert.deepEqual(databaseProof, {
     databaseConnected: true, exactRuntimeRole: true, producerReadOnly: true,
-    ziweiParentUpdate: true, ziweiAttemptUpdate: true, ziweiIntegrityTriggers: true,
+    ziweiParentUpdate: true, ziweiAttemptUpdate: true,
+    ziweiOccurrenceDeleteDenied: true, ziweiInstallationDeleteDenied: true,
+    ziweiUserDeleteDenied: true, ziweiProfileDeleteDenied: true,
+    ziweiPurgeExecutable: true, ziweiPurgeHardened: true,
+    ziweiIntegrityTriggers: true,
   }, "preflight proves current_user and effective Ziwei privileges through the dedicated connection");
+  const databaseSql: string[] = [];
+  await preflight.inspectDatabaseAccess({
+    environment: { PGHOST: "db", PGPORT: "5432", PGDATABASE: "hourkey", PGUSER: "hourkey_app", PGPASSWORD: "private" },
+    connect: async () => ({
+      async query(sql: string) {
+        databaseSql.push(sql);
+        return { rows: [{}] };
+      },
+      async end() {},
+    }),
+  });
+  assert.match(databaseSql.join("\n"), /mobile_ziwei_hourly_occurrences[\s\S]+?DELETE/u,
+    "preflight queries effective occurrence DELETE denial");
+  assert.match(databaseSql.join("\n"), /mobile_ziwei_hourly_installations[\s\S]+?DELETE/u,
+    "preflight queries the installation cascade boundary");
+  assert.match(databaseSql.join("\n"), /public\.users[\s\S]+?DELETE/u,
+    "preflight queries the user parent cascade boundary");
+  assert.match(databaseSql.join("\n"), /public\.profiles[\s\S]+?DELETE/u,
+    "preflight queries the profile parent cascade boundary");
+  assert.match(databaseSql.join("\n"), /purge_mobile_ziwei_hourly_occurrences[\s\S]+?prosecdef[\s\S]+?proowner[\s\S]+?proconfig/u,
+    "preflight verifies executable definer ownership and pinned search path from pg_catalog");
+  assert.match(databaseSql.join("\n"), /mobile_ziwei_hourly_occurrence_immutable/u,
+    "preflight requires the occurrence immutability trigger in addition to parent and attempt gates");
   const wrongDatabaseRole = await preflight.inspectDatabaseAccess({
     environment: { PGHOST: "db", PGPORT: "5432", PGDATABASE: "hourkey", PGUSER: "decode_user", PGPASSWORD: "private" },
     connect: async () => { throw new Error("must not connect"); },
@@ -151,7 +183,8 @@ try {
   assert.equal(preflight.inspect({ access: () => {}, uid: () => 0 }).runtimeRoot, true, "preflight independently verifies the template root account exists on this host");
   execFileSync("systemd-analyze", ["verify", retryUnit, receiptTimer, healthUnit, healthTimer], { stdio: "pipe" });
   const runbook = await readFile("docs/runbooks/notification-observability.md", "utf8");
-  assert.match(runbook, /root.*least-privilege|least-privilege.*root/isu, "runbook records the root credential-access and least-privilege tradeoff");
+  assert.match(runbook, /retry.*health[\s\S]+hourkey-notify/isu,
+    "runbook records the dedicated retry and health runtime boundary");
   assert.match(runbook, /notification-observability-preflight\.cjs/u, "runbook requires source-only executable and credential-access preflight");
   assert.match(runbook, /\/api\/internal\/health\/notifications/u, "runbook documents the authenticated internal health endpoint");
   assert.match(runbook, /notification-reconcile\.cjs.*rejects.*--lookback-hours/isu, "runbook documents that reconciliation rejects its obsolete no-op lookback argument");

@@ -5,6 +5,7 @@ BEGIN;
 -- runtime SQL cannot erase occurrence attestations directly.
 REVOKE DELETE ON TABLE mobile_ziwei_hourly_occurrences FROM PUBLIC,hourkey_app;
 REVOKE DELETE ON TABLE mobile_ziwei_hourly_installations FROM PUBLIC,hourkey_app;
+REVOKE DELETE ON TABLE users, profiles FROM hourkey_app;
 
 -- A physical installation may move between authenticated accounts. Keep each
 -- old disabled owner row so its occurrence FK remains intact, while allowing
@@ -23,7 +24,7 @@ SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $$
 BEGIN
-  IF p_retention_days IS NULL OR p_retention_days<1 OR p_retention_days>3650
+  IF p_retention_days IS NULL OR p_retention_days<30 OR p_retention_days>3650
     OR p_batch_size IS NULL OR p_batch_size<1 OR p_batch_size>5000 THEN
     RAISE EXCEPTION 'mobile_ziwei_hourly_occurrence_retention_arguments_invalid'
       USING ERRCODE='22023';
@@ -33,20 +34,57 @@ BEGIN
   WITH candidates AS (
     SELECT o.id
       FROM public.mobile_ziwei_hourly_occurrences o
-     WHERE o.state IN ('claimed','skipped') AND o.push_log_id IS NULL
-       AND o.created_at<statement_timestamp()-(p_retention_days*interval '1 day')
+     WHERE o.created_at<statement_timestamp()-(p_retention_days*interval '1 day')
        AND o.window_valid_until<=statement_timestamp()
        AND o.send_deadline<=statement_timestamp()
+       AND (
+         (o.push_log_id IS NULL AND o.state IN ('claimed','reserved','skipped'))
+         OR (
+           o.push_log_id IS NOT NULL AND o.state='reserved'
+           AND EXISTS(
+             SELECT 1 FROM public.mobile_push_log l
+              WHERE l.id=o.push_log_id
+                AND l.delivery_status IN ('accepted','delivered','failed')
+           )
+           AND NOT EXISTS(
+             SELECT 1 FROM public.mobile_push_attempts a
+              WHERE a.push_log_id=o.push_log_id AND (
+                a.status IN ('reserved','retry_due')
+                OR (a.provider='expo' AND a.status='provider_accepted'
+                  AND a.provider_receipt_checked_at IS NULL)
+              )
+           )
+         )
+       )
      ORDER BY o.created_at,o.id
      LIMIT p_batch_size
      FOR UPDATE SKIP LOCKED
   )
   DELETE FROM public.mobile_ziwei_hourly_occurrences o
    USING candidates c
-   WHERE o.id=c.id AND o.state IN ('claimed','skipped') AND o.push_log_id IS NULL
+   WHERE o.id=c.id
      AND o.created_at<statement_timestamp()-(p_retention_days*interval '1 day')
      AND o.window_valid_until<=statement_timestamp()
      AND o.send_deadline<=statement_timestamp()
+     AND (
+       (o.push_log_id IS NULL AND o.state IN ('claimed','reserved','skipped'))
+       OR (
+         o.push_log_id IS NOT NULL AND o.state='reserved'
+         AND EXISTS(
+           SELECT 1 FROM public.mobile_push_log l
+            WHERE l.id=o.push_log_id
+              AND l.delivery_status IN ('accepted','delivered','failed')
+         )
+         AND NOT EXISTS(
+           SELECT 1 FROM public.mobile_push_attempts a
+            WHERE a.push_log_id=o.push_log_id AND (
+              a.status IN ('reserved','retry_due')
+              OR (a.provider='expo' AND a.status='provider_accepted'
+                AND a.provider_receipt_checked_at IS NULL)
+            )
+         )
+       )
+     )
   RETURNING o.id;
 END;
 $$;

@@ -29,17 +29,23 @@ running on a host. Installation remains behind the release and signature gates.
 - Active reservations, retries, and outstanding Expo receipts are never
   redacted or deleted, regardless of age. Health checks continue to alert on
   those stale rows.
-- Ziwei personal occurrence snapshots have an explicit 30 days retention
-  window. Only old, expired, unlinked `claimed` or `skipped` occurrences are
-  deleted. `reserved`, push-linked, and still-live rows are preserved. The
-  phase uses the same bounded batches, row locks, and `SKIP LOCKED` policy as
-  the other phases, so a scheduler-owned row is deferred to a later run. The
-  shared `hourkey_app` role has no direct `DELETE` privilege on the occurrence
-  table or its installation parent. Push unregister and account transfer
-  disable the installation instead of cascade-deleting it, so occurrence
-  evidence remains attached. Retention can invoke only the `SECURITY DEFINER`
-  purge function, which pins `pg_catalog,public` and independently enforces the
-  age, state, linkage, expiry, batch-size, and retention-window bounds inside
+- Ziwei personal occurrence snapshots have an explicit minimum 30-day
+  retention window, enforced by both the CLI parser and PostgreSQL function.
+  After that boundary, old and expired unlinked `claimed`, `reserved`, or
+  `skipped` occurrences are eligible for deletion. A push-linked `reserved`
+  occurrence is eligible only when its parent is terminal
+  (`accepted`/`delivered`/`failed`) and no active retry or unchecked Expo
+  receipt remains. Recent, still-live, actively retried, and receipt-pending
+  rows are preserved. The phase uses the same bounded batches, row locks, and
+  `SKIP LOCKED` policy as the other phases, so a scheduler-owned row is deferred
+  to a later run. The shared `hourkey_app` role has no direct `DELETE`
+  privilege on the occurrence table, its installation parent, or the
+  `users`/`profiles` cascade parents. Push unregister, account transfer, and
+  normal account deletion use non-destructive state changes, so occurrence
+  evidence remains attached until retention is allowed to remove it. Retention
+  can invoke only the `SECURITY DEFINER` purge function, which pins
+  `pg_catalog,public` and independently enforces the age, state, linkage,
+  provider-finality, expiry, batch-size, and retention-window bounds inside
   PostgreSQL.
 - The parent payload remains available while authenticated history remains.
   Payload and copy are therefore bounded by the 180/365-day parent windows.
@@ -54,9 +60,9 @@ prints titles, bodies, payloads, source facts, tokens, user IDs, or errors.
 Run only against the disposable test databases created by the tests:
 
 ```text
-node --experimental-strip-types scripts/test-notification-retention.mts
-node --experimental-strip-types scripts/test-notification-retention-cli.mts
-node --experimental-strip-types scripts/test-ziwei-occurrence-retention.mts
+node --import tsx scripts/test-notification-retention.mts
+node --import tsx scripts/test-notification-retention-cli.mts
+node --import tsx scripts/test-ziwei-occurrence-retention.mts
 systemd-analyze verify ops/systemd/hourkey-mobile-notification-retention.service ops/systemd/hourkey-mobile-notification-retention.timer
 ```
 
@@ -65,7 +71,8 @@ and writes aggregate output under the systemd-managed `/var/log/hourkey`
 directory with mode 0750, a 0027 umask, 0640 files owned by that account, and
 the checked-in 14-file rotation policy. Before a release gate approves installation, verify the reviewed source
 commit, migration rollback/reapply evidence, that `hourkey_app` cannot delete
-occurrences directly but can execute the bounded purge function, disk budget,
+occurrences, installations, users, or profiles directly but can execute only
+the hardened bounded purge function, the enforced 30-day minimum, disk budget,
 and that the log path contains aggregate records only.
 
 ## Rollback

@@ -24,6 +24,19 @@ let pool: pg.Pool | undefined;
 try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
+    CREATE TABLE users (id uuid PRIMARY KEY);
+    CREATE TABLE profiles (id uuid PRIMARY KEY);
+    CREATE TABLE mobile_push_log (
+      id uuid PRIMARY KEY,
+      delivery_status text NOT NULL
+    );
+    CREATE TABLE mobile_push_attempts (
+      id uuid PRIMARY KEY,
+      push_log_id uuid NOT NULL REFERENCES mobile_push_log(id) ON DELETE CASCADE,
+      provider text NOT NULL,
+      status text NOT NULL,
+      provider_receipt_checked_at timestamptz
+    );
     CREATE TABLE mobile_ziwei_hourly_installations (
       user_id uuid NOT NULL,
       installation_id uuid NOT NULL,
@@ -42,6 +55,11 @@ try {
       created_at timestamptz NOT NULL,
       updated_at timestamptz NOT NULL
     );
+    INSERT INTO mobile_push_log VALUES
+      ('10000000-0000-4000-8000-000000000005','delivered'),
+      ('10000000-0000-4000-8000-000000000008','pending');
+    INSERT INTO mobile_push_attempts VALUES
+      ('20000000-0000-4000-8000-000000000008','10000000-0000-4000-8000-000000000008','fcm','retry_due',NULL);
     INSERT INTO mobile_ziwei_hourly_occurrences VALUES
       ('00000000-0000-4000-8000-000000000001','claimed',NULL,'{"private":"old-claimed"}',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days'),
       ('00000000-0000-4000-8000-000000000002','skipped',NULL,'{"private":"old-skipped"}',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days'),
@@ -49,7 +67,8 @@ try {
       ('00000000-0000-4000-8000-000000000004','reserved',NULL,'{"private":"reserved"}',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days'),
       ('00000000-0000-4000-8000-000000000005','reserved','10000000-0000-4000-8000-000000000005','{"private":"push-linked"}',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days'),
       ('00000000-0000-4000-8000-000000000006','claimed',NULL,'{"private":"live"}',now()+interval '1 hour',now()+interval '30 minutes',now()-interval '40 days',now()-interval '40 days'),
-      ('00000000-0000-4000-8000-000000000007','skipped',NULL,'{"private":"recent"}',now()-interval '5 days',now()-interval '5 days',now()-interval '5 days',now()-interval '5 days');
+      ('00000000-0000-4000-8000-000000000007','skipped',NULL,'{"private":"recent"}',now()-interval '5 days',now()-interval '5 days',now()-interval '5 days',now()-interval '5 days'),
+      ('00000000-0000-4000-8000-000000000008','reserved','10000000-0000-4000-8000-000000000008','{"private":"active-linked"}',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days',now()-interval '40 days');
     GRANT SELECT,UPDATE ON mobile_ziwei_hourly_occurrences TO ${role};
   `);
   psql(database, retentionMigration);
@@ -90,6 +109,11 @@ try {
       "the definer boundary rejects a zero-day destructive window",
     );
     await assert.rejects(
+      worker.query("SELECT * FROM public.purge_mobile_ziwei_hourly_occurrences(29,10)"),
+      (error: any) => error?.code === "22023",
+      "the definer boundary rejects a retention period shorter than the declared 30-day policy",
+    );
+    await assert.rejects(
       worker.query("SELECT * FROM public.purge_mobile_ziwei_hourly_occurrences(30,5001)"),
       (error: any) => error?.code === "22023",
       "the definer boundary rejects an oversized batch even when called outside the CLI",
@@ -99,7 +123,8 @@ try {
     const first = await retention.purgeZiweiOccurrencesBatch(worker, retention.optionsFor({
       ziweiOccurrenceDays: 30, batchSize: 10, maxBatches: 1,
     }));
-    assert.equal(first, 2, "SKIP LOCKED purges other eligible rows without waiting for a live owner");
+    assert.equal(first, 4,
+      "SKIP LOCKED purges old unlinked and terminal-linked snapshots without waiting for a live owner");
     assert.equal((await worker.query("SELECT 1 FROM mobile_ziwei_hourly_occurrences WHERE id='00000000-0000-4000-8000-000000000003'")).rowCount, 1,
       "the concurrently locked occurrence survives this bounded batch");
     await locker.query("COMMIT");
@@ -114,8 +139,8 @@ try {
   }
 
   const survivors = (await pool.query("SELECT snapshot->>'private' AS name FROM mobile_ziwei_hourly_occurrences ORDER BY id")).rows.map((row) => row.name);
-  assert.deepEqual(survivors, ["reserved", "push-linked", "live", "recent"],
-    "retention preserves reserved, push-linked, still-live, and recent personal snapshots");
+  assert.deepEqual(survivors, ["live", "recent", "active-linked"],
+    "retention removes terminal personal snapshots at 30 days while preserving live, recent, and actively retried rows");
   console.log("ZIWEI_OCCURRENCE_RETENTION_OK");
 } finally {
   await pool?.end().catch(() => null);

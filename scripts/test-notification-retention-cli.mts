@@ -11,6 +11,8 @@ assert.deepEqual(cli.parseArgs([]), {
   securityHistoryDays: 365, ziweiOccurrenceDays: 30, batchSize: 500, maxBatches: 20,
 }, "retention CLI has explicit conservative bounded defaults");
 assert.equal(cli.parseArgs(["--history-days", "0"]).ok, false, "retention CLI rejects an unbounded/destructive zero-day history window");
+assert.equal(cli.parseArgs(["--ziwei-occurrence-days", "29"]).ok, false,
+  "the CLI cannot shorten the declared 30-day Ziwei snapshot privacy window");
 assert.equal(cli.parseArgs(["--batch-size", "5001"]).ok, false, "retention CLI bounds each database batch");
 assert.equal(cli.parseArgs(["--attempt-days", "30", "--engagement-days", "90"]).ok, false,
   "retention CLI cannot delete installation ownership before the engagement acceptance window ends");
@@ -47,8 +49,10 @@ assert.match(serviceSource, /--ziwei-occurrence-days 30/u,
 assert.match(serviceSource, /^EnvironmentFile=\/etc\/hourkey\/hourkey-notification\.env$/mu,
   "retention uses the same least-secret PostgreSQL environment");
 const runbookSource = await readFile(runbook, "utf8");
-assert.match(runbookSource, /Ziwei[\s\S]+30 days[\s\S]+claimed[\s\S]+skipped/iu,
-  "the runbook records the bounded unlinked Ziwei snapshot policy");
+assert.match(runbookSource, /Ziwei[\s\S]+minimum 30-day[\s\S]+claimed[\s\S]+reserved[\s\S]+skipped/iu,
+  "the runbook records the database-enforced minimum and bounded unlinked Ziwei snapshot policy");
+assert.match(runbookSource, /push-linked[\s\S]+terminal[\s\S]+no active retry or unchecked Expo[\s\S]+preserved/iu,
+  "the runbook records that only terminal linked snapshots may age out while active delivery survives");
 assert.match(runbookSource, /hourkey_app[\s\S]+no direct `DELETE`[\s\S]+SECURITY DEFINER/iu,
   "the runbook records the database-enforced least-privilege boundary");
 const ziweiRetentionMigrationSource = await readFile(ziweiRetentionMigration, "utf8");
@@ -58,8 +62,12 @@ assert.match(ziweiRetentionMigrationSource, /REVOKE DELETE ON (?:TABLE )?mobile_
   "the migration repairs any prior direct-delete grant before enabling bounded retention");
 assert.match(ziweiRetentionMigrationSource, /REVOKE DELETE ON (?:TABLE )?mobile_ziwei_hourly_installations FROM PUBLIC\s*,\s*hourkey_app/u,
   "the repair also closes the installation cascade path into occurrence deletion");
+assert.match(ziweiRetentionMigrationSource, /REVOKE DELETE ON TABLE users\s*,\s*profiles FROM hourkey_app/u,
+  "the repair closes both runtime-owned parent cascades while soft-delete UPDATE remains available");
 assert.match(ziweiRetentionMigrationSource, /SECURITY DEFINER/u,
   "Ziwei occurrence retention crosses the privilege boundary only through a reviewed definer function");
+assert.match(ziweiRetentionMigrationSource, /p_retention_days\s*<\s*30/u,
+  "the database boundary independently enforces the declared 30-day minimum");
 assert.match(ziweiRetentionMigrationSource, /SET search_path\s*=\s*pg_catalog\s*,\s*public/u,
   "the definer function pins trusted relation resolution");
 assert.match(ziweiRetentionMigrationSource, /GRANT EXECUTE ON FUNCTION public\.purge_mobile_ziwei_hourly_occurrences\(integer,integer\) TO hourkey_app/u,

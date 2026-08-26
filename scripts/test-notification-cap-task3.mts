@@ -23,7 +23,10 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); DROP ROLE IF EXISTS ${role}; CREATE ROLE ${role} LOGIN PASSWORD '${password}'; CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users (id uuid PRIMARY KEY, timezone text);
+    CREATE TABLE users (
+      id uuid PRIMARY KEY, timezone text,
+      is_active boolean NOT NULL DEFAULT true, deleted_at timestamptz
+    );
     CREATE TABLE mobile_notification_prefs (
       user_id uuid PRIMARY KEY REFERENCES users(id), timezone text, max_per_day int,
       privacy_preview boolean NOT NULL DEFAULT false, locale text NOT NULL DEFAULT 'th'
@@ -47,7 +50,7 @@ try {
       status text, next_retry_at timestamptz, updated_at timestamptz,
       UNIQUE(push_log_id,installation_id)
     );
-    INSERT INTO users VALUES ('${userId}','America/New_York');
+    INSERT INTO users(id,timezone) VALUES ('${userId}','America/New_York');
     INSERT INTO mobile_notification_prefs VALUES ('${userId}','America/New_York',1,false,'en');
     GRANT USAGE ON SCHEMA public TO ${role};
     GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};

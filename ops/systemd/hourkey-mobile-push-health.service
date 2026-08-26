@@ -4,12 +4,29 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-User=root
-Group=root
+User=hourkey-notify
+Group=hourkey-notify
 WorkingDirectory=/root/releases/current
 Environment=NODE_ENV=production
 EnvironmentFile=/etc/hourkey/hourkey-notification.env
 ExecStart=/usr/bin/env FCM_SERVICE_ACCOUNT_PATH=/etc/hourkey/credentials/fcm-service-account.json /usr/bin/node /root/releases/current/scripts/notification-health.cjs --lookback-hours 168 --worker-heartbeat-file /var/lib/hourkey-notification/retry-receipt.heartbeat --scheduler-heartbeat-dir /var/lib/hourkey-notification/schedulers
 NoNewPrivileges=true
 PrivateTmp=true
+PrivateDevices=true
 ProtectSystem=strict
+ProtectHome=read-only
+ProtectProc=invisible
+ProcSubset=pid
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+ReadWritePaths=/var/lib/hourkey-notification

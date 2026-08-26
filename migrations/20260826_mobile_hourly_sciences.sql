@@ -586,6 +586,7 @@ RETURNS SETOF mobile_ziwei_hourly_installations LANGUAGE sql AS $$
 $$;
 
 REVOKE DELETE ON TABLE mobile_ziwei_hourly_installations FROM PUBLIC,hourkey_app;
+REVOKE DELETE ON TABLE users, profiles FROM hourkey_app;
 GRANT SELECT,INSERT,UPDATE ON mobile_ziwei_hourly_installations TO hourkey_app;
 GRANT SELECT,INSERT,UPDATE ON mobile_ziwei_hourly_occurrences TO hourkey_app;
 REVOKE UPDATE ON mobile_ziwei_hourly_producer_state FROM hourkey_app;

@@ -48,12 +48,20 @@ This source-controlled package is read-only for health and reconciliation. It em
 
 ## Deployment review
 
-The templates under `ops/systemd/` are examples only. They are not installed, enabled, reloaded, or started by this repository. They deliberately use the existing `root` runtime account because the current release path and FCM credential access model are root-owned. This is not least-privilege isolation: the hardening directives reduce filesystem exposure, but the account can still read the reviewed root-owned release and credential locations. Before a future drop to a dedicated account, relocate credentials and release access, validate that account and its executable paths, then review the changed service units.
+The templates under `ops/systemd/` are examples only. They are not installed,
+enabled, reloaded, or started by this repository. The unchanged legacy Qimen
+and Zi Bai source workers still use their existing root runtime and shared
+environment; this release does not silently move or restart them. The shared
+retry/receipt and health workers, together with the new Ziwei scheduler and
+retention job, run as the dedicated `hourkey-notify` account with the dedicated
+notification environment and reviewed FCM credential path. This boundary must
+be proven with effective-user path and credential checks before installation;
+unit-file declarations alone are not evidence that delivery will continue.
 
 Before an operator performs a reviewed deployment, confirm the release path, runtime accounts, state directory ownership, environment file permissions, migration level, timer cadence, and scheduler heartbeat producer. Verify health and reconciliation output contains aggregate fields only and record the exact revision and review approvals in the release evidence.
 
-The Ziwei unit is the isolated exception to the shared root runtime: it runs as
-`hourkey-notify` and loads only `/etc/hourkey/hourkey-notification.env`. The
+The Ziwei, retry/receipt, health, and retention units run as `hourkey-notify`
+and load only `/etc/hourkey/hourkey-notification.env`. The
 checked-in `scripts/derive-hourkey-notification-env.cjs --install` helper copies
 only `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`,
 `EXPO_PUSH_ACCESS_TOKEN`, `ZIWEI_HOURLY_PRODUCER_ENABLED`,
@@ -69,7 +77,28 @@ check, and retention unit all require this file. Retry and health force the
 reviewed `/etc/hourkey/credentials/fcm-service-account.json` path in their unit
 command rather than copying an arbitrary credential path from the shared env.
 
-Run `node scripts/notification-observability-preflight.cjs` from the reviewed release before any service action. It checks the root runtime identity, Node executable, release scripts, shared environment/credential readability for remaining root workers, dedicated-environment readability, exact regular-file ownership `root:hourkey-notify`, mode `0640`, reviewed key/value contract, credential readability as `hourkey-notify`, and the state-directory contract as booleans only; it prints neither paths nor credential data. It also connects through the dedicated settings and proves `current_user=session_user=hourkey_app`, read-only effective access to the Ziwei producer row, and the required parent/attempt UPDATE capabilities protected by database triggers. A pre-existing writable state directory is `stateReady`. Before the first service start, an absent directory is accepted only as `stateCreatable` when root can write `/var/lib` and the reviewed tmpfiles contract declares `/var/lib/hourkey-notification` with the single owner `hourkey-notify:hourkey-notify`; the preflight never creates it. No service unit declares `StateDirectory`, so root consumers cannot recursively change that shared ownership on start. Apply the tmpfiles contract before starting a worker and validate the unit files with `systemd-analyze verify` as part of that review. A failed preflight or unit validation is a deployment blocker, not a reason to weaken the service account or protections.
+Run `node scripts/notification-observability-preflight.cjs` from the reviewed
+release before any service action. It checks the root operator identity, Node
+executable, every named scheduler/retry/health source, shared environment and
+credential readability for remaining root workers, dedicated-environment
+readability, exact regular-file ownership `root:hourkey-notify`, mode `0640`,
+reviewed key/value contract, credential and executable-path readability as
+`hourkey-notify`, and the state-directory contract as booleans only; it prints
+neither paths nor credential data. It also connects through the dedicated
+settings and proves `current_user=session_user=hourkey_app`, read-only effective
+access to the Ziwei producer row, required parent/attempt UPDATE capabilities,
+no direct DELETE on occurrence/installation/user/profile cascade boundaries,
+the executable and hardened bounded purge function, and all four required
+integrity triggers. A pre-existing writable state directory is `stateReady`.
+Before the first service start, an absent directory is accepted only as
+`stateCreatable` when root can write `/var/lib` and the reviewed tmpfiles
+contract declares `/var/lib/hourkey-notification` with the single owner
+`hourkey-notify:hourkey-notify`; the preflight never creates it. No service unit
+declares `StateDirectory`, so a service start cannot recursively change that
+shared ownership. Apply the tmpfiles contract before starting a worker and
+validate the unit files with `systemd-analyze verify` as part of that review. A
+failed preflight or unit validation is a deployment blocker, not a reason to
+weaken the service account or protections.
 
 ## Ziwei producer mutation boundary
 

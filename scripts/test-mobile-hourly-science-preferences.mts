@@ -88,6 +88,8 @@ assert.match(scheduler, /const birthLocation =[\s\S]*?\? \{ lat: latitude, lng: 
 assert.match(migration, /hourkey_reconcile_ziwei_hourly_profile/u);
 assert.doesNotMatch(migration, /GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_ziwei_hourly_installations TO hourkey_app/u,
   "the shared runtime role cannot cascade-delete occurrences through an installation");
+assert.match(migration, /REVOKE DELETE ON TABLE users\s*,\s*profiles FROM hourkey_app/u,
+  "the shared runtime role cannot cascade-delete Ziwei evidence through an account or profile parent");
 assert.match(migration, /WHERE enabled=true/u,
   "the global installation identity fence applies only to active Ziwei scheduling ownership");
 assert.match(migration, /last_skip_reason='profile_ineligible'/u);

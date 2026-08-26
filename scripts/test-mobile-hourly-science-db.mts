@@ -96,6 +96,11 @@ try {
     UNIQUE(push_log_id,installation_id)
   )`);
 
+  // Model the broad legacy application grants that production carries. The
+  // Ziwei migration must narrow only parent DELETE while preserving soft-delete
+  // UPDATE used by account and profile APIs.
+  await admin.query("GRANT SELECT,INSERT,UPDATE,DELETE ON users,profiles TO hourkey_app");
+
   await admin.query(migration);
   await admin.query(migration);
   await admin.query(`GRANT USAGE ON SCHEMA ${quotedSchema} TO hourkey_app`);
@@ -147,6 +152,17 @@ try {
   assert.equal((await admin.query(
     "SELECT has_table_privilege('hourkey_app','mobile_ziwei_hourly_producer_state','UPDATE') AS allowed",
   )).rows[0].allowed, false, "the runtime role cannot re-enable its own privileged kill switch");
+  for (const table of ["users", "profiles"] as const) {
+    assert.equal((await admin.query(
+      `SELECT has_table_privilege('hourkey_app',$1,'DELETE') AS can_delete,
+              has_table_privilege('hourkey_app',$1,'UPDATE') AS can_update`,
+      [table],
+    )).rows[0].can_delete, false, `runtime DELETE is revoked from the ${table} cascade parent`);
+    assert.equal((await admin.query(
+      `SELECT has_table_privilege('hourkey_app',$1,'UPDATE') AS can_update`,
+      [table],
+    )).rows[0].can_update, true, `soft-delete UPDATE remains available on ${table}`);
+  }
   await assertHourkeyAppRejects(
     "UPDATE mobile_ziwei_hourly_producer_state SET producer_enabled=false",
     [],
@@ -298,6 +314,16 @@ try {
     "SELECT count(*)::int AS total FROM mobile_ziwei_hourly_occurrences WHERE id=$1",
     [occurrenceId],
   )).rows[0].total, 1, "the rejected installation deletion leaves its attestation intact");
+  await assertHourkeyAppRejects(
+    "DELETE FROM profiles WHERE id=$1",
+    [profileId],
+    "SET ROLE hourkey_app cannot cascade-delete evidence through a profile parent",
+  );
+  await assertHourkeyAppRejects(
+    "DELETE FROM users WHERE id=$1",
+    [userId],
+    "SET ROLE hourkey_app cannot cascade-delete evidence through an account parent",
+  );
 
   const transferOldUserId = crypto.randomUUID();
   const transferNewUserId = crypto.randomUUID();
