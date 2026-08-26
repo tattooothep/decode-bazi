@@ -84,6 +84,21 @@ await check("Yam/Qimen/Zi Bai ใช้ช่อง HIGH ใหม่ แต่ 
   assert.equal(S.providerTtlSeconds("security"), 21_600);
 });
 
+await check("Ziwei รายยามมี Android channel และ action category แยกจากทุกศาสตร์", () => {
+  const item = {
+    title: "紫微流時", body: "月 · 日 · 時", category: "ziwei",
+    data: { notificationId: "00000000-0000-4000-8000-000000000001", ziweiHourlyV2: "e30" },
+  };
+  const fcm = S.prepareMessage(item, "fcm");
+  const expo = S.prepareMessage(item, "expo");
+  assert.equal(fcm.android.notification.channel_id, "hourkey-ziwei-hourly-v1");
+  assert.equal(expo.channelId, "hourkey-ziwei-hourly-v1");
+  assert.equal(fcm.data.categoryId, "hourkey_ziwei_hourly");
+  assert.equal(expo.categoryId, "hourkey_ziwei_hourly");
+  assert.equal(S.providerTtlSeconds("ziwei"), 300);
+  assert.equal(S.providerQueueSafetySeconds("ziwei"), 360);
+});
+
 await check("provider adapter เก็บ message ID/ticket และไม่เรียก HTTP success ว่า delivered", async () => {
   const originalFetch = globalThis.fetch;
   const requests: Array<{ url: string; body: unknown }> = [];

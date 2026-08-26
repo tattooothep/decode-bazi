@@ -6,6 +6,7 @@ const notificationScience = require("./notification-science.cjs");
 const qimenRuntime = require("./qimen-three-layer-notification.cjs");
 const qimenAdvisory = require("./qimen-notification-advisory.cjs");
 const zibaiVersionRuntime = require("./zibai-version-runtime.cjs");
+const ziweiHourlyRuntime = require("./ziwei-hourly-notification.cjs");
 
 const DEFAULT_MAX_ATTEMPTS = 5;
 const DEFAULT_BASE_DELAY_SECONDS = 300;
@@ -24,7 +25,9 @@ function assertNoCredentialFacts(value) {
       "token", "auth", "authorization", "secret", "credential", "password", "cookie", "session",
       "apikey", "privatekey", "accesskey", "clientsecret", "bearer",
     ];
-    if (normalizedKey.endsWith("key") || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) {
+    const approvedStructuralKey = normalizedKey === "windowkey";
+    if ((normalizedKey.endsWith("key") && !approvedStructuralKey)
+      || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) {
       throw new TypeError("notification source facts contain a forbidden credential key");
     }
     assertNoCredentialFacts(child);
@@ -41,9 +44,12 @@ function assertTransactionalKind(notice) {
   }
 }
 
-function localizedHistoryCopies(build) {
+function localizedHistoryCopies(build, locales = ["th", "en", "zh"]) {
   if (typeof build !== "function") throw new TypeError("notification history copy builder is required");
-  return Object.fromEntries(["th", "en", "zh"].map((locale) => {
+  const selected = [...new Set(Array.isArray(locales) ? locales : [])]
+    .filter((locale) => typeof locale === "string" && /^[a-z]{2}$/u.test(locale));
+  if (selected.length === 0 || selected.length > 20) throw new TypeError("notification history locales are invalid");
+  return Object.fromEntries(selected.map((locale) => {
     const copy = build(locale);
     const title = String(copy?.title || "").slice(0, 120);
     const body = String(copy?.body || "").slice(0, 400);
@@ -54,7 +60,8 @@ function localizedHistoryCopies(build) {
 
 function historyCopyFor(notice, locale) {
   const family = notificationPayload.normalizedLocale(locale);
-  const copy = notice?.historyCopies?.[family];
+  const exactLocale = String(locale || "").trim().toLowerCase();
+  const copy = notice?.historyCopies?.[exactLocale] || notice?.historyCopies?.[family] || notice?.historyCopies?.en;
   return {
     title: String(copy?.title || notice?.title || "").slice(0, 120),
     body: String(copy?.body || notice?.body || "").slice(0, 400),
@@ -185,6 +192,12 @@ async function reserve(db, notice, dry = false) {
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.qimenOccurrenceId)
     ? notice.qimenOccurrenceId : null;
   if (qimenPayload && qimenOccurrenceId === null) throw new TypeError("qimen occurrence reservation required");
+  const ziweiPayload = notice?.kind === "ziwei" && typeof notice?.payload?.ziweiHourlyV2 === "string";
+  const ziweiOccurrenceId = ziweiPayload && typeof notice?.ziweiOccurrenceId === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.ziweiOccurrenceId)
+    ? notice.ziweiOccurrenceId : null;
+  if (notice?.kind === "ziwei" && !ziweiPayload) throw new TypeError("ziwei_notice_schema_mismatch");
+  if (ziweiPayload && ziweiOccurrenceId === null) throw new TypeError("ziwei occurrence reservation required");
   const zibaiOccurrenceId = notice?.kind === "zibai" && typeof notice?.zibaiOccurrenceId === "string"
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.zibaiOccurrenceId)
     ? notice.zibaiOccurrenceId : null;
@@ -198,11 +211,11 @@ async function reserve(db, notice, dry = false) {
   }
   return transaction(db, async (client) => {
     assertNoCredentialFacts(notice.sourceFacts);
-    // Qimen is excluded from the generic daily cap and owns a separately
+    // Qimen and Ziwei hourly are excluded from the generic daily cap and own a separately
     // locked immutable occurrence row below. Avoid serializing it on the
     // unrelated per-account cap lock; the occurrence FOR UPDATE plus unique
     // parent key remain the reservation fence.
-    if (!qimenPayload) {
+    if (!qimenPayload && !ziweiPayload) {
       await client.query(
         `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
         [notice.userId],
@@ -229,6 +242,8 @@ async function reserve(db, notice, dry = false) {
     let zibaiToken = null;
     let qimenOccurrence = null;
     let qimenToken = null;
+    let ziweiOccurrence = null;
+    let ziweiToken = null;
     if (notice.kind === "zibai") {
       if (!Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
       const item = notice.messages[0];
@@ -357,9 +372,106 @@ async function reserve(db, notice, dry = false) {
         throw new Error("qimen_occurrence_binding_changed");
       }
     }
+    if (ziweiPayload) {
+      if (!Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
+      const item = notice.messages[0];
+      if (!item?.data || typeof item.data !== "object" || Array.isArray(item.data)
+        || item.data.ziweiHourlyV2 !== notice.payload.ziweiHourlyV2
+        || Object.keys(item.data).length !== 1) {
+        throw new TypeError("ziwei_notice_schema_mismatch");
+      }
+      const bindingResult = await client.query(
+        `SELECT t.id AS token_id,t.installation_id AS token_installation_id,
+                t.device_push_token,t.device_token_type,t.expo_push_token,t.platform,t.ziwei_payload_schema,
+                o.id AS occurrence_id,o.user_id AS occurrence_user_id,
+                o.installation_id AS occurrence_installation_id,o.profile_id,o.state,o.push_log_id,
+                o.lineage,o.calculation_version,o.window_valid_from,o.window_valid_until,
+                o.send_deadline,o.snapshot,o.snapshot_digest,
+                o.owner_generation AS occurrence_owner_generation,
+                i.owner_generation AS current_owner_generation,i.enabled AS current_installation_enabled,
+                i.profile_id AS current_profile_id
+           FROM mobile_push_tokens t
+           JOIN mobile_ziwei_hourly_occurrences o ON o.id=$3 AND o.user_id=t.user_id
+           JOIN mobile_ziwei_hourly_installations i
+             ON i.user_id=o.user_id AND i.installation_id=o.installation_id
+          WHERE t.id=$1 AND t.user_id=$2 AND t.enabled=true
+          FOR UPDATE OF t,o,i`,
+        [item.tokenId, notice.userId, ziweiOccurrenceId],
+      );
+      const binding = bindingResult.rows[0] || null;
+      ziweiToken = binding ? {
+        id: binding.token_id,
+        installation_id: binding.token_installation_id,
+        device_push_token: binding.device_push_token,
+        device_token_type: binding.device_token_type,
+        expo_push_token: binding.expo_push_token,
+        platform: binding.platform,
+        ziwei_payload_schema: binding.ziwei_payload_schema,
+      } : null;
+      ziweiOccurrence = binding ? {
+        id: binding.occurrence_id,
+        user_id: binding.occurrence_user_id,
+        installation_id: binding.occurrence_installation_id,
+        profile_id: binding.profile_id,
+        state: binding.state,
+        push_log_id: binding.push_log_id,
+        lineage: binding.lineage,
+        calculation_version: binding.calculation_version,
+        window_valid_from: binding.window_valid_from,
+        window_valid_until: binding.window_valid_until,
+        send_deadline: binding.send_deadline,
+        snapshot: binding.snapshot,
+        snapshot_digest: binding.snapshot_digest,
+        occurrence_owner_generation: binding.occurrence_owner_generation,
+        current_owner_generation: binding.current_owner_generation,
+        current_installation_enabled: binding.current_installation_enabled,
+        current_profile_id: binding.current_profile_id,
+      } : null;
+      if (!ziweiToken || Number(ziweiToken.ziwei_payload_schema) !== 2) {
+        throw new Error("ziwei_token_capability_changed");
+      }
+      if (!ziweiOccurrence || ziweiOccurrence.state !== "claimed" || ziweiOccurrence.push_log_id !== null) return null;
+      if (ziweiOccurrence.current_installation_enabled !== true
+        || ziweiOccurrence.current_profile_id !== ziweiOccurrence.profile_id
+        || Number(ziweiOccurrence.current_owner_generation) !== Number(ziweiOccurrence.occurrence_owner_generation)) return null;
+      if (ziweiToken.installation_id !== ziweiOccurrence.installation_id) {
+        throw new Error("ziwei_token_capability_changed");
+      }
+      const compact = ziweiHourlyRuntime.parseZiweiHourlyProviderData(notice.payload);
+      if (!compact) throw new TypeError("ziwei_notice_schema_mismatch");
+      if (!ziweiHourlyRuntime.verifyZiweiHourlyNotificationSnapshot(ziweiOccurrence.snapshot)
+        || ziweiHourlyRuntime.buildZiweiHourlyProviderData(ziweiOccurrence.snapshot).ziweiHourlyV2
+          !== notice.payload.ziweiHourlyV2) {
+        throw new Error("ziwei_occurrence_binding_changed");
+      }
+      const iso = (value) => value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+      const source = notice.sourceFacts;
+      if (ziweiOccurrence.user_id !== notice.userId
+        || ziweiOccurrence.profile_id !== ziweiOccurrence.snapshot.profile.id
+        || ziweiOccurrence.snapshot.accountId !== notice.userId
+        || compact.accountId !== notice.userId
+        || compact.profileId !== ziweiOccurrence.profile_id
+        || compact.lineage !== ziweiOccurrence.lineage
+        || compact.calculationVersion !== ziweiOccurrence.calculation_version
+        || compact.windowKey !== ziweiOccurrence.snapshot.facts.reference.windowKey
+        || compact.validFrom !== iso(ziweiOccurrence.window_valid_from)
+        || compact.validUntil !== iso(ziweiOccurrence.window_valid_until)
+        || compact.snapshotDigest !== ziweiOccurrence.snapshot_digest
+        || source?.accountId !== notice.userId
+        || source?.profileId !== ziweiOccurrence.profile_id
+        || source?.lineage !== ziweiOccurrence.lineage
+        || source?.calculationVersion !== ziweiOccurrence.calculation_version
+        || source?.windowKey !== compact.windowKey
+        || source?.snapshotDigest !== ziweiOccurrence.snapshot_digest
+        || source?.eventEndAt !== iso(ziweiOccurrence.window_valid_until)
+        || source?.sendDeadline !== iso(ziweiOccurrence.send_deadline)
+        || Number(source?.ownerGeneration) !== Number(ziweiOccurrence.occurrence_owner_generation)) {
+        throw new Error("ziwei_occurrence_binding_changed");
+      }
+    }
     const historyCopy = historyCopyFor(notice, context.locale);
     if (context.has_prefs === true && notice.transactional !== true
-        && notice.kind !== "zibai" && notice.kind !== "qimen") {
+        && notice.kind !== "zibai" && notice.kind !== "qimen" && notice.kind !== "ziwei") {
       const cap = await client.query(
         `SELECT count(*)::int AS reserved_today
            FROM mobile_push_log l
@@ -385,8 +497,8 @@ async function reserve(db, notice, dry = false) {
     const attemptIds = [];
     for (const item of (Array.isArray(notice.messages) ? notice.messages.slice(0, 100) : [])) {
       if (!item?.tokenId) continue;
-      let token = notice.kind === "zibai" ? zibaiToken : qimenPayload ? qimenToken : null;
-      if (notice.kind !== "zibai" && !qimenPayload) {
+      let token = notice.kind === "zibai" ? zibaiToken : qimenPayload ? qimenToken : ziweiPayload ? ziweiToken : null;
+      if (notice.kind !== "zibai" && !qimenPayload && !ziweiPayload) {
         const tokenResult = await client.query(
           `SELECT id,installation_id,device_push_token,device_token_type,expo_push_token,platform
              FROM mobile_push_tokens WHERE id=$1 AND user_id=$2 AND enabled=true`,
@@ -397,6 +509,7 @@ async function reserve(db, notice, dry = false) {
       if (!token) continue;
       if (notice.kind === "zibai" && token.installation_id !== zibaiOccurrence.installation_id) continue;
       if (qimenPayload && token.installation_id !== qimenOccurrence.installation_id) continue;
+      if (ziweiPayload && token.installation_id !== ziweiOccurrence.installation_id) continue;
       const provider = push.providerFor({
         ...item,
         deviceToken: token.device_push_token,
@@ -406,12 +519,15 @@ async function reserve(db, notice, dry = false) {
       });
       if (!provider) continue;
       const qimenV3PrivacySafeCopy = qimenPayload?.schema === 3;
-      const providerCopy = qimenV3PrivacySafeCopy ? historyCopy : notificationPayload.previewCopy(
-        notice.kind,
-        context.privacy_preview === true,
-        { title: item.title, body: item.body },
-        item.locale || context.locale,
-      );
+      const providerCopy = qimenV3PrivacySafeCopy ? historyCopy
+        : notice.kind === "ziwei" && context.privacy_preview !== true
+          ? ziweiHourlyRuntime.buildZiweiHourlyPrivateCopy(context.locale)
+          : notificationPayload.previewCopy(
+            notice.kind,
+            context.privacy_preview === true,
+            { title: item.title, body: item.body },
+            notice.kind === "ziwei" ? context.locale : item.locale || context.locale,
+          );
       const itemData = item.data && typeof item.data === "object" && !Array.isArray(item.data) ? item.data : {};
       const providerMessage = cleanJson(push.prepareMessage({
         ...item,
@@ -443,6 +559,13 @@ async function reserve(db, notice, dry = false) {
         `UPDATE mobile_qimen_occurrences SET state='reserved',push_log_id=$2,updated_at=now()
           WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
         [qimenOccurrenceId, parent.rows[0].id],
+      );
+    }
+    if (ziweiPayload && attemptIds.length > 0) {
+      await client.query(
+        `UPDATE mobile_ziwei_hourly_occurrences SET state='reserved',push_log_id=$2,updated_at=now()
+          WHERE id=$1 AND state='claimed' AND push_log_id IS NULL`,
+        [ziweiOccurrenceId, parent.rows[0].id],
       );
     }
     return { id: parent.rows[0].id, attemptIds };
@@ -682,6 +805,60 @@ function currentPolicyDecision(row, context, capCount) {
   }
   if (row.transactional === true) return { allow: true };
   const now = new Date(context.now_at);
+  if (row.kind === "ziwei") {
+    if (context.account_active !== true) {
+      return { allow: false, terminal: true, reason: "policy_account_inactive" };
+    }
+    if (Number(row.ziwei_token_payload_schema) !== 2) {
+      return { allow: false, terminal: true, reason: "policy_payload_schema_changed" };
+    }
+    if (context.ziwei_hourly_enabled !== true) {
+      return { allow: false, terminal: true, reason: "policy_consent_revoked" };
+    }
+    if (context.ziwei_hourly_profile_id !== row.source_facts?.profileId) {
+      return { allow: false, terminal: true, reason: "policy_profile_changed" };
+    }
+    if (!Number.isSafeInteger(Number(row.source_facts?.ownerGeneration))
+      || Number(context.ziwei_hourly_current_owner_generation) !== Number(row.source_facts.ownerGeneration)
+      || Number(context.ziwei_hourly_occurrence_owner_generation) !== Number(row.source_facts.ownerGeneration)) {
+      return { allow: false, terminal: true, reason: "policy_profile_changed" };
+    }
+    if (row.source_facts?.accountId !== row.user_id
+      || context.ziwei_hourly_lineage !== row.source_facts?.lineage
+      || context.ziwei_hourly_calculation_version !== row.source_facts?.calculationVersion
+      || context.ziwei_hourly_window_key !== row.source_facts?.windowKey) {
+      return { allow: false, terminal: true, reason: "policy_calculation_version_changed" };
+    }
+    const pausedUntil = context.ziwei_hourly_paused_until
+      ? new Date(context.ziwei_hourly_paused_until) : null;
+    if (pausedUntil && Number.isFinite(pausedUntil.valueOf()) && pausedUntil > now) {
+      return { allow: false, terminal: true, reason: "policy_paused" };
+    }
+    const sendDeadline = context.ziwei_hourly_send_deadline
+      ? new Date(context.ziwei_hourly_send_deadline) : null;
+    if (!sendDeadline || !Number.isFinite(sendDeadline.valueOf()) || sendDeadline <= now) {
+      return { allow: false, terminal: true, reason: "policy_late_occurrence" };
+    }
+    const expiresAt = context.ziwei_hourly_expires_at
+      ? new Date(context.ziwei_hourly_expires_at) : null;
+    if (!expiresAt || !Number.isFinite(expiresAt.valueOf())) {
+      return { allow: false, terminal: true, reason: "policy_missing_occurrence_expiry" };
+    }
+    const queueSafetyMs = push.providerQueueSafetySeconds("ziwei") * 1_000;
+    if (expiresAt.valueOf() <= now.valueOf() + queueSafetyMs) {
+      return { allow: false, terminal: true, reason: "policy_expired_occurrence" };
+    }
+    const timezone = notificationScience.safeTimezone(context.ziwei_hourly_timezone);
+    const hour = Number(notificationScience.zonedClock(timezone, now).time.slice(0, 2));
+    const quietStart = Number.isInteger(Number(context.ziwei_hourly_quiet_start))
+      ? Number(context.ziwei_hourly_quiet_start) : 22;
+    const quietEnd = Number.isInteger(Number(context.ziwei_hourly_quiet_end))
+      ? Number(context.ziwei_hourly_quiet_end) : 7;
+    const quiet = quietStart === quietEnd ? false
+      : quietStart < quietEnd ? hour >= quietStart && hour < quietEnd : hour >= quietStart || hour < quietEnd;
+    if (quiet) return { allow: false, terminal: true, reason: "policy_quiet_hours" };
+    return { allow: true };
+  }
   if (row.kind === "zibai") {
     const payloadCalculationVersion = row.payload?.calculationVersion;
     if (!zibaiVersionRuntime.isReadableCalculationVersion(payloadCalculationVersion)
@@ -869,10 +1046,12 @@ function zibaiOccurrenceEndAt(payload, sourceFacts = null) {
 }
 
 async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
-  await tx.query(
-    `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
-    [row.user_id],
-  );
+  if (row.kind !== "zibai" && row.kind !== "qimen" && row.kind !== "ziwei") {
+    await tx.query(
+      `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
+      [row.user_id],
+    );
+  }
   const contextResult = await tx.query(
     `SELECT COALESCE(to_jsonb(np)->>'timezone',to_jsonb(u)->>'timezone','Asia/Bangkok') AS timezone,
             COALESCE((to_jsonb(np)->>'privacy_preview')::boolean,false) AS privacy_preview,
@@ -933,9 +1112,35 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     context.qimen_send_deadline = row.source_facts?.sendDeadline || null;
     context.qimen_paused_until = context.prefs?.paused_until || null;
   }
+  if (row.kind === "ziwei") {
+    const ziwei = await tx.query(
+      `SELECT i.enabled,i.profile_id,i.reference_timezone,i.quiet_start,i.quiet_end,
+              i.owner_generation AS current_owner_generation,o.owner_generation AS occurrence_owner_generation,
+              o.lineage,o.calculation_version,o.snapshot->'facts'->'reference'->>'windowKey' AS window_key,
+              o.window_valid_until,o.send_deadline
+         FROM mobile_ziwei_hourly_installations i
+         JOIN mobile_ziwei_hourly_occurrences o
+           ON o.user_id=i.user_id AND o.installation_id=i.installation_id AND o.push_log_id=$3
+        WHERE i.user_id=$1 AND i.installation_id=$2 FOR UPDATE OF i,o`,
+      [row.user_id, row.installation_id, row.push_log_id],
+    );
+    context.ziwei_hourly_enabled = ziwei.rows[0]?.enabled === true;
+    context.ziwei_hourly_profile_id = ziwei.rows[0]?.profile_id || null;
+    context.ziwei_hourly_current_owner_generation = ziwei.rows[0]?.current_owner_generation || null;
+    context.ziwei_hourly_occurrence_owner_generation = ziwei.rows[0]?.occurrence_owner_generation || null;
+    context.ziwei_hourly_timezone = ziwei.rows[0]?.reference_timezone || "UTC";
+    context.ziwei_hourly_quiet_start = ziwei.rows[0]?.quiet_start;
+    context.ziwei_hourly_quiet_end = ziwei.rows[0]?.quiet_end;
+    context.ziwei_hourly_lineage = ziwei.rows[0]?.lineage || null;
+    context.ziwei_hourly_calculation_version = ziwei.rows[0]?.calculation_version || null;
+    context.ziwei_hourly_window_key = ziwei.rows[0]?.window_key || null;
+    context.ziwei_hourly_expires_at = ziwei.rows[0]?.window_valid_until || null;
+    context.ziwei_hourly_send_deadline = ziwei.rows[0]?.send_deadline || null;
+    context.ziwei_hourly_paused_until = context.prefs?.paused_until || null;
+  }
   let capCount = 0;
   if (!(row.transactional === true && isTransactionalKind(row.kind))
-      && row.kind !== "zibai" && row.kind !== "qimen") {
+      && row.kind !== "zibai" && row.kind !== "qimen" && row.kind !== "ziwei") {
     const cap = await tx.query(
       `SELECT count(*)::int AS reserved_today
          FROM mobile_push_log l
@@ -982,15 +1187,18 @@ async function processClaim(db, attempt, options = {}) {
           `SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))`,
           [row.user_id],
         );
-        // Match reserve()'s cap -> token lock order. The later re-entrant cap
-        // acquisition inside applyCurrentPolicyLocked remains transaction-local.
-        await tx.query(
-          `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
-          [row.user_id],
-        );
+        // Generic notifications share an account cap. Occurrence-owned sciences
+        // deduplicate against their own locked row instead.
+        if (row.kind !== "zibai" && row.kind !== "qimen" && row.kind !== "ziwei") {
+          await tx.query(
+            `SELECT pg_advisory_xact_lock(hashtextextended('mobile-notification-cap:'||$1::text,0))`,
+            [row.user_id],
+          );
+        }
         const token = await tx.query(
           `SELECT t.id,t.device_push_token,t.expo_push_token,
-                  to_jsonb(t)->>'zibai_calculation_version' AS zibai_calculation_version
+                  to_jsonb(t)->>'zibai_calculation_version' AS zibai_calculation_version,
+                  t.ziwei_payload_schema
              FROM mobile_push_tokens t
             WHERE t.user_id=$1 AND t.installation_id=$2 AND t.enabled=true
               AND (($3='fcm' AND t.device_push_token IS NOT NULL AND t.platform<>'ios' AND COALESCE(t.device_token_type,'')<>'apns')
@@ -1001,7 +1209,9 @@ async function processClaim(db, attempt, options = {}) {
         if (!token.rows[0]) return { ...row, targetUnavailable: true };
         const policyRow = row.kind === "zibai"
           ? { ...row, zibai_token_calculation_version: token.rows[0].zibai_calculation_version }
-          : row;
+          : row.kind === "ziwei"
+            ? { ...row, ziwei_token_payload_schema: token.rows[0].ziwei_payload_schema }
+            : row;
         const policy = await applyCurrentPolicyLocked(tx, policyRow, resolvePolicyClock(options));
         if (policy) return { ...policyRow, policyBlocked: true, policy };
         const marked = await tx.query(

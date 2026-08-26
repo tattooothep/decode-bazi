@@ -1,0 +1,10 @@
+export type ZiweiHourlyNotificationSnapshot = Readonly<Record<string, unknown>>;
+export declare const LINEAGE: "iztro_2_5_8_normal_forward_zi_v1";
+export declare const CALCULATION_VERSION: "ziwei-hourly-notification-v1";
+export declare function buildZiweiHourlyNotificationSnapshot(input: Readonly<Record<string, unknown>>): ZiweiHourlyNotificationSnapshot;
+export declare function verifyZiweiHourlyNotificationSnapshot(input: unknown): boolean;
+export declare function buildZiweiHourlyProviderData(snapshot: unknown): Readonly<{ ziweiHourlyV2: string }>;
+export declare function parseZiweiHourlyProviderData(data: unknown): Readonly<Record<string, unknown>> | null;
+export declare function buildZiweiHourlyCopy(locale: string, snapshot: unknown): Readonly<{ title: string; body: string }>;
+export declare function buildZiweiHourlyPrivateCopy(locale: string): Readonly<{ title: string; body: string }>;
+export declare function canonicalStringify(value: unknown): string;

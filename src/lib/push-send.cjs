@@ -12,8 +12,10 @@ const MAX_ATTEMPTS = 3;
 const CONCURRENCY = 10;
 const ACTION_CATEGORY_ID = "hourkey_daily";
 const ZIBAI_ACTION_CATEGORY_ID = "hourkey_zibai";
+const ZIWEI_HOURLY_ACTION_CATEGORY_ID = "hourkey_ziwei_hourly";
 const TIME_ALERT_CHANNEL_ID = "hourkey-time-alerts-v2";
-const TIME_ALERT_CATEGORIES = new Set(["yam", "qimen", "zibai"]);
+const ZIWEI_HOURLY_CHANNEL_ID = "hourkey-ziwei-hourly-v1";
+const TIME_ALERT_CATEGORIES = new Set(["yam", "qimen", "zibai", "ziwei"]);
 const TIME_BOUND_TTL_SECONDS = 300;
 const TIME_BOUND_ACCEPTANCE_SAFETY_SECONDS = 60;
 
@@ -60,7 +62,7 @@ function safeUrl(raw) {
 
 function categoryOf(message) {
   const value = String(message?.category || "daily").trim();
-  return ["security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service", "zibai"].includes(value)
+  return ["security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service", "zibai", "ziwei"].includes(value)
     ? value
     : "daily";
 }
@@ -68,6 +70,7 @@ function categoryOf(message) {
 function channelOf(category) {
   if (category === "security") return "hourkey-security";
   if (category === "service") return "hourkey-service";
+  if (category === "ziwei") return ZIWEI_HOURLY_CHANNEL_ID;
   if (TIME_ALERT_CATEGORIES.has(category)) return TIME_ALERT_CHANNEL_ID;
   return "hourkey-reminders";
 }
@@ -86,7 +89,7 @@ function providerTtlSeconds(categoryInput) {
 function providerQueueSafetySeconds(categoryInput) {
   const category = categoryOf({ category: categoryInput });
   const ttl = providerTtlSeconds(category);
-  return category === "zibai"
+  return category === "zibai" || category === "ziwei"
     ? ttl + TIME_BOUND_ACCEPTANCE_SAFETY_SECONDS
     : ttl;
 }
@@ -100,6 +103,9 @@ function providerData(message, stringifyValues) {
       && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "qimenV2")
       || (typeof data.qimenV3 === "string"
         && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "qimenV3"));
+  const exactZiweiEnvelope = categoryOf(message) === "ziwei"
+    && typeof data.notificationId === "string" && typeof data.ziweiHourlyV2 === "string"
+    && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "ziweiHourlyV2";
   const out = {};
   const zibaiShichenKeys = new Set(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
   const exactZibaiPayload = data.kind === "zibai"
@@ -122,7 +128,7 @@ function providerData(message, stringifyValues) {
       || sensitiveKeyParts.some((part) => normalizedKey.includes(part))) continue;
     out[String(key).slice(0, 80)] = stringifyValues ? String(value).slice(0, 500) : value;
   }
-  if (!exactQimenEnvelope && typeof out.url !== "string") out.url = safeUrl(message?.url || data.url);
+  if (!exactQimenEnvelope && !exactZiweiEnvelope && typeof out.url !== "string") out.url = safeUrl(message?.url || data.url);
   return out;
 }
 
@@ -149,7 +155,7 @@ function prepareMessage(item, provider = providerFor(item)) {
     ? null
     : category === "zibai"
       ? item?.data?.event === "zibai_shichen" ? ZIBAI_ACTION_CATEGORY_ID : null
-      : ACTION_CATEGORY_ID;
+      : category === "ziwei" ? ZIWEI_HOURLY_ACTION_CATEGORY_ID : ACTION_CATEGORY_ID;
   if (provider === "fcm") {
     return {
       notification: {

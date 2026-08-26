@@ -58,19 +58,26 @@ try {
   const preflightReport = preflight.inspect({
     access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
     lookupUser: () => true, uid: () => 0,
+    serviceUserAccess: () => true,
     readUnit: () => "User=root\nGroup=root\nStateDirectory=hourkey-notification\n",
   });
-  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, credentialReadable: true, stateReady: false, stateCreatable: true }, "absent StateDirectory passes first-start preflight only through validated root/systemd creation contract");
+  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, credentialReadable: true, stateReady: false, stateCreatable: true, ziweiServiceUser: true, ziweiServiceAccess: true }, "absent StateDirectory passes first-start preflight only through validated root/systemd creation contract and effective Ziwei service-user access");
   const unsafeStatePreflight = preflight.inspect({
     access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
-    lookupUser: () => true, uid: () => 0, readUnit: () => "User=root\n",
+    lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true, readUnit: () => "User=root\n",
   });
   assert.equal(unsafeStatePreflight.ok, false, "absent StateDirectory fails closed without the reviewed systemd creation contract");
   const incompleteSchedulerPreflight = preflight.inspect({
     access: (target: string) => { if (target.endsWith("mobile-monthly-report-push-cron.cjs")) throw new Error("missing-source"); },
-    lookupUser: () => true, uid: () => 0,
+    lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
   });
   assert.equal(incompleteSchedulerPreflight.ok, false, "preflight fails closed when any named scheduler heartbeat producer is absent from the release");
+  const blockedZiweiServiceUser = preflight.inspect({
+    access: () => {}, lookupUser: () => true, uid: () => 0,
+    serviceUserAccess: () => false,
+  });
+  assert.equal(blockedZiweiServiceUser.ok, false,
+    "preflight fails closed when the effective non-root Ziwei worker cannot traverse/read/write its runtime paths");
   const blockedPreflight = preflight.inspect({
     access: () => { throw new Error("private-path"); }, lookupUser: () => false, uid: () => 99,
   });

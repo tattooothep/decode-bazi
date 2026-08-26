@@ -31,7 +31,12 @@ ok(parseTz("+08:00")?.offsetMin === 480, "อ่านออฟเซ็ต +08:
 ok(parseTz("8")?.offsetMin === 480, "อ่านออฟเซ็ตแบบตัวเลขชั่วโมงได้");
 ok(parseTz("-05:30")?.offsetMin === -330, "อ่านออฟเซ็ตติดลบพร้อมนาทีได้");
 ok(parseTz("+15:00") === null, "ออฟเซ็ตเกินจริงต้องถูกปฏิเสธ");
+ok(parseTz("+14:59") === null, "ออฟเซ็ตต้องไม่เกิน +14:00 รวมทั้งนาที");
 ok(parseTz("Asia/Taipei")?.kind === "zone", "อ่านชื่อโซนได้");
+ok(parseTz("asia/bangkok")?.label === "Asia/Bangkok", "ชื่อ IANA ตัวพิมพ์เล็กต้องถูก canonicalize");
+ok(parseTz("US/Eastern")?.label === "America/New_York", "IANA alias ต้องถูก canonicalize");
+ok(parseTz("Etc/UTC")?.label === "UTC", "Etc/UTC ต้องถูก canonicalize เป็น UTC");
+ok(parseTz("CET")?.label === "Europe/Brussels", "ชื่อโซนแบบไม่มี slash ที่ Intl รองรับต้อง canonicalize");
 ok(parseTz("'; DROP TABLE") === null, "ข้อความแปลกปลอมต้องถูกปฏิเสธ");
 
 // เกิดไทเป 1990-05-05 06:30 → เวลาสากลต้องเป็น 22:30 ของวันก่อนหน้า (+08:00)

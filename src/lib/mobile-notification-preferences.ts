@@ -1,4 +1,5 @@
 import type { Pool, PoolClient } from "pg";
+import { parseTz } from "./birth-timezone";
 
 export type MobileNotificationPreferenceRow = {
   security_enabled: boolean;
@@ -7,6 +8,9 @@ export type MobileNotificationPreferenceRow = {
   auspicious_enabled: boolean;
   daily_enabled: boolean;
   qimen_enabled: boolean;
+  ziwei_hourly_enabled: boolean;
+  ziwei_profile_id: string | null;
+  qizheng_electional_enabled: false;
   shrine_enabled: boolean;
   goal_enabled: boolean;
   service_enabled: boolean;
@@ -24,6 +28,29 @@ export type MobileNotificationPreferenceRow = {
 
 export type MobileNotificationPreferenceInput = Record<string, unknown>;
 
+export type ZiweiNotificationContext = Readonly<{
+  enabled: boolean;
+  profileId: string | null;
+  referenceTimezone: string;
+  quietStart: number;
+  quietEnd: number;
+  locale: string;
+  privacyPreview: boolean;
+}>;
+
+export function ziweiNotificationContextChanged(
+  current: ZiweiNotificationContext,
+  next: ZiweiNotificationContext,
+): boolean {
+  return current.enabled !== next.enabled
+    || current.profileId !== next.profileId
+    || current.referenceTimezone !== next.referenceTimezone
+    || current.quietStart !== next.quietStart
+    || current.quietEnd !== next.quietEnd
+    || current.locale !== next.locale
+    || current.privacyPreview !== next.privacyPreview;
+}
+
 const LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
 
 const DEFAULT_PREFERENCES: MobileNotificationPreferenceRow = Object.freeze({
@@ -33,6 +60,9 @@ const DEFAULT_PREFERENCES: MobileNotificationPreferenceRow = Object.freeze({
   auspicious_enabled: false,
   daily_enabled: false,
   qimen_enabled: false,
+  ziwei_hourly_enabled: false,
+  ziwei_profile_id: null,
+  qizheng_electional_enabled: false,
   shrine_enabled: false,
   goal_enabled: false,
   service_enabled: true,
@@ -51,6 +81,13 @@ const DEFAULT_PREFERENCES: MobileNotificationPreferenceRow = Object.freeze({
 function intInRange(value: unknown, min: number, max: number): number | null {
   if (typeof value !== "number" || !Number.isInteger(value)) return null;
   return value >= min && value <= max ? value : null;
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+
+function requestedUuid(value: unknown): string | null {
+  const candidate = typeof value === "string" ? value.trim().replace(/^hk_/u, "") : "";
+  return UUID_RE.test(candidate) ? candidate : null;
 }
 
 function validTimezone(timezone: string | null): string {
@@ -133,7 +170,8 @@ export async function updateNotificationPreferences(
       effective_locale: string | null;
     }>(
       `SELECT np.security_enabled,np.saved_date_enabled,np.yam_enabled,np.auspicious_enabled,np.daily_enabled,
-              np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
+              np.qimen_enabled,np.ziwei_hourly_enabled,np.ziwei_profile_id,np.qizheng_electional_enabled,
+              np.shrine_enabled,np.goal_enabled,np.service_enabled,
               np.yam_min_quality,np.yam_lead_minutes,np.daily_slot,np.quiet_start,np.quiet_end,np.max_per_day,
               np.paused_until,np.privacy_preview,np.locale,np.timezone,
               COALESCE(np.timezone,u.timezone,'Asia/Bangkok') AS effective_timezone,
@@ -176,6 +214,52 @@ export async function updateNotificationPreferences(
     const shrine = typeof body.shrine === "boolean"
       ? body.shrine
       : typeof body.auspicious === "boolean" ? body.auspicious : current.shrine_enabled;
+    if (body.qizhengElectional === true) throw new TypeError("qizheng_electional_unavailable");
+    const ziweiHourly = typeof body.ziweiHourly === "boolean"
+      ? body.ziweiHourly : current.ziwei_hourly_enabled;
+    const ziweiProfileId = body.ziweiProfileId === undefined
+      ? current.ziwei_profile_id
+      : requestedUuid(body.ziweiProfileId);
+    if (body.ziweiProfileId !== undefined && ziweiProfileId === null) {
+      throw new TypeError("ziwei_profile_invalid");
+    }
+    if (ziweiHourly && ziweiProfileId === null) throw new TypeError("ziwei_profile_required");
+    if (ziweiHourly || body.ziweiProfileId !== undefined) {
+      const owned = await client.query<{ id: string; birth_tz: string }>(
+        `SELECT id,birth_tz FROM profiles
+          WHERE id=$1 AND created_by_user_id=$2 AND COALESCE(is_archived,false)=false
+            AND birth_datetime IS NOT NULL
+            AND birth_time_known=true
+            AND NULLIF(btrim(birth_tz),'') IS NOT NULL
+            AND hourkey_birth_timezone_valid(birth_tz)
+            AND gender IN ('M','F')
+            AND (relationship_type IS NULL OR btrim(relationship_type) = '')`,
+        [ziweiProfileId, userId],
+      );
+      if (!owned.rows[0] || !parseTz(owned.rows[0].birth_tz)) throw new TypeError("ziwei_profile_invalid");
+    }
+    const quietStart = intInRange(body.quietStart, 0, 23) ?? current.quiet_start;
+    const quietEnd = intInRange(body.quietEnd, 0, 23) ?? current.quiet_end;
+    const privacyPreview = typeof body.privacyPreview === "boolean"
+      ? body.privacyPreview
+      : current.privacy_preview;
+    const ziweiContextChanged = ziweiNotificationContextChanged({
+      enabled: current.ziwei_hourly_enabled,
+      profileId: current.ziwei_profile_id,
+      referenceTimezone: current.timezone,
+      quietStart: current.quiet_start,
+      quietEnd: current.quiet_end,
+      locale: current.locale,
+      privacyPreview: current.privacy_preview,
+    }, {
+      enabled: ziweiHourly,
+      profileId: ziweiProfileId,
+      referenceTimezone: timezoneInput,
+      quietStart,
+      quietEnd,
+      locale: localeInput,
+      privacyPreview,
+    });
     let pausedUntil = current.paused_until === null || current.paused_until === undefined
       ? null
       : new Date(String(current.paused_until));
@@ -189,15 +273,18 @@ export async function updateNotificationPreferences(
     const saved = await client.query<MobileNotificationPreferenceRow>(
       `INSERT INTO mobile_notification_prefs
          (user_id,security_enabled,saved_date_enabled,yam_enabled,auspicious_enabled,daily_enabled,
-          qimen_enabled,shrine_enabled,goal_enabled,service_enabled,yam_min_quality,yam_lead_minutes,daily_slot,
+          qimen_enabled,ziwei_hourly_enabled,ziwei_profile_id,qizheng_electional_enabled,
+          shrine_enabled,goal_enabled,service_enabled,yam_min_quality,yam_lead_minutes,daily_slot,
           quiet_start,quiet_end,max_per_day,paused_until,qimen_latitude,qimen_longitude,qimen_location_updated_at,
           updated_at,privacy_preview,locale,timezone)
-       VALUES($1,true,$2,$3,$4,$5,$6,$7,$8,true,$9,$10,$11,$12,$13,$14,$15,$16,$17,
+       VALUES($1,true,$2,$3,$4,$5,$6,$22,$23,$24,$7,$8,true,$9,$10,$11,$12,$13,$14,$15,$16,$17,
               CASE WHEN $16::float8 IS NULL THEN NULL ELSE $21::timestamptz END,$21::timestamptz,$18,$19,$20)
        ON CONFLICT(user_id) DO UPDATE SET
          security_enabled=true,saved_date_enabled=EXCLUDED.saved_date_enabled,yam_enabled=EXCLUDED.yam_enabled,
          auspicious_enabled=EXCLUDED.auspicious_enabled,daily_enabled=EXCLUDED.daily_enabled,
-         qimen_enabled=EXCLUDED.qimen_enabled,shrine_enabled=EXCLUDED.shrine_enabled,goal_enabled=EXCLUDED.goal_enabled,
+         qimen_enabled=EXCLUDED.qimen_enabled,ziwei_hourly_enabled=EXCLUDED.ziwei_hourly_enabled,
+         ziwei_profile_id=EXCLUDED.ziwei_profile_id,qizheng_electional_enabled=false,
+         shrine_enabled=EXCLUDED.shrine_enabled,goal_enabled=EXCLUDED.goal_enabled,
          service_enabled=true,yam_min_quality=EXCLUDED.yam_min_quality,yam_lead_minutes=EXCLUDED.yam_lead_minutes,
          daily_slot=EXCLUDED.daily_slot,quiet_start=EXCLUDED.quiet_start,quiet_end=EXCLUDED.quiet_end,
          max_per_day=EXCLUDED.max_per_day,paused_until=EXCLUDED.paused_until,
@@ -207,7 +294,8 @@ export async function updateNotificationPreferences(
            THEN mobile_notification_prefs.qimen_location_updated_at ELSE EXCLUDED.qimen_location_updated_at END,
          privacy_preview=EXCLUDED.privacy_preview,locale=EXCLUDED.locale,timezone=EXCLUDED.timezone,updated_at=EXCLUDED.updated_at
        RETURNING security_enabled,saved_date_enabled,yam_enabled,auspicious_enabled,daily_enabled,
-                 qimen_enabled,shrine_enabled,goal_enabled,service_enabled,yam_min_quality,yam_lead_minutes,daily_slot,
+                 qimen_enabled,ziwei_hourly_enabled,ziwei_profile_id,qizheng_electional_enabled,
+                 shrine_enabled,goal_enabled,service_enabled,yam_min_quality,yam_lead_minutes,daily_slot,
                  quiet_start,quiet_end,max_per_day,paused_until,privacy_preview,locale,timezone`,
       [
         userId,
@@ -221,16 +309,19 @@ export async function updateNotificationPreferences(
         body.yamMinQuality === "good" || body.yamMinQuality === "best" ? body.yamMinQuality : current.yam_min_quality,
         [15, 30, 60].includes(Number(body.yamLeadMinutes)) ? Number(body.yamLeadMinutes) : current.yam_lead_minutes,
         body.dailySlot === "morning" || body.dailySlot === "evening" || body.dailySlot === "both" ? body.dailySlot : current.daily_slot,
-        intInRange(body.quietStart, 0, 23) ?? current.quiet_start,
-        intInRange(body.quietEnd, 0, 23) ?? current.quiet_end,
+        quietStart,
+        quietEnd,
         intInRange(body.maxPerDay, 0, 10) ?? current.max_per_day,
         pausedUntil,
         qimenLatitude,
         qimenLongitude,
-        typeof body.privacyPreview === "boolean" ? body.privacyPreview : current.privacy_preview,
+        privacyPreview,
         localeInput,
         timezoneInput,
         at.toISOString(),
+        ziweiHourly,
+        ziweiProfileId,
+        false,
       ],
     );
     const qimenSchema = await client.query<{ available: boolean }>(
@@ -268,6 +359,37 @@ export async function updateNotificationPreferences(
            owner_generation=mobile_qimen_installations.owner_generation+1,updated_at=EXCLUDED.updated_at`,
         [userId, at.toISOString()],
       );
+    }
+    const ziweiSchema = await client.query<{ available: boolean }>(
+      `SELECT to_regclass('mobile_ziwei_hourly_installations') IS NOT NULL AS available`,
+    );
+    if (ziweiSchema.rows[0]?.available === true && ziweiContextChanged) {
+      if (ziweiHourly && ziweiProfileId) {
+        await client.query(
+          `INSERT INTO mobile_ziwei_hourly_installations
+             (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,next_due_at,updated_at)
+           SELECT t.user_id,t.installation_id,$3::uuid,
+                  (t.ziwei_payload_schema=2),$4,np.quiet_start,np.quiet_end,
+                  CASE WHEN t.ziwei_payload_schema=2 THEN $2::timestamptz ELSE NULL END,$2::timestamptz
+             FROM mobile_push_tokens t JOIN mobile_notification_prefs np ON np.user_id=t.user_id
+            WHERE t.user_id=$1 AND t.enabled=true
+           ON CONFLICT(user_id,installation_id) DO UPDATE SET
+             profile_id=EXCLUDED.profile_id,enabled=EXCLUDED.enabled,
+             reference_timezone=EXCLUDED.reference_timezone,quiet_start=EXCLUDED.quiet_start,
+             quiet_end=EXCLUDED.quiet_end,next_due_at=EXCLUDED.next_due_at,
+             lease_token=NULL,lease_expires_at=NULL,last_skip_reason=NULL,
+             owner_generation=mobile_ziwei_hourly_installations.owner_generation+1,updated_at=EXCLUDED.updated_at`,
+          [userId, at.toISOString(), ziweiProfileId, timezoneInput],
+        );
+      } else {
+        await client.query(
+          `UPDATE mobile_ziwei_hourly_installations
+              SET enabled=false,next_due_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+                  last_skip_reason='preference_disabled',owner_generation=owner_generation+1,updated_at=$2
+            WHERE user_id=$1`,
+          [userId, at.toISOString()],
+        );
+      }
     }
     await client.query("COMMIT");
     return saved.rows[0];

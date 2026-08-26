@@ -134,6 +134,8 @@ export async function POST(req: Request) {
     ? zibaiVersionRuntime.LEGACY_CALCULATION_VERSION
     : body.zibaiCalculationVersion;
   const qimenPayloadSchema = body.qimenPayloadSchema === undefined ? 1 : body.qimenPayloadSchema;
+  const ziweiPayloadSchema = body.ziweiPayloadSchema === undefined ? 0 : body.ziweiPayloadSchema;
+  const qizhengPayloadSchema = body.qizhengPayloadSchema === undefined ? 0 : body.qizhengPayloadSchema;
   /**
    * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
    *
@@ -155,6 +157,8 @@ export async function POST(req: Request) {
     || !(zibaiPayloadSchema === 1 || zibaiPayloadSchema === 2)
     || !zibaiVersionRuntime.isReadableCalculationVersion(zibaiCalculationVersion)
     || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2 || qimenPayloadSchema === 3)
+    || !(ziweiPayloadSchema === 0 || ziweiPayloadSchema === 1 || ziweiPayloadSchema === 2)
+    || qizhengPayloadSchema !== 0
   ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
   }
@@ -194,10 +198,11 @@ export async function POST(req: Request) {
       await client.query("ROLLBACK");
       return NextResponse.json({ ok: false, error: "account_not_available" }, { status: 409 });
     }
-    const tokenLocale = locale
-      ?? (LOCALES.has(String(accountContext.rows[0]?.locale || "").toLowerCase())
-        ? String(accountContext.rows[0]?.locale).toLowerCase()
-        : "th");
+    const currentAccountLocale = LOCALES.has(String(accountContext.rows[0]?.locale || "").toLowerCase())
+      ? String(accountContext.rows[0]?.locale).toLowerCase()
+      : "th";
+    const tokenLocale = locale ?? currentAccountLocale;
+    const accountLocaleChanged = locale !== null && tokenLocale !== currentAccountLocale;
     await client.query(
       `DELETE FROM mobile_zibai_installations z USING mobile_push_tokens t
         WHERE z.user_id=t.user_id AND z.installation_id=t.installation_id
@@ -208,6 +213,13 @@ export async function POST(req: Request) {
     await client.query(
       `DELETE FROM mobile_qimen_installations q USING mobile_push_tokens t
         WHERE q.user_id=t.user_id AND q.installation_id=t.installation_id
+          AND t.user_id<>$1
+          AND (t.installation_id=$2::uuid OR ($3::text IS NOT NULL AND t.device_push_token=$3))`,
+      [session.userId, installationId, deviceToken],
+    );
+    await client.query(
+      `DELETE FROM mobile_ziwei_hourly_installations z USING mobile_push_tokens t
+        WHERE z.user_id=t.user_id AND z.installation_id=t.installation_id
           AND t.user_id<>$1
           AND (t.installation_id=$2::uuid OR ($3::text IS NOT NULL AND t.device_push_token=$3))`,
       [session.userId, installationId, deviceToken],
@@ -235,8 +247,9 @@ export async function POST(req: Request) {
     const registered = await client.query<{ id: string }>(
       `INSERT INTO mobile_push_tokens
          (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,app_version,locale,timezone,enabled,
-          fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema,qimen_payload_schema,zibai_calculation_version)
-       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10,$11,$12)
+          fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema,qimen_payload_schema,
+          ziwei_payload_schema,qizheng_payload_schema,zibai_calculation_version)
+       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10,$11,$13,$14,$12)
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
@@ -249,13 +262,19 @@ export async function POST(req: Request) {
          zibai_payload_schema=EXCLUDED.zibai_payload_schema,
          zibai_calculation_version=EXCLUDED.zibai_calculation_version,
          qimen_payload_schema=EXCLUDED.qimen_payload_schema,
+         ziwei_payload_schema=EXCLUDED.ziwei_payload_schema,
+         qizheng_payload_schema=EXCLUDED.qizheng_payload_schema,
          enabled=true,
          fail_count=0,
          last_registered_at=now(),
          disabled_at=NULL,
          updated_at=now()
        RETURNING id`,
-      [session.userId, installationId, token, platform, appVersion, tokenLocale, deviceToken, deviceTokenType, timezone, zibaiPayloadSchema, qimenPayloadSchema, zibaiCalculationVersion]
+      [
+        session.userId, installationId, token, platform, appVersion, tokenLocale,
+        deviceToken, deviceTokenType, timezone, zibaiPayloadSchema, qimenPayloadSchema,
+        zibaiCalculationVersion, ziweiPayloadSchema, qizhengPayloadSchema,
+      ]
     );
     row = registered.rows[0];
     const installationCalculationVersion = zibaiVersionRuntime.supportsCalculationVersion(
@@ -299,6 +318,46 @@ export async function POST(req: Request) {
          lease_token=NULL,lease_expires_at=NULL,last_skip_reason=NULL,
          owner_generation=mobile_qimen_installations.owner_generation+1,updated_at=now()`,
       [session.userId, installationId, qimenPayloadSchema, timezone],
+    );
+    if (accountLocaleChanged) {
+      await client.query(
+        `UPDATE mobile_ziwei_hourly_installations
+            SET next_due_at=CASE WHEN enabled THEN now() ELSE NULL END,
+                lease_token=NULL,lease_expires_at=NULL,last_skip_reason='locale_changed',
+                owner_generation=owner_generation+1,updated_at=now()
+          WHERE user_id=$1 AND installation_id<>$2::uuid`,
+        [session.userId, installationId],
+      );
+    }
+    await client.query(
+      `INSERT INTO mobile_ziwei_hourly_installations
+         (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,next_due_at,updated_at)
+       SELECT $1,$2::uuid,np.ziwei_profile_id,
+              ($3::smallint=2 AND np.ziwei_hourly_enabled),
+              COALESCE($4,np.timezone,u.timezone,'Asia/Bangkok'),np.quiet_start,np.quiet_end,
+              CASE WHEN $3::smallint=2 AND np.ziwei_hourly_enabled THEN now() ELSE NULL END,now()
+         FROM users u JOIN mobile_notification_prefs np ON np.user_id=u.id
+         JOIN profiles p ON p.id=np.ziwei_profile_id
+          AND p.created_by_user_id=u.id AND COALESCE(p.is_archived,false)=false
+          AND p.birth_time_known=true
+          AND NULLIF(btrim(p.birth_tz),'') IS NOT NULL
+          AND hourkey_birth_timezone_valid(p.birth_tz)
+          AND p.gender IN ('M','F')
+          AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
+        WHERE u.id=$1
+         ON CONFLICT(user_id,installation_id) DO UPDATE SET
+           profile_id=EXCLUDED.profile_id,enabled=EXCLUDED.enabled,
+           reference_timezone=EXCLUDED.reference_timezone,quiet_start=EXCLUDED.quiet_start,
+           quiet_end=EXCLUDED.quiet_end,next_due_at=EXCLUDED.next_due_at,
+           lease_token=NULL,lease_expires_at=NULL,last_skip_reason=NULL,
+           owner_generation=mobile_ziwei_hourly_installations.owner_generation+1,updated_at=now()
+         WHERE mobile_ziwei_hourly_installations.profile_id IS DISTINCT FROM EXCLUDED.profile_id
+            OR mobile_ziwei_hourly_installations.enabled IS DISTINCT FROM EXCLUDED.enabled
+            OR mobile_ziwei_hourly_installations.reference_timezone IS DISTINCT FROM EXCLUDED.reference_timezone
+            OR mobile_ziwei_hourly_installations.quiet_start IS DISTINCT FROM EXCLUDED.quiet_start
+            OR mobile_ziwei_hourly_installations.quiet_end IS DISTINCT FROM EXCLUDED.quiet_end
+            OR $5::boolean`,
+      [session.userId, installationId, ziweiPayloadSchema, timezone, accountLocaleChanged],
     );
     // Account notification context follows the most recently authenticated
     // mobile installation. Per-installation locale remains on the token for
@@ -388,6 +447,11 @@ export async function DELETE(req: Request) {
     );
     await client.query(
       `DELETE FROM mobile_qimen_installations
+        WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
+      [session.userId, installationId || null],
+    );
+    await client.query(
+      `DELETE FROM mobile_ziwei_hourly_installations
         WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
       [session.userId, installationId || null],
     );

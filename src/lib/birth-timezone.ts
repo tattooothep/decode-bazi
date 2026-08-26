@@ -52,15 +52,17 @@ export function parseTz(raw: string | null): TzSpec | null {
   if (m) {
     const sign = m[1] === "-" ? -1 : 1;
     const hh = Number(m[2]), mm = Number(m[3] || 0);
-    if (hh > 14 || mm > 59) return null;
+    if (hh > 14 || mm > 59 || (hh === 14 && mm !== 0)) return null;
     const offsetMin = sign * (hh * 60 + mm);
     const abs = Math.abs(offsetMin);
     const label = `${offsetMin < 0 ? "-" : "+"}${String(Math.floor(abs / 60)).padStart(2, "0")}:${String(abs % 60).padStart(2, "0")}`;
     return { label, kind: "offset", offsetMin };
   }
-  if (!/^[A-Za-z][A-Za-z0-9_+\-]*(\/[A-Za-z0-9_+\-]+){1,2}$/.test(text) && text !== "UTC") return null;
-  if (zoneOffsetMinutes(Date.now(), text) === null) return null;
-  return { label: text, kind: "zone" };
+  try {
+    const label = new Intl.DateTimeFormat("en-US", { timeZone: text }).resolvedOptions().timeZone;
+    if (!label || label.length > 64 || zoneOffsetMinutes(Date.now(), label) === null) return null;
+    return { label, kind: "zone" };
+  } catch { return null; }
 }
 
 /** เวลานาฬิกา "YYYY-MM-DDTHH:MM:SS" + เขตเวลา → เวลาสากลจริง (สองรอบ กันช่วง DST เปลี่ยน) */

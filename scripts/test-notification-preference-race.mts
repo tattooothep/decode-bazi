@@ -86,6 +86,8 @@ try {
       security_enabled boolean NOT NULL DEFAULT true,saved_date_enabled boolean NOT NULL DEFAULT false,
       yam_enabled boolean NOT NULL DEFAULT false,auspicious_enabled boolean NOT NULL DEFAULT false,
       daily_enabled boolean NOT NULL DEFAULT false,qimen_enabled boolean NOT NULL DEFAULT false,
+      ziwei_hourly_enabled boolean NOT NULL DEFAULT false,ziwei_profile_id uuid,
+      qizheng_electional_enabled boolean NOT NULL DEFAULT false,
       shrine_enabled boolean NOT NULL DEFAULT false,goal_enabled boolean NOT NULL DEFAULT false,
       service_enabled boolean NOT NULL DEFAULT true,yam_min_quality text NOT NULL DEFAULT 'best',
       yam_lead_minutes int NOT NULL DEFAULT 60,daily_slot text NOT NULL DEFAULT 'morning',

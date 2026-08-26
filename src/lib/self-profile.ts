@@ -18,6 +18,7 @@
 import crypto from "node:crypto";
 import { pool } from "./db";
 import { calcBazi } from "./bazi-calc";
+import { parseTz, resolveBirthTz, tzOffsetHoursAt, wallClockToUtc } from "./birth-timezone";
 
 export type UpsertSelfFields = {
   name: string;
@@ -31,6 +32,7 @@ export type UpsertSelfFields = {
   dayBoundary?: "23:00" | "00:00";
   /* 19 พ.ค. Option α · birthTimeKnown=false → 3p mode · hour pillar = null */
   birthTimeKnown?: boolean;
+  birthTz?: string | null;
 };
 
 export type UpsertSelfResult = {
@@ -45,34 +47,11 @@ export async function upsertSelfProfile(
   if (!session.orgId) throw new Error("upsertSelfProfile: session.orgId required");
   const orgId = session.orgId;
 
-  // Pre-compute outside the transaction — calcBazi is pure and may be slow.
-  // Codex direction: shared Layer 0/1 source · no inline tyme4ts.
-  // 19 พ.ค. Option α · branch by birthTimeKnown · 3p ส่ง birthTimeKnown:false · 4p เดิม
   const birthTimeKnown = fields.birthTimeKnown !== false;        /* default true · backward compat */
   const dayBoundary = fields.dayBoundary === "00:00" ? "00:00" : "23:00";
-  const calc = birthTimeKnown
-    ? await calcBazi({
-        date: fields.birthDate,
-        time: fields.birthTime,
-        longitude: fields.birthLng ?? 100.5018,
-        gmtOffsetHours: 7,
-        gender: fields.gender ?? undefined,
-        dayBoundary,
-        birthTimeKnown: true,
-      })
-    : await calcBazi({
-        date: fields.birthDate,
-        longitude: fields.birthLng ?? 100.5018,
-        gmtOffsetHours: 7,
-        gender: fields.gender ?? undefined,
-        birthTimeKnown: false,
-      });
-
-  /* 3p: birth_datetime ใน DB ใช้ 12:00 anchor (ไม่ใช่ pillar) · flag birth_time_known=false */
-  const dbTime = birthTimeKnown ? fields.birthTime : "12:00";
-  const isoDt = `${fields.birthDate}T${dbTime}:00+07:00`;
-  const yongshenJson = JSON.stringify({ top3: calc.yongshen, climate: calc.climate });
-  const baziJson = JSON.stringify({ pillars: calc.pillars, ge_ju: calc.geJu.structure, day_boundary: dayBoundary });
+  const birthTzText = typeof fields.birthTz === "string" ? fields.birthTz.trim() : "";
+  const requestedBirthTz = fields.birthTz === undefined ? undefined : parseTz(birthTzText || null);
+  if (birthTzText && !requestedBirthTz) throw new TypeError("upsertSelfProfile: birth timezone invalid");
 
   const client = await pool.connect();
   try {
@@ -83,8 +62,8 @@ export async function upsertSelfProfile(
       [orgId, session.userId]
     );
 
-    const existingRes = await client.query<{ id: string }>(
-      `SELECT id FROM profiles
+    const existingRes = await client.query<{ id: string; birth_tz: string | null }>(
+      `SELECT id,birth_tz FROM profiles
        WHERE org_id=$1
          AND created_by_user_id=$2
          AND is_archived=false
@@ -94,6 +73,38 @@ export async function upsertSelfProfile(
       [orgId, session.userId]
     );
     const existing = existingRes.rows[0] || null;
+    const birthTzSpec = requestedBirthTz !== undefined ? requestedBirthTz : parseTz(existing?.birth_tz ?? null);
+    const birthTz = birthTzSpec?.label ?? null;
+    const birthWall = `${fields.birthDate}T${birthTimeKnown ? fields.birthTime : "12:00"}:00`;
+    const resolvedBirthTz = resolveBirthTz(birthTzSpec);
+    const birthInstant = wallClockToUtc(birthWall, resolvedBirthTz);
+    if (!birthInstant || !Number.isFinite(birthInstant.valueOf())) {
+      throw new TypeError("upsertSelfProfile: birth datetime invalid");
+    }
+    const gmtOffsetHours = tzOffsetHoursAt(resolvedBirthTz, birthInstant);
+    const calc = birthTimeKnown
+      ? await calcBazi({
+          date: fields.birthDate,
+          time: fields.birthTime,
+          longitude: fields.birthLng ?? 100.5018,
+          gmtOffsetHours,
+          gender: fields.gender ?? undefined,
+          dayBoundary,
+          birthTimeKnown: true,
+        })
+      : await calcBazi({
+          date: fields.birthDate,
+          longitude: fields.birthLng ?? 100.5018,
+          gmtOffsetHours,
+          gender: fields.gender ?? undefined,
+          birthTimeKnown: false,
+        });
+
+    /* 3p: birth_datetime ใน DB ใช้ 12:00 anchor (ไม่ใช่ pillar) · flag birth_time_known=false */
+    const dbTime = birthTimeKnown ? fields.birthTime : "12:00";
+    const isoDt = `${fields.birthDate}T${dbTime}:00+07:00`;
+    const yongshenJson = JSON.stringify({ top3: calc.yongshen, climate: calc.climate });
+    const baziJson = JSON.stringify({ pillars: calc.pillars, ge_ju: calc.geJu.structure, day_boundary: dayBoundary });
 
     if (existing) {
       await client.query(
@@ -101,9 +112,12 @@ export async function upsertSelfProfile(
            name=$1, nickname=$2,
            birth_datetime=$3, birth_lat=$4, birth_lng=$5, birth_location_name=$6, gender=$7,
           day_master=$8, day_master_strength=$9, yongshen=$10, bazi_pillars=$11,
-          birth_time_known=$12, day_boundary=$13, network_group='self', network_group_label=NULL,
+           birth_time_known=$12, day_boundary=$13,
+           birth_tz=CASE WHEN $14::boolean THEN $15 ELSE birth_tz END,
+           birth_tz_source=CASE WHEN $14::boolean THEN $16 ELSE birth_tz_source END,
+           network_group='self', network_group_label=NULL,
            updated_at=now()
-         WHERE id=$14`,
+         WHERE id=$17`,
         [
           fields.name,
           fields.nickname ?? null,
@@ -118,6 +132,9 @@ export async function upsertSelfProfile(
           baziJson,
           birthTimeKnown,
           dayBoundary,
+          fields.birthTz !== undefined,
+          birthTz,
+          birthTz ? "user_input" : null,
           existing.id,
         ]
       );
@@ -131,8 +148,10 @@ export async function upsertSelfProfile(
          id, org_id, created_by_user_id, name, nickname,
          birth_datetime, birth_lat, birth_lng, birth_location_name, gender,
          relationship_type, network_group, network_group_label, day_master, day_master_strength, yongshen, bazi_pillars,
-         birth_source, birth_time_known, day_boundary, is_archived, created_at, updated_at
-       ) VALUES ($1,$2,$3,$4,$5, $6,$7,$8,$9,$10, NULL, 'self', NULL, $11,$12,$13,$14, 'self_reported', $15, $16, false, now(), now())`,
+         birth_source, birth_time_known, day_boundary, birth_tz, birth_tz_source,
+         is_archived, created_at, updated_at
+       ) VALUES ($1,$2,$3,$4,$5, $6,$7,$8,$9,$10, NULL, 'self', NULL, $11,$12,$13,$14,
+                 'self_reported', $15, $16, $17, $18, false, now(), now())`,
       [
         id,
         orgId,
@@ -150,6 +169,8 @@ export async function upsertSelfProfile(
         baziJson,
         birthTimeKnown,
         dayBoundary,
+        birthTz,
+        birthTz ? "user_input" : null,
       ]
     );
     await client.query("COMMIT");

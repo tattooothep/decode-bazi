@@ -1,0 +1,42 @@
+[Unit]
+Description=Hourkey Ziwei immutable hourly structural notification scheduler
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=hourkey-notify
+Group=hourkey-notify
+WorkingDirectory=/root/releases/current
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/hourkey/hourkey.env
+StateDirectory=hourkey-notification
+StateDirectoryMode=0750
+LogsDirectory=hourkey
+LogsDirectoryMode=0750
+UMask=0027
+# ExecStart's env assignment intentionally overrides any stale value from the
+# shared EnvironmentFile. The effective non-root worker always uses this path.
+ExecStart=/usr/bin/env FCM_SERVICE_ACCOUNT_PATH=/etc/hourkey/credentials/fcm-service-account.json /usr/bin/node --import tsx /root/releases/current/scripts/mobile-ziwei-hourly-push-cron.mts
+TimeoutStartSec=55
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectProc=invisible
+ProcSubset=pid
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+ReadWritePaths=/var/lib/hourkey-notification
+StandardOutput=append:/var/log/hourkey/mobile-ziwei-hourly-push.log
+StandardError=append:/var/log/hourkey/mobile-ziwei-hourly-push.log

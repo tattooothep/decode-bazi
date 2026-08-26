@@ -34,7 +34,7 @@ assert.equal(healthy.status, 200, "authenticated internal caller receives aggreg
 assert.deepEqual(await healthy.json(), { ok: true, reasons: [], metrics: { retry: { overdueCount: 0 } } }, "endpoint preserves aggregate-only health response");
 assert.deepEqual(Object.keys(healthyInput?.heartbeat?.schedulers || {}), [
   "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning",
-  "zibai", "qimen",
+  "zibai", "qimen", "ziwei-hourly",
 ], "authenticated endpoint supplies one heartbeat slot for every notification scheduler");
 
 const unhealthy = await POST(request("Bearer notification-observability-internal-test"), {

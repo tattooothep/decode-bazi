@@ -12,6 +12,16 @@ function rootExists(lookupUser) {
   try { return lookupUser("root") === true; } catch { return false; }
 }
 
+function defaultServiceUserAccess(name, target, mode) {
+  const flag = mode === constants.X_OK ? "-x" : mode === constants.W_OK ? "-w" : "-r";
+  try {
+    execFileSync("runuser", ["-u", name, "--", "/usr/bin/test", flag, target], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function hasStateDirectoryContract(readUnit) {
   try {
     const source = readUnit("/root/releases/current/ops/systemd/hourkey-mobile-push-retry-receipts.service", "utf8");
@@ -28,6 +38,7 @@ function inspect(options = {}) {
   const lookupUser = options.lookupUser || ((name) => {
     try { execFileSync("getent", ["passwd", name], { stdio: "ignore" }); return true; } catch { return false; }
   });
+  const serviceUserAccess = options.serviceUserAccess || defaultServiceUserAccess;
   const readUnit = options.readUnit || readFileSync;
   const runtimeRoot = uid() === 0 && rootExists(lookupUser);
   const nodeExecutable = canAccess(access, "/usr/bin/node", constants.X_OK);
@@ -43,7 +54,9 @@ function inspect(options = {}) {
     "/root/releases/current/scripts/mobile-network-morning-push-cron.cjs",
     "/root/releases/current/scripts/mobile-zibai-push-cron.cjs",
     "/root/releases/current/scripts/mobile-qimen-push-cron.cjs",
+    "/root/releases/current/scripts/mobile-ziwei-hourly-push-cron.mts",
     "/root/releases/current/ops/systemd/hourkey-mobile-qimen-push.service",
+    "/root/releases/current/ops/systemd/hourkey-mobile-ziwei-hourly-push.service",
   ];
   const releaseReadable = releasePaths.every((target) => canAccess(access, target, constants.R_OK));
   const environmentReadable = canAccess(access, "/etc/hourkey/hourkey.env", constants.R_OK);
@@ -51,10 +64,25 @@ function inspect(options = {}) {
   const stateReady = canAccess(access, "/var/lib/hourkey-notification", constants.W_OK);
   const stateCreatable = !stateReady && runtimeRoot
     && canAccess(access, "/var/lib", constants.W_OK) && hasStateDirectoryContract(readUnit);
+  const ziweiServiceUser = rootExists((name) => name === "root" ? true : lookupUser(name))
+    && (() => { try { return lookupUser("hourkey-notify") === true; } catch { return false; } })();
+  const ziweiServicePaths = [
+    ["/usr/bin/env", constants.X_OK],
+    ["/usr/bin/node", constants.X_OK],
+    ["/root/releases/current", constants.X_OK],
+    ["/root/releases/current/scripts/mobile-ziwei-hourly-push-cron.mts", constants.R_OK],
+    ["/etc/hourkey/credentials/fcm-service-account.json", constants.R_OK],
+    ["/var/lib/hourkey-notification", constants.W_OK],
+    ["/var/log/hourkey", constants.W_OK],
+  ];
+  const ziweiServiceAccess = ziweiServiceUser && ziweiServicePaths.every(([target, mode]) => {
+    try { return serviceUserAccess("hourkey-notify", target, mode) === true; } catch { return false; }
+  });
   return {
     ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable && credentialReadable
-      && (stateReady || stateCreatable),
+      && (stateReady || stateCreatable) && ziweiServiceUser && ziweiServiceAccess,
     runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, credentialReadable, stateReady, stateCreatable,
+    ziweiServiceUser, ziweiServiceAccess,
   };
 }
 

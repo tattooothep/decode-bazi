@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { q, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
 import { upsertSelfProfile } from "@/lib/self-profile";
+import { parseTz } from "@/lib/birth-timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,8 @@ type MobileProfileRow = {
   bazi_pillars: unknown;
   birth_time_known: boolean | null;
   day_boundary: string | null;
+  birth_tz: string | null;
+  birth_tz_source: string | null;
   is_self: boolean;
 };
 
@@ -47,7 +50,7 @@ async function loadProfile(orgId: string, userId: string, profileId: string) {
             birth_lat, birth_lng, birth_location_name, gender,
             relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars,
-            birth_time_known, day_boundary,
+            birth_time_known, day_boundary, birth_tz, birth_tz_source,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
        FROM profiles
       WHERE id=$3
@@ -69,7 +72,7 @@ export async function GET(req: Request) {
             birth_lat, birth_lng, birth_location_name, gender,
             relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars,
-            birth_time_known, day_boundary,
+            birth_time_known, day_boundary, birth_tz, birth_tz_source,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
        FROM profiles
       WHERE created_by_user_id=$2 AND org_id=$1  /* ⛔ เฉพาะดวงที่ user สร้างเอง · เดิม org อย่างเดียว=leak (rule #6) */
@@ -120,6 +123,13 @@ export async function POST(req: Request) {
   const birthLat = cleanNumber(body.birthLat);
   const birthLng = cleanNumber(body.birthLng);
   const dayBoundary = body.dayBoundary === "00:00" ? "00:00" : "23:00";
+  const birthTzProvided = Object.prototype.hasOwnProperty.call(body, "birthTz");
+  const birthTzValue = typeof body.birthTz === "string" ? body.birthTz.trim() : "";
+  const birthTzSpec = parseTz(typeof body.birthTz === "string" ? body.birthTz : null);
+  if ((body.birthTz !== undefined && body.birthTz !== null && typeof body.birthTz !== "string")
+    || (birthTzValue && !birthTzSpec)) {
+    return NextResponse.json({ ok: false, error: "birth timezone invalid" }, { status: 400 });
+  }
 
   try {
     const result = await upsertSelfProfile(
@@ -135,6 +145,7 @@ export async function POST(req: Request) {
         gender: cleanGender(body.gender),
         dayBoundary,
         birthTimeKnown,
+        birthTz: birthTzProvided ? (birthTzSpec?.label ?? null) : undefined,
       }
     );
     const profile = await loadProfile(session.orgId, session.userId, result.id);

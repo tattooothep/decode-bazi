@@ -32,7 +32,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const KINDS = new Set([
-  "security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service", "zibai",
+  "security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service", "zibai", "ziwei",
   // legacy rows remain readable after the category split
   "auspicious", "network",
 ]);
@@ -61,7 +61,8 @@ async function authorize(req: Request) {
 async function readPrefs(userId: string): Promise<PrefRow> {
   const row = await q1<PrefRow>(
     `SELECT np.security_enabled,np.saved_date_enabled,np.yam_enabled,np.auspicious_enabled,np.daily_enabled,
-            np.qimen_enabled,np.shrine_enabled,np.goal_enabled,np.service_enabled,
+            np.qimen_enabled,np.ziwei_hourly_enabled,np.ziwei_profile_id,np.qizheng_electional_enabled,
+            np.shrine_enabled,np.goal_enabled,np.service_enabled,
             np.yam_min_quality,np.yam_lead_minutes,np.daily_slot,
             np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,np.privacy_preview,
             CASE WHEN lower(COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th'))
@@ -81,6 +82,9 @@ async function readPrefs(userId: string): Promise<PrefRow> {
     auspicious_enabled: false,
     daily_enabled: false,
     qimen_enabled: false,
+    ziwei_hourly_enabled: false,
+    ziwei_profile_id: null,
+    qizheng_electional_enabled: false,
     shrine_enabled: false,
     goal_enabled: false,
     service_enabled: true,
@@ -109,6 +113,10 @@ function prefsPayload(row: PrefRow) {
     yam: row.yam_enabled,
     daily: row.daily_enabled,
     qimen: row.qimen_enabled,
+    ziweiHourly: row.ziwei_hourly_enabled,
+    ziweiProfileId: row.ziwei_profile_id,
+    qizhengElectional: false,
+    qizhengElectionalAvailable: false,
     shrine: row.shrine_enabled,
     goal: row.goal_enabled,
     service: true,

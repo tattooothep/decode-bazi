@@ -19,6 +19,7 @@ import {
 } from "./tables";
 
 export type Gender = "M" | "F";
+export type ZiweiTimeIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export interface StarPlacement {
   name: string;
@@ -98,6 +99,16 @@ export interface ZiweiChart {
     siHua: { star: string; type: SiHuaType; palaceName: PalaceName | null; branch: string | null }[];
     dailyStars: { star: string; palaceName: PalaceName; branch: string; source: string }[];
   } | null;
+  liuShi?: {
+    civilDateISO: string;
+    calculationDateISO: string;
+    timeIndex: ZiweiTimeIndex;
+    ganzhi: string;
+    mingBranch: string;
+    mingPalaceName: PalaceName;
+    siHua: { star: string; type: SiHuaType; palaceName: PalaceName | null; branch: string | null }[];
+    hourlyStars: { star: string; palaceName: PalaceName; branch: string; source: string }[];
+  } | null;
   notAvailable: string[];
 }
 
@@ -120,9 +131,20 @@ function splitGanzhi(ganzhi: string): { stem: string; branch: string } {
   return { stem: ganzhi.slice(0, 1), branch: ganzhi.slice(1, 2) };
 }
 
+function advanceGanzhi(ganzhi: string, steps: number): string {
+  const { stem, branch } = splitGanzhi(ganzhi);
+  const stemIndex = STEMS.indexOf(stem as any);
+  const branchIndex = BRANCHES.indexOf(branch as any);
+  if (stemIndex < 0 || branchIndex < 0) throw new Error("invalid_ganzhi");
+  return STEMS[(stemIndex + steps) % STEMS.length]
+    + BRANCHES[(branchIndex + steps) % BRANCHES.length];
+}
+
 export interface ZiweiOptions {
   gmtOffsetHours?: number; // default = Math.round(lng/15) (เขตเวลามาตรฐาน)
   refDate?: Date;          // สำหรับ流年 (deterministic · ห้ามใช้ Date.now ใน engine)
+  refGmtOffsetHours?: number; // เขตเวลาของ refDate แยกจากเขตเวลาเกิด
+  refBoundaryPolicy?: "forward_zi"; // 23:00–23:59 ใช้วันคำนวณถัดไป
 }
 
 /**
@@ -342,9 +364,27 @@ export function ziweiChart(
     const p = palaceByGround(g);
     return { star, palaceName: p.name, branch: p.branch, source };
   };
-  const flowStarsFor = (prefix: "流月" | "流日", stem: string, branch: string) => {
+  const changQuForStem = (stem: string): { chang: number; qu: number } => {
+    const changQu: Record<string, { chang: number; qu: number }> = {
+      甲: { chang: groundOf("巳"), qu: groundOf("酉") },
+      乙: { chang: groundOf("午"), qu: groundOf("申") },
+      丙: { chang: groundOf("申"), qu: groundOf("午") },
+      丁: { chang: groundOf("酉"), qu: groundOf("巳") },
+      戊: { chang: groundOf("申"), qu: groundOf("午") },
+      己: { chang: groundOf("酉"), qu: groundOf("巳") },
+      庚: { chang: groundOf("亥"), qu: groundOf("卯") },
+      辛: { chang: groundOf("子"), qu: groundOf("寅") },
+      壬: { chang: groundOf("寅"), qu: groundOf("子") },
+      癸: { chang: groundOf("卯"), qu: groundOf("亥") },
+    };
+    const result = changQu[stem];
+    if (!result) throw new Error("ziwei_flow_stem_invalid");
+    return result;
+  };
+  const flowStarsFor = (prefix: "流月" | "流日", stem: string, branch: string, includeChangQu = false) => {
     const luGround = LU_CUN_GROUND[stem];
     const ky = KUI_YUE_GROUND[stem];
+    const cq = changQuForStem(stem);
     const branchIndex = BRANCHES.indexOf(branch as any);
     const hongluan = fix12(groundOf("卯") - branchIndex);
     return [
@@ -353,9 +393,32 @@ export function ziweiChart(
       annualStar(`${prefix}陀羅`, luGround - 1, `${prefix}干`),
       annualStar(`${prefix}天魁`, ky.kui, `${prefix}干`),
       annualStar(`${prefix}天鉞`, ky.yue, `${prefix}干`),
+      ...(includeChangQu ? [
+        annualStar(`${prefix}文昌`, cq.chang, `${prefix}干`),
+        annualStar(`${prefix}文曲`, cq.qu, `${prefix}干`),
+      ] : []),
       annualStar(`${prefix}天馬`, TIAN_MA_GROUND[branch], `${prefix}支`),
       annualStar(`${prefix}紅鸞`, hongluan, `${prefix}支`),
       annualStar(`${prefix}天喜`, hongluan + 6, `${prefix}支`),
+    ];
+  };
+  const hourlyFlowStarsFor = (stem: string, branch: string) => {
+    const luGround = LU_CUN_GROUND[stem];
+    const ky = KUI_YUE_GROUND[stem];
+    const cq = changQuForStem(stem);
+    const branchIndex = BRANCHES.indexOf(branch as any);
+    const hongluan = fix12(groundOf("卯") - branchIndex);
+    return [
+      annualStar("流時天魁", ky.kui, "流時干"),
+      annualStar("流時天鉞", ky.yue, "流時干"),
+      annualStar("流時文昌", cq.chang, "流時干"),
+      annualStar("流時文曲", cq.qu, "流時干"),
+      annualStar("流時祿存", luGround, "流時干"),
+      annualStar("流時擎羊", luGround + 1, "流時干"),
+      annualStar("流時陀羅", luGround - 1, "流時干"),
+      annualStar("流時天馬", TIAN_MA_GROUND[branch], "流時支"),
+      annualStar("流時紅鸞", hongluan, "流時支"),
+      annualStar("流時天喜", hongluan + 6, "流時支"),
     ];
   };
 
@@ -374,13 +437,22 @@ export function ziweiChart(
   let liuNian: ZiweiChart["liuNian"] = null;
   let liuYue: ZiweiChart["liuYue"] = null;
   let liuRi: ZiweiChart["liuRi"] = null;
+  let liuShi: ZiweiChart["liuShi"] = null;
   if (opts.refDate) {
-    const refLoc = localCivil(opts.refDate, gmtOffsetHours);
+    const refGmtOffsetHours = opts.refGmtOffsetHours ?? gmtOffsetHours;
+    const civilRefLoc = localCivil(opts.refDate, refGmtOffsetHours);
+    const timeIndex = (civilRefLoc.h === 23 ? 12 : hourBranchIndexOf(civilRefLoc.h)) as ZiweiTimeIndex;
+    const calculationRefDate = opts.refBoundaryPolicy === "forward_zi" && timeIndex === 12
+      ? new Date(opts.refDate.getTime() + 3_600_000)
+      : opts.refDate;
+    const refLoc = localCivil(calculationRefDate, refGmtOffsetHours);
     const refSt = SolarTime.fromYmdHms(refLoc.y, refLoc.m, refLoc.d, refLoc.h, refLoc.mi, 0);
     const refLunarHour = refSt.getLunarHour();
     const refLunarDay = refLunarHour.getLunarDay();
     const refLunarMonth = refLunarDay.getLunarMonth();
-    const refYearGanzhi = splitGanzhi(refLunarHour.getYearSixtyCycle().getName());
+    const refYearGanzhi = splitGanzhi((opts.refBoundaryPolicy === "forward_zi"
+      ? refLunarMonth.getLunarYear().getSixtyCycle()
+      : refLunarHour.getYearSixtyCycle()).getName());
     const refStem = refYearGanzhi.stem;
     const refBranch = refYearGanzhi.branch;
     const taisuiBranchIndex = BRANCHES.indexOf(refBranch as any);
@@ -388,6 +460,7 @@ export function ziweiChart(
     const pal = palaces.find((p) => p.ground === taisuiGround)!;
     const luGround = LU_CUN_GROUND[refStem];
     const ky = KUI_YUE_GROUND[refStem];
+    const cq = changQuForStem(refStem);
     const hongluan = fix12(groundOf("卯") - taisuiBranchIndex);
     liuNian = {
       year: refLoc.y,
@@ -401,6 +474,10 @@ export function ziweiChart(
         annualStar("流年陀羅", luGround - 1, "流年年干"),
         annualStar("流年天魁", ky.kui, "流年年干"),
         annualStar("流年天鉞", ky.yue, "流年年干"),
+        ...(opts.refBoundaryPolicy === "forward_zi" ? [
+          annualStar("流年文昌", cq.chang, "流年年干"),
+          annualStar("流年文曲", cq.qu, "流年年干"),
+        ] : []),
         annualStar("流年天馬", TIAN_MA_GROUND[refBranch], "流年年支"),
         annualStar("流年紅鸞", hongluan, "流年年支"),
         annualStar("流年天喜", hongluan + 6, "流年年支"),
@@ -412,12 +489,20 @@ export function ziweiChart(
     const refMonth = Math.abs(refRawMonth);
     const refDay = refLunarDay.getDay();
     const refEffectiveMonth = refMonth + (refIsLeapMonth && refDay > 15 ? 1 : 0);
-    const monthlyGanzhi = refLunarDay.getMonthSixtyCycle().getName();
+    const rawMonthlyGanzhi = (opts.refBoundaryPolicy === "forward_zi"
+      ? refLunarMonth.getSixtyCycle()
+      : refLunarDay.getMonthSixtyCycle()).getName();
+    const monthlyGanzhi = opts.refBoundaryPolicy === "forward_zi" && refIsLeapMonth && refDay > 15
+      ? advanceGanzhi(rawMonthlyGanzhi, 1)
+      : rawMonthlyGanzhi;
     const dailyGanzhi = refLunarDay.getSixtyCycle().getName();
+    const hourlyGanzhi = refLunarHour.getSixtyCycle().getName();
     const monthlyGz = splitGanzhi(monthlyGanzhi);
     const dailyGz = splitGanzhi(dailyGanzhi);
+    const hourlyGz = splitGanzhi(hourlyGanzhi);
     const monthlyGround = fix12(taisuiGround - effectiveMonth + hourBranchIndex + refEffectiveMonth);
     const dailyGround = fix12(monthlyGround + refDay - 1);
+    const hourlyGround = fix12(dailyGround + BRANCHES.indexOf(hourlyGz.branch as any));
     const monthPalaces = Array.from({ length: 12 }, (_, i) => {
       const m = i + 1;
       const g = fix12(taisuiGround - effectiveMonth + hourBranchIndex + m);
@@ -426,6 +511,7 @@ export function ziweiChart(
     });
     const monthlyPalace = palaceByGround(monthlyGround);
     const dailyPalace = palaceByGround(dailyGround);
+    const hourlyPalace = palaceByGround(hourlyGround);
     liuYue = {
       year: refLoc.y,
       lunarMonth: refMonth,
@@ -435,18 +521,32 @@ export function ziweiChart(
       mingBranch: monthlyPalace.branch,
       mingPalaceName: monthlyPalace.name,
       siHua: siHuaForStem(monthlyGz.stem),
-      monthlyStars: flowStarsFor("流月", monthlyGz.stem, monthlyGz.branch),
+      monthlyStars: flowStarsFor("流月", monthlyGz.stem, monthlyGz.branch, opts.refBoundaryPolicy === "forward_zi"),
       monthPalaces,
     };
     liuRi = {
-      dateISO: opts.refDate.toISOString().slice(0, 10),
+      dateISO: opts.refBoundaryPolicy === "forward_zi"
+        ? `${refLoc.y}-${String(refLoc.m).padStart(2, "0")}-${String(refLoc.d).padStart(2, "0")}`
+        : opts.refDate.toISOString().slice(0, 10),
       lunarDay: refDay,
       ganzhi: dailyGanzhi,
       mingBranch: dailyPalace.branch,
       mingPalaceName: dailyPalace.name,
       siHua: siHuaForStem(dailyGz.stem),
-      dailyStars: flowStarsFor("流日", dailyGz.stem, dailyGz.branch),
+      dailyStars: flowStarsFor("流日", dailyGz.stem, dailyGz.branch, opts.refBoundaryPolicy === "forward_zi"),
     };
+    if (opts.refBoundaryPolicy === "forward_zi") {
+      liuShi = {
+        civilDateISO: `${civilRefLoc.y}-${String(civilRefLoc.m).padStart(2, "0")}-${String(civilRefLoc.d).padStart(2, "0")}`,
+        calculationDateISO: `${refLoc.y}-${String(refLoc.m).padStart(2, "0")}-${String(refLoc.d).padStart(2, "0")}`,
+        timeIndex,
+        ganzhi: hourlyGanzhi,
+        mingBranch: hourlyPalace.branch,
+        mingPalaceName: hourlyPalace.name,
+        siHua: siHuaForStem(hourlyGz.stem),
+        hourlyStars: hourlyFlowStarsFor(hourlyGz.stem, hourlyGz.branch),
+      };
+    }
   }
 
   return {
@@ -469,6 +569,7 @@ export function ziweiChart(
     liuNian,
     liuYue,
     liuRi,
+    ...(opts.refBoundaryPolicy === "forward_zi" ? { liuShi } : {}),
     notAvailable: opts.refDate ? [] : ["流年", "流年四化", "流年星", "流月", "流日"],
   };
 }

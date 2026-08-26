@@ -72,13 +72,13 @@ await check("daily calls use one total deadline even when a call never resolves"
 
 await check("all heartbeat and execution scheduler names have stable advisory lease keys", () => {
   assert.deepEqual(science.SCHEDULER_NAMES, [
-    "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning", "zibai", "qimen",
+    "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning", "zibai", "qimen", "ziwei-hourly",
   ]);
   assert.deepEqual(science.SCHEDULER_LEASE_NAMES, [
     "yam", "daily-fortune-morning", "daily-fortune-evening", "auspicious",
-    "personal-reminders", "monthly-report", "network-morning", "zibai", "qimen",
+    "personal-reminders", "monthly-report", "network-morning", "zibai", "qimen", "ziwei-hourly",
   ]);
-  assert.equal(new Set(science.SCHEDULER_LEASE_NAMES.map(science.schedulerLeaseKey)).size, 9);
+  assert.equal(new Set(science.SCHEDULER_LEASE_NAMES.map(science.schedulerLeaseKey)).size, 10);
 });
 
 await check("all scheduler entrypoints acquire their named DB run lease", () => {
@@ -90,9 +90,10 @@ await check("all scheduler entrypoints acquire their named DB run lease", () => 
     "network-morning": "scripts/mobile-network-morning-push-cron.cjs",
     zibai: "scripts/mobile-zibai-push-cron.cjs",
     qimen: "scripts/mobile-qimen-push-cron.cjs",
+    "ziwei-hourly": "scripts/mobile-ziwei-hourly-push-cron.mts",
   };
   for (const [name, file] of Object.entries(files)) {
-    assert.match(readFileSync(file, "utf8"), new RegExp(`(?:try|with)SchedulerRunLease\\(db, ["']${name}["']`));
+    assert.match(readFileSync(file, "utf8"), new RegExp(`(?:try|with)SchedulerRunLease\\(\\s*db,\\s*["']${name}["']`));
   }
   const daily = require("../scripts/mobile-daily-fortune-push-cron.cjs");
   assert.equal(daily.dailySchedulerLeaseName("morning"), "daily-fortune-morning");

@@ -33,6 +33,7 @@ try {
     "network-morning": "scripts/mobile-network-morning-push-cron.cjs",
     zibai: "scripts/mobile-zibai-push-cron.cjs",
     qimen: "scripts/mobile-qimen-push-cron.cjs",
+    "ziwei-hourly": "scripts/mobile-ziwei-hourly-push-cron.mts",
   };
   for (const [name, file] of Object.entries(files)) {
     const source = readFileSync(file, "utf8");
