@@ -16,7 +16,18 @@ const migration = readFileSync("migrations/20260815_mobile_notification_integrit
 const qimenMigration = readFileSync("migrations/20260821_mobile_qimen_three_layer.sql", "utf8");
 const qimenV3Migration = readFileSync("migrations/20260821_mobile_qimen_component_quality_v3.sql", "utf8");
 const workerSource = readFileSync("scripts/mobile-push-retry-worker.cjs", "utf8");
+const pushRouteSource = readFileSync("src/app/api/mobile/v1/push/route.ts", "utf8");
 assert.match(workerSource, /FOR UPDATE SKIP LOCKED/u, "retry claims must use PostgreSQL skip-locked leasing");
+const registrationIdentityLocks = pushRouteSource.slice(
+  pushRouteSource.indexOf("async function lockPushIdentities"),
+  pushRouteSource.indexOf("function cleanTimezone"),
+);
+assert.ok(
+  registrationIdentityLocks.indexOf('"installation"') < registrationIdentityLocks.indexOf('"user"')
+    && registrationIdentityLocks.indexOf('"user"') < registrationIdentityLocks.indexOf('"expo"')
+    && registrationIdentityLocks.indexOf('"expo"') < registrationIdentityLocks.indexOf('"native"'),
+  "push registration must acquire installation then user identity locks before provider-only identities",
+);
 
 function psql(db: string, sql: string): string {
   return execFileSync(
@@ -875,6 +886,63 @@ try {
   );
   check(allDeadParent.delivery_status === "failed" && allDeadParent.sent_at === null && allDeadParent.accepted_at === null,
     "concurrent sibling completions serialize on the parent and preserve all-dead truth");
+
+  await delivery.deliver(pool, notice("registration-retry-lock-order", [secondFcmMessage]), { defer: true });
+  const lockOrderAttempt = await row(
+    `SELECT a.id FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+      WHERE l.yam_key='registration-retry-lock-order'`,
+  );
+  const registrationClient = new pg.Client({
+    host: process.env.PGHOST || "127.0.0.1", port: Number(process.env.PGPORT || 5433), database,
+    user: databaseRole, password: databasePassword,
+  });
+  await registrationClient.connect();
+  let releaseLockOrderWorker!: () => void;
+  let lockOrderWorkerEntered!: () => void;
+  const lockOrderWorkerRelease = new Promise<void>((resolve) => { releaseLockOrderWorker = resolve; });
+  const lockOrderWorkerAtIdentityFence = new Promise<void>((resolve) => { lockOrderWorkerEntered = resolve; });
+  let registrationOpen = false;
+  try {
+    const retryAtRegistration = worker.runRetryBatch(pool, {
+      attemptIds: [lockOrderAttempt.id], limit: 1,
+      hooks: {
+        async afterClaim() {
+          lockOrderWorkerEntered();
+          await lockOrderWorkerRelease;
+        },
+      },
+      sender: {
+        async sendPrepared() {
+          return { kind: "provider_accepted", providerMessageId: "registration-retry-lock-order-fcm" };
+        },
+      },
+    });
+    await lockOrderWorkerAtIdentityFence;
+    await registrationClient.query("BEGIN");
+    registrationOpen = true;
+    let registrationReachedInstallation = false;
+    const registrationInstallationLock = registrationClient.query(
+      `SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-installation:'||$1::text,0))`,
+      [secondInstallation],
+    ).then(() => { registrationReachedInstallation = true; });
+    await new Promise<void>((resolve) => setTimeout(resolve, 50));
+    assert.equal(registrationReachedInstallation, false,
+      "registration waits at the installation fence while its provider send is in flight");
+    releaseLockOrderWorker();
+    await retryAtRegistration;
+    await registrationInstallationLock;
+    await registrationClient.query(
+      `SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))`,
+      [userId],
+    );
+    await registrationClient.query("COMMIT");
+    registrationOpen = false;
+    check(true, "registration and provider retry share one installation-before-user advisory lock order");
+  } finally {
+    releaseLockOrderWorker();
+    if (registrationOpen) await registrationClient.query("ROLLBACK").catch(() => null);
+    await registrationClient.end().catch(() => null);
+  }
 
   const transferUserId = "00000000-0000-4000-8000-000000000003";
   await pool.query(`INSERT INTO users(id) VALUES($1)`, [transferUserId]);

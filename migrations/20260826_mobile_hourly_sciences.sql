@@ -310,12 +310,27 @@ DECLARE
   no_open_attempt boolean;
   owner_exists boolean;
   attempts_retirable boolean;
+  zero_attempt_terminal boolean;
 BEGIN
   IF TG_OP='DELETE' THEN
     IF OLD.kind<>'ziwei' THEN RETURN OLD; END IF;
     EXECUTE format('SELECT EXISTS (SELECT 1 FROM %I.users WHERE id=$1)',TG_TABLE_SCHEMA)
       INTO owner_exists USING OLD.user_id;
-    IF OLD.attempts_retired_at IS NULL AND owner_exists THEN
+    zero_attempt_terminal := OLD.delivery_model_generation=1
+      AND OLD.delivery_status='failed'
+      AND OLD.last_error='no_deliverable_installation'
+      AND OLD.attempt_count=0
+      AND OLD.next_retry_at IS NULL
+      AND OLD.accepted_at IS NULL
+      AND OLD.sent_at IS NULL;
+    IF zero_attempt_terminal THEN
+      EXECUTE format(
+        'SELECT NOT EXISTS (SELECT 1 FROM %I.mobile_push_attempts WHERE push_log_id=$1)',
+        TG_TABLE_SCHEMA
+      ) INTO zero_attempt_terminal USING OLD.id;
+    END IF;
+    IF OLD.attempts_retired_at IS NULL AND owner_exists
+      AND NOT COALESCE(zero_attempt_terminal,false) THEN
       RAISE EXCEPTION 'mobile_ziwei_push_parent_delete_unretired';
     END IF;
     RETURN OLD;

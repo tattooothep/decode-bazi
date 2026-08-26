@@ -53,9 +53,10 @@ node --experimental-strip-types scripts/test-ziwei-occurrence-retention.mts
 systemd-analyze verify ops/systemd/hourkey-mobile-notification-retention.service ops/systemd/hourkey-mobile-notification-retention.timer
 ```
 
-The source service writes aggregate output under `/var/log/hourkey` with a
-0750 directory, 0027 umask, 0640 files, and the checked-in 14-file rotation
-policy. Before a release gate approves installation, verify the reviewed source
+The source service runs as the dedicated unprivileged `hourkey-notify` account
+and writes aggregate output under the systemd-managed `/var/log/hourkey`
+directory with mode 0750, a 0027 umask, 0640 files owned by that account, and
+the checked-in 14-file rotation policy. Before a release gate approves installation, verify the reviewed source
 commit, migration rollback/reapply evidence, database-role access, disk budget,
 and that the log path contains aggregate records only.
 

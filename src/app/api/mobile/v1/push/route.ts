@@ -34,18 +34,19 @@ async function lockIdentitySet(client: PoolClient, kind: "user" | "expo" | "inst
 }
 
 /**
- * Every mutation uses this order: users, Expo identities, installations, then
- * native tokens. Discovery is deliberately unlocked; row locks only happen
- * after the full advisory identity set is held.
+ * Every mutation uses this order: installations, users, Expo identities, then
+ * native tokens. Provider retry holds the same installation-before-user order
+ * across an in-flight send. Discovery is deliberately unlocked; row locks only
+ * happen after the full advisory identity set is held.
  */
 async function lockPushIdentities(
   client: PoolClient,
   rows: PushIdentity[],
   requested: { userId: string; expoTokens?: string[]; installationIds?: string[]; nativeTokens?: Array<string | null> },
 ) {
+  await lockIdentitySet(client, "installation", [...(requested.installationIds || []), ...rows.map((row) => row.installation_id)]);
   await lockIdentitySet(client, "user", [requested.userId, ...rows.map((row) => row.user_id)]);
   await lockIdentitySet(client, "expo", [...(requested.expoTokens || []), ...rows.map((row) => row.expo_push_token)]);
-  await lockIdentitySet(client, "installation", [...(requested.installationIds || []), ...rows.map((row) => row.installation_id)]);
   await lockIdentitySet(client, "native", [...(requested.nativeTokens || []), ...rows.map((row) => row.device_push_token)]);
 }
 

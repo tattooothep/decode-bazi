@@ -4,12 +4,14 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-User=root
-Group=root
+User=hourkey-notify
+Group=hourkey-notify
 WorkingDirectory=/root/releases/current
 Environment=NODE_ENV=production
 EnvironmentFile=/etc/hourkey/hourkey-notification.env
 UMask=0027
+LogsDirectory=hourkey
+LogsDirectoryMode=0750
 ExecStart=/usr/bin/node /root/releases/current/scripts/notification-retention.cjs --source-facts-days 30 --attempt-days 90 --engagement-days 90 --history-days 180 --security-history-days 365 --ziwei-occurrence-days 30 --batch-size 500 --max-batches 20
 StandardOutput=append:/var/log/hourkey/mobile-notification-retention.log
 StandardError=append:/var/log/hourkey/mobile-notification-retention.log

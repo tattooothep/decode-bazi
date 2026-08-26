@@ -9,6 +9,7 @@ import * as scheduler from "./mobile-ziwei-hourly-push-cron.mts";
 
 const require = createRequire(import.meta.url);
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const notificationRetention = require("../src/lib/notification-retention.cjs");
 const ziweiRuntime = require("../src/lib/ziwei-hourly-notification.cjs");
 
 function loadEnv(): void {
@@ -472,6 +473,28 @@ try {
     await admin.query("ROLLBACK");
     await setSearchPath(admin);
   }
+
+  const noDeliveryParentId = crypto.randomUUID();
+  await admin.query(
+    `INSERT INTO mobile_push_log
+       (id,user_id,yam_key,kind,title,body,payload,source_facts,delivery_status,attempt_count,
+        next_retry_at,last_error,delivery_model_generation,created_at,updated_at)
+     VALUES($1,$2,'ziwei-no-deliverable-retention','ziwei','No device','No device','{}','{}',
+            'failed',0,NULL,'no_deliverable_installation',1,
+            now()-interval '200 days',now()-interval '200 days')`,
+    [noDeliveryParentId, userId],
+  );
+  assert.equal((await admin.query(
+    "SELECT count(*)::int AS n FROM mobile_push_attempts WHERE push_log_id=$1",
+    [noDeliveryParentId],
+  )).rows[0].n, 0, "the supported no-deliverable parent has no child evidence to retire");
+  assert.equal(await notificationRetention.purgeHistoryBatch(admin, {
+    historyDays: 180, securityHistoryDays: 365, batchSize: 100,
+  }), 1, "bounded retention deletes an expired terminal Ziwei parent that never had a deliverable installation");
+  assert.equal((await admin.query(
+    "SELECT count(*)::int AS n FROM mobile_push_log WHERE id=$1",
+    [noDeliveryParentId],
+  )).rows[0].n, 0, "zero-attempt Ziwei history cannot permanently block a retention batch");
 
   await workerA.query(
     `SELECT pg_advisory_lock_shared(hashtextextended('mobile-ziwei-hourly-producer-gate:v1',0))`,

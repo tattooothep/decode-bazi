@@ -37,8 +37,8 @@ assert.match(route, /pg_advisory_xact_lock/iu, "ownership transfers must seriali
 assert.match(route, /lockIdentitySet\(client, "user"/iu, "registration and unregister must serialize same-account lifecycle changes");
 assert.match(
   route,
-  /await lockIdentitySet\(client, "user"[\s\S]+await lockIdentitySet\(client, "expo"[\s\S]+await lockIdentitySet\(client, "installation"[\s\S]+await lockIdentitySet\(client, "native"/u,
-  "all mutations must take identity advisory locks in one global user/expo/installation/native order",
+  /await lockIdentitySet\(client, "installation"[\s\S]+await lockIdentitySet\(client, "user"[\s\S]+await lockIdentitySet\(client, "expo"[\s\S]+await lockIdentitySet\(client, "native"/u,
+  "all mutations must take identity advisory locks in one global installation/user/expo/native order",
 );
 const postStart = route.indexOf('export async function POST');
 const deleteStart = route.indexOf('export async function DELETE');

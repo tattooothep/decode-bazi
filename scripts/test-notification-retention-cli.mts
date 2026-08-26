@@ -34,7 +34,10 @@ for (const file of [service, timer, rotation, runbook]) {
   assert.doesNotMatch(source, /(?:systemctl\s+(?:enable|start|restart)|PGPASSWORD=|ExponentPushToken|authorization:)/iu, `${file} remains source-only and contains no live operation or credential material`);
 }
 const serviceSource = await readFile(service, "utf8");
+assert.match(serviceSource, /^User=hourkey-notify$/mu, "retention runs as the dedicated unprivileged notification account");
+assert.match(serviceSource, /^Group=hourkey-notify$/mu, "retention receives only the notification runtime group");
 assert.match(serviceSource, /^UMask=0027$/mu, "retention service creates no world-readable files");
+assert.match(serviceSource, /^LogsDirectory=hourkey$/mu, "systemd owns retention's bounded log directory lifecycle");
 assert.match(serviceSource, /^LogsDirectoryMode=0750$/mu, "retention log directory is restrictive");
 assert.match(serviceSource, /notification-retention\.cjs/u, "retention service runs only the reviewed bounded runner");
 assert.match(serviceSource, /--attempt-days 90 --engagement-days 90/u,
@@ -53,6 +56,6 @@ assert.doesNotMatch(ziweiRetentionMigrationSource, /mobile_ziwei_hourly_producer
   "the retention migration does not broaden producer-control privileges");
 const rotationSource = await readFile(rotation, "utf8");
 assert.match(rotationSource, /rotate 14/u, "retention logs have explicit bounded rotation");
-assert.match(rotationSource, /create 0640 root root/u, "rotated aggregate logs remain restrictive");
+assert.match(rotationSource, /create 0640 hourkey-notify hourkey-notify/u, "rotated aggregate logs remain restrictive and writable only by the dedicated runtime");
 execFileSync("systemd-analyze", ["verify", service, timer], { stdio: "pipe" });
 console.log("NOTIFICATION_RETENTION_CLI_OK");

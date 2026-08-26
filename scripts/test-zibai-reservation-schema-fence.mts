@@ -28,6 +28,7 @@ try {
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES users(id),installation_id uuid NOT NULL,
       expo_push_token text NOT NULL UNIQUE,device_push_token text,device_token_type text,platform text NOT NULL,app_version text,
       locale text,timezone text,enabled boolean NOT NULL DEFAULT true,fail_count integer NOT NULL DEFAULT 0,last_registered_at timestamptz,
+      ziwei_payload_schema smallint NOT NULL DEFAULT 0,
       last_success_at timestamptz,disabled_at timestamptz,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE(user_id,installation_id)
     );
