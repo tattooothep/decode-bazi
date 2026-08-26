@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -439,8 +439,16 @@ async function main(): Promise<void> {
   } finally { await db.end(); }
 }
 
-const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";
-if (import.meta.url === invokedPath) {
+export function isDirectExecution(moduleUrl: string, invokedPath: string | undefined): boolean {
+  if (!invokedPath) return false;
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(invokedPath);
+  } catch {
+    return moduleUrl === pathToFileURL(invokedPath).href;
+  }
+}
+
+if (isDirectExecution(import.meta.url, process.argv[1])) {
   main().catch(() => {
     console.error("[mobile-ziwei-hourly-push] error_code=scheduler_failed");
     process.exit(1);

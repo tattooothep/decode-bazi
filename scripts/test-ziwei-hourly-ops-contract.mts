@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { mkdtemp, rm, symlink } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import science from "../src/lib/notification-science.cjs";
 
 assert.ok(science.SCHEDULER_NAMES.includes("ziwei-hourly"));
@@ -86,5 +90,20 @@ assert.match(preflight, /hourkey-notify/u);
 assert.match(preflight, /ziweiServiceAccess/u);
 assert.match(preflight, /ziweiEnvironmentReadable/u);
 assert.match(environmentHelper, /hourkey-notification\.env/u);
+
+const schedulerModule = await import("./mobile-ziwei-hourly-push-cron.mts");
+const symlinkDirectory = await mkdtemp(join(tmpdir(), "ziwei-hourly-main-symlink-"));
+try {
+  const realScheduler = resolve("scripts/mobile-ziwei-hourly-push-cron.mts");
+  const invokedThroughCurrent = join(symlinkDirectory, "mobile-ziwei-hourly-push-cron.mts");
+  await symlink(realScheduler, invokedThroughCurrent);
+  assert.equal(
+    schedulerModule.isDirectExecution(pathToFileURL(realScheduler).href, invokedThroughCurrent),
+    true,
+    "the production scheduler enters main when systemd invokes it through /root/releases/current",
+  );
+} finally {
+  await rm(symlinkDirectory, { recursive: true, force: true });
+}
 
 console.log("PASS Ziwei hourly ops contract — minute timer, lease, heartbeat, hardened service, preflight");
