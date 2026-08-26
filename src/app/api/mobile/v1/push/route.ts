@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import zibaiVersionRuntime from "@/lib/zibai-version-runtime.cjs";
+import pushRegistrationReadiness from "@/lib/mobile-push-registration-readiness.cjs";
 import type { PoolClient } from "pg";
 import { pool, q, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 const TOKEN_RE = /^(?:ExponentPushToken|ExpoPushToken)\[[A-Za-z0-9_-]{10,200}\]$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
+const { effectiveZiweiPayloadSchema, expoIosPushReady } = pushRegistrationReadiness;
 
 type PushIdentity = {
   user_id: string;
@@ -108,7 +110,7 @@ export async function GET(req: Request) {
       /** ส่งถึงเครื่องนี้ได้จริงไหม — มีกุญแจส่งตรงหรือยัง */
       deliverable: installationId
         ? count?.native_deliverable === true
-          || (count?.ios_current === true && process.env.EXPO_IOS_PUSH_READY === "true")
+          || (count?.ios_current === true && expoIosPushReady(process.env))
         : null,
       active_installations: count?.n || 0,
     },
@@ -134,7 +136,8 @@ export async function POST(req: Request) {
     ? zibaiVersionRuntime.LEGACY_CALCULATION_VERSION
     : body.zibaiCalculationVersion;
   const qimenPayloadSchema = body.qimenPayloadSchema === undefined ? 1 : body.qimenPayloadSchema;
-  const ziweiPayloadSchema = body.ziweiPayloadSchema === undefined ? 0 : body.ziweiPayloadSchema;
+  const requestedZiweiPayloadSchema = body.ziweiPayloadSchema === undefined ? 0 : body.ziweiPayloadSchema;
+  const ziweiPayloadSchema = effectiveZiweiPayloadSchema(platform, requestedZiweiPayloadSchema, process.env);
   const qizhengPayloadSchema = body.qizhengPayloadSchema === undefined ? 0 : body.qizhengPayloadSchema;
   /**
    * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
@@ -157,7 +160,7 @@ export async function POST(req: Request) {
     || !(zibaiPayloadSchema === 1 || zibaiPayloadSchema === 2)
     || !zibaiVersionRuntime.isReadableCalculationVersion(zibaiCalculationVersion)
     || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2 || qimenPayloadSchema === 3)
-    || !(ziweiPayloadSchema === 0 || ziweiPayloadSchema === 1 || ziweiPayloadSchema === 2)
+    || !(requestedZiweiPayloadSchema === 0 || requestedZiweiPayloadSchema === 1 || requestedZiweiPayloadSchema === 2)
     || qizhengPayloadSchema !== 0
   ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
@@ -342,6 +345,7 @@ export async function POST(req: Request) {
           AND p.birth_time_known=true
           AND NULLIF(btrim(p.birth_tz),'') IS NOT NULL
           AND hourkey_birth_timezone_valid(p.birth_tz)
+          AND hourkey_ziwei_birth_wall_eligible(p.birth_datetime,p.birth_tz)
           AND p.gender IN ('M','F')
           AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
         WHERE u.id=$1
@@ -391,7 +395,7 @@ export async function POST(req: Request) {
   if (!row) return NextResponse.json({ ok: false, error: "push_registration_failed" }, { status: 500 });
   const deliverable = platform === "android"
     ? deviceTokenType === "fcm" && deviceToken !== null
-    : process.env.EXPO_IOS_PUSH_READY === "true";
+    : expoIosPushReady(process.env);
   return NextResponse.json({ ok: true, subscribed: true, deliverable, registration_id: row.id });
 }
 

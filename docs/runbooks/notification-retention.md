@@ -29,6 +29,11 @@ running on a host. Installation remains behind the release and signature gates.
 - Active reservations, retries, and outstanding Expo receipts are never
   redacted or deleted, regardless of age. Health checks continue to alert on
   those stale rows.
+- Ziwei personal occurrence snapshots have an explicit 30 days retention
+  window. Only old, expired, unlinked `claimed` or `skipped` occurrences are
+  deleted. `reserved`, push-linked, and still-live rows are preserved. The
+  phase uses the same bounded batches, row locks, and `SKIP LOCKED` policy as
+  the other phases, so a scheduler-owned row is deferred to a later run.
 - The parent payload remains available while authenticated history remains.
   Payload and copy are therefore bounded by the 180/365-day parent windows.
 
@@ -44,6 +49,7 @@ Run only against the disposable test databases created by the tests:
 ```text
 node --experimental-strip-types scripts/test-notification-retention.mts
 node --experimental-strip-types scripts/test-notification-retention-cli.mts
+node --experimental-strip-types scripts/test-ziwei-occurrence-retention.mts
 systemd-analyze verify ops/systemd/hourkey-mobile-notification-retention.service ops/systemd/hourkey-mobile-notification-retention.timer
 ```
 

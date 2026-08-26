@@ -8,14 +8,12 @@ User=hourkey-notify
 Group=hourkey-notify
 WorkingDirectory=/root/releases/current
 Environment=NODE_ENV=production
-EnvironmentFile=-/etc/hourkey/hourkey.env
-StateDirectory=hourkey-notification
-StateDirectoryMode=0750
+EnvironmentFile=/etc/hourkey/hourkey-notification.env
 LogsDirectory=hourkey
 LogsDirectoryMode=0750
 UMask=0027
-# ExecStart's env assignment intentionally overrides any stale value from the
-# shared EnvironmentFile. The effective non-root worker always uses this path.
+# The FCM file remains a separate credential; the dedicated environment above
+# contains only the reviewed scheduler/database variables.
 ExecStart=/usr/bin/env FCM_SERVICE_ACCOUNT_PATH=/etc/hourkey/credentials/fcm-service-account.json /usr/bin/node --import tsx /root/releases/current/scripts/mobile-ziwei-hourly-push-cron.mts
 TimeoutStartSec=55
 NoNewPrivileges=true

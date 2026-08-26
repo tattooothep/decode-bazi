@@ -26,7 +26,7 @@ export const ZIWEI_HOURLY_LINEAGE_MANIFEST = Object.freeze({
     sources: Object.freeze([
       Object.freeze({ path: "src/lib/astro/ziwei/engine.ts", sha256: "d861f4baabce4c6547d7d6b92ebce6324d3fa8c66254bb6213b7b2e2fd4835bc" }),
       Object.freeze({ path: "src/lib/astro/ziwei/tables.ts", sha256: "b77d14dea17ac91b646c5711515dcff4a72179540f3162098d3ebb8b8e4e4c8c" }),
-      Object.freeze({ path: "src/lib/astro/ziwei/hourly-preview.ts", sha256: "ba0c9ff67a60f079c905a1cfe58e12a113c91f632dc31aefb1f0d99e99fc36c0" }),
+      Object.freeze({ path: "src/lib/astro/ziwei/hourly-preview.ts", sha256: "6e8f11f27f75442d06419e4111aa5269a1dd1fd82183cdadd903ea014dfba60a" }),
       Object.freeze({ path: "src/lib/birth-timezone.ts", sha256: "fbe1ac54f179a575c088d1d9e6722dda4b414b7fdf85b842c681f296474398c1" }),
     ]),
   }),
@@ -46,6 +46,15 @@ export const ZIWEI_HOURLY_LINEAGE_MANIFEST = Object.freeze({
     policy: "forward_zi",
     lateZi: "23:00-24:00 maps to next effective flow date at index 0",
     ziOccurrence: "[previous local date 23:00,current local date 01:00)",
+    civilBoundaryResolution: "earliest exact instant on folds; transition instant for gaps",
+    realizedWindow: "one half-open interval from exact civil boundaries; elapsed duration follows timezone transitions",
+    admissionEnvelope: "exact boundary recomputation; no arbitrary elapsed-duration cap",
+  }),
+  natalInputPolicy: Object.freeze({
+    persistedWallClock: "birth_datetime anchored at Asia/Bangkok; birth_tz supplies actual interpretation",
+    timezoneResolution: "exact fixed offset deterministic; IANA/UTC domain with gap/fold and historical sub-minute offsets rejected",
+    lateZi: "23:00-23:59 unsupported for natal input",
+    calendarRange: "1900-01-31..2100-12-31 inclusive",
   }),
   supportedCalendarRange: Object.freeze({ from: "1900-01-31", through: "2100-12-31" }),
 });

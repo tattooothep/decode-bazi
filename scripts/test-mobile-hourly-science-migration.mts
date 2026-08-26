@@ -34,10 +34,20 @@ assert.match(migration, /snapshot_digest text NOT NULL CHECK \(snapshot_digest ~
 assert.match(migration, /owner_generation bigint NOT NULL/u,
   "each immutable occurrence must bind the exact profile/install generation");
 assert.match(migration, /CREATE OR REPLACE FUNCTION enforce_mobile_ziwei_hourly_occurrence_immutable/u);
+assert.match(migration, /CREATE OR REPLACE FUNCTION enforce_mobile_ziwei_push_parent_integrity/u);
+assert.match(migration, /CREATE OR REPLACE FUNCTION enforce_mobile_ziwei_push_attempt_integrity/u);
+assert.match(migration, /BEFORE INSERT OR UPDATE OR DELETE ON mobile_push_attempts/u,
+  "Ziwei attempt integrity must cover delete/reinsert resurrection, not only UPDATE");
+assert.match(migration, /BEFORE UPDATE OR DELETE ON mobile_push_log/u,
+  "Ziwei parent integrity must cover delete/reconstruct bypasses");
+assert.match(migration, /format\([^;]+TG_TABLE_SCHEMA/su,
+  "Ziwei integrity triggers must address their own schema and resist pg_temp relation shadowing");
+assert.match(migration, /CREATE OR REPLACE FUNCTION serialize_mobile_ziwei_hourly_producer_mutation/u);
 assert.match(migration, /CREATE OR REPLACE FUNCTION claim_mobile_ziwei_hourly_installations/u);
 assert.match(migration, /FOR UPDATE SKIP LOCKED/u);
 assert.match(migration, /LIMIT LEAST\(GREATEST\(p_limit,1\),10000\)/u);
 assert.match(migration, /CREATE OR REPLACE FUNCTION hourkey_birth_timezone_valid/u);
+assert.match(migration, /CREATE OR REPLACE FUNCTION hourkey_ziwei_birth_wall_eligible/u);
 assert.match(migration, /matched\[2\]::integer<14\s+OR\s+\(matched\[2\]::integer=14\s+AND\s+matched\[3\]::integer=0\)/u,
   "fixed offsets must be bounded by an absolute maximum of 14:00");
 assert.match(migration, /lower\(name\)=lower\(value\)/u,
@@ -56,5 +66,9 @@ assert.match(rollback, /DROP TABLE IF EXISTS mobile_ziwei_hourly_installations/u
 assert.match(rollback, /DROP TRIGGER IF EXISTS hourkey_reconcile_ziwei_hourly_profile ON profiles/u);
 assert.match(rollback, /DROP FUNCTION IF EXISTS hourkey_reconcile_ziwei_hourly_profile\(\)/u);
 assert.match(rollback, /DROP FUNCTION IF EXISTS hourkey_birth_timezone_valid\(text\)/u);
+assert.match(rollback, /DROP FUNCTION IF EXISTS hourkey_ziwei_birth_wall_eligible\(timestamptz,text\)/u);
+assert.match(rollback, /DROP FUNCTION IF EXISTS enforce_mobile_ziwei_push_parent_integrity\(\)/u);
+assert.match(rollback, /DROP FUNCTION IF EXISTS enforce_mobile_ziwei_push_attempt_integrity\(\)/u);
+assert.match(rollback, /DROP FUNCTION IF EXISTS serialize_mobile_ziwei_hourly_producer_mutation\(\)/u);
 
 console.log("PASS mobile hourly science migration — separate capabilities, immutable Ziwei, hard-blocked Qizheng");

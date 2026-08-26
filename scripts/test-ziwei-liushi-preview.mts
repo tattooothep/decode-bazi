@@ -261,13 +261,17 @@ assert.throws(() => buildZiweiHourlyPreview({
 }), /ziwei_hourly_calendar_range_unsupported/);
 
 const santiagoTransition = resolveUnambiguousIanaWallClock("2026-09-05T23:30:00", "America/Santiago");
-assert.throws(() => buildZiweiHourlyPreview({
+const santiagoPreview = buildZiweiHourlyPreview({
   birthInstant: officialBirth,
   birthTimezone: "Asia/Bangkok",
   birthLocation: { lat: 13.7563, lng: 100.5018 },
   gender: "F",
   referenceInstant: santiagoTransition,
   referenceTimezone: "America/Santiago",
-}), /ziwei_hourly_timezone_transition_unsupported/);
+});
+assert.equal(santiagoPreview.reference.validFrom, "2026-09-06T03:00:00.000Z");
+assert.equal(santiagoPreview.reference.validUntil, "2026-09-06T04:00:00.000Z");
+assert.equal(santiagoPreview.reference.calculationDate, "2026-09-06",
+  "a midnight DST gap keeps one realized forward-Zi window instead of dropping the shichen");
 
 console.log("PASS ziwei liushi preview — 13 indices, official vector, leap/forward-Zi seam, strict inputs");

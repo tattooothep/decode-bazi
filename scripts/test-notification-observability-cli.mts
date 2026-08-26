@@ -16,6 +16,22 @@ try {
   const runner = require("./notification-retry-receipt-runner.cjs");
   const heartbeat = join(directory, "retry.heartbeat");
   assert.equal(health.providerReadiness({ FCM_SERVICE_ACCOUNT_PATH: join(directory, "missing-service-account.json") }).fcm, false, "a routed FCM provider without a readable credential is unhealthy without printing its path");
+  assert.equal(health.providerReadiness({}).expo, false,
+    "CLI health reports Expo unready unless iOS delivery readiness is explicit");
+  assert.equal(health.providerReadiness({ EXPO_IOS_PUSH_READY: "true" }).expo, true,
+    "CLI health reflects the exact reviewed Expo iOS readiness flag");
+  let healthInput: Record<string, any> | undefined;
+  await health.main({
+    db: {}, args: [], env: {}, log: () => {},
+    collectHealth: async (_db: unknown, input: Record<string, any>) => {
+      healthInput = input;
+      return { ok: true, reasons: [], metrics: {} };
+    },
+  });
+  assert.equal(healthInput?.ziweiRuntime?.producerEnabled, false,
+    "CLI health passes the fail-closed Ziwei runtime producer gate");
+  assert.equal(typeof healthInput?.ziweiRuntime?.sourceReady, "boolean",
+    "CLI health passes verified Ziwei source readiness");
   await runner.writeHeartbeat(heartbeat, new Date("2026-08-16T00:00:00.000Z"));
   assert.equal(await readFile(heartbeat, "utf8"), "2026-08-16T00:00:00.000Z\n", "retry runner heartbeat contains only a timestamp");
   await utimes(heartbeat, new Date("2026-08-16T00:00:00.000Z"), new Date("2026-08-16T00:00:00.000Z"));
@@ -37,6 +53,7 @@ try {
   const receiptTimer = "ops/systemd/hourkey-mobile-push-retry-receipts.timer";
   const healthUnit = "ops/systemd/hourkey-mobile-push-health.service";
   const healthTimer = "ops/systemd/hourkey-mobile-push-health.timer";
+  const retentionUnit = "ops/systemd/hourkey-mobile-notification-retention.service";
   for (const file of [retryUnit, receiptTimer, healthUnit, healthTimer, "docs/runbooks/notification-observability.md"]) {
     const source = await readFile(file, "utf8");
     assert.doesNotMatch(source, /(?:systemctl\s+(?:enable|start|restart|reload)|curl\s+.*push|ExponentPushToken|authorization:|PGPASSWORD=)/iu, `${file} is source-only and contains no live operation or credential material`);
@@ -46,11 +63,24 @@ try {
   assert.match(await readFile(healthUnit, "utf8"), /notification-health\.cjs.*--worker-heartbeat-file/u, "health unit fails closed on the retry heartbeat input");
   assert.match(await readFile(healthUnit, "utf8"), /--scheduler-heartbeat-dir \/var\/lib\/hourkey-notification\/schedulers/u, "health unit reads every source-produced scheduler heartbeat file");
   assert.match(await readFile(healthTimer, "utf8"), /OnUnitActiveSec=1min/u, "health timer has a bounded cadence");
+  for (const file of [retryUnit, healthUnit, retentionUnit]) {
+    const source = await readFile(file, "utf8");
+    assert.match(source, /^EnvironmentFile=\/etc\/hourkey\/hourkey-notification\.env$/mu,
+      `${file} loads the required dedicated notification environment`);
+    assert.doesNotMatch(source, /^EnvironmentFile=-?\/etc\/hourkey\/hourkey\.env$/mu,
+      `${file} does not receive the shared application environment`);
+  }
+  for (const file of [retryUnit, healthUnit]) {
+    assert.match(await readFile(file, "utf8"), /^ExecStart=\/usr\/bin\/env FCM_SERVICE_ACCOUNT_PATH=\/etc\/hourkey\/credentials\/fcm-service-account\.json /mu,
+      `${file} forces the reviewed FCM credential path`);
+  }
   for (const file of [retryUnit, healthUnit]) {
     const source = await readFile(file, "utf8");
     assert.match(source, /^User=root$/mu, `${file} uses the existing validated runtime account`);
     assert.match(source, /^Group=root$/mu, `${file} uses the existing validated runtime group`);
     assert.doesNotMatch(source, /^User=hourkey$/mu, `${file} does not name a nonexistent service account`);
+    assert.doesNotMatch(source, /^StateDirectory=/mu,
+      `${file} must not recursively change ownership of the shared tmpfiles-owned state tree`);
   }
   assert.match(execFileSync("getent", ["passwd", "root"], { encoding: "utf8" }), /^root:/mu, "template runtime account exists on the reviewed host");
   accessSync("/usr/bin/node", constants.X_OK);
@@ -59,25 +89,60 @@ try {
     access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
     lookupUser: () => true, uid: () => 0,
     serviceUserAccess: () => true,
-    readUnit: () => "User=root\nGroup=root\nStateDirectory=hourkey-notification\n",
+    notificationEnvironmentContract: () => true,
+    readUnit: () => "d /var/lib/hourkey-notification 0750 hourkey-notify hourkey-notify -\n",
   });
-  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, credentialReadable: true, stateReady: false, stateCreatable: true, ziweiServiceUser: true, ziweiServiceAccess: true }, "absent StateDirectory passes first-start preflight only through validated root/systemd creation contract and effective Ziwei service-user access");
+  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, notificationEnvironmentReadable: true, notificationEnvironmentValid: true, credentialReadable: true, stateReady: false, stateCreatable: true, ziweiServiceUser: true, ziweiEnvironmentReadable: true, ziweiServiceAccess: true }, "absent state tree passes first-start preflight only through the single-owner tmpfiles contract and effective Ziwei service-user access");
   const unsafeStatePreflight = preflight.inspect({
     access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
-    lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true, readUnit: () => "User=root\n",
+    lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
+    notificationEnvironmentContract: () => true, readUnit: () => "d /var/lib/hourkey-notification 0750 root root -\n",
   });
-  assert.equal(unsafeStatePreflight.ok, false, "absent StateDirectory fails closed without the reviewed systemd creation contract");
+  assert.equal(unsafeStatePreflight.ok, false, "absent state tree fails closed without the reviewed single-owner tmpfiles contract");
+
+  const databaseProof = await preflight.inspectDatabaseAccess({
+    environment: { PGHOST: "db", PGPORT: "5432", PGDATABASE: "hourkey", PGUSER: "hourkey_app", PGPASSWORD: "private" },
+    connect: async () => ({
+      async query() {
+        return { rows: [{
+          exact_runtime_role: true, producer_read_only: true, ziwei_parent_update: true,
+          ziwei_attempt_update: true, ziwei_integrity_triggers: true,
+        }] };
+      },
+      async end() {},
+    }),
+  });
+  assert.deepEqual(databaseProof, {
+    databaseConnected: true, exactRuntimeRole: true, producerReadOnly: true,
+    ziweiParentUpdate: true, ziweiAttemptUpdate: true, ziweiIntegrityTriggers: true,
+  }, "preflight proves current_user and effective Ziwei privileges through the dedicated connection");
+  const wrongDatabaseRole = await preflight.inspectDatabaseAccess({
+    environment: { PGHOST: "db", PGPORT: "5432", PGDATABASE: "hourkey", PGUSER: "decode_user", PGPASSWORD: "private" },
+    connect: async () => { throw new Error("must not connect"); },
+  });
+  assert.equal(wrongDatabaseRole.databaseConnected, false,
+    "preflight rejects a non-hourkey_app PGUSER before attempting a database connection");
   const incompleteSchedulerPreflight = preflight.inspect({
     access: (target: string) => { if (target.endsWith("mobile-monthly-report-push-cron.cjs")) throw new Error("missing-source"); },
     lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
+    notificationEnvironmentContract: () => true,
   });
   assert.equal(incompleteSchedulerPreflight.ok, false, "preflight fails closed when any named scheduler heartbeat producer is absent from the release");
   const blockedZiweiServiceUser = preflight.inspect({
     access: () => {}, lookupUser: () => true, uid: () => 0,
-    serviceUserAccess: () => false,
+    serviceUserAccess: () => false, notificationEnvironmentContract: () => true,
   });
   assert.equal(blockedZiweiServiceUser.ok, false,
     "preflight fails closed when the effective non-root Ziwei worker cannot traverse/read/write its runtime paths");
+  assert.equal(blockedZiweiServiceUser.ziweiEnvironmentReadable, false,
+    "preflight separately reports that the effective Ziwei worker cannot read its dedicated environment");
+  const invalidDedicatedEnvironment = preflight.inspect({
+    access: () => {}, lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
+    notificationEnvironmentContract: () => false,
+  });
+  assert.equal(invalidDedicatedEnvironment.ok, false,
+    "preflight fails closed on a dedicated environment owner/mode/key/value contract mismatch");
+  assert.equal(invalidDedicatedEnvironment.notificationEnvironmentValid, false);
   const blockedPreflight = preflight.inspect({
     access: () => { throw new Error("private-path"); }, lookupUser: () => false, uid: () => 99,
   });

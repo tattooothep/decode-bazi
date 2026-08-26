@@ -68,9 +68,12 @@ assert.equal(
   "invalid profiles stay on the lower-frequency fail-closed retry",
 );
 
-const notice = scheduler.buildZiweiNotice(row, snapshot, occurrenceId, "2026-08-26T12:10:00.000Z");
+const backendCommit = "a".repeat(40);
+const notice = scheduler.buildZiweiNotice(row, snapshot, occurrenceId, "2026-08-26T12:10:00.000Z", backendCommit);
 assert.equal(notice.kind, "ziwei");
 assert.equal(notice.ziweiOccurrenceId, occurrenceId);
+assert.equal(notice.sourceFacts.sourceDigest, scheduler.SOURCE_DIGEST);
+assert.equal(notice.sourceFacts.backendCommit, backendCommit);
 assert.deepEqual(notice.payload, notice.messages[0].data);
 assert.deepEqual(notice.sourceFacts, {
   accountId,
@@ -79,6 +82,8 @@ assert.deepEqual(notice.sourceFacts, {
   calculationVersion: snapshot.facts.calculationVersion,
   windowKey: snapshot.facts.reference.windowKey,
   snapshotDigest: snapshot.snapshotDigest,
+  sourceDigest: scheduler.SOURCE_DIGEST,
+  backendCommit,
   eventEndAt: snapshot.facts.reference.validUntil,
   sendDeadline: "2026-08-26T12:10:00.000Z",
   ownerGeneration: 7,
@@ -89,7 +94,7 @@ assert.doesNotMatch(`${notice.title} ${notice.body}`, /lucky|auspicious|best|ม
 
 const source = readFileSync(new URL("./mobile-ziwei-hourly-push-cron.mts", import.meta.url), "utf8");
 assert.match(source, /to_char\(p\.birth_datetime AT TIME ZONE 'Asia\/Bangkok','YYYY-MM-DD"T"HH24:MI:SS'\) AS birth_wall/u);
-assert.match(source, /resolveUnambiguousBirthWallClock\(row\.birth_wall, row\.birth_tz\)/u);
+assert.match(source, /resolveEligibleZiweiBirthWallClock\(row\.birth_wall, row\.birth_tz\)/u);
 assert.match(source, /AS account_locale/u);
 assert.match(source, /t\.enabled=true AND t\.ziwei_payload_schema=2/u);
 assert.match(source, /owner_generation/u);

@@ -12,6 +12,15 @@ const sysusers = readFileSync("ops/sysusers.d/hourkey-notification.conf", "utf8"
 const tmpfiles = readFileSync("ops/tmpfiles.d/hourkey-notification.conf", "utf8");
 const scheduler = readFileSync("scripts/mobile-ziwei-hourly-push-cron.mts", "utf8");
 const preflight = readFileSync("scripts/notification-observability-preflight.cjs", "utf8");
+const environmentHelper = readFileSync("scripts/derive-hourkey-notification-env.cjs", "utf8");
+const sharedStateUnits = [
+  "ops/systemd/hourkey-mobile-notification-retention.service",
+  "ops/systemd/hourkey-mobile-push-retry-receipts.service",
+  "ops/systemd/hourkey-mobile-push-health.service",
+  "ops/systemd/hourkey-mobile-zibai-push.service",
+  "ops/systemd/hourkey-mobile-qimen-push.service",
+  "ops/systemd/hourkey-mobile-ziwei-hourly-push.service",
+];
 
 assert.match(service, /^WorkingDirectory=\/root\/releases\/current$/mu);
 assert.match(service, /^ExecStart=\/usr\/bin\/env FCM_SERVICE_ACCOUNT_PATH=\/etc\/hourkey\/credentials\/fcm-service-account\.json \/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-ziwei-hourly-push-cron\.mts$/mu);
@@ -24,10 +33,26 @@ assert.match(service, /^ProtectProc=invisible$/mu);
 assert.match(service, /^ProcSubset=pid$/mu);
 assert.doesNotMatch(service, /^Environment=FCM_SERVICE_ACCOUNT_PATH=/mu,
   "the shared EnvironmentFile must not be able to win over a weaker Environment assignment");
-assert.match(service, /^StateDirectoryMode=0750$/mu);
+assert.match(service, /^EnvironmentFile=\/etc\/hourkey\/hourkey-notification\.env$/mu,
+  "the Ziwei worker loads only its dedicated least-secret environment");
+assert.doesNotMatch(service, /^EnvironmentFile=-\/etc\/hourkey\/hourkey\.env$/mu,
+  "the Ziwei worker never receives the shared application environment");
 assert.match(service, /^LogsDirectory=hourkey$/mu);
 assert.match(sysusers, /^u hourkey-notify - "HourKey notification scheduler" \/nonexistent \/usr\/sbin\/nologin$/mu);
 assert.match(tmpfiles, /^d \/var\/lib\/hourkey-notification 0750 hourkey-notify hourkey-notify -$/mu);
+assert.doesNotMatch(service, /^StateDirectory=/mu,
+  "tmpfiles owns the shared state tree; systemd must not recursively chown it at service start");
+for (const unit of sharedStateUnits) {
+  assert.doesNotMatch(readFileSync(unit, "utf8"), /^StateDirectory=/mu,
+    `${unit} must preserve the single tmpfiles owner of the shared state tree`);
+}
+for (const unit of sharedStateUnits.filter((path) => path !== "ops/systemd/hourkey-mobile-ziwei-hourly-push.service")) {
+  const unitSource = readFileSync(unit, "utf8");
+  if (/^User=root$/mu.test(unitSource)) {
+    assert.doesNotMatch(unitSource, /^LogsDirectory=hourkey$/mu,
+      `${unit} must not recursively change the tmpfiles-owned shared log tree to root`);
+  }
+}
 assert.match(tmpfiles, /^d \/var\/log\/hourkey 0750 hourkey-notify hourkey-notify -$/mu);
 assert.match(tmpfiles, /^d \/etc\/hourkey 0750 root hourkey-notify -$/mu,
   "the service account must be able to traverse the credential parent without reading hourkey.env");
@@ -50,5 +75,7 @@ assert.match(preflight, /mobile-ziwei-hourly-push-cron\.mts/u);
 assert.match(preflight, /hourkey-mobile-ziwei-hourly-push\.service/u);
 assert.match(preflight, /hourkey-notify/u);
 assert.match(preflight, /ziweiServiceAccess/u);
+assert.match(preflight, /ziweiEnvironmentReadable/u);
+assert.match(environmentHelper, /hourkey-notification\.env/u);
 
 console.log("PASS Ziwei hourly ops contract — minute timer, lease, heartbeat, hardened service, preflight");

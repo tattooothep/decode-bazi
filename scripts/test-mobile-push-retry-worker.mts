@@ -116,6 +116,7 @@ try {
       device_push_token text,
       device_token_type text,
       platform text NOT NULL,
+      ziwei_payload_schema smallint NOT NULL DEFAULT 0,
       app_version text,
       locale text,
       timezone text,

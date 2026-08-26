@@ -90,6 +90,27 @@ assert.throws(() => runtime.buildZiweiHourlyNotificationSnapshot({
   facts: duplicateTransformationFacts,
 }), /ziwei_hourly_snapshot_invalid/u);
 
+for (const [label, mutate] of [
+  ["window calculation date", (value: any) => { value.reference.windowKey = value.reference.windowKey.replace(":2026-08-26:", ":2026-08-25:"); }],
+  ["window branch", (value: any) => { value.reference.windowKey = value.reference.windowKey.replace(/:戌$/u, ":酉"); }],
+  ["hour Ganzhi branch", (value: any) => { value.layers.liuShi.ganzhi = `${value.layers.liuShi.ganzhi.slice(0, 1)}酉`; }],
+  ["day identity", (value: any) => { value.layers.liuRi.dateISO = "2026-08-25"; }],
+  ["civil date", (value: any) => { value.layers.liuShi.civilDateISO = "2026-08-25"; }],
+  ["stale realized bounds", (value: any) => {
+    value.reference.validFrom = "2026-08-25T12:00:00.000Z";
+    value.reference.validUntil = "2026-08-25T14:00:00.000Z";
+    value.reference.instant = "2026-08-25T12:30:00.000Z";
+  }],
+] as const) {
+  const mixedFacts = JSON.parse(JSON.stringify(facts));
+  mutate(mixedFacts);
+  assert.throws(() => runtime.buildZiweiHourlyNotificationSnapshot({
+    accountId: "00000000-0000-4000-8000-000000000001",
+    profile: { id: "00000000-0000-4000-8000-000000000002", name: "Owner", isSelf: true },
+    facts: mixedFacts,
+  }), /ziwei_hourly_snapshot_invalid/u, `${label} cannot enter a signed occurrence snapshot`);
+}
+
 const preview = buildZiweiHourlyPreview({
   birthInstant: new Date("1984-12-31T06:15:00.000Z"),
   birthTimezone: "Asia/Bangkok",
@@ -109,5 +130,21 @@ duplicateCompact.day.siHua[1][1] = duplicateCompact.day.siHua[0][1];
 assert.equal(runtime.parseZiweiHourlyProviderData({
   ziweiHourlyV2: Buffer.from(runtime.canonicalStringify(duplicateCompact), "utf8").toString("base64url"),
 }), null);
+
+for (const mutate of [
+  (value: any) => { value.windowKey = value.windowKey.replace(":2026-08-26:", ":2026-08-25:"); },
+  (value: any) => { value.hour.ganzhi = `${value.hour.ganzhi.slice(0, 1)}酉`; },
+  (value: any) => { value.day.dateISO = "2026-08-25"; },
+  (value: any) => {
+    value.validFrom = "2026-08-25T12:00:00.000Z";
+    value.validUntil = "2026-08-25T14:00:00.000Z";
+  },
+]) {
+  const mixedCompact = JSON.parse(JSON.stringify(compact));
+  mutate(mixedCompact);
+  assert.equal(runtime.parseZiweiHourlyProviderData({
+    ziweiHourlyV2: Buffer.from(runtime.canonicalStringify(mixedCompact), "utf8").toString("base64url"),
+  }), null, "compact provider identity must remain bound to its exact realized shichen");
+}
 
 console.log("PASS ziwei hourly notification payload — immutable three-layer facts, compact provider data, no verdict");

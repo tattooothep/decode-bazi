@@ -23,6 +23,47 @@ BEGIN
 END;
 $$;
 
+-- Profiles persist the reported natal wall clock by anchoring it at +07:00;
+-- birth_tz carries its actual IANA/fixed-offset interpretation. Ziwei hourly
+-- supports only one real natal instant and excludes the unimplemented late-Zi
+-- and out-of-range natal domains.
+CREATE OR REPLACE FUNCTION hourkey_ziwei_birth_wall_eligible(value timestamptz, timezone_value text)
+RETURNS boolean LANGUAGE plpgsql STABLE AS $$
+DECLARE
+  wall timestamp;
+  naive timestamptz;
+  zone_name text;
+  matches integer;
+BEGIN
+  IF value IS NULL OR NOT hourkey_birth_timezone_valid(timezone_value)
+    OR (timezone_value !~ '^([+-])(\d{2}):(\d{2})$'
+      AND timezone_value<>'UTC' AND position('/' IN timezone_value)=0) THEN RETURN false; END IF;
+  wall := value AT TIME ZONE 'Asia/Bangkok';
+  IF wall::date < DATE '1900-01-31' OR wall::date > DATE '2100-12-31'
+    OR extract(hour FROM wall)=23 THEN RETURN false; END IF;
+  IF timezone_value ~ '^([+-])(\d{2}):(\d{2})$' THEN RETURN true; END IF;
+
+  SELECT name INTO zone_name FROM pg_catalog.pg_timezone_names
+   WHERE lower(name)=lower(timezone_value) ORDER BY name LIMIT 1;
+  IF zone_name IS NULL THEN RETURN false; END IF;
+  naive := wall AT TIME ZONE 'UTC';
+  WITH offsets AS (
+    -- Mirror the JS/Intl resolver's minute-precision offset candidates. Zones
+    -- with historical sub-minute offsets therefore fail closed in every tier
+    -- instead of SQL admitting a wall clock the app/backend cannot reproduce.
+    SELECT DISTINCT round(extract(epoch FROM (
+      (probe AT TIME ZONE zone_name) - (probe AT TIME ZONE 'UTC')
+    ))/60)::bigint * interval '1 minute' AS value
+      FROM generate_series(naive-interval '36 hours',naive+interval '36 hours',interval '12 hours') probe
+  ), candidates AS (
+    SELECT naive-offsets.value AS instant FROM offsets
+  )
+  SELECT count(DISTINCT instant)::integer INTO matches FROM candidates
+   WHERE instant AT TIME ZONE zone_name = wall;
+  RETURN matches=1;
+END;
+$$;
+
 ALTER TABLE mobile_notification_prefs
   ADD COLUMN IF NOT EXISTS ziwei_hourly_enabled boolean NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS ziwei_profile_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
@@ -55,14 +96,51 @@ CREATE TABLE IF NOT EXISTS mobile_ziwei_hourly_producer_state (
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT mobile_ziwei_hourly_source_digest_shape CHECK (source_digest ~ '^[0-9a-f]{64}$'),
   CONSTRAINT mobile_ziwei_hourly_enable_provenance CHECK (
-    producer_enabled=false OR (backend_commit ~ '^[0-9a-f]{40}$' AND enabled_at IS NOT NULL AND btrim(enabled_by)<>'')
+    producer_enabled=false OR (
+      backend_commit IS NOT NULL AND backend_commit ~ '^[0-9a-f]{40}$'
+      AND enabled_at IS NOT NULL AND enabled_by IS NOT NULL AND btrim(enabled_by)<>''
+    )
   )
 );
 INSERT INTO mobile_ziwei_hourly_producer_state(singleton,producer_enabled,source_digest)
-VALUES(true,false,'a8bb96398b2b673d72fcfd2bfb71d10326e26849fc1ddc3ea3bff2ab27661e6c')
+VALUES(true,false,'1da9d5d7f78e4bcfb3cff35c0764fc502384292f8ab5c5a3da0228f763d7f9db')
 ON CONFLICT(singleton) DO UPDATE
   SET source_digest=EXCLUDED.source_digest,updated_at=now()
   WHERE mobile_ziwei_hourly_producer_state.producer_enabled=false;
+UPDATE mobile_ziwei_hourly_producer_state
+   SET producer_enabled=false,backend_commit=NULL,enabled_at=NULL,enabled_by=NULL,updated_at=now()
+ WHERE producer_enabled=true AND (
+   backend_commit IS NULL OR backend_commit !~ '^[0-9a-f]{40}$'
+   OR enabled_at IS NULL OR enabled_by IS NULL OR btrim(enabled_by)=''
+ );
+ALTER TABLE mobile_ziwei_hourly_producer_state
+  DROP CONSTRAINT IF EXISTS mobile_ziwei_hourly_enable_provenance;
+ALTER TABLE mobile_ziwei_hourly_producer_state
+  ADD CONSTRAINT mobile_ziwei_hourly_enable_provenance CHECK (
+    producer_enabled=false OR (
+      backend_commit IS NOT NULL AND backend_commit ~ '^[0-9a-f]{40}$'
+      AND enabled_at IS NOT NULL AND enabled_by IS NOT NULL AND btrim(enabled_by)<>''
+    )
+  );
+
+-- The provider worker holds the shared side of this gate from its final policy
+-- read until the provider result is durable. Every owner/admin mutation takes
+-- the exclusive transaction side automatically, including direct SQL, so a
+-- disable cannot commit while an admitted Ziwei provider call is in flight.
+CREATE OR REPLACE FUNCTION serialize_mobile_ziwei_hourly_producer_mutation()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM pg_advisory_xact_lock(
+    hashtextextended('mobile-ziwei-hourly-producer-gate:v1',0)
+  );
+  RETURN CASE WHEN TG_OP='DELETE' THEN OLD ELSE NEW END;
+END;
+$$;
+DROP TRIGGER IF EXISTS mobile_ziwei_hourly_producer_mutation_gate
+  ON mobile_ziwei_hourly_producer_state;
+CREATE TRIGGER mobile_ziwei_hourly_producer_mutation_gate
+BEFORE INSERT OR UPDATE OR DELETE ON mobile_ziwei_hourly_producer_state
+FOR EACH ROW EXECUTE FUNCTION serialize_mobile_ziwei_hourly_producer_mutation();
 
 CREATE TABLE IF NOT EXISTS mobile_qizheng_electional_producer_state (
   singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton=true),
@@ -77,7 +155,10 @@ CREATE TABLE IF NOT EXISTS mobile_qizheng_electional_producer_state (
   CONSTRAINT mobile_qizheng_electional_source_digest_shape CHECK (source_digest ~ '^[0-9a-f]{64}$'),
   CONSTRAINT mobile_qizheng_electional_producer_disabled CHECK (producer_enabled=false),
   CONSTRAINT mobile_qizheng_electional_enable_provenance CHECK (
-    producer_enabled=false OR (backend_commit ~ '^[0-9a-f]{40}$' AND enabled_at IS NOT NULL AND btrim(enabled_by)<>'')
+    producer_enabled=false OR (
+      backend_commit IS NOT NULL AND backend_commit ~ '^[0-9a-f]{40}$'
+      AND enabled_at IS NOT NULL AND enabled_by IS NOT NULL AND btrim(enabled_by)<>''
+    )
   )
 );
 UPDATE mobile_qizheng_electional_producer_state
@@ -85,9 +166,16 @@ UPDATE mobile_qizheng_electional_producer_state
  WHERE producer_enabled=true;
 ALTER TABLE mobile_qizheng_electional_producer_state
   DROP CONSTRAINT IF EXISTS mobile_qizheng_electional_enable_gate,
-  DROP CONSTRAINT IF EXISTS mobile_qizheng_electional_producer_disabled;
+  DROP CONSTRAINT IF EXISTS mobile_qizheng_electional_producer_disabled,
+  DROP CONSTRAINT IF EXISTS mobile_qizheng_electional_enable_provenance;
 ALTER TABLE mobile_qizheng_electional_producer_state
-  ADD CONSTRAINT mobile_qizheng_electional_producer_disabled CHECK (producer_enabled=false);
+  ADD CONSTRAINT mobile_qizheng_electional_producer_disabled CHECK (producer_enabled=false),
+  ADD CONSTRAINT mobile_qizheng_electional_enable_provenance CHECK (
+    producer_enabled=false OR (
+      backend_commit IS NOT NULL AND backend_commit ~ '^[0-9a-f]{40}$'
+      AND enabled_at IS NOT NULL AND enabled_by IS NOT NULL AND btrim(enabled_by)<>''
+    )
+  );
 INSERT INTO mobile_qizheng_electional_producer_state
   (singleton,producer_enabled,evidence_status,source_evidence_version,source_digest)
 VALUES(
@@ -211,6 +299,152 @@ CREATE TRIGGER mobile_ziwei_hourly_occurrence_immutable
 BEFORE UPDATE ON mobile_ziwei_hourly_occurrences
 FOR EACH ROW EXECUTE FUNCTION enforce_mobile_ziwei_hourly_occurrence_immutable();
 
+-- Generic notification DML remains available to the runtime role, therefore
+-- Ziwei's parent attestation and attempt state machine need their own database
+-- boundary. A row cannot be relabelled into/out of Ziwei, provenance cannot be
+-- rewritten while delivery is live, and terminal attempts cannot be reopened.
+CREATE OR REPLACE FUNCTION enforce_mobile_ziwei_push_parent_integrity()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  terminal_redaction boolean;
+  no_open_attempt boolean;
+  owner_exists boolean;
+  attempts_retirable boolean;
+BEGIN
+  IF TG_OP='DELETE' THEN
+    IF OLD.kind<>'ziwei' THEN RETURN OLD; END IF;
+    EXECUTE format('SELECT EXISTS (SELECT 1 FROM %I.users WHERE id=$1)',TG_TABLE_SCHEMA)
+      INTO owner_exists USING OLD.user_id;
+    IF OLD.attempts_retired_at IS NULL AND owner_exists THEN
+      RAISE EXCEPTION 'mobile_ziwei_push_parent_delete_unretired';
+    END IF;
+    RETURN OLD;
+  END IF;
+  IF OLD.kind<>'ziwei' AND NEW.kind<>'ziwei' THEN RETURN NEW; END IF;
+  IF OLD.kind IS DISTINCT FROM NEW.kind
+    OR OLD.user_id IS DISTINCT FROM NEW.user_id
+    OR OLD.yam_key IS DISTINCT FROM NEW.yam_key
+    OR OLD.title IS DISTINCT FROM NEW.title
+    OR OLD.body IS DISTINCT FROM NEW.body
+    OR OLD.payload IS DISTINCT FROM NEW.payload THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_parent_immutable';
+  END IF;
+  IF NEW.updated_at<OLD.updated_at THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_parent_time_regression';
+  END IF;
+  IF OLD.attempts_retired_at IS DISTINCT FROM NEW.attempts_retired_at THEN
+    EXECUTE format(
+      'SELECT count(*)>0 AND bool_and(
+         created_at<now()-interval ''90 days''
+         AND updated_at<now()-interval ''90 days''
+         AND status NOT IN (''reserved'',''retry_due'')
+         AND lease_token IS NULL AND lease_expires_at IS NULL
+       ) FROM %I.mobile_push_attempts WHERE push_log_id=$1',
+      TG_TABLE_SCHEMA
+    ) INTO attempts_retirable USING OLD.id;
+    IF OLD.attempts_retired_at IS NOT NULL OR NEW.attempts_retired_at IS NULL
+      OR NOT COALESCE(attempts_retirable,false) THEN
+      RAISE EXCEPTION 'mobile_ziwei_push_parent_retirement_invalid';
+    END IF;
+  END IF;
+  EXECUTE format(
+    'SELECT NOT EXISTS (SELECT 1 FROM %I.mobile_push_attempts WHERE push_log_id=$1 AND status IN (''reserved'',''retry_due''))',
+    TG_TABLE_SCHEMA
+  ) INTO no_open_attempt USING OLD.id;
+  terminal_redaction := OLD.source_facts IS DISTINCT FROM NEW.source_facts
+    AND NEW.source_facts='{}'::jsonb
+    AND OLD.delivery_status IN ('accepted','delivered','failed')
+    AND NEW.delivery_status IN ('accepted','delivered','failed')
+    AND no_open_attempt;
+  IF OLD.source_facts IS DISTINCT FROM NEW.source_facts AND NOT terminal_redaction THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_parent_source_facts_immutable';
+  END IF;
+  IF OLD.delivery_status IN ('delivered','failed')
+    AND OLD.delivery_status IS DISTINCT FROM NEW.delivery_status THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_parent_terminal';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS mobile_ziwei_push_parent_integrity ON mobile_push_log;
+CREATE TRIGGER mobile_ziwei_push_parent_integrity
+BEFORE UPDATE OR DELETE ON mobile_push_log
+FOR EACH ROW EXECUTE FUNCTION enforce_mobile_ziwei_push_parent_integrity();
+
+CREATE OR REPLACE FUNCTION enforce_mobile_ziwei_push_attempt_integrity()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  old_parent_kind text;
+  new_parent_kind text;
+  parent_retired_at timestamptz;
+  occurrence_ready boolean;
+BEGIN
+  IF TG_OP='INSERT' THEN
+    EXECUTE format('SELECT kind,attempts_retired_at FROM %I.mobile_push_log WHERE id=$1',TG_TABLE_SCHEMA)
+      INTO new_parent_kind,parent_retired_at USING NEW.push_log_id;
+    IF new_parent_kind<>'ziwei' THEN RETURN NEW; END IF;
+    EXECUTE format(
+      'SELECT EXISTS (
+         SELECT 1 FROM %1$I.mobile_push_log l
+         JOIN %1$I.mobile_ziwei_hourly_occurrences o
+           ON o.user_id=l.user_id AND o.occurrence_key=l.yam_key
+        WHERE l.id=$1 AND o.installation_id=$2
+          AND o.state=''claimed'' AND o.push_log_id IS NULL
+       )',
+      TG_TABLE_SCHEMA
+    ) INTO occurrence_ready USING NEW.push_log_id,NEW.installation_id;
+    IF parent_retired_at IS NOT NULL OR NOT occurrence_ready THEN
+      RAISE EXCEPTION 'mobile_ziwei_push_attempt_insert_unowned';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF TG_OP='DELETE' THEN
+    EXECUTE format('SELECT kind,attempts_retired_at FROM %I.mobile_push_log WHERE id=$1',TG_TABLE_SCHEMA)
+      INTO old_parent_kind,parent_retired_at USING OLD.push_log_id;
+    IF old_parent_kind='ziwei' AND parent_retired_at IS NULL THEN
+      RAISE EXCEPTION 'mobile_ziwei_push_attempt_delete_unretired';
+    END IF;
+    RETURN OLD;
+  END IF;
+  EXECUTE format('SELECT kind FROM %I.mobile_push_log WHERE id=$1',TG_TABLE_SCHEMA)
+    INTO old_parent_kind USING OLD.push_log_id;
+  EXECUTE format('SELECT kind FROM %I.mobile_push_log WHERE id=$1',TG_TABLE_SCHEMA)
+    INTO new_parent_kind USING NEW.push_log_id;
+  IF old_parent_kind<>'ziwei' AND new_parent_kind<>'ziwei' THEN RETURN NEW; END IF;
+  IF OLD.push_log_id IS DISTINCT FROM NEW.push_log_id
+    OR OLD.installation_id IS DISTINCT FROM NEW.installation_id
+    OR OLD.provider IS DISTINCT FROM NEW.provider
+    OR OLD.provider_message IS DISTINCT FROM NEW.provider_message
+    OR OLD.message_sha256 IS DISTINCT FROM NEW.message_sha256
+    OR OLD.privacy_safe IS DISTINCT FROM NEW.privacy_safe
+    OR OLD.transactional IS DISTINCT FROM NEW.transactional
+    OR OLD.created_at IS DISTINCT FROM NEW.created_at THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_attempt_immutable';
+  END IF;
+  IF OLD.status IN ('dead','delivered') AND OLD.status IS DISTINCT FROM NEW.status THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_attempt_terminal';
+  END IF;
+  IF OLD.status='provider_accepted' AND NEW.status IN ('reserved','retry_due') THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_attempt_resurrection';
+  END IF;
+  IF NEW.send_count<OLD.send_count THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_attempt_send_count_regression';
+  END IF;
+  IF NEW.updated_at<OLD.updated_at THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_attempt_time_regression';
+  END IF;
+  IF OLD.send_started_at IS NOT NULL AND NEW.send_started_at IS NULL
+    AND NOT (OLD.status IN ('reserved','retry_due') AND NEW.status='retry_due') THEN
+    RAISE EXCEPTION 'mobile_ziwei_push_attempt_send_boundary_regression';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS mobile_ziwei_push_attempt_integrity ON mobile_push_attempts;
+CREATE TRIGGER mobile_ziwei_push_attempt_integrity
+BEFORE INSERT OR UPDATE OR DELETE ON mobile_push_attempts
+FOR EACH ROW EXECUTE FUNCTION enforce_mobile_ziwei_push_attempt_integrity();
+
 -- One eligibility lifecycle for every profile mutation path (mobile, web,
 -- admin or future imports). Ineligible facts atomically turn consent and all
 -- installations off; changed-but-still-eligible facts fence any old claim and
@@ -263,6 +497,7 @@ BEGIN
     AND NEW.birth_datetime IS NOT NULL
     AND NEW.birth_time_known=true
     AND hourkey_birth_timezone_valid(NEW.birth_tz)
+    AND hourkey_ziwei_birth_wall_eligible(NEW.birth_datetime,NEW.birth_tz)
     AND NEW.gender IN ('M','F')
     AND (NEW.relationship_type IS NULL OR btrim(NEW.relationship_type)='');
 
@@ -298,6 +533,7 @@ UPDATE mobile_notification_prefs np
      SELECT 1 FROM profiles p WHERE p.id=np.ziwei_profile_id AND p.created_by_user_id=np.user_id
        AND COALESCE(p.is_archived,false)=false AND p.birth_datetime IS NOT NULL
        AND p.birth_time_known=true AND hourkey_birth_timezone_valid(p.birth_tz)
+       AND hourkey_ziwei_birth_wall_eligible(p.birth_datetime,p.birth_tz)
        AND p.gender IN ('M','F')
        AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
    )
@@ -312,6 +548,7 @@ UPDATE mobile_ziwei_hourly_installations i
         AND p.created_by_user_id=i.user_id AND COALESCE(p.is_archived,false)=false
         AND p.birth_datetime IS NOT NULL AND p.birth_time_known=true
         AND hourkey_birth_timezone_valid(p.birth_tz) AND p.gender IN ('M','F')
+        AND hourkey_ziwei_birth_wall_eligible(p.birth_datetime,p.birth_tz)
         AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
    );
 
@@ -335,7 +572,9 @@ $$;
 
 GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_ziwei_hourly_installations TO hourkey_app;
 GRANT SELECT,INSERT,UPDATE ON mobile_ziwei_hourly_occurrences TO hourkey_app;
-GRANT SELECT,UPDATE ON mobile_ziwei_hourly_producer_state TO hourkey_app;
+REVOKE UPDATE ON mobile_ziwei_hourly_producer_state FROM hourkey_app;
+REVOKE INSERT,DELETE,TRUNCATE,REFERENCES,TRIGGER ON mobile_ziwei_hourly_producer_state FROM hourkey_app;
+GRANT SELECT ON mobile_ziwei_hourly_producer_state TO hourkey_app;
 GRANT SELECT ON mobile_qizheng_electional_producer_state TO hourkey_app;
 GRANT EXECUTE ON FUNCTION claim_mobile_ziwei_hourly_installations(timestamptz,integer) TO hourkey_app;
 

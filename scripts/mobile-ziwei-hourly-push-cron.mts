@@ -6,20 +6,23 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   buildZiweiHourlyNotificationFacts,
-  resolveUnambiguousBirthWallClock,
+  resolveEligibleZiweiBirthWallClock,
 } from "../src/lib/astro/ziwei/hourly-preview";
 import { ZIWEI_HOURLY_LINEAGE_MANIFEST } from "../src/lib/astro/ziwei/hourly-lineage";
 
 const require = createRequire(import.meta.url);
+const sourceContract = require("../src/lib/ziwei-hourly-source-contract.cjs");
 const { Pool } = require("pg");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const payloadRuntime = require("../src/lib/ziwei-hourly-notification.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
-export const SOURCE_DIGEST = createHash("sha256")
+const manifestDigest = createHash("sha256")
   .update(canonicalStringify(ZIWEI_HOURLY_LINEAGE_MANIFEST))
   .digest("hex");
+export const SOURCE_DIGEST: string = sourceContract.SOURCE_DIGEST;
+if (manifestDigest !== SOURCE_DIGEST) throw new Error("ziwei_hourly_source_contract_drift");
 const SEND_GRACE_MS = 10 * 60_000;
 const PROVIDER_QUEUE_MS = 5 * 60_000;
 const BATCH = 500;
@@ -96,7 +99,7 @@ export function admissionDecision(row: SchedulerRow, snapshot: any, value: Date)
   const start = new Date(snapshot?.facts?.reference?.validFrom);
   const end = new Date(snapshot?.facts?.reference?.validUntil);
   if (!Number.isFinite(at.valueOf()) || !Number.isFinite(start.valueOf()) || !Number.isFinite(end.valueOf())
-    || end.valueOf() - start.valueOf() !== 2 * 3_600_000) {
+    || !payloadRuntime.realizedShichenWindow(snapshot?.facts?.reference)) {
     return { allow: false, reason: "snapshot_window_invalid" };
   }
   if (inQuietHours(localMinute(row.reference_timezone, at), Number(row.quiet_start), Number(row.quiet_end))) {
@@ -117,11 +120,18 @@ export function retryAfterSnapshotFailure(at: Date, error: unknown): Date {
   return new Date(at.valueOf() + delayMs);
 }
 
-export function buildZiweiNotice(row: SchedulerRow, snapshot: any, occurrenceId: string, sendDeadline: string): any {
+export function buildZiweiNotice(
+  row: SchedulerRow,
+  snapshot: any,
+  occurrenceId: string,
+  sendDeadline: string,
+  backendCommit: string,
+): any {
   if (!payloadRuntime.verifyZiweiHourlyNotificationSnapshot(snapshot)) throw new TypeError("ziwei_hourly_snapshot_invalid");
   if (snapshot.accountId !== row.user_id || snapshot.profile.id !== row.profile_id) {
     throw new TypeError("ziwei_hourly_owner_binding_invalid");
   }
+  if (!/^[0-9a-f]{40}$/u.test(backendCommit)) throw new TypeError("ziwei_hourly_backend_commit_invalid");
   const payload = payloadRuntime.buildZiweiHourlyProviderData(snapshot);
   const historyCopies = delivery.localizedHistoryCopies(
     (locale: string) => payloadRuntime.buildZiweiHourlyCopy(locale, snapshot),
@@ -145,6 +155,8 @@ export function buildZiweiNotice(row: SchedulerRow, snapshot: any, occurrenceId:
       calculationVersion: snapshot.facts.calculationVersion,
       windowKey: snapshot.facts.reference.windowKey,
       snapshotDigest: snapshot.snapshotDigest,
+      sourceDigest: SOURCE_DIGEST,
+      backendCommit,
       eventEndAt: snapshot.facts.reference.validUntil,
       sendDeadline,
       ownerGeneration: Number(row.owner_generation),
@@ -195,6 +207,7 @@ async function loadClaimContext(db: Db, claim: SchedulerRow): Promise<SchedulerR
          AND p.birth_time_known=true AND COALESCE(p.is_archived,false)=false
          AND NULLIF(btrim(p.birth_tz),'') IS NOT NULL
          AND hourkey_birth_timezone_valid(p.birth_tz)
+         AND hourkey_ziwei_birth_wall_eligible(p.birth_datetime,p.birth_tz)
          AND p.gender IN ('M','F')
          AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
       WHERE i.user_id=$1 AND i.installation_id=$2 AND i.lease_token=$3 AND i.enabled=true
@@ -210,7 +223,7 @@ function buildSnapshot(row: SchedulerRow, at: Date): any {
   if (!row.birth_wall || !row.birth_tz || !gender) {
     throw new TypeError("ziwei_hourly_profile_inputs_unavailable");
   }
-  const birthInstant = resolveUnambiguousBirthWallClock(row.birth_wall, row.birth_tz);
+  const birthInstant = resolveEligibleZiweiBirthWallClock(row.birth_wall, row.birth_tz);
   const latitude = Number(row.birth_lat);
   const longitude = Number(row.birth_lng);
   const birthLocation = row.birth_lat != null && row.birth_lng != null
@@ -328,7 +341,7 @@ async function processClaim(db: Db, claim: SchedulerRow, at: Date, dependencies:
     await finishClaim(db, row, at, next, reason);
     return { reserved: 0, skipped: 1, reason };
   }
-  const notice = buildZiweiNotice(row, admitted.snapshot, admitted.id, admitted.sendDeadline);
+  const notice = buildZiweiNotice(row, admitted.snapshot, admitted.id, admitted.sendDeadline, dependencies.backendCommit);
   const result = await (dependencies.deliver || delivery.deliver)(db, notice, { defer: true });
   const reserved = result?.status === "pending" ? 1 : 0;
   const reason = reserved ? null : result?.status === "duplicate" ? "duplicate" : "delivery_reservation_failed";
@@ -390,7 +403,9 @@ export async function runScheduler(db: Db, signal: AbortSignal, at = new Date(),
     report.due += claims.length;
     try {
       await forEachBounded(claims, workers, async (claim) => {
-        const result = await (dependencies.processClaim || processClaim)(db, claim, at, { ...dependencies, signal });
+        const result = await (dependencies.processClaim || processClaim)(db, claim, at, {
+          ...dependencies, backendCommit: runtimeCommit, signal,
+        });
         report.reserved += result.reserved;
         report.skipped += result.skipped;
       });

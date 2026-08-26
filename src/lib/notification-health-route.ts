@@ -9,6 +9,12 @@ const { collectHealth: collectNotificationHealth } = require("./notification-obs
 const { readSchedulerHeartbeats } = require("./notification-scheduler-heartbeat.cjs") as {
   readSchedulerHeartbeats: (directory?: string) => Record<string, string | null>;
 };
+const { expoIosPushReady } = require("./mobile-push-registration-readiness.cjs") as {
+  expoIosPushReady: (env?: NodeJS.ProcessEnv) => boolean;
+};
+const { readZiweiRuntimeContext } = require("./ziwei-hourly-runtime-observability.cjs") as {
+  readZiweiRuntimeContext: (env?: NodeJS.ProcessEnv, options?: { repositoryRoot?: string }) => Record<string, unknown>;
+};
 
 export type NotificationHealthRouteDependencies = {
   db?: { connect?: () => Promise<void>; end?: () => Promise<void> };
@@ -37,9 +43,9 @@ export function providerReadiness(env: NodeJS.ProcessEnv): { fcm: boolean; expo:
     const credential = JSON.parse(readFileSync(keyPath, "utf8"));
     const fcm = ["private_key", "client_email", "project_id", "token_uri"]
       .every((key) => typeof credential?.[key] === "string" && credential[key].trim());
-    return { fcm, expo: true };
+    return { fcm, expo: expoIosPushReady(env) };
   } catch {
-    return { fcm: false, expo: true };
+    return { fcm: false, expo: expoIosPushReady(env) };
   }
 }
 
@@ -63,6 +69,7 @@ export async function notificationHealthPost(req: Request, dependencies: Notific
         schedulers: readSchedulerHeartbeats(env.NOTIFICATION_SCHEDULER_HEARTBEAT_DIR),
       },
       providerReady: providerReadiness(env),
+      ziweiRuntime: readZiweiRuntimeContext(env, { repositoryRoot: process.cwd() }),
     });
     return NextResponse.json(report, { status: report.ok === true ? 200 : 503 });
   } catch {

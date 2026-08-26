@@ -19,6 +19,7 @@ function optionsFor(input = {}) {
     engagementDays: integerOption(input.engagementDays, 90, 1, 3650, "engagementDays"),
     historyDays: integerOption(input.historyDays, 180, 30, 3650, "historyDays"),
     securityHistoryDays: integerOption(input.securityHistoryDays, 365, 30, 3650, "securityHistoryDays"),
+    ziweiOccurrenceDays: integerOption(input.ziweiOccurrenceDays, 30, 1, 3650, "ziweiOccurrenceDays"),
     batchSize: integerOption(input.batchSize, 500, 1, 5000, "batchSize"),
     maxBatches: integerOption(input.maxBatches, 20, 1, 100, "maxBatches"),
   };
@@ -176,6 +177,25 @@ async function purgeHistoryBatch(client, config) {
   });
 }
 
+async function purgeZiweiOccurrencesBatch(client, config) {
+  return transaction(client, async (tx) => {
+    const result = await tx.query(
+      `WITH candidates AS (
+         SELECT id FROM mobile_ziwei_hourly_occurrences
+          WHERE state IN ('claimed','skipped') AND push_log_id IS NULL
+            AND created_at<now()-($1::text||' days')::interval
+            AND window_valid_until<=now() AND send_deadline<=now()
+          ORDER BY created_at,id LIMIT $2 FOR UPDATE SKIP LOCKED
+       ) DELETE FROM mobile_ziwei_hourly_occurrences o USING candidates c
+          WHERE o.id=c.id AND o.state IN ('claimed','skipped') AND o.push_log_id IS NULL
+            AND o.window_valid_until<=now() AND o.send_deadline<=now()
+        RETURNING o.id`,
+      [String(config.ziweiOccurrenceDays), config.batchSize],
+    );
+    return result.rowCount || 0;
+  });
+}
+
 async function runPhase(client, config, execute) {
   let total = 0;
   for (let batch = 0; batch < config.maxBatches; batch += 1) {
@@ -197,13 +217,14 @@ async function runRetention(db, input = {}) {
     );
     locked = lock.rows[0]?.locked === true;
     if (!locked) {
-      return { ok: true, status: "overlap_skipped", sourceFactsRedacted: 0, engagementPurged: 0, attemptsPurged: 0, historyPurged: 0 };
+      return { ok: true, status: "overlap_skipped", sourceFactsRedacted: 0, engagementPurged: 0, attemptsPurged: 0, historyPurged: 0, ziweiOccurrencesPurged: 0 };
     }
+    const ziweiOccurrencesPurged = await runPhase(client, config, purgeZiweiOccurrencesBatch);
     const sourceFactsRedacted = await runPhase(client, config, redactSourceFactsBatch);
     const engagementPurged = await runPhase(client, config, purgeEngagementsBatch);
     const attemptsPurged = await runPhase(client, config, purgeAttemptsBatch);
     const historyPurged = await runPhase(client, config, purgeHistoryBatch);
-    return { ok: true, status: "completed", sourceFactsRedacted, engagementPurged, attemptsPurged, historyPurged };
+    return { ok: true, status: "completed", sourceFactsRedacted, engagementPurged, attemptsPurged, historyPurged, ziweiOccurrencesPurged };
   } finally {
     if (locked) {
       await client.query(
@@ -214,4 +235,4 @@ async function runRetention(db, input = {}) {
   }
 }
 
-module.exports = { optionsFor,purgeAttemptsBatch,purgeEngagementsBatch,purgeHistoryBatch,redactSourceFactsBatch,runRetention };
+module.exports = { optionsFor,purgeAttemptsBatch,purgeEngagementsBatch,purgeHistoryBatch,purgeZiweiOccurrencesBatch,redactSourceFactsBatch,runRetention };

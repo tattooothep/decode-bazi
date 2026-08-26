@@ -7,6 +7,7 @@ const qimenRuntime = require("./qimen-three-layer-notification.cjs");
 const qimenAdvisory = require("./qimen-notification-advisory.cjs");
 const zibaiVersionRuntime = require("./zibai-version-runtime.cjs");
 const ziweiHourlyRuntime = require("./ziwei-hourly-notification.cjs");
+const ziweiHourlySourceContract = require("./ziwei-hourly-source-contract.cjs");
 
 const DEFAULT_MAX_ATTEMPTS = 5;
 const DEFAULT_BASE_DELAY_SECONDS = 300;
@@ -78,6 +79,67 @@ function stableStringify(value) {
 
 function messageSha256(message) {
   return createHash("sha256").update(stableStringify(message)).digest("hex");
+}
+
+function exactIsoInstant(value) {
+  const instant = value instanceof Date ? value : new Date(value);
+  return Number.isFinite(instant.valueOf()) ? instant.toISOString() : null;
+}
+
+function ziweiAttemptAttestationValid(row, snapshot, occurrence) {
+  try {
+    if (!ziweiHourlyRuntime.verifyZiweiHourlyNotificationSnapshot(snapshot)) return false;
+    const source = row.source_facts;
+    const reference = snapshot.facts.reference;
+    if (!source || !occurrence
+      || source.accountId !== row.user_id
+      || snapshot.accountId !== row.user_id
+      || occurrence.occurrence_user_id !== row.user_id
+      || source.profileId !== snapshot.profile.id
+      || occurrence.occurrence_profile_id !== snapshot.profile.id
+      || occurrence.occurrence_state !== "reserved"
+      || occurrence.occurrence_key !== row.yam_key
+      || source.lineage !== snapshot.facts.lineage
+      || occurrence.lineage !== snapshot.facts.lineage
+      || source.calculationVersion !== snapshot.facts.calculationVersion
+      || occurrence.calculation_version !== snapshot.facts.calculationVersion
+      || source.windowKey !== reference.windowKey
+      || occurrence.window_key !== reference.windowKey
+      || source.snapshotDigest !== snapshot.snapshotDigest
+      || occurrence.snapshot_digest !== snapshot.snapshotDigest
+      || !Number.isSafeInteger(Number(source.ownerGeneration))
+      || Number(source.ownerGeneration) !== Number(occurrence.occurrence_owner_generation)
+      || reference.validFrom !== exactIsoInstant(occurrence.window_valid_from)
+      || source.eventEndAt !== reference.validUntil
+      || source.eventEndAt !== exactIsoInstant(occurrence.window_valid_until)
+      || source.sendDeadline !== exactIsoInstant(occurrence.send_deadline)) return false;
+    const expectedPayload = ziweiHourlyRuntime.buildZiweiHourlyProviderData(snapshot);
+    if (stableStringify(row.payload) !== stableStringify(expectedPayload)) return false;
+    const providerMessage = row.provider_message;
+    const visible = row.provider === "fcm"
+      ? providerMessage?.notification : row.provider === "expo" ? providerMessage : null;
+    if (!visible || typeof visible.title !== "string" || typeof visible.body !== "string") return false;
+    if (row.privacy_safe === true) {
+      const privateCopyMatches = ["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]
+        .some((locale) => {
+          const copy = ziweiHourlyRuntime.buildZiweiHourlyPrivateCopy(locale);
+          return copy.title === visible.title && copy.body === visible.body;
+        });
+      if (!privateCopyMatches) return false;
+    } else if (visible.title !== row.title || visible.body !== row.body) return false;
+    const expectedMessage = cleanJson(push.prepareMessage({
+      category: "ziwei",
+      title: visible.title,
+      body: visible.body,
+      url: "/ziwei/hourly",
+      transactional: false,
+      data: { ...expectedPayload, notificationId: row.push_log_id },
+    }, row.provider));
+    return stableStringify(providerMessage) === stableStringify(expectedMessage)
+      && row.message_sha256 === messageSha256(expectedMessage);
+  } catch {
+    return false;
+  }
 }
 
 function safeReason(outcome) {
@@ -691,7 +753,7 @@ async function withInstallationLock(db, installationId, run) {
   return withClient(db, async (client, lifecycle) => {
     await acquireInstallationLock(client, installationId);
     try {
-      return await run(client);
+      return await run(client, lifecycle);
     } finally {
       try {
         await releaseInstallationLock(client, installationId);
@@ -701,6 +763,34 @@ async function withInstallationLock(db, installationId, run) {
       }
     }
   });
+}
+
+async function withZiweiProducerGate(client, pushLogId, run, lifecycle = null) {
+  const parent = await client.query(
+    `SELECT l.kind FROM mobile_push_log l WHERE l.id=$1`,
+    [pushLogId],
+  );
+  if (parent.rows[0]?.kind !== "ziwei") return run();
+  await client.query(
+    `SELECT pg_advisory_lock_shared(
+       hashtextextended('mobile-ziwei-hourly-producer-gate:v1',0)
+     )`,
+  );
+  try {
+    return await run();
+  } finally {
+    try {
+      const released = await client.query(
+        `SELECT pg_advisory_unlock_shared(
+           hashtextextended('mobile-ziwei-hourly-producer-gate:v1',0)
+         ) AS unlocked`,
+      );
+      if (released.rows[0]?.unlocked !== true) throw new Error("ziwei_producer_gate_unlock_failed");
+    } catch (error) {
+      lifecycle?.discard?.();
+      throw error;
+    }
+  }
 }
 
 async function recoverUncertainOne(db, options = {}) {
@@ -806,6 +896,19 @@ function currentPolicyDecision(row, context, capCount) {
   if (row.transactional === true) return { allow: true };
   const now = new Date(context.now_at);
   if (row.kind === "ziwei") {
+    if (context.ziwei_hourly_producer_enabled !== true
+      || context.ziwei_hourly_runtime_enabled !== true
+      || typeof row.source_facts?.sourceDigest !== "string"
+      || context.ziwei_hourly_runtime_source_digest !== row.source_facts.sourceDigest
+      || context.ziwei_hourly_producer_source_digest !== row.source_facts.sourceDigest
+      || typeof row.source_facts?.backendCommit !== "string"
+      || context.ziwei_hourly_producer_backend_commit !== row.source_facts.backendCommit
+      || context.ziwei_hourly_runtime_commit !== row.source_facts.backendCommit) {
+      return { allow: false, terminal: true, reason: "policy_producer_disabled" };
+    }
+    if (context.ziwei_hourly_attempt_attested !== true) {
+      return { allow: false, terminal: true, reason: "policy_attestation_changed" };
+    }
     if (context.account_active !== true) {
       return { allow: false, terminal: true, reason: "policy_account_inactive" };
     }
@@ -1113,11 +1216,28 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     context.qimen_paused_until = context.prefs?.paused_until || null;
   }
   if (row.kind === "ziwei") {
+    // Re-read the privileged global producer fence for every reserved/retry
+    // attempt, inside the same transaction that marks the provider send as
+    // started. Attempts whose immutable provenance no longer matches are
+    // terminally fenced before any provider call.
+    const producer = await tx.query(
+      `SELECT producer_enabled,source_digest,backend_commit
+         FROM mobile_ziwei_hourly_producer_state
+        WHERE singleton=true`,
+    );
+    context.ziwei_hourly_producer_enabled = producer.rows[0]?.producer_enabled === true;
+    context.ziwei_hourly_producer_source_digest = producer.rows[0]?.source_digest || null;
+    context.ziwei_hourly_producer_backend_commit = producer.rows[0]?.backend_commit || null;
+    context.ziwei_hourly_runtime_enabled = process.env.ZIWEI_HOURLY_PRODUCER_ENABLED === "1";
+    context.ziwei_hourly_runtime_commit = String(process.env.HOURKEY_RELEASE_COMMIT || "").trim() || null;
+    context.ziwei_hourly_runtime_source_digest = ziweiHourlySourceContract.SOURCE_DIGEST;
     const ziwei = await tx.query(
       `SELECT i.enabled,i.profile_id,i.reference_timezone,i.quiet_start,i.quiet_end,
               i.owner_generation AS current_owner_generation,o.owner_generation AS occurrence_owner_generation,
+              o.user_id AS occurrence_user_id,o.profile_id AS occurrence_profile_id,
+              o.state AS occurrence_state,o.occurrence_key,
               o.lineage,o.calculation_version,o.snapshot->'facts'->'reference'->>'windowKey' AS window_key,
-              o.window_valid_until,o.send_deadline
+              o.window_valid_from,o.window_valid_until,o.send_deadline,o.snapshot,o.snapshot_digest
          FROM mobile_ziwei_hourly_installations i
          JOIN mobile_ziwei_hourly_occurrences o
            ON o.user_id=i.user_id AND o.installation_id=i.installation_id AND o.push_log_id=$3
@@ -1137,6 +1257,11 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     context.ziwei_hourly_expires_at = ziwei.rows[0]?.window_valid_until || null;
     context.ziwei_hourly_send_deadline = ziwei.rows[0]?.send_deadline || null;
     context.ziwei_hourly_paused_until = context.prefs?.paused_until || null;
+    context.ziwei_hourly_attempt_attested = ziweiAttemptAttestationValid(
+      row,
+      ziwei.rows[0]?.snapshot,
+      ziwei.rows[0],
+    );
   }
   let capCount = 0;
   if (!(row.transactional === true && isTransactionalKind(row.kind))
@@ -1172,11 +1297,14 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
 
 async function processClaim(db, attempt, options = {}) {
   const sender = options.sender || push;
-  return withInstallationLock(db, attempt.installation_id, async (client) => {
+  return withInstallationLock(db, attempt.installation_id, async (client, lifecycle) => withZiweiProducerGate(
+    client,
+    attempt.push_log_id,
+    async () => {
       if (options.hooks?.afterClaim) await options.hooks.afterClaim(attempt);
       const started = await transactionOn(client, async (tx) => {
         const current = await tx.query(
-          `SELECT a.*,l.user_id,l.kind,l.payload,l.source_facts FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
+          `SELECT a.*,l.user_id,l.yam_key,l.kind,l.title,l.body,l.payload,l.source_facts FROM mobile_push_attempts a JOIN mobile_push_log l ON l.id=a.push_log_id
             WHERE a.id=$1 AND a.lease_token=$2 AND a.status IN ('reserved','retry_due') AND a.send_started_at IS NULL
             FOR UPDATE OF a`,
           [attempt.id, attempt.lease_token],
@@ -1250,7 +1378,9 @@ async function processClaim(db, attempt, options = {}) {
       }
       const status = await finishAttempt(client, started, outcome, options);
       return { status, outcome };
-  });
+    },
+    lifecycle,
+  ));
 }
 
 async function runRetryBatch(db, options = {}) {
@@ -1406,6 +1536,7 @@ module.exports = {
   assertNoCredentialFacts,assertTransactionalKind,
   claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
   messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
-  currentPolicyDecision,historyCopyFor,localizedHistoryCopies,trySchedulerRunLease,withInstallationLock,withSchedulerRunLease,
+  currentPolicyDecision,historyCopyFor,localizedHistoryCopies,trySchedulerRunLease,withInstallationLock,
+  withSchedulerRunLease,withZiweiProducerGate,ziweiAttemptAttestationValid,
   zibaiOccurrenceEndAt,
 };

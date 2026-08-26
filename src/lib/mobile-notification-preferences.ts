@@ -1,5 +1,6 @@
 import type { Pool, PoolClient } from "pg";
 import { parseTz } from "./birth-timezone";
+import { resolveEligibleZiweiBirthWallClock } from "./astro/ziwei/hourly-preview";
 
 export type MobileNotificationPreferenceRow = {
   security_enabled: boolean;
@@ -225,8 +226,10 @@ export async function updateNotificationPreferences(
     }
     if (ziweiHourly && ziweiProfileId === null) throw new TypeError("ziwei_profile_required");
     if (ziweiHourly || body.ziweiProfileId !== undefined) {
-      const owned = await client.query<{ id: string; birth_tz: string }>(
-        `SELECT id,birth_tz FROM profiles
+      const owned = await client.query<{ id: string; birth_tz: string; birth_wall: string }>(
+        `SELECT id,birth_tz,
+                to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall
+           FROM profiles
           WHERE id=$1 AND created_by_user_id=$2 AND COALESCE(is_archived,false)=false
             AND birth_datetime IS NOT NULL
             AND birth_time_known=true
@@ -237,6 +240,11 @@ export async function updateNotificationPreferences(
         [ziweiProfileId, userId],
       );
       if (!owned.rows[0] || !parseTz(owned.rows[0].birth_tz)) throw new TypeError("ziwei_profile_invalid");
+      try {
+        resolveEligibleZiweiBirthWallClock(owned.rows[0].birth_wall, owned.rows[0].birth_tz);
+      } catch {
+        throw new TypeError("ziwei_profile_invalid");
+      }
     }
     const quietStart = intInRange(body.quietStart, 0, 23) ?? current.quiet_start;
     const quietEnd = intInRange(body.quietEnd, 0, 23) ?? current.quiet_end;

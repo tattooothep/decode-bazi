@@ -6,6 +6,7 @@ const LINEAGE = "iztro_2_5_8_normal_forward_zi_v1";
 const CALCULATION_VERSION = "ziwei-hourly-notification-v1";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u;
+const HOUR_BRANCHES = Object.freeze(["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]);
 
 function canonicalStringify(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalStringify).join(",")}]`;
@@ -26,6 +27,129 @@ function exactIso(value) {
   if (typeof value !== "string" || !ISO_RE.test(value)) return false;
   const parsed = new Date(value);
   return Number.isFinite(parsed.valueOf()) && parsed.toISOString() === value;
+}
+
+function realizedShichenWindow(reference) {
+  const start = Date.parse(reference?.validFrom);
+  const end = Date.parse(reference?.validUntil);
+  const instant = Date.parse(reference?.instant);
+  return Number.isFinite(start) && Number.isFinite(end) && Number.isFinite(instant)
+    && end > start && instant >= start && instant < end;
+}
+
+function civilAt(instant, timezone) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    }).formatToParts(instant);
+    const values = Object.fromEntries(parts.filter((part) => part.type !== "literal")
+      .map((part) => [part.type, Number(part.value)]));
+    if (![values.year, values.month, values.day, values.hour, values.minute, values.second].every(Number.isInteger)) return null;
+    return { y: values.year, m: values.month, d: values.day, h: values.hour, mi: values.minute, s: values.second };
+  } catch { return null; }
+}
+
+function civilValue(civil) {
+  return Date.UTC(civil.y, civil.m - 1, civil.d, civil.h, civil.mi, civil.s);
+}
+
+function sameCivil(left, right) {
+  return left !== null && left.y === right.y && left.m === right.m && left.d === right.d
+    && left.h === right.h && left.mi === right.mi && left.s === right.s;
+}
+
+function shiftCivilDate(civil, days) {
+  const value = new Date(Date.UTC(civil.y, civil.m - 1, civil.d + days, civil.h, civil.mi, civil.s));
+  return {
+    y: value.getUTCFullYear(), m: value.getUTCMonth() + 1, d: value.getUTCDate(),
+    h: value.getUTCHours(), mi: value.getUTCMinutes(), s: value.getUTCSeconds(),
+  };
+}
+
+function civilDateISO(civil) {
+  return `${String(civil.y).padStart(4, "0")}-${String(civil.m).padStart(2, "0")}-${String(civil.d).padStart(2, "0")}`;
+}
+
+function zoneOffsetMinutes(utcMilliseconds, timezone) {
+  const civil = civilAt(new Date(utcMilliseconds), timezone);
+  return civil ? Math.round((civilValue(civil) - utcMilliseconds) / 60_000) : null;
+}
+
+function civilBoundaryInstant(civil, timezone) {
+  const naive = civilValue(civil);
+  const offsets = new Set();
+  for (const deltaHours of [-36, -24, -12, 0, 12, 24, 36]) {
+    const offset = zoneOffsetMinutes(naive + deltaHours * 3_600_000, timezone);
+    if (offset !== null) offsets.add(offset);
+  }
+  const candidates = [...offsets].map((offset) => naive - offset * 60_000);
+  const exact = candidates.filter((instant) => sameCivil(civilAt(new Date(instant), timezone), civil))
+    .sort((left, right) => left - right);
+  if (exact.length > 0) return exact[0];
+  const before = candidates.filter((instant) => {
+    const realized = civilAt(new Date(instant), timezone);
+    return realized !== null && civilValue(realized) < naive;
+  }).sort((left, right) => right - left)[0];
+  const after = candidates.filter((instant) => {
+    const realized = civilAt(new Date(instant), timezone);
+    return realized !== null && civilValue(realized) > naive;
+  }).sort((left, right) => left - right)[0];
+  if (!Number.isFinite(before) || !Number.isFinite(after) || before >= after) return null;
+  let lower = before;
+  let upper = after;
+  while (upper - lower > 1) {
+    const middle = lower + Math.floor((upper - lower) / 2);
+    const realized = civilAt(new Date(middle), timezone);
+    if (!realized) return null;
+    if (civilValue(realized) < naive) lower = middle;
+    else upper = middle;
+  }
+  return upper;
+}
+
+function validReferenceIdentity(reference, day, hour) {
+  if (!calendarDate(reference?.localDate) || !calendarDate(reference?.calculationDate)
+    || !calendarDate(day?.dateISO) || !calendarDate(hour?.civilDateISO)
+    || !calendarDate(hour?.calculationDateISO) || !Number.isInteger(hour?.timeIndex)
+    || typeof hour?.ganzhi !== "string") return false;
+  const timeIndex = hour.timeIndex;
+  const expectedBranch = HOUR_BRANCHES[timeIndex === 12 ? 0 : timeIndex];
+  if (!expectedBranch || hour.ganzhi.slice(1) !== expectedBranch) return false;
+  const [y, m, d] = hour.civilDateISO.split("-").map(Number);
+  const startHour = timeIndex === 0 || timeIndex === 12 ? 23 : timeIndex * 2 - 1;
+  const base = { y, m, d, h: startHour, mi: 0, s: 0 };
+  const start = timeIndex === 0 ? shiftCivilDate(base, -1) : base;
+  const end = timeIndex === 12 ? shiftCivilDate({ ...base, h: 1 }, 1)
+    : timeIndex === 0 ? { ...base, h: 1 } : { ...base, h: startHour + 2 };
+  const expectedCalculationDate = timeIndex === 12 ? civilDateISO(shiftCivilDate(base, 1)) : hour.civilDateISO;
+  const validFrom = civilBoundaryInstant(start, reference.timezone);
+  const validUntil = civilBoundaryInstant(end, reference.timezone);
+  return reference.timeIndex === timeIndex
+    && reference.effectiveTimeIndex === (timeIndex === 12 ? 0 : timeIndex)
+    && reference.localDate === hour.civilDateISO
+    && reference.calculationDate === expectedCalculationDate
+    && hour.calculationDateISO === expectedCalculationDate && day.dateISO === expectedCalculationDate
+    && reference.windowKey === `${LINEAGE}:${reference.timezone}:${expectedCalculationDate}:${expectedBranch}`
+    && validFrom !== null && validUntil !== null
+    && Date.parse(reference.validFrom) === validFrom && Date.parse(reference.validUntil) === validUntil;
+}
+
+function validCompactIdentity(value) {
+  const prefix = `${LINEAGE}:`;
+  if (typeof value?.windowKey !== "string" || !value.windowKey.startsWith(prefix)) return false;
+  const suffix = /^(.*):(\d{4}-\d{2}-\d{2}):([子丑寅卯辰巳午未申酉戌亥])$/u.exec(value.windowKey.slice(prefix.length));
+  if (!suffix || !suffix[1] || suffix[1].length > 80) return false;
+  return validReferenceIdentity({
+    timezone: suffix[1],
+    localDate: value.hour.civilDateISO,
+    calculationDate: suffix[2],
+    timeIndex: value.hour.timeIndex,
+    effectiveTimeIndex: value.hour.timeIndex === 12 ? 0 : value.hour.timeIndex,
+    validFrom: value.validFrom,
+    validUntil: value.validUntil,
+    windowKey: value.windowKey,
+  }, value.day, value.hour);
 }
 
 function text(value, min = 1, max = 160) {
@@ -71,9 +195,7 @@ function verifyFacts(facts) {
     "instant", "timezone", "localDate", "calculationDate", "timeIndex", "effectiveTimeIndex",
     "boundaryPolicy", "validFrom", "validUntil", "windowKey",
   ]) || !exactIso(reference.instant) || !exactIso(reference.validFrom) || !exactIso(reference.validUntil)
-    || Date.parse(reference.validUntil) - Date.parse(reference.validFrom) !== 2 * 3_600_000
-    || Date.parse(reference.instant) < Date.parse(reference.validFrom)
-    || Date.parse(reference.instant) >= Date.parse(reference.validUntil)
+    || !realizedShichenWindow(reference)
     || !text(reference.timezone, 1, 80) || !text(reference.windowKey, 1, 300)
     || reference.boundaryPolicy !== "forward_zi"
     || !Number.isInteger(reference.timeIndex) || reference.timeIndex < 0 || reference.timeIndex > 12
@@ -96,7 +218,7 @@ function verifyFacts(facts) {
     "mingPalaceName", "siHua", "hourlyStars",
   ]) || !baseLayer(liuShi) || !Array.isArray(liuShi.hourlyStars) || liuShi.hourlyStars.length !== 10
     || !liuShi.hourlyStars.every(starPlacement)) return false;
-  return true;
+  return validReferenceIdentity(reference, liuRi, liuShi);
 }
 
 function snapshotDigest(snapshotWithoutDigest) {
@@ -234,6 +356,7 @@ function parseZiweiHourlyProviderData(data) {
   ]) || !compactLayerValid(value.hour) || !calendarDate(value.hour.civilDateISO)
     || !calendarDate(value.hour.calculationDateISO) || !Number.isInteger(value.hour.timeIndex)
     || value.hour.timeIndex < 0 || value.hour.timeIndex > 12) return null;
+  if (!validCompactIdentity(value)) return null;
   return Object.freeze(value);
 }
 
@@ -295,5 +418,6 @@ module.exports = Object.freeze({
   buildZiweiHourlyProviderData,
   canonicalStringify,
   parseZiweiHourlyProviderData,
+  realizedShichenWindow,
   verifyZiweiHourlyNotificationSnapshot,
 });

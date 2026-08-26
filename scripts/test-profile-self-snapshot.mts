@@ -18,7 +18,7 @@ ck("resolve ยึด is_self อย่างเดียว", /arr\.find\(funct
 ck("เลิก fallback localStorage hk_profile_id ใน resolve", !/localStorage\.getItem\('hk_profile_id'\)/.test(resolve));
 ck("เลิก fallback arr\\[0\\] (ไม่หยิบดวงแรก/ญาติ)", !/\|\| arr\[0\]/.test(DRAWER));
 ck("ไม่เจอ self → ไม่เปิดฟอร์ม (เพิ่มดวงของคุณ)", /ยังไม่มีดวงของคุณ/.test(DRAWER));
-ck("หัว drawer โชว์ชื่อดวง self", /ตั้งค่าดวงของฉัน · ' \+ \(profile\.name/.test(DRAWER));
+ck("หัว drawer โชว์ชื่อดวง self", /hd\.textContent\s*=\s*'⚙ '\s*\+\s*tx\('title'\)\s*\+\s*' · '\s*\+\s*\(profile\.name\s*\|\|\s*''\)/.test(DRAWER));
 ck("มีลิงก์แก้ดวงญาติ → /yongsennetwork", /href="\/yongsennetwork"/.test(DRAWER) && /แก้ดวงญาติ/.test(DRAWER));
 ck("PUT ยังยิงไป profile.id (ดวง self ที่ resolve)", /\/api\/profile\/' \+ profile\.id/.test(DRAWER));
 

@@ -36,6 +36,8 @@ try {
     CREATE TABLE mobile_push_tokens (
       id uuid PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id), installation_id uuid NOT NULL,
       expo_push_token text NOT NULL UNIQUE, device_push_token text, device_token_type text,
+      zibai_payload_schema smallint NOT NULL DEFAULT 2,
+      zibai_calculation_version text NOT NULL DEFAULT 'zibai-zaoming-true-solar-v3',
       platform text NOT NULL, enabled boolean NOT NULL DEFAULT true, fail_count integer NOT NULL DEFAULT 0,
       last_registered_at timestamptz, last_success_at timestamptz, disabled_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
@@ -56,6 +58,11 @@ try {
   psql(database, observabilityMigration);
   psql(database, engagementMigration);
   psql(database, zibaiMigration);
+  psql(database, `
+    ALTER TABLE mobile_zibai_installations DROP CONSTRAINT mobile_zibai_installations_calculation_version_check;
+    ALTER TABLE mobile_zibai_installations ADD CONSTRAINT mobile_zibai_installations_calculation_version_check
+      CHECK (calculation_version IN ('zibai-zaoming-true-solar-v2','zibai-zaoming-true-solar-v3'));
+  `);
   psql(database, qimenMigration);
   psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
 
@@ -131,8 +138,8 @@ try {
     VALUES ('30000000-0000-4000-8000-000000000017','00000000-0000-4000-8000-000000000001','new-intentional-no-delivery','service','failed','no_deliverable_installation',now()-interval '1 hour',1);
     INSERT INTO mobile_zibai_installations
       (user_id,installation_id,daily_enabled,shichen_enabled,location_permission,latitude,longitude,location_timezone,
-       location_captured_at,location_expires_at,next_daily_at,next_shichen_at,last_skip_reason,updated_at)
-    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002',true,false,'foreground',13.75,100.5,'Asia/Bangkok',now()-interval '6 days',now()+interval '1 day',now()-interval '20 minutes',NULL,'engine_unavailable',now());
+       location_captured_at,location_expires_at,next_daily_at,next_shichen_at,calculation_version,last_skip_reason,updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002',true,false,'foreground',13.75,100.5,'Asia/Bangkok',now()-interval '6 days',now()+interval '1 day',now()-interval '20 minutes',NULL,'zibai-zaoming-true-solar-v3','engine_unavailable',now());
     INSERT INTO mobile_zibai_occurrences
       (user_id,installation_id,occurrence_key,occurrence_type,apparent_solar_date,shichen_key,calculation_version,state,skip_reason)
     VALUES ('00000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','observability-quiet','shichen',current_date,'si','zibai-zaoming-true-solar-v2','skipped','quiet_hours');
@@ -166,6 +173,7 @@ try {
   assert.equal(report.metrics.worker.fresh, false, "stale worker heartbeat is visible and unhealthy");
   assert.equal(report.metrics.schedulers.every((entry: { fresh: boolean }) => entry.fresh), true, "all fresh scheduler heartbeats are individually healthy");
   assert.deepEqual(report.metrics.zibai, {
+    activeEnabledCount: 1, inactiveOrphanCount: 0,
     overdueCount: 1, oldestLagSeconds: report.metrics.zibai.oldestLagSeconds,
     locationFreshCount: 1, locationStaleCount: 0, locationAbsentCount: 0, engineFailureCount: 1,
     dailyReservedCount: 0, shichenReservedCount: 0, skippedCount: 1, quietSkipCount: 1, duplicateOrCapCount: 0,

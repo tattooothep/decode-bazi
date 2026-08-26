@@ -3,6 +3,10 @@
 
 const { constants, accessSync, readFileSync } = require("node:fs");
 const { execFileSync } = require("node:child_process");
+const pg = require("pg");
+const {
+  inspectInstalledEnvironment, readInstalledEnvironment,
+} = require("./derive-hourkey-notification-env.cjs");
 
 function canAccess(access, target, mode) {
   try { access(target, mode); return true; } catch { return false; }
@@ -24,10 +28,66 @@ function defaultServiceUserAccess(name, target, mode) {
 
 function hasStateDirectoryContract(readUnit) {
   try {
-    const source = readUnit("/root/releases/current/ops/systemd/hourkey-mobile-push-retry-receipts.service", "utf8");
-    return /^User=root$/m.test(source) && /^Group=root$/m.test(source) && /^StateDirectory=hourkey-notification$/m.test(source);
+    const source = readUnit("/root/releases/current/ops/tmpfiles.d/hourkey-notification.conf", "utf8");
+    return /^d \/var\/lib\/hourkey-notification 0750 hourkey-notify hourkey-notify -$/m.test(source);
   } catch {
     return false;
+  }
+}
+
+function emptyDatabaseProof() {
+  return {
+    databaseConnected: false, exactRuntimeRole: false, producerReadOnly: false,
+    ziweiParentUpdate: false, ziweiAttemptUpdate: false, ziweiIntegrityTriggers: false,
+  };
+}
+
+async function inspectDatabaseAccess(options = {}) {
+  const environment = options.environment || readInstalledEnvironment();
+  if (!environment || environment.PGUSER !== "hourkey_app") return emptyDatabaseProof();
+  let client;
+  try {
+    if (options.connect) client = await options.connect(environment);
+    else {
+      client = new pg.Client({
+        host: environment.PGHOST, port: Number(environment.PGPORT),
+        database: environment.PGDATABASE, user: environment.PGUSER,
+        password: environment.PGPASSWORD,
+      });
+      await client.connect();
+    }
+    const result = await client.query(
+      `SELECT current_user='hourkey_app' AND session_user='hourkey_app' AS exact_runtime_role,
+              has_table_privilege(current_user,'mobile_ziwei_hourly_producer_state','SELECT')
+                AND NOT has_table_privilege(current_user,'mobile_ziwei_hourly_producer_state','UPDATE')
+                AND NOT has_table_privilege(current_user,'mobile_ziwei_hourly_producer_state','INSERT')
+                AND NOT has_table_privilege(current_user,'mobile_ziwei_hourly_producer_state','DELETE') AS producer_read_only,
+              has_table_privilege(current_user,'mobile_push_log','UPDATE') AS ziwei_parent_update,
+              has_table_privilege(current_user,'mobile_push_attempts','UPDATE') AS ziwei_attempt_update,
+              (SELECT count(*)=3 FROM pg_catalog.pg_trigger t
+                JOIN pg_catalog.pg_class c ON c.oid=t.tgrelid
+               WHERE t.tgenabled='O' AND NOT t.tgisinternal AND (
+                 (c.oid='mobile_ziwei_hourly_producer_state'::regclass
+                   AND t.tgname='mobile_ziwei_hourly_producer_mutation_gate')
+                 OR (c.oid='mobile_push_log'::regclass
+                   AND t.tgname='mobile_ziwei_push_parent_integrity')
+                 OR (c.oid='mobile_push_attempts'::regclass
+                   AND t.tgname='mobile_ziwei_push_attempt_integrity')
+               )) AS ziwei_integrity_triggers`,
+    );
+    const row = result.rows[0] || {};
+    return {
+      databaseConnected: true,
+      exactRuntimeRole: row.exact_runtime_role === true,
+      producerReadOnly: row.producer_read_only === true,
+      ziweiParentUpdate: row.ziwei_parent_update === true,
+      ziweiAttemptUpdate: row.ziwei_attempt_update === true,
+      ziweiIntegrityTriggers: row.ziwei_integrity_triggers === true,
+    };
+  } catch {
+    return emptyDatabaseProof();
+  } finally {
+    if (client?.end) await client.end().catch(() => undefined);
   }
 }
 
@@ -55,12 +115,18 @@ function inspect(options = {}) {
     "/root/releases/current/scripts/mobile-zibai-push-cron.cjs",
     "/root/releases/current/scripts/mobile-qimen-push-cron.cjs",
     "/root/releases/current/scripts/mobile-ziwei-hourly-push-cron.mts",
+    "/root/releases/current/scripts/derive-hourkey-notification-env.cjs",
+    "/root/releases/current/ops/tmpfiles.d/hourkey-notification.conf",
     "/root/releases/current/ops/systemd/hourkey-mobile-qimen-push.service",
     "/root/releases/current/ops/systemd/hourkey-mobile-ziwei-hourly-push.service",
   ];
   const releaseReadable = releasePaths.every((target) => canAccess(access, target, constants.R_OK));
   const environmentReadable = canAccess(access, "/etc/hourkey/hourkey.env", constants.R_OK);
-  const credentialReadable = canAccess(access, env.FCM_SERVICE_ACCOUNT_PATH || "/root/secrets/hourkey-fcm-service-account.json", constants.R_OK);
+  const notificationEnvironmentReadable = canAccess(access, "/etc/hourkey/hourkey-notification.env", constants.R_OK);
+  const notificationEnvironmentContract = options.notificationEnvironmentContract || inspectInstalledEnvironment;
+  const notificationEnvironmentValid = notificationEnvironmentReadable
+    && (() => { try { return notificationEnvironmentContract("/etc/hourkey/hourkey-notification.env") === true; } catch { return false; } })();
+  const credentialReadable = canAccess(access, "/etc/hourkey/credentials/fcm-service-account.json", constants.R_OK);
   const stateReady = canAccess(access, "/var/lib/hourkey-notification", constants.W_OK);
   const stateCreatable = !stateReady && runtimeRoot
     && canAccess(access, "/var/lib", constants.W_OK) && hasStateDirectoryContract(readUnit);
@@ -75,21 +141,42 @@ function inspect(options = {}) {
     ["/var/lib/hourkey-notification", constants.W_OK],
     ["/var/log/hourkey", constants.W_OK],
   ];
-  const ziweiServiceAccess = ziweiServiceUser && ziweiServicePaths.every(([target, mode]) => {
+  const ziweiEnvironmentReadable = ziweiServiceUser && (() => {
+    try { return serviceUserAccess("hourkey-notify", "/etc/hourkey/hourkey-notification.env", constants.R_OK) === true; }
+    catch { return false; }
+  })();
+  const ziweiServiceAccess = ziweiEnvironmentReadable && ziweiServicePaths.every(([target, mode]) => {
     try { return serviceUserAccess("hourkey-notify", target, mode) === true; } catch { return false; }
   });
   return {
-    ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable && credentialReadable
-      && (stateReady || stateCreatable) && ziweiServiceUser && ziweiServiceAccess,
-    runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, credentialReadable, stateReady, stateCreatable,
-    ziweiServiceUser, ziweiServiceAccess,
+    ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable
+      && notificationEnvironmentReadable && notificationEnvironmentValid && credentialReadable
+      && (stateReady || stateCreatable) && ziweiServiceUser && ziweiEnvironmentReadable && ziweiServiceAccess,
+    runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, notificationEnvironmentReadable,
+    notificationEnvironmentValid, credentialReadable, stateReady, stateCreatable,
+    ziweiServiceUser, ziweiEnvironmentReadable, ziweiServiceAccess,
+  };
+}
+
+async function runPreflight(options = {}) {
+  const filesystem = inspect(options);
+  const database = await inspectDatabaseAccess(options.database || {});
+  return {
+    ...filesystem, ...database,
+    ok: filesystem.ok && database.databaseConnected && database.exactRuntimeRole
+      && database.producerReadOnly && database.ziweiParentUpdate && database.ziweiAttemptUpdate
+      && database.ziweiIntegrityTriggers,
   };
 }
 
 if (require.main === module) {
-  const report = inspect();
-  console.log(JSON.stringify(report));
-  if (!report.ok) process.exitCode = 1;
+  runPreflight().then((report) => {
+    console.log(JSON.stringify(report));
+    if (!report.ok) process.exitCode = 1;
+  }).catch(() => {
+    console.log(JSON.stringify({ ...inspect(), ...emptyDatabaseProof(), ok: false }));
+    process.exitCode = 1;
+  });
 }
 
-module.exports = { hasStateDirectoryContract, inspect };
+module.exports = { hasStateDirectoryContract, inspect, inspectDatabaseAccess, runPreflight };

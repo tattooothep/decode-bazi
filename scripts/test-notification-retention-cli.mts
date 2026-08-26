@@ -8,7 +8,7 @@ const cli = require("./notification-retention.cjs");
 
 assert.deepEqual(cli.parseArgs([]), {
   ok: true, sourceFactsDays: 30, attemptDays: 90, engagementDays: 90, historyDays: 180,
-  securityHistoryDays: 365, batchSize: 500, maxBatches: 20,
+  securityHistoryDays: 365, ziweiOccurrenceDays: 30, batchSize: 500, maxBatches: 20,
 }, "retention CLI has explicit conservative bounded defaults");
 assert.equal(cli.parseArgs(["--history-days", "0"]).ok, false, "retention CLI rejects an unbounded/destructive zero-day history window");
 assert.equal(cli.parseArgs(["--batch-size", "5001"]).ok, false, "retention CLI bounds each database batch");
@@ -28,6 +28,7 @@ const service = "ops/systemd/hourkey-mobile-notification-retention.service";
 const timer = "ops/systemd/hourkey-mobile-notification-retention.timer";
 const rotation = "ops/logrotate/hourkey-mobile-notification-retention";
 const runbook = "docs/runbooks/notification-retention.md";
+const ziweiRetentionMigration = "migrations/20260826_mobile_ziwei_occurrence_retention.sql";
 for (const file of [service, timer, rotation, runbook]) {
   const source = await readFile(file, "utf8");
   assert.doesNotMatch(source, /(?:systemctl\s+(?:enable|start|restart)|PGPASSWORD=|ExponentPushToken|authorization:)/iu, `${file} remains source-only and contains no live operation or credential material`);
@@ -38,6 +39,18 @@ assert.match(serviceSource, /^LogsDirectoryMode=0750$/mu, "retention log directo
 assert.match(serviceSource, /notification-retention\.cjs/u, "retention service runs only the reviewed bounded runner");
 assert.match(serviceSource, /--attempt-days 90 --engagement-days 90/u,
   "installed policy retains installation ownership throughout late engagement acceptance");
+assert.match(serviceSource, /--ziwei-occurrence-days 30/u,
+  "installed policy makes the personal Ziwei snapshot window explicit");
+assert.match(serviceSource, /^EnvironmentFile=\/etc\/hourkey\/hourkey-notification\.env$/mu,
+  "retention uses the same least-secret PostgreSQL environment");
+const runbookSource = await readFile(runbook, "utf8");
+assert.match(runbookSource, /Ziwei[\s\S]+30 days[\s\S]+claimed[\s\S]+skipped/iu,
+  "the runbook records the bounded unlinked Ziwei snapshot policy");
+const ziweiRetentionMigrationSource = await readFile(ziweiRetentionMigration, "utf8");
+assert.match(ziweiRetentionMigrationSource, /GRANT DELETE ON mobile_ziwei_hourly_occurrences TO hourkey_app/u,
+  "the notification runtime role receives only the additional occurrence-delete capability needed by retention");
+assert.doesNotMatch(ziweiRetentionMigrationSource, /mobile_ziwei_hourly_producer_state/u,
+  "the retention migration does not broaden producer-control privileges");
 const rotationSource = await readFile(rotation, "utf8");
 assert.match(rotationSource, /rotate 14/u, "retention logs have explicit bounded rotation");
 assert.match(rotationSource, /create 0640 root root/u, "rotated aggregate logs remain restrictive");

@@ -10,6 +10,7 @@ const ARGUMENTS = Object.freeze({
   "--engagement-days": "engagementDays",
   "--history-days": "historyDays",
   "--security-history-days": "securityHistoryDays",
+  "--ziwei-occurrence-days": "ziweiOccurrenceDays",
   "--batch-size": "batchSize",
   "--max-batches": "maxBatches",
 });

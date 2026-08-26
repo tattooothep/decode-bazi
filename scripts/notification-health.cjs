@@ -5,6 +5,8 @@ const { readFileSync, statSync } = require("node:fs");
 const { Client } = require("pg");
 const { collectHealth } = require("../src/lib/notification-observability.cjs");
 const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
+const { expoIosPushReady } = require("../src/lib/mobile-push-registration-readiness.cjs");
+const { readZiweiRuntimeContext } = require("../src/lib/ziwei-hourly-runtime-observability.cjs");
 
 function argumentValue(argumentsList, name) {
   const index = argumentsList.indexOf(name);
@@ -23,8 +25,7 @@ function providerReadiness(env = process.env) {
     const credential = JSON.parse(readFileSync(keyPath, "utf8"));
     fcm = ["private_key", "client_email", "project_id", "token_uri"].every((key) => typeof credential?.[key] === "string" && credential[key].trim());
   } catch {}
-  // Expo permits unauthenticated project sends; an optional access token is not a readiness prerequisite.
-  return { fcm, expo: true };
+  return { fcm, expo: expoIosPushReady(env) };
 }
 
 function createDb() {
@@ -43,13 +44,15 @@ async function main(options = {}) {
   const db = options.db || createDb();
   try {
     if (ownsDb) await db.connect();
-    const report = await collectHealth(db, {
+    const execute = options.collectHealth || collectHealth;
+    const report = await execute(db, {
       lookbackHours,
       heartbeat: {
         workerAt: readHeartbeat(workerFile),
         schedulers: schedulerHeartbeat.readSchedulerHeartbeats(schedulerDirectory),
       },
       providerReady: providerReadiness(options.env || process.env),
+      ziweiRuntime: readZiweiRuntimeContext(options.env || process.env),
     });
     (options.log || console.log)(JSON.stringify(report));
     return report;

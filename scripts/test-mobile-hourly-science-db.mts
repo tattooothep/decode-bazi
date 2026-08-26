@@ -52,46 +52,104 @@ try {
   await setSearchPath(admin);
   await admin.query(`CREATE TABLE users(
     id uuid PRIMARY KEY, timezone text DEFAULT 'Asia/Bangkok', locale text DEFAULT 'th',
-    is_active boolean NOT NULL DEFAULT true, deleted_at timestamptz
+    is_active boolean NOT NULL DEFAULT true, deleted_at timestamptz,
+    tier text NOT NULL DEFAULT 'premium',sub_expires_at timestamptz DEFAULT '2099-01-01T00:00:00Z',
+    trial_ends_at timestamptz
   )`);
   await admin.query(`CREATE TABLE profiles(
-    id uuid PRIMARY KEY, created_by_user_id uuid REFERENCES users(id),
+    id uuid PRIMARY KEY, created_by_user_id uuid REFERENCES users(id) ON DELETE CASCADE,
     birth_datetime timestamptz, birth_time_known boolean,
     birth_lat float8,birth_lng float8,gender text,relationship_type text,
     is_archived boolean NOT NULL DEFAULT false, name text, nickname text
   )`);
   await admin.query(`CREATE TABLE mobile_notification_prefs(
-    user_id uuid PRIMARY KEY REFERENCES users(id), timezone text DEFAULT 'Asia/Bangkok', locale text DEFAULT 'th',
+    user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE, timezone text DEFAULT 'Asia/Bangkok', locale text DEFAULT 'th',
     max_per_day integer NOT NULL DEFAULT 2, privacy_preview boolean NOT NULL DEFAULT false,
     updated_at timestamptz NOT NULL DEFAULT now()
   )`);
   await admin.query(`CREATE TABLE mobile_push_tokens(
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES users(id),
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     installation_id uuid NOT NULL, device_push_token text, device_token_type text, expo_push_token text,
-    platform text NOT NULL, enabled boolean NOT NULL DEFAULT true
+    platform text NOT NULL, enabled boolean NOT NULL DEFAULT true,last_registered_at timestamptz,
+    updated_at timestamptz NOT NULL DEFAULT now(),disabled_at timestamptz
   )`);
   await admin.query(`CREATE TABLE mobile_push_log(
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES users(id), yam_key text NOT NULL,
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, yam_key text NOT NULL,
     kind text NOT NULL,title text NOT NULL,body text NOT NULL,payload jsonb NOT NULL DEFAULT '{}'::jsonb,
     source_facts jsonb NOT NULL DEFAULT '{}'::jsonb,delivery_status text NOT NULL DEFAULT 'pending',
     attempt_count integer NOT NULL DEFAULT 0,next_retry_at timestamptz,accepted_at timestamptz,sent_at timestamptz,
-    last_error text,updated_at timestamptz NOT NULL DEFAULT now(),UNIQUE(user_id,yam_key)
+    last_error text,source_facts_redacted_at timestamptz,attempts_retired_at timestamptz,
+    delivery_model_generation smallint NOT NULL DEFAULT 1,created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),UNIQUE(user_id,yam_key)
   )`);
   await admin.query(`CREATE TABLE mobile_push_attempts(
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),push_log_id uuid NOT NULL REFERENCES mobile_push_log(id),
-    token_id uuid REFERENCES mobile_push_tokens(id),installation_id uuid NOT NULL,provider text NOT NULL,
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),push_log_id uuid NOT NULL REFERENCES mobile_push_log(id) ON DELETE CASCADE,
+    token_id uuid REFERENCES mobile_push_tokens(id) ON DELETE SET NULL,installation_id uuid NOT NULL,provider text NOT NULL,
     provider_message jsonb NOT NULL,message_sha256 text NOT NULL,privacy_safe boolean NOT NULL,
-    transactional boolean NOT NULL,status text NOT NULL,next_retry_at timestamptz,updated_at timestamptz NOT NULL,
+    transactional boolean NOT NULL,status text NOT NULL,next_retry_at timestamptz,
+    send_count integer NOT NULL DEFAULT 0,lease_token text,lease_expires_at timestamptz,
+    send_started_at timestamptz,provider_message_id text,provider_ticket_id text,next_receipt_at timestamptz,
+    provider_receipt_checked_at timestamptz,receipt_poll_count integer NOT NULL DEFAULT 0,last_error text,
+    accepted_at timestamptz,delivered_at timestamptz,created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL,
     UNIQUE(push_log_id,installation_id)
   )`);
 
   await admin.query(migration);
   await admin.query(migration);
+  await admin.query(`GRANT USAGE ON SCHEMA ${quotedSchema} TO hourkey_app`);
+  await admin.query("GRANT SELECT,INSERT,UPDATE ON mobile_push_log TO hourkey_app");
+  await admin.query("GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_push_attempts TO hourkey_app");
+
+  async function assertHourkeyAppRejects(sql: string, params: unknown[], label: string): Promise<void> {
+    await admin.query("BEGIN");
+    try {
+      await admin.query("SET LOCAL ROLE hourkey_app");
+      await admin.query(`SET LOCAL search_path TO ${quotedSchema},public`);
+      await assert.rejects(
+        admin.query(sql, params),
+        (error: any) => error?.code === "P0001" || error?.code === "42501",
+        label,
+      );
+    } finally {
+      await admin.query("ROLLBACK");
+      await setSearchPath(admin);
+    }
+  }
+  for (const [wall, timezone, expected, label] of [
+    ["1984-12-31T13:15:00+07:00", "Asia/Bangkok", true, "ordinary IANA wall clock"],
+    ["1984-12-31T13:15:00+07:00", "UTC", true, "explicit UTC wall clock"],
+    ["1984-12-31T13:15:00+07:00", "CET", false, "abbreviated timezone"],
+    ["1984-12-31T13:15:00+07:00", "Factory", false, "tzdb implementation alias"],
+    ["1900-01-31T12:00:00+07:00", "Europe/Paris", false, "historical sub-minute offset"],
+  ] as const) {
+    assert.equal((await admin.query(
+      "SELECT hourkey_ziwei_birth_wall_eligible($1::timestamptz,$2) AS eligible",
+      [wall, timezone],
+    )).rows[0].eligible, expected, `${label} follows the shared Ziwei resolver domain`);
+  }
   assert.equal((await admin.query("SELECT producer_enabled FROM mobile_ziwei_hourly_producer_state")).rows[0].producer_enabled, false);
   await assert.rejects(
     admin.query("UPDATE mobile_ziwei_hourly_producer_state SET producer_enabled=true"),
     (error: any) => error?.code === "23514",
     "Ziwei producer cannot be enabled without exact provenance",
+  );
+  await assert.rejects(
+    admin.query(`UPDATE mobile_ziwei_hourly_producer_state
+                    SET producer_enabled=true,backend_commit=repeat('a',40),enabled_at=now(),enabled_by=NULL`),
+    (error: any) => error?.code === "23514",
+    "PostgreSQL CHECK null semantics cannot bypass Ziwei producer provenance",
+  );
+  assert.equal((await admin.query(
+    "SELECT has_table_privilege('hourkey_app','mobile_ziwei_hourly_producer_state','SELECT') AS allowed",
+  )).rows[0].allowed, true, "the runtime role can read the global producer fence");
+  assert.equal((await admin.query(
+    "SELECT has_table_privilege('hourkey_app','mobile_ziwei_hourly_producer_state','UPDATE') AS allowed",
+  )).rows[0].allowed, false, "the runtime role cannot re-enable its own privileged kill switch");
+  await assertHourkeyAppRejects(
+    "UPDATE mobile_ziwei_hourly_producer_state SET producer_enabled=false",
+    [],
+    "SET ROLE hourkey_app cannot mutate the producer fence even to a superficially safe value",
   );
   await assert.rejects(
     admin.query("UPDATE mobile_qizheng_electional_producer_state SET producer_enabled=true"),
@@ -207,7 +265,7 @@ try {
     reference_timezone: "Asia/Bangkok",
     quiet_start: 22,
     quiet_end: 7,
-  }, snapshot, occurrenceId, "2026-08-26T12:10:00.000Z");
+  }, snapshot, occurrenceId, "2026-08-26T12:10:00.000Z", "a".repeat(40));
   const reservation = await delivery.reserve(admin, notice);
   assert.equal(reservation.attemptIds.length, 1, "valid Ziwei occurrence creates exactly one attempt");
   const persisted = (await admin.query(
@@ -226,6 +284,212 @@ try {
   assert.equal(providerEnvelope.notificationId, reservation.id);
   assert.equal(providerEnvelope.ziweiHourlyV2, notice.payload.ziweiHourlyV2);
   assert.equal(await delivery.reserve(admin, notice), null, "same occurrence cannot reserve twice");
+
+  const exploitInstallationId = claimed10k.rows[1].installation_id;
+  const exploitTokenId = crypto.randomUUID();
+  const exploitOccurrenceId = crypto.randomUUID();
+  const exploitParentId = crypto.randomUUID();
+  const exploitAttemptId = crypto.randomUUID();
+  await admin.query(
+    `INSERT INTO mobile_push_tokens
+       (id,user_id,installation_id,device_push_token,device_token_type,expo_push_token,platform,ziwei_payload_schema)
+     VALUES($1,$2,$3,'fcm-ziwei-exploit-fixture','fcm',NULL,'android',2)`,
+    [exploitTokenId, userId, exploitInstallationId],
+  );
+  const exploitKey = scheduler.occurrenceKey({
+    user_id: userId, installation_id: exploitInstallationId,
+    profile_id: profileId, owner_generation: ownerGeneration,
+  }, snapshot);
+  await admin.query(
+    `INSERT INTO mobile_ziwei_hourly_occurrences
+       (id,user_id,installation_id,profile_id,owner_generation,occurrence_key,lineage,calculation_version,
+        window_valid_from,window_valid_until,send_deadline,snapshot,snapshot_digest)
+     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::timestamptz,$10::timestamptz,$11::timestamptz,$12::jsonb,$13)`,
+    [exploitOccurrenceId, userId, exploitInstallationId, profileId, ownerGeneration, exploitKey,
+      snapshot.facts.lineage, snapshot.facts.calculationVersion, snapshot.facts.reference.validFrom,
+      snapshot.facts.reference.validUntil, "2026-08-26T12:10:00.000Z",
+      JSON.stringify(snapshot), snapshot.snapshotDigest],
+  );
+  const exploitNotice = scheduler.buildZiweiNotice({
+    user_id: userId, installation_id: exploitInstallationId, profile_id: profileId,
+    token_id: exploitTokenId, device_push_token: "fcm-ziwei-exploit-fixture",
+    device_token_type: "fcm", expo_push_token: null, platform: "android",
+    token_locale: "th", account_locale: "th", owner_generation: ownerGeneration,
+    reference_timezone: "Asia/Bangkok", quiet_start: 22, quiet_end: 7,
+  }, snapshot, exploitOccurrenceId, "2026-08-26T12:10:00.000Z", "a".repeat(40));
+  const forgedProviderMessage = {
+    notification: { title: "forged Ziwei", body: "forged science copy" },
+    data: { body: JSON.stringify({ notificationId: exploitParentId, ziweiHourlyV2: "forged-envelope" }) },
+    android: { priority: "HIGH", ttl: "300s", notification: { sound: "default", channel_id: "hourkey-ziwei-hourly-v1" } },
+  };
+  await admin.query("BEGIN");
+  try {
+    await admin.query("SET LOCAL ROLE hourkey_app");
+    await admin.query(`SET LOCAL search_path TO ${quotedSchema},public`);
+    await admin.query(
+      `INSERT INTO mobile_push_log
+         (id,user_id,yam_key,kind,title,body,payload,source_facts,delivery_status,attempt_count,next_retry_at)
+       VALUES($1,$2,$3,'ziwei',$4,$5,$6::jsonb,$7::jsonb,'pending',0,now())`,
+      [exploitParentId, userId, exploitKey, exploitNotice.title, exploitNotice.body,
+        JSON.stringify(exploitNotice.payload), JSON.stringify(exploitNotice.sourceFacts)],
+    );
+    await admin.query(
+      `INSERT INTO mobile_push_attempts
+         (id,push_log_id,token_id,installation_id,provider,provider_message,message_sha256,
+          privacy_safe,transactional,status,next_retry_at,updated_at)
+       VALUES($1,$2,$3,$4,'fcm',$5::jsonb,$6,true,false,'reserved',now(),now())`,
+      [exploitAttemptId, exploitParentId, exploitTokenId, exploitInstallationId,
+        JSON.stringify(forgedProviderMessage), delivery.messageSha256(forgedProviderMessage)],
+    );
+    await admin.query(
+      `UPDATE mobile_ziwei_hourly_occurrences
+          SET state='reserved',push_log_id=$2,updated_at=now()
+        WHERE id=$1`,
+      [exploitOccurrenceId, exploitParentId],
+    );
+    await admin.query("COMMIT");
+  } catch (error) {
+    await admin.query("ROLLBACK");
+    throw error;
+  } finally {
+    await setSearchPath(admin);
+  }
+  await admin.query(
+    `UPDATE mobile_ziwei_hourly_producer_state
+        SET producer_enabled=true,backend_commit=repeat('a',40),enabled_at=now(),enabled_by='security-db-test'`,
+  );
+  const previousRuntimeGate = process.env.ZIWEI_HOURLY_PRODUCER_ENABLED;
+  const previousRuntimeCommit = process.env.HOURKEY_RELEASE_COMMIT;
+  process.env.ZIWEI_HOURLY_PRODUCER_ENABLED = "1";
+  process.env.HOURKEY_RELEASE_COMMIT = "a".repeat(40);
+  let exploitSenderCalls = 0;
+  try {
+    const exploitRun = await delivery.runRetryBatch(admin, {
+      attemptIds: [exploitAttemptId], limit: 1,
+      hooks: { policyNow: new Date("2026-08-26T12:01:30.000Z") },
+      sender: { async sendPrepared() { exploitSenderCalls += 1; return { kind: "provider_accepted" }; } },
+    });
+    assert.equal(exploitRun.dead, 1, "a direct-role fake bind is terminally fenced");
+    assert.equal(exploitRun.outcomes[0]?.reason, "policy_attestation_changed");
+    assert.equal(exploitSenderCalls, 0,
+      "a SET ROLE hourkey_app fake parent/provider message never reaches the provider sender");
+  } finally {
+    if (previousRuntimeGate === undefined) delete process.env.ZIWEI_HOURLY_PRODUCER_ENABLED;
+    else process.env.ZIWEI_HOURLY_PRODUCER_ENABLED = previousRuntimeGate;
+    if (previousRuntimeCommit === undefined) delete process.env.HOURKEY_RELEASE_COMMIT;
+    else process.env.HOURKEY_RELEASE_COMMIT = previousRuntimeCommit;
+  }
+  await assertHourkeyAppRejects(
+    "UPDATE mobile_push_log SET source_facts=jsonb_set(source_facts,'{windowKey}','\"forged\"'::jsonb) WHERE id=$1",
+    [reservation.id],
+    "SET ROLE hourkey_app cannot rewrite a pending Ziwei source attestation",
+  );
+  await assertHourkeyAppRejects(
+    "UPDATE mobile_push_log SET kind='daily' WHERE id=$1",
+    [reservation.id],
+    "SET ROLE hourkey_app cannot relabel a Ziwei parent to escape its policy gate",
+  );
+  const genericParentId = crypto.randomUUID();
+  await admin.query(
+    `INSERT INTO mobile_push_log(id,user_id,yam_key,kind,title,body,payload,source_facts)
+     VALUES($1,$2,'generic-parent','daily','title','body','{}','{}')`,
+    [genericParentId, userId],
+  );
+  await assertHourkeyAppRejects(
+    "UPDATE mobile_push_log SET kind='ziwei' WHERE id=$1",
+    [genericParentId],
+    "SET ROLE hourkey_app cannot relabel an unattested generic parent as Ziwei",
+  );
+  await admin.query("BEGIN");
+  try {
+    await admin.query("UPDATE mobile_push_log SET delivery_status='accepted' WHERE id=$1", [reservation.id]);
+    await admin.query("SET LOCAL ROLE hourkey_app");
+    await admin.query(`SET LOCAL search_path TO ${quotedSchema},public`);
+    await admin.query("CREATE TEMP TABLE mobile_push_attempts(push_log_id uuid,status text)");
+    await assert.rejects(
+      admin.query("UPDATE mobile_push_log SET source_facts='{}'::jsonb WHERE id=$1", [reservation.id]),
+      (error: any) => error?.code === "P0001",
+      "a pg_temp attempt table cannot shadow the real open Ziwei attempt and unlock provenance redaction",
+    );
+  } finally {
+    await admin.query("ROLLBACK");
+    await setSearchPath(admin);
+  }
+  const attemptId = reservation.attemptIds[0];
+  await assertHourkeyAppRejects(
+    "UPDATE mobile_push_attempts SET push_log_id=$2 WHERE id=$1",
+    [attemptId, genericParentId],
+    "SET ROLE hourkey_app cannot detach a Ziwei attempt from its immutable parent",
+  );
+  await admin.query("UPDATE mobile_push_attempts SET status='dead' WHERE id=$1", [attemptId]);
+  await assertHourkeyAppRejects(
+    "UPDATE mobile_push_attempts SET status='retry_due',send_started_at=NULL WHERE id=$1",
+    [attemptId],
+    "SET ROLE hourkey_app cannot resurrect a terminal Ziwei provider attempt",
+  );
+  await assertHourkeyAppRejects(
+    "DELETE FROM mobile_push_attempts WHERE id=$1",
+    [attemptId],
+    "SET ROLE hourkey_app cannot delete a live-audit Ziwei attempt and reinsert it as reserved",
+  );
+  await assertHourkeyAppRejects(
+    "DELETE FROM mobile_push_log WHERE id=$1",
+    [reservation.id],
+    "SET ROLE hourkey_app cannot delete and reconstruct a live-audit Ziwei parent",
+  );
+  await assertHourkeyAppRejects(
+    "UPDATE mobile_push_log SET attempts_retired_at=now() WHERE id=$1",
+    [reservation.id],
+    "SET ROLE hourkey_app cannot forge the retention marker for a recent Ziwei attempt",
+  );
+  await admin.query("BEGIN");
+  try {
+    await admin.query("SET LOCAL ROLE hourkey_app");
+    await admin.query(`SET LOCAL search_path TO ${quotedSchema},public`);
+    await admin.query("CREATE TEMP TABLE mobile_push_log(id uuid,kind text)");
+    await admin.query("INSERT INTO mobile_push_log(id,kind) VALUES($1,'daily')", [reservation.id]);
+    await assert.rejects(
+      admin.query("UPDATE mobile_push_attempts SET status='retry_due' WHERE id=$1", [attemptId]),
+      (error: any) => error?.code === "P0001",
+      "a pg_temp parent table cannot shadow the real Ziwei parent and resurrect a terminal attempt",
+    );
+  } finally {
+    await admin.query("ROLLBACK");
+    await setSearchPath(admin);
+  }
+  await admin.query("UPDATE mobile_push_log SET delivery_status='failed' WHERE id=$1", [reservation.id]);
+  await admin.query("BEGIN");
+  try {
+    await admin.query("SET LOCAL ROLE hourkey_app");
+    await admin.query(`SET LOCAL search_path TO ${quotedSchema},public`);
+    assert.equal((await admin.query(
+      `UPDATE mobile_push_log
+          SET source_facts='{}'::jsonb,source_facts_redacted_at=now()
+        WHERE id=$1 RETURNING id`,
+      [reservation.id],
+    )).rowCount, 1, "terminal Ziwei provenance remains one-way redactable by the bounded retention path");
+  } finally {
+    await admin.query("ROLLBACK");
+    await setSearchPath(admin);
+  }
+
+  await workerA.query(
+    `SELECT pg_advisory_lock_shared(hashtextextended('mobile-ziwei-hourly-producer-gate:v1',0))`,
+  );
+  await workerB.query("BEGIN");
+  await workerB.query("SET LOCAL lock_timeout='200ms'");
+  await assert.rejects(
+    workerB.query("UPDATE mobile_ziwei_hourly_producer_state SET updated_at=now()"),
+    (error: any) => error?.code === "55P03",
+    "an admin mutation cannot cross a shared provider gate held by an in-flight Ziwei send",
+  );
+  await workerB.query("ROLLBACK");
+  assert.equal((await workerA.query(
+    `SELECT pg_advisory_unlock_shared(hashtextextended('mobile-ziwei-hourly-producer-gate:v1',0)) AS unlocked`,
+  )).rows[0].unlocked, true);
+  await workerB.query("UPDATE mobile_ziwei_hourly_producer_state SET updated_at=now()",
+    [],
+  );
   await assert.rejects(
     admin.query("UPDATE mobile_ziwei_hourly_occurrences SET snapshot='{\"tampered\":true}' WHERE id=$1", [occurrenceId]),
     (error: any) => error?.code === "P0001",
@@ -243,6 +507,89 @@ try {
     (error: any) => error?.code === "23505",
     "profile/window dedupe rejects a second occurrence",
   );
+
+  async function assertNatalLifecycleRevokes(wall: string, timezone: string, label: string): Promise<void> {
+    const lifecycleUserId = crypto.randomUUID();
+    const lifecycleProfileId = crypto.randomUUID();
+    const lifecycleInstallationId = crypto.randomUUID();
+    await admin.query("INSERT INTO users(id) VALUES($1)", [lifecycleUserId]);
+    await admin.query(
+      `INSERT INTO profiles
+         (id,created_by_user_id,birth_datetime,birth_time_known,birth_tz,gender,relationship_type,name)
+       VALUES($1,$2,'1984-12-31T13:15:00+07:00',true,'Asia/Bangkok','M',NULL,'Lifecycle')`,
+      [lifecycleProfileId, lifecycleUserId],
+    );
+    await admin.query(
+      `INSERT INTO mobile_notification_prefs(user_id,ziwei_hourly_enabled,ziwei_profile_id)
+       VALUES($1,true,$2)`,
+      [lifecycleUserId, lifecycleProfileId],
+    );
+    await admin.query(
+      `INSERT INTO mobile_ziwei_hourly_installations
+         (user_id,installation_id,profile_id,enabled,reference_timezone,next_due_at)
+       VALUES($1,$2,$3,true,'Asia/Bangkok',now())`,
+      [lifecycleUserId, lifecycleInstallationId, lifecycleProfileId],
+    );
+    await admin.query(
+      "UPDATE profiles SET birth_datetime=$2::timestamptz,birth_tz=$3 WHERE id=$1",
+      [lifecycleProfileId, wall, timezone],
+    );
+    assert.equal((await admin.query(
+      "SELECT ziwei_hourly_enabled FROM mobile_notification_prefs WHERE user_id=$1",
+      [lifecycleUserId],
+    )).rows[0].ziwei_hourly_enabled, false, `${label}: consent revoked`);
+    assert.deepEqual((await admin.query(
+      `SELECT enabled,next_due_at,lease_token,lease_expires_at,last_skip_reason
+         FROM mobile_ziwei_hourly_installations WHERE user_id=$1 AND installation_id=$2`,
+      [lifecycleUserId, lifecycleInstallationId],
+    )).rows[0], {
+      enabled: false,
+      next_due_at: null,
+      lease_token: null,
+      lease_expires_at: null,
+      last_skip_reason: "profile_ineligible",
+    }, `${label}: installation fenced`);
+  }
+
+  await assertNatalLifecycleRevokes("1984-12-31T23:30:00+07:00", "Asia/Bangkok", "late-Zi birth");
+  await assertNatalLifecycleRevokes("1900-01-30T12:00:00+07:00", "Asia/Bangkok", "lower out-of-range birth");
+  await assertNatalLifecycleRevokes("2101-01-01T12:00:00+07:00", "Asia/Bangkok", "upper out-of-range birth");
+  await assertNatalLifecycleRevokes("2026-03-08T02:30:00+07:00", "America/New_York", "IANA gap birth");
+  await assertNatalLifecycleRevokes("2026-11-01T01:30:00+07:00", "America/New_York", "IANA fold birth");
+
+  const fixedOffsetUserId = crypto.randomUUID();
+  const fixedOffsetProfileId = crypto.randomUUID();
+  const fixedOffsetInstallationId = crypto.randomUUID();
+  await admin.query("INSERT INTO users(id) VALUES($1)", [fixedOffsetUserId]);
+  await admin.query(
+    `INSERT INTO profiles
+       (id,created_by_user_id,birth_datetime,birth_time_known,birth_tz,gender,relationship_type,name)
+     VALUES($1,$2,'1984-12-31T13:15:00+07:00',true,'+07:00','M',NULL,'Fixed')`,
+    [fixedOffsetProfileId, fixedOffsetUserId],
+  );
+  await admin.query(
+    `INSERT INTO mobile_notification_prefs(user_id,ziwei_hourly_enabled,ziwei_profile_id)
+     VALUES($1,true,$2)`,
+    [fixedOffsetUserId, fixedOffsetProfileId],
+  );
+  await admin.query(
+    `INSERT INTO mobile_ziwei_hourly_installations
+       (user_id,installation_id,profile_id,enabled,reference_timezone,next_due_at)
+     VALUES($1,$2,$3,true,'Asia/Bangkok',now())`,
+    [fixedOffsetUserId, fixedOffsetInstallationId, fixedOffsetProfileId],
+  );
+  await admin.query(
+    "UPDATE profiles SET birth_datetime='1984-12-31T14:15:00+07:00' WHERE id=$1",
+    [fixedOffsetProfileId],
+  );
+  assert.equal((await admin.query(
+    "SELECT ziwei_hourly_enabled FROM mobile_notification_prefs WHERE user_id=$1",
+    [fixedOffsetUserId],
+  )).rows[0].ziwei_hourly_enabled, true, "fixed-offset natal birth remains eligible");
+  assert.equal((await admin.query(
+    "SELECT enabled FROM mobile_ziwei_hourly_installations WHERE user_id=$1 AND installation_id=$2",
+    [fixedOffsetUserId, fixedOffsetInstallationId],
+  )).rows[0].enabled, true, "fixed-offset installation remains enabled");
 
   await admin.query("UPDATE profiles SET birth_time_known=false WHERE id=$1", [profileId]);
   assert.equal((await admin.query(
@@ -267,6 +614,13 @@ try {
     [userId, installationId, profileId, ownerGeneration + 1, due, "2026-08-26T14:00:00.000Z",
       "2026-08-26T12:10:00.000Z", "2".repeat(64)],
   );
+
+  await admin.query("DELETE FROM users WHERE id=$1", [userId]);
+  assert.equal((await admin.query(
+    "SELECT count(*)::int AS total FROM mobile_push_log WHERE user_id=$1",
+    [userId],
+  )).rows[0].total, 0,
+  "account deletion may cascade through an unretired Ziwei parent/attempt without weakening direct-delete guards");
 
   await admin.query(rollback);
   await admin.query("UPDATE profiles SET birth_time_known=true WHERE id=$1", [profileId]);

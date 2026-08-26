@@ -69,10 +69,11 @@ export type ZiweiHourlyNotificationFacts = Readonly<{
 
 function canonicalIanaTimezone(timezone: string, instant: Date, errorCode: string): string {
   const value = String(timezone || "").trim();
-  if (!value || (value !== "UTC" && !value.includes("/"))) throw new TypeError(errorCode);
+  if (!value) throw new TypeError(errorCode);
   try {
     const canonical = new Intl.DateTimeFormat("en", { timeZone: value }).resolvedOptions().timeZone;
-    if (!canonical || zoneOffsetMinutes(instant.getTime(), canonical) === null) throw new TypeError(errorCode);
+    if (!canonical || (canonical !== "UTC" && !canonical.includes("/"))
+      || zoneOffsetMinutes(instant.getTime(), canonical) === null) throw new TypeError(errorCode);
     return canonical;
   } catch { throw new TypeError(errorCode); }
 }
@@ -126,20 +127,59 @@ function sameCivil(a: Civil, b: Civil): boolean {
   return a.y === b.y && a.m === b.m && a.d === b.d && a.h === b.h && a.mi === b.mi && a.s === b.s;
 }
 
-/** Resolve one IANA wall clock. DST gaps and folds deliberately fail closed. */
-function unambiguousWallInstant(civil: Civil, timezone: string): Date {
-  const naive = Date.UTC(civil.y, civil.m - 1, civil.d, civil.h, civil.mi, civil.s);
+function civilValue(civil: Civil): number {
+  return Date.UTC(civil.y, civil.m - 1, civil.d, civil.h, civil.mi, civil.s);
+}
+
+function wallCandidates(civil: Civil, timezone: string): Date[] {
+  const naive = civilValue(civil);
   const offsets = new Set<number>();
   for (const deltaHours of [-36, -24, -12, 0, 12, 24, 36]) {
     const offset = zoneOffsetMinutes(naive + deltaHours * 3_600_000, timezone);
     if (offset !== null) offsets.add(offset);
   }
-  const matches = [...offsets]
-    .map((offset) => new Date(naive - offset * 60_000))
+  return [...offsets].map((offset) => new Date(naive - offset * 60_000));
+}
+
+/** Resolve one IANA wall clock. DST gaps and folds deliberately fail closed. */
+function unambiguousWallInstant(civil: Civil, timezone: string): Date {
+  const matches = wallCandidates(civil, timezone)
     .filter((instant) => sameCivil(civilAt(instant, timezone), civil));
   const unique = [...new Map(matches.map((instant) => [instant.getTime(), instant])).values()];
   if (unique.length !== 1) throw new TypeError("ziwei_hourly_ambiguous_reference_boundary");
   return unique[0];
+}
+
+/**
+ * Map one civil shichen boundary to the timeline. A fold chooses the earliest
+ * exact instant, so both repeated wall-clock runs stay in one interval. A gap
+ * has no exact instant, so it advances to the transition instant where the
+ * first realized civil time after the gap begins.
+ */
+function civilBoundaryInstant(civil: Civil, timezone: string): Date {
+  const candidates = wallCandidates(civil, timezone);
+  const exact = candidates
+    .filter((instant) => sameCivil(civilAt(instant, timezone), civil))
+    .sort((a, b) => a.getTime() - b.getTime());
+  if (exact.length > 0) return exact[0];
+
+  const target = civilValue(civil);
+  const before = candidates
+    .filter((instant) => civilValue(civilAt(instant, timezone)) < target)
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+  const after = candidates
+    .filter((instant) => civilValue(civilAt(instant, timezone)) > target)
+    .sort((a, b) => a.getTime() - b.getTime())[0];
+  if (!before || !after || before >= after) throw new TypeError("ziwei_hourly_ambiguous_reference_boundary");
+
+  let lower = before.getTime();
+  let upper = after.getTime();
+  while (upper - lower > 1) {
+    const middle = lower + Math.floor((upper - lower) / 2);
+    if (civilValue(civilAt(new Date(middle), timezone)) < target) lower = middle;
+    else upper = middle;
+  }
+  return new Date(upper);
 }
 
 function parseBirthWallClock(wall: string): Civil {
@@ -149,7 +189,7 @@ function parseBirthWallClock(wall: string): Civil {
     y: Number(match[1]), m: Number(match[2]), d: Number(match[3]),
     h: Number(match[4]), mi: Number(match[5]), s: Number(match[6]),
   };
-  if (civil.y < 1900 || civil.y > 2100 || civil.m < 1 || civil.m > 12 || civil.d < 1 || civil.d > 31
+  if (civil.y < 1 || civil.y > 9999 || civil.m < 1 || civil.m > 12 || civil.d < 1 || civil.d > 31
     || civil.h < 0 || civil.h > 23 || civil.mi < 0 || civil.mi > 59 || civil.s < 0 || civil.s > 59) {
     throw new TypeError("ziwei_hourly_invalid_birth_wall_clock");
   }
@@ -181,6 +221,22 @@ export function resolveUnambiguousBirthWallClock(wall: string, timezone: string)
   return new Date(naive - (parsed.offsetMin || 0) * 60_000);
 }
 
+/** Natal domain supported by the locked hourly Ziwei lineage. */
+export function resolveEligibleZiweiBirthWallClock(wall: string, timezone: string): Date {
+  const civil = parseBirthWallClock(wall);
+  const timezoneValue = String(timezone || "").trim();
+  if (!/^[+-]\d{2}:\d{2}$/u.test(timezoneValue)
+    && timezoneValue !== "UTC" && !timezoneValue.includes("/")) {
+    throw new TypeError("ziwei_hourly_invalid_birth_timezone");
+  }
+  const date = `${civil.y}-${String(civil.m).padStart(2, "0")}-${String(civil.d).padStart(2, "0")}`;
+  if (date < "1900-01-31" || date > "2100-12-31") {
+    throw new RangeError("ziwei_hourly_calendar_range_unsupported");
+  }
+  if (civil.h === 23) throw new RangeError("ziwei_hourly_late_zi_birth_unsupported");
+  return resolveUnambiguousBirthWallClock(wall, timezone);
+}
+
 function shichenWindow(referenceInstant: Date, timezone: string, timeIndex: number): { validFrom: Date; validUntil: Date } {
   const ref = civilAt(referenceInstant, timezone);
   let start: Civil;
@@ -197,8 +253,8 @@ function shichenWindow(referenceInstant: Date, timezone: string, timeIndex: numb
     end = { ...ref, h: startHour + 2, mi: 0, s: 0 };
   }
   return {
-    validFrom: unambiguousWallInstant(start, timezone),
-    validUntil: unambiguousWallInstant(end, timezone),
+    validFrom: civilBoundaryInstant(start, timezone),
+    validUntil: civilBoundaryInstant(end, timezone),
   };
 }
 
@@ -253,8 +309,8 @@ export function buildZiweiHourlyPreview(input: ZiweiHourlyPreviewInput): ZiweiHo
     throw new RangeError("ziwei_hourly_calendar_range_unsupported");
   }
   const window = shichenWindow(input.referenceInstant, referenceTimezone, chart.liuShi.timeIndex);
-  if (window.validUntil.getTime() - window.validFrom.getTime() !== 2 * 3_600_000) {
-    throw new RangeError("ziwei_hourly_timezone_transition_unsupported");
+  if (!(window.validFrom <= input.referenceInstant && input.referenceInstant < window.validUntil)) {
+    throw new RangeError("ziwei_hourly_reference_window_unrealized");
   }
   const effectiveTimeIndex = (chart.liuShi.timeIndex === 12 ? 0 : chart.liuShi.timeIndex) as ZiweiHourlyPreview["reference"]["effectiveTimeIndex"];
   const windowKey = `${ZIWEI_HOURLY_LINEAGE}:${referenceTimezone}:${chart.liuShi.calculationDateISO}:${chart.liuShi.ganzhi.slice(1, 2)}`;

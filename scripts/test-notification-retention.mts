@@ -31,6 +31,12 @@ try {
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text);
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY REFERENCES users(id));
+    CREATE TABLE mobile_ziwei_hourly_occurrences(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),state text NOT NULL,push_log_id uuid,
+      snapshot jsonb NOT NULL DEFAULT '{}'::jsonb,window_valid_until timestamptz NOT NULL DEFAULT now(),
+      send_deadline timestamptz NOT NULL DEFAULT now(),created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
     CREATE TABLE mobile_push_tokens(
       id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES users(id),installation_id uuid NOT NULL,
       expo_push_token text NOT NULL UNIQUE,device_push_token text,device_token_type text,platform text NOT NULL,
@@ -119,7 +125,8 @@ try {
     batchSize: 100, maxBatches: 5,
   });
   assert.equal(report.ok, true, "bounded retention completes successfully");
-  assert.deepEqual(Object.keys(report).sort(), ["attemptsPurged", "engagementPurged", "historyPurged", "ok", "sourceFactsRedacted", "status"], "retention reports aggregate counts and run status only");
+  assert.deepEqual(Object.keys(report).sort(), ["attemptsPurged", "engagementPurged", "historyPurged", "ok", "sourceFactsRedacted", "status", "ziweiOccurrencesPurged"], "retention reports aggregate counts and run status only");
+  assert.equal(report.ziweiOccurrencesPurged, 0, "a database without eligible old Ziwei snapshots reports an aggregate zero");
   assert.equal(report.engagementPurged, 1, "old app engagement evidence expires on its explicit shorter retention window");
   assert.equal(Number((await pool.query(`SELECT count(*)::int AS n FROM mobile_notification_engagements`)).rows[0].n), 1, "recent aggregate engagement evidence remains available");
   assert.equal(JSON.stringify(report).includes("private"), false, "retention output contains no user, payload, source-fact, or provider content");
