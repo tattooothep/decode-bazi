@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { accessSync, constants } from "node:fs";
-import { mkdtemp, readFile, rm, utimes } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -54,11 +54,17 @@ try {
   const healthUnit = "ops/systemd/hourkey-mobile-push-health.service";
   const healthTimer = "ops/systemd/hourkey-mobile-push-health.timer";
   const retentionUnit = "ops/systemd/hourkey-mobile-notification-retention.service";
+  const tmpfilesUnit = "ops/tmpfiles.d/hourkey-notification.conf";
   for (const file of [retryUnit, receiptTimer, healthUnit, healthTimer, "docs/runbooks/notification-observability.md"]) {
     const source = await readFile(file, "utf8");
     assert.doesNotMatch(source, /(?:systemctl\s+(?:enable|start|restart|reload)|curl\s+.*push|ExponentPushToken|authorization:|PGPASSWORD=)/iu, `${file} is source-only and contains no live operation or credential material`);
   }
   assert.match(await readFile(retryUnit, "utf8"), /notification-retry-receipt-runner\.cjs.*--heartbeat-file/u, "retry unit routes work through the heartbeat runner");
+  const retryRunnerSource = await readFile("scripts/notification-retry-receipt-runner.cjs", "utf8");
+  assert.match(retryRunnerSource, /open\(temporary, "wx", 0o640\)[\s\S]*handle\.sync\(\)[\s\S]*rename\(temporary, file\)/u,
+    "retry heartbeat uses a durable atomic inode replacement so a legacy root-owned file cannot stop the non-root worker");
+  assert.doesNotMatch(retryRunnerSource, /writeFile\(file,/u,
+    "retry heartbeat never truncates a pre-upgrade inode in place");
   assert.match(await readFile(receiptTimer, "utf8"), /OnUnitActiveSec=1min/u, "retry/receipt timer has a bounded cadence");
   assert.match(await readFile(healthUnit, "utf8"), /notification-health\.cjs.*--worker-heartbeat-file/u, "health unit fails closed on the retry heartbeat input");
   assert.match(await readFile(healthUnit, "utf8"), /--scheduler-heartbeat-dir \/var\/lib\/hourkey-notification\/schedulers/u, "health unit reads every source-produced scheduler heartbeat file");
@@ -73,6 +79,49 @@ try {
   for (const file of [retryUnit, healthUnit]) {
     assert.match(await readFile(file, "utf8"), /^ExecStart=\/usr\/bin\/env FCM_SERVICE_ACCOUNT_PATH=\/etc\/hourkey\/credentials\/fcm-service-account\.json /mu,
       `${file} forces the reviewed FCM credential path`);
+  }
+  const tmpfilesSource = await readFile(tmpfilesUnit, "utf8");
+  assert.match(tmpfilesSource,
+    /^d \/var\/lib\/hourkey-notification\/schedulers 0750 hourkey-notify hourkey-notify -$/mu,
+    "tmpfiles migrates the shared scheduler-heartbeat directory to the effective health/producer account without rewriting heartbeat files");
+  assert.match(tmpfilesSource,
+    /^d \/var\/lib\/hourkey-notification 0750 hourkey-notify hourkey-notify -$/mu,
+    "tmpfiles gives the retry worker atomic-replacement access to the shared state directory");
+  assert.doesNotMatch(tmpfilesSource, /^Z\s+\/var\/lib\/hourkey-notification\b/mu,
+    "tmpfiles never recursively changes ownership or mode of other notification heartbeat state");
+
+  if (typeof process.getuid === "function" && process.getuid() === 0) {
+    const upgradeDirectory = join(directory, "tmpfiles-upgrade");
+    const schedulerDirectory = join(upgradeDirectory, "schedulers");
+    const legacyRetryHeartbeat = join(upgradeDirectory, "retry-receipt.heartbeat");
+    const upgradeConfig = join(directory, "hourkey-notification-upgrade.conf");
+    const nobodyUid = Number(execFileSync("id", ["-u", "nobody"], { encoding: "utf8" }).trim());
+    const nobodyGid = Number(execFileSync("id", ["-g", "nobody"], { encoding: "utf8" }).trim());
+    await chmod(directory, 0o755);
+    await mkdir(schedulerDirectory, { recursive: true });
+    await writeFile(legacyRetryHeartbeat, "2026-08-16T00:00:00.000Z\n", { mode: 0o640 });
+    await writeFile(upgradeConfig, [
+      `d ${upgradeDirectory} 0750 ${nobodyUid} ${nobodyGid} -`,
+      `d ${schedulerDirectory} 0750 ${nobodyUid} ${nobodyGid} -`,
+      "",
+    ].join("\n"), { mode: 0o600 });
+    execFileSync("systemd-tmpfiles", ["--create", upgradeConfig], { stdio: "pipe" });
+    const untouchedHeartbeat = await stat(legacyRetryHeartbeat);
+    assert.equal(untouchedHeartbeat.uid, 0, "directory migration does not recursively mutate legacy heartbeat ownership");
+    assert.equal(untouchedHeartbeat.gid, 0, "directory migration does not recursively mutate legacy heartbeat group");
+    const child = [
+      `const runner=require(${JSON.stringify(resolve("scripts/notification-retry-receipt-runner.cjs"))});`,
+      `process.setgroups([${nobodyGid}]);process.setgid(${nobodyGid});process.setuid(${nobodyUid});`,
+      `runner.writeHeartbeat(${JSON.stringify(legacyRetryHeartbeat)},new Date("2026-08-16T01:00:00.000Z"))`,
+      `.catch(()=>{process.exitCode=1;});`,
+    ].join("");
+    execFileSync(process.execPath, ["-e", child], { stdio: "pipe" });
+    const replacedHeartbeat = await stat(legacyRetryHeartbeat);
+    assert.equal(replacedHeartbeat.uid, nobodyUid, "effective worker atomically replaces the pre-existing root-owned heartbeat inode");
+    assert.equal(replacedHeartbeat.gid, nobodyGid, "replacement heartbeat belongs to the effective worker group");
+    assert.equal(replacedHeartbeat.mode & 0o777, 0o640, "atomic replacement keeps the retry heartbeat restrictive");
+    assert.equal(await readFile(legacyRetryHeartbeat, "utf8"), "2026-08-16T01:00:00.000Z\n");
+    execFileSync("runuser", ["-u", "nobody", "--", "/usr/bin/test", "-x", schedulerDirectory], { stdio: "pipe" });
   }
   for (const file of [retryUnit, healthUnit]) {
     const source = await readFile(file, "utf8");
@@ -92,9 +141,13 @@ try {
     lookupUser: () => true, uid: () => 0,
     serviceUserAccess: () => true,
     notificationEnvironmentContract: () => true,
-    readUnit: () => "d /var/lib/hourkey-notification 0750 hourkey-notify hourkey-notify -\n",
+    readUnit: () => [
+      "d /var/lib/hourkey-notification 0750 hourkey-notify hourkey-notify -",
+      "d /var/lib/hourkey-notification/schedulers 0750 hourkey-notify hourkey-notify -",
+      "",
+    ].join("\n"),
   });
-  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, notificationEnvironmentReadable: true, notificationEnvironmentValid: true, credentialReadable: true, stateReady: false, stateCreatable: true, ziweiServiceUser: true, ziweiEnvironmentReadable: true, ziweiServiceAccess: true }, "absent state tree passes first-start preflight only through the single-owner tmpfiles contract and effective Ziwei service-user access");
+  assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, notificationEnvironmentReadable: true, notificationEnvironmentValid: true, credentialReadable: true, stateReady: false, stateCreatable: true, ziweiServiceUser: true, ziweiEnvironmentReadable: true, retryHeartbeatAccess: true, schedulerHeartbeatAccess: true, ziweiServiceAccess: true }, "absent state tree passes first-start preflight only through the single-owner tmpfiles contract and effective Ziwei service-user access");
   const unsafeStatePreflight = preflight.inspect({
     access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
     lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
@@ -171,6 +224,24 @@ try {
     "preflight fails closed when the effective non-root Ziwei worker cannot traverse/read/write its runtime paths");
   assert.equal(blockedZiweiServiceUser.ziweiEnvironmentReadable, false,
     "preflight separately reports that the effective Ziwei worker cannot read its dedicated environment");
+  const blockedLegacyRetryHeartbeat = preflight.inspect({
+    access: () => {}, lookupUser: () => true, uid: () => 0,
+    serviceUserAccess: (_name: string, target: string, mode: number) =>
+      !(target === "/var/lib/hourkey-notification" && mode === constants.X_OK),
+    notificationEnvironmentContract: () => true,
+  });
+  assert.equal(blockedLegacyRetryHeartbeat.ok, false,
+    "preflight blocks deployment when the effective retry worker cannot advance a pre-existing root-owned heartbeat");
+  assert.equal(blockedLegacyRetryHeartbeat.retryHeartbeatAccess, false);
+  const blockedSchedulerHeartbeats = preflight.inspect({
+    access: () => {}, lookupUser: () => true, uid: () => 0,
+    serviceUserAccess: (_name: string, target: string, mode: number) =>
+      !(target === "/var/lib/hourkey-notification/schedulers" && mode === constants.X_OK),
+    notificationEnvironmentContract: () => true,
+  });
+  assert.equal(blockedSchedulerHeartbeats.ok, false,
+    "preflight blocks deployment when the effective health worker cannot stat legacy scheduler heartbeats");
+  assert.equal(blockedSchedulerHeartbeats.schedulerHeartbeatAccess, false);
   const invalidDedicatedEnvironment = preflight.inspect({
     access: () => {}, lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
     notificationEnvironmentContract: () => false,

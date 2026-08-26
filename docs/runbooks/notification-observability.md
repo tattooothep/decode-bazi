@@ -77,6 +77,16 @@ check, and retention unit all require this file. Retry and health force the
 reviewed `/etc/hourkey/credentials/fcm-service-account.json` path in their unit
 command rather than copying an arbitrary credential path from the shared env.
 
+The tmpfiles contract assigns only the shared state directory and its
+`schedulers` child to `hourkey-notify`; it never recursively changes ownership
+or modes of existing notification state. The retry worker advances its
+timestamp-only heartbeat with a synced temporary file and atomic rename. This
+lets an upgrade replace the legacy `root:root 0640` heartbeat through directory
+write permission without truncating that old inode, while the replacement
+remains mode `0640`. Legacy root-run Qimen and Zi Bai schedulers may continue to
+replace their own mode-`0640` heartbeat files; the health worker needs traverse
+permission on the scheduler directory because it reads only file metadata.
+
 Run `node scripts/notification-observability-preflight.cjs` from the reviewed
 release before any service action. It checks the root operator identity, Node
 executable, every named scheduler/retry/health source, shared environment and
@@ -95,7 +105,11 @@ pre-existing writable state directory is `stateReady`.
 Before the first service start, an absent directory is accepted only as
 `stateCreatable` when root can write `/var/lib` and the reviewed tmpfiles
 contract declares `/var/lib/hourkey-notification` with the single owner
-`hourkey-notify:hourkey-notify`; the preflight never creates it. No service unit
+`hourkey-notify:hourkey-notify` and declares the scheduler-heartbeat child with
+the same restrictive ownership. The preflight also proves, as the effective
+service account, write/traverse permission needed for atomic retry-heartbeat
+replacement and write/traverse permission on the shared scheduler-heartbeat
+directory. It never creates or mutates either path. No service unit
 declares `StateDirectory`, so a service start cannot recursively change that
 shared ownership. Apply the tmpfiles contract before starting a worker and
 validate the unit files with `systemd-analyze verify` as part of that review. A

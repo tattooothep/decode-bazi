@@ -29,7 +29,8 @@ function defaultServiceUserAccess(name, target, mode) {
 function hasStateDirectoryContract(readUnit) {
   try {
     const source = readUnit("/root/releases/current/ops/tmpfiles.d/hourkey-notification.conf", "utf8");
-    return /^d \/var\/lib\/hourkey-notification 0750 hourkey-notify hourkey-notify -$/m.test(source);
+    return /^d \/var\/lib\/hourkey-notification 0750 hourkey-notify hourkey-notify -$/m.test(source)
+      && /^d \/var\/lib\/hourkey-notification\/schedulers 0750 hourkey-notify hourkey-notify -$/m.test(source);
   } catch {
     return false;
   }
@@ -202,7 +203,21 @@ function inspect(options = {}) {
     try { return serviceUserAccess("hourkey-notify", "/etc/hourkey/hourkey-notification.env", constants.R_OK) === true; }
     catch { return false; }
   })();
-  const ziweiServiceAccess = ziweiEnvironmentReadable && ziweiServicePaths.every(([target, mode]) => {
+  const retryHeartbeatAccess = ziweiServiceUser && (() => {
+    try {
+      return serviceUserAccess("hourkey-notify", "/var/lib/hourkey-notification", constants.X_OK) === true
+        && serviceUserAccess("hourkey-notify", "/var/lib/hourkey-notification", constants.W_OK) === true;
+    } catch { return false; }
+  })();
+  const schedulerHeartbeatDirectory = "/var/lib/hourkey-notification/schedulers";
+  const schedulerHeartbeatAccess = ziweiServiceUser && (() => {
+    try {
+      return serviceUserAccess("hourkey-notify", schedulerHeartbeatDirectory, constants.X_OK) === true
+        && serviceUserAccess("hourkey-notify", schedulerHeartbeatDirectory, constants.W_OK) === true;
+    } catch { return false; }
+  })();
+  const ziweiServiceAccess = ziweiEnvironmentReadable && retryHeartbeatAccess
+    && schedulerHeartbeatAccess && ziweiServicePaths.every(([target, mode]) => {
     try { return serviceUserAccess("hourkey-notify", target, mode) === true; } catch { return false; }
   });
   return {
@@ -211,7 +226,8 @@ function inspect(options = {}) {
       && (stateReady || stateCreatable) && ziweiServiceUser && ziweiEnvironmentReadable && ziweiServiceAccess,
     runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, notificationEnvironmentReadable,
     notificationEnvironmentValid, credentialReadable, stateReady, stateCreatable,
-    ziweiServiceUser, ziweiEnvironmentReadable, ziweiServiceAccess,
+    ziweiServiceUser, ziweiEnvironmentReadable, retryHeartbeatAccess,
+    schedulerHeartbeatAccess, ziweiServiceAccess,
   };
 }
 
