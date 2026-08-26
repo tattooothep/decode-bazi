@@ -222,10 +222,16 @@ export async function POST(req: Request) {
       [session.userId, installationId, deviceToken],
     );
     await client.query(
-      `DELETE FROM mobile_ziwei_hourly_installations z USING mobile_push_tokens t
+      `UPDATE mobile_ziwei_hourly_installations z
+          SET enabled=false,next_due_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+              last_skip_reason='installation_transferred',
+              owner_generation=z.owner_generation+1,updated_at=now()
+         FROM mobile_push_tokens t
         WHERE z.user_id=t.user_id AND z.installation_id=t.installation_id
           AND t.user_id<>$1
-          AND (t.installation_id=$2::uuid OR ($3::text IS NOT NULL AND t.device_push_token=$3))`,
+          AND (t.installation_id=$2::uuid OR ($3::text IS NOT NULL AND t.device_push_token=$3))
+          AND (z.enabled=true OR z.next_due_at IS NOT NULL OR z.lease_token IS NOT NULL
+            OR z.lease_expires_at IS NOT NULL OR z.last_skip_reason IS DISTINCT FROM 'installation_transferred')`,
       [session.userId, installationId, deviceToken],
     );
     // Installation IDs and native push tokens identify a physical app install,
@@ -456,8 +462,13 @@ export async function DELETE(req: Request) {
       [session.userId, installationId || null],
     );
     await client.query(
-      `DELETE FROM mobile_ziwei_hourly_installations
-        WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
+      `UPDATE mobile_ziwei_hourly_installations
+          SET enabled=false,next_due_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+              last_skip_reason='installation_unregistered',
+              owner_generation=owner_generation+1,updated_at=now()
+        WHERE user_id=$1 AND ($2::uuid IS NULL OR installation_id=$2::uuid)
+          AND (enabled=true OR next_due_at IS NOT NULL OR lease_token IS NOT NULL
+            OR lease_expires_at IS NOT NULL OR last_skip_reason IS DISTINCT FROM 'installation_unregistered')`,
       [session.userId, installationId || null],
     );
     await client.query("COMMIT");

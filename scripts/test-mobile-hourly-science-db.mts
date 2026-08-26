@@ -285,6 +285,92 @@ try {
   assert.equal(providerEnvelope.notificationId, reservation.id);
   assert.equal(providerEnvelope.ziweiHourlyV2, notice.payload.ziweiHourlyV2);
   assert.equal(await delivery.reserve(admin, notice), null, "same occurrence cannot reserve twice");
+  assert.equal((await admin.query(
+    "SELECT has_table_privilege('hourkey_app','mobile_ziwei_hourly_installations','DELETE') AS allowed",
+  )).rows[0].allowed, false,
+  "the runtime role cannot erase occurrence evidence through installation cascade");
+  await assertHourkeyAppRejects(
+    "DELETE FROM mobile_ziwei_hourly_installations WHERE user_id=$1 AND installation_id=$2",
+    [userId, installationId],
+    "SET ROLE hourkey_app cannot delete an installation that owns a reserved occurrence",
+  );
+  assert.equal((await admin.query(
+    "SELECT count(*)::int AS total FROM mobile_ziwei_hourly_occurrences WHERE id=$1",
+    [occurrenceId],
+  )).rows[0].total, 1, "the rejected installation deletion leaves its attestation intact");
+
+  const transferOldUserId = crypto.randomUUID();
+  const transferNewUserId = crypto.randomUUID();
+  const transferOldProfileId = crypto.randomUUID();
+  const transferNewProfileId = crypto.randomUUID();
+  const transferInstallationId = crypto.randomUUID();
+  const transferOccurrenceId = crypto.randomUUID();
+  await admin.query("INSERT INTO users(id) VALUES($1),($2)", [transferOldUserId, transferNewUserId]);
+  await admin.query(
+    `INSERT INTO profiles
+       (id,created_by_user_id,birth_datetime,birth_time_known,birth_tz,gender,relationship_type,name)
+     VALUES($1,$2,'1984-12-31T13:15:00+07:00',true,'Asia/Bangkok','M',NULL,'Old owner'),
+           ($3,$4,'1984-12-31T13:15:00+07:00',true,'Asia/Bangkok','M',NULL,'New owner')`,
+    [transferOldProfileId, transferOldUserId, transferNewProfileId, transferNewUserId],
+  );
+  await admin.query(
+    `INSERT INTO mobile_ziwei_hourly_installations
+       (user_id,installation_id,profile_id,enabled,reference_timezone,next_due_at)
+     VALUES($1,$2,$3,true,'Asia/Bangkok',now())`,
+    [transferOldUserId, transferInstallationId, transferOldProfileId],
+  );
+  await admin.query(
+    `INSERT INTO mobile_ziwei_hourly_occurrences
+       (id,user_id,installation_id,profile_id,owner_generation,occurrence_key,lineage,calculation_version,
+        window_valid_from,window_valid_until,send_deadline,snapshot,snapshot_digest)
+     VALUES($1,$2,$3,$4,1,'ziwei|account-transfer','lineage','version',
+            now()-interval '1 minute',now()+interval '119 minutes',now()+interval '9 minutes','{}',$5)`,
+    [transferOccurrenceId, transferOldUserId, transferInstallationId, transferOldProfileId, "3".repeat(64)],
+  );
+  await admin.query("BEGIN");
+  try {
+    await admin.query("SET LOCAL ROLE hourkey_app");
+    await admin.query(`SET LOCAL search_path TO ${quotedSchema},public`);
+    await admin.query(
+      `UPDATE mobile_ziwei_hourly_installations
+          SET enabled=false,next_due_at=NULL,last_skip_reason='installation_transferred',
+              owner_generation=owner_generation+1,updated_at=now()
+        WHERE user_id=$1 AND installation_id=$2`,
+      [transferOldUserId, transferInstallationId],
+    );
+    await admin.query(
+      `INSERT INTO mobile_ziwei_hourly_installations
+         (user_id,installation_id,profile_id,enabled,reference_timezone,next_due_at)
+       VALUES($1,$2,$3,true,'Asia/Bangkok',now())`,
+      [transferNewUserId, transferInstallationId, transferNewProfileId],
+    );
+    await admin.query("COMMIT");
+  } catch (error) {
+    await admin.query("ROLLBACK");
+    throw error;
+  } finally {
+    await setSearchPath(admin);
+  }
+  assert.deepEqual((await admin.query(
+    `SELECT count(*)::int AS owners,count(*) FILTER (WHERE enabled)::int AS active
+       FROM mobile_ziwei_hourly_installations WHERE installation_id=$1`,
+    [transferInstallationId],
+  )).rows[0], { owners: 2, active: 1 },
+  "account transfer preserves the disabled historical owner and permits exactly one active owner");
+  assert.equal((await admin.query(
+    "SELECT count(*)::int AS total FROM mobile_ziwei_hourly_occurrences WHERE id=$1",
+    [transferOccurrenceId],
+  )).rows[0].total, 1, "account transfer preserves the old owner's occurrence evidence");
+  await assert.rejects(
+    admin.query(
+      `INSERT INTO mobile_ziwei_hourly_installations
+         (user_id,installation_id,profile_id,enabled,reference_timezone,next_due_at)
+       VALUES($1,$2,$3,true,'Asia/Bangkok',now())`,
+      [transferOldUserId, transferInstallationId, transferOldProfileId],
+    ),
+    (error: any) => error?.code === "23505",
+    "the partial identity fence rejects two active owners for one physical installation",
+  );
 
   const exploitInstallationId = claimed10k.rows[1].installation_id;
   const exploitTokenId = crypto.randomUUID();

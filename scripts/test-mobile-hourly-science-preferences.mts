@@ -63,7 +63,10 @@ assert.match(route, /qizhengElectionalAvailable: false/u);
 assert.match(push, /ziweiPayloadSchema/u);
 assert.match(push, /qizhengPayloadSchema/u);
 assert.match(push, /ziwei_payload_schema,qizheng_payload_schema/u);
-assert.match(push, /DELETE FROM mobile_ziwei_hourly_installations/u);
+assert.doesNotMatch(push, /DELETE FROM mobile_ziwei_hourly_installations/u,
+  "push unregister and account transfer must preserve Ziwei occurrence attestations");
+assert.match(push, /last_skip_reason='installation_(?:transferred|unregistered)'/u,
+  "push identity changes deactivate Ziwei scheduling without deleting its evidence parent");
 assert.match(push, /COALESCE\(\$4,np\.timezone,u\.timezone,'Asia\/Bangkok'\)/u,
   "authenticated device timezone wins immediately when refreshing the Ziwei installation");
 assert.doesNotMatch(push, /last_skip_reason='registration_refresh'/u,
@@ -83,6 +86,10 @@ for (const source of [push, scheduler]) {
 assert.match(scheduler, /const birthLocation =[\s\S]*?\? \{ lat: latitude, lng: longitude \}[\s\S]*?: null/u,
   "missing metadata coordinates must remain explicit null, never invented as a real birthplace");
 assert.match(migration, /hourkey_reconcile_ziwei_hourly_profile/u);
+assert.doesNotMatch(migration, /GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_ziwei_hourly_installations TO hourkey_app/u,
+  "the shared runtime role cannot cascade-delete occurrences through an installation");
+assert.match(migration, /WHERE enabled=true/u,
+  "the global installation identity fence applies only to active Ziwei scheduling ownership");
 assert.match(migration, /last_skip_reason='profile_ineligible'/u);
 assert.match(migration, /last_skip_reason='profile_changed'/u);
 

@@ -33,7 +33,14 @@ running on a host. Installation remains behind the release and signature gates.
   window. Only old, expired, unlinked `claimed` or `skipped` occurrences are
   deleted. `reserved`, push-linked, and still-live rows are preserved. The
   phase uses the same bounded batches, row locks, and `SKIP LOCKED` policy as
-  the other phases, so a scheduler-owned row is deferred to a later run.
+  the other phases, so a scheduler-owned row is deferred to a later run. The
+  shared `hourkey_app` role has no direct `DELETE` privilege on the occurrence
+  table or its installation parent. Push unregister and account transfer
+  disable the installation instead of cascade-deleting it, so occurrence
+  evidence remains attached. Retention can invoke only the `SECURITY DEFINER`
+  purge function, which pins `pg_catalog,public` and independently enforces the
+  age, state, linkage, expiry, batch-size, and retention-window bounds inside
+  PostgreSQL.
 - The parent payload remains available while authenticated history remains.
   Payload and copy are therefore bounded by the 180/365-day parent windows.
 
@@ -57,7 +64,8 @@ The source service runs as the dedicated unprivileged `hourkey-notify` account
 and writes aggregate output under the systemd-managed `/var/log/hourkey`
 directory with mode 0750, a 0027 umask, 0640 files owned by that account, and
 the checked-in 14-file rotation policy. Before a release gate approves installation, verify the reviewed source
-commit, migration rollback/reapply evidence, database-role access, disk budget,
+commit, migration rollback/reapply evidence, that `hourkey_app` cannot delete
+occurrences directly but can execute the bounded purge function, disk budget,
 and that the log path contains aggregate records only.
 
 ## Rollback

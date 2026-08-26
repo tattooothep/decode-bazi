@@ -49,9 +49,21 @@ assert.match(serviceSource, /^EnvironmentFile=\/etc\/hourkey\/hourkey-notificati
 const runbookSource = await readFile(runbook, "utf8");
 assert.match(runbookSource, /Ziwei[\s\S]+30 days[\s\S]+claimed[\s\S]+skipped/iu,
   "the runbook records the bounded unlinked Ziwei snapshot policy");
+assert.match(runbookSource, /hourkey_app[\s\S]+no direct `DELETE`[\s\S]+SECURITY DEFINER/iu,
+  "the runbook records the database-enforced least-privilege boundary");
 const ziweiRetentionMigrationSource = await readFile(ziweiRetentionMigration, "utf8");
-assert.match(ziweiRetentionMigrationSource, /GRANT DELETE ON mobile_ziwei_hourly_occurrences TO hourkey_app/u,
-  "the notification runtime role receives only the additional occurrence-delete capability needed by retention");
+assert.doesNotMatch(ziweiRetentionMigrationSource, /GRANT DELETE ON (?:TABLE )?mobile_ziwei_hourly_occurrences TO hourkey_app/u,
+  "the shared runtime role never receives unbounded occurrence DELETE");
+assert.match(ziweiRetentionMigrationSource, /REVOKE DELETE ON (?:TABLE )?mobile_ziwei_hourly_occurrences FROM PUBLIC\s*,\s*hourkey_app/u,
+  "the migration repairs any prior direct-delete grant before enabling bounded retention");
+assert.match(ziweiRetentionMigrationSource, /REVOKE DELETE ON (?:TABLE )?mobile_ziwei_hourly_installations FROM PUBLIC\s*,\s*hourkey_app/u,
+  "the repair also closes the installation cascade path into occurrence deletion");
+assert.match(ziweiRetentionMigrationSource, /SECURITY DEFINER/u,
+  "Ziwei occurrence retention crosses the privilege boundary only through a reviewed definer function");
+assert.match(ziweiRetentionMigrationSource, /SET search_path\s*=\s*pg_catalog\s*,\s*public/u,
+  "the definer function pins trusted relation resolution");
+assert.match(ziweiRetentionMigrationSource, /GRANT EXECUTE ON FUNCTION public\.purge_mobile_ziwei_hourly_occurrences\(integer,integer\) TO hourkey_app/u,
+  "the runtime role receives only the bounded purge capability");
 assert.doesNotMatch(ziweiRetentionMigrationSource, /mobile_ziwei_hourly_producer_state/u,
   "the retention migration does not broaden producer-control privileges");
 const rotationSource = await readFile(rotation, "utf8");

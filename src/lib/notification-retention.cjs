@@ -180,17 +180,9 @@ async function purgeHistoryBatch(client, config) {
 async function purgeZiweiOccurrencesBatch(client, config) {
   return transaction(client, async (tx) => {
     const result = await tx.query(
-      `WITH candidates AS (
-         SELECT id FROM mobile_ziwei_hourly_occurrences
-          WHERE state IN ('claimed','skipped') AND push_log_id IS NULL
-            AND created_at<now()-($1::text||' days')::interval
-            AND window_valid_until<=now() AND send_deadline<=now()
-          ORDER BY created_at,id LIMIT $2 FOR UPDATE SKIP LOCKED
-       ) DELETE FROM mobile_ziwei_hourly_occurrences o USING candidates c
-          WHERE o.id=c.id AND o.state IN ('claimed','skipped') AND o.push_log_id IS NULL
-            AND o.window_valid_until<=now() AND o.send_deadline<=now()
-        RETURNING o.id`,
-      [String(config.ziweiOccurrenceDays), config.batchSize],
+      `SELECT deleted_id
+         FROM public.purge_mobile_ziwei_hourly_occurrences($1::integer,$2::integer)`,
+      [config.ziweiOccurrenceDays, config.batchSize],
     );
     return result.rowCount || 0;
   });

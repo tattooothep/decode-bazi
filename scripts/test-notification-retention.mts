@@ -13,6 +13,7 @@ const password = crypto.randomBytes(24).toString("hex");
 const integrity = readFileSync("migrations/20260815_mobile_notification_integrity.sql", "utf8");
 const observability = readFileSync("migrations/20260816_mobile_notification_observability.sql", "utf8");
 const engagement = readFileSync("migrations/20260816_mobile_notification_engagement.sql", "utf8");
+const ziweiOccurrenceRetention = readFileSync("migrations/20260826_mobile_ziwei_occurrence_retention.sql", "utf8");
 
 assert.match(database, /^notification_retention_test_/u, "retention test database is disposable");
 
@@ -31,6 +32,12 @@ try {
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     CREATE TABLE users(id uuid PRIMARY KEY,timezone text,locale text);
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY REFERENCES users(id));
+    CREATE TABLE mobile_ziwei_hourly_installations(
+      user_id uuid NOT NULL,installation_id uuid NOT NULL,enabled boolean NOT NULL DEFAULT false,
+      PRIMARY KEY(user_id,installation_id)
+    );
+    CREATE UNIQUE INDEX ux_mobile_ziwei_hourly_active_installation
+      ON mobile_ziwei_hourly_installations(installation_id);
     CREATE TABLE mobile_ziwei_hourly_occurrences(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),state text NOT NULL,push_log_id uuid,
       snapshot jsonb NOT NULL DEFAULT '{}'::jsonb,window_valid_until timestamptz NOT NULL DEFAULT now(),
@@ -56,7 +63,13 @@ try {
   psql(database, integrity);
   psql(database, observability);
   psql(database, engagement);
-  psql(database, `GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};`);
+  psql(database, ziweiOccurrenceRetention);
+  psql(database, `
+    GRANT USAGE ON SCHEMA public TO ${role};
+    GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role};
+    REVOKE DELETE ON mobile_ziwei_hourly_occurrences FROM ${role};
+    GRANT EXECUTE ON FUNCTION public.purge_mobile_ziwei_hourly_occurrences(integer,integer) TO ${role};
+  `);
   pool = new pg.Pool({ host: "127.0.0.1", port: 5433, database, user: role, password, max: 2 });
 
   await pool.query(`

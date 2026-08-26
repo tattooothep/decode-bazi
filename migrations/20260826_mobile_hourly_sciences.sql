@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS mobile_ziwei_hourly_installations (
   CONSTRAINT mobile_ziwei_hourly_lease_shape CHECK ((lease_token IS NULL)=(lease_expires_at IS NULL))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_ziwei_hourly_active_installation
-  ON mobile_ziwei_hourly_installations(installation_id);
+  ON mobile_ziwei_hourly_installations(installation_id) WHERE enabled=true;
 CREATE INDEX IF NOT EXISTS ix_mobile_ziwei_hourly_due
   ON mobile_ziwei_hourly_installations(next_due_at,user_id,installation_id)
   WHERE enabled=true AND next_due_at IS NOT NULL;
@@ -585,7 +585,8 @@ RETURNS SETOF mobile_ziwei_hourly_installations LANGUAGE sql AS $$
   RETURNING z.*;
 $$;
 
-GRANT SELECT,INSERT,UPDATE,DELETE ON mobile_ziwei_hourly_installations TO hourkey_app;
+REVOKE DELETE ON TABLE mobile_ziwei_hourly_installations FROM PUBLIC,hourkey_app;
+GRANT SELECT,INSERT,UPDATE ON mobile_ziwei_hourly_installations TO hourkey_app;
 GRANT SELECT,INSERT,UPDATE ON mobile_ziwei_hourly_occurrences TO hourkey_app;
 REVOKE UPDATE ON mobile_ziwei_hourly_producer_state FROM hourkey_app;
 REVOKE INSERT,DELETE,TRUNCATE,REFERENCES,TRIGGER ON mobile_ziwei_hourly_producer_state FROM hourkey_app;
