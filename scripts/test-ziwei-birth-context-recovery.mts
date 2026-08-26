@@ -41,6 +41,12 @@ assert.match(confirmRoute, /profile_birth_context_events/u);
 assert.match(confirmRoute, /owner_generation=owner_generation\+1/u);
 assert.doesNotMatch(confirmRoute, /birth_datetime\s*=|birth_lat\s*=|birth_lng\s*=|gender\s*=/u,
   "confirmation may only add the confirmed timezone; existing birth facts stay untouched");
+assert.match(confirmRoute, /birth_place_id=COALESCE\(birth_place_id,\$3\)/u,
+  "confirmation may fill missing place evidence but must not overwrite an existing place ID");
+assert.match(confirmRoute, /birth_location_source=COALESCE\(NULLIF\(btrim\(birth_location_source\),''\)/u,
+  "confirmation preserves existing place provenance");
+assert.match(confirmRoute, /birth_location_confirmed_at=COALESCE\(birth_location_confirmed_at,now\(\)\)/u,
+  "confirmation preserves an existing place-confirmation timestamp");
 assert.doesNotMatch(confirmRoute, /mobile_qimen|mobile_zibai/u,
   "confirmation must not touch other science notification state");
 assert.match(mobileRecoveryRoute, /contractVersion:\s*1/u);

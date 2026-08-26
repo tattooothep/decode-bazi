@@ -28,6 +28,9 @@ type RecoveryRow = {
   birth_tz: string | null;
   birth_tz_source: string | null;
   birth_tz_confirmed_at: string | Date | null;
+  birth_place_id: string | null;
+  birth_location_source: string | null;
+  birth_location_confirmed_at: string | Date | null;
 };
 
 function completePayload(profileId: string, timezone: string, fingerprint: string | null) {
@@ -62,7 +65,8 @@ export async function POST(req: Request) {
               r.candidate_digest,r.chart_change_required,r.profile_updated_at_seen,
               p.updated_at AS profile_updated_at,
               to_char(p.birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall,
-              p.birth_tz,p.birth_tz_source,p.birth_tz_confirmed_at
+              p.birth_tz,p.birth_tz_source,p.birth_tz_confirmed_at,
+              p.birth_place_id,p.birth_location_source,p.birth_location_confirmed_at
          FROM profile_birth_context_recoveries r
          JOIN profiles p ON p.id=r.profile_id AND p.created_by_user_id=r.user_id
         WHERE r.confirmation_token_digest=$1 AND r.user_id=$2
@@ -129,19 +133,23 @@ export async function POST(req: Request) {
       birthTimezone: row.birth_tz,
       birthTimezoneSource: row.birth_tz_source,
       birthTimezoneConfirmedAt: row.birth_tz_confirmed_at,
+      birthPlaceId: row.birth_place_id,
+      birthLocationSource: row.birth_location_source,
+      birthLocationConfirmedAt: row.birth_location_confirmed_at,
     };
     const afterContext = {
       birthTimezone: context.birth.timezone,
       birthTimezoneSource: "user_confirmed_iana",
       candidateDigest: row.candidate_digest,
       resolverFingerprint: context.fingerprint,
+      candidatePlaceId: row.candidate_place_id,
     };
     await client.query(
       `UPDATE profiles
           SET birth_tz=$1,birth_tz_source='user_confirmed_iana',birth_tz_confirmed_at=now(),
-              birth_tz_tzdb_version=$2,birth_place_id=COALESCE($3,birth_place_id),
-              birth_location_source='user_confirmed_geocoded_place',
-              birth_location_confirmed_at=now(),updated_at=now()
+              birth_tz_tzdb_version=$2,birth_place_id=COALESCE(birth_place_id,$3),
+              birth_location_source=COALESCE(NULLIF(btrim(birth_location_source),''),'user_confirmed_geocoded_place'),
+              birth_location_confirmed_at=COALESCE(birth_location_confirmed_at,now()),updated_at=now()
         WHERE id=$4 AND created_by_user_id=$5`,
       [context.birth.timezone, `node-icu-${process.versions.icu || "unknown"}`, row.candidate_place_id, row.profile_id, session.userId],
     );

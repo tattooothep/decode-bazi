@@ -61,14 +61,19 @@ assert.doesNotMatch(migration, /GRANT[^;]*DELETE ON mobile_ziwei_hourly_occurren
 
 assert.doesNotMatch(migration, /mobile_qizheng_electional_occurrences|claim_mobile_qizheng/u,
   "no Qizheng production occurrence/scheduler surface exists before science approval");
-assert.match(rollback, /DROP TABLE IF EXISTS mobile_ziwei_hourly_occurrences/u);
-assert.match(rollback, /DROP TABLE IF EXISTS mobile_ziwei_hourly_installations/u);
-assert.match(rollback, /DROP TRIGGER IF EXISTS hourkey_reconcile_ziwei_hourly_profile ON profiles/u);
-assert.match(rollback, /DROP FUNCTION IF EXISTS hourkey_reconcile_ziwei_hourly_profile\(\)/u);
-assert.match(rollback, /DROP FUNCTION IF EXISTS hourkey_birth_timezone_valid\(text\)/u);
-assert.match(rollback, /DROP FUNCTION IF EXISTS hourkey_ziwei_birth_wall_eligible\(timestamptz,text\)/u);
-assert.match(rollback, /DROP FUNCTION IF EXISTS enforce_mobile_ziwei_push_parent_integrity\(\)/u);
-assert.match(rollback, /DROP FUNCTION IF EXISTS enforce_mobile_ziwei_push_attempt_integrity\(\)/u);
-assert.match(rollback, /DROP FUNCTION IF EXISTS serialize_mobile_ziwei_hourly_producer_mutation\(\)/u);
+assert.doesNotMatch(rollback, /\bDROP\s+(?:TABLE|COLUMN|FUNCTION|TRIGGER|INDEX)\b/iu,
+  "operational rollback must preserve immutable science and audit evidence");
+assert.match(rollback, /SET producer_enabled=false/u,
+  "rollback contains the producer before an old release resumes");
+assert.match(rollback, /SET ziwei_hourly_enabled=false/u,
+  "rollback revokes Ziwei consent without deleting the preference row");
+assert.match(rollback, /last_skip_reason='rollback_disabled'/u,
+  "rollback retains installations in a non-runnable forensic state");
+assert.match(rollback, /l\.kind='ziwei'/u,
+  "rollback retires only Ziwei attempts and does not touch other sciences");
+assert.match(rollback, /FROM PUBLIC, hourkey_app/u,
+  "rollback revokes inherited and direct claim authority");
+assert.match(migration, /REVOKE ALL ON FUNCTION claim_mobile_ziwei_hourly_installations[\s\S]*FROM PUBLIC/u,
+  "forward migration never exposes the claim function through PUBLIC");
 
 console.log("PASS mobile hourly science migration — separate capabilities, immutable Ziwei, hard-blocked Qizheng");

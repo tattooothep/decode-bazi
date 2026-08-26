@@ -595,6 +595,7 @@ REVOKE UPDATE ON mobile_ziwei_hourly_producer_state FROM hourkey_app;
 REVOKE INSERT,DELETE,TRUNCATE,REFERENCES,TRIGGER ON mobile_ziwei_hourly_producer_state FROM hourkey_app;
 GRANT SELECT ON mobile_ziwei_hourly_producer_state TO hourkey_app;
 GRANT SELECT ON mobile_qizheng_electional_producer_state TO hourkey_app;
+REVOKE ALL ON FUNCTION claim_mobile_ziwei_hourly_installations(timestamptz,integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION claim_mobile_ziwei_hourly_installations(timestamptz,integer) TO hourkey_app;
 
 COMMIT;

@@ -111,9 +111,36 @@ try {
     "false,true,2,true",
   );
 
+  const confirmedRecoveryId = "00000000-0000-4000-8000-000000000004";
+  const pendingRecoveryId = "00000000-0000-4000-8000-000000000005";
+  psql(database, `
+    INSERT INTO profile_birth_context_recoveries(
+      id,user_id,profile_id,status,candidate_digest,evidence_kind,
+      confirmation_token_digest,profile_updated_at_seen,expires_at,confirmed_at,applied_at
+    ) VALUES(
+      '${confirmedRecoveryId}','${userId}','${profileId}','confirmed',repeat('c',64),'stored_location_name',
+      repeat('d',64),(SELECT updated_at FROM profiles WHERE id='${profileId}'),now()+interval '1 hour',now(),now()
+    ),(
+      '${pendingRecoveryId}','${userId}','${profileId}','confirmation_required',repeat('e',64),'stored_location_name',
+      repeat('f',64),(SELECT updated_at FROM profiles WHERE id='${profileId}'),now()+interval '1 hour',NULL,NULL
+    );
+    INSERT INTO profile_birth_context_events(
+      recovery_id,user_id,profile_id,event_type,before_context,after_context,candidate_digest,resolver_fingerprint
+    ) VALUES(
+      '${confirmedRecoveryId}','${userId}','${profileId}','timezone_confirmed','{}','{}',repeat('c',64),repeat('a',64)
+    );
+  `);
   psql(database, readFileSync("migrations/20260827_ziwei_birth_context_recovery.rollback.sql", "utf8"));
-  assert.equal(psql(database, `SELECT to_regclass('profile_birth_context_recoveries') IS NULL;`), "t");
-  console.log("PASS Ziwei birth-context recovery DB — rerunnable migration, provenance fence, rollback");
+  assert.equal(psql(database, `SELECT to_regclass('profile_birth_context_recoveries') IS NOT NULL;`), "t");
+  assert.equal(psql(database, `SELECT count(*) FROM profile_birth_context_recoveries;`), "2");
+  assert.equal(psql(database, `SELECT count(*) FROM profile_birth_context_events;`), "1");
+  assert.equal(
+    psql(database, `SELECT status||','||failure_code FROM profile_birth_context_recoveries WHERE id='${pendingRecoveryId}';`),
+    "manual_review,rollback_disabled",
+  );
+  assert.equal(psql(database, `SELECT producer_enabled FROM mobile_ziwei_hourly_producer_state WHERE singleton=true;`), "f");
+  assert.equal(psql(database, `SELECT enabled FROM mobile_ziwei_hourly_installations WHERE user_id='${userId}';`), "f");
+  console.log("PASS Ziwei birth-context recovery DB — rerunnable migration, provenance fence, non-destructive rollback");
 } finally {
   try { psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE);`); } catch {}
 }

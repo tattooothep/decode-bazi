@@ -809,14 +809,35 @@ try {
   )).rows[0].total, 0,
   "account deletion may cascade through an unretired Ziwei parent/attempt without weakening direct-delete guards");
 
+  const occurrencesBeforeRollback = (await admin.query(
+    "SELECT count(*)::int AS total FROM mobile_ziwei_hourly_occurrences",
+  )).rows[0].total;
   await admin.query(rollback);
   await admin.query("UPDATE profiles SET birth_time_known=true WHERE id=$1", [profileId]);
-  assert.equal((await admin.query("SELECT to_regclass('mobile_ziwei_hourly_occurrences') AS value")).rows[0].value, null);
+  assert.equal(
+    (await admin.query("SELECT to_regclass('mobile_ziwei_hourly_occurrences') AS value")).rows[0].value,
+    "mobile_ziwei_hourly_occurrences",
+    "rollback preserves the immutable occurrence ledger",
+  );
+  assert.equal(
+    (await admin.query("SELECT count(*)::int AS total FROM mobile_ziwei_hourly_occurrences")).rows[0].total,
+    occurrencesBeforeRollback,
+    "rollback preserves every retained occurrence row",
+  );
   assert.equal((await admin.query(
     "SELECT count(*)::int AS n FROM information_schema.columns WHERE table_schema=$1 AND column_name IN ('ziwei_hourly_enabled','ziwei_payload_schema','qizheng_payload_schema')",
     [schema],
-  )).rows[0].n, 0);
-  console.log("PASS mobile hourly science DB — rerunnable, immutable/deduped, disjoint claims, 10,000 capacity, rollback");
+  )).rows[0].n, 3, "rollback retains additive schema for old-release compatibility");
+  assert.equal((await admin.query(
+    "SELECT producer_enabled FROM mobile_ziwei_hourly_producer_state WHERE singleton=true",
+  )).rows[0].producer_enabled, false, "rollback disables the producer");
+  assert.equal((await admin.query(
+    "SELECT count(*)::int AS total FROM mobile_ziwei_hourly_installations WHERE enabled OR next_due_at IS NOT NULL OR lease_token IS NOT NULL",
+  )).rows[0].total, 0, "rollback drains every runnable installation without deleting it");
+  assert.equal((await admin.query(
+    "SELECT has_function_privilege('hourkey_app','claim_mobile_ziwei_hourly_installations(timestamptz,integer)','EXECUTE') AS allowed",
+  )).rows[0].allowed, false, "rollback revokes worker claim authority");
+  console.log("PASS mobile hourly science DB — rerunnable, immutable/deduped, disjoint claims, 10,000 capacity, non-destructive rollback");
 } finally {
   await Promise.allSettled([workerA.end(), workerB.end()]);
   if (schemaCreated) await admin.query(`DROP SCHEMA IF EXISTS ${quotedSchema} CASCADE`).catch(() => undefined);

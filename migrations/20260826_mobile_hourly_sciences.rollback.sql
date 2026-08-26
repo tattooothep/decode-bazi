@@ -1,33 +1,46 @@
+-- Non-destructive containment rollback.
+-- The previous application release ignores these additive objects. Preserve
+-- immutable occurrences and delivery evidence so an operational rollback can
+-- never erase user/audit data merely to restore service.
 BEGIN;
 
-DROP TRIGGER IF EXISTS mobile_ziwei_push_attempt_integrity ON mobile_push_attempts;
-DROP FUNCTION IF EXISTS enforce_mobile_ziwei_push_attempt_integrity();
-DROP TRIGGER IF EXISTS mobile_ziwei_push_parent_integrity ON mobile_push_log;
-DROP FUNCTION IF EXISTS enforce_mobile_ziwei_push_parent_integrity();
-DROP TRIGGER IF EXISTS hourkey_reconcile_ziwei_hourly_profile ON profiles;
-DROP FUNCTION IF EXISTS hourkey_reconcile_ziwei_hourly_profile();
-DROP FUNCTION IF EXISTS claim_mobile_ziwei_hourly_installations(timestamptz,integer);
-DROP TABLE IF EXISTS mobile_ziwei_hourly_occurrences;
-DROP FUNCTION IF EXISTS enforce_mobile_ziwei_hourly_occurrence_immutable();
-DROP TABLE IF EXISTS mobile_ziwei_hourly_installations;
-DROP TRIGGER IF EXISTS mobile_ziwei_hourly_producer_mutation_gate
-  ON mobile_ziwei_hourly_producer_state;
-DROP FUNCTION IF EXISTS serialize_mobile_ziwei_hourly_producer_mutation();
-DROP TABLE IF EXISTS mobile_ziwei_hourly_producer_state;
-DROP TABLE IF EXISTS mobile_qizheng_electional_producer_state;
+UPDATE mobile_ziwei_hourly_producer_state
+   SET producer_enabled=false,backend_commit=NULL,enabled_at=NULL,enabled_by=NULL,
+       updated_at=now()
+ WHERE singleton=true;
 
-ALTER TABLE mobile_push_tokens
-  DROP CONSTRAINT IF EXISTS mobile_push_tokens_ziwei_payload_schema_check,
-  DROP CONSTRAINT IF EXISTS mobile_push_tokens_qizheng_payload_schema_check,
-  DROP COLUMN IF EXISTS ziwei_payload_schema,
-  DROP COLUMN IF EXISTS qizheng_payload_schema;
-ALTER TABLE mobile_notification_prefs
-  DROP CONSTRAINT IF EXISTS mobile_notification_prefs_qizheng_electional_disabled,
-  DROP COLUMN IF EXISTS ziwei_hourly_enabled,
-  DROP COLUMN IF EXISTS ziwei_profile_id,
-  DROP COLUMN IF EXISTS qizheng_electional_enabled;
+UPDATE mobile_notification_prefs
+   SET ziwei_hourly_enabled=false,updated_at=now()
+ WHERE ziwei_hourly_enabled=true;
 
-DROP FUNCTION IF EXISTS hourkey_ziwei_birth_wall_eligible(timestamptz,text);
-DROP FUNCTION IF EXISTS hourkey_birth_timezone_valid(text);
+UPDATE mobile_ziwei_hourly_installations
+   SET enabled=false,next_due_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+       last_skip_reason='rollback_disabled',owner_generation=owner_generation+1,
+       updated_at=now()
+ WHERE enabled=true OR next_due_at IS NOT NULL OR lease_token IS NOT NULL;
+
+UPDATE mobile_push_attempts a
+   SET status='dead',next_retry_at=NULL,lease_token=NULL,lease_expires_at=NULL,
+       last_error='ziwei_rollback_disabled',updated_at=now()
+  FROM mobile_push_log l
+ WHERE l.id=a.push_log_id AND l.kind='ziwei'
+   AND a.status IN ('reserved','retry_due') AND a.send_started_at IS NULL;
+
+UPDATE mobile_push_log l
+   SET delivery_status='failed',next_retry_at=NULL,
+       last_error='ziwei_rollback_disabled',updated_at=now()
+ WHERE l.kind='ziwei' AND l.delivery_status='pending'
+   AND NOT EXISTS (
+     SELECT 1 FROM mobile_push_attempts a
+      WHERE a.push_log_id=l.id AND a.status IN ('reserved','retry_due')
+   );
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='hourkey_app')
+     AND to_regprocedure('claim_mobile_ziwei_hourly_installations(timestamptz,integer)') IS NOT NULL THEN
+    EXECUTE 'REVOKE EXECUTE ON FUNCTION claim_mobile_ziwei_hourly_installations(timestamptz,integer) FROM PUBLIC, hourkey_app';
+  END IF;
+END $$;
 
 COMMIT;
