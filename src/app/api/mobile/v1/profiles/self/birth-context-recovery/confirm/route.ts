@@ -4,6 +4,7 @@ import { getMobileSession } from "@/lib/mobile-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import {
   exactRecoveryConfirmationBody,
+  recoveryCandidateDigest,
   recoveryTokenDigest,
   ZIWEI_BIRTH_RECOVERY_CONTRACT,
 } from "@/lib/astro/ziwei/birth-context-recovery";
@@ -19,7 +20,11 @@ type RecoveryRow = {
   status: "confirmation_required" | "confirmed" | "expired" | "manual_review";
   profile_id: string;
   candidate_timezone: string;
+  candidate_display_name: string | null;
   candidate_place_id: string | null;
+  candidate_latitude: number | string | null;
+  candidate_longitude: number | string | null;
+  candidate_provider: string | null;
   candidate_digest: string;
   chart_change_required: boolean;
   profile_updated_at_seen: string | Date;
@@ -61,7 +66,9 @@ export async function POST(req: Request) {
       [session.userId],
     );
     const selected = await client.query<RecoveryRow>(
-      `SELECT r.id AS recovery_id,r.status,r.profile_id,r.candidate_timezone,r.candidate_place_id,
+      `SELECT r.id AS recovery_id,r.status,r.profile_id,r.candidate_timezone,
+              r.candidate_display_name,r.candidate_place_id,r.candidate_latitude,
+              r.candidate_longitude,r.candidate_provider,
               r.candidate_digest,r.chart_change_required,r.profile_updated_at_seen,
               p.updated_at AS profile_updated_at,
               to_char(p.birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall,
@@ -69,11 +76,11 @@ export async function POST(req: Request) {
               p.birth_place_id,p.birth_location_source,p.birth_location_confirmed_at
          FROM profile_birth_context_recoveries r
          JOIN profiles p ON p.id=r.profile_id AND p.created_by_user_id=r.user_id
-        WHERE r.confirmation_token_digest=$1 AND r.user_id=$2
-          AND p.org_id=$3 AND COALESCE(p.is_archived,false)=false
+        WHERE r.confirmation_token_digest=$1 AND r.user_id=$2 AND r.profile_id=$3
+          AND p.org_id=$4 AND COALESCE(p.is_archived,false)=false
           AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')
         FOR UPDATE OF r,p`,
-      [tokenDigest, session.userId, session.orgId],
+      [tokenDigest, session.userId, body.profileId, session.orgId],
     );
     const row = selected.rows[0];
     if (!row) {
@@ -105,6 +112,46 @@ export async function POST(req: Request) {
       );
       await client.query("COMMIT");
       return NextResponse.json({ ok: false, error: "profile_changed" }, { status: 409, headers: PRIVATE_HEADERS });
+    }
+
+    const candidateLatitude = typeof row.candidate_latitude === "number"
+      ? row.candidate_latitude
+      : Number(row.candidate_latitude);
+    const candidateLongitude = typeof row.candidate_longitude === "number"
+      ? row.candidate_longitude
+      : Number(row.candidate_longitude);
+    const candidateFactsValid = typeof row.candidate_display_name === "string"
+      && row.candidate_display_name.trim().length > 0
+      && typeof row.candidate_place_id === "string"
+      && row.candidate_place_id.trim().length > 0
+      && row.candidate_latitude !== null && row.candidate_longitude !== null
+      && Number.isFinite(candidateLatitude) && candidateLatitude >= -90 && candidateLatitude <= 90
+      && Number.isFinite(candidateLongitude) && candidateLongitude >= -180 && candidateLongitude <= 180
+      && typeof row.candidate_timezone === "string" && row.candidate_timezone.trim().length > 0
+      && row.candidate_provider === "google_geocoding_timezone_v1";
+    const recomputedCandidateDigest = candidateFactsValid
+      ? recoveryCandidateDigest({
+        displayName: row.candidate_display_name!,
+        placeId: row.candidate_place_id!,
+        latitude: candidateLatitude,
+        longitude: candidateLongitude,
+        timezone: row.candidate_timezone,
+        provider: "google_geocoding_timezone_v1",
+        confidence: "candidate_requires_user_confirmation",
+      })
+      : null;
+    if (!recomputedCandidateDigest || recomputedCandidateDigest !== row.candidate_digest) {
+      await client.query(
+        `UPDATE profile_birth_context_recoveries
+            SET status='manual_review',failure_code='candidate_digest_mismatch',updated_at=now()
+          WHERE id=$1`,
+        [row.recovery_id],
+      );
+      await client.query("COMMIT");
+      return NextResponse.json(
+        { ok: false, error: "confirmation_evidence_changed" },
+        { status: 409, headers: PRIVATE_HEADERS },
+      );
     }
     if (row.chart_change_required && !body.acceptChartChange) {
       await client.query("ROLLBACK");

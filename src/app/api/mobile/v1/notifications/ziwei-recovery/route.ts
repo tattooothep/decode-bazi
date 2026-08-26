@@ -153,6 +153,7 @@ export async function POST(req: Request) {
     method: "POST",
     headers: req.headers,
     body: JSON.stringify({
+      profileId: body.profileId,
       confirmationToken: body.confirmationToken,
       confirm: true,
       acceptChartChange: body.acceptChartChange,

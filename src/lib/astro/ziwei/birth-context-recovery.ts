@@ -14,6 +14,7 @@ export type ZiweiBirthTimezoneCandidate = Readonly<{
 }>;
 
 export type RecoveryConfirmationBody = Readonly<{
+  profileId: string;
   confirmationToken: string;
   confirm: true;
   acceptChartChange: boolean;
@@ -278,16 +279,19 @@ export function newRecoveryToken(): string {
 export function exactRecoveryConfirmationBody(value: unknown): RecoveryConfirmationBody | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const body = value as Record<string, unknown>;
-  const allowed = new Set(["confirmationToken", "confirm", "acceptChartChange"]);
+  const allowed = new Set(["profileId", "confirmationToken", "confirm", "acceptChartChange"]);
   if (Object.keys(body).some((key) => !allowed.has(key))) return null;
+  const profileId = typeof body.profileId === "string" ? body.profileId.trim() : "";
   const confirmationToken = typeof body.confirmationToken === "string"
     ? body.confirmationToken.trim()
     : "";
-  if (confirmationToken.length < 3 || confirmationToken.length > 512 || body.confirm !== true
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(profileId)
+    || confirmationToken.length < 3 || confirmationToken.length > 512 || body.confirm !== true
     || (body.acceptChartChange !== undefined && typeof body.acceptChartChange !== "boolean")) {
     return null;
   }
   return Object.freeze({
+    profileId,
     confirmationToken,
     confirm: true,
     acceptChartChange: body.acceptChartChange === true,

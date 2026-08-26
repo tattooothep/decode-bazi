@@ -27,6 +27,12 @@ assert.match(migration, /confirmation_token_digest text NOT NULL/u);
 assert.match(migration, /profile_updated_at_seen timestamptz NOT NULL/u);
 assert.match(migration, /FOREIGN KEY \(user_id,profile_id\)/u);
 assert.match(migration, /CHECK \(status IN \('confirmation_required','confirmed','expired','manual_review'\)\)/u);
+assert.match(migration, /CREATE TRIGGER profile_birth_context_recovery_evidence_immutable/u,
+  "candidate evidence must remain write-once after insertion");
+assert.match(migration, /GRANT UPDATE \(status,confirmed_at,applied_at,failure_code,updated_at\)/u,
+  "the runtime role may update lifecycle fields only");
+assert.doesNotMatch(migration, /GRANT SELECT,INSERT,UPDATE ON TABLE profile_birth_context_recoveries/u,
+  "the runtime role must never receive full-row UPDATE");
 assert.doesNotMatch(migration, /mobile_qimen|mobile_zibai/u,
   "birth recovery must not mutate or couple to Qimen/Zi Bai state");
 
@@ -35,6 +41,12 @@ assert.match(statusRoute, /resolveCanonicalZiweiHourlyContext/u,
   "recovery must reject natal inputs outside the locked hourly science domain before enrollment");
 assert.match(statusRoute, /Cache-Control[^\n]*no-store/u);
 assert.match(confirmRoute, /exactRecoveryConfirmationBody/u);
+assert.match(confirmRoute, /r\.profile_id=\$3/u,
+  "the confirmation token must be bound to the explicit owner profile");
+assert.match(confirmRoute, /recoveryCandidateDigest/u,
+  "confirmation must recompute candidate integrity from stored facts");
+assert.match(confirmRoute, /candidate_digest_mismatch/u,
+  "changed candidate evidence must fail closed into manual review");
 assert.match(confirmRoute, /pg_advisory_xact_lock/u);
 assert.match(confirmRoute, /birth_tz_source='user_confirmed_iana'/u);
 assert.match(confirmRoute, /profile_birth_context_events/u);
@@ -54,6 +66,8 @@ assert.match(mobileRecoveryRoute, /pushSubscribed/u);
 assert.match(mobileRecoveryRoute, /ziweiEnrolled/u);
 assert.match(mobileRecoveryRoute, /chartChangeRequired/u);
 assert.match(mobileRecoveryRoute, /acceptChartChange/u);
+assert.match(mobileRecoveryRoute, /profileId:\s*body\.profileId/u,
+  "the compatibility route must forward the owner profile binding");
 for (const reason of ["birth_calendar_range_unsupported", "birth_late_zi_unsupported", "birth_wall_clock_ambiguous"]) {
   assert.match(mobileRecoveryRoute, new RegExp(reason, "u"),
     `the compatibility route must preserve the real science blocker ${reason}`);
@@ -66,20 +80,32 @@ assert.doesNotMatch(mobileRecoveryRoute, /OR t\.platform='ios'/u,
 assert.doesNotMatch(mobileRecoveryRoute, /mobile_qimen|mobile_zibai/u,
   "mobile compatibility route must remain isolated from other science state");
 
+const confirmationProfileId = "00000000-0000-4000-8000-000000000002";
 assert.deepEqual(
-  exactRecoveryConfirmationBody({ confirmationToken: "abc", confirm: true }),
-  { confirmationToken: "abc", confirm: true, acceptChartChange: false },
+  exactRecoveryConfirmationBody({
+    profileId: confirmationProfileId,
+    confirmationToken: "abc",
+    confirm: true,
+  }),
+  { profileId: confirmationProfileId, confirmationToken: "abc", confirm: true, acceptChartChange: false },
 );
 assert.deepEqual(
-  exactRecoveryConfirmationBody({ confirmationToken: "abc", confirm: true, acceptChartChange: true }),
-  { confirmationToken: "abc", confirm: true, acceptChartChange: true },
+  exactRecoveryConfirmationBody({
+    profileId: confirmationProfileId,
+    confirmationToken: "abc",
+    confirm: true,
+    acceptChartChange: true,
+  }),
+  { profileId: confirmationProfileId, confirmationToken: "abc", confirm: true, acceptChartChange: true },
 );
 for (const body of [
-  { confirmationToken: "abc", confirm: true, birthDate: "1984-01-01" },
-  { confirmationToken: "abc", confirm: true, birthTime: "12:00" },
-  { confirmationToken: "abc", confirm: true, gender: "M" },
-  { confirmationToken: "abc", confirm: true, latitude: 13.7 },
-  { confirmationToken: "abc", confirm: true, timezone: "Asia/Bangkok" },
+  { confirmationToken: "abc", confirm: true },
+  { profileId: "not-a-uuid", confirmationToken: "abc", confirm: true },
+  { profileId: confirmationProfileId, confirmationToken: "abc", confirm: true, birthDate: "1984-01-01" },
+  { profileId: confirmationProfileId, confirmationToken: "abc", confirm: true, birthTime: "12:00" },
+  { profileId: confirmationProfileId, confirmationToken: "abc", confirm: true, gender: "M" },
+  { profileId: confirmationProfileId, confirmationToken: "abc", confirm: true, latitude: 13.7 },
+  { profileId: confirmationProfileId, confirmationToken: "abc", confirm: true, timezone: "Asia/Bangkok" },
 ]) {
   assert.equal(exactRecoveryConfirmationBody(body), null,
     "the client must never resubmit existing birth facts during confirmation");

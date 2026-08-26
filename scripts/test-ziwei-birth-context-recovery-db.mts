@@ -70,6 +70,18 @@ try {
   const migration = readFileSync("migrations/20260827_ziwei_birth_context_recovery.sql", "utf8");
   psql(database, migration);
   psql(database, migration);
+  assert.equal(
+    psql(database, `SELECT has_table_privilege('hourkey_app','profile_birth_context_recoveries','UPDATE');`),
+    "f",
+  );
+  assert.equal(
+    psql(database, `SELECT has_column_privilege('hourkey_app','profile_birth_context_recoveries','status','UPDATE');`),
+    "t",
+  );
+  assert.equal(
+    psql(database, `SELECT has_column_privilege('hourkey_app','profile_birth_context_recoveries','candidate_timezone','UPDATE');`),
+    "f",
+  );
   assert.equal(psql(database, `SELECT hourkey_ziwei_birth_context_confirmed('user_confirmed_iana',now());`), "t");
   assert.equal(psql(database, `SELECT hourkey_ziwei_birth_context_confirmed('user_confirmed_exact_offset',now());`), "t");
   assert.equal(psql(database, `SELECT hourkey_ziwei_birth_context_confirmed('user_input',now());`), "f");
@@ -130,6 +142,36 @@ try {
       '${confirmedRecoveryId}','${userId}','${profileId}','timezone_confirmed','{}','{}',repeat('c',64),repeat('a',64)
     );
   `);
+  assert.throws(
+    () => psql(database, `
+      SET ROLE hourkey_app;
+      UPDATE profile_birth_context_recoveries
+         SET candidate_timezone='Asia/Tokyo'
+       WHERE id='${pendingRecoveryId}';
+    `),
+    /permission denied|profile_birth_context_recovery_evidence_immutable/u,
+    "the runtime role must not mutate candidate evidence",
+  );
+  assert.equal(
+    psql(database, `
+      SET ROLE hourkey_app;
+      UPDATE profile_birth_context_recoveries
+         SET failure_code='lifecycle_test',updated_at=now()
+       WHERE id='${pendingRecoveryId}';
+      RESET ROLE;
+      SELECT failure_code FROM profile_birth_context_recoveries WHERE id='${pendingRecoveryId}';
+    `),
+    "lifecycle_test",
+  );
+  assert.throws(
+    () => psql(database, `
+      UPDATE profile_birth_context_recoveries
+         SET candidate_digest=repeat('9',64)
+       WHERE id='${pendingRecoveryId}';
+    `),
+    /profile_birth_context_recovery_evidence_immutable/u,
+    "the trigger must defend evidence even from an overprivileged connection",
+  );
   psql(database, readFileSync("migrations/20260827_ziwei_birth_context_recovery.rollback.sql", "utf8"));
   assert.equal(psql(database, `SELECT to_regclass('profile_birth_context_recoveries') IS NOT NULL;`), "t");
   assert.equal(psql(database, `SELECT count(*) FROM profile_birth_context_recoveries;`), "2");

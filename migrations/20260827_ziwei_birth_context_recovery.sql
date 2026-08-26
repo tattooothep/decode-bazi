@@ -91,6 +91,37 @@ CREATE INDEX IF NOT EXISTS ix_profile_birth_context_expiry
   ON profile_birth_context_recoveries(expires_at)
   WHERE status='confirmation_required';
 
+-- Candidate identity and evidence are write-once. Only lifecycle fields may
+-- change after insertion, even if a future application grant is too broad.
+CREATE OR REPLACE FUNCTION hourkey_profile_birth_context_evidence_immutable()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF ROW(
+    NEW.id,NEW.user_id,NEW.profile_id,NEW.observed_location_name,NEW.observed_birth_tz,
+    NEW.candidate_display_name,NEW.candidate_place_id,NEW.candidate_latitude,
+    NEW.candidate_longitude,NEW.candidate_timezone,NEW.candidate_provider,
+    NEW.candidate_digest,NEW.evidence_kind,NEW.confirmation_token_digest,
+    NEW.profile_updated_at_seen,NEW.chart_change_required,NEW.old_natal_fingerprint,
+    NEW.candidate_natal_fingerprint,NEW.expires_at,NEW.created_at
+  ) IS DISTINCT FROM ROW(
+    OLD.id,OLD.user_id,OLD.profile_id,OLD.observed_location_name,OLD.observed_birth_tz,
+    OLD.candidate_display_name,OLD.candidate_place_id,OLD.candidate_latitude,
+    OLD.candidate_longitude,OLD.candidate_timezone,OLD.candidate_provider,
+    OLD.candidate_digest,OLD.evidence_kind,OLD.confirmation_token_digest,
+    OLD.profile_updated_at_seen,OLD.chart_change_required,OLD.old_natal_fingerprint,
+    OLD.candidate_natal_fingerprint,OLD.expires_at,OLD.created_at
+  ) THEN
+    RAISE EXCEPTION 'profile_birth_context_recovery_evidence_immutable';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS profile_birth_context_recovery_evidence_immutable
+  ON profile_birth_context_recoveries;
+CREATE TRIGGER profile_birth_context_recovery_evidence_immutable
+BEFORE UPDATE ON profile_birth_context_recoveries
+FOR EACH ROW EXECUTE FUNCTION hourkey_profile_birth_context_evidence_immutable();
+
 CREATE TABLE IF NOT EXISTS profile_birth_context_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   recovery_id uuid NOT NULL REFERENCES profile_birth_context_recoveries(id) ON DELETE RESTRICT,
@@ -170,7 +201,8 @@ DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='hourkey_app') THEN
     EXECUTE 'REVOKE ALL PRIVILEGES ON TABLE profile_birth_context_recoveries,profile_birth_context_events FROM PUBLIC, hourkey_app';
-    EXECUTE 'GRANT SELECT,INSERT,UPDATE ON TABLE profile_birth_context_recoveries TO hourkey_app';
+    EXECUTE 'GRANT SELECT,INSERT ON TABLE profile_birth_context_recoveries TO hourkey_app';
+    EXECUTE 'GRANT UPDATE (status,confirmed_at,applied_at,failure_code,updated_at) ON TABLE profile_birth_context_recoveries TO hourkey_app';
     EXECUTE 'GRANT SELECT,INSERT ON TABLE profile_birth_context_events TO hourkey_app';
   ELSE
     REVOKE ALL PRIVILEGES ON TABLE profile_birth_context_recoveries,profile_birth_context_events FROM PUBLIC;
