@@ -6,6 +6,7 @@ const migration = read("migrations/20260827_ziwei_birth_context_recovery.sql");
 const preferences = read("src/lib/mobile-notification-preferences.ts");
 const push = read("src/app/api/mobile/v1/push/route.ts");
 const scheduler = read("scripts/mobile-ziwei-hourly-push-cron.mts");
+const recoveryPreflight = read("scripts/preflight-ziwei-birth-context-recovery.mts");
 const preview = read("src/app/api/mobile/v1/ziwei/hourly-preview/route.ts");
 const chart = read("src/app/api/mobile/v1/ziwei/route.ts");
 
@@ -18,6 +19,7 @@ for (const [name, source] of [
   ["preferences", preferences],
   ["push", push],
   ["scheduler", scheduler],
+  ["recovery preflight", recoveryPreflight],
   ["preview", preview],
 ] as const) {
   assert.match(source, /resolveCanonicalZiweiHourlyContext/u,

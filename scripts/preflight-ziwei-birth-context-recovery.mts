@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { pool } from "../src/lib/db";
 import { lookupZiweiBirthTimezoneCandidate } from "../src/lib/astro/ziwei/birth-context-recovery";
-import { resolveCanonicalZiweiContext } from "../src/lib/astro/ziwei/context-resolver";
+import { resolveCanonicalZiweiHourlyContext } from "../src/lib/astro/ziwei/context-resolver";
 
 type Row = {
   birth_location_name: string | null;
@@ -34,7 +34,7 @@ try {
       birthWallClock: row.birth_wall,
       apiKey: serverKey,
     });
-    const context = resolveCanonicalZiweiContext({
+    const context = resolveCanonicalZiweiHourlyContext({
       mode: "strict",
       birthWallClock: row.birth_wall,
       birthTimezone: candidate.timezone,
