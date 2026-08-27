@@ -48,13 +48,18 @@ type RecoveryRow = {
   birth_location_confirmed_at: string | Date | null;
 };
 
-function completePayload(profileId: string, timezone: string, fingerprint: string | null) {
+function completePayload(
+  profileId: string,
+  timezone: string,
+  fingerprint: string | null,
+  birthFingerprint: string,
+) {
   return {
     ok: true,
     contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
     state: "complete",
     profile: { id: profileId, isSelf: true },
-    context: { status: "resolved", timezone, fingerprint },
+    context: { status: "resolved", timezone, fingerprint, birthFingerprint },
     requires_birth_reentry: false,
   };
 }
@@ -148,7 +153,12 @@ export async function POST(req: Request) {
       }
       await client.query("COMMIT");
       return NextResponse.json(
-        completePayload(row.profile_id, confirmedContext.birth.timezone, confirmedContext.fingerprint),
+        completePayload(
+          row.profile_id,
+          confirmedContext.birth.timezone,
+          confirmedContext.fingerprint,
+          confirmedContext.birthFingerprint,
+        ),
         { headers: PRIVATE_HEADERS },
       );
     }
@@ -307,7 +317,12 @@ export async function POST(req: Request) {
     );
     await client.query("COMMIT");
     return NextResponse.json(
-      completePayload(row.profile_id, context.birth.timezone, context.fingerprint),
+      completePayload(
+        row.profile_id,
+        context.birth.timezone,
+        context.fingerprint,
+        context.birthFingerprint,
+      ),
       { headers: PRIVATE_HEADERS },
     );
   } catch (error) {

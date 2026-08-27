@@ -49,6 +49,10 @@ assert.doesNotMatch(migration, /mobile_qimen|mobile_zibai/u,
   "birth recovery must not mutate or couple to Qimen/Zi Bai state");
 
 assert.match(statusRoute, /requires_birth_reentry:\s*false/u);
+assert.match(statusRoute, /birthFingerprint/u,
+  "recovery completion must expose the immutable natal fingerprint used by installation enrollment");
+assert.match(statusRoute, /if \(context\.status === "resolved"\)[\s\S]{0,500}completePayload\([\s\S]{0,300}context\.birthFingerprint/u,
+  "already-confirmed profiles must expose the exact enrollment fingerprint on the fast path");
 assert.match(statusRoute, /resolveCanonicalZiweiHourlyContext/u,
   "recovery must reject natal inputs outside the locked hourly science domain before enrollment");
 assert.match(statusRoute, /recoveryConfirmationToken/u,
@@ -105,7 +109,7 @@ assert.ok(
 );
 assert.match(confirmRoute, /row\.birth_time_known === true[\s\S]+APPROVED_SOURCES\.has[\s\S]+confirmedContext\.birthFingerprint !== row\.candidate_natal_fingerprint/u,
   "confirmed replay must prove the current canonical profile still matches the consented natal context");
-assert.match(confirmRoute, /completePayload\(row\.profile_id, confirmedContext\.birth\.timezone, confirmedContext\.fingerprint\)/u,
+assert.match(confirmRoute, /completePayload\([\s\S]+row\.profile_id,[\s\S]+confirmedContext\.birth\.timezone,[\s\S]+confirmedContext\.fingerprint,[\s\S]+confirmedContext\.birthFingerprint,[\s\S]+\)/u,
   "confirmed replay returns the current real canonical fingerprint, never a synthetic ready response");
 assert.match(confirmRoute, /recoveryCandidateDigest/u,
   "confirmation must recompute candidate integrity from stored facts");
@@ -145,7 +149,13 @@ assert.match(mobileRecoveryRoute, /installation_id=\$2::uuid/u,
   "another phone on the same account must not make this phone appear subscribed or enrolled");
 assert.match(mobileRecoveryRoute, /invalid_installation_id/u,
   "missing or malformed installation identity must fail before recovery/provider work");
-assert.match(mobileRecoveryRoute, /deviceStatus\(session\.userId, installationId\)/u);
+assert.match(mobileRecoveryRoute,
+  /deviceStatus\(session\.userId, installationId, profileId, birthContextFingerprint\)/u,
+  "installation truth must be checked against the exact canonical recovery profile and natal fingerprint");
+assert.match(mobileRecoveryRoute, /i\.profile_id=\$3::uuid/u,
+  "an enrollment for an older/different self profile must not appear enabled for canonical recovery");
+assert.match(mobileRecoveryRoute, /i\.birth_context_fingerprint=\$4/u,
+  "stale natal facts must not appear enrolled after the canonical profile changes");
 assert.match(mobileRecoveryRoute,
   /JSON\.stringify\(keys\) !== JSON\.stringify\(\["acceptChartChange", "action", "confirmationToken", "installation_id", "profileId"\]\)/u,
   "confirmation must accept only the exact mobile body including its installation binding");

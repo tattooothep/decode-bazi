@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store, max-age=0" } as const;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const SHA256_RE = /^[0-9a-f]{64}$/u;
 
 type DeviceStatus = {
   push_subscribed: boolean;
@@ -24,7 +25,12 @@ function installationIdFromRequest(req: Request): string | null {
   return UUID_RE.test(installationId) ? installationId.toLowerCase() : null;
 }
 
-async function deviceStatus(userId: string, installationId: string): Promise<DeviceStatus> {
+async function deviceStatus(
+  userId: string,
+  installationId: string,
+  profileId: string | null,
+  birthContextFingerprint: string | null,
+): Promise<DeviceStatus> {
   const row = await q1<DeviceStatus & { ios_subscribed: boolean }>(
     `SELECT EXISTS(
               SELECT 1 FROM mobile_push_tokens t
@@ -45,9 +51,10 @@ async function deviceStatus(userId: string, installationId: string): Promise<Dev
             EXISTS(
               SELECT 1 FROM mobile_ziwei_hourly_installations i
                WHERE i.user_id=$1 AND i.installation_id=$2::uuid AND i.enabled=true
-                 AND i.birth_context_fingerprint IS NOT NULL
+                 AND i.profile_id=$3::uuid
+                 AND i.birth_context_fingerprint=$4
             ) AS ziwei_enrolled`,
-    [userId, installationId],
+    [userId, installationId, profileId, birthContextFingerprint],
   );
   if (!row) return { push_subscribed: false, push_deliverable: false, ziwei_enrolled: false };
   return {
@@ -140,7 +147,18 @@ async function relayStatus(req: Request, upstream: Response, installationId: str
   }
   const session = await getMobileSession(req);
   if (!session) return NextResponse.json({ ok: false, error: "not_authorized" }, { status: 401, headers: PRIVATE_HEADERS });
-  return response(200, normalizedRecovery(raw, await deviceStatus(session.userId, installationId)));
+  const profileId = typeof raw.profile?.id === "string" && UUID_RE.test(raw.profile.id)
+    ? raw.profile.id.toLowerCase()
+    : null;
+  const birthContextFingerprint = raw.state === "complete"
+    && typeof raw.context?.birthFingerprint === "string"
+    && SHA256_RE.test(raw.context.birthFingerprint)
+    ? raw.context.birthFingerprint
+    : null;
+  return response(200, normalizedRecovery(
+    raw,
+    await deviceStatus(session.userId, installationId, profileId, birthContextFingerprint),
+  ));
 }
 
 export async function GET(req: Request) {

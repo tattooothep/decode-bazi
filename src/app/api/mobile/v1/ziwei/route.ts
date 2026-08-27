@@ -11,6 +11,11 @@ import { birthTimezoneMeta } from "@/lib/birth-timezone";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+const APPROVED_BIRTH_TIMEZONE_SOURCES = new Set([
+  "user_confirmed_iana",
+  "user_confirmed_exact_offset",
+  "verified_import",
+]);
 
 function cleanId(value: unknown): string | null {
   const text = typeof value === "string" ? value.trim().replace(/^hk_/, "") : "";
@@ -36,30 +41,53 @@ export async function GET(req: Request) {
   const row = await q1<{
     id: string; name: string | null; nickname: string | null; birth_datetime: string | null;
     birth_lat: string | null; birth_lng: string | null; gender: string | null; birth_time_known: boolean | null;
-    birth_tz: string | null;
+    birth_tz: string | null; birth_tz_source: string | null; birth_tz_confirmed_at: string | Date | null;
   }>(
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-            birth_lat, birth_lng, gender, birth_time_known, birth_tz
-       FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
-    [profileId, session.orgId]
+            birth_lat, birth_lng, gender, birth_time_known,
+            birth_tz,birth_tz_source,birth_tz_confirmed_at
+       FROM profiles
+      WHERE id=$1 AND org_id=$2 AND created_by_user_id=$3 AND COALESCE(is_archived,false)=false`,
+    [profileId, session.orgId, session.userId]
   );
   if (!row || !row.birth_datetime) {
     return NextResponse.json({ ok: false, error: "profile not found" }, { status: 404 });
   }
-  const profileHasTimezone = row.birth_tz !== null && row.birth_tz !== "";
-  const requestedTimezone = url.searchParams.get("tz");
-  const birthTimezone = profileHasTimezone ? row.birth_tz : requestedTimezone;
+  const birthLat = row.birth_lat === null ? Number.NaN : Number(row.birth_lat);
+  const birthLng = row.birth_lng === null ? Number.NaN : Number(row.birth_lng);
+  const gender = row.gender === "M" || row.gender === "F" ? row.gender as Gender : null;
+  const birthTimezone = row.birth_tz;
+  if (!birthTimezone || !row.birth_tz_confirmed_at
+    || !APPROVED_BIRTH_TIMEZONE_SOURCES.has(String(row.birth_tz_source || ""))
+    || !gender) {
+    const timezoneConfirmed = !!birthTimezone && !!row.birth_tz_confirmed_at
+      && APPROVED_BIRTH_TIMEZONE_SOURCES.has(String(row.birth_tz_source || ""));
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "ziwei_context_blocked",
+        reason: timezoneConfirmed ? "birth_gender_invalid" : "birth_timezone_unconfirmed",
+      },
+      { status: 422, headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
+  }
+  // Coordinates are engine metadata only once gmtOffsetHours is explicit.
+  // Match hourly preview's neutral policy rather than inventing Bangkok.
+  const engineLocation = Number.isFinite(birthLat) && Number.isFinite(birthLng)
+    && birthLat >= -90 && birthLat <= 90 && birthLng >= -180 && birthLng <= 180
+    ? { lat: birthLat, lng: birthLng }
+    : { lat: 0, lng: 0 };
   const referenceInstant = new Date();
   const ziweiContext = resolveCanonicalZiweiContext({
     mode: "legacy_chart",
     birthWallClock: row.birth_datetime,
     birthTimezone,
-    birthTimezoneSource: profileHasTimezone ? "profile" : requestedTimezone ? "request" : undefined,
+    birthTimezoneSource: "profile",
     referenceInstant,
     // The established chart evaluates reference facts in the birth offset. Keep that
     // compatibility explicit until the chart API accepts a separate reference zone.
-    referenceTimezone: birthTimezone || "+07:00",
+    referenceTimezone: birthTimezone,
     legacyReferenceUsesBirthOffset: true,
   });
   if (ziweiContext.status === "blocked") {
@@ -68,11 +96,10 @@ export async function GET(req: Request) {
       { status: 422 },
     );
   }
-  const gender: Gender = String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M";
   const chart = ziweiChart(
     new Date(ziweiContext.birth.instant),
-    Number(row.birth_lat || 13.7563),
-    Number(row.birth_lng || 100.5018),
+    engineLocation.lat,
+    engineLocation.lng,
     gender,
     row.birth_time_known !== false,
     {
@@ -81,14 +108,11 @@ export async function GET(req: Request) {
       refGmtOffsetHours: ziweiContext.reference.utcOffsetMinutes / 60,
     },
   );
-  const timezone = ziweiContext.status === "compatibility_only"
-      && ziweiContext.reason === "birth_timezone_missing_legacy_bangkok"
-    ? birthTimezoneMeta(null)
-    : birthTimezoneMeta({
-      label: ziweiContext.birth.timezone,
-      kind: ziweiContext.birth.timezoneKind === "iana" ? "zone" : "offset",
-      offsetMin: ziweiContext.birth.utcOffsetMinutes,
-    }, ziweiContext.birth.timezoneSource === "profile");
+  const timezone = birthTimezoneMeta({
+    label: ziweiContext.birth.timezone,
+    kind: ziweiContext.birth.timezoneKind === "iana" ? "zone" : "offset",
+    offsetMin: ziweiContext.birth.utcOffsetMinutes,
+  }, true);
   return NextResponse.json(
     {
       ok: true,

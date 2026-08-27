@@ -136,13 +136,18 @@ function confirmationRequiredPayload(
   };
 }
 
-function completePayload(profileId: string, timezone: string, fingerprint: string) {
+function completePayload(
+  profileId: string,
+  timezone: string,
+  fingerprint: string,
+  birthFingerprint: string,
+) {
   return {
     ok: true,
     contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
     state: "complete",
     profile: profilePayload(profileId),
-    context: { status: "resolved", timezone, fingerprint },
+    context: { status: "resolved", timezone, fingerprint, birthFingerprint },
     requires_birth_reentry: false,
   };
 }
@@ -166,7 +171,12 @@ function completePayloadFromCurrentProfile(
     referenceTimezone: "Asia/Bangkok",
   });
   return context.status === "resolved"
-    ? completePayload(profileId, context.birth.timezone, context.fingerprint)
+    ? completePayload(
+      profileId,
+      context.birth.timezone,
+      context.fingerprint,
+      context.birthFingerprint,
+    )
     : null;
 }
 
@@ -314,7 +324,12 @@ async function applyAutomaticNoChangeRecovery(input: Readonly<{
       context.fingerprint,
     ],
   );
-  return completePayload(input.profile.id, context.birth.timezone, context.fingerprint);
+  return completePayload(
+    input.profile.id,
+    context.birth.timezone,
+    context.fingerprint,
+    context.birthFingerprint,
+  );
 }
 
 export async function GET(req: Request) {
@@ -359,12 +374,12 @@ export async function GET(req: Request) {
     });
     if (context.status === "resolved") {
       return NextResponse.json({
-        ok: true,
-        contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
-        state: "complete",
-        profile: profilePayload(profile.id),
-        context: { status: "resolved", timezone: context.birth.timezone, fingerprint: context.fingerprint },
-        requires_birth_reentry: false,
+        ...completePayload(
+          profile.id,
+          context.birth.timezone,
+          context.fingerprint,
+          context.birthFingerprint,
+        ),
       }, { headers: PRIVATE_HEADERS });
     }
   }
