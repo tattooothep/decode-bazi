@@ -1,6 +1,7 @@
 "use strict";
 
 const { createHash } = require("node:crypto");
+const ziweiHourlyPresentation = require("./ziwei-hourly-presentation.cjs");
 
 const LINEAGE = "iztro_2_5_8_normal_forward_zi_v1";
 const CALCULATION_VERSION = "ziwei-hourly-notification-v1";
@@ -360,18 +361,6 @@ function parseZiweiHourlyProviderData(data) {
   return Object.freeze(value);
 }
 
-const COPY = Object.freeze({
-  th: Object.freeze({ title: "紫微流時", month: "เดือน", day: "วัน", hour: "ยาม", palace: "เรือน", detail: "แตะดูผัง 3 ชั้นและหลักฐาน" }),
-  en: Object.freeze({ title: "Ziwei hour", month: "Month", day: "Day", hour: "Hour", palace: "palace", detail: "Open the three layers and evidence" }),
-  zh: Object.freeze({ title: "紫微流時", month: "月", day: "日", hour: "時", palace: "宮", detail: "查看月日時三層與依據" }),
-  cn: Object.freeze({ title: "紫微流时", month: "月", day: "日", hour: "时", palace: "宫", detail: "查看月日时三层与依据" }),
-  vi: Object.freeze({ title: "Tử Vi lưu thời", month: "Tháng", day: "Ngày", hour: "Giờ", palace: "cung", detail: "Mở ba tầng tháng–ngày–giờ và căn cứ lá số" }),
-  ja: Object.freeze({ title: "紫微流時", month: "月", day: "日", hour: "時辰", palace: "宮", detail: "月・日・時の三層と算出根拠を確認" }),
-  ru: Object.freeze({ title: "Цзывэй по часу", month: "Месяц", day: "День", hour: "Час", palace: "дворец", detail: "Откройте три слоя и данные расчёта" }),
-  ko: Object.freeze({ title: "자미두수 시진", month: "월", day: "일", hour: "시진", palace: "궁", detail: "월·일·시진 3개 층과 계산 근거 보기" }),
-  es: Object.freeze({ title: "Ziwei por hora", month: "Mes", day: "Día", hour: "Hora", palace: "palacio", detail: "Abre las tres capas y la evidencia del cálculo" }),
-});
-
 const PRIVATE_COPY = Object.freeze({
   th: Object.freeze({ title: "การแจ้งเตือนส่วนตัว", body: "เปิด HourKey เพื่อดูรายละเอียด" }),
   en: Object.freeze({ title: "Private notification", body: "Open HourKey to view details" }),
@@ -386,23 +375,12 @@ const PRIVATE_COPY = Object.freeze({
 
 function copyLocale(locale) {
   const value = String(locale || "").trim().toLowerCase();
-  return Object.hasOwn(COPY, value) ? value : "en";
+  return Object.hasOwn(PRIVATE_COPY, value) ? value : "en";
 }
 
 function buildZiweiHourlyCopy(locale, snapshot) {
   if (!verifyZiweiHourlyNotificationSnapshot(snapshot)) throw new TypeError("ziwei_hourly_snapshot_invalid");
-  const language = copyLocale(locale);
-  const copy = COPY[language];
-  const layers = snapshot.facts.layers;
-  const title = `${copy.title} · ${layers.liuShi.ganzhi} · ${copy.palace}${layers.liuShi.mingPalaceName}`;
-  const body = [
-    `${copy.month} ${layers.liuYue.ganzhi} · ${copy.palace}${layers.liuYue.mingPalaceName}`,
-    `${copy.day} ${layers.liuRi.ganzhi} · ${copy.palace}${layers.liuRi.mingPalaceName}`,
-    `${copy.hour} ${layers.liuShi.ganzhi} · ${copy.palace}${layers.liuShi.mingPalaceName}`,
-    copy.detail,
-  ].join(" | ");
-  if (title.length > 120 || body.length > 400) throw new RangeError("ziwei_hourly_copy_too_long");
-  return Object.freeze({ title, body });
+  return ziweiHourlyPresentation.buildZiweiHourlyTypeCCopy(locale, snapshot);
 }
 
 function buildZiweiHourlyPrivateCopy(locale) {
