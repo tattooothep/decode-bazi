@@ -21,15 +21,18 @@ try {
     CREATE TABLE profiles(
       id uuid PRIMARY KEY,
       created_by_user_id uuid REFERENCES users(id),
+      org_id uuid,
       birth_datetime timestamptz,
       birth_time_known boolean,
+      birth_lat double precision,
+      birth_lng double precision,
       birth_tz varchar(64),
       birth_tz_source varchar(32),
       birth_location_name text,
       gender text,
       relationship_type text,
       is_archived boolean DEFAULT false,
-      updated_at timestamptz NOT NULL DEFAULT now()
+      updated_at timestamptz
     );
     CREATE TABLE mobile_notification_prefs(
       user_id uuid PRIMARY KEY REFERENCES users(id),
@@ -65,11 +68,18 @@ try {
       LANGUAGE sql IMMUTABLE AS $$ SELECT $1 IN ('Asia/Bangkok','UTC','+07:00') $$;
     CREATE FUNCTION hourkey_ziwei_birth_wall_eligible(timestamptz,text) RETURNS boolean
       LANGUAGE sql IMMUTABLE AS $$ SELECT $1 IS NOT NULL AND hourkey_birth_timezone_valid($2) $$;
+    INSERT INTO users(id) VALUES('00000000-0000-4000-8000-000000000099');
+    INSERT INTO profiles(id,created_by_user_id,updated_at)
+      VALUES('00000000-0000-4000-8000-000000000098','00000000-0000-4000-8000-000000000099',NULL);
   `);
 
   const migration = readFileSync("migrations/20260827_ziwei_birth_context_recovery.sql", "utf8");
   psql(database, migration);
   psql(database, migration);
+  assert.equal(psql(database, `SELECT updated_at IS NOT NULL FROM profiles
+    WHERE id='00000000-0000-4000-8000-000000000098';`), "t");
+  assert.equal(psql(database, `SELECT is_nullable FROM information_schema.columns
+    WHERE table_name='profiles' AND column_name='updated_at';`), "NO");
   assert.equal(
     psql(database, `SELECT has_table_privilege('hourkey_app','profile_birth_context_recoveries','UPDATE');`),
     "f",
@@ -122,10 +132,21 @@ try {
       FROM mobile_ziwei_hourly_installations WHERE user_id='${userId}';`),
     "false,true,2,true",
   );
+  const sourceVersionBefore = psql(database, `SELECT updated_at::text FROM profiles WHERE id='${profileId}';`);
+  psql(database, `UPDATE profiles SET gender='F',updated_at='${sourceVersionBefore}' WHERE id='${profileId}';`);
+  assert.equal(
+    psql(database, `SELECT updated_at>'${sourceVersionBefore}'::timestamptz FROM profiles WHERE id='${profileId}';`),
+    "t",
+    "a direct birth-fact writer cannot preserve the recovery freshness version",
+  );
+  psql(database, `UPDATE profiles SET gender='M' WHERE id='${profileId}';`);
 
   const confirmedRecoveryId = "00000000-0000-4000-8000-000000000004";
   const pendingRecoveryId = "00000000-0000-4000-8000-000000000005";
   psql(database, `
+    UPDATE profiles
+       SET updated_at='2026-08-27 00:00:00.123456+00'
+     WHERE id='${profileId}';
     INSERT INTO profile_birth_context_recoveries(
       id,user_id,profile_id,status,candidate_digest,evidence_kind,
       confirmation_token_digest,profile_updated_at_seen,expires_at,confirmed_at,applied_at
@@ -142,6 +163,24 @@ try {
       '${confirmedRecoveryId}','${userId}','${profileId}','timezone_confirmed','{}','{}',repeat('c',64),repeat('a',64)
     );
   `);
+  assert.equal(
+    psql(database, `SELECT r.profile_updated_at_seen=p.updated_at
+      FROM profile_birth_context_recoveries r JOIN profiles p ON p.id=r.profile_id
+      WHERE r.id='${pendingRecoveryId}';`),
+    "t",
+    "a recovery snapshot must preserve all six PostgreSQL fractional timestamp digits",
+  );
+  psql(database, `UPDATE profiles
+    SET updated_at='2026-08-27 00:00:00.123457+00' WHERE id='${profileId}';`);
+  assert.equal(
+    psql(database, `SELECT r.profile_updated_at_seen=p.updated_at
+      FROM profile_birth_context_recoveries r JOIN profiles p ON p.id=r.profile_id
+      WHERE r.id='${pendingRecoveryId}';`),
+    "f",
+    "a one-microsecond profile change must invalidate the recovery snapshot",
+  );
+  psql(database, `UPDATE profiles
+    SET updated_at='2026-08-27 00:00:00.123456+00' WHERE id='${profileId}';`);
   assert.throws(
     () => psql(database, `
       SET ROLE hourkey_app;

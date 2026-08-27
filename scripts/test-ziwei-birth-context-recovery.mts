@@ -4,6 +4,9 @@ import {
   exactRecoveryConfirmationBody,
   lookupZiweiBirthTimezoneCandidate,
   recoveryCandidateDigest,
+  recoveryConfirmationToken,
+  recoveryTokenDigest,
+  recoveryTokenMatchesDigest,
 } from "../src/lib/astro/ziwei/birth-context-recovery.ts";
 
 const migration = readFileSync("migrations/20260827_ziwei_birth_context_recovery.sql", "utf8");
@@ -21,6 +24,10 @@ const mobileRecoveryRoute = readFileSync(
 );
 
 assert.match(migration, /ADD COLUMN IF NOT EXISTS birth_tz_confirmed_at timestamptz/u);
+assert.match(migration, /UPDATE profiles SET updated_at=now\(\) WHERE updated_at IS NULL/u,
+  "legacy profiles need a concrete recovery version without asking the user to re-enter data");
+assert.match(migration, /ALTER TABLE profiles ALTER COLUMN updated_at SET NOT NULL/u,
+  "future recovery snapshots must always have a representable profile version");
 assert.match(migration, /CREATE TABLE IF NOT EXISTS profile_birth_context_recoveries/u);
 assert.match(migration, /CREATE TABLE IF NOT EXISTS profile_birth_context_events/u);
 assert.match(migration, /confirmation_token_digest text NOT NULL/u);
@@ -29,6 +36,10 @@ assert.match(migration, /FOREIGN KEY \(user_id,profile_id\)/u);
 assert.match(migration, /CHECK \(status IN \('confirmation_required','confirmed','expired','manual_review'\)\)/u);
 assert.match(migration, /CREATE TRIGGER profile_birth_context_recovery_evidence_immutable/u,
   "candidate evidence must remain write-once after insertion");
+assert.match(migration, /CREATE TRIGGER hourkey_touch_profile_birth_context_version/u,
+  "every canonical birth or location-evidence mutation must advance profile freshness");
+assert.match(migration, /OLD\.updated_at,'-infinity'::timestamptz\) \+ interval '1 microsecond'/u,
+  "a direct writer cannot preserve the old freshness version during a source-fact change");
 assert.match(migration, /GRANT UPDATE \(status,confirmed_at,applied_at,failure_code,updated_at\)/u,
   "the runtime role may update lifecycle fields only");
 assert.doesNotMatch(migration, /GRANT SELECT,INSERT,UPDATE ON TABLE profile_birth_context_recoveries/u,
@@ -39,19 +50,56 @@ assert.doesNotMatch(migration, /mobile_qimen|mobile_zibai/u,
 assert.match(statusRoute, /requires_birth_reentry:\s*false/u);
 assert.match(statusRoute, /resolveCanonicalZiweiHourlyContext/u,
   "recovery must reject natal inputs outside the locked hourly science domain before enrollment");
+assert.match(statusRoute, /recoveryConfirmationToken/u,
+  "overlapping status reads must derive one reusable opaque token from the immutable recovery row");
+assert.match(statusRoute, /recoveryTokenMatchesDigest\(reusableToken, active\.confirmation_token_digest\)/u,
+  "a regenerated token must match the digest committed with the active row");
+assert.match(statusRoute, /pg_advisory_xact_lock[\s\S]+FROM profile_birth_context_recoveries[\s\S]+FOR UPDATE/u,
+  "the route must re-read pending recovery under the owner lock before inserting");
+assert.match(statusRoute, /SELECT updated_at::text AS updated_at_exact[\s\S]+created_by_user_id=\$2 AND org_id=\$3[\s\S]+FOR UPDATE/u,
+  "the locked profile re-read must retain owner, organization and self-profile eligibility");
+assert.match(statusRoute, /\(updated_at=\$4::timestamptz\) AS profile_unchanged/u,
+  "profile freshness must preserve PostgreSQL microseconds instead of round-tripping through JS Date");
+assert.match(statusRoute, /\(r\.profile_updated_at_seen=p\.updated_at\) AS profile_fresh/u,
+  "pending recovery freshness must be compared exactly inside PostgreSQL");
+assert.doesNotMatch(statusRoute, /new Date\([^)]*updated_at/u,
+  "JavaScript Date truncates PostgreSQL microseconds and must not decide freshness");
+assert.doesNotMatch(statusRoute, /newRecoveryToken/u,
+  "random per-GET tokens make overlapping responses invalidate one another");
 assert.match(statusRoute, /Cache-Control[^\n]*no-store/u);
 assert.match(confirmRoute, /exactRecoveryConfirmationBody/u);
 assert.match(confirmRoute, /r\.profile_id=\$3/u,
   "the confirmation token must be bound to the explicit owner profile");
+assert.match(confirmRoute, /recoveryConfirmationToken\([\s\S]+recoveryTokenMatchesDigest\(authenticatedToken, row\.confirmation_token_digest\)/u,
+  "confirmation must authenticate the opaque HMAC token, not trust an arbitrary inserted digest");
+assert.match(confirmRoute, /confirmation_token_authentication_mismatch/u,
+  "an unauthenticated recovery row must fail closed and remain auditable");
+assert.ok(
+  confirmRoute.indexOf("const authenticatedToken = recoveryConfirmationToken")
+    < confirmRoute.indexOf('if (row.status === "confirmed")'),
+  "confirmed-token replay must authenticate before its idempotent response",
+);
+assert.match(confirmRoute, /row\.birth_time_known === true[\s\S]+APPROVED_SOURCES\.has[\s\S]+confirmedContext\.birthFingerprint !== row\.candidate_natal_fingerprint/u,
+  "confirmed replay must prove the current canonical profile still matches the consented natal context");
+assert.match(confirmRoute, /completePayload\(row\.profile_id, confirmedContext\.birth\.timezone, confirmedContext\.fingerprint\)/u,
+  "confirmed replay returns the current real canonical fingerprint, never a synthetic ready response");
 assert.match(confirmRoute, /recoveryCandidateDigest/u,
   "confirmation must recompute candidate integrity from stored facts");
 assert.match(confirmRoute, /candidate_digest_mismatch/u,
   "changed candidate evidence must fail closed into manual review");
+assert.match(confirmRoute, /context\.birthFingerprint !== row\.candidate_natal_fingerprint/u,
+  "confirmation must reproduce the exact candidate natal fingerprint captured before consent");
+assert.match(confirmRoute, /candidate_natal_fingerprint_mismatch/u,
+  "natal source drift must fail closed and remain auditable");
+assert.match(confirmRoute, /\(r\.profile_updated_at_seen=p\.updated_at\) AS profile_fresh/u,
+  "confirmation freshness must be evaluated by PostgreSQL at full timestamp precision");
+assert.doesNotMatch(confirmRoute, /\$1::timestamptz=\$2::timestamptz/u,
+  "confirmation must not compare timestamps after a lossy driver round trip");
 assert.match(confirmRoute, /pg_advisory_xact_lock/u);
 assert.match(confirmRoute, /birth_tz_source='user_confirmed_iana'/u);
 assert.match(confirmRoute, /profile_birth_context_events/u);
 assert.match(confirmRoute, /owner_generation=owner_generation\+1/u);
-assert.doesNotMatch(confirmRoute, /birth_datetime\s*=|birth_lat\s*=|birth_lng\s*=|gender\s*=/u,
+assert.doesNotMatch(confirmRoute, /birth_datetime\s*=(?!=)|birth_lat\s*=(?!=)|birth_lng\s*=(?!=)|gender\s*=(?!=)/u,
   "confirmation may only add the confirmed timezone; existing birth facts stay untouched");
 assert.match(confirmRoute, /birth_place_id=COALESCE\(birth_place_id,\$3\)/u,
   "confirmation may fill missing place evidence but must not overwrite an existing place ID");
@@ -159,6 +207,34 @@ const digestB = recoveryCandidateDigest({ ...candidate });
 assert.equal(digestA, digestB);
 assert.match(digestA, /^[0-9a-f]{64}$/u);
 assert.notEqual(digestA, recoveryCandidateDigest({ ...candidate, timezone: "Asia/Tokyo" }));
+
+const tokenContext = {
+  recoveryId: "00000000-0000-4000-8000-000000000010",
+  userId: "00000000-0000-4000-8000-000000000001",
+  profileId: confirmationProfileId,
+  candidateDigest: digestA,
+};
+const tokenSecret = "test-only-recovery-secret-with-32-bytes-minimum";
+const reusableTokenA = recoveryConfirmationToken(tokenContext, tokenSecret);
+const reusableTokenB = recoveryConfirmationToken({ ...tokenContext }, tokenSecret);
+assert.equal(reusableTokenA, reusableTokenB,
+  "two overlapping GET responses for one immutable recovery must carry the same token");
+assert.match(reusableTokenA, /^[A-Za-z0-9_-]{43}$/u);
+assert.equal(recoveryTokenMatchesDigest(reusableTokenA, recoveryTokenDigest(reusableTokenA)), true);
+assert.equal(recoveryTokenMatchesDigest(reusableTokenA, "0".repeat(64)), false);
+assert.notEqual(
+  reusableTokenA,
+  recoveryConfirmationToken({
+    ...tokenContext,
+    recoveryId: "00000000-0000-4000-8000-000000000011",
+  }, tokenSecret),
+  "tokens remain isolated between recovery rows",
+);
+assert.throws(
+  () => recoveryConfirmationToken(tokenContext, "short"),
+  /recovery_token_context_invalid/u,
+  "a weak or missing server secret must fail closed",
+);
 
 await assert.rejects(
   lookupZiweiBirthTimezoneCandidate({

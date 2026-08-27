@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { pool, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
@@ -5,9 +6,10 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import {
   lookupZiweiBirthTimezoneCandidate,
   lookupZiweiBirthTimezoneAtCoordinates,
-  newRecoveryToken,
   recoveryCandidateDigest,
+  recoveryConfirmationToken,
   recoveryTokenDigest,
+  recoveryTokenMatchesDigest,
   ZIWEI_BIRTH_RECOVERY_CONTRACT,
   type ZiweiBirthTimezoneCandidate,
 } from "@/lib/astro/ziwei/birth-context-recovery";
@@ -36,18 +38,20 @@ type ProfileRow = {
   birth_location_confirmed_at: string | Date | null;
   birth_time_known: boolean | null;
   gender: string | null;
-  updated_at: string | Date;
+  updated_at_exact: string;
 };
 
 type PendingRow = {
   id: string;
-  candidate_display_name: string;
-  candidate_place_id: string;
-  candidate_latitude: string | number;
-  candidate_longitude: string | number;
-  candidate_timezone: string;
-  candidate_provider: "google_geocoding_timezone_v1";
+  candidate_display_name: string | null;
+  candidate_place_id: string | null;
+  candidate_latitude: string | number | null;
+  candidate_longitude: string | number | null;
+  candidate_timezone: string | null;
+  candidate_provider: string | null;
   candidate_digest: string;
+  confirmation_token_digest: string;
+  profile_fresh: boolean;
   chart_change_required: boolean;
 };
 
@@ -55,8 +59,51 @@ function profilePayload(profileId: string) {
   return { id: profileId, isSelf: true };
 }
 
-function publicCandidate(row: Pick<PendingRow, "candidate_display_name" | "candidate_timezone">) {
-  return { displayName: row.candidate_display_name, timezone: row.candidate_timezone };
+function publicCandidate(candidate: ZiweiBirthTimezoneCandidate) {
+  return { displayName: candidate.displayName, timezone: candidate.timezone };
+}
+
+function candidateFromPending(row: PendingRow): ZiweiBirthTimezoneCandidate | null {
+  const latitude = row.candidate_latitude === null ? Number.NaN : Number(row.candidate_latitude);
+  const longitude = row.candidate_longitude === null ? Number.NaN : Number(row.candidate_longitude);
+  if (typeof row.candidate_display_name !== "string" || !row.candidate_display_name.trim()
+    || typeof row.candidate_place_id !== "string" || !row.candidate_place_id.trim()
+    || !Number.isFinite(latitude) || latitude < -90 || latitude > 90
+    || !Number.isFinite(longitude) || longitude < -180 || longitude > 180
+    || typeof row.candidate_timezone !== "string" || !row.candidate_timezone.trim()
+    || row.candidate_provider !== "google_geocoding_timezone_v1") {
+    return null;
+  }
+  const candidate: ZiweiBirthTimezoneCandidate = Object.freeze({
+    displayName: row.candidate_display_name,
+    placeId: row.candidate_place_id,
+    latitude,
+    longitude,
+    timezone: row.candidate_timezone,
+    provider: "google_geocoding_timezone_v1",
+    confidence: "candidate_requires_user_confirmation",
+  });
+  return recoveryCandidateDigest(candidate) === row.candidate_digest ? candidate : null;
+}
+
+function confirmationRequiredPayload(
+  profileId: string,
+  recoveryId: string,
+  candidate: ZiweiBirthTimezoneCandidate,
+  confirmationToken: string,
+  chartChangeRequired: boolean,
+) {
+  return {
+    ok: true,
+    contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
+    state: "confirmation_required",
+    recoveryId,
+    profile: profilePayload(profileId),
+    candidate: publicCandidate(candidate),
+    confirmationToken,
+    chartChangeRequired,
+    requires_birth_reentry: false,
+  };
 }
 
 function compatibilityAndCandidate(profile: ProfileRow, timezone: string) {
@@ -112,7 +159,7 @@ export async function GET(req: Request) {
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall,
             birth_tz,birth_tz_source,birth_tz_confirmed_at,birth_location_name,
             birth_lat,birth_lng,birth_place_id,birth_location_confirmed_at,
-            birth_time_known,gender,updated_at
+            birth_time_known,gender,updated_at::text AS updated_at_exact
        FROM profiles
       WHERE org_id=$1 AND created_by_user_id=$2 AND COALESCE(is_archived,false)=false
         AND (relationship_type IS NULL OR btrim(relationship_type)='')
@@ -153,24 +200,22 @@ export async function GET(req: Request) {
   }
 
   const existing = await q1<PendingRow>(
-    `SELECT id,candidate_display_name,candidate_place_id,candidate_latitude,candidate_longitude,
-            candidate_timezone,candidate_provider,candidate_digest,chart_change_required
-       FROM profile_birth_context_recoveries
-      WHERE user_id=$1 AND profile_id=$2 AND status='confirmation_required' AND expires_at>now()`,
+    `SELECT r.id,r.candidate_display_name,r.candidate_place_id,r.candidate_latitude,
+            r.candidate_longitude,r.candidate_timezone,r.candidate_provider,r.candidate_digest,
+            r.confirmation_token_digest,(r.profile_updated_at_seen=p.updated_at) AS profile_fresh,
+            r.chart_change_required
+       FROM profile_birth_context_recoveries r
+       JOIN profiles p ON p.id=r.profile_id AND p.created_by_user_id=r.user_id
+      WHERE r.user_id=$1 AND r.profile_id=$2
+        AND r.status='confirmation_required' AND r.expires_at>now()`,
     [session.userId, profile.id],
   ).catch(() => null);
 
-  let candidate: ZiweiBirthTimezoneCandidate;
-  if (existing) {
-    candidate = {
-      displayName: existing.candidate_display_name,
-      placeId: existing.candidate_place_id,
-      latitude: Number(existing.candidate_latitude),
-      longitude: Number(existing.candidate_longitude),
-      timezone: existing.candidate_timezone,
-      provider: existing.candidate_provider,
-      confidence: "candidate_requires_user_confirmation",
-    };
+  const existingCandidate = existing?.profile_fresh === true ? candidateFromPending(existing) : null;
+  let candidate: ZiweiBirthTimezoneCandidate | null = null;
+  let candidateFailureReason = "recovery_provider_unavailable";
+  if (existingCandidate) {
+    candidate = existingCandidate;
   } else {
     try {
       const latitude = Number(profile.birth_lat);
@@ -198,84 +243,166 @@ export async function GET(req: Request) {
           apiKey: process.env.GOOGLE_MAPS_SERVER_KEY || "",
         });
     } catch (error) {
-      const reason = error instanceof Error ? error.message : "recovery_provider_unavailable";
-      return NextResponse.json({
-        ok: true,
-        contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
-        state: "manual_review",
-        reason,
-        profile: profilePayload(profile.id),
-        requires_birth_reentry: false,
-      }, { headers: PRIVATE_HEADERS });
+      candidateFailureReason = error instanceof Error ? error.message : "recovery_provider_unavailable";
     }
   }
-
-  const comparison = compatibilityAndCandidate(profile, candidate.timezone);
-  if ("blockedReason" in comparison) {
-    return NextResponse.json({
-      ok: true,
-      contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
-      state: "manual_review",
-      reason: comparison.blockedReason,
-      profile: profilePayload(profile.id),
-      requires_birth_reentry: false,
-    }, { headers: PRIVATE_HEADERS });
-  }
-
-  const confirmationToken = newRecoveryToken();
-  const tokenDigest = recoveryTokenDigest(confirmationToken);
-  const candidateDigest = recoveryCandidateDigest(candidate);
+  const tokenSecret = process.env.AUTH_SECRET || "";
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     await client.query(`SELECT pg_advisory_xact_lock(hashtextextended('ziwei-birth-recovery:'||$1::text,0))`, [session.userId]);
-    const locked = await client.query<{ updated_at: string | Date }>(
-      `SELECT updated_at FROM profiles WHERE id=$1 AND created_by_user_id=$2 FOR UPDATE`,
-      [profile.id, session.userId],
+    const locked = await client.query<{ updated_at_exact: string; profile_unchanged: boolean }>(
+      `SELECT updated_at::text AS updated_at_exact,
+              (updated_at=$4::timestamptz) AS profile_unchanged
+         FROM profiles
+        WHERE id=$1 AND created_by_user_id=$2 AND org_id=$3
+          AND COALESCE(is_archived,false)=false
+          AND (relationship_type IS NULL OR btrim(relationship_type)='')
+        FOR UPDATE`,
+      [profile.id, session.userId, session.orgId, profile.updated_at_exact],
     );
-    if (!locked.rows[0] || new Date(locked.rows[0].updated_at).valueOf() !== new Date(profile.updated_at).valueOf()) {
+    if (!locked.rows[0] || locked.rows[0].profile_unchanged !== true) {
       await client.query("ROLLBACK");
       return NextResponse.json({ ok: false, error: "profile_changed" }, { status: 409, headers: PRIVATE_HEADERS });
     }
+
+    // The initial read/provider lookup happens outside the transaction. Read
+    // the pending row again under the owner lock so overlapping GET requests
+    // converge on one immutable row and one reusable token.
+    const activeResult = await client.query<PendingRow>(
+      `SELECT r.id,r.candidate_display_name,r.candidate_place_id,r.candidate_latitude,
+              r.candidate_longitude,r.candidate_timezone,r.candidate_provider,r.candidate_digest,
+              r.confirmation_token_digest,(r.profile_updated_at_seen=p.updated_at) AS profile_fresh,
+              r.chart_change_required
+         FROM profile_birth_context_recoveries r
+         JOIN profiles p ON p.id=r.profile_id AND p.created_by_user_id=r.user_id
+        WHERE r.user_id=$1 AND r.profile_id=$2
+          AND r.status='confirmation_required' AND r.expires_at>now()
+        FOR UPDATE OF r`,
+      [session.userId, profile.id],
+    );
+    const active = activeResult.rows[0];
+    if (active) {
+      const activeCandidate = candidateFromPending(active);
+      if (!activeCandidate) {
+        await client.query(
+          `UPDATE profile_birth_context_recoveries
+              SET status='manual_review',failure_code='candidate_digest_mismatch',updated_at=now()
+            WHERE id=$1`,
+          [active.id],
+        );
+        await client.query("COMMIT");
+        return NextResponse.json({
+          ok: true,
+          contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
+          state: "manual_review",
+          reason: "recovery_evidence_changed",
+          profile: profilePayload(profile.id),
+          requires_birth_reentry: false,
+        }, { headers: PRIVATE_HEADERS });
+      }
+      const activeFresh = active.profile_fresh === true;
+      const reusableToken = activeFresh ? recoveryConfirmationToken({
+        recoveryId: active.id,
+        userId: session.userId,
+        profileId: profile.id,
+        candidateDigest: active.candidate_digest,
+      }, tokenSecret) : null;
+      if (reusableToken && recoveryTokenMatchesDigest(reusableToken, active.confirmation_token_digest)) {
+        await client.query("COMMIT");
+        return NextResponse.json(
+          confirmationRequiredPayload(
+            profile.id,
+            active.id,
+            activeCandidate,
+            reusableToken,
+            active.chart_change_required,
+          ),
+          { headers: PRIVATE_HEADERS },
+        );
+      }
+      await client.query(
+        `UPDATE profile_birth_context_recoveries
+            SET status='expired',failure_code=$2,updated_at=now()
+          WHERE id=$1`,
+        [active.id, activeFresh ? "token_format_rotated" : "profile_changed_or_expired"],
+      );
+    }
+
+    // A concurrent request may have created the reusable row while this
+    // request's provider lookup failed. Only expose the provider failure after
+    // the locked re-read proves there is no usable active row.
+    if (!candidate) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({
+        ok: true,
+        contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
+        state: "manual_review",
+        reason: candidateFailureReason,
+        profile: profilePayload(profile.id),
+        requires_birth_reentry: false,
+      }, { headers: PRIVATE_HEADERS });
+    }
+
+    const comparison = compatibilityAndCandidate(profile, candidate.timezone);
+    if ("blockedReason" in comparison) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({
+        ok: true,
+        contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
+        state: "manual_review",
+        reason: comparison.blockedReason,
+        profile: profilePayload(profile.id),
+        requires_birth_reentry: false,
+      }, { headers: PRIVATE_HEADERS });
+    }
+    const candidateDigest = recoveryCandidateDigest(candidate);
+
+    // Clear an elapsed legacy pending row that is still covered by the unique
+    // pending index before inserting its deterministic replacement.
     await client.query(
       `UPDATE profile_birth_context_recoveries
-          SET status='expired',failure_code='superseded',updated_at=now()
+          SET status='expired',failure_code='expired_before_reissue',updated_at=now()
         WHERE user_id=$1 AND profile_id=$2 AND status='confirmation_required'`,
       [session.userId, profile.id],
     );
-    const inserted = await client.query<{ id: string }>(
+
+    const recoveryId = crypto.randomUUID();
+    const confirmationToken = recoveryConfirmationToken({
+      recoveryId,
+      userId: session.userId,
+      profileId: profile.id,
+      candidateDigest,
+    }, tokenSecret);
+    const tokenDigest = recoveryTokenDigest(confirmationToken);
+    await client.query(
       `INSERT INTO profile_birth_context_recoveries
-         (user_id,profile_id,status,observed_location_name,observed_birth_tz,
+         (id,user_id,profile_id,status,observed_location_name,observed_birth_tz,
           candidate_display_name,candidate_place_id,candidate_latitude,candidate_longitude,
           candidate_timezone,candidate_provider,candidate_digest,evidence_kind,
           confirmation_token_digest,profile_updated_at_seen,chart_change_required,
           old_natal_fingerprint,candidate_natal_fingerprint,expires_at)
-       VALUES($1,$2,'confirmation_required',$3,$4,$5,$6,$7,$8,$9,$10,$11,
-              'geocoded_existing_location_user_confirmation',$12,$13,$14,$15,$16,now()+interval '15 minutes')
-       RETURNING id`,
+       VALUES($1,$2,$3,'confirmation_required',$4,$5,$6,$7,$8,$9,$10,$11,$12,
+              'geocoded_existing_location_user_confirmation',$13,$14,$15,$16,$17,now()+interval '15 minutes')`,
       [
-        session.userId, profile.id, profile.birth_location_name, profile.birth_tz,
+        recoveryId, session.userId, profile.id, profile.birth_location_name, profile.birth_tz,
         candidate.displayName, candidate.placeId, candidate.latitude, candidate.longitude,
         candidate.timezone, candidate.provider, candidateDigest, tokenDigest,
-        new Date(profile.updated_at).toISOString(), comparison.chartChangeRequired,
+        locked.rows[0].updated_at_exact, comparison.chartChangeRequired,
         comparison.oldFingerprint, comparison.candidateFingerprint,
       ],
     );
     await client.query("COMMIT");
-    return NextResponse.json({
-      ok: true,
-      contractVersion: ZIWEI_BIRTH_RECOVERY_CONTRACT,
-      state: "confirmation_required",
-      recoveryId: inserted.rows[0].id,
-      profile: profilePayload(profile.id),
-      candidate: publicCandidate({
-        candidate_display_name: candidate.displayName,
-        candidate_timezone: candidate.timezone,
-      }),
-      confirmationToken,
-      chartChangeRequired: comparison.chartChangeRequired,
-      requires_birth_reentry: false,
-    }, { headers: PRIVATE_HEADERS });
+    return NextResponse.json(
+      confirmationRequiredPayload(
+        profile.id,
+        recoveryId,
+        candidate,
+        confirmationToken,
+        comparison.chartChangeRequired,
+      ),
+      { headers: PRIVATE_HEADERS },
+    );
   } catch (error) {
     await client.query("ROLLBACK").catch(() => null);
     console.error("[ziwei-birth-recovery]", error instanceof Error ? error.message : String(error));

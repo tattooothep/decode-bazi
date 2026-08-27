@@ -20,6 +20,13 @@ export type RecoveryConfirmationBody = Readonly<{
   acceptChartChange: boolean;
 }>;
 
+export type RecoveryTokenContext = Readonly<{
+  recoveryId: string;
+  userId: string;
+  profileId: string;
+  candidateDigest: string;
+}>;
+
 type CandidateLookupInput = Readonly<{
   locationName: string;
   birthWallClock: string;
@@ -272,8 +279,41 @@ export function recoveryTokenDigest(token: string): string {
   return crypto.createHash("sha256").update(token, "utf8").digest("hex");
 }
 
-export function newRecoveryToken(): string {
-  return crypto.randomBytes(32).toString("base64url");
+/**
+ * Deterministic for one immutable recovery row, but unforgeable without the
+ * server secret. This lets overlapping GET requests return the same usable
+ * token without storing token plaintext in PostgreSQL.
+ */
+export function recoveryConfirmationToken(
+  context: RecoveryTokenContext,
+  secretValue: string,
+): string {
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
+  const recoveryId = String(context.recoveryId || "").trim().toLowerCase();
+  const userId = String(context.userId || "").trim().toLowerCase();
+  const profileId = String(context.profileId || "").trim().toLowerCase();
+  const candidateDigest = String(context.candidateDigest || "").trim().toLowerCase();
+  const secret = String(secretValue || "");
+  if (!uuid.test(recoveryId) || !uuid.test(userId) || !uuid.test(profileId)
+    || !/^[0-9a-f]{64}$/u.test(candidateDigest)
+    || Buffer.byteLength(secret, "utf8") < 32) {
+    throw new TypeError("recovery_token_context_invalid");
+  }
+  const canonical = JSON.stringify({
+    candidateDigest,
+    profileId,
+    purpose: "hourkey_ziwei_birth_context_confirmation_v1",
+    recoveryId,
+    userId,
+  });
+  return crypto.createHmac("sha256", secret).update(canonical, "utf8").digest("base64url");
+}
+
+export function recoveryTokenMatchesDigest(token: string, expectedDigest: string): boolean {
+  const actual = recoveryTokenDigest(token);
+  const expected = String(expectedDigest || "").trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/u.test(expected)) return false;
+  return crypto.timingSafeEqual(Buffer.from(actual, "hex"), Buffer.from(expected, "hex"));
 }
 
 export function exactRecoveryConfirmationBody(value: unknown): RecoveryConfirmationBody | null {

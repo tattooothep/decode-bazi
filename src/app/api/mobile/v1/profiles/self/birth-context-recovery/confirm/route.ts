@@ -5,7 +5,9 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import {
   exactRecoveryConfirmationBody,
   recoveryCandidateDigest,
+  recoveryConfirmationToken,
   recoveryTokenDigest,
+  recoveryTokenMatchesDigest,
   ZIWEI_BIRTH_RECOVERY_CONTRACT,
 } from "@/lib/astro/ziwei/birth-context-recovery";
 import { resolveCanonicalZiweiHourlyContext } from "@/lib/astro/ziwei/context-resolver";
@@ -14,6 +16,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store, max-age=0" } as const;
+const APPROVED_SOURCES = new Set(["user_confirmed_iana", "user_confirmed_exact_offset", "verified_import"]);
 
 type RecoveryRow = {
   recovery_id: string;
@@ -26,10 +29,14 @@ type RecoveryRow = {
   candidate_longitude: number | string | null;
   candidate_provider: string | null;
   candidate_digest: string;
+  candidate_natal_fingerprint: string | null;
+  confirmation_token_digest: string;
   chart_change_required: boolean;
-  profile_updated_at_seen: string | Date;
-  profile_updated_at: string | Date;
+  profile_fresh: boolean;
+  unexpired: boolean;
   birth_wall: string | null;
+  birth_time_known: boolean | null;
+  gender: string | null;
   birth_tz: string | null;
   birth_tz_source: string | null;
   birth_tz_confirmed_at: string | Date | null;
@@ -69,10 +76,12 @@ export async function POST(req: Request) {
       `SELECT r.id AS recovery_id,r.status,r.profile_id,r.candidate_timezone,
               r.candidate_display_name,r.candidate_place_id,r.candidate_latitude,
               r.candidate_longitude,r.candidate_provider,
-              r.candidate_digest,r.chart_change_required,r.profile_updated_at_seen,
-              p.updated_at AS profile_updated_at,
+              r.candidate_digest,r.candidate_natal_fingerprint,r.confirmation_token_digest,
+              r.chart_change_required,
+              (r.profile_updated_at_seen=p.updated_at) AS profile_fresh,
+              (r.expires_at>now()) AS unexpired,
               to_char(p.birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall,
-              p.birth_tz,p.birth_tz_source,p.birth_tz_confirmed_at,
+              p.birth_time_known,p.gender,p.birth_tz,p.birth_tz_source,p.birth_tz_confirmed_at,
               p.birth_place_id,p.birth_location_source,p.birth_location_confirmed_at
          FROM profile_birth_context_recoveries r
          JOIN profiles p ON p.id=r.profile_id AND p.created_by_user_id=r.user_id
@@ -87,10 +96,55 @@ export async function POST(req: Request) {
       await client.query("ROLLBACK");
       return NextResponse.json({ ok: false, error: "confirmation_not_found" }, { status: 404, headers: PRIVATE_HEADERS });
     }
+    const authenticatedToken = recoveryConfirmationToken({
+      recoveryId: row.recovery_id,
+      userId: session.userId,
+      profileId: row.profile_id,
+      candidateDigest: row.candidate_digest,
+    }, process.env.AUTH_SECRET || "");
+    if (!recoveryTokenMatchesDigest(authenticatedToken, row.confirmation_token_digest)) {
+      if (row.status === "confirmation_required") {
+        await client.query(
+          `UPDATE profile_birth_context_recoveries
+              SET status='manual_review',failure_code='confirmation_token_authentication_mismatch',updated_at=now()
+            WHERE id=$1`,
+          [row.recovery_id],
+        );
+        await client.query("COMMIT");
+      } else {
+        await client.query("ROLLBACK");
+      }
+      return NextResponse.json(
+        { ok: false, error: "confirmation_evidence_changed" },
+        { status: 409, headers: PRIVATE_HEADERS },
+      );
+    }
     if (row.status === "confirmed") {
+      const confirmedContext = row.birth_time_known === true
+        && (row.gender === "M" || row.gender === "F")
+        && row.birth_tz && row.birth_tz_confirmed_at
+        && APPROVED_SOURCES.has(String(row.birth_tz_source || ""))
+        ? resolveCanonicalZiweiHourlyContext({
+          mode: "strict",
+          birthWallClock: row.birth_wall || "",
+          birthTimezone: row.birth_tz,
+          birthTimezoneSource: "profile",
+          referenceInstant: new Date(),
+          referenceTimezone: "Asia/Bangkok",
+        })
+        : null;
+      if (!confirmedContext || confirmedContext.status !== "resolved"
+        || !row.candidate_natal_fingerprint
+        || confirmedContext.birthFingerprint !== row.candidate_natal_fingerprint) {
+        await client.query("ROLLBACK");
+        return NextResponse.json(
+          { ok: false, error: "profile_changed" },
+          { status: 409, headers: PRIVATE_HEADERS },
+        );
+      }
       await client.query("COMMIT");
       return NextResponse.json(
-        completePayload(row.profile_id, row.birth_tz || row.candidate_timezone, null),
+        completePayload(row.profile_id, confirmedContext.birth.timezone, confirmedContext.fingerprint),
         { headers: PRIVATE_HEADERS },
       );
     }
@@ -98,12 +152,7 @@ export async function POST(req: Request) {
       await client.query("ROLLBACK");
       return NextResponse.json({ ok: false, error: "confirmation_expired" }, { status: 409, headers: PRIVATE_HEADERS });
     }
-    const freshness = await client.query<{ fresh: boolean; unexpired: boolean }>(
-      `SELECT ($1::timestamptz=$2::timestamptz) AS fresh,
-              EXISTS(SELECT 1 FROM profile_birth_context_recoveries WHERE id=$3 AND expires_at>now()) AS unexpired`,
-      [row.profile_updated_at_seen, row.profile_updated_at, row.recovery_id],
-    );
-    if (freshness.rows[0]?.fresh !== true || freshness.rows[0]?.unexpired !== true) {
+    if (row.profile_fresh !== true || row.unexpired !== true) {
       await client.query(
         `UPDATE profile_birth_context_recoveries
             SET status='expired',failure_code='profile_changed_or_expired',updated_at=now()
@@ -174,6 +223,20 @@ export async function POST(req: Request) {
     if (context.status !== "resolved") {
       await client.query("ROLLBACK");
       return NextResponse.json({ ok: false, error: "candidate_birth_context_invalid" }, { status: 422, headers: PRIVATE_HEADERS });
+    }
+    if (!row.candidate_natal_fingerprint
+      || context.birthFingerprint !== row.candidate_natal_fingerprint) {
+      await client.query(
+        `UPDATE profile_birth_context_recoveries
+            SET status='manual_review',failure_code='candidate_natal_fingerprint_mismatch',updated_at=now()
+          WHERE id=$1`,
+        [row.recovery_id],
+      );
+      await client.query("COMMIT");
+      return NextResponse.json(
+        { ok: false, error: "confirmation_evidence_changed" },
+        { status: 409, headers: PRIVATE_HEADERS },
+      );
     }
 
     const beforeContext = {

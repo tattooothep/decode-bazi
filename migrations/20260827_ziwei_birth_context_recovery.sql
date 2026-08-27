@@ -10,6 +10,12 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS birth_location_confirmed_at timestamptz,
   ADD COLUMN IF NOT EXISTS birth_location_accuracy_m double precision;
 
+-- Legacy rows may predate the profile-version invariant used by recovery.
+-- Backfill once, then make every future recovery snapshot representable.
+UPDATE profiles SET updated_at=now() WHERE updated_at IS NULL;
+ALTER TABLE profiles ALTER COLUMN updated_at SET DEFAULT now();
+ALTER TABLE profiles ALTER COLUMN updated_at SET NOT NULL;
+
 ALTER TABLE mobile_ziwei_hourly_installations
   ADD COLUMN IF NOT EXISTS birth_context_fingerprint text;
 
@@ -138,6 +144,43 @@ CREATE TABLE IF NOT EXISTS profile_birth_context_events (
 );
 CREATE INDEX IF NOT EXISTS ix_profile_birth_context_events_owner
   ON profile_birth_context_events(user_id,profile_id,created_at DESC);
+
+-- Recovery freshness cannot depend on every writer remembering to bump
+-- updated_at. Any canonical birth, owner or location-evidence change advances
+-- it by at least one microsecond, even when a direct SQL writer supplies the
+-- old timestamp explicitly.
+CREATE OR REPLACE FUNCTION hourkey_touch_profile_birth_context_version()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF ROW(
+    NEW.birth_datetime,NEW.birth_time_known,NEW.birth_tz,NEW.birth_tz_source,
+    NEW.birth_tz_confirmed_at,NEW.birth_tz_tzdb_version,NEW.birth_lat,NEW.birth_lng,
+    NEW.birth_location_name,NEW.birth_place_id,NEW.birth_location_source,
+    NEW.birth_location_confirmed_at,NEW.birth_location_accuracy_m,NEW.gender,
+    NEW.relationship_type,NEW.is_archived,NEW.created_by_user_id,NEW.org_id
+  ) IS DISTINCT FROM ROW(
+    OLD.birth_datetime,OLD.birth_time_known,OLD.birth_tz,OLD.birth_tz_source,
+    OLD.birth_tz_confirmed_at,OLD.birth_tz_tzdb_version,OLD.birth_lat,OLD.birth_lng,
+    OLD.birth_location_name,OLD.birth_place_id,OLD.birth_location_source,
+    OLD.birth_location_confirmed_at,OLD.birth_location_accuracy_m,OLD.gender,
+    OLD.relationship_type,OLD.is_archived,OLD.created_by_user_id,OLD.org_id
+  ) THEN
+    NEW.updated_at := GREATEST(
+      COALESCE(NEW.updated_at,'-infinity'::timestamptz),
+      COALESCE(OLD.updated_at,'-infinity'::timestamptz) + interval '1 microsecond',
+      clock_timestamp()
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS hourkey_touch_profile_birth_context_version ON profiles;
+CREATE TRIGGER hourkey_touch_profile_birth_context_version
+BEFORE UPDATE OF birth_datetime,birth_time_known,birth_tz,birth_tz_source,
+  birth_tz_confirmed_at,birth_tz_tzdb_version,birth_lat,birth_lng,birth_location_name,
+  birth_place_id,birth_location_source,birth_location_confirmed_at,birth_location_accuracy_m,
+  gender,relationship_type,is_archived,created_by_user_id,org_id
+ON profiles FOR EACH ROW EXECUTE FUNCTION hourkey_touch_profile_birth_context_version();
 
 -- Database defence-in-depth. The backend resolver remains authoritative, but
 -- an unconfirmed/imported string must never leave stale consent runnable.
