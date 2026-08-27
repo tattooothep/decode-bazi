@@ -14,6 +14,7 @@
     "test:entitlement-i18n": "node scripts/test-entitlement-i18n-matrix.mjs",
     "test:mobile-internal-origin": "tsx scripts/test-mobile-internal-origin.mts",
     "test:mobile-qimen-parity": "node scripts/test-mobile-qimen-parity.mjs",
+    "test:ziwei-profile-timezone": "tsx scripts/test-mobile-3fix.mts && node --no-warnings --experimental-strip-types scripts/test-ziwei-canonical-consumer-integration.mts",
     "test:qimen-component-catalog": "tsx scripts/test-qimen-component-catalog.mts",
     "test:qimen-v223-transport": "node --no-warnings --experimental-strip-types scripts/test-qimen-v223-transport-contract.mts",
     "test:mobile-export-parity": "node scripts/test-mobile-export-parity.mjs",

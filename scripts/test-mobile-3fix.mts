@@ -1,6 +1,7 @@
 /**
  * ด่านตรวจ 3 จุดที่แก้ฝั่งเครื่องแม่ข่าย 23 ก.ค. 2569
- *  1) เขตเวลาเกิด — จื่อเวยต้องรับ ?tz= และส่งออฟเซ็ตจริงให้ engine (เดิมปล่อยให้ engine เดาจากลองจิจูด)
+ *  1) เขตเวลาเกิด — จื่อเวยต้องใช้ค่า profile ที่ยืนยัน provenance แล้วเท่านั้น
+ *     และส่งออฟเซ็ตจริงให้ engine (ห้าม query override/เดาจากลองจิจูด)
  *  2) กรองก้อน "งานอะไร" ก่อนเข้าคำสั่งซินแส (เดิมส่งดิบ → แทรกข้อความสั่งซินแสได้)
  *  3) เพดานสมาชิกทีมตามแพ็กเกจจริง + ต้องบอกจำนวน ไม่ใช่ตัดรายชื่อทิ้งเงียบ
  *
@@ -66,11 +67,16 @@ for (const meta of [metaDefault, metaQuery]) {
   ok(!/[฀-๿]/u.test(meta.note.zh), "ข้อความจีนห้ามมีอักษรไทยปน");
 }
 
-// เส้นจื่อเวยต้องต่อท่อจริง ไม่ใช่มีแต่ไลบรารี
+// เส้นจื่อเวยต้องต่อท่อ canonical profile จริง ไม่ใช่มีแต่ไลบรารี
 const ziweiRoute = read("src/app/api/mobile/v1/ziwei/route.ts");
-ok(/parseTz\(url\.searchParams\.get\("tz"\)\)/u.test(ziweiRoute), "เส้นจื่อเวยต้องรับ ?tz=");
-ok(/gmtOffsetHours: tzOffsetHoursAt\(tz, dtUTC\)/u.test(ziweiRoute), "ต้องส่งออฟเซ็ตจริงให้ engine ไม่ปล่อยให้เดาจากลองจิจูด");
-ok(/timezone: birthTimezoneMeta\(tzParam/u.test(ziweiRoute), "ต้องส่งธงเขตเวลากลับให้แอพแสดง");
+ok(/birth_tz,birth_tz_source,birth_tz_confirmed_at/u.test(ziweiRoute), "เส้นจื่อเวยต้องอ่าน timezone พร้อม provenance ที่ยืนยันแล้ว");
+ok(/APPROVED_BIRTH_TIMEZONE_SOURCES\.has/u.test(ziweiRoute), "เส้นจื่อเวยต้องยอมรับเฉพาะ provenance ที่อนุมัติ");
+ok(/resolveCanonicalZiweiContext/u.test(ziweiRoute), "เส้นจื่อเวยต้องผ่าน canonical context resolver");
+ok(/gmtOffsetHours: ziweiContext\.birth\.utcOffsetMinutes \/ 60/u.test(ziweiRoute), "ต้องส่งออฟเซ็ต canonical จริงให้ engine");
+ok(/birthTimezoneSource: "profile"/u.test(ziweiRoute), "แหล่ง timezone ของผังต้องเป็น profile เท่านั้น");
+ok(/const timezone = birthTimezoneMeta\([\s\S]{0,300}\}, true\);/u.test(ziweiRoute), "ธง timezone ที่ตอบกลับต้องระบุว่าใช้ profile จริง");
+ok(!/url\.searchParams\.get\("tz"\)|requestedTimezone/u.test(ziweiRoute), "ห้าม query override เวลาเกิดที่ยืนยันแล้ว");
+ok(!/13\.7563|100\.5018/u.test(ziweiRoute), "ห้ามสร้างพิกัดกรุงเทพแทนข้อเท็จจริงที่ไม่มี");
 ok(!/new Date\(`\$\{row\.birth_datetime\}\+07:00`\)/u.test(ziweiRoute), "ห้ามกลับไปตรึง +07:00 ตายตัว");
 
 /* ── 2) กรอง "งานอะไร" ก่อนเข้าคำสั่งซินแส ───────────────────── */
@@ -102,15 +108,13 @@ ok(/parseTz\(typeof birthTzRaw === "string"/u.test(createRoute), "เขตเ�
 ok(/birth_tz, birth_tz_source/u.test(createRoute), "ต้องบันทึกลงคอลัมน์จริง");
 ok(/birthTz \? "user_input" : null/u.test(createRoute), "ต้องบันทึกที่มาของค่า (ห้ามเดาแทนผู้ใช้)");
 
-for (const [file, label] of [
-  ["src/app/api/mobile/v1/ziwei/route.ts", "จื่อเวย"],
-  ["src/app/api/mobile/v1/tianxing/route.ts", "ดาวจริง"],
-] as const) {
-  const src = read(file);
-  ok(/birth_tz/u.test(src), `เส้น${label}ต้องอ่านเขตเวลาเกิดจากโปรไฟล์`);
-  ok(/parseTz\(row\.birth_tz\)/u.test(src), `เส้น${label}ต้องตีความเขตเวลาด้วยตัวอ่านกลาง`);
-  ok(/tzFromProfile/u.test(src), `เส้น${label}ต้องให้ค่าจากโปรไฟล์มาก่อนค่าที่หน้าจอส่ง`);
-}
+ok(/birth_tz/u.test(ziweiRoute), "เส้นจื่อเวยต้องอ่านเขตเวลาเกิดจากโปรไฟล์");
+ok(/birthTimezoneSource: "profile"/u.test(ziweiRoute), "เส้นจื่อเวยต้องให้ profile เป็นแหล่งเดียว");
+ok(!/tzFromProfile|url\.searchParams\.get\("tz"\)/u.test(ziweiRoute), "เส้นจื่อเวยห้ามเหลือทางเลือก timezone ขนานจากหน้าจอ");
+const tianxingRoute = read("src/app/api/mobile/v1/tianxing/route.ts");
+ok(/birth_tz/u.test(tianxingRoute), "เส้นดาวจริงต้องอ่านเขตเวลาเกิดจากโปรไฟล์");
+ok(/parseTz\(row\.birth_tz\)/u.test(tianxingRoute), "เส้นดาวจริงต้องตีความเขตเวลาด้วยตัวอ่านกลาง");
+ok(/tzFromProfile/u.test(tianxingRoute), "เส้นดาวจริงต้องให้ค่าจากโปรไฟล์มาก่อนค่าที่หน้าจอส่ง");
 ok(birthTimezoneMeta(parseTz("Asia/Taipei"), true).source === "profile", "ธงต้องบอกได้ว่าเขตเวลามาจากโปรไฟล์");
 ok(birthTimezoneMeta(parseTz("Asia/Taipei"), false).source === "query", "ธงต้องแยกกรณีที่หน้าจอส่งมาเอง");
 ok(birthTimezoneMeta(null).isDefault === true, "ไม่มีเขตเวลาที่ไหนเลย = ยังต้องติดธงค่าตั้งต้น");
