@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store, max-age=0" } as const;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 type DeviceStatus = {
   push_subscribed: boolean;
@@ -18,28 +19,35 @@ type DeviceStatus = {
 
 const { expoIosPushReady } = pushRegistrationReadiness;
 
-async function deviceStatus(userId: string): Promise<DeviceStatus> {
+function installationIdFromRequest(req: Request): string | null {
+  const installationId = new URL(req.url).searchParams.get("installation_id") || "";
+  return UUID_RE.test(installationId) ? installationId.toLowerCase() : null;
+}
+
+async function deviceStatus(userId: string, installationId: string): Promise<DeviceStatus> {
   const row = await q1<DeviceStatus & { ios_subscribed: boolean }>(
     `SELECT EXISTS(
-              SELECT 1 FROM mobile_push_tokens t WHERE t.user_id=$1 AND t.enabled=true
+              SELECT 1 FROM mobile_push_tokens t
+               WHERE t.user_id=$1 AND t.installation_id=$2::uuid AND t.enabled=true
             ) AS push_subscribed,
             EXISTS(
               SELECT 1 FROM mobile_push_tokens t
-               WHERE t.user_id=$1 AND t.enabled=true
+               WHERE t.user_id=$1 AND t.installation_id=$2::uuid AND t.enabled=true
                  AND ((t.platform='android' AND t.device_token_type='fcm'
                    AND NULLIF(t.device_push_token,'') IS NOT NULL)
                    )
             ) AS push_deliverable,
             EXISTS(
               SELECT 1 FROM mobile_push_tokens t
-               WHERE t.user_id=$1 AND t.enabled=true AND t.platform='ios'
+               WHERE t.user_id=$1 AND t.installation_id=$2::uuid
+                 AND t.enabled=true AND t.platform='ios'
             ) AS ios_subscribed,
             EXISTS(
               SELECT 1 FROM mobile_ziwei_hourly_installations i
-               WHERE i.user_id=$1 AND i.enabled=true
+               WHERE i.user_id=$1 AND i.installation_id=$2::uuid AND i.enabled=true
                  AND i.birth_context_fingerprint IS NOT NULL
             ) AS ziwei_enrolled`,
-    [userId],
+    [userId, installationId],
   );
   if (!row) return { push_subscribed: false, push_deliverable: false, ziwei_enrolled: false };
   return {
@@ -122,7 +130,7 @@ function normalizedRecovery(
   };
 }
 
-async function relayStatus(req: Request, upstream: Response) {
+async function relayStatus(req: Request, upstream: Response, installationId: string) {
   const raw = await upstream.json().catch(() => null) as Record<string, any> | null;
   if (!upstream.ok || !raw || raw.ok !== true) {
     return NextResponse.json(raw || { ok: false, error: "recovery_api_unavailable" }, {
@@ -132,19 +140,27 @@ async function relayStatus(req: Request, upstream: Response) {
   }
   const session = await getMobileSession(req);
   if (!session) return NextResponse.json({ ok: false, error: "not_authorized" }, { status: 401, headers: PRIVATE_HEADERS });
-  return response(200, normalizedRecovery(raw, await deviceStatus(session.userId)));
+  return response(200, normalizedRecovery(raw, await deviceStatus(session.userId, installationId)));
 }
 
 export async function GET(req: Request) {
-  return relayStatus(req, await getBirthContextRecovery(req));
+  const installationId = installationIdFromRequest(req);
+  if (!installationId) {
+    return NextResponse.json({ ok: false, error: "invalid_installation_id" }, { status: 400, headers: PRIVATE_HEADERS });
+  }
+  return relayStatus(req, await getBirthContextRecovery(req), installationId);
 }
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null) as Record<string, unknown> | null;
   const keys = body && typeof body === "object" && !Array.isArray(body) ? Object.keys(body).sort() : [];
-  if (!body || JSON.stringify(keys) !== JSON.stringify(["acceptChartChange", "action", "confirmationToken", "profileId"])) {
+  if (!body || JSON.stringify(keys) !== JSON.stringify(["acceptChartChange", "action", "confirmationToken", "installation_id", "profileId"])) {
     return NextResponse.json({ ok: false, error: "invalid_confirmation_request" }, { status: 400, headers: PRIVATE_HEADERS });
   }
+  if (typeof body.installation_id !== "string" || !UUID_RE.test(body.installation_id)) {
+    return NextResponse.json({ ok: false, error: "invalid_installation_id" }, { status: 400, headers: PRIVATE_HEADERS });
+  }
+  const installationId = body.installation_id.toLowerCase();
   if (body.action !== "confirm_location" || typeof body.confirmationToken !== "string"
     || typeof body.profileId !== "string" || typeof body.acceptChartChange !== "boolean") {
     return NextResponse.json({ ok: false, error: "invalid_confirmation_request" }, { status: 400, headers: PRIVATE_HEADERS });
@@ -159,5 +175,5 @@ export async function POST(req: Request) {
       acceptChartChange: body.acceptChartChange,
     }),
   });
-  return relayStatus(req, await confirmBirthContextRecovery(forwarded));
+  return relayStatus(req, await confirmBirthContextRecovery(forwarded), installationId);
 }

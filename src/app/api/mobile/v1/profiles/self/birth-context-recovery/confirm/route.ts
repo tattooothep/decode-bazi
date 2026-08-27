@@ -40,6 +40,9 @@ type RecoveryRow = {
   birth_tz: string | null;
   birth_tz_source: string | null;
   birth_tz_confirmed_at: string | Date | null;
+  birth_location_name: string | null;
+  birth_lat: number | string | null;
+  birth_lng: number | string | null;
   birth_place_id: string | null;
   birth_location_source: string | null;
   birth_location_confirmed_at: string | Date | null;
@@ -82,7 +85,8 @@ export async function POST(req: Request) {
               (r.expires_at>now()) AS unexpired,
               to_char(p.birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall,
               p.birth_time_known,p.gender,p.birth_tz,p.birth_tz_source,p.birth_tz_confirmed_at,
-              p.birth_place_id,p.birth_location_source,p.birth_location_confirmed_at
+              p.birth_location_name,p.birth_lat,p.birth_lng,p.birth_place_id,
+              p.birth_location_source,p.birth_location_confirmed_at
          FROM profile_birth_context_recoveries r
          JOIN profiles p ON p.id=r.profile_id AND p.created_by_user_id=r.user_id
         WHERE r.confirmation_token_digest=$1 AND r.user_id=$2 AND r.profile_id=$3
@@ -243,6 +247,9 @@ export async function POST(req: Request) {
       birthTimezone: row.birth_tz,
       birthTimezoneSource: row.birth_tz_source,
       birthTimezoneConfirmedAt: row.birth_tz_confirmed_at,
+      birthLocationName: row.birth_location_name,
+      birthLatitude: row.birth_lat,
+      birthLongitude: row.birth_lng,
       birthPlaceId: row.birth_place_id,
       birthLocationSource: row.birth_location_source,
       birthLocationConfirmedAt: row.birth_location_confirmed_at,
@@ -252,17 +259,27 @@ export async function POST(req: Request) {
       birthTimezoneSource: "user_confirmed_iana",
       candidateDigest: row.candidate_digest,
       resolverFingerprint: context.fingerprint,
-      candidatePlaceId: row.candidate_place_id,
+      birthLocationName: row.candidate_display_name,
+      birthLatitude: candidateLatitude,
+      birthLongitude: candidateLongitude,
+      birthPlaceId: row.candidate_place_id,
+      birthLocationSource: "user_confirmed_geocoded_place",
     };
-    await client.query(
+    const updatedProfile = await client.query(
       `UPDATE profiles
           SET birth_tz=$1,birth_tz_source='user_confirmed_iana',birth_tz_confirmed_at=now(),
-              birth_tz_tzdb_version=$2,birth_place_id=COALESCE(birth_place_id,$3),
-              birth_location_source=COALESCE(NULLIF(btrim(birth_location_source),''),'user_confirmed_geocoded_place'),
-              birth_location_confirmed_at=COALESCE(birth_location_confirmed_at,now()),updated_at=now()
-        WHERE id=$4 AND created_by_user_id=$5`,
-      [context.birth.timezone, `node-icu-${process.versions.icu || "unknown"}`, row.candidate_place_id, row.profile_id, session.userId],
+              birth_tz_tzdb_version=$2,birth_location_name=$3,birth_place_id=$4,
+              birth_lat=$5,birth_lng=$6,
+              birth_location_source='user_confirmed_geocoded_place',
+              birth_location_confirmed_at=now(),updated_at=now()
+        WHERE id=$7 AND created_by_user_id=$8 AND org_id=$9`,
+      [
+        context.birth.timezone, `node-icu-${process.versions.icu || "unknown"}`,
+        row.candidate_display_name, row.candidate_place_id, candidateLatitude,
+        candidateLongitude, row.profile_id, session.userId, session.orgId,
+      ],
     );
+    if (updatedProfile.rowCount !== 1) throw new Error("recovery_profile_owner_changed");
     await client.query(
       `INSERT INTO profile_birth_context_events
          (recovery_id,user_id,profile_id,event_type,before_context,after_context,candidate_digest,resolver_fingerprint)

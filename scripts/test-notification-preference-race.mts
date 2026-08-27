@@ -108,9 +108,9 @@ try {
     [userId],
   );
 
-  const savedDateWrite = updateNotificationPreferences(pool, userId, { savedDate: true });
+  const savedDateWrite = updateNotificationPreferences(pool, userId, null, { savedDate: true });
   await waitForAdvisoryWaiters(pool, 1);
-  const qimenWrite = updateNotificationPreferences(pool, userId, {
+  const qimenWrite = updateNotificationPreferences(pool, userId, null, {
     qimen: true, qimenLatitude: 13.7563, qimenLongitude: 100.5018,
   });
   await waitForAdvisoryWaiters(pool, 2);
@@ -129,7 +129,7 @@ try {
     "two API preference writes serialize and merge fields instead of losing the first update",
   );
 
-  await updateNotificationPreferences(pool, userId, { locale: "en", timezone: "America/New_York" });
+  await updateNotificationPreferences(pool, userId, null, { locale: "en", timezone: "America/New_York" });
   const synchronizedContext = (await pool.query(
     `SELECT u.locale AS user_locale,u.timezone AS user_timezone,np.locale AS pref_locale,np.timezone AS pref_timezone
        FROM users u JOIN mobile_notification_prefs np ON np.user_id=u.id WHERE u.id=$1`,
@@ -147,7 +147,7 @@ try {
       FOR EACH ROW EXECUTE FUNCTION fail_notification_pref_update();
   `);
   await assert.rejects(
-    updateNotificationPreferences(pool, userId, { daily: true, locale: "ru" }),
+    updateNotificationPreferences(pool, userId, null, { daily: true, locale: "ru" }),
     /forced private preference failure/u,
     "database errors are surfaced to the API boundary",
   );

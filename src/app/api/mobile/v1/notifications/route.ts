@@ -268,7 +268,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "qimen_location_invalid" }, { status: 400 });
     }
     try {
-      const saved = await updateNotificationPreferences(pool, session.userId, body || {});
+      const saved = await updateNotificationPreferences(pool, session.userId, session.orgId, body || {});
       return NextResponse.json(
         { ok: true, prefs: prefsPayload(saved) },
         { headers: { "Cache-Control": "no-store" } },

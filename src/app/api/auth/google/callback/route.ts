@@ -12,6 +12,11 @@ import { userHasProfile } from "@/lib/profile-status";
 import { captureAffiliateAttribution } from "@/lib/affiliate";
 import { recordSignupFingerprint } from "@/lib/record-signup-fingerprint";
 import { applySignupProductDefaults } from "@/lib/product-entitlement";
+import {
+  classifyGoogleCallback,
+  googleAccountAction,
+  googleCallbackErrorLocation,
+} from "@/lib/oauth-google-callback-flow";
 
 const COOKIE_DOMAIN = process.env.NODE_ENV === "production" ? ".hourkey.io" : undefined;
 
@@ -31,48 +36,64 @@ function clearOAuthStateCookie(c: Awaited<ReturnType<typeof cookies>>) {
 }
 
 export async function GET(req: Request) {
-  if (!isReady()) return new Response("Google OAuth not configured", { status: 503 });
-
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
-  if (error) {
-    return redirect(`/signup?tab=login&err=${encodeURIComponent("ยกเลิกการเข้าสู่ระบบด้วย Google")}`);
-  }
-  if (!code || !state) {
+  if (!state) {
     return redirect(`/signup?tab=login&err=${encodeURIComponent("ข้อมูลจาก Google ไม่ครบ")}`);
   }
 
   const c = await cookies();
   const stateCookie = c.get("oauth_state_google")?.value;
-  if (!stateCookie || stateCookie !== state) {
-    return redirect(`/signup?tab=login&err=${encodeURIComponent("session OAuth ไม่ตรง · ลองใหม่")}`);
-  }
   const stateData = await verifyState(state);
   if (!stateData) {
     return redirect(`/signup?tab=login&err=${encodeURIComponent("token หมดอายุ · ลองใหม่")}`);
   }
+
+  // A mobile callback runs inside the system browser, whose HourKey cookie may
+  // belong to a different account. The signed mobile marker is authoritative:
+  // never turn that stale browser session into an account-link operation.
+  const callbackFlow = classifyGoogleCallback(stateData.next);
+  if (callbackFlow.kind === "invalid_mobile") {
+    return redirect(`hourkey://auth/google?error=${encodeURIComponent("bad_challenge")}`);
+  }
+  const flowError = (mobileCode: string, webMessage: string) => redirect(
+    googleCallbackErrorLocation(callbackFlow, mobileCode, webMessage),
+  );
+  if (!stateCookie || stateCookie !== state) {
+    return flowError("oauth_state_mismatch", "session OAuth ไม่ตรง · ลองใหม่");
+  }
   clearOAuthStateCookie(c);
+  if (error) {
+    return flowError("oauth_cancelled", "ยกเลิกการเข้าสู่ระบบด้วย Google");
+  }
+  if (!code) {
+    return flowError("oauth_incomplete", "ข้อมูลจาก Google ไม่ครบ");
+  }
+  if (!isReady()) {
+    return flowError("google_not_configured", "Google OAuth not configured");
+  }
 
   let profile;
   try {
     profile = await handleCallback(code);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "google verify failed";
-    return redirect(`/signup?tab=login&err=${encodeURIComponent(msg)}`);
+    return redirect(googleCallbackErrorLocation(callbackFlow, "google_verify_failed", msg));
   }
 
-  const current = await getSession();
+  const current = callbackFlow.kind === "web" ? await getSession() : null;
+  const accountAction = googleAccountAction(callbackFlow, current?.userId ?? null);
   let user;
   try {
-    user = current?.userId
-      ? await linkGoogleToUser(current.userId, profile)
+    user = accountAction === "link"
+      ? await linkGoogleToUser(current!.userId, profile)
       : await findOrCreateUser(profile);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "create user failed";
-    return redirect(`/signup?tab=login&err=${encodeURIComponent(msg)}`);
+    return redirect(googleCallbackErrorLocation(callbackFlow, "account_resolution_failed", msg));
   }
   if (user.is_new) {
     await recordSignupFingerprint({ userId: user.id, request: req });
@@ -90,16 +111,11 @@ export async function GET(req: Request) {
   // R522: สะพานมือถือ — state จาก /api/mobile/v1/auth/google/start ฝัง challenge เป็น
   // path "/__mobile__/<code_challenge>" → ออก one-time code (PKCE S256 · ใช้ครั้งเดียว · 60 วิ)
   // แล้วเด้งกลับเข้าแอพ ไม่ set cookie เว็บ
-  const mobileMarker = "/__mobile__/";
-  if (stateData.next && stateData.next.startsWith(mobileMarker)) {
-    const challenge = stateData.next.slice(mobileMarker.length);
-    if (!/^[A-Za-z0-9_-]{43,128}$/.test(challenge)) {
-      return redirect(`hourkey://auth/google?error=${encodeURIComponent("bad_challenge")}`);
-    }
+  if (callbackFlow.kind === "mobile") {
     const { q1 } = await import("@/lib/db");
     const codeRow = await q1<{ code: string }>(
       `INSERT INTO mobile_auth_codes (user_id, code_challenge) VALUES ($1, $2) RETURNING code`,
-      [user.id, challenge],
+      [user.id, callbackFlow.challenge],
     ).catch(() => null);
     if (!codeRow) {
       return redirect(`hourkey://auth/google?error=${encodeURIComponent("code_issue_failed")}`);

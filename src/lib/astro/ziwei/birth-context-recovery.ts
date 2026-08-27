@@ -27,6 +27,20 @@ export type RecoveryTokenContext = Readonly<{
   candidateDigest: string;
 }>;
 
+export type BirthContextRecoveryEvidenceKind =
+  | "confirmed_coordinates_timezone_lookup"
+  | "geocoded_location_name_candidate";
+
+export function birthContextRecoveryDisposition(input: Readonly<{
+  chartChangeRequired: boolean;
+  evidenceKind: BirthContextRecoveryEvidenceKind;
+}>): "auto_apply" | "confirmation_required" {
+  return input.chartChangeRequired === false
+    && input.evidenceKind === "confirmed_coordinates_timezone_lookup"
+    ? "auto_apply"
+    : "confirmation_required";
+}
+
 type CandidateLookupInput = Readonly<{
   locationName: string;
   birthWallClock: string;

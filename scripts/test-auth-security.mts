@@ -30,13 +30,13 @@ const mod = await import(new URL("../src/lib/rate-limit.ts", import.meta.url).hr
 const k = "t:" + Math.random();
 let okCount = 0, blocked = false, retry = 0;
 for (let i = 0; i < 7; i++) {
-  const r = mod.rateLimit(k, 5, 60_000);
+  const r = await mod.rateLimit(k, 5, 60_000);
   if (r.ok) okCount++; else { blocked = true; retry = r.retryAfterMs; }
 }
 ck("อนุญาต 5 ครั้งแรก", okCount === 5);
 ck("บล็อกครั้งที่ 6+ (429)", blocked);
 ck("retryAfterMs > 0 เมื่อบล็อก", retry > 0);
-const r2 = mod.rateLimit("other:" + Math.random(), 5, 60_000);
+const r2 = await mod.rateLimit("other:" + Math.random(), 5, 60_000);
 ck("key อื่นไม่โดนผลกระทบ (แยก bucket)", r2.ok);
 
 console.log(`\n[auth-security] ${pass}/${pass + fail} passed`);

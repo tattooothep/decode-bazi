@@ -155,6 +155,7 @@ async function rollback(client: PoolClient) {
 export async function updateNotificationPreferences(
   pool: Pool,
   userId: string,
+  orgId: string | null | undefined,
   body: MobileNotificationPreferenceInput,
   at = new Date(),
 ): Promise<MobileNotificationPreferenceRow> {
@@ -236,7 +237,8 @@ export async function updateNotificationPreferences(
         `SELECT id,birth_tz,birth_tz_source,birth_tz_confirmed_at,
                 to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_wall
            FROM profiles
-          WHERE id=$1 AND created_by_user_id=$2 AND COALESCE(is_archived,false)=false
+          WHERE id=$1 AND created_by_user_id=$2 AND org_id=$3
+            AND COALESCE(is_archived,false)=false
             AND birth_datetime IS NOT NULL
             AND birth_time_known=true
             AND NULLIF(btrim(birth_tz),'') IS NOT NULL
@@ -246,7 +248,7 @@ export async function updateNotificationPreferences(
             AND birth_tz_confirmed_at IS NOT NULL
             AND gender IN ('M','F')
             AND (relationship_type IS NULL OR btrim(relationship_type) = '')`,
-        [ziweiProfileId, userId],
+        [ziweiProfileId, userId, orgId],
       );
       if (!owned.rows[0]) throw new TypeError("ziwei_profile_invalid");
       const canonicalContext = resolveCanonicalZiweiHourlyContext({
@@ -282,6 +284,8 @@ export async function updateNotificationPreferences(
       locale: localeInput,
       privacyPreview,
     });
+    const ziweiPreferenceExplicit = body.ziweiHourly !== undefined
+      || body.ziweiProfileId !== undefined;
     let pausedUntil = current.paused_until === null || current.paused_until === undefined
       ? null
       : new Date(String(current.paused_until));
@@ -385,7 +389,7 @@ export async function updateNotificationPreferences(
     const ziweiSchema = await client.query<{ available: boolean }>(
       `SELECT to_regclass('mobile_ziwei_hourly_installations') IS NOT NULL AS available`,
     );
-    if (ziweiSchema.rows[0]?.available === true && ziweiContextChanged) {
+    if (ziweiSchema.rows[0]?.available === true && (ziweiContextChanged || ziweiPreferenceExplicit)) {
       if (ziweiHourly && ziweiProfileId) {
         await client.query(
           `INSERT INTO mobile_ziwei_hourly_installations

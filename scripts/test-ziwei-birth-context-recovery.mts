@@ -8,6 +8,7 @@ import {
   recoveryTokenDigest,
   recoveryTokenMatchesDigest,
 } from "../src/lib/astro/ziwei/birth-context-recovery.ts";
+import * as recoveryPolicy from "../src/lib/astro/ziwei/birth-context-recovery.ts";
 
 const migration = readFileSync("migrations/20260827_ziwei_birth_context_recovery.sql", "utf8");
 const statusRoute = readFileSync(
@@ -52,6 +53,26 @@ assert.match(statusRoute, /resolveCanonicalZiweiHourlyContext/u,
   "recovery must reject natal inputs outside the locked hourly science domain before enrollment");
 assert.match(statusRoute, /recoveryConfirmationToken/u,
   "overlapping status reads must derive one reusable opaque token from the immutable recovery row");
+assert.equal(typeof (recoveryPolicy as any).birthContextRecoveryDisposition, "function",
+  "recovery must expose an auditable policy separating automatic no-change recovery from consent");
+assert.equal((recoveryPolicy as any).birthContextRecoveryDisposition({
+  chartChangeRequired: false,
+  evidenceKind: "confirmed_coordinates_timezone_lookup",
+}), "auto_apply");
+assert.equal((recoveryPolicy as any).birthContextRecoveryDisposition({
+  chartChangeRequired: true,
+  evidenceKind: "confirmed_coordinates_timezone_lookup",
+}), "confirmation_required");
+assert.equal((recoveryPolicy as any).birthContextRecoveryDisposition({
+  chartChangeRequired: false,
+  evidenceKind: "geocoded_location_name_candidate",
+}), "confirmation_required");
+assert.match(statusRoute, /birthContextRecoveryDisposition\([\s\S]+case "auto_apply"/u,
+  "confirmed coordinates with an unchanged natal basis must recover automatically");
+assert.match(statusRoute, /birth_tz_source='verified_import'/u,
+  "automatic no-change recovery must record verified-import provenance, never fake user confirmation");
+assert.match(statusRoute, /APPROVED_LOCATION_SOURCES\.has\(String\(profile\.birth_location_source \|\| ""\)\)/u,
+  "automatic recovery must require explicit stored-location provenance, not merely non-null coordinates");
 assert.match(statusRoute, /recoveryTokenMatchesDigest\(reusableToken, active\.confirmation_token_digest\)/u,
   "a regenerated token must match the digest committed with the active row");
 assert.match(statusRoute, /pg_advisory_xact_lock[\s\S]+FROM profile_birth_context_recoveries[\s\S]+FOR UPDATE/u,
@@ -60,6 +81,9 @@ assert.match(statusRoute, /SELECT updated_at::text AS updated_at_exact[\s\S]+cre
   "the locked profile re-read must retain owner, organization and self-profile eligibility");
 assert.match(statusRoute, /\(updated_at=\$4::timestamptz\) AS profile_unchanged/u,
   "profile freshness must preserve PostgreSQL microseconds instead of round-tripping through JS Date");
+assert.match(statusRoute,
+  /profile_unchanged !== true[\s\S]+completePayloadFromCurrentProfile[\s\S]+COMMIT[\s\S]+profile_changed/u,
+  "an overlapping GET must converge on a concurrently completed canonical recovery instead of returning 409");
 assert.match(statusRoute, /\(r\.profile_updated_at_seen=p\.updated_at\) AS profile_fresh/u,
   "pending recovery freshness must be compared exactly inside PostgreSQL");
 assert.doesNotMatch(statusRoute, /new Date\([^)]*updated_at/u,
@@ -99,19 +123,34 @@ assert.match(confirmRoute, /pg_advisory_xact_lock/u);
 assert.match(confirmRoute, /birth_tz_source='user_confirmed_iana'/u);
 assert.match(confirmRoute, /profile_birth_context_events/u);
 assert.match(confirmRoute, /owner_generation=owner_generation\+1/u);
-assert.doesNotMatch(confirmRoute, /birth_datetime\s*=(?!=)|birth_lat\s*=(?!=)|birth_lng\s*=(?!=)|gender\s*=(?!=)/u,
-  "confirmation may only add the confirmed timezone; existing birth facts stay untouched");
-assert.match(confirmRoute, /birth_place_id=COALESCE\(birth_place_id,\$3\)/u,
-  "confirmation may fill missing place evidence but must not overwrite an existing place ID");
-assert.match(confirmRoute, /birth_location_source=COALESCE\(NULLIF\(btrim\(birth_location_source\),''\)/u,
-  "confirmation preserves existing place provenance");
-assert.match(confirmRoute, /birth_location_confirmed_at=COALESCE\(birth_location_confirmed_at,now\(\)\)/u,
-  "confirmation preserves an existing place-confirmation timestamp");
+assert.doesNotMatch(confirmRoute, /birth_datetime\s*=(?!=)|gender\s*=(?!=)/u,
+  "confirmation must never rewrite the owner's birth instant or gender");
+assert.match(confirmRoute,
+  /birth_location_name=\$3,birth_place_id=\$4,\s*birth_lat=\$5,birth_lng=\$6,[\s\S]+birth_location_source='user_confirmed_geocoded_place',[\s\S]+birth_location_confirmed_at=now\(\)/u,
+  "confirmation must atomically persist the exact immutable candidate location facts and provenance");
+assert.match(confirmRoute, /WHERE id=\$7 AND created_by_user_id=\$8 AND org_id=\$9/u,
+  "candidate application must remain bound to the authenticated owner and organization");
+assert.match(confirmRoute, /updatedProfile\.rowCount !== 1/u,
+  "candidate application must fail closed if the owned profile changed or disappeared");
+assert.match(confirmRoute, /const afterContext = \{[\s\S]+birthLatitude: candidateLatitude,[\s\S]+birthLongitude: candidateLongitude/u,
+  "the audit event must carry the exact candidate coordinates applied to the profile");
 assert.doesNotMatch(confirmRoute, /mobile_qimen|mobile_zibai/u,
   "confirmation must not touch other science notification state");
 assert.match(mobileRecoveryRoute, /contractVersion:\s*1/u);
 assert.match(mobileRecoveryRoute, /pushSubscribed/u);
 assert.match(mobileRecoveryRoute, /ziweiEnrolled/u);
+assert.match(mobileRecoveryRoute, /const installationId = installationIdFromRequest\(req\)/u,
+  "recovery readiness must be scoped to the physical installation making the request");
+assert.match(mobileRecoveryRoute, /installation_id=\$2::uuid/u,
+  "another phone on the same account must not make this phone appear subscribed or enrolled");
+assert.match(mobileRecoveryRoute, /invalid_installation_id/u,
+  "missing or malformed installation identity must fail before recovery/provider work");
+assert.match(mobileRecoveryRoute, /deviceStatus\(session\.userId, installationId\)/u);
+assert.match(mobileRecoveryRoute,
+  /JSON\.stringify\(keys\) !== JSON\.stringify\(\["acceptChartChange", "action", "confirmationToken", "installation_id", "profileId"\]\)/u,
+  "confirmation must accept only the exact mobile body including its installation binding");
+assert.match(mobileRecoveryRoute, /typeof body\.installation_id !== "string"[\s\S]+UUID_RE\.test\(body\.installation_id\)/u,
+  "POST installation identity must be a canonical UUID before upstream confirmation work");
 assert.match(mobileRecoveryRoute, /chartChangeRequired/u);
 assert.match(mobileRecoveryRoute, /acceptChartChange/u);
 assert.match(mobileRecoveryRoute, /profileId:\s*body\.profileId/u,

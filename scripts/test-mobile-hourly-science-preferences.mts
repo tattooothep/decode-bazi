@@ -18,6 +18,8 @@ assert.match(prefs, /body\.ziweiProfileId/u);
 assert.match(prefs, /body\.qizhengElectional === true/u);
 assert.match(prefs, /qizheng_electional_unavailable/u);
 assert.match(prefs, /created_by_user_id=\$2/u);
+assert.match(prefs, /org_id=\$3/u,
+  "Ziwei selection must remain inside the authenticated organization");
 assert.match(prefs, /relationship_type IS NULL OR btrim\(relationship_type\) = ''/u);
 assert.match(prefs, /gender IN \('M','F'\)/u);
 assert.doesNotMatch(prefs, /birth_lat BETWEEN -90 AND 90|birth_lng BETWEEN -180 AND 180/u,
@@ -31,8 +33,12 @@ assert.match(prefs, /if \(ziweiHourly \|\| body\.ziweiProfileId !== undefined\)/
   "enabling/changing selection is strict while disabling always remains reachable");
 assert.match(prefs, /mobile_ziwei_hourly_installations/u);
 assert.match(prefs, /t\.ziwei_payload_schema=2/u);
-assert.match(prefs, /if \(ziweiSchema\.rows\[0\]\?\.available === true && ziweiContextChanged\)/u,
-  "unrelated preference writes must not invalidate an admitted Ziwei occurrence");
+assert.match(prefs, /const ziweiPreferenceExplicit =\s*body\.ziweiHourly !== undefined\s*\|\| body\.ziweiProfileId !== undefined/u,
+  "an explicit Ziwei save must synchronize the installation after profile recovery");
+assert.match(prefs, /if \(ziweiSchema\.rows\[0\]\?\.available === true && \(ziweiContextChanged \|\| ziweiPreferenceExplicit\)\)/u,
+  "explicit Ziwei saves must re-enroll while unrelated preference writes remain a no-op");
+assert.match(route, /updateNotificationPreferences\(pool, session\.userId, session\.orgId, body \|\| \{\}\)/u,
+  "the authenticated organization must reach the profile ownership query");
 
 const context = Object.freeze({
   enabled: true,
