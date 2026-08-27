@@ -7,6 +7,18 @@ import { buildZiweiHourlyNotificationFacts } from "../src/lib/astro/ziwei/hourly
 const require = createRequire(import.meta.url);
 const runtime = require("../src/lib/ziwei-hourly-notification.cjs");
 const presentation = require("../src/lib/ziwei-hourly-presentation.cjs");
+const push = require("../src/lib/push-send.cjs");
+
+const accountId = "00000000-0000-4000-8000-000000000001";
+const profile = { id: "00000000-0000-4000-8000-000000000002", name: "Owner", isSelf: true };
+const notificationId = "00000000-0000-4000-8000-000000000003";
+const fcmToken = "f".repeat(256);
+const expoToken = `ExponentPushToken[${"e".repeat(32)}]`;
+const PROVIDER_PAYLOAD_CEILING_BYTES = 4_096;
+const REQUIRED_REQUEST_HEADROOM_BYTES = 96;
+const MAX_PROVIDER_REQUEST_BYTES = PROVIDER_PAYLOAD_CEILING_BYTES - REQUIRED_REQUEST_HEADROOM_BYTES;
+let maximumFcmRequestBytes = 0;
+let maximumExpoRequestBytes = 0;
 
 const facts = buildZiweiHourlyNotificationFacts({
   birthInstant: new Date("1984-12-31T06:15:00.000Z"),
@@ -17,8 +29,8 @@ const facts = buildZiweiHourlyNotificationFacts({
   referenceTimezone: "Asia/Bangkok",
 });
 const snapshot = runtime.buildZiweiHourlyNotificationSnapshot({
-  accountId: "00000000-0000-4000-8000-000000000001",
-  profile: { id: "00000000-0000-4000-8000-000000000002", name: "Owner", isSelf: true },
+  accountId,
+  profile,
   facts,
 });
 
@@ -72,15 +84,15 @@ for (const palace of ["命宮", "兄弟", "夫妻", "子女", "財帛", "疾厄"
 }
 
 const languageMarkers: Record<(typeof locales)[number], readonly RegExp[]> = {
-  th: [/แรงหนุน/u, /แรงผลัก/u, /ควรระวัง/u, /โฟกัส/u],
-  en: [/Support/u, /Drive/u, /Caution/u, /focus/iu],
-  zh: [/助力/u, /推動/u, /留意/u, /三層焦點/u],
-  cn: [/助力/u, /推动/u, /注意/u, /三层重点/u],
-  vi: [/Hỗ trợ/u, /Thúc đẩy/u, /Cẩn trọng/u, /Trọng tâm/u],
-  ja: [/後押し/u, /推進/u, /注意/u, /焦点/u],
-  ru: [/Поддержка/u, /Импульс/u, /Осторожно/u, /Фокус/u],
-  ko: [/도움/u, /추진/u, /주의/u, /초점/u],
-  es: [/Apoyo/u, /Impulso/u, /Precaución/u, /Enfoque/u],
+  th: [/แรงหนุน/u, /แรงผลัก/u, /ระวัง/u, /3 ชั้น/u],
+  en: [/Support/u, /Drive/u, /Caution/u, /3 layers/iu],
+  zh: [/助力/u, /推動/u, /留意/u, /三層/u],
+  cn: [/助力/u, /推动/u, /注意/u, /三层/u],
+  vi: [/Hỗ trợ/u, /Thúc đẩy/u, /Cẩn trọng/u, /3 tầng/u],
+  ja: [/後押し/u, /推進/u, /注意/u, /3層/u],
+  ru: [/Поддержка/u, /Импульс/u, /Риск/u, /3 уровня/u],
+  ko: [/도움/u, /추진/u, /주의/u, /3층/u],
+  es: [/Apoyo/u, /Impulso/u, /Precaución/u, /3 capas/u],
 };
 
 for (const locale of locales) {
@@ -111,15 +123,28 @@ for (const locale of locales) {
 
 for (const locale of locales) {
   for (const palace of ["命宮", "兄弟", "夫妻", "子女", "財帛", "疾厄", "遷移", "僕役", "官祿", "田宅", "福德", "父母"]) {
-    const worstCase = structuredClone(snapshot) as any;
+    const worstFacts = structuredClone(facts) as any;
     for (const key of ["liuYue", "liuRi", "liuShi"]) {
-      worstCase.facts.layers[key].mingPalaceName = palace;
-      for (const item of worstCase.facts.layers[key].siHua) item.palaceName = palace;
+      worstFacts.layers[key].mingPalaceName = palace;
+      for (const item of worstFacts.layers[key].siHua) item.palaceName = palace;
     }
-    const copy = presentation.buildZiweiHourlyTypeCCopy(locale, worstCase);
+    const worstCase = runtime.buildZiweiHourlyNotificationSnapshot({ accountId, profile, facts: worstFacts });
+    const copy = runtime.buildZiweiHourlyCopy(locale, worstCase);
     assert.ok(copy.title.length <= 120 && copy.body.length <= 400,
       `${locale}/${palace} cannot make a valid notification fail at delivery time`);
+    const data = { ...runtime.buildZiweiHourlyProviderData(worstCase), notificationId };
+    const input = { category: "ziwei", ...copy, url: "/ziwei/hourly", transactional: false, data };
+    const fcm = push.prepareMessage(input, "fcm");
+    const expo = push.prepareMessage(input, "expo");
+    const fcmBytes = Buffer.byteLength(JSON.stringify({ message: { token: fcmToken, ...fcm } }), "utf8");
+    const expoBytes = Buffer.byteLength(JSON.stringify({ to: expoToken, ...expo }), "utf8");
+    maximumFcmRequestBytes = Math.max(maximumFcmRequestBytes, fcmBytes);
+    maximumExpoRequestBytes = Math.max(maximumExpoRequestBytes, expoBytes);
+    assert.ok(fcmBytes <= MAX_PROVIDER_REQUEST_BYTES,
+      `${locale}/${palace} FCM request ${fcmBytes} bytes exceeds ${MAX_PROVIDER_REQUEST_BYTES}`);
+    assert.ok(expoBytes <= MAX_PROVIDER_REQUEST_BYTES,
+      `${locale}/${palace} Expo request ${expoBytes} bytes exceeds ${MAX_PROVIDER_REQUEST_BYTES}`);
   }
 }
 
-console.log("PASS Ziwei hourly Type C presentation — 9 locales, practical meaning, reviewed science tones");
+console.log(`PASS Ziwei hourly Type C presentation — 9 locales, FCM max ${maximumFcmRequestBytes} B, Expo max ${maximumExpoRequestBytes} B, 96 B headroom gate`);

@@ -12,6 +12,17 @@
     "ko": { "title": "자미두수 시진", "supportive": "도움", "drive": "추진/압박", "caution": "주의", "contextual": "맥락상 촉발", "focus": "3층 초점", "month": "월", "day": "일", "hour": "시진", "detail": "3개 층의 의미와 근거 모두 보기", "unavailable": "정보 없음" },
     "es": { "title": "Ziwei por hora", "supportive": "Apoyo", "drive": "Impulso/presión", "caution": "Precaución", "contextual": "Activadores contextuales", "focus": "Enfoque de 3 capas", "month": "Mes", "day": "Día", "hour": "Hora", "detail": "Abrir significados y evidencia de las 3 capas", "unavailable": "Sin datos" }
   },
+  "compactLabels": {
+    "th": { "supportive": "แรงหนุน", "drive": "แรงผลัก", "caution": "ระวัง", "contextual": "ตามบริบท", "focus": "3 ชั้น", "month": "เดือน", "day": "วัน", "hour": "ยาม" },
+    "en": { "supportive": "Support", "drive": "Drive", "caution": "Caution", "contextual": "Context", "focus": "3 layers", "month": "Month", "day": "Day", "hour": "Hour" },
+    "zh": { "supportive": "助力", "drive": "推動", "caution": "留意", "contextual": "情境", "focus": "三層", "month": "月", "day": "日", "hour": "時" },
+    "cn": { "supportive": "助力", "drive": "推动", "caution": "注意", "contextual": "情境", "focus": "三层", "month": "月", "day": "日", "hour": "时" },
+    "vi": { "supportive": "Hỗ trợ", "drive": "Thúc đẩy", "caution": "Cẩn trọng", "contextual": "Bối cảnh", "focus": "3 tầng", "month": "Tháng", "day": "Ngày", "hour": "Giờ" },
+    "ja": { "supportive": "後押し", "drive": "推進", "caution": "注意", "contextual": "状況", "focus": "3層", "month": "月", "day": "日", "hour": "時" },
+    "ru": { "supportive": "Поддержка", "drive": "Импульс", "caution": "Риск", "contextual": "Контекст", "focus": "3 уровня", "month": "Месяц", "day": "День", "hour": "Час" },
+    "ko": { "supportive": "도움", "drive": "추진", "caution": "주의", "contextual": "맥락", "focus": "3층", "month": "월", "day": "일", "hour": "시진" },
+    "es": { "supportive": "Apoyo", "drive": "Impulso", "caution": "Precaución", "contextual": "Contexto", "focus": "3 capas", "month": "Mes", "day": "Día", "hour": "Hora" }
+  },
   "sihua": {
     "祿": { "tone": "supportive", "meanings": { "th": "โอกาสและทรัพยากรไหลเข้า", "en": "opportunity and resource flow", "zh": "機會與資源流動", "cn": "机会与资源流动", "vi": "cơ hội và dòng nguồn lực", "ja": "機会と資源の流れ", "ru": "возможности и поток ресурсов", "ko": "기회와 자원의 흐름", "es": "oportunidad y flujo de recursos" } },
     "權": { "tone": "drive", "meanings": { "th": "การลงมือ อำนาจ และแรงกดดัน", "en": "action, authority and pressure", "zh": "行動、權責與壓力", "cn": "行动、权责与压力", "vi": "hành động, quyền hạn và áp lực", "ja": "行動・権限・圧力", "ru": "действие, власть и давление", "ko": "행동·권한·압박", "es": "acción, autoridad y presión" } },

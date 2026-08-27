@@ -3,7 +3,8 @@
 const catalog = require("./ziwei-hourly-presentation-catalog.json");
 
 const PRESENTATION_VERSION = catalog.version;
-const PRESENTATION_CATALOG_SHA256 = "40433d2b61e197c8f60bb712cfeba08d19c0cb5622f40d666eb2cd03ffdc0918";
+const PRESENTATION_CATALOG_SHA256 = "efea1c6c05c24867ce1df8e5ce5c639266a9544118ee8dc091f69c94adbdbd88";
+const MAX_LOCKSCREEN_COPY_UTF8_BYTES = 360;
 const SUPPORTED_LOCALES = Object.freeze([...catalog.supportedLocales]);
 const TONES = Object.freeze(["supportive", "drive", "caution", "contextual", "unavailable"]);
 const PALACE_ALIASES = Object.freeze({
@@ -114,10 +115,6 @@ function buildZiweiHourlyPresentation(locale, snapshot) {
   });
 }
 
-function compactTransformation(marker) {
-  return `${marker.raw}→${marker.focus.topic}`;
-}
-
 function rawTransformation(marker) {
   return `${marker.raw}→${marker.focus.rawPalace || "?"}`;
 }
@@ -125,29 +122,36 @@ function rawTransformation(marker) {
 function buildZiweiHourlyTypeCCopy(locale, snapshot) {
   const view = buildZiweiHourlyPresentation(locale, snapshot);
   const L = view.copy;
+  const C = catalog.compactLabels[view.locale];
   const hour = view.layers.hour;
   const detailedTitle = `${L.title} · ${L.hour} ${hour.ganzhi} · ${hour.focus.rawPalace} ${hour.focus.topic}`;
-  const title = detailedTitle.length <= 120 ? detailedTitle : `${L.title} · ${L.hour} ${hour.ganzhi} · ${hour.focus.rawPalace}`;
+  const rawTitle = `${L.title} · ${L.hour} ${hour.ganzhi} · ${hour.focus.rawPalace}`;
+  let title = detailedTitle.length <= 120 ? detailedTitle : rawTitle;
   const transformations = groupByTone(hour.transformations);
   const contextualStars = view.summary.hour.contextual.map((marker) => marker.canonicalStar).join("/");
   const segments = (format) => [
-    `${L.supportive}: ${transformations.supportive.map(format).join(" · ")}`,
-    `${L.drive}: ${transformations.drive.map(format).join(" · ")}`,
-    `${L.caution}: ${transformations.caution.map(format).join(" · ")}`,
-    `${L.contextual}: ${contextualStars}`,
-    `${L.focus}: ${L.month} ${view.layers.month.focus.topic} · ${L.day} ${view.layers.day.focus.topic} · ${L.hour} ${hour.focus.topic}`,
+    `${C.supportive}:${transformations.supportive.map(format).join("/")}`,
+    `${C.drive}:${transformations.drive.map(format).join("/")}`,
+    `${C.caution}:${transformations.caution.map(format).join("/")}`,
+    `${C.contextual}:${contextualStars}`,
+    `${C.focus}:${C.month} ${view.layers.month.focus.rawPalace}/${C.day} ${view.layers.day.focus.rawPalace}/${C.hour} ${hour.focus.rawPalace}`,
   ];
-  let core = segments(compactTransformation).join(" | ");
-  if (core.length > 400) core = segments(rawTransformation).join(" | ");
-  const withDetail = `${core} | ${L.detail}`;
-  const body = withDetail.length <= 400 ? withDetail : core;
-  if (title.length > 120 || body.length > 400) throw new RangeError("ziwei_hourly_copy_too_long");
+  let body = segments(rawTransformation).join("|");
+  const copyBytes = () => Buffer.byteLength(JSON.stringify({ title, body }), "utf8");
+  if (copyBytes() > MAX_LOCKSCREEN_COPY_UTF8_BYTES) {
+    title = rawTitle;
+    body = segments((marker) => marker.raw).join("|");
+  }
+  if (title.length > 120 || body.length > 400 || copyBytes() > MAX_LOCKSCREEN_COPY_UTF8_BYTES) {
+    throw new RangeError("ziwei_hourly_copy_too_long");
+  }
   return Object.freeze({ title, body });
 }
 
 module.exports = Object.freeze({
   PRESENTATION_VERSION,
   PRESENTATION_CATALOG_SHA256,
+  MAX_LOCKSCREEN_COPY_UTF8_BYTES,
   SUPPORTED_LOCALES,
   buildZiweiHourlyPresentation,
   buildZiweiHourlyTypeCCopy,
