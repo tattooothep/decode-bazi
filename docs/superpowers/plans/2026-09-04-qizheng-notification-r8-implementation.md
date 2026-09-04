@@ -164,6 +164,17 @@ CREATE TABLE mobile_science_notification_subscriptions (
   updated_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id,science_id,submode)
 );
+
+CREATE TABLE mobile_science_notification_shadow_cohort (
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  science_id text NOT NULL CHECK (science_id='astronomy_fact'),
+  submode text NOT NULL CHECK (submode='civil_two_hour'),
+  enabled boolean NOT NULL DEFAULT false,
+  approved_by text,
+  approved_at timestamptz,
+  PRIMARY KEY (user_id,science_id,submode),
+  CHECK (enabled=false OR (approved_by IS NOT NULL AND btrim(approved_by)<>'' AND approved_at IS NOT NULL))
+);
 ```
 
 Add delivery chains with one partial-unique primary endpoint, occurrence lineage, canonical identity `bytea CHECK(octet_length(identity_hash)=32)`, immutable result revision, rollout epoch, and provider-incapable shadow states. Qizheng rows additionally enforce `schema_version=0`, `enabled=false`, and `provider_send_enabled=false`.
@@ -333,7 +344,7 @@ Expected: FAIL because the shadow files are absent.
 
 - [ ] **Step 3: Implement shadow scheduling**
 
-The scheduler reads only enabled internal test subscriptions, verifies the producer row is `provider_send_enabled=false`, builds immutable astronomy facts, writes `shadowed` occurrences transactionally, and advances its own lane heartbeat. It exits non-zero if any provider-capable module is present in its dependency inventory.
+The scheduler reads only `mobile_science_notification_shadow_cohort.enabled=true` rows that also have an explicit approval audit, verifies the producer row is `provider_send_enabled=false`, builds immutable astronomy facts, writes `shadowed` occurrences transactionally, and advances its own lane heartbeat. It never treats the production subscription's forced-false `enabled` field as consent and exits non-zero if any provider-capable module is present in its dependency inventory.
 
 - [ ] **Step 4: Run race/load/isolation tests**
 
@@ -392,7 +403,7 @@ Cards use independent toggles and explain that sky facts are not predictions whi
 
 - [ ] **Step 4: Run nine-locale, navigation, foreground/background/killed-open, logout purge, and legacy replay tests**
 
-Run backend: `npx tsx scripts/test-mobile-science-payload-r8.mts && npx tsx scripts/test-notification-source-replay-task3.mts`
+Run backend: `HOURKEY_MOBILE_ROOT=/root/worktrees/hourkey-mobile-zibai-v3-p0 HOURKEY_MOBILE_SHA=5af5f20687f40e55c23c52a15a6b620c700848b6 npx tsx scripts/test-mobile-science-payload-r8.mts && HOURKEY_MOBILE_ROOT=/root/worktrees/hourkey-mobile-zibai-v3-p0 HOURKEY_MOBILE_SHA=5af5f20687f40e55c23c52a15a6b620c700848b6 npx tsx scripts/test-notification-source-replay-task3.mts`
 
 Run mobile: `npx tsx scripts/testNotificationScienceR8.mts && npx tsc --noEmit`
 
@@ -432,7 +443,7 @@ Run backend:
 ```bash
 npx tsc --noEmit
 npx tsx scripts/test-notification-r8-final-gates.mts
-npx tsx scripts/test-notification-live-producers-task3.mts
+HOURKEY_MOBILE_ROOT=/root/worktrees/hourkey-mobile-zibai-v3-p0 HOURKEY_MOBILE_SHA=5af5f20687f40e55c23c52a15a6b620c700848b6 npx tsx scripts/test-notification-live-producers-task3.mts
 npx tsx scripts/test-mobile-push-retry-worker.mts
 npx tsx scripts/test-notification-science-final-blockers.mts
 npx next build --webpack
@@ -443,7 +454,7 @@ Run mobile:
 ```bash
 npx tsc --noEmit
 npx tsx scripts/testNotificationScienceR8.mts
-npx expo export --platform android --platform ios
+npx expo export --platform all
 ```
 
 Expected: all exit `0`; Qizheng schema remains `0`; new provider attempts remain `0`.
