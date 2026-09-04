@@ -34,6 +34,7 @@ export const runtime = "nodejs";
 
 const KINDS = new Set([
   "security", "saved_date", "daily", "yam", "qimen", "shrine", "goal", "service", "zibai", "ziwei",
+  "astronomy_fact",
   // legacy rows remain readable after the category split
   "auspicious", "network",
 ]);
@@ -125,6 +126,9 @@ function prefsPayload(row: PrefRow) {
     ziweiProfileId: row.ziwei_profile_id,
     qizhengElectional: false,
     qizhengElectionalAvailable: false,
+    astronomyFact: false,
+    astronomyFactAvailable: false,
+    astronomyFactPreviewAvailable: true,
     shrine: row.shrine_enabled,
     goal: row.goal_enabled,
     service: true,

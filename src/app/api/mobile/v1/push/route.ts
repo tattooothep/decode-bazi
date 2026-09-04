@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 const TOKEN_RE = /^(?:ExponentPushToken|ExpoPushToken)\[[A-Za-z0-9_-]{10,200}\]$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
-const { effectiveZiweiPayloadSchema, expoIosPushReady } = pushRegistrationReadiness;
+const { effectiveAstronomyFactPayloadSchema, effectiveZiweiPayloadSchema, expoIosPushReady } = pushRegistrationReadiness;
 
 type PushIdentity = {
   user_id: string;
@@ -160,6 +160,10 @@ export async function POST(req: Request) {
   const requestedZiweiPayloadSchema = body.ziweiPayloadSchema === undefined ? 0 : body.ziweiPayloadSchema;
   const ziweiPayloadSchema = effectiveZiweiPayloadSchema(platform, requestedZiweiPayloadSchema, process.env);
   const qizhengPayloadSchema = body.qizhengPayloadSchema === undefined ? 0 : body.qizhengPayloadSchema;
+  const requestedAstronomyFactPayloadSchema = body.astronomyFactPayloadSchema === undefined
+    ? 0
+    : body.astronomyFactPayloadSchema;
+  const astronomyFactPayloadSchema = effectiveAstronomyFactPayloadSchema(requestedAstronomyFactPayloadSchema);
   /**
    * กุญแจเครื่องแบบส่งตรงถึงกูเกิล (30 ก.ค.)
    *
@@ -183,6 +187,7 @@ export async function POST(req: Request) {
     || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2 || qimenPayloadSchema === 3)
     || !(requestedZiweiPayloadSchema === 0 || requestedZiweiPayloadSchema === 1 || requestedZiweiPayloadSchema === 2)
     || qizhengPayloadSchema !== 0
+    || !(requestedAstronomyFactPayloadSchema === 0 || requestedAstronomyFactPayloadSchema === 1)
   ) {
     return NextResponse.json({ ok: false, error: "invalid_push_registration" }, { status: 400 });
   }
@@ -280,8 +285,8 @@ export async function POST(req: Request) {
       `INSERT INTO mobile_push_tokens
          (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,app_version,locale,timezone,enabled,
           fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema,qimen_payload_schema,
-          ziwei_payload_schema,qizheng_payload_schema,zibai_calculation_version)
-       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10,$11,$13,$14,$12)
+          ziwei_payload_schema,qizheng_payload_schema,astronomy_fact_payload_schema,zibai_calculation_version)
+       VALUES($1,$2::uuid,$3,$7,$8,$4,$5,$6,$9,true,0,now(),NULL,now(),$10,$11,$13,$14,$15,$12)
        ON CONFLICT(expo_push_token) DO UPDATE SET
          user_id=EXCLUDED.user_id,
          installation_id=EXCLUDED.installation_id,
@@ -296,6 +301,7 @@ export async function POST(req: Request) {
          qimen_payload_schema=EXCLUDED.qimen_payload_schema,
          ziwei_payload_schema=EXCLUDED.ziwei_payload_schema,
          qizheng_payload_schema=EXCLUDED.qizheng_payload_schema,
+         astronomy_fact_payload_schema=EXCLUDED.astronomy_fact_payload_schema,
          enabled=true,
          fail_count=0,
          last_registered_at=now(),
@@ -305,7 +311,7 @@ export async function POST(req: Request) {
       [
         session.userId, installationId, token, platform, appVersion, tokenLocale,
         deviceToken, deviceTokenType, timezone, zibaiPayloadSchema, qimenPayloadSchema,
-        zibaiCalculationVersion, ziweiPayloadSchema, qizhengPayloadSchema,
+        zibaiCalculationVersion, ziweiPayloadSchema, qizhengPayloadSchema, astronomyFactPayloadSchema,
       ]
     );
     row = registered.rows[0];

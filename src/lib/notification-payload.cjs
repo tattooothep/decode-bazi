@@ -12,6 +12,12 @@ const ROUTES = Object.freeze({
 const zibaiRuleRuntime = require("./zibai-three-layer-runtime.cjs");
 const solarTermRuntime = require("./zibai-solar-term-runtime.cjs");
 const zibaiVersionRuntime = require("./zibai-version-runtime.cjs");
+const R8_SCIENCE_PROVIDER_KEYS = Object.freeze([
+  "v", "kind", "notificationId", "occurrenceId", "audience", "mode", "url",
+]);
+const R8_SCIENCE_PROVIDER_MAX_BYTES = 1_024;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const AUDIENCE_RE = /^[A-Za-z0-9_-]{22,64}$/u;
 
 const FACT_KEYS = Object.freeze({
   security: ["event", "url"],
@@ -124,6 +130,28 @@ function readDataArray(value, expectedLength) {
     captured.push(descriptor.value);
   }
   return captured;
+}
+
+/**
+ * Strict parser for the only R8 provider shape understood by schema v1.
+ * Qizheng deliberately has schema 0 and therefore has no provider parser.
+ */
+function parseR8ScienceProviderPayload(value, expectedAudience) {
+  const record = readDataRecord(value, R8_SCIENCE_PROVIDER_KEYS);
+  if (!record || record.v !== 1 || record.kind !== "astronomy_fact"
+    || record.mode !== "civil_two_hour" || record.url !== "/astronomy-facts/detail"
+    || typeof record.notificationId !== "string" || !UUID_RE.test(record.notificationId)
+    || typeof record.occurrenceId !== "string" || !UUID_RE.test(record.occurrenceId)
+    || typeof record.audience !== "string" || !AUDIENCE_RE.test(record.audience)
+    || typeof expectedAudience !== "string" || !AUDIENCE_RE.test(expectedAudience)
+    || record.audience !== expectedAudience) return null;
+  const output = Object.freeze({ ...record });
+  try {
+    if (Buffer.byteLength(JSON.stringify(output), "utf8") > R8_SCIENCE_PROVIDER_MAX_BYTES) return null;
+  } catch {
+    return null;
+  }
+  return output;
 }
 
 function validIso(value) {
@@ -366,4 +394,4 @@ function previewCopy(kind, privacyPreview, fullCopy, locale) {
   return REDACTED[normalizedLocale(locale)];
 }
 
-module.exports = { buildNotificationPayload, normalizedLocale, previewCopy };
+module.exports = { buildNotificationPayload, normalizedLocale, parseR8ScienceProviderPayload, previewCopy };

@@ -8,4 +8,18 @@ function effectiveZiweiPayloadSchema(platform, requestedSchema, env = process.en
   return platform === "ios" && !expoIosPushReady(env) ? 0 : requestedSchema;
 }
 
-module.exports = Object.freeze({ effectiveZiweiPayloadSchema, expoIosPushReady });
+function effectiveAstronomyFactPayloadSchema(requestedSchema) {
+  return requestedSchema === 1 ? 1 : 0;
+}
+
+function r8ScienceProviderDeliveryReady(scienceId) {
+  if (scienceId !== "astronomy_fact" && scienceId !== "qizheng") return false;
+  return false;
+}
+
+module.exports = Object.freeze({
+  effectiveAstronomyFactPayloadSchema,
+  effectiveZiweiPayloadSchema,
+  expoIosPushReady,
+  r8ScienceProviderDeliveryReady,
+});
