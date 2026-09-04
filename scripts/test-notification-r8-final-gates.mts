@@ -158,8 +158,13 @@ function filesTreeDigest(root: string, normalizeNext = false): string {
   assert.equal(lstatSync(root).isDirectory(),true);
   const buildId = normalizeNext ? readFileSync(join(root,"BUILD_ID"),"utf8").trim() : "";
   if (normalizeNext) assert.match(buildId,/^[A-Za-z0-9_-]{16,64}$/u);
+  const artifactAppRoot = normalizeNext
+    ? String(JSON.parse(readFileSync(join(root,"required-server-files.json"),"utf8")).appDir)
+    : "";
+  if (normalizeNext) assert.ok(artifactAppRoot.startsWith("/"));
   const nextSecrets = normalizeNext ? [
     [buildId,"<BUILD_ID>"],
+    [artifactAppRoot,"<APP_ROOT>"],
     [realpathSync(join(root,"..")),"<APP_ROOT>"],
     ...Object.entries(JSON.parse(readFileSync(join(root,"prerender-manifest.json"),"utf8")).preview)
       .map(([key,value]) => [String(value),`<${key}>`]),
