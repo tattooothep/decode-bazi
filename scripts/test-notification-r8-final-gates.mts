@@ -305,6 +305,17 @@ assert.ok(bundle.soak.legacyP95RegressionPercent < 5);
 assert.equal(bundle.soak.duplicateLineages, 0);
 assert.equal(bundle.soak.providerCalls, 0);
 assert.equal(bundle.soak.qizhengSuppressionReasons.every((reason: string) => reason === "source_incomplete"), true);
+assert.deepEqual(Object.keys(bundle.verification).sort(), [
+  "backendProductionBuild", "backendTypecheck", "legacyProducerReplay",
+  "migrationApplyTwiceRollback", "mobileAndroidIosWebExport", "mobileLifecycleAndRoutes",
+  "mobileTypecheck", "providerFreeShadow", "retryRaceAndConsentFences", "strictPayloadPrivacy",
+].sort());
+assert.equal(Object.values(bundle.verification).every((status) => status === "PASS"), true);
+assert.deepEqual(bundle.activationBoundary, {
+  astronomyProviderActivationRequiresNewSignedMigration: true,
+  qizhengRequiresDoubleVerifiedSourcesAndNewSignedActivation: true,
+  productionMigrationApplied: false,
+});
 
 const signatures = Array.isArray(evidence.signatures) ? evidence.signatures : [];
 if (!allowUnsigned) {
