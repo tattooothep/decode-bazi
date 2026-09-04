@@ -1,6 +1,7 @@
 "use strict";
 
 const catalog = require("./ziwei-hourly-presentation-catalog.json");
+const readableCatalog = require("./ziwei-hourly-readable-copy-catalog.json");
 
 const PRESENTATION_VERSION = catalog.version;
 const PRESENTATION_CATALOG_SHA256 = "efea1c6c05c24867ce1df8e5ce5c639266a9544118ee8dc091f69c94adbdbd88";
@@ -148,6 +149,35 @@ function buildZiweiHourlyTypeCCopy(locale, snapshot) {
   return Object.freeze({ title, body });
 }
 
+// Opt-in only: the legacy V2 transport does not leave enough room for readable
+// copy. Callers must select this together with the lossless V3 wire capability.
+// No truncation/raw-only fallback: every visible transformation keeps a meaning
+// and its actual target palace; all three layer focuses stay independently named.
+function buildZiweiHourlyReadableCopy(locale, snapshot) {
+  const view = buildZiweiHourlyPresentation(locale, snapshot);
+  const C = readableCatalog.locales[view.locale];
+  const types = view.layers.hour.transformations.map((marker) => marker.transformation);
+  if (types.length !== 4 || new Set(types).size !== 4 || types.some((type) => !Object.hasOwn(catalog.sihua, type))) {
+    throw new TypeError("ziwei_hourly_readable_transformations_invalid");
+  }
+  const shortFocus = (focus) => C.topics[focus.canonicalPalace] || C.unavailable;
+  // Unsupported names have no sourced palace meaning. Show that explicitly;
+  // their exact input still lives in the immutable offline detail payload.
+  const rawPalace = (focus) => focus.canonicalPalace ? focus.rawPalace : "?";
+  const focusWithRaw = (focus) => `${shortFocus(focus)}(${rawPalace(focus)})`;
+  const format = (marker) => `${marker.meaning}→${shortFocus(marker.focus)}(${marker.raw}/${rawPalace(marker.focus)})`;
+  const transformations = groupByTone(view.layers.hour.transformations);
+  const title = `${C.title} · ${view.layers.hour.ganzhi}`;
+  const body = [
+    `${C.supportive}: ${transformations.supportive.map(format).join("; ")}`,
+    `${C.drive}: ${transformations.drive.map(format).join("; ")}`,
+    `${C.caution}: ${transformations.caution.map(format).join("; ")}`,
+    `${C.focus}: ${["month", "day", "hour"].map((key) => `${C[key]} ${focusWithRaw(view.layers[key].focus)}`).join(" · ")}`,
+  ].join("\n");
+  if (title.length > 120 || body.length > 400) throw new RangeError("ziwei_hourly_readable_copy_too_long");
+  return Object.freeze({ title, body });
+}
+
 module.exports = Object.freeze({
   PRESENTATION_VERSION,
   PRESENTATION_CATALOG_SHA256,
@@ -155,6 +185,9 @@ module.exports = Object.freeze({
   SUPPORTED_LOCALES,
   buildZiweiHourlyPresentation,
   buildZiweiHourlyTypeCCopy,
+  buildZiweiHourlyReadableCopy,
+  READABLE_COPY_VERSION: readableCatalog.version,
+  READABLE_COPY_CATALOG_SHA256: "23ea576b5cd9fb95c7102315620980dff1637e11540d7f07d10d090eb1f732e6",
   resolveFlowStarPresentation,
   resolvePalacePresentation,
   resolveSihuaPresentation,

@@ -1,0 +1,60 @@
+{
+  "version": "ziwei-hourly-readable-copy-v1",
+  "supportedLocales": ["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"],
+  "locales": {
+    "th": {
+      "title": "จื่อเว่ยรายยาม · บริบทตามผัง",
+      "supportive": "แรงหนุน", "drive": "แรงผลัก", "caution": "ระวัง",
+      "focus": "3 ชั้น", "month": "เดือน", "day": "วัน", "hour": "ยาม", "unavailable": "ไม่ทราบเรือน",
+      "topics": {"命": "ตัวตน/ตัดสินใจ", "兄弟": "พี่น้อง/เพื่อน", "夫妻": "คู่ครอง/หุ้นส่วน", "子女": "ลูก/ผลงาน", "財帛": "เงิน/ทรัพยากร", "疾厄": "สุขภาพ/กิจวัตร", "遷移": "ภายนอก/เดินทาง", "僕役": "ทีม/เครือข่าย", "官祿": "งาน/บทบาท", "田宅": "บ้าน/ทรัพย์สิน", "福德": "ใจ/การพัก", "父母": "ผู้ใหญ่/เอกสาร"}
+    },
+    "en": {
+      "title": "Ziwei hourly · chart context",
+      "supportive": "Support", "drive": "Drive", "caution": "Caution",
+      "focus": "3 layers", "month": "Month", "day": "Day", "hour": "Hour", "unavailable": "unknown palace",
+      "topics": {"命": "self/decisions", "兄弟": "siblings/peers", "夫妻": "partnership", "子女": "children/output", "財帛": "money/resources", "疾厄": "health/routines", "遷移": "outside/travel", "僕役": "team/network", "官祿": "work/role", "田宅": "home/property", "福德": "inner state/rest", "父母": "elders/papers"}
+    },
+    "zh": {
+      "title": "紫微流時 · 盤面參考",
+      "supportive": "助力", "drive": "推動", "caution": "留意",
+      "focus": "三層", "month": "月", "day": "日", "hour": "時", "unavailable": "宮位不明",
+      "topics": {"命": "自身／決策", "兄弟": "手足／同輩", "夫妻": "伴侶／合作", "子女": "子女／成果", "財帛": "財務／資源", "疾厄": "健康／日常", "遷移": "外界／移動", "僕役": "團隊／人脈", "官祿": "事業／職責", "田宅": "家宅／資產", "福德": "內在／休息", "父母": "長輩／文書"}
+    },
+    "cn": {
+      "title": "紫微流时 · 盘面参考",
+      "supportive": "助力", "drive": "推动", "caution": "注意",
+      "focus": "三层", "month": "月", "day": "日", "hour": "时", "unavailable": "宫位不明",
+      "topics": {"命": "自身／决策", "兄弟": "手足／同辈", "夫妻": "伴侣／合作", "子女": "子女／成果", "財帛": "财务／资源", "疾厄": "健康／日常", "遷移": "外界／移动", "僕役": "团队／人脉", "官祿": "事业／职责", "田宅": "家宅／资产", "福德": "内在／休息", "父母": "长辈／文书"}
+    },
+    "vi": {
+      "title": "Tử Vi lưu thời · tham khảo lá số",
+      "supportive": "Hỗ trợ", "drive": "Thúc đẩy", "caution": "Cẩn trọng",
+      "focus": "3 tầng", "month": "Tháng", "day": "Ngày", "hour": "Giờ", "unavailable": "chưa rõ cung",
+      "topics": {"命": "bản thân", "兄弟": "anh chị em/bạn", "夫妻": "bạn đời/đối tác", "子女": "con cái/thành quả", "財帛": "tiền/nguồn lực", "疾厄": "sức khỏe/nếp sống", "遷移": "bên ngoài/đi lại", "僕役": "nhóm/quan hệ", "官祿": "việc/vai trò", "田宅": "nhà/tài sản", "福德": "nội tâm/nghỉ ngơi", "父母": "bề trên/giấy tờ"}
+    },
+    "ja": {
+      "title": "紫微流時 · 命盤上の参考",
+      "supportive": "後押し", "drive": "推進", "caution": "注意",
+      "focus": "3層", "month": "月", "day": "日", "hour": "時辰", "unavailable": "宮が不明",
+      "topics": {"命": "自身・判断", "兄弟": "きょうだい・同輩", "夫妻": "配偶・パートナー", "子女": "子ども・成果", "財帛": "財務・資源", "疾厄": "健康・日課", "遷移": "外部・移動", "僕役": "チーム・人脈", "官祿": "仕事・役割", "田宅": "家・資産", "福德": "内面・休息", "父母": "年長者・文書"}
+    },
+    "ru": {
+      "title": "Цзывэй по часу · контекст карты",
+      "supportive": "Поддержка", "drive": "Импульс", "caution": "Осторожно",
+      "focus": "3 уровня", "month": "Месяц", "day": "День", "hour": "Час", "unavailable": "дворец неизвестен",
+      "topics": {"命": "личность/выбор", "兄弟": "братья/сёстры", "夫妻": "партнёрство", "子女": "дети/творчество", "財帛": "деньги/ресурсы", "疾厄": "здоровье/режим", "遷移": "внешний мир/путь", "僕役": "команда/связи", "官祿": "работа/роль", "田宅": "дом/имущество", "福德": "душа/отдых", "父母": "старшие/бумаги"}
+    },
+    "ko": {
+      "title": "자미두수 시진 · 명반 참고",
+      "supportive": "도움", "drive": "추진", "caution": "주의",
+      "focus": "3층", "month": "월", "day": "일", "hour": "시진", "unavailable": "궁 위치 미상",
+      "topics": {"命": "자신·판단", "兄弟": "형제자매·동료", "夫妻": "배우자·파트너", "子女": "자녀·결과물", "財帛": "재정·자원", "疾厄": "건강·생활습관", "遷移": "외부·이동", "僕役": "팀·인맥", "官祿": "일·역할", "田宅": "집·자산", "福德": "내면·휴식", "父母": "윗사람·문서"}
+    },
+    "es": {
+      "title": "Ziwei por hora · contexto de la carta",
+      "supportive": "Apoyo", "drive": "Impulso", "caution": "Precaución",
+      "focus": "3 capas", "month": "Mes", "day": "Día", "hour": "Hora", "unavailable": "palacio sin datos",
+      "topics": {"命": "identidad/juicio", "兄弟": "hermanos/pares", "夫妻": "pareja/alianzas", "子女": "hijos/creación", "財帛": "dinero/recursos", "疾厄": "salud/rutina", "遷移": "exterior/viajes", "僕役": "equipo/red", "官祿": "trabajo/rol", "田宅": "hogar/bienes", "福德": "ánimo/descanso", "父母": "mayores/papeles"}
+    }
+  }
+}

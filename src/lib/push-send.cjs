@@ -104,8 +104,11 @@ function providerData(message, stringifyValues) {
       || (typeof data.qimenV3 === "string"
         && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "qimenV3"));
   const exactZiweiEnvelope = categoryOf(message) === "ziwei"
-    && typeof data.notificationId === "string" && typeof data.ziweiHourlyV2 === "string"
-    && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "ziweiHourlyV2";
+    && typeof data.notificationId === "string"
+    && ((typeof data.ziweiHourlyV2 === "string"
+      && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "ziweiHourlyV2")
+      || (typeof data.ziweiHourlyV3 === "string"
+        && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "ziweiHourlyV3"));
   const out = {};
   const zibaiShichenKeys = new Set(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
   const exactZibaiPayload = data.kind === "zibai"

@@ -405,8 +405,9 @@ function copyLocale(locale) {
   return Object.hasOwn(PRIVATE_COPY, value) ? value : "en";
 }
 
-function buildZiweiHourlyCopy(locale, snapshot) {
+function buildZiweiHourlyCopy(locale, snapshot, options) {
   if (!verifyZiweiHourlyNotificationSnapshot(snapshot)) throw new TypeError("ziwei_hourly_snapshot_invalid");
+  if (options?.schema === 3) return ziweiHourlyPresentation.buildZiweiHourlyReadableCopy(locale, snapshot);
   return ziweiHourlyPresentation.buildZiweiHourlyTypeCCopy(locale, snapshot);
 }
 
