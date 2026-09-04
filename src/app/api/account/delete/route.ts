@@ -88,6 +88,22 @@ export async function POST(req: Request) {
     [u.id]
   );
 
+  // Fence every R8 delivery path immediately after the account becomes
+  // inactive. The scheduler independently joins active users as a second
+  // fail-closed guard, so a concurrent run cannot admit this account.
+  await q1(
+    `SELECT hourkey_r8_revoke_delivery_scope($1::uuid,NULL::uuid)`,
+    [u.id]
+  );
+  await q1(
+    `UPDATE mobile_push_tokens
+        SET enabled=false,disabled_at=now(),updated_at=now(),
+            astronomy_fact_audience_binding=
+              translate(rtrim(encode(gen_random_bytes(24),'base64'),'='),'+/','-_')
+      WHERE user_id=$1 AND enabled=true`,
+    [u.id]
+  );
+
   // 5) logout เครื่องนี้
   await clearAuthCookie();
 

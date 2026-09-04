@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_producer_state (
 INSERT INTO mobile_science_notification_producer_state
   (science_id,submode,schema_version,source_digest,evidence_complete,provider_send_enabled)
 VALUES
-  ('astronomy_fact','civil_two_hour',1,'6f65f1cf1e8ecea4f007b18122cb3df4b161f9d7267faf10ff88d3392dfc195a',true,false),
+  ('astronomy_fact','civil_two_hour',1,'6a4228e9f654062b3b131db3d434172243930151ed025193ae14449e7615964e',true,false),
   ('qizheng','electional_window',0,'af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2',false,false),
   ('qizheng','rule_event',0,'af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2',false,false),
   ('qizheng','solar_month',0,'af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2',false,false),
@@ -268,6 +268,149 @@ CREATE INDEX IF NOT EXISTS ix_mobile_science_notification_shadow_enabled
   ON mobile_science_notification_shadow_cohort(science_id,submode,user_id)
   WHERE enabled=true;
 
+CREATE OR REPLACE FUNCTION hourkey_r8_remove_transferred_bindings(
+  p_new_user_id uuid,p_new_installation_id uuid,p_expo_push_token text,p_device_push_token text
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+BEGIN
+  DELETE FROM public.mobile_science_notification_chains c
+   USING public.mobile_push_tokens t
+   WHERE c.primary_token_id=t.id
+     AND (t.expo_push_token=p_expo_push_token
+       OR t.installation_id=p_new_installation_id
+       OR (p_device_push_token IS NOT NULL AND t.device_push_token=p_device_push_token))
+     AND (t.user_id<>p_new_user_id OR t.installation_id<>p_new_installation_id);
+  DELETE FROM public.mobile_science_notification_endpoints e
+   USING public.mobile_push_tokens t
+   WHERE e.token_id=t.id
+     AND (t.expo_push_token=p_expo_push_token
+       OR t.installation_id=p_new_installation_id
+       OR (p_device_push_token IS NOT NULL AND t.device_push_token=p_device_push_token))
+     AND (t.user_id<>p_new_user_id OR t.installation_id<>p_new_installation_id);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION hourkey_r8_rebind_primary_token(
+  p_user_id uuid,p_installation_id uuid,p_token_id uuid,p_audience text
+) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE affected integer := 0;
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.mobile_push_tokens t
+     WHERE t.id=p_token_id AND t.user_id=p_user_id AND t.installation_id=p_installation_id
+       AND t.astronomy_fact_audience_binding=p_audience AND t.enabled=true
+  ) THEN
+    RAISE EXCEPTION 'r8_primary_token_binding_invalid' USING ERRCODE='23514';
+  END IF;
+  DELETE FROM public.mobile_science_notification_endpoints e
+   USING public.mobile_science_notification_chains c
+   WHERE e.chain_id=c.id AND c.user_id=p_user_id
+     AND c.primary_installation_id=p_installation_id
+     AND c.primary_token_id<>p_token_id AND c.lifecycle_state='shadow';
+  UPDATE public.mobile_science_notification_chains c
+     SET primary_token_id=p_token_id,target_revision=c.target_revision+1,updated_at=now()
+   WHERE c.user_id=p_user_id AND c.primary_installation_id=p_installation_id
+     AND c.primary_token_id<>p_token_id AND c.lifecycle_state='shadow';
+  INSERT INTO public.mobile_science_notification_endpoints
+    (chain_id,token_id,installation_id,audience_binding,target_revision,primary_endpoint,active)
+  SELECT c.id,p_token_id,p_installation_id,p_audience,c.target_revision,true,true
+    FROM public.mobile_science_notification_chains c
+   WHERE c.user_id=p_user_id AND c.primary_installation_id=p_installation_id
+     AND c.primary_token_id=p_token_id AND c.lifecycle_state='shadow'
+     AND c.science_id='astronomy_fact' AND c.submode='civil_two_hour'
+  ON CONFLICT(chain_id,installation_id) DO UPDATE SET
+    token_id=EXCLUDED.token_id,audience_binding=EXCLUDED.audience_binding,
+    target_revision=EXCLUDED.target_revision,primary_endpoint=true,active=true,updated_at=now();
+  GET DIAGNOSTICS affected=ROW_COUNT;
+  RETURN affected;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION hourkey_r8_revoke_delivery_scope(
+  p_user_id uuid,p_installation_id uuid DEFAULT NULL
+) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE affected integer := 0;
+BEGIN
+  UPDATE public.mobile_science_notification_chains c
+     SET active=false,lifecycle_state='revoked',target_revision=c.target_revision+1,updated_at=now()
+   WHERE c.user_id=p_user_id
+     AND (p_installation_id IS NULL OR c.primary_installation_id=p_installation_id)
+     AND c.lifecycle_state<>'rollback';
+  GET DIAGNOSTICS affected=ROW_COUNT;
+  DELETE FROM public.mobile_science_notification_endpoints e
+   USING public.mobile_science_notification_chains c
+   WHERE e.chain_id=c.id AND c.user_id=p_user_id
+     AND (p_installation_id IS NULL OR e.installation_id=p_installation_id);
+  RETURN affected;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION hourkey_r8_record_astronomy_shadow_occurrence(
+  p_chain_id uuid,p_notification_unit_id text,p_identity_cbor bytea,p_identity_hash bytea,
+  p_result_revision_hash bytea,p_rollout_epoch bigint,p_state text,p_suppression_reason text,
+  p_snapshot jsonb,p_snapshot_digest text,p_scheduled_for timestamptz,p_expires_at timestamptz,
+  p_model_digest text
+) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE inserted_id uuid;
+BEGIN
+  WITH eligible AS (
+    SELECT c.id
+      FROM public.mobile_science_notification_chains c
+      JOIN public.users u ON u.id=c.user_id
+       AND u.deleted_at IS NULL AND u.is_active IS DISTINCT FROM false
+      JOIN public.mobile_science_notification_shadow_cohort h
+        ON h.user_id=c.user_id AND h.science_id=c.science_id AND h.submode=c.submode
+      JOIN public.mobile_science_notification_subscriptions s
+        ON s.user_id=c.user_id AND s.org_id=c.org_id
+       AND s.science_id=c.science_id AND s.submode=c.submode
+      JOIN public.mobile_science_notification_producer_state p
+        ON p.science_id=c.science_id AND p.submode=c.submode AND p.schema_version=c.schema_version
+      JOIN public.mobile_push_tokens t ON t.id=c.primary_token_id AND t.user_id=c.user_id
+       AND t.installation_id=c.primary_installation_id AND t.enabled=true
+      JOIN public.mobile_science_notification_endpoints e ON e.chain_id=c.id AND e.token_id=t.id
+       AND e.installation_id=c.primary_installation_id
+       AND e.audience_binding=t.astronomy_fact_audience_binding
+       AND e.primary_endpoint=true AND e.active=true AND e.target_revision=c.target_revision
+     WHERE c.id=p_chain_id AND c.science_id='astronomy_fact' AND c.submode='civil_two_hour'
+       AND c.schema_version=1 AND c.lifecycle_state='shadow' AND c.active=false
+       AND h.enabled=true AND h.approved_by IS NOT NULL AND h.approved_at IS NOT NULL
+       AND s.enabled=false AND s.consent_generation=c.consent_generation
+       AND p.provider_send_enabled=false AND p.evidence_complete=true AND p.source_digest=p_model_digest
+     FOR UPDATE OF c
+  )
+  INSERT INTO public.mobile_science_notification_occurrences
+    (chain_id,science_id,submode,schema_version,notification_unit_id,identity_cbor,identity_hash,
+     result_revision_hash,rollout_epoch,state,suppression_reason,snapshot,snapshot_digest,scheduled_for,expires_at)
+  SELECT id,'astronomy_fact','civil_two_hour',1,p_notification_unit_id,p_identity_cbor,p_identity_hash,
+         p_result_revision_hash,p_rollout_epoch,p_state,p_suppression_reason,p_snapshot,p_snapshot_digest,
+         p_scheduled_for,p_expires_at FROM eligible
+  ON CONFLICT DO NOTHING RETURNING id INTO inserted_id;
+  RETURN inserted_id IS NOT NULL;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION hourkey_r8_mark_astronomy_shadow_run(
+  p_run_at timestamptz,p_count integer,p_model_digest text
+) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+BEGIN
+  UPDATE public.mobile_science_notification_producer_state
+     SET last_shadow_run_at=p_run_at,last_shadow_count=p_count,updated_at=now()
+   WHERE science_id='astronomy_fact' AND submode='civil_two_hour' AND schema_version=1
+     AND provider_send_enabled=false AND evidence_complete=true AND source_digest=p_model_digest;
+  RETURN FOUND;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION hourkey_r8_remove_transferred_bindings(uuid,uuid,text,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION hourkey_r8_rebind_primary_token(uuid,uuid,uuid,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION hourkey_r8_revoke_delivery_scope(uuid,uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION hourkey_r8_record_astronomy_shadow_occurrence(uuid,text,bytea,bytea,bytea,bigint,text,text,jsonb,text,timestamptz,timestamptz,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION hourkey_r8_mark_astronomy_shadow_run(timestamptz,integer,text) FROM PUBLIC;
+REVOKE INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER
+  ON mobile_science_notification_producer_state,mobile_science_notification_subscriptions,
+     mobile_science_notification_shadow_cohort,mobile_science_notification_chains,
+     mobile_science_notification_endpoints,mobile_science_notification_occurrences
+  FROM PUBLIC;
+
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='hourkey_app') THEN
@@ -277,6 +420,16 @@ BEGIN
     GRANT SELECT ON mobile_science_notification_chains TO hourkey_app;
     GRANT SELECT ON mobile_science_notification_endpoints TO hourkey_app;
     GRANT SELECT ON mobile_science_notification_occurrences TO hourkey_app;
+    REVOKE INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER
+      ON mobile_science_notification_producer_state,mobile_science_notification_subscriptions,
+         mobile_science_notification_shadow_cohort,mobile_science_notification_chains,
+         mobile_science_notification_endpoints,mobile_science_notification_occurrences
+      FROM hourkey_app;
+    GRANT EXECUTE ON FUNCTION hourkey_r8_remove_transferred_bindings(uuid,uuid,text,text) TO hourkey_app;
+    GRANT EXECUTE ON FUNCTION hourkey_r8_rebind_primary_token(uuid,uuid,uuid,text) TO hourkey_app;
+    GRANT EXECUTE ON FUNCTION hourkey_r8_revoke_delivery_scope(uuid,uuid) TO hourkey_app;
+    GRANT EXECUTE ON FUNCTION hourkey_r8_record_astronomy_shadow_occurrence(uuid,text,bytea,bytea,bytea,bigint,text,text,jsonb,text,timestamptz,timestamptz,text) TO hourkey_app;
+    GRANT EXECUTE ON FUNCTION hourkey_r8_mark_astronomy_shadow_run(timestamptz,integer,text) TO hourkey_app;
   END IF;
 END $$;
 

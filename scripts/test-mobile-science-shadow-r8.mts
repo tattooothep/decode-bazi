@@ -72,8 +72,8 @@ const db: ShadowSchedulerDb = {
   async query(sql) {
     if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [], rowCount: 0 };
     if (sql.includes("FROM mobile_science_notification_shadow_cohort")) return { rows: [ROW], rowCount: 1 };
-    if (sql.includes("INSERT INTO mobile_science_notification_occurrences")) { writes += 1; return { rows: [], rowCount: 1 }; }
-    if (sql.includes("last_shadow_run_at")) { heartbeats += 1; return { rows: [], rowCount: 1 }; }
+    if (sql.includes("hourkey_r8_record_astronomy_shadow_occurrence")) { writes += 1; return { rows: [{ inserted: true }], rowCount: 1 }; }
+    if (sql.includes("hourkey_r8_mark_astronomy_shadow_run")) { heartbeats += 1; return { rows: [{ marked: true }], rowCount: 1 }; }
     throw new Error(`unexpected SQL: ${sql.slice(0, 80)}`);
   },
 };
@@ -97,6 +97,10 @@ for (const source of [schedulerSource, moduleSource]) {
   assert.doesNotMatch(source, /qimen|zibai|ziwei|yam/iu, "shadow calculation is isolated from other sciences");
 }
 assert.match(schedulerSource, /provider_send_enabled=false/u);
+assert.match(schedulerSource, /p\.evidence_complete=true/u);
+assert.match(schedulerSource, /p\.source_digest=\$2/u);
+assert.match(schedulerSource, /JOIN users u/u);
+assert.match(schedulerSource, /u\.deleted_at IS NULL/u);
 assert.match(schedulerSource, /science_id='astronomy_fact'/u);
 assert.match(schedulerSource, /submode='civil_two_hour'/u);
 assert.match(schedulerSource, /primary_endpoint=true/u);
@@ -159,7 +163,7 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users(id uuid PRIMARY KEY);
+    CREATE TABLE users(id uuid PRIMARY KEY,deleted_at timestamptz,is_active boolean NOT NULL DEFAULT true);
     CREATE TABLE profiles(id uuid PRIMARY KEY,created_by_user_id uuid NOT NULL REFERENCES users(id));
     CREATE TABLE mobile_push_tokens(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,

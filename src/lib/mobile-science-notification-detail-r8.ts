@@ -64,7 +64,13 @@ export async function resolveScienceNotificationDetail(
               WHEN o.state='shadowed' AND o.expires_at<=now() THEN 'expired'
               ELSE o.state
             END AS state,
-            o.snapshot,o.snapshot_digest,o.created_at
+            CASE
+              WHEN c.lifecycle_state IN ('rollback','revoked')
+                OR o.state IN ('expired','revoked','rollback')
+                OR (o.state='shadowed' AND o.expires_at<=now()) THEN NULL
+              ELSE o.snapshot
+            END AS snapshot,
+            o.snapshot_digest,o.created_at
        FROM mobile_science_notification_occurrences o
        JOIN mobile_science_notification_chains c ON c.id=o.chain_id
        JOIN mobile_science_notification_endpoints e ON e.chain_id=c.id
@@ -80,9 +86,10 @@ export async function resolveScienceNotificationDetail(
     || !SHA256_RE.test(String(row.snapshot_digest || ""))) return null;
   const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at);
   if (!Number.isFinite(createdAt.valueOf())) return null;
+  const state = detailState(row.state);
   return Object.freeze({
-    state: detailState(row.state),
-    snapshot: row.snapshot,
+    state,
+    snapshot: state === "current" ? row.snapshot : null,
     snapshotDigest: row.snapshot_digest,
     createdAt: createdAt.toISOString(),
   });

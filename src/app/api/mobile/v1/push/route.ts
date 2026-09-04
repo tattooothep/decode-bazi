@@ -229,23 +229,7 @@ export async function POST(req: Request) {
     // Remove the old private delivery relationship before an Expo/native token
     // is transferred, so its audience can rotate without inheriting old facts.
     await client.query(
-      `DELETE FROM mobile_science_notification_chains c
-        USING mobile_push_tokens t
-        WHERE c.primary_token_id=t.id
-          AND (t.expo_push_token=$1
-            OR t.installation_id=$3::uuid
-            OR ($4::text IS NOT NULL AND t.device_push_token=$4))
-          AND (t.user_id<>$2 OR t.installation_id<>$3::uuid)`,
-      [token, session.userId, installationId, deviceToken],
-    );
-    await client.query(
-      `DELETE FROM mobile_science_notification_endpoints e
-        USING mobile_push_tokens t
-        WHERE e.token_id=t.id
-          AND (t.expo_push_token=$1
-            OR t.installation_id=$3::uuid
-            OR ($4::text IS NOT NULL AND t.device_push_token=$4))
-          AND (t.user_id<>$2 OR t.installation_id<>$3::uuid)`,
+      `SELECT hourkey_r8_remove_transferred_bindings($2::uuid,$3::uuid,$1,$4)`,
       [token, session.userId, installationId, deviceToken],
     );
     const accountContext = await client.query<{ locale: string | null }>(
@@ -349,6 +333,15 @@ export async function POST(req: Request) {
       ]
     );
     row = registered.rows[0];
+    // Expo/APNs/FCM may rotate a token while the authenticated account and
+    // physical installation stay the same. Move the R8 shadow chain to the
+    // newly enabled token atomically; leaving it on the disabled row makes the
+    // scheduler silently ineligible. Endpoint removal must precede the token
+    // rebind because its audience FK is immutable.
+    await client.query(
+      `SELECT hourkey_r8_rebind_primary_token($1::uuid,$2::uuid,$3::uuid,$4)`,
+      [session.userId,installationId,row.id,row.astronomy_fact_audience_binding],
+    );
     const installationCalculationVersion = zibaiVersionRuntime.supportsCalculationVersion(
       zibaiCalculationVersion,
       zibaiVersionRuntime.ACTIVE_CALCULATION_VERSION,
@@ -564,25 +557,14 @@ export async function DELETE(req: Request) {
       );
     }
     await client.query(
-      `UPDATE mobile_science_notification_chains c
-          SET active=false,lifecycle_state='revoked',target_revision=target_revision+1,updated_at=now()
-         FROM mobile_push_tokens t
-        WHERE c.primary_token_id=t.id AND t.user_id=$1
-          AND ($2::uuid IS NULL OR t.installation_id=$2::uuid)
-          AND c.lifecycle_state<>'rollback'`,
+      `SELECT hourkey_r8_revoke_delivery_scope($1::uuid,$2::uuid)`,
       [session.userId, installationId || null],
     );
     await client.query(
-      `UPDATE mobile_science_notification_endpoints e
-          SET active=false,target_revision=c.target_revision,updated_at=now()
-         FROM mobile_science_notification_chains c
-        WHERE c.id=e.chain_id AND c.user_id=$1
-          AND ($2::uuid IS NULL OR e.installation_id=$2::uuid)
-          AND (e.active=true OR e.target_revision<>c.target_revision)`,
-      [session.userId, installationId || null],
-    );
-    await client.query(
-      `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+      `UPDATE mobile_push_tokens
+          SET enabled=false,disabled_at=now(),updated_at=now(),
+              astronomy_fact_audience_binding=
+                translate(rtrim(encode(gen_random_bytes(24),'base64'),'='),'+/','-_')
         WHERE user_id=$1 AND enabled=true
           AND ($2::uuid IS NULL OR installation_id=$2::uuid)`,
       [session.userId, installationId || null]

@@ -99,7 +99,13 @@ export async function POST(req: Request) {
       [session.userId],
     );
     await client.query(
+      `SELECT hourkey_r8_revoke_delivery_scope($1::uuid,NULL::uuid)`,
+      [session.userId],
+    );
+    await client.query(
       `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
+          ,astronomy_fact_audience_binding=
+            translate(rtrim(encode(gen_random_bytes(24),'base64'),'='),'+/','-_')
         WHERE user_id=$1 AND enabled=true`,
       [session.userId],
     );

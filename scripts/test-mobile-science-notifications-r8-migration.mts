@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { ASTRONOMY_FACT_MODEL_DIGEST } from "../src/lib/astro/astronomy-fact-model-attestation";
 
 const forwardPath = "migrations/20260904_mobile_science_notifications_r8.sql";
 const rollbackPath = "migrations/20260904_mobile_science_notifications_r8.rollback.sql";
@@ -25,6 +26,8 @@ assert.doesNotMatch(forward, /REFERENCES mobile_push_tokens\(user_id,installatio
 assert.match(forward, /octet_length\(identity_hash\)=32/u);
 assert.doesNotMatch(forward, /UPDATE mobile_(?:ziwei|zibai|qimen)_/iu);
 assert.doesNotMatch(rollback, /\bDROP\s+(?:TABLE|COLUMN|FUNCTION|TRIGGER|INDEX)\b/iu);
+assert.match(forward, /SECURITY DEFINER SET search_path=pg_catalog,public/iu);
+assert.match(forward, /REVOKE INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER/iu);
 
 const database = `mobile_science_r8_${process.pid}`;
 const databasePattern = /^mobile_science_r8_\d+$/u;
@@ -61,6 +64,33 @@ try {
   `);
   psql(database, forward);
   psql(database, forward);
+  assert.equal(psql(database,
+    "SELECT source_digest FROM mobile_science_notification_producer_state WHERE science_id='astronomy_fact' AND submode='civil_two_hour' AND schema_version=1",
+  ), ASTRONOMY_FACT_MODEL_DIGEST);
+  for (const table of [
+    "mobile_science_notification_producer_state",
+    "mobile_science_notification_subscriptions",
+    "mobile_science_notification_shadow_cohort",
+    "mobile_science_notification_chains",
+    "mobile_science_notification_endpoints",
+    "mobile_science_notification_occurrences",
+  ]) {
+    assert.equal(psql(database, `SELECT has_table_privilege('hourkey_app','${table}','SELECT')`), "t");
+    for (const privilege of ["INSERT","UPDATE","DELETE"]) {
+      assert.equal(psql(database, `SELECT has_table_privilege('hourkey_app','${table}','${privilege}')`), "f",
+        `hourkey_app has no broad ${privilege} privilege on ${table}`);
+    }
+  }
+  for (const signature of [
+    "hourkey_r8_remove_transferred_bindings(uuid,uuid,text,text)",
+    "hourkey_r8_rebind_primary_token(uuid,uuid,uuid,text)",
+    "hourkey_r8_revoke_delivery_scope(uuid,uuid)",
+    "hourkey_r8_record_astronomy_shadow_occurrence(uuid,text,bytea,bytea,bytea,bigint,text,text,jsonb,text,timestamp with time zone,timestamp with time zone,text)",
+    "hourkey_r8_mark_astronomy_shadow_run(timestamp with time zone,integer,text)",
+  ]) {
+    assert.equal(psql(database, `SELECT has_function_privilege('hourkey_app','${signature}','EXECUTE')`), "t",
+      `runtime can execute only the scoped ${signature} capability`);
+  }
 
   const userId = crypto.randomUUID();
   const installationId = crypto.randomUUID();
@@ -101,13 +131,27 @@ try {
     VALUES('${userId}',gen_random_uuid(),'astronomy_fact','civil_two_hour',1,'${tokenId}','${installationId}')
     RETURNING id;
   `).split("\n").at(-1)!;
+  const replacementTokenId = psql(database, `
+    UPDATE mobile_push_tokens SET enabled=false WHERE id='${tokenId}';
+    INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES('${userId}','${installationId}') RETURNING id;
+  `).split("\n").at(-1)!;
+  const replacementAudience = psql(database,
+    `SELECT astronomy_fact_audience_binding FROM mobile_push_tokens WHERE id='${replacementTokenId}'`,
+  );
+  assert.equal(psql(database,
+    `SELECT hourkey_r8_rebind_primary_token('${userId}','${installationId}','${replacementTokenId}','${replacementAudience}')`,
+  ), "1");
+  assert.equal(psql(database,
+    `SELECT primary_token_id::text FROM mobile_science_notification_chains WHERE id='${chainId}'`,
+  ), replacementTokenId);
   psql(database, `
     INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
-    VALUES('${chainId}','${tokenId}','${installationId}','${audienceBinding}',true);
+    VALUES('${chainId}','${replacementTokenId}','${installationId}','${replacementAudience}',true)
+    ON CONFLICT(chain_id,installation_id) DO UPDATE SET primary_endpoint=EXCLUDED.primary_endpoint;
   `);
   rejectsSql(database,
     `INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
-     VALUES('${chainId}','${tokenId}',gen_random_uuid(),'B8c7wP4nY2kLm8QrV5sT1u',true)`,
+     VALUES('${chainId}','${replacementTokenId}',gen_random_uuid(),'B8c7wP4nY2kLm8QrV5sT1u',true)`,
     "one chain has only one active primary endpoint",
   );
   psql(database, `

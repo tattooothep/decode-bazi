@@ -46,6 +46,7 @@ for (const required of ["o.id=$1", "c.user_id=$2", "c.org_id=$3", "e.installatio
 assert.match(capturedSql, /o\.expires_at<=now\(\)/u, "elapsed two-hour facts are exposed as expired without mutating evidence");
 assert.match(capturedSql, /c\.lifecycle_state='rollback'/u);
 assert.match(capturedSql, /c\.lifecycle_state='revoked'/u);
+assert.match(capturedSql, /THEN NULL/u, "terminal states never return the private snapshot");
 assert.doesNotMatch(capturedSql, /e\.active=true/u,
   "an authenticated original endpoint can still read a rollback/revocation explanation");
 assert.deepEqual(capturedParams, [IDS.occurrenceId, IDS.userId, IDS.orgId, IDS.installationId, IDS.audience, "astronomy_fact"]);
@@ -82,7 +83,10 @@ for (const [stored, exposed] of [
       return { rows: [{ state: stored, snapshot: {}, snapshot_digest: "b".repeat(64), created_at: "2026-09-04T05:00:00.000Z" }] };
     },
   };
-  assert.equal((await resolveScienceNotificationDetail(stateDb, { ...IDS, category: "astronomy_fact" }))?.state, exposed);
+  const stateDetail = await resolveScienceNotificationDetail(stateDb, { ...IDS, category: "astronomy_fact" });
+  assert.equal(stateDetail?.state, exposed);
+  assert.deepEqual(stateDetail?.snapshot, exposed === "current" ? {} : null,
+    "terminal details disclose state and digest only");
 }
 
 const moduleSource = readFileSync("src/lib/mobile-science-notification-detail-r8.ts", "utf8");

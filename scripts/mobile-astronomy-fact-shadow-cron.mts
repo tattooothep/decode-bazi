@@ -7,6 +7,7 @@ import {
   buildAstronomyShadowOccurrence,
   type AstronomyShadowRow,
 } from "../src/lib/mobile-science-shadow-r8";
+import { ASTRONOMY_FACT_MODEL_DIGEST } from "../src/lib/astro/astronomy-fact-model-attestation";
 
 const require = createRequire(import.meta.url);
 const { Client } = require("pg");
@@ -52,6 +53,8 @@ const ROWS_SQL = `SELECT c.id::text AS chain_id,c.account_delivery_chain_uuid::t
             AND prior.scheduled_for<=$1::timestamptz
        ),0)::int AS rolling_24h_count
   FROM mobile_science_notification_shadow_cohort h
+  JOIN users u
+    ON u.id=h.user_id AND u.deleted_at IS NULL AND u.is_active IS DISTINCT FROM false
   JOIN mobile_science_notification_subscriptions s
     ON s.user_id=h.user_id AND s.science_id=h.science_id AND s.submode=h.submode
   JOIN mobile_science_notification_chains c
@@ -70,7 +73,8 @@ const ROWS_SQL = `SELECT c.id::text AS chain_id,c.account_delivery_chain_uuid::t
  WHERE h.enabled=true AND h.approved_by IS NOT NULL AND h.approved_at IS NOT NULL
    AND h.science_id='astronomy_fact' AND h.submode='civil_two_hour'
    AND c.schema_version=1 AND c.lifecycle_state='shadow' AND c.active=false
-   AND s.enabled=false AND p.provider_send_enabled=false
+   AND s.enabled=false AND p.provider_send_enabled=false AND p.evidence_complete=true
+   AND p.source_digest=$2
    AND c.consent_generation=s.consent_generation
    AND e.target_revision=c.target_revision
  ORDER BY c.id`;
@@ -84,7 +88,7 @@ export async function runShadowScheduler(
   let inserted = 0;
   let duplicates = 0;
   try {
-    const selected = await db.query(ROWS_SQL, [options.at.toISOString()]);
+    const selected = await db.query(ROWS_SQL, [options.at.toISOString(),ASTRONOMY_FACT_MODEL_DIGEST]);
     for (const row of selected.rows as AstronomyShadowRow[]) {
       const occurrence = buildAstronomyShadowOccurrence(row, options.at, {
         key: options.identityKey,
@@ -92,29 +96,21 @@ export async function runShadowScheduler(
       });
       if (options.dry) continue;
       const result = await db.query(
-        `INSERT INTO mobile_science_notification_occurrences
-          (chain_id,science_id,submode,schema_version,notification_unit_id,
-           identity_cbor,identity_hash,result_revision_hash,rollout_epoch,state,suppression_reason,
-           snapshot,snapshot_digest,scheduled_for,expires_at)
-         VALUES($1::uuid,'astronomy_fact','civil_two_hour',1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12)
-         ON CONFLICT DO NOTHING`,
+        `SELECT hourkey_r8_record_astronomy_shadow_occurrence(
+           $1::uuid,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13
+         ) AS inserted`,
         [occurrence.chainId,occurrence.notificationUnitId,occurrence.identityCbor,
           occurrence.identityHash,occurrence.resultRevisionHash,occurrence.rolloutEpoch,
           occurrence.state,occurrence.suppressionReason,JSON.stringify(occurrence.snapshot),occurrence.snapshotDigest,
-          occurrence.scheduledFor.toISOString(),occurrence.expiresAt.toISOString()],
+          occurrence.scheduledFor.toISOString(),occurrence.expiresAt.toISOString(),ASTRONOMY_FACT_MODEL_DIGEST],
       );
-      const count = Number(result.rowCount || 0);
+      const count = result.rows[0]?.inserted === true ? 1 : 0;
       inserted += count;
       duplicates += count === 0 ? 1 : 0;
     }
     if (!options.dry) {
-      await db.query(
-        `UPDATE mobile_science_notification_producer_state
-            SET last_shadow_run_at=$1,last_shadow_count=$2,updated_at=now()
-          WHERE science_id='astronomy_fact' AND submode='civil_two_hour'
-            AND schema_version=1 AND provider_send_enabled=false`,
-        [options.at.toISOString(),selected.rows.length],
-      );
+      await db.query(`SELECT hourkey_r8_mark_astronomy_shadow_run($1,$2,$3)`,
+        [options.at.toISOString(),selected.rows.length,ASTRONOMY_FACT_MODEL_DIGEST]);
       await db.query("COMMIT");
     }
     return Object.freeze({ candidates: selected.rows.length, inserted, duplicates, dry: options.dry });

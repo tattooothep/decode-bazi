@@ -61,15 +61,31 @@ assert.equal(readiness.r8ScienceProviderDeliveryReady("qizheng"), false);
 
 const pushRoute = readFileSync("src/app/api/mobile/v1/push/route.ts", "utf8");
 const notificationRoute = readFileSync("src/app/api/mobile/v1/notifications/route.ts", "utf8");
+const migration = readFileSync("migrations/20260904_mobile_science_notifications_r8.sql", "utf8");
+const webAccountDeleteRoute = readFileSync("src/app/api/account/delete/route.ts", "utf8");
+const mobileAccountDeleteRoute = readFileSync("src/app/api/mobile/v1/account/delete/route.ts", "utf8");
+const scheduler = readFileSync("scripts/mobile-astronomy-fact-shadow-cron.mts", "utf8");
 assert.match(pushRoute, /astronomyFactPayloadSchema/u);
 assert.match(pushRoute, /astronomy_fact_payload_schema/u);
 assert.match(pushRoute, /astronomy_fact_audience_binding/u);
 assert.match(pushRoute, /astronomyFactAudience/u);
-assert.match(pushRoute, /mobile_science_notification_chains/u,
-  "account/install transfer removes the old R8 delivery chain before rotating its audience");
-assert.match(pushRoute, /mobile_science_notification_endpoints/u);
-assert.match(pushRoute, /lifecycle_state='revoked'/u,
-  "unregister makes the revoked detail state reachable without rewriting occurrences");
+assert.match(pushRoute, /hourkey_r8_remove_transferred_bindings/u,
+  "account/install transfer uses the scoped R8 cleanup capability before rotating its audience");
+assert.match(migration, /lifecycle_state='revoked'/u,
+  "the scoped unregister capability revokes the R8 delivery lineage without rewriting occurrences");
+assert.match(pushRoute, /hourkey_r8_rebind_primary_token/u,
+  "same-installation token refresh atomically rebinds the R8 primary chain");
+assert.match(pushRoute, /hourkey_r8_revoke_delivery_scope/u);
+assert.match(pushRoute, /astronomy_fact_audience_binding=\s*translate/iu,
+  "unregister rotates the former private audience");
+for (const route of [webAccountDeleteRoute,mobileAccountDeleteRoute]) {
+  assert.match(route, /hourkey_r8_revoke_delivery_scope/u,
+    "account deletion revokes and purges the R8 endpoint mapping");
+  assert.match(route, /astronomy_fact_audience_binding=\s*translate/iu,
+    "account deletion rotates private audiences before local session teardown");
+}
+assert.match(scheduler, /JOIN users u/iu);
+assert.match(scheduler, /u\.deleted_at IS NULL/iu);
 assert.match(pushRoute,
   /CASE WHEN mobile_push_tokens\.user_id=EXCLUDED\.user_id[\s\S]+mobile_push_tokens\.installation_id=EXCLUDED\.installation_id[\s\S]+THEN mobile_push_tokens\.astronomy_fact_audience_binding[\s\S]+ELSE translate/u,
   "the private audience stays stable for one owner/install and rotates on transfer");

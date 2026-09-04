@@ -18,6 +18,10 @@ import {
   ASTRONOMY_FACT_TZDB_VERSION,
   buildCivilSkySnapshot,
 } from "../src/lib/astro/astronomy-fact-r8";
+import {
+  ASTRONOMY_FACT_MODEL_DIGEST,
+  ASTRONOMY_FACT_MODEL_FILES,
+} from "../src/lib/astro/astronomy-fact-model-attestation";
 import { runAcceleratedProviderFreeSoak } from "./lib/notification-r8-soak.mts";
 
 const require = createRequire(import.meta.url);
@@ -36,12 +40,15 @@ const BACKEND_RUNTIME_FILES = Object.freeze([
   "scripts/lib/notification-r8-soak.mts",
   "scripts/notification-health.cjs",
   "scripts/notification-observability-preflight.cjs",
+  "src/app/api/account/delete/route.ts",
+  "src/app/api/mobile/v1/account/delete/route.ts",
   "src/app/api/mobile/v1/astronomy-facts/[occurrenceId]/route.ts",
   "src/app/api/mobile/v1/astronomy-facts/route.ts",
   "src/app/api/mobile/v1/notifications/route.ts",
   "src/app/api/mobile/v1/push/route.ts",
   "src/app/api/mobile/v1/qizheng/notification-detail/[occurrenceId]/route.ts",
   "src/lib/astro/astronomy-fact-r8.ts",
+  "src/lib/astro/astronomy-fact-model-attestation.ts",
   "src/lib/astro/notification-r8-contract.ts",
   "src/lib/astro/qizheng/electional-source-manifest.ts",
   "src/lib/mobile-push-registration-readiness.cjs",
@@ -211,13 +218,16 @@ assert.deepEqual(bundle.runtime, {
   astronomyModel: ASTRONOMY_FACT_MODEL_VERSION,
 });
 assert.match(bundle.science.modelDigest, HEX64);
+assert.deepEqual(ASTRONOMY_FACT_MODEL_FILES, [
+  "package.json",
+  "package-lock.json",
+  "scripts/fixtures/astronomy-fact-r8-jpl-horizons-goldens.json",
+  "src/lib/astro/astronomy-fact-r8.ts",
+  "src/lib/tianxing/ephemeris.ts",
+]);
 assert.equal(bundle.science.modelDigest,
-  committedFilesDigest(backendRoot, bundle.backend.applicationCommit, [
-    "package.json",
-    "package-lock.json",
-    "scripts/fixtures/astronomy-fact-r8-jpl-horizons-goldens.json",
-    "src/lib/astro/astronomy-fact-r8.ts",
-  ]));
+  committedFilesDigest(backendRoot, bundle.backend.applicationCommit, ASTRONOMY_FACT_MODEL_FILES));
+assert.equal(bundle.science.modelDigest, ASTRONOMY_FACT_MODEL_DIGEST);
 const jplGoldens = JSON.parse(blob(
   backendRoot,
   bundle.backend.applicationCommit,
@@ -239,7 +249,9 @@ const shadow = blob(backendRoot, bundle.backend.applicationCommit,
   "scripts/mobile-astronomy-fact-shadow-cron.mts").toString("utf8");
 assert.match(sql, /CHECK \(provider_send_enabled=false\)/u);
 assert.match(sql, /CHECK \(qizheng_payload_schema=0\)/u);
+assert.match(sql, new RegExp(`\\('astronomy_fact','civil_two_hour',1,'${ASTRONOMY_FACT_MODEL_DIGEST}'`, "u"));
 assert.match(shadow, /s\.enabled=false AND p\.provider_send_enabled=false/u);
+assert.match(shadow, /p\.source_digest=\$2/u);
 assert.doesNotMatch(shadow, /firebase|expo-server-sdk|apns2|sendMulticast|sendEachForMulticast/iu,
   "provider-free shadow code must not import a delivery provider");
 for (const lane of ["yam","daily","auspicious","personal","monthly","network","zibai","qimen","ziwei"]) {
@@ -340,6 +352,7 @@ assert.deepEqual(bundle.activationBoundary, {
   astronomyProviderActivationRequiresNewSignedMigration: true,
   qizhengRequiresDoubleVerifiedSourcesAndNewSignedActivation: true,
   productionMigrationApplied: false,
+  requiredProductionRolloutOrder: "migration_then_application",
 });
 
 const signatures = Array.isArray(evidence.signatures) ? evidence.signatures : [];
