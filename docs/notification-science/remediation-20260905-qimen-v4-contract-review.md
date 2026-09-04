@@ -2,7 +2,7 @@
 
 Reviewed implementation commit `919e56a` against parent `a8fbe2330e182d1a812bd34e6cb2704a993f7af7`. Scope: source manifest, full snapshot/provider codec, detail reader, new fixture and focused tests. Reviewer did not implement those files. Concurrent advisory/registration/delivery work and the reviewer's own mobile implementation are not approved by this review.
 
-## Verdict
+## Initial verdict on `919e56a`
 
 - **SPEC: CHANGES REQUIRED.** Two new-path validation gaps remain.
 - **QUALITY: CHANGES REQUIRED.** The existing green suite accepts a contradictory recommended fixture and misses non-travel values.
@@ -55,3 +55,13 @@ The detail SQL retains both log and occurrence owner predicates; its schema-4 di
 The **4000 B complete-provider-request guard and locale-specific final envelope are downstream of commit `919e56a`**; the 1873 B compact measurement is not proof of that final request budget. Parent-owned durable-delivery integration requires its separate pure envelope tests and review. No release approval is inferred from this codec review.
 
 No external engine import, network operation, service/DB access, full build, deployment, push, historical rewrite or enrollment change was performed.
+
+## Independent fix verification — `eb3dc3473bcb92a2cb07a79b550ba78b6faa1e84`
+
+**SPEC: APPROVED. QUALITY: APPROVED**, bounded to this backend V4 codec/detail contract and the two fixes above. The initial findings remain recorded as the RED baseline; this is not a final deployment signature.
+
+Inspected the fix diff: purpose is now explicitly travel-only in the schema-4 full builder and compact parser; the schema-4 full path independently requires both selected-hour seasonal states to be 旺/相. All added guards are schema-4 scoped. The base fixture now selects an existing supportive W ordinary / SE Tongzong palace without changing arrangement or state labels. Its separate matrix-only arrangement helper is explicit, swaps complete door tuples, refuses an already-supportive input, and is not imported into production code.
+
+Independently reran the **untouched** review test: **70 checks, zero failures**, exit 0. The actual pre-V4 source comparison still proves complete historical V2/V3 snapshot and compact bytes unchanged. Reran all five earlier focused suites successfully. Updated V4 suite: 24 cases / 216 palace checks, four deliberately ineligible arrangements rejected before explicit synthetic test-matrix construction; compact 1878/1888 B and full 17065/17083 B. No review-test assertion was removed or relaxed to obtain GREEN.
+
+No remaining finding in this bounded contract review. Parent-owned transport, full-request byte limits, mobile parity, enrollment ordering and explicit production door-method choice still require their own evidence and authorization.
