@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-09-04T09:31:31Z",
+  "generatedAt": "2026-09-04T13:29:42Z",
   "bundle": {
     "releaseMode": "hard_off",
     "backend": {
@@ -11,19 +11,20 @@
         "7909d8e421f26786ce91c81e6808beedbb6febc3",
         "ac63fcc9805e8e8387138837c4c8bd5650686e26"
       ],
-      "applicationCommit": "681997474c22ee99e9d68d493860ba6ba9c378c6",
-      "applicationTree": "8b193f36fab9f454854d7780b5bea0f6ef632333",
+      "applicationCommit": "0eea8be4283ea88d7911557c4d11c46681d42de2",
+      "applicationTree": "47f02cdc3868bc80721fdea499eac8507c517ff1",
       "lockfileSha256": "df3f6863add0a67d7be3cd189d9b954f333a9586e7c790884bae2d250edf855e",
-      "runtimeDigest": "d5bb3dabcc437c30fbcfdf0483df8b8ab720189cb8e913818b102f13a3e7a593",
-      "buildArtifactDigest": "7839fca84f567067319f791ce0242ea2c908adde96b6a31dab6cb15c54c84aa9"
+      "runtimeDigest": "a446658825c68b2fb2f461d0a1b51665bb3df4b0a4b99e61dd039e1a729b0fd7",
+      "sourceDigest": "c866f3f9e877da87d011beabe7578dca7a7dedc33cafea7ce9168472f2b3f883",
+      "buildArtifactDigest": "a7d8d7d0c03779fffa3899fb0344f661ff9b17965debb0f456842568d0da85b8"
     },
     "mobile": {
       "baselineCommit": "5af5f20687f40e55c23c52a15a6b620c700848b6",
-      "applicationCommit": "fd6ad331048ca835903b48c6146953a0dcad7903",
-      "applicationTree": "2f141215e2e1e56885af80a0966c42eae392bd94",
+      "applicationCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
+      "applicationTree": "ce2646523423da15835cd4fbbe3e20ef3ac73226",
       "lockfileSha256": "a72870c3baf1a54c000472e42e14c6106b49e56b8d7d7c99026b35d5af42bf7d",
       "runtimeDigest": "c57c0c3e95c9cb68dad6109c3a91f504daa97058b933a20934ae514fa7cc46f8",
-      "buildArtifactDigest": "6904f049e13e584e36f97e2479bcc3b33c050bdd510529695b028f69e458a3c3"
+      "buildArtifactDigest": "2e8c2f8838ea35949fd28850e8eeb006f152d3b9992a01b37d738acfff3c05a1"
     },
     "runtime": {
       "node": "22.22.1",
@@ -37,6 +38,7 @@
       "sourceDigest": "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
       "modelDigest": "6a4228e9f654062b3b131db3d434172243930151ed025193ae14449e7615964e",
       "copyDigest": "4aae1bf56fd2e212fc73bb51703f5ef227b92448e7b2f12745e698dfdde45612",
+      "databaseSchemaDigest": "fb8f54d63c6e693d7cf8f35befcf322b79519f718a6517d0b41c38c01b27dff8",
       "astronomyFact": {
         "mode": "civil_two_hour",
         "payloadSchema": 1,
@@ -51,6 +53,40 @@
       }
     },
     "providerAttempts": 0,
+    "buildEvidence": {
+      "policy": {
+        "verifier": "committed_direct_execution_v3",
+        "backend": "fresh_detached_worktree_npm_ci_offline",
+        "mobile": "isolated_stable_module_export_then_observed_sandboxed_native_full_suite_signed_gradle"
+      },
+      "toolchain": {
+        "node": "v22.22.1",
+        "npm": "10.9.4",
+        "gradle": "9.3.1",
+        "androidBuildTools": "36.0.0"
+      },
+      "mobileFullSuite": {
+        "commandCount": 301,
+        "commandManifestSha256": "eb5fe76fe502deb5e5616d494d2f5241f678ffc43e9c59d113aa2d73eeb70169",
+        "gradleExecutedTasks": 652
+      },
+      "mobileNativeInputManifestSha256": "4bfa0c152149b7b1772bc4c561e03dc4fc1f8a798d11f5e484561a19185e8f8a",
+      "mobileDependencyInputManifestSha256": "d662ff27ea94ccd30f211b3a3285095004995a71606af8e231dcdbcac1d2308e",
+      "mobileToolchainInputManifestSha256": "13f8e0aed48f8426fd12b40bf6a75e8b0e5baeaddff672ee03dfa2f0707d9dea",
+      "observedBuildReceiptSha256": "328fd963adfcb29ad2940c12b576a6a52b2e4ed390da65a5665e0e5fc3ffcdfb",
+      "apk": {
+        "sha256": "c8954bda70e84ff24aa82d8d7a3ac2722c4b78da19e6e7e8c17a8647f3d3b118",
+        "unsignedContentSha256": "7b7c09679017b67da84be4bfb4b7539a64d1223c49978ed433f20af72fea9984",
+        "bytes": 165348100,
+        "packageName": "io.hourkey.app",
+        "versionCode": "233",
+        "versionName": "1.0.233",
+        "signerSha256": "fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c",
+        "distribution": "internal_qa",
+        "playProduction": false,
+        "storeUpload": false
+      }
+    },
     "localeReviews": [
       { "locale": "th", "status": "PASS", "scope": "hard_off_copy_contract", "note": "ภาษาไทยระบุชัดว่าเป็นข้อมูลท้องฟ้า ไม่ใช่คำพยากรณ์ และยังไม่เปิดส่งจริง" },
       { "locale": "en", "status": "PASS", "scope": "hard_off_copy_contract", "note": "English copy separates sky facts from prediction and states that delivery is not enabled." },
@@ -120,6 +156,6 @@
       "requiredProductionRolloutOrder": "migration_then_application"
     }
   },
-  "bundleDigest": "8f465a67fad789ca1f30cbe14fff1f713f0a3505f89a397870bf26dbaf0f9316",
+  "bundleDigest": "b9684649bbad1465d79141e931d68174cabb54ceb9597f010cf865342a5cab3d",
   "signatures": []
 }
