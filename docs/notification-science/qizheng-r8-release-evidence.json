@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-09-04T07:48:16Z",
+  "bundle": {
+    "releaseMode": "hard_off",
+    "backend": {
+      "baselineCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "integrationMode": "patch_equivalent_cherry_pick",
+      "recoveryPatchCommits": [
+        "51559ea5644966775890f9ad2f29fcbcf0e7e6e1",
+        "7909d8e421f26786ce91c81e6808beedbb6febc3",
+        "ac63fcc9805e8e8387138837c4c8bd5650686e26"
+      ],
+      "applicationCommit": "8e5352a59b37294598bb3893c905b86122cfbdac",
+      "applicationTree": "f591df63308816f755afb707db1575c42bd45e5a",
+      "lockfileSha256": "6b95438aebc48381f2fc99ceba612a965042a3727c933333975d31250e3e6bb5",
+      "runtimeDigest": "c7e782f8ef65c8998c2274f2aca4952c89a712c071dceadf5c5c9058564096c3",
+      "buildArtifactDigest": "df9104e2a95f3e20fa559572134e4bd8e5ef0212999c829a64a18367f0828716"
+    },
+    "mobile": {
+      "baselineCommit": "5af5f20687f40e55c23c52a15a6b620c700848b6",
+      "applicationCommit": "e7a3b1a495c03718da932e3310069bac20c89bab",
+      "applicationTree": "6fa6f92bc38d4cdbfb8750e6547a9e00da89e538",
+      "lockfileSha256": "a72870c3baf1a54c000472e42e14c6106b49e56b8d7d7c99026b35d5af42bf7d",
+      "runtimeDigest": "f052b249928a9a270f3b7f9c8da07f7f10a4d97acad589a3f0b2ee66d314d494",
+      "buildArtifactDigest": "8420384c5f765b2501e4c39e29882bbb6e191b507ec9b5af393ff88f764e618d"
+    },
+    "runtime": {
+      "node": "22.22.1",
+      "icu": "78.2",
+      "tzdb": "2025c",
+      "astronomyEngine": "2.1.19",
+      "astronomyModel": "astronomy-engine-2.1.19-geocentric-apparent-v1"
+    },
+    "science": {
+      "sourceDigest": "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
+      "modelDigest": "c01e4169ed0242a9a474707ba6248a149060cbe9730da3cc6ba90d9e360958d7",
+      "copyDigest": "5e168809205d651704dbc45265f56ef9afbe15ec920a3d2e58eaa52945bcc7db",
+      "astronomyFact": {
+        "mode": "civil_two_hour",
+        "payloadSchema": 1,
+        "providerSendEnabled": false,
+        "prediction": false
+      },
+      "qizheng": {
+        "payloadSchema": 0,
+        "providerSendEnabled": false,
+        "sourceStatus": "pending_double_verification",
+        "verdictGeneration": false
+      }
+    },
+    "providerAttempts": 0,
+    "localeReviews": [
+      { "locale": "th", "status": "PASS", "scope": "hard_off_copy_contract", "note": "ภาษาไทยระบุชัดว่าเป็นข้อมูลท้องฟ้า ไม่ใช่คำพยากรณ์ และยังไม่เปิดส่งจริง" },
+      { "locale": "en", "status": "PASS", "scope": "hard_off_copy_contract", "note": "English copy separates sky facts from prediction and states that delivery is not enabled." },
+      { "locale": "zh", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Traditional Chinese copy states astronomy-only facts, no auspicious ranking, and hard-off delivery." },
+      { "locale": "cn", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Simplified Chinese copy states astronomy-only facts, no auspicious ranking, and hard-off delivery." },
+      { "locale": "vi", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Vietnamese copy distinguishes sky data from prediction and accurately describes disabled delivery." },
+      { "locale": "ja", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Japanese copy distinguishes astronomical data from fortune judgment and marks notification delivery off." },
+      { "locale": "ru", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Russian copy separates sky information from forecasts and truthfully marks delivery disabled." },
+      { "locale": "ko", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Korean copy separates celestial information from prediction and identifies the notification as disabled." },
+      { "locale": "es", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Spanish copy separates sky information from prediction and explicitly states delivery is disabled." }
+    ],
+    "soak": {
+      "mode": "accelerated_provider_free_72h_simulation",
+      "observedWindowHours": 72,
+      "accounts": 10000,
+      "boundariesPerDay": 120000,
+      "boundaries": 360000,
+      "p95Minutes": 1.9,
+      "p99Minutes": 1.98,
+      "maxBacklogMinutes": 2,
+      "poolPercent": 48,
+      "quotaPercent": 50,
+      "headroomMultiplier": 2,
+      "legacyP95RegressionPercent": 2,
+      "duplicateLineages": 0,
+      "crashReplayAttempts": 300,
+      "deduplicatedReplays": 300,
+      "revokedBeforeEnqueue": 33,
+      "deletedBeforeEnqueue": 33,
+      "providerCalls": 0,
+      "zones": [
+        "Pacific/Kiritimati",
+        "Pacific/Pago_Pago",
+        "Asia/Bangkok",
+        "Asia/Kathmandu",
+        "Asia/Kolkata",
+        "Europe/London",
+        "Europe/Berlin",
+        "America/New_York"
+      ],
+      "qizhengSuppressionReasons": [
+        "source_incomplete",
+        "source_incomplete",
+        "source_incomplete",
+        "source_incomplete",
+        "source_incomplete"
+      ]
+    },
+    "verification": {
+      "backendTypecheck": "PASS",
+      "backendProductionBuild": "PASS",
+      "mobileTypecheck": "PASS",
+      "mobileAndroidIosWebExport": "PASS",
+      "migrationApplyTwiceRollback": "PASS",
+      "strictPayloadPrivacy": "PASS",
+      "providerFreeShadow": "PASS",
+      "legacyProducerReplay": "PASS",
+      "mobileLifecycleAndRoutes": "PASS",
+      "retryRaceAndConsentFences": "PASS"
+    },
+    "activationBoundary": {
+      "astronomyProviderActivationRequiresNewSignedMigration": true,
+      "qizhengRequiresDoubleVerifiedSourcesAndNewSignedActivation": true,
+      "productionMigrationApplied": false
+    }
+  },
+  "bundleDigest": "b16cfae50dba8324ea6236eb6bcc09ff53b4477797fcc0bb022b4cd2f90f1e45",
+  "signatures": []
+}
