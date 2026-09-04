@@ -157,5 +157,81 @@
     }
   },
   "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
-  "signatures": []
+  "signatures": [
+    {
+      "reviewerId": "r8-science-source-gpt5-20260904T150806Z-d1f86822",
+      "dimension": "science_source_integrity",
+      "verdict": "PASS",
+      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
+      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
+      "findings": { "critical": [], "important": [], "minor": [] },
+      "testEvidence": [
+        "Fresh unsigned gate passed R8_FINAL_GATES_OK with 360000 boundaries and providerCalls=0.",
+        "NASA/JPL fixtures, all ten source PDFs, tzdb 2026c, factual-only preview, hard-off contract, profile clone guard, nine-locale separation and Qimen golden-source tests passed.",
+        "Verifier-only delta left all inspected science, source-manifest, ephemeris, migration, contract and shadow-runtime blobs byte-identical."
+      ],
+      "reviewedAt": "2026-09-04T15:08:06Z"
+    },
+    {
+      "reviewerId": "mobile-lifecycle-locale-privacy-2b476130-1d53-4d12-8375-04a74d8a5e93",
+      "dimension": "mobile_lifecycle_locale_privacy",
+      "verdict": "PASS",
+      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
+      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
+      "findings": { "critical": [], "important": [], "minor": [] },
+      "testEvidence": [
+        "Fresh aggregate gate, mobile typecheck, nine-locale science suite and i18n 106/106 passed.",
+        "Account/push/client 44/44 covered payload validation, audience isolation, preferences, Android channels, iOS authorization and foreground/background/killed route opening.",
+        "Account deletion, route dispatcher, Ziwei recovery, Zibai/Qimen/Ziwei compatibility and APK provenance checks passed with clean exact worktrees."
+      ],
+      "reviewedAt": "2026-09-04T15:17:15Z"
+    },
+    {
+      "reviewerId": "codex-r8-backend-migration-delivery-20260904T150622Z",
+      "dimension": "backend_migration_delivery",
+      "verdict": "PASS",
+      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
+      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
+      "findings": { "critical": [], "important": [], "minor": [] },
+      "testEvidence": [
+        "Migration apply-twice/rollback, immutable evidence, cascade deletion, least privilege, Astronomy-only rebind and Qizheng preservation passed.",
+        "Scheduler idempotency, lifecycle interleavings, lock ordering, deadlock regression, provider incapability and schema fingerprint passed.",
+        "Restored-account/profile test proved profile reuse cannot revive a deleted lineage; payload, detail, observability, source replay, soak and TypeScript gates passed."
+      ],
+      "reviewedAt": "2026-09-04T15:06:22Z"
+    },
+    {
+      "reviewerId": "r8-scale-observability-rollback-delta-20260904t150943z",
+      "dimension": "scale_observability_rollback",
+      "verdict": "PASS",
+      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
+      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
+      "findings": { "critical": [], "important": [], "minor": [] },
+      "testEvidence": [
+        "Provider-free 10000-account/72-hour soak passed 360000 boundaries with p95/p99 1 minute, zero duplicate lineages and zero provider calls.",
+        "Retry 80 checks, preference races, migration rollback, schema, observability and live producer 165 checks passed.",
+        "Qimen 10000 queue passed and Yam, Daily, Auspicious, Personal, Monthly, Network, Zibai, Qimen and Ziwei producer sources remained byte-identical."
+      ],
+      "reviewedAt": "2026-09-04T15:09:43Z"
+    },
+    {
+      "reviewerId": "r8-final-redteam-cross-science-20260904t150651z",
+      "dimension": "red_team_cross_science",
+      "verdict": "PASS",
+      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
+      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
+      "findings": { "critical": [], "important": [], "minor": [] },
+      "testEvidence": [
+        "Prior APK provenance finding closed: pinned signed APK full SHA and fresh APK exact unsigned-content digest plus size are enforced.",
+        "Fresh forensic APK verified package/version, arm64-only ABI, one expected v2 signer, no source stamp and native before/after/final digest continuity.",
+        "Observed logs proved 301 source commands, 652 executed Gradle tasks, offline read-only bubblewrap, unshared network and mutation journal; aggregate gate passed."
+      ],
+      "reviewedAt": "2026-09-04T15:06:51Z"
+    }
+  ]
 }
