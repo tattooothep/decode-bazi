@@ -98,8 +98,8 @@ try {
   );
   psql(database, `
     INSERT INTO mobile_science_notification_occurrences
-      (chain_id,science_id,submode,schema_version,notification_unit_id,identity_cbor,identity_hash,result_revision_hash,rollout_epoch,state,snapshot,snapshot_digest)
-    VALUES('${chainId}','astronomy_fact','civil_two_hour',1,'civil:2026-09-04T12:00:00+07:00',decode('a100','hex'),digest('identity','sha256'),digest('revision','sha256'),1,'shadowed','{}',encode(digest('{}','sha256'),'hex'));
+      (chain_id,science_id,submode,schema_version,notification_unit_id,identity_cbor,identity_hash,result_revision_hash,rollout_epoch,state,snapshot,snapshot_digest,scheduled_for,expires_at)
+    VALUES('${chainId}','astronomy_fact','civil_two_hour',1,'civil:2026-09-04T12:00:00+07:00',decode('a100','hex'),digest('identity','sha256'),digest('revision','sha256'),1,'shadowed','{}',encode(digest('{}','sha256'),'hex'),'2026-09-04T05:00:00Z','2026-09-04T07:00:00Z');
   `);
   rejectsSql(database,
     `UPDATE mobile_science_notification_occurrences SET snapshot='{"changed":true}'`,

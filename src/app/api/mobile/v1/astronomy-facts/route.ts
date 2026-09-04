@@ -32,7 +32,9 @@ export async function GET(req: Request) {
       snapshot_digest: string;
       created_at: Date;
     }>(
-      `SELECT o.id::text,o.state,o.snapshot_digest,o.created_at
+      `SELECT o.id::text,
+              CASE WHEN o.state='shadowed' AND o.expires_at<=now() THEN 'expired' ELSE o.state END AS state,
+              o.snapshot_digest,o.created_at
          FROM mobile_science_notification_occurrences o
          JOIN mobile_science_notification_chains c ON c.id=o.chain_id
          JOIN mobile_science_notification_endpoints e ON e.chain_id=c.id

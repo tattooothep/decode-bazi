@@ -35,6 +35,34 @@ function createDb() {
   });
 }
 
+async function readR8ShadowHealth(db) {
+  if (!db || typeof db.query !== "function") return null;
+  try {
+    const relation = await db.query(
+      "SELECT to_regclass('mobile_science_notification_producer_state')::text AS relation",
+    );
+    if (!relation.rows[0]?.relation) return null;
+    const result = await db.query(
+      `SELECT last_shadow_run_at,last_shadow_count,provider_send_enabled
+         FROM mobile_science_notification_producer_state
+        WHERE science_id='astronomy_fact' AND submode='civil_two_hour' AND schema_version=1
+        LIMIT 1`,
+    );
+    const row = result.rows[0];
+    if (!row) return { available: false, lastRunAt: null, lastCount: 0, providerSendEnabled: false };
+    return {
+      available: true,
+      lastRunAt: row.last_shadow_run_at instanceof Date
+        ? row.last_shadow_run_at.toISOString()
+        : (row.last_shadow_run_at || null),
+      lastCount: Number(row.last_shadow_count || 0),
+      providerSendEnabled: row.provider_send_enabled === true,
+    };
+  } catch {
+    return { available: false, lastRunAt: null, lastCount: 0, providerSendEnabled: false };
+  }
+}
+
 async function main(options = {}) {
   const args = options.args || process.argv.slice(2);
   const workerFile = argumentValue(args, "--worker-heartbeat-file") || process.env.NOTIFICATION_WORKER_HEARTBEAT_FILE;
@@ -45,7 +73,7 @@ async function main(options = {}) {
   try {
     if (ownsDb) await db.connect();
     const execute = options.collectHealth || collectHealth;
-    const report = await execute(db, {
+    let report = await execute(db, {
       lookbackHours,
       heartbeat: {
         workerAt: readHeartbeat(workerFile),
@@ -54,6 +82,10 @@ async function main(options = {}) {
       providerReady: providerReadiness(options.env || process.env),
       ziweiRuntime: readZiweiRuntimeContext(options.env || process.env),
     });
+    const r8Shadow = await readR8ShadowHealth(db);
+    if (r8Shadow && report?.metrics && typeof report.metrics === "object") {
+      report = { ...report, metrics: { ...report.metrics, r8Shadow } };
+    }
     (options.log || console.log)(JSON.stringify(report));
     return report;
   } catch {
@@ -69,4 +101,4 @@ if (require.main === module) {
   main().then((report) => { if (!report.ok) process.exitCode = 1; });
 }
 
-module.exports = { argumentValue, main, providerReadiness, readHeartbeat };
+module.exports = { argumentValue, main, providerReadiness, readHeartbeat, readR8ShadowHealth };

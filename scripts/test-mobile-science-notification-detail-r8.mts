@@ -43,6 +43,7 @@ assert.equal(calls, 1);
 for (const required of ["o.id=$1", "c.user_id=$2", "c.org_id=$3", "e.installation_id=$4", "e.audience_binding=$5", "c.science_id=$6"]) {
   assert.ok(capturedSql.includes(required), `ownership SQL includes ${required}`);
 }
+assert.match(capturedSql, /o\.expires_at<=now\(\)/u, "elapsed two-hour facts are exposed as expired without mutating evidence");
 assert.deepEqual(capturedParams, [IDS.occurrenceId, IDS.userId, IDS.orgId, IDS.installationId, IDS.audience, "astronomy_fact"]);
 
 for (const [field, value] of [
@@ -96,5 +97,6 @@ assert.match(astronomyDetailRoute, /resolveScienceNotificationDetail/u);
 assert.match(qizhengDetailRoute, /resolveScienceNotificationDetail/u);
 assert.match(astronomyDetailRoute, /notification_detail_unavailable/u);
 assert.match(qizhengDetailRoute, /notification_detail_unavailable/u);
+assert.match(listRoute, /o\.expires_at<=now\(\)/u, "the list cannot present elapsed facts as current");
 
 console.log("MOBILE_SCIENCE_NOTIFICATION_DETAIL_R8_OK auth-bound stored-only");

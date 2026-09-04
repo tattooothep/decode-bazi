@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_producer_state (
   source_digest text NOT NULL CHECK (source_digest ~ '^[0-9a-f]{64}$'),
   evidence_complete boolean NOT NULL DEFAULT false,
   provider_send_enabled boolean NOT NULL DEFAULT false CHECK (provider_send_enabled=false),
+  last_shadow_run_at timestamptz,
+  last_shadow_count integer NOT NULL DEFAULT 0 CHECK (last_shadow_count >= 0),
   updated_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (science_id,submode,schema_version),
   CHECK (science_id<>'qizheng' OR (schema_version=0 AND evidence_complete=false AND provider_send_enabled=false))
@@ -49,6 +51,8 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_subscriptions (
   enabled boolean NOT NULL DEFAULT false CHECK (enabled=false),
   cadence text NOT NULL CHECK (cadence IN ('two_hour','event','daily','weekly','solar_month','annual_limit')),
   local_day_cap smallint NOT NULL CHECK (local_day_cap BETWEEN 1 AND 12),
+  quiet_start smallint NOT NULL DEFAULT 22 CHECK (quiet_start BETWEEN 0 AND 23),
+  quiet_end smallint NOT NULL DEFAULT 7 CHECK (quiet_end BETWEEN 0 AND 23),
   consent_generation bigint NOT NULL DEFAULT 1 CHECK (consent_generation > 0),
   profile_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
   profile_revision bigint,
@@ -59,6 +63,7 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_subscriptions (
   PRIMARY KEY (user_id,science_id,submode),
   CHECK ((profile_id IS NULL AND profile_revision IS NULL)
       OR (profile_id IS NOT NULL AND profile_revision IS NOT NULL AND profile_revision>0)),
+  CHECK (quiet_start<>quiet_end),
   CHECK (science_id<>'qizheng' OR (enabled=false AND profile_id IS NOT NULL))
 );
 
@@ -86,6 +91,7 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_chains (
   submode text NOT NULL CHECK (submode ~ '^[a-z][a-z0-9_]{0,31}$'),
   schema_version smallint NOT NULL CHECK (schema_version BETWEEN 0 AND 32),
   primary_installation_id uuid NOT NULL,
+  consent_generation bigint NOT NULL DEFAULT 1 CHECK (consent_generation > 0),
   target_revision bigint NOT NULL DEFAULT 1 CHECK (target_revision > 0),
   active boolean NOT NULL DEFAULT false CHECK (active=false),
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -124,15 +130,22 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_occurrences (
   result_revision_hash bytea NOT NULL CHECK (octet_length(result_revision_hash)=32),
   rollout_epoch bigint NOT NULL CHECK (rollout_epoch > 0),
   state text NOT NULL CHECK (state IN ('shadowed','expired','revoked','rollback')),
+  suppression_reason text CHECK (suppression_reason IN ('quiet_hours','local_day_cap','rolling_24h_cap')),
   snapshot jsonb NOT NULL CHECK (jsonb_typeof(snapshot)='object' AND pg_column_size(snapshot)<=131072),
   snapshot_digest text NOT NULL CHECK (snapshot_digest ~ '^[0-9a-f]{64}$'),
+  scheduled_for timestamptz NOT NULL,
+  expires_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   FOREIGN KEY (chain_id,science_id,submode,schema_version)
     REFERENCES mobile_science_notification_chains(id,science_id,submode,schema_version) ON DELETE RESTRICT,
   UNIQUE NULLS NOT DISTINCT (chain_id,notification_unit_id),
   UNIQUE (identity_hash),
-  UNIQUE (result_revision_hash)
+  UNIQUE (result_revision_hash),
+  CHECK (scheduled_for<expires_at),
+  CHECK ((state='shadowed' AND suppression_reason IS NULL)
+      OR (state='expired' AND suppression_reason IS NOT NULL)
+      OR state IN ('revoked','rollback'))
 );
 
 CREATE OR REPLACE FUNCTION enforce_mobile_science_notification_occurrence_immutable()
@@ -149,6 +162,9 @@ FOR EACH ROW EXECUTE FUNCTION enforce_mobile_science_notification_occurrence_imm
 
 CREATE INDEX IF NOT EXISTS ix_mobile_science_notification_occurrence_chain_created
   ON mobile_science_notification_occurrences(chain_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS ix_mobile_science_notification_occurrence_scheduled
+  ON mobile_science_notification_occurrences(scheduled_for,chain_id)
+  WHERE state='shadowed';
 CREATE INDEX IF NOT EXISTS ix_mobile_science_notification_shadow_enabled
   ON mobile_science_notification_shadow_cohort(science_id,submode,user_id)
   WHERE enabled=true;

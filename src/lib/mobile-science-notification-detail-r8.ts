@@ -58,7 +58,8 @@ export async function resolveScienceNotificationDetail(
 ): Promise<ScienceNotificationDetail | null> {
   if (!validInput(input)) return null;
   const result = await db.query<DetailRow>(
-    `SELECT o.state,o.snapshot,o.snapshot_digest,o.created_at
+    `SELECT CASE WHEN o.state='shadowed' AND o.expires_at<=now() THEN 'expired' ELSE o.state END AS state,
+            o.snapshot,o.snapshot_digest,o.created_at
        FROM mobile_science_notification_occurrences o
        JOIN mobile_science_notification_chains c ON c.id=o.chain_id
        JOIN mobile_science_notification_endpoints e ON e.chain_id=c.id
