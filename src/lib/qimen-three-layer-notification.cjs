@@ -4,6 +4,7 @@ const crypto = require("node:crypto");
 const sourceManifestRuntime = require("./qimen-canonical-source-manifest.cjs");
 const componentCatalog = require("./qimen-component-catalog.cjs");
 const { buildFaqiaoFeipan } = require("./qimen-canonical-context-engine.cjs");
+const seasonalVigor = require("./qimen-seasonal-vigor.cjs");
 
 const TOP_INPUT_KEYS = Object.freeze([
   "event", "notificationId", "accountId", "purpose", "selectedDirection",
@@ -130,6 +131,12 @@ function invalidProviderV3() {
   return error;
 }
 
+function invalidProviderV4() {
+  const error = new TypeError("QIMEN_V4_PROVIDER_PAYLOAD_INVALID");
+  error.code = "QIMEN_V4_PROVIDER_PAYLOAD_INVALID";
+  return error;
+}
+
 function sameKeys(actual, expected) {
   const left = [...actual].sort();
   const right = [...expected].sort();
@@ -206,7 +213,7 @@ function readCodeArray(value) {
   return Object.freeze([...array]);
 }
 
-function readPalace(value, index, layerKind) {
+function readPalace(value, index, layerKind, seasonalMaps = null) {
   const record = captureRecord(value, V2_PALACE_KEYS);
   const center = record?.direction === "C";
   const heavenInstrumentValid = layerKind === "hour" && center
@@ -228,7 +235,13 @@ function readPalace(value, index, layerKind) {
   const vigor = new Set(["旺", "相", "休", "囚", "死"]);
   if (!formationCodes || !warningCodes || !clashCodes) return null;
   if (layerKind === "hour") {
-    if (!vigor.has(record.starVigor) || (!center && !vigor.has(record.doorVigor))
+    if (seasonalMaps) {
+      if (!Object.hasOwn(seasonalMaps.star.byStarCode, record.starCode)
+        || record.starVigor !== seasonalMaps.star.byStarCode[record.starCode]
+        || (center ? record.doorVigor !== null
+          : !Object.hasOwn(seasonalMaps.door.byDoorCode, record.doorCode)
+            || record.doorVigor !== seasonalMaps.door.byDoorCode[record.doorCode])) return null;
+    } else if (!vigor.has(record.starVigor) || (!center && !vigor.has(record.doorVigor))
       || (center && record.doorVigor !== null)) return null;
   } else if (record.starVigor !== null || record.doorVigor !== null || clashCodes.length !== 0) return null;
   return Object.freeze({ ...record, formationCodes, warningCodes, clashCodes });
@@ -269,7 +282,7 @@ function readContextEvidence(value, palaces) {
   return Object.freeze({ ...record, centerEvidence: Object.freeze({ ...center }) });
 }
 
-function readLayer(value, expectedKind, versions) {
+function readLayer(value, expectedKind, versions, schema = 2) {
   const record = captureRecord(value, LAYER_KEYS);
   const palacesInput = record ? captureArray(record.palaces, 9, 9) : null;
   const expectedEvidence = LAYER_EVIDENCE[expectedKind];
@@ -298,7 +311,14 @@ function readLayer(value, expectedKind, versions) {
       return null;
     }
   }
-  const palaces = palacesInput.map((palace, index) => readPalace(palace, index, expectedKind));
+  let seasonalEvidence = null;
+  let seasonalMaps = null;
+  if (schema === 4 && expectedKind === "hour") {
+    if (!seasonalVigor.verifySeasonalVigorEvidence(record.contextEvidence)) return null;
+    seasonalEvidence = Object.freeze({ ...record.contextEvidence });
+    seasonalMaps = seasonalVigor.separatedVigorForMonthPillar(seasonalEvidence.monthPillarZh, seasonalEvidence.doorMethod);
+  }
+  const palaces = palacesInput.map((palace, index) => readPalace(palace, index, expectedKind, seasonalMaps));
   if (palaces.some((palace) => !palace)) return null;
   if (new Set(palaces.map((palace) => palace.earthInstrument)).size !== 9
     || new Set(palaces.map((palace) => palace.heavenInstrument)).size !== 9
@@ -306,7 +326,7 @@ function readLayer(value, expectedKind, versions) {
     || new Set(palaces.filter((palace) => palace.direction !== "C").map((palace) => palace.doorCode)).size !== 8
     || new Set(palaces.filter((palace) => palace.direction !== "C").map((palace) => palace.deityCode)).size !== 8) return null;
   const contextEvidence = expectedKind === "hour"
-    ? (record.contextEvidence === null ? null : undefined)
+    ? (schema === 4 ? seasonalEvidence : record.contextEvidence === null ? null : undefined)
     : readContextEvidence(record.contextEvidence, palaces);
   if (contextEvidence === undefined || (expectedKind !== "hour" && !contextEvidence)) return null;
   return Object.freeze({
@@ -392,9 +412,13 @@ function deepFreeze(value) {
 }
 
 function buildQimenThreeLayerSnapshot(input) {
+  return buildBaseSnapshot(input, 2);
+}
+
+function buildBaseSnapshot(input, schema) {
   const top = captureRecord(input, TOP_INPUT_KEYS);
   const layersRecord = top ? captureRecord(top.layers, LAYER_KINDS) : null;
-  const manifest = sourceManifestRuntime.loadCanonicalSourceManifest();
+  const manifest = sourceManifestRuntime.loadCanonicalSourceManifest({ schema });
   if (!top || !layersRecord || top.event !== "qimen_three_layer"
     || !cleanCode(top.notificationId, 128) || !cleanCode(top.accountId, 128)
     || !cleanCode(top.purpose, 48) || !ACTION_DIRECTIONS.has(top.selectedDirection)
@@ -402,7 +426,7 @@ function buildQimenThreeLayerSnapshot(input) {
 
   const layers = Object.create(null);
   for (const kind of LAYER_KINDS) {
-    layers[kind] = readLayer(layersRecord[kind], kind, manifest.layers);
+    layers[kind] = readLayer(layersRecord[kind], kind, manifest.layers, schema);
     if (!layers[kind]) throw invalid();
   }
   const hourDecision = readDecision(top.hourDecision, top.purpose, top.selectedDirection);
@@ -410,6 +434,19 @@ function buildQimenThreeLayerSnapshot(input) {
 
   const hourStart = Date.parse(layers.hour.validFrom);
   const hourEnd = Date.parse(layers.hour.validUntil);
+  if (schema === 4) {
+    const evidence = layers.hour.contextEvidence;
+    const month = layers.month;
+    const dayContext = layers.day.contextEvidence;
+    if (month.contextEvidence.subjectPillarZh !== month.contextEvidence.monthPillarZh
+      || dayContext.subjectPillarZh !== dayContext.dayPillarZh
+      || dayContext.monthPillarZh !== month.contextEvidence.monthPillarZh
+      || evidence.monthPillarZh !== month.contextEvidence.monthPillarZh
+      || evidence.monthBoundaryClock !== month.boundaryEvidence.clock
+      || evidence.monthBoundaryClock !== month.contextEvidence.yearMonthBoundaryClock
+      || evidence.monthValidFrom !== month.validFrom || evidence.monthValidUntil !== month.validUntil
+      || hourEnd - hourStart < 90 * 60_000 || hourEnd - hourStart > 150 * 60_000) throw invalid();
+  }
   for (const kind of ["month", "day"]) {
     if (hourStart < Date.parse(layers[kind].validFrom) || hourEnd > Date.parse(layers[kind].validUntil)) throw invalid();
   }
@@ -444,7 +481,7 @@ function buildQimenThreeLayerSnapshot(input) {
     }),
   });
   const base = {
-    snapshotSchema: 2,
+    snapshotSchema: schema,
     event: top.event,
     notificationId: top.notificationId,
     accountId: top.accountId,
@@ -535,6 +572,14 @@ function selectedTupleV3(layer, direction) {
 }
 
 function buildQimenThreeLayerSnapshotV3(input) {
+  return buildAttestedSnapshot(input, 3);
+}
+
+function buildQimenThreeLayerSnapshotV4(input) {
+  return buildAttestedSnapshot(input, 4);
+}
+
+function buildAttestedSnapshot(input, schema) {
   const clone = canonicalClone(input);
   const top = clone ? captureRecord(clone, TOP_INPUT_KEYS) : null;
   const layersRecord = top ? captureRecord(top.layers, LAYER_KINDS) : null;
@@ -562,7 +607,7 @@ function buildQimenThreeLayerSnapshotV3(input) {
       })),
     }])),
   };
-  const v2 = buildQimenThreeLayerSnapshot(validationInput);
+  const v2 = schema === 4 ? buildBaseSnapshot(validationInput, 4) : buildQimenThreeLayerSnapshot(validationInput);
   const layers = Object.fromEntries(LAYER_KINDS.map((kind) => [kind, Object.freeze({
     ...v2.layers[kind],
     palaces: Object.freeze(v2.layers[kind].palaces.map(v3Palace)),
@@ -574,7 +619,7 @@ function buildQimenThreeLayerSnapshotV3(input) {
   const { snapshotDigest: _snapshotDigest, ...v2Base } = v2;
   const base = {
     ...v2Base,
-    snapshotSchema: 3,
+    snapshotSchema: schema,
     layers: Object.freeze(layers),
     selectedEvidence: Object.freeze(selectedEvidence),
   };
@@ -583,9 +628,17 @@ function buildQimenThreeLayerSnapshotV3(input) {
 }
 
 function verifyQimenThreeLayerSnapshotV3(snapshot) {
+  return verifyAttestedSnapshot(snapshot, 3);
+}
+
+function verifyQimenThreeLayerSnapshotV4(snapshot) {
+  try { return verifyAttestedSnapshot(snapshot, 4); } catch { return false; }
+}
+
+function verifyAttestedSnapshot(snapshot, schema) {
   const clone = canonicalClone(snapshot);
   if (!clone || !sameKeys(Object.keys(clone), V3_TOP_OUTPUT_KEYS)
-    || clone.snapshotSchema !== 3 || !/^[a-f0-9]{64}$/u.test(clone.snapshotDigest)) return false;
+    || clone.snapshotSchema !== schema || !/^[a-f0-9]{64}$/u.test(clone.snapshotDigest)) return false;
   const layersRecord = captureRecord(clone.layers, LAYER_KINDS);
   const selectedRecord = captureRecord(clone.selectedEvidence, LAYER_KINDS);
   if (!layersRecord || !selectedRecord) return false;
@@ -621,7 +674,7 @@ function verifyQimenThreeLayerSnapshotV3(snapshot) {
         }];
       })),
     };
-    const rebuilt = buildQimenThreeLayerSnapshotV3(input);
+    const rebuilt = schema === 4 ? buildQimenThreeLayerSnapshotV4(input) : buildQimenThreeLayerSnapshotV3(input);
     return canonicalStringify(rebuilt) === canonicalStringify(clone);
   } catch {
     return false;
@@ -793,9 +846,18 @@ function buildQimenV2ProviderData(snapshot) {
 }
 
 function buildQimenV3ProviderData(snapshot) {
-  if (!verifyQimenThreeLayerSnapshotV3(snapshot)) throw invalidProviderV3();
+  return buildAttestedProviderData(snapshot, 3);
+}
+
+function buildQimenV4ProviderData(snapshot) {
+  return buildAttestedProviderData(snapshot, 4);
+}
+
+function buildAttestedProviderData(snapshot, schema) {
+  const fail = schema === 4 ? invalidProviderV4 : invalidProviderV3;
+  if (!(schema === 4 ? verifyQimenThreeLayerSnapshotV4(snapshot) : verifyQimenThreeLayerSnapshotV3(snapshot))) throw fail();
   const compact = Object.freeze({
-    v: 3,
+    v: schema,
     event: "qimen_three_layer",
     accountId: snapshot.accountId,
     notificationId: snapshot.notificationId,
@@ -808,9 +870,10 @@ function buildQimenV3ProviderData(snapshot) {
     url: "/qimen/notification-detail",
   });
   const qimenV3 = canonicalStringify(compact);
-  if (Buffer.byteLength(qimenV3, "utf8") >= PROVIDER_MAX_BYTES) throw invalidProviderV3();
-  const outer = Object.freeze({ qimenV3 });
-  parseQimenV3ProviderData(outer);
+  if (Buffer.byteLength(qimenV3, "utf8") >= PROVIDER_MAX_BYTES) throw fail();
+  const outer = Object.freeze({ [schema === 4 ? "qimenV4" : "qimenV3"]: qimenV3 });
+  if (schema === 4) parseQimenV4ProviderData(outer);
+  else parseQimenV3ProviderData(outer);
   return outer;
 }
 
@@ -885,31 +948,41 @@ function parseQimenV2ProviderData(value) {
 }
 
 function parseQimenV3ProviderData(value) {
-  const outer = captureRecord(value, ["qimenV3"]);
-  if (!outer || typeof outer.qimenV3 !== "string"
-    || Buffer.byteLength(outer.qimenV3, "utf8") >= PROVIDER_MAX_BYTES) throw invalidProviderV3();
+  return parseAttestedProviderData(value, 3);
+}
+
+function parseQimenV4ProviderData(value) {
+  try { return parseAttestedProviderData(value, 4); } catch { throw invalidProviderV4(); }
+}
+
+function parseAttestedProviderData(value, schema) {
+  const key = schema === 4 ? "qimenV4" : "qimenV3";
+  const fail = schema === 4 ? invalidProviderV4 : invalidProviderV3;
+  const outer = captureRecord(value, [key]);
+  if (!outer || typeof outer[key] !== "string"
+    || Buffer.byteLength(outer[key], "utf8") >= PROVIDER_MAX_BYTES) throw fail();
   let parsed;
   try {
-    parsed = parseJsonWithoutDuplicateKeys(outer.qimenV3);
+    parsed = parseJsonWithoutDuplicateKeys(outer[key]);
   } catch {
-    throw invalidProviderV3();
+    throw fail();
   }
   const record = captureRecord(parsed, V3_PROVIDER_KEYS);
   const layersRecord = record ? captureRecord(record.layers, LAYER_KINDS) : null;
-  if (!record || !layersRecord || canonicalStringify(parsed) !== outer.qimenV3
-    || record.v !== 3 || record.event !== "qimen_three_layer"
+  if (!record || !layersRecord || canonicalStringify(parsed) !== outer[key]
+    || record.v !== schema || record.event !== "qimen_three_layer"
     || !cleanCode(record.accountId, 128) || !cleanCode(record.notificationId, 128)
     || !cleanCode(record.purpose, 48) || !ACTION_DIRECTIONS.has(record.direction)
     || !validIso(record.hourStart) || !validIso(record.hourEnd)
     || Date.parse(record.hourEnd) - Date.parse(record.hourStart) < 90 * 60_000
     || Date.parse(record.hourEnd) - Date.parse(record.hourStart) > 150 * 60_000
     || !/^[a-f0-9]{64}$/u.test(record.snapshotDigest) || /^0{64}$/u.test(record.snapshotDigest)
-    || record.url !== "/qimen/notification-detail") throw invalidProviderV3();
-  const manifest = sourceManifestRuntime.loadCanonicalSourceManifest();
+    || record.url !== "/qimen/notification-detail") throw fail();
+  const manifest = sourceManifestRuntime.loadCanonicalSourceManifest({ schema });
   const layers = Object.create(null);
   for (const kind of LAYER_KINDS) {
     layers[kind] = parseProviderLayerV3(layersRecord[kind], kind, manifest);
-    if (!layers[kind]) throw invalidProviderV3();
+    if (!layers[kind]) throw fail();
   }
   return deepFreeze({ ...record, layers: { ...layers } });
 }
@@ -917,11 +990,15 @@ function parseQimenV3ProviderData(value) {
 module.exports = Object.freeze({
   buildQimenV2ProviderData,
   buildQimenV3ProviderData,
+  buildQimenV4ProviderData,
   buildQimenThreeLayerSnapshot,
   buildQimenThreeLayerSnapshotV3,
+  buildQimenThreeLayerSnapshotV4,
   canonicalStringify,
   parseQimenV2ProviderData,
   parseQimenV3ProviderData,
+  parseQimenV4ProviderData,
   verifyQimenThreeLayerSnapshot,
   verifyQimenThreeLayerSnapshotV3,
+  verifyQimenThreeLayerSnapshotV4,
 });

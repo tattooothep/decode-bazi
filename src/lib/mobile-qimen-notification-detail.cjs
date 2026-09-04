@@ -37,7 +37,9 @@ async function readQimenNotificationDetail(db, userId, notificationId) {
     ? snapshotRuntime.verifyQimenThreeLayerSnapshot(snapshot)
     : snapshot?.snapshotSchema === 3
       ? snapshotRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)
-      : false;
+      : snapshot?.snapshotSchema === 4
+        ? snapshotRuntime.verifyQimenThreeLayerSnapshotV4(snapshot)
+        : false;
   if (!validSnapshot
       || snapshot.accountId !== userId
       || snapshot.snapshotDigest !== row.snapshot_digest) {

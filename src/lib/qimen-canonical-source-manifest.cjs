@@ -3,6 +3,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { SEASONAL_HOUR_CALCULATION_VERSION } = require("./qimen-seasonal-vigor.cjs");
 
 const SOURCE_DIGEST = "987997fa7ee6cbd148c337272975ac14c3b7e720f392d7671f93549b9315a460";
 const SOURCE_BYTE_SIZE = 10629;
@@ -66,8 +67,19 @@ function canonicalError(code) {
   return error;
 }
 
-function loadCanonicalSourceManifest() {
-  return MANIFEST;
+// Historical V2/V3 always retain MANIFEST and its exact source/version pins.
+// V4 changes the application classifier contract, not the external arrangement engine.
+const V4_MANIFEST = Object.freeze({
+  ...MANIFEST,
+  layers: Object.freeze({ ...LAYERS, hour: Object.freeze({
+    ...LAYERS.hour, calculationVersion: SEASONAL_HOUR_CALCULATION_VERSION,
+  }) }),
+});
+
+function loadCanonicalSourceManifest(options) {
+  if (options === undefined || options?.schema === 2 || options?.schema === 3) return MANIFEST;
+  if (options?.schema === 4) return V4_MANIFEST;
+  throw canonicalError("QIMEN_CANONICAL_VERSION_NOT_ALLOWED");
 }
 
 function assertAllowedContextVersion(layer, calculationVersion) {
