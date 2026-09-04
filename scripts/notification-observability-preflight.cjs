@@ -54,14 +54,30 @@ function inspectR8HardOffEvidence(target, options = {}) {
     const bundleDigest = createHash("sha256").update(canonicalJson(evidence.bundle)).digest("hex");
     const signatures = Array.isArray(evidence.signatures) ? evidence.signatures : [];
     const signatureIds = new Set(signatures.map((signature) => signature?.reviewerId));
+    const requiredDimensions = new Set([
+      "science_source_integrity",
+      "mobile_lifecycle_locale_privacy",
+      "backend_migration_delivery",
+      "scale_observability_rollback",
+      "red_team_cross_science",
+    ]);
+    const signatureDimensions = new Set(signatures.map((signature) => signature?.dimension));
     const signaturesValid = signatures.length === 5 && signatureIds.size === 5
+      && signatureDimensions.size === requiredDimensions.size
       && signatures.every((signature) => signature?.verdict === "PASS"
+        && requiredDimensions.has(signature?.dimension)
         && signature?.bundleDigest === bundleDigest
         && signature?.backendCommit === evidence.bundle?.backend?.applicationCommit
         && signature?.mobileCommit === evidence.bundle?.mobile?.applicationCommit
         && Array.isArray(signature?.findings?.critical)
+        && signature.findings.critical.length === 0
         && Array.isArray(signature?.findings?.important)
-        && Array.isArray(signature?.findings?.minor));
+        && signature.findings.important.length === 0
+        && Array.isArray(signature?.findings?.minor)
+        && Array.isArray(signature?.testEvidence)
+        && signature.testEvidence.length > 0
+        && typeof signature?.reviewedAt === "string"
+        && Number.isFinite(new Date(signature.reviewedAt).valueOf()));
     const hardOff = evidence?.bundle?.releaseMode === "hard_off"
       && evidence?.bundle?.science?.astronomyFact?.providerSendEnabled === false
       && evidence?.bundle?.science?.qizheng?.providerSendEnabled === false

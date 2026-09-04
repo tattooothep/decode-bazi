@@ -59,12 +59,17 @@ const ROWS_SQL = `SELECT c.id::text AS chain_id,c.account_delivery_chain_uuid::t
    AND c.science_id=h.science_id AND c.submode=h.submode
   JOIN mobile_science_notification_producer_state p
     ON p.science_id=c.science_id AND p.submode=c.submode AND p.schema_version=c.schema_version
+  JOIN mobile_push_tokens t
+    ON t.id=c.primary_token_id AND t.user_id=c.user_id
+   AND t.installation_id=c.primary_installation_id AND t.enabled=true
   JOIN mobile_science_notification_endpoints e
-    ON e.chain_id=c.id AND e.installation_id=c.primary_installation_id
+    ON e.chain_id=c.id AND e.token_id=t.id
+   AND e.installation_id=c.primary_installation_id
+   AND e.audience_binding=t.astronomy_fact_audience_binding
    AND e.primary_endpoint=true AND e.active=true
  WHERE h.enabled=true AND h.approved_by IS NOT NULL AND h.approved_at IS NOT NULL
    AND h.science_id='astronomy_fact' AND h.submode='civil_two_hour'
-   AND c.schema_version=1 AND c.active=false
+   AND c.schema_version=1 AND c.lifecycle_state='shadow' AND c.active=false
    AND s.enabled=false AND p.provider_send_enabled=false
    AND c.consent_generation=s.consent_generation
    AND e.target_revision=c.target_revision

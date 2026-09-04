@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "source": {
+    "name": "NASA/JPL Horizons",
+    "documentation": "https://ssd-api.jpl.nasa.gov/doc/horizons.html",
+    "endpoint": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "retrievedAt": "2026-09-04",
+    "observer": "500@399",
+    "ephemerisType": "OBSERVER",
+    "quantity": 31,
+    "quantityDefinition": "observer-centered IAU76/80 ecliptic-of-date apparent longitude and latitude",
+    "query": {
+      "START_TIME": "2026-09-04 05:00",
+      "STOP_TIME": "2026-09-04 05:01",
+      "STEP_SIZE": "1 m",
+      "CSV_FORMAT": "YES"
+    }
+  },
+  "instant": "2026-09-04T05:00:00.000Z",
+  "timezone": "Asia/Bangkok",
+  "toleranceDeg": 0.005,
+  "bodies": [
+    { "key": "Sun", "command": "10", "longitudeDeg": 161.6989239, "latitudeDeg": 0.0001890 },
+    { "key": "Moon", "command": "301", "longitudeDeg": 70.1288034, "latitudeDeg": 5.1849845 },
+    { "key": "Mercury", "command": "199", "longitudeDeg": 168.6417852, "latitudeDeg": 1.3531802 },
+    { "key": "Venus", "command": "299", "longitudeDeg": 205.6639331, "latitudeDeg": -3.8001238 },
+    { "key": "Mars", "command": "499", "longitudeDeg": 105.4211959, "latitudeDeg": 0.5829544 },
+    { "key": "Jupiter", "command": "599", "longitudeDeg": 134.3700939, "latitudeDeg": 0.5354634 },
+    { "key": "Saturn", "command": "699", "longitudeDeg": 13.4939610, "latitudeDeg": -2.6614444 }
+  ]
+}

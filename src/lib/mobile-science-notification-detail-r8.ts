@@ -58,7 +58,12 @@ export async function resolveScienceNotificationDetail(
 ): Promise<ScienceNotificationDetail | null> {
   if (!validInput(input)) return null;
   const result = await db.query<DetailRow>(
-    `SELECT CASE WHEN o.state='shadowed' AND o.expires_at<=now() THEN 'expired' ELSE o.state END AS state,
+    `SELECT CASE
+              WHEN c.lifecycle_state='rollback' THEN 'rollback'
+              WHEN c.lifecycle_state='revoked' THEN 'revoked'
+              WHEN o.state='shadowed' AND o.expires_at<=now() THEN 'expired'
+              ELSE o.state
+            END AS state,
             o.snapshot,o.snapshot_digest,o.created_at
        FROM mobile_science_notification_occurrences o
        JOIN mobile_science_notification_chains c ON c.id=o.chain_id
@@ -66,7 +71,7 @@ export async function resolveScienceNotificationDetail(
       WHERE o.id=$1::uuid AND c.user_id=$2::uuid AND c.org_id=$3::uuid
         AND e.installation_id=$4::uuid AND e.audience_binding=$5
         AND c.science_id=$6 AND o.science_id=$6
-        AND e.active=true AND e.primary_endpoint=true
+        AND e.primary_endpoint=true
       LIMIT 1`,
     [input.occurrenceId,input.userId,input.orgId,input.installationId,input.audience,input.category],
   );

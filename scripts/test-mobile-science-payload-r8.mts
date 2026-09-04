@@ -63,6 +63,16 @@ const pushRoute = readFileSync("src/app/api/mobile/v1/push/route.ts", "utf8");
 const notificationRoute = readFileSync("src/app/api/mobile/v1/notifications/route.ts", "utf8");
 assert.match(pushRoute, /astronomyFactPayloadSchema/u);
 assert.match(pushRoute, /astronomy_fact_payload_schema/u);
+assert.match(pushRoute, /astronomy_fact_audience_binding/u);
+assert.match(pushRoute, /astronomyFactAudience/u);
+assert.match(pushRoute, /mobile_science_notification_chains/u,
+  "account/install transfer removes the old R8 delivery chain before rotating its audience");
+assert.match(pushRoute, /mobile_science_notification_endpoints/u);
+assert.match(pushRoute, /lifecycle_state='revoked'/u,
+  "unregister makes the revoked detail state reachable without rewriting occurrences");
+assert.match(pushRoute,
+  /CASE WHEN mobile_push_tokens\.user_id=EXCLUDED\.user_id[\s\S]+mobile_push_tokens\.installation_id=EXCLUDED\.installation_id[\s\S]+THEN mobile_push_tokens\.astronomy_fact_audience_binding[\s\S]+ELSE translate/u,
+  "the private audience stays stable for one owner/install and rotates on transfer");
 assert.match(notificationRoute, /"astronomy_fact"/u);
 assert.match(notificationRoute, /qizhengElectional:\s*false/u);
 assert.match(notificationRoute, /qizhengElectionalAvailable:\s*false/u);

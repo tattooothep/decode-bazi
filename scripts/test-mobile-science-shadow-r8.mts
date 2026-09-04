@@ -100,6 +100,11 @@ assert.match(schedulerSource, /provider_send_enabled=false/u);
 assert.match(schedulerSource, /science_id='astronomy_fact'/u);
 assert.match(schedulerSource, /submode='civil_two_hour'/u);
 assert.match(schedulerSource, /primary_endpoint=true/u);
+assert.match(schedulerSource, /JOIN mobile_push_tokens t/u);
+assert.match(schedulerSource, /t\.id=c\.primary_token_id/u);
+assert.match(schedulerSource, /t\.user_id=c\.user_id/u);
+assert.match(schedulerSource, /t\.installation_id=c\.primary_installation_id/u);
+assert.match(schedulerSource, /t\.enabled=true/u);
 assert.match(schedulerSource, /e\.target_revision=c\.target_revision/u);
 assert.match(schedulerSource, /c\.consent_generation=s\.consent_generation/u);
 
@@ -157,10 +162,12 @@ try {
     CREATE TABLE users(id uuid PRIMARY KEY);
     CREATE TABLE profiles(id uuid PRIMARY KEY,created_by_user_id uuid NOT NULL REFERENCES users(id));
     CREATE TABLE mobile_push_tokens(
-      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES users(id),
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       installation_id uuid NOT NULL,qizheng_payload_schema smallint NOT NULL DEFAULT 0,
-      UNIQUE(user_id,installation_id)
+      enabled boolean NOT NULL DEFAULT true
     );
+    CREATE UNIQUE INDEX ux_mobile_push_tokens_active_installation
+      ON mobile_push_tokens(installation_id) WHERE enabled=true;
     CREATE TABLE notification_scheduler_runs(name text PRIMARY KEY,last_run_at timestamptz NOT NULL,run_count int NOT NULL);
     INSERT INTO notification_scheduler_runs VALUES('qimen','2026-09-04T00:00:00Z',17);
   `);
@@ -173,25 +180,33 @@ try {
   const secondaryInstallation = crypto.randomUUID();
   psql(database, `
     INSERT INTO users(id) VALUES('${accountId}');
-    INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES
-      ('${accountId}','${primaryInstallation}'),('${accountId}','${secondaryInstallation}');
     INSERT INTO mobile_science_notification_subscriptions
       (user_id,org_id,science_id,submode,cadence,local_day_cap,locale,display_timezone,receipt,quiet_start,quiet_end)
     VALUES('${accountId}','${orgId}','astronomy_fact','civil_two_hour','two_hour',12,'th','Asia/Bangkok','{}',22,7);
     INSERT INTO mobile_science_notification_shadow_cohort
       (user_id,science_id,submode,enabled,approved_by,approved_at)
     VALUES('${accountId}','astronomy_fact','civil_two_hour',true,'r8-test','2026-09-04T00:00:00Z');
-    WITH inserted AS (
+    WITH primary_token AS (
+      INSERT INTO mobile_push_tokens(user_id,installation_id)
+      VALUES('${accountId}','${primaryInstallation}')
+      RETURNING id,installation_id,astronomy_fact_audience_binding
+    ), secondary_token AS (
+      INSERT INTO mobile_push_tokens(user_id,installation_id)
+      VALUES('${accountId}','${secondaryInstallation}')
+      RETURNING id,installation_id,astronomy_fact_audience_binding
+    ), inserted AS (
       INSERT INTO mobile_science_notification_chains
-        (user_id,org_id,science_id,submode,schema_version,primary_installation_id,consent_generation)
-      VALUES('${accountId}','${orgId}','astronomy_fact','civil_two_hour',1,'${primaryInstallation}',1)
+        (user_id,org_id,science_id,submode,schema_version,primary_token_id,primary_installation_id,consent_generation)
+      SELECT '${accountId}','${orgId}','astronomy_fact','civil_two_hour',1,id,installation_id,1 FROM primary_token
       RETURNING id
     )
     INSERT INTO mobile_science_notification_endpoints
-      (chain_id,installation_id,audience_binding,target_revision,primary_endpoint)
-    SELECT id,'${primaryInstallation}'::uuid,'A9c7wP4nY2kLm8QrV5sT1u',1,true FROM inserted
+      (chain_id,token_id,installation_id,audience_binding,target_revision,primary_endpoint)
+    SELECT inserted.id,primary_token.id,primary_token.installation_id,
+           primary_token.astronomy_fact_audience_binding,1,true FROM inserted,primary_token
     UNION ALL
-    SELECT id,'${secondaryInstallation}'::uuid,'B8c7wP4nY2kLm8QrV5sT1u',1,false FROM inserted;
+    SELECT inserted.id,secondary_token.id,secondary_token.installation_id,
+           secondary_token.astronomy_fact_audience_binding,1,false FROM inserted,secondary_token;
   `);
 
   const client = new Client(clientOptions);
@@ -217,6 +232,10 @@ try {
     assert.deepEqual(await runShadowScheduler(client, { at, identityKey: KEY, identityKeyId: "r8-test-key-1", dry: false }),
       { candidates: 1, inserted: 0, duplicates: 1, dry: false }, "restart replay is idempotent");
     assert.equal((await client.query("SELECT count(*)::int AS count FROM mobile_science_notification_occurrences")).rows[0].count, 1);
+    await client.query("UPDATE mobile_push_tokens SET enabled=false WHERE installation_id=$1", [primaryInstallation]);
+    assert.deepEqual(await runShadowScheduler(client, { at, identityKey: KEY, identityKeyId: "r8-test-key-1", dry: true }),
+      { candidates: 0, inserted: 0, duplicates: 0, dry: true }, "a disabled primary device cannot enter the shadow scheduler");
+    await client.query("UPDATE mobile_push_tokens SET enabled=true WHERE installation_id=$1", [primaryInstallation]);
     await client.query("UPDATE mobile_science_notification_chains SET target_revision=2 WHERE user_id=$1", [accountId]);
     await client.query("UPDATE mobile_science_notification_endpoints SET target_revision=2 WHERE installation_id=$1", [primaryInstallation]);
     assert.deepEqual(await runShadowScheduler(client, { at, identityKey: KEY, identityKeyId: "r8-test-key-1", dry: false }),
@@ -251,7 +270,10 @@ try {
     const rollingInstallation = crypto.randomUUID();
     const rollingChain = crypto.randomUUID();
     await client.query("INSERT INTO users(id) VALUES($1)", [rollingUser]);
-    await client.query("INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES($1,$2)", [rollingUser,rollingInstallation]);
+    const rollingToken = (await client.query(
+      "INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES($1,$2) RETURNING id,astronomy_fact_audience_binding",
+      [rollingUser,rollingInstallation],
+    )).rows[0];
     await client.query(`INSERT INTO mobile_science_notification_subscriptions
       (user_id,org_id,science_id,submode,cadence,local_day_cap,locale,display_timezone,receipt,quiet_start,quiet_end)
       VALUES($1,$2,'astronomy_fact','civil_two_hour','two_hour',12,'th','UTC','{}',1,2)`, [rollingUser,rollingOrg]);
@@ -259,11 +281,13 @@ try {
       (user_id,science_id,submode,enabled,approved_by,approved_at)
       VALUES($1,'astronomy_fact','civil_two_hour',true,'r8-test',now())`, [rollingUser]);
     await client.query(`INSERT INTO mobile_science_notification_chains
-      (id,user_id,org_id,science_id,submode,schema_version,primary_installation_id,consent_generation)
-      VALUES($1,$2,$3,'astronomy_fact','civil_two_hour',1,$4,1)`, [rollingChain,rollingUser,rollingOrg,rollingInstallation]);
+      (id,user_id,org_id,science_id,submode,schema_version,primary_token_id,primary_installation_id,consent_generation)
+      VALUES($1,$2,$3,'astronomy_fact','civil_two_hour',1,$4,$5,1)`,
+      [rollingChain,rollingUser,rollingOrg,rollingToken.id,rollingInstallation]);
     await client.query(`INSERT INTO mobile_science_notification_endpoints
-      (chain_id,installation_id,audience_binding,target_revision,primary_endpoint)
-      VALUES($1,$2,'C7c7wP4nY2kLm8QrV5sT1u',1,true)`, [rollingChain,rollingInstallation]);
+      (chain_id,token_id,installation_id,audience_binding,target_revision,primary_endpoint)
+      VALUES($1,$2,$3,$4,1,true)`,
+      [rollingChain,rollingToken.id,rollingInstallation,rollingToken.astronomy_fact_audience_binding]);
     await client.query(`INSERT INTO mobile_science_notification_occurrences
       (chain_id,science_id,submode,schema_version,notification_unit_id,identity_cbor,identity_hash,
        result_revision_hash,rollout_epoch,state,snapshot,snapshot_digest,scheduled_for,expires_at)

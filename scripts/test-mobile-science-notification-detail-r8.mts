@@ -44,6 +44,10 @@ for (const required of ["o.id=$1", "c.user_id=$2", "c.org_id=$3", "e.installatio
   assert.ok(capturedSql.includes(required), `ownership SQL includes ${required}`);
 }
 assert.match(capturedSql, /o\.expires_at<=now\(\)/u, "elapsed two-hour facts are exposed as expired without mutating evidence");
+assert.match(capturedSql, /c\.lifecycle_state='rollback'/u);
+assert.match(capturedSql, /c\.lifecycle_state='revoked'/u);
+assert.doesNotMatch(capturedSql, /e\.active=true/u,
+  "an authenticated original endpoint can still read a rollback/revocation explanation");
 assert.deepEqual(capturedParams, [IDS.occurrenceId, IDS.userId, IDS.orgId, IDS.installationId, IDS.audience, "astronomy_fact"]);
 
 for (const [field, value] of [
@@ -98,5 +102,8 @@ assert.match(qizhengDetailRoute, /resolveScienceNotificationDetail/u);
 assert.match(astronomyDetailRoute, /notification_detail_unavailable/u);
 assert.match(qizhengDetailRoute, /notification_detail_unavailable/u);
 assert.match(listRoute, /o\.expires_at<=now\(\)/u, "the list cannot present elapsed facts as current");
+assert.match(listRoute, /c\.lifecycle_state='rollback'/u);
+assert.match(listRoute, /c\.lifecycle_state='revoked'/u);
+assert.doesNotMatch(listRoute, /e\.active=true/u);
 
 console.log("MOBILE_SCIENCE_NOTIFICATION_DETAIL_R8_OK auth-bound stored-only");

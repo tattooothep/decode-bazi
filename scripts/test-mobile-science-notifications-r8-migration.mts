@@ -16,6 +16,12 @@ assert.match(forward, /UNIQUE NULLS NOT DISTINCT/u);
 assert.match(forward, /mobile_science_notification_shadow_cohort/u);
 assert.match(forward, /primary_endpoint/u);
 assert.match(forward, /audience_binding text NOT NULL UNIQUE/u);
+assert.match(forward, /astronomy_fact_audience_binding/u);
+assert.match(forward, /primary_token_id uuid NOT NULL/u);
+assert.match(forward, /lifecycle_state text NOT NULL/u);
+assert.match(forward, /ON DELETE CASCADE/u);
+assert.match(forward, /pg_trigger_depth\(\)>1/u);
+assert.doesNotMatch(forward, /REFERENCES mobile_push_tokens\(user_id,installation_id\)/u);
 assert.match(forward, /octet_length\(identity_hash\)=32/u);
 assert.doesNotMatch(forward, /UPDATE mobile_(?:ziwei|zibai|qimen)_/iu);
 assert.doesNotMatch(rollback, /\bDROP\s+(?:TABLE|COLUMN|FUNCTION|TRIGGER|INDEX)\b/iu);
@@ -46,19 +52,27 @@ try {
     CREATE TABLE profiles(id uuid PRIMARY KEY,created_by_user_id uuid NOT NULL REFERENCES users(id));
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY REFERENCES users(id));
     CREATE TABLE mobile_push_tokens(
-      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES users(id),
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       installation_id uuid NOT NULL,qizheng_payload_schema smallint NOT NULL DEFAULT 0,
-      UNIQUE(user_id,installation_id)
+      enabled boolean NOT NULL DEFAULT true
     );
+    CREATE UNIQUE INDEX ux_mobile_push_tokens_active_installation
+      ON mobile_push_tokens(installation_id) WHERE enabled=true;
   `);
   psql(database, forward);
   psql(database, forward);
 
   const userId = crypto.randomUUID();
   const installationId = crypto.randomUUID();
-  psql(database, `
+  const tokenId = psql(database, `
     INSERT INTO users(id) VALUES('${userId}');
-    INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES('${userId}','${installationId}');
+    INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES('${userId}','${installationId}') RETURNING id;
+  `).split("\n").at(-1)!;
+  const audienceBinding = psql(database,
+    `SELECT astronomy_fact_audience_binding FROM mobile_push_tokens WHERE id='${tokenId}'`,
+  );
+  assert.match(audienceBinding, /^[A-Za-z0-9_-]{22,64}$/u);
+  psql(database, `
     INSERT INTO mobile_science_notification_subscriptions
       (user_id,org_id,science_id,submode,cadence,local_day_cap,locale,display_timezone,receipt)
     VALUES('${userId}',gen_random_uuid(),'astronomy_fact','civil_two_hour','two_hour',12,'th','Asia/Bangkok','{}');
@@ -83,17 +97,17 @@ try {
 
   const chainId = psql(database, `
     INSERT INTO mobile_science_notification_chains
-      (user_id,org_id,science_id,submode,schema_version,primary_installation_id)
-    VALUES('${userId}',gen_random_uuid(),'astronomy_fact','civil_two_hour',1,'${installationId}')
+      (user_id,org_id,science_id,submode,schema_version,primary_token_id,primary_installation_id)
+    VALUES('${userId}',gen_random_uuid(),'astronomy_fact','civil_two_hour',1,'${tokenId}','${installationId}')
     RETURNING id;
   `).split("\n").at(-1)!;
   psql(database, `
-    INSERT INTO mobile_science_notification_endpoints(chain_id,installation_id,audience_binding,primary_endpoint)
-    VALUES('${chainId}','${installationId}','A9c7wP4nY2kLm8QrV5sT1u',true);
+    INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
+    VALUES('${chainId}','${tokenId}','${installationId}','${audienceBinding}',true);
   `);
   rejectsSql(database,
-    `INSERT INTO mobile_science_notification_endpoints(chain_id,installation_id,audience_binding,primary_endpoint)
-     VALUES('${chainId}',gen_random_uuid(),'B8c7wP4nY2kLm8QrV5sT1u',true)`,
+    `INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
+     VALUES('${chainId}','${tokenId}',gen_random_uuid(),'B8c7wP4nY2kLm8QrV5sT1u',true)`,
     "one chain has only one active primary endpoint",
   );
   psql(database, `
@@ -105,11 +119,22 @@ try {
     `UPDATE mobile_science_notification_occurrences SET snapshot='{"changed":true}'`,
     "immutable occurrence evidence cannot be rewritten",
   );
+  rejectsSql(database,
+    "DELETE FROM mobile_science_notification_occurrences",
+    "direct occurrence deletion remains immutable",
+  );
 
   psql(database, rollback);
   assert.equal(psql(database, "SELECT count(*) FROM mobile_science_notification_occurrences"), "1");
+  assert.equal(psql(database, `SELECT lifecycle_state FROM mobile_science_notification_chains WHERE id='${chainId}'`), "rollback");
+  assert.equal(psql(database, `SELECT active FROM mobile_science_notification_endpoints WHERE chain_id='${chainId}'`), "f");
   assert.equal(psql(database, "SELECT count(*) FROM mobile_science_notification_producer_state WHERE provider_send_enabled"), "0");
   assert.equal(psql(database, "SELECT count(*) FROM mobile_science_notification_shadow_cohort WHERE enabled"), "0");
+
+  psql(database, `DELETE FROM users WHERE id='${userId}'`);
+  assert.equal(psql(database, `SELECT count(*) FROM mobile_science_notification_occurrences WHERE chain_id='${chainId}'`), "0",
+    "account deletion cascades through immutable R8 evidence without being blocked");
+  assert.equal(psql(database, `SELECT count(*) FROM mobile_science_notification_chains WHERE id='${chainId}'`), "0");
 } finally {
   if (databasePattern.test(database)) {
     psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE);`);

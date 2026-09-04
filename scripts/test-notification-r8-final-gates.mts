@@ -13,7 +13,12 @@ import {
   R8_QIZHENG_SCHEMA,
   r8ProductionCapability,
 } from "../src/lib/astro/notification-r8-contract";
-import { buildCivilSkySnapshot } from "../src/lib/astro/astronomy-fact-r8";
+import {
+  ASTRONOMY_FACT_MODEL_VERSION,
+  ASTRONOMY_FACT_TZDB_VERSION,
+  buildCivilSkySnapshot,
+} from "../src/lib/astro/astronomy-fact-r8";
+import { runAcceleratedProviderFreeSoak } from "./lib/notification-r8-soak.mts";
 
 const require = createRequire(import.meta.url);
 const payload = require("../src/lib/notification-payload.cjs");
@@ -28,6 +33,7 @@ const BACKEND_RUNTIME_FILES = Object.freeze([
   "migrations/20260904_mobile_science_notifications_r8.rollback.sql",
   "migrations/20260904_mobile_science_notifications_r8.sql",
   "scripts/mobile-astronomy-fact-shadow-cron.mts",
+  "scripts/lib/notification-r8-soak.mts",
   "scripts/notification-health.cjs",
   "scripts/notification-observability-preflight.cjs",
   "src/app/api/mobile/v1/astronomy-facts/[occurrenceId]/route.ts",
@@ -50,6 +56,7 @@ const MOBILE_RUNTIME_FILES = Object.freeze([
   "src/components/design/astronomy/AstronomyFactDetailScreen.tsx",
   "src/components/design/qizheng/QizhengNotificationDetailScreen.tsx",
   "src/greenfield/client.ts",
+  "src/greenfield/endpoints.ts",
   "src/i18n/scienceNotificationsR8.ts",
   "src/native/notificationPreferencePolicy.ts",
   "src/native/push.ts",
@@ -118,65 +125,6 @@ function filesTreeDigest(root: string): string {
   return sha(records.join(""));
 }
 
-function runAcceleratedProviderFreeSoak() {
-  const accounts = 10_000;
-  const days = 3;
-  const boundariesPerLocalDay = 12;
-  const lineages = new Set<string>();
-  let collisionCount = 0;
-  let crashReplayAttempts = 0;
-  let deduplicatedReplays = 0;
-  let revokedBeforeEnqueue = 0;
-  let deletedBeforeEnqueue = 0;
-  const zones = [
-    "Pacific/Kiritimati", "Pacific/Pago_Pago", "Asia/Bangkok", "Asia/Kathmandu",
-    "Asia/Kolkata", "Europe/London", "Europe/Berlin", "America/New_York",
-  ];
-  for (let day = 0; day < days; day += 1) {
-    for (let boundary = 0; boundary < boundariesPerLocalDay; boundary += 1) {
-      for (let account = 0; account < accounts; account += 1) {
-        const lineage = sha(`r8-soak-v1\0${zones[account % zones.length]}\0${account}\0${day}\0${boundary}`);
-        if (lineages.has(lineage)) collisionCount += 1;
-        else lineages.add(lineage);
-        if (account < 100 && boundary === 5) {
-          crashReplayAttempts += 1;
-          if (lineages.has(lineage)) deduplicatedReplays += 1;
-        }
-        if (account % 997 === 0 && boundary === 7) revokedBeforeEnqueue += 1;
-        if (account % 991 === 0 && boundary === 9) deletedBeforeEnqueue += 1;
-      }
-    }
-  }
-  const qizhengSyntheticEnvelopes = ["C1", "B", "C2", "D1", "D2"].map((ruleClass) => ({
-    ruleClass,
-    state: "suppressed",
-    reason: "source_incomplete",
-    payload: null,
-  }));
-  return Object.freeze({
-    mode: "accelerated_provider_free_72h_simulation",
-    observedWindowHours: 72,
-    accounts,
-    boundariesPerDay: accounts * boundariesPerLocalDay,
-    boundaries: lineages.size,
-    p95Minutes: 1.9,
-    p99Minutes: 1.98,
-    maxBacklogMinutes: 2,
-    poolPercent: 48,
-    quotaPercent: 50,
-    headroomMultiplier: 2,
-    legacyP95RegressionPercent: 2,
-    duplicateLineages: collisionCount,
-    crashReplayAttempts,
-    deduplicatedReplays,
-    revokedBeforeEnqueue,
-    deletedBeforeEnqueue,
-    providerCalls: 0,
-    zones,
-    qizhengSuppressionReasons: qizhengSyntheticEnvelopes.map((entry) => entry.reason),
-  });
-}
-
 const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
 assert.equal(evidence.schema, 1);
 assert.ok(evidence.bundle && typeof evidence.bundle === "object");
@@ -243,13 +191,28 @@ assert.equal(QIZHENG_ELECTIONAL_SOURCE_ARTIFACTS.every(
 assert.deepEqual(bundle.runtime, {
   node: process.versions.node,
   icu: process.versions.icu,
-  tzdb: process.versions.tz,
+  hostTzdb: process.versions.tz,
+  embeddedTzdb: ASTRONOMY_FACT_TZDB_VERSION,
   astronomyEngine: "2.1.19",
-  astronomyModel: "astronomy-engine-2.1.19-geocentric-apparent-v1",
+  astronomyModel: ASTRONOMY_FACT_MODEL_VERSION,
 });
 assert.match(bundle.science.modelDigest, HEX64);
 assert.equal(bundle.science.modelDigest,
-  sha(blob(backendRoot, bundle.backend.applicationCommit, "src/lib/astro/astronomy-fact-r8.ts")));
+  committedFilesDigest(backendRoot, bundle.backend.applicationCommit, [
+    "package.json",
+    "package-lock.json",
+    "scripts/fixtures/astronomy-fact-r8-jpl-horizons-goldens.json",
+    "src/lib/astro/astronomy-fact-r8.ts",
+  ]));
+const jplGoldens = JSON.parse(blob(
+  backendRoot,
+  bundle.backend.applicationCommit,
+  "scripts/fixtures/astronomy-fact-r8-jpl-horizons-goldens.json",
+).toString("utf8"));
+assert.equal(jplGoldens.source.name, "NASA/JPL Horizons");
+assert.equal(jplGoldens.source.observer, "500@399");
+assert.equal(jplGoldens.source.quantity, 31);
+assert.equal(jplGoldens.bodies.length, 7);
 assert.match(bundle.science.copyDigest, HEX64);
 assert.equal(bundle.science.copyDigest,
   sha(blob(mobileRoot, bundle.mobile.applicationCommit, "src/i18n/scienceNotificationsR8.ts")));
@@ -343,6 +306,13 @@ const signatures = Array.isArray(evidence.signatures) ? evidence.signatures : []
 if (!allowUnsigned) {
   assert.equal(signatures.length, 5, "exactly five fresh review signatures are required");
   assert.equal(new Set(signatures.map((signature: any) => signature.reviewerId)).size, 5);
+  assert.deepEqual(new Set(signatures.map((signature: any) => signature.dimension)), new Set([
+    "science_source_integrity",
+    "mobile_lifecycle_locale_privacy",
+    "backend_migration_delivery",
+    "scale_observability_rollback",
+    "red_team_cross_science",
+  ]));
   for (const signature of signatures) {
     assert.equal(signature.verdict, "PASS");
     assert.equal(signature.bundleDigest, bundleDigest);
@@ -351,6 +321,7 @@ if (!allowUnsigned) {
     assert.deepEqual(signature.findings.critical, []);
     assert.deepEqual(signature.findings.important, []);
     assert.ok(Array.isArray(signature.findings.minor));
+    assert.ok(Array.isArray(signature.testEvidence) && signature.testEvidence.length > 0);
     assert.match(signature.reviewedAt, /^2026-09-04T/u);
   }
 }

@@ -1,4 +1,4 @@
-import { zoneOffsetMinutes } from "../birth-timezone";
+import moment from "moment-timezone";
 import {
   eclipticLat,
   eclipticLon,
@@ -11,6 +11,11 @@ import {
 const PHYSICAL_BODIES = Object.freeze([
   "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
 ] as const satisfies readonly PlanetKey[]);
+
+export const ASTRONOMY_FACT_TZDB_VERSION = "2026c" as const;
+export const ASTRONOMY_FACT_MODEL_VERSION =
+  "astronomy-engine-2.1.19-tzdb-2026c-geocentric-apparent-v2" as const;
+const MOTION_HALF_WINDOW_MS = 60 * 60 * 1_000;
 
 type Civil = Readonly<{
   year: number;
@@ -63,7 +68,7 @@ export type AstronomyFactSnapshot = Readonly<{
     unitId: string;
   }>;
   frame: "geocentric";
-  modelVersion: "astronomy-engine-2.1.19-geocentric-apparent-v1";
+  modelVersion: typeof ASTRONOMY_FACT_MODEL_VERSION;
   physicalBodies: readonly AstronomyBodyFact[];
   points: readonly AstronomyPointFact[];
   prediction: false;
@@ -88,38 +93,28 @@ function fixed(value: number, digits = 6): number {
   return Number(value.toFixed(digits));
 }
 
-function formatter(timezone: string): Intl.DateTimeFormat {
-  try {
-    const value = new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      hourCycle: "h23",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-    value.format(new Date(0));
-    return value;
-  } catch {
-    throw new TypeError("astronomy_fact_timezone_invalid");
+function timezoneZone(timezone: string): moment.MomentZone {
+  if (moment.tz.dataVersion !== ASTRONOMY_FACT_TZDB_VERSION) {
+    throw new Error("astronomy_fact_tzdb_mismatch");
   }
+  const zone = typeof timezone === "string" ? moment.tz.zone(timezone.trim()) : null;
+  if (!zone) throw new TypeError("astronomy_fact_timezone_invalid");
+  return zone;
+}
+
+function zoneOffsetMinutesAt(utcMilliseconds: number, timezone: string): number {
+  return -timezoneZone(timezone).utcOffset(utcMilliseconds);
 }
 
 function civilAt(instant: Date, timezone: string): Civil {
-  const parts = Object.fromEntries(
-    formatter(timezone).formatToParts(instant)
-      .filter((part) => part.type !== "literal")
-      .map((part) => [part.type, Number(part.value)]),
-  );
+  const shifted = new Date(instant.valueOf() + zoneOffsetMinutesAt(instant.valueOf(), timezone) * 60_000);
   return Object.freeze({
-    year: parts.year,
-    month: parts.month,
-    day: parts.day,
-    hour: parts.hour === 24 ? 0 : parts.hour,
-    minute: parts.minute,
-    second: parts.second,
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+    hour: shifted.getUTCHours(),
+    minute: shifted.getUTCMinutes(),
+    second: shifted.getUTCSeconds(),
   });
 }
 
@@ -140,8 +135,7 @@ function wallCandidates(civil: Civil, timezone: string): readonly Date[] {
   const naive = civilValue(civil);
   const offsets = new Set<number>();
   for (const deltaHours of [-36, -24, -12, 0, 12, 24, 36]) {
-    const offset = zoneOffsetMinutes(naive + deltaHours * 3_600_000, timezone);
-    if (offset !== null) offsets.add(offset);
+    offsets.add(zoneOffsetMinutesAt(naive + deltaHours * 3_600_000, timezone));
   }
   const matches = [...offsets]
     .map((offset) => new Date(naive - offset * 60_000))
@@ -163,8 +157,7 @@ function boundaryAt(instant: Date, timezone: string): CivilTwoHourBoundary {
   if (!(instant instanceof Date) || !Number.isFinite(instant.valueOf())) {
     throw new TypeError("astronomy_fact_instant_invalid");
   }
-  const offset = zoneOffsetMinutes(instant.valueOf(), timezone);
-  if (offset === null) throw new TypeError("astronomy_fact_timezone_invalid");
+  const offset = zoneOffsetMinutesAt(instant.valueOf(), timezone);
   const civil = civilAt(instant, timezone);
   if (instant.getUTCMilliseconds() !== 0 || civil.minute !== 0 || civil.second !== 0 || civil.hour % 2 !== 0) {
     throw new TypeError("astronomy_fact_not_boundary");
@@ -192,7 +185,7 @@ export function nextCivilTwoHourBoundary(timezone: string, after: Date): CivilTw
   if (!(after instanceof Date) || !Number.isFinite(after.valueOf())) {
     throw new TypeError("astronomy_fact_instant_invalid");
   }
-  formatter(timezone);
+  timezoneZone(timezone);
   const firstMinute = Math.floor(after.valueOf() / 60_000) * 60_000 + 60_000;
   const limit = firstMinute + 36 * 3_600_000;
   for (let value = firstMinute; value <= limit; value += 60_000) {
@@ -209,19 +202,29 @@ export function nextCivilTwoHourBoundary(timezone: string, after: Date): CivilTw
   return null;
 }
 
+function signedAngularDifference(later: number, earlier: number): number {
+  let difference = normalizedLongitude(later) - normalizedLongitude(earlier);
+  if (difference > 180) difference -= 360;
+  if (difference < -180) difference += 360;
+  return difference;
+}
+
+export function apparentLongitudeSpeedDegPerDay(key: PlanetKey, instant: Date): number {
+  const before = eclipticLon(key, new Date(instant.valueOf() - MOTION_HALF_WINDOW_MS));
+  const after = eclipticLon(key, new Date(instant.valueOf() + MOTION_HALF_WINDOW_MS));
+  return signedAngularDifference(after, before) * (86_400_000 / (2 * MOTION_HALF_WINDOW_MS));
+}
+
 function physicalBody(key: PlanetKey, instant: Date): AstronomyBodyFact {
   const illumination = illuminationOf(key, instant);
   const longitudeNow = eclipticLon(key, instant);
-  const longitudeYesterday = eclipticLon(key, new Date(instant.valueOf() - 86_400_000));
-  let dailyMotion = longitudeNow - longitudeYesterday;
-  if (dailyMotion > 180) dailyMotion -= 360;
-  if (dailyMotion < -180) dailyMotion += 360;
+  const instantaneousMotion = apparentLongitudeSpeedDegPerDay(key, instant);
   return Object.freeze({
     key,
     kind: "physical_body",
     longitudeTropicalDeg: fixed(longitudeNow),
     eclipticLatitudeDeg: fixed(eclipticLat(key, instant)),
-    retrograde: key === "Sun" || key === "Moon" ? false : dailyMotion < 0,
+    retrograde: key === "Sun" || key === "Moon" ? false : instantaneousMotion < 0,
     ...(illumination.mag === undefined ? {} : { apparentMagnitude: illumination.mag }),
     ...(illumination.phaseFrac === undefined ? {} : { illuminatedFraction: illumination.phaseFrac }),
     ...(illumination.ringTilt === undefined ? {} : { ringTiltDeg: illumination.ringTilt }),
@@ -271,7 +274,7 @@ export function buildCivilSkySnapshot(input: AstronomyFactInput): AstronomyFactS
       unitId: boundary.unitId,
     }),
     frame: "geocentric",
-    modelVersion: "astronomy-engine-2.1.19-geocentric-apparent-v1",
+    modelVersion: ASTRONOMY_FACT_MODEL_VERSION,
     physicalBodies,
     points,
     prediction: false,

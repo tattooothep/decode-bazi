@@ -102,6 +102,7 @@ export async function GET(req: Request) {
     native_deliverable: boolean;
     ios_current: boolean;
     ziwei_enrolled: boolean;
+    astronomy_fact_audience_binding: string | null;
   }>(
     `SELECT count(*)::int AS n,
             bool_or(installation_id=$2::uuid) AS current,
@@ -116,7 +117,9 @@ export async function GET(req: Request) {
                WHERE i.user_id=mobile_push_tokens.user_id
                  AND i.installation_id=mobile_push_tokens.installation_id
                  AND i.enabled=true AND i.birth_context_fingerprint IS NOT NULL
-            )) AS ziwei_enrolled
+            )) AS ziwei_enrolled,
+            max(CASE WHEN installation_id=$2::uuid
+                     THEN astronomy_fact_audience_binding END) AS astronomy_fact_audience_binding
        FROM mobile_push_tokens WHERE user_id=$1 AND enabled=true`,
     [session.userId, installationId || null]
   );
@@ -127,6 +130,9 @@ export async function GET(req: Request) {
       pushSubscribed: installationId ? count?.current === true : (count?.n || 0) > 0,
       ziweiEnrolled: count?.ziwei_enrolled === true,
       ziweiEnrollmentStatus: count?.ziwei_enrolled === true ? "enrolled" : "not_enrolled",
+      astronomyFactAudience: count?.current === true
+        ? count.astronomy_fact_audience_binding
+        : null,
       /** ส่งถึงเครื่องนี้ได้จริงไหม — มีกุญแจส่งตรงหรือยัง */
       deliverable: installationId
         ? count?.native_deliverable === true
@@ -193,7 +199,7 @@ export async function POST(req: Request) {
   }
 
   const client = await pool.connect();
-  let row: { id: string } | undefined;
+  let row: { id: string; astronomy_fact_audience_binding: string } | undefined;
   let ziweiCanonicalContext: CanonicalZiweiContextResult | null = null;
   let ziweiEnrolled = false;
   try {
@@ -218,6 +224,29 @@ export async function POST(req: Request) {
            OR ($4::text IS NOT NULL AND device_push_token=$4)
         FOR UPDATE`,
       [token, session.userId, installationId, deviceToken]
+    );
+    // An R8 audience is bound to one authenticated account + installation.
+    // Remove the old private delivery relationship before an Expo/native token
+    // is transferred, so its audience can rotate without inheriting old facts.
+    await client.query(
+      `DELETE FROM mobile_science_notification_chains c
+        USING mobile_push_tokens t
+        WHERE c.primary_token_id=t.id
+          AND (t.expo_push_token=$1
+            OR t.installation_id=$3::uuid
+            OR ($4::text IS NOT NULL AND t.device_push_token=$4))
+          AND (t.user_id<>$2 OR t.installation_id<>$3::uuid)`,
+      [token, session.userId, installationId, deviceToken],
+    );
+    await client.query(
+      `DELETE FROM mobile_science_notification_endpoints e
+        USING mobile_push_tokens t
+        WHERE e.token_id=t.id
+          AND (t.expo_push_token=$1
+            OR t.installation_id=$3::uuid
+            OR ($4::text IS NOT NULL AND t.device_push_token=$4))
+          AND (t.user_id<>$2 OR t.installation_id<>$3::uuid)`,
+      [token, session.userId, installationId, deviceToken],
     );
     const accountContext = await client.query<{ locale: string | null }>(
       `SELECT locale FROM users
@@ -281,7 +310,7 @@ export async function POST(req: Request) {
           AND (installation_id=$2::uuid OR ($4::text IS NOT NULL AND device_push_token=$4))`,
       [session.userId, installationId, token, deviceToken]
     );
-    const registered = await client.query<{ id: string }>(
+    const registered = await client.query<{ id: string; astronomy_fact_audience_binding: string }>(
       `INSERT INTO mobile_push_tokens
          (user_id,installation_id,expo_push_token,device_push_token,device_token_type,platform,app_version,locale,timezone,enabled,
           fail_count,last_registered_at,disabled_at,updated_at,zibai_payload_schema,qimen_payload_schema,
@@ -302,12 +331,17 @@ export async function POST(req: Request) {
          ziwei_payload_schema=EXCLUDED.ziwei_payload_schema,
          qizheng_payload_schema=EXCLUDED.qizheng_payload_schema,
          astronomy_fact_payload_schema=EXCLUDED.astronomy_fact_payload_schema,
+         astronomy_fact_audience_binding=
+           CASE WHEN mobile_push_tokens.user_id=EXCLUDED.user_id
+                  AND mobile_push_tokens.installation_id=EXCLUDED.installation_id
+                THEN mobile_push_tokens.astronomy_fact_audience_binding
+                ELSE translate(rtrim(encode(gen_random_bytes(24),'base64'),'='),'+/','-_') END,
          enabled=true,
          fail_count=0,
          last_registered_at=now(),
          disabled_at=NULL,
          updated_at=now()
-       RETURNING id`,
+       RETURNING id,astronomy_fact_audience_binding`,
       [
         session.userId, installationId, token, platform, appVersion, tokenLocale,
         deviceToken, deviceTokenType, timezone, zibaiPayloadSchema, qimenPayloadSchema,
@@ -486,6 +520,7 @@ export async function POST(req: Request) {
     ziweiEnrolled,
     ziweiEnrollmentStatus: ziweiEnrolled ? "enrolled" : "not_enrolled",
     registration_id: row.id,
+    astronomyFactAudience: row.astronomy_fact_audience_binding,
   });
 }
 
@@ -528,6 +563,24 @@ export async function DELETE(req: Request) {
         [session.userId]
       );
     }
+    await client.query(
+      `UPDATE mobile_science_notification_chains c
+          SET active=false,lifecycle_state='revoked',target_revision=target_revision+1,updated_at=now()
+         FROM mobile_push_tokens t
+        WHERE c.primary_token_id=t.id AND t.user_id=$1
+          AND ($2::uuid IS NULL OR t.installation_id=$2::uuid)
+          AND c.lifecycle_state<>'rollback'`,
+      [session.userId, installationId || null],
+    );
+    await client.query(
+      `UPDATE mobile_science_notification_endpoints e
+          SET active=false,target_revision=c.target_revision,updated_at=now()
+         FROM mobile_science_notification_chains c
+        WHERE c.id=e.chain_id AND c.user_id=$1
+          AND ($2::uuid IS NULL OR e.installation_id=$2::uuid)
+          AND (e.active=true OR e.target_revision<>c.target_revision)`,
+      [session.userId, installationId || null],
+    );
     await client.query(
       `UPDATE mobile_push_tokens SET enabled=false,disabled_at=now(),updated_at=now()
         WHERE user_id=$1 AND enabled=true

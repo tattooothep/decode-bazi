@@ -3,15 +3,31 @@
 BEGIN;
 
 ALTER TABLE mobile_push_tokens
-  ADD COLUMN IF NOT EXISTS astronomy_fact_payload_schema smallint NOT NULL DEFAULT 0;
+  ADD COLUMN IF NOT EXISTS astronomy_fact_payload_schema smallint NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS astronomy_fact_audience_binding text;
+UPDATE mobile_push_tokens
+   SET astronomy_fact_audience_binding=
+       translate(rtrim(encode(gen_random_bytes(24),'base64'),'='),'+/','-_')
+ WHERE astronomy_fact_audience_binding IS NULL
+    OR astronomy_fact_audience_binding !~ '^[A-Za-z0-9_-]{22,64}$';
 ALTER TABLE mobile_push_tokens
   DROP CONSTRAINT IF EXISTS mobile_push_tokens_astronomy_fact_payload_schema_check,
-  DROP CONSTRAINT IF EXISTS mobile_push_tokens_qizheng_payload_schema_check;
+  DROP CONSTRAINT IF EXISTS mobile_push_tokens_qizheng_payload_schema_check,
+  DROP CONSTRAINT IF EXISTS mobile_push_tokens_astronomy_fact_audience_binding_check;
 ALTER TABLE mobile_push_tokens
+  ALTER COLUMN astronomy_fact_audience_binding SET DEFAULT
+    (translate(rtrim(encode(gen_random_bytes(24),'base64'),'='),'+/','-_')),
+  ALTER COLUMN astronomy_fact_audience_binding SET NOT NULL,
   ADD CONSTRAINT mobile_push_tokens_astronomy_fact_payload_schema_check
     CHECK (astronomy_fact_payload_schema IN (0,1)),
   ADD CONSTRAINT mobile_push_tokens_qizheng_payload_schema_check
-    CHECK (qizheng_payload_schema=0);
+    CHECK (qizheng_payload_schema=0),
+  ADD CONSTRAINT mobile_push_tokens_astronomy_fact_audience_binding_check
+    CHECK (astronomy_fact_audience_binding ~ '^[A-Za-z0-9_-]{22,64}$');
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_tokens_astronomy_fact_audience
+  ON mobile_push_tokens(astronomy_fact_audience_binding);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_push_tokens_r8_id_audience
+  ON mobile_push_tokens(id,astronomy_fact_audience_binding);
 
 CREATE TABLE IF NOT EXISTS mobile_science_notification_producer_state (
   science_id text NOT NULL CHECK (science_id IN ('astronomy_fact','qizheng')),
@@ -90,21 +106,62 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_chains (
   science_id text NOT NULL CHECK (science_id IN ('astronomy_fact','qizheng')),
   submode text NOT NULL CHECK (submode ~ '^[a-z][a-z0-9_]{0,31}$'),
   schema_version smallint NOT NULL CHECK (schema_version BETWEEN 0 AND 32),
+  primary_token_id uuid NOT NULL,
   primary_installation_id uuid NOT NULL,
   consent_generation bigint NOT NULL DEFAULT 1 CHECK (consent_generation > 0),
   target_revision bigint NOT NULL DEFAULT 1 CHECK (target_revision > 0),
+  lifecycle_state text NOT NULL DEFAULT 'shadow',
   active boolean NOT NULL DEFAULT false CHECK (active=false),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  FOREIGN KEY (user_id,primary_installation_id)
-    REFERENCES mobile_push_tokens(user_id,installation_id) ON DELETE CASCADE,
   UNIQUE NULLS NOT DISTINCT (user_id,org_id,science_id,submode),
   UNIQUE (id,science_id,submode,schema_version),
   CHECK (science_id<>'qizheng' OR (schema_version=0 AND active=false))
 );
+ALTER TABLE mobile_science_notification_chains
+  ADD COLUMN IF NOT EXISTS primary_token_id uuid,
+  ADD COLUMN IF NOT EXISTS lifecycle_state text NOT NULL DEFAULT 'shadow';
+UPDATE mobile_science_notification_chains c
+   SET primary_token_id=(
+     SELECT t.id FROM mobile_push_tokens t
+      WHERE t.user_id=c.user_id AND t.installation_id=c.primary_installation_id
+      ORDER BY t.enabled DESC,t.id LIMIT 1
+   )
+ WHERE c.primary_token_id IS NULL;
+ALTER TABLE mobile_science_notification_chains
+  ALTER COLUMN primary_token_id SET NOT NULL,
+  DROP CONSTRAINT IF EXISTS mobile_science_notification_chains_user_id_primary_installation_id_fkey,
+  DROP CONSTRAINT IF EXISTS fk_mobile_science_chain_primary_token,
+  DROP CONSTRAINT IF EXISTS mobile_science_notification_chains_lifecycle_state_check;
+ALTER TABLE mobile_science_notification_chains
+  ADD CONSTRAINT fk_mobile_science_chain_primary_token
+    FOREIGN KEY (primary_token_id) REFERENCES mobile_push_tokens(id) ON DELETE CASCADE,
+  ADD CONSTRAINT mobile_science_notification_chains_lifecycle_state_check
+    CHECK (lifecycle_state IN ('shadow','revoked','rollback'));
+
+CREATE OR REPLACE FUNCTION enforce_mobile_science_notification_chain_owner()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM mobile_push_tokens t
+     WHERE t.id=NEW.primary_token_id AND t.user_id=NEW.user_id
+       AND t.installation_id=NEW.primary_installation_id
+  ) THEN
+    RAISE EXCEPTION 'mobile_science_notification_chain_owner_mismatch' USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS mobile_science_notification_chain_owner
+  ON mobile_science_notification_chains;
+CREATE TRIGGER mobile_science_notification_chain_owner
+BEFORE INSERT OR UPDATE OF primary_token_id,user_id,primary_installation_id
+ON mobile_science_notification_chains
+FOR EACH ROW EXECUTE FUNCTION enforce_mobile_science_notification_chain_owner();
 
 CREATE TABLE IF NOT EXISTS mobile_science_notification_endpoints (
   chain_id uuid NOT NULL REFERENCES mobile_science_notification_chains(id) ON DELETE CASCADE,
+  token_id uuid NOT NULL,
   installation_id uuid NOT NULL,
   audience_binding text NOT NULL UNIQUE
     CHECK (audience_binding ~ '^[A-Za-z0-9_-]{22,64}$'),
@@ -114,6 +171,25 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_endpoints (
   updated_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (chain_id,installation_id)
 );
+ALTER TABLE mobile_science_notification_endpoints
+  ADD COLUMN IF NOT EXISTS token_id uuid;
+UPDATE mobile_science_notification_endpoints e
+   SET token_id=COALESCE((
+     SELECT t.id FROM mobile_push_tokens t
+      JOIN mobile_science_notification_chains owner ON owner.id=e.chain_id
+      WHERE t.user_id=owner.user_id AND t.installation_id=e.installation_id
+      ORDER BY t.enabled DESC,t.id LIMIT 1
+   ),(
+     SELECT c.primary_token_id FROM mobile_science_notification_chains c WHERE c.id=e.chain_id
+   ))
+ WHERE e.token_id IS NULL;
+ALTER TABLE mobile_science_notification_endpoints
+  ALTER COLUMN token_id SET NOT NULL,
+  DROP CONSTRAINT IF EXISTS fk_mobile_science_endpoint_token_audience;
+ALTER TABLE mobile_science_notification_endpoints
+  ADD CONSTRAINT fk_mobile_science_endpoint_token_audience
+    FOREIGN KEY (token_id,audience_binding)
+    REFERENCES mobile_push_tokens(id,astronomy_fact_audience_binding) ON DELETE CASCADE;
 CREATE UNIQUE INDEX IF NOT EXISTS ux_mobile_science_notification_primary_endpoint
   ON mobile_science_notification_endpoints(chain_id)
   WHERE primary_endpoint=true AND active=true;
@@ -137,8 +213,9 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_occurrences (
   expires_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  FOREIGN KEY (chain_id,science_id,submode,schema_version)
-    REFERENCES mobile_science_notification_chains(id,science_id,submode,schema_version) ON DELETE RESTRICT,
+  CONSTRAINT fk_mobile_science_occurrence_chain
+    FOREIGN KEY (chain_id,science_id,submode,schema_version)
+    REFERENCES mobile_science_notification_chains(id,science_id,submode,schema_version) ON DELETE CASCADE,
   UNIQUE NULLS NOT DISTINCT (chain_id,notification_unit_id),
   UNIQUE (identity_hash),
   UNIQUE (result_revision_hash),
@@ -148,9 +225,31 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_occurrences (
       OR state IN ('revoked','rollback'))
 );
 
+DO $$
+DECLARE fk_name text;
+BEGIN
+  FOR fk_name IN
+    SELECT conname FROM pg_constraint
+     WHERE conrelid='mobile_science_notification_occurrences'::regclass
+       AND confrelid='mobile_science_notification_chains'::regclass
+       AND contype='f' AND conname<>'fk_mobile_science_occurrence_chain'
+  LOOP
+    EXECUTE format('ALTER TABLE mobile_science_notification_occurrences DROP CONSTRAINT %I',fk_name);
+  END LOOP;
+END $$;
+ALTER TABLE mobile_science_notification_occurrences
+  DROP CONSTRAINT IF EXISTS fk_mobile_science_occurrence_chain;
+ALTER TABLE mobile_science_notification_occurrences
+  ADD CONSTRAINT fk_mobile_science_occurrence_chain
+    FOREIGN KEY (chain_id,science_id,submode,schema_version)
+    REFERENCES mobile_science_notification_chains(id,science_id,submode,schema_version) ON DELETE CASCADE;
+
 CREATE OR REPLACE FUNCTION enforce_mobile_science_notification_occurrence_immutable()
 RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+  IF TG_OP='DELETE' AND pg_trigger_depth()>1 THEN
+    RETURN OLD;
+  END IF;
   RAISE EXCEPTION 'mobile_science_notification_occurrence_immutable' USING ERRCODE='23514';
 END;
 $$;

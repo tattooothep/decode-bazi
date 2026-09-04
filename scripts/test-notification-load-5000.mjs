@@ -3,11 +3,15 @@ import path from "node:path";
 import pg from "pg";
 
 const root = process.cwd();
-const env = {};
-for (const line of fs.readFileSync(path.join(root, ".env.local"), "utf8").split("\n")) {
-  const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
-  if (match) env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+const env = { ...process.env };
+const envFile = process.env.HOURKEY_ENV_FILE || path.join(root, ".env.local");
+if (fs.existsSync(envFile)) {
+  for (const line of fs.readFileSync(envFile, "utf8").split("\n")) {
+    const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (match) env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+  }
 }
+if (!env.PGUSER || !env.PGPASSWORD) throw new Error("database_credentials_missing");
 const db = new pg.Client({
   host: env.PGHOST || "127.0.0.1",
   port: Number(env.PGPORT || 5433),

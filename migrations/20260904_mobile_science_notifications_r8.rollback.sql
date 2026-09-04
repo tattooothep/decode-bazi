@@ -14,8 +14,14 @@ UPDATE mobile_science_notification_shadow_cohort
  WHERE enabled=true;
 
 UPDATE mobile_science_notification_chains
-   SET active=false,target_revision=target_revision+1,updated_at=now()
- WHERE active=true;
+   SET active=false,lifecycle_state='rollback',target_revision=target_revision+1,updated_at=now()
+ WHERE active=true OR lifecycle_state<>'rollback';
+
+UPDATE mobile_science_notification_endpoints e
+   SET active=false,target_revision=c.target_revision,updated_at=now()
+  FROM mobile_science_notification_chains c
+ WHERE c.id=e.chain_id
+   AND (e.active=true OR e.target_revision<>c.target_revision);
 
 DO $$
 BEGIN

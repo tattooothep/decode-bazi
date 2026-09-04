@@ -33,7 +33,12 @@ export async function GET(req: Request) {
       created_at: Date;
     }>(
       `SELECT o.id::text,
-              CASE WHEN o.state='shadowed' AND o.expires_at<=now() THEN 'expired' ELSE o.state END AS state,
+              CASE
+                WHEN c.lifecycle_state='rollback' THEN 'rollback'
+                WHEN c.lifecycle_state='revoked' THEN 'revoked'
+                WHEN o.state='shadowed' AND o.expires_at<=now() THEN 'expired'
+                ELSE o.state
+              END AS state,
               o.snapshot_digest,o.created_at
          FROM mobile_science_notification_occurrences o
          JOIN mobile_science_notification_chains c ON c.id=o.chain_id
@@ -41,7 +46,7 @@ export async function GET(req: Request) {
         WHERE c.user_id=$1::uuid AND c.org_id=$2::uuid
           AND e.installation_id=$3::uuid AND e.audience_binding=$4
           AND c.science_id='astronomy_fact' AND o.science_id='astronomy_fact'
-          AND e.active=true AND e.primary_endpoint=true
+          AND e.primary_endpoint=true
         ORDER BY o.created_at DESC LIMIT 50`,
       [session.userId,session.orgId,installationId,audience],
     );
