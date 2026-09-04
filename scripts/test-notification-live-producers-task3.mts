@@ -378,6 +378,54 @@ for (const [name, scheduler] of [["Yam", yam.runScheduler], ["network", network.
   }
 }
 
+const cooldownAbort = new AbortController();
+let cooldownQueries = 0;
+let cooldownDeliveries = 0;
+const deliveryRuntime = require("../src/lib/mobile-notification-delivery.cjs");
+const originalDeliver = deliveryRuntime.deliver;
+const cooldownUser = {
+  ...abortUser,
+  id: "acct-abort-cooldown-001",
+  email: "cooldown@example.test",
+};
+const cooldownDb = {
+  async query(sql: string) {
+    cooldownQueries += 1;
+    if (cooldownQueries === 1) return { rows: [cooldownUser] };
+    if (sql.includes("source_facts->>'allyProfileId'")) {
+      cooldownAbort.abort();
+      return { rows: [] };
+    }
+    throw new Error("scheduler crossed the aborted cooldown fence");
+  },
+};
+globalThis.fetch = async () => ({
+  ok: true,
+  async json() {
+    return {
+      ok: true,
+      active_profile: { id: "profile-center-abort-001" },
+      people: [
+        { id: "profile-ally-abort-001", name: "Ally", scores: { day: 40 } },
+        { id: "profile-risk-abort-001", name: "Risk", scores: { day: -40 } },
+      ],
+    };
+  },
+} as Response);
+deliveryRuntime.deliver = async () => {
+  cooldownDeliveries += 1;
+  return { status: "accepted" };
+};
+try {
+  await assert.rejects(network.runScheduler(cooldownDb, cooldownAbort.signal), /abort/u,
+    "network must stop after an abort raised while its cooldown query is pending");
+  check(cooldownDeliveries === 0,
+    "network never crosses the provider-delivery boundary after a cooldown-query abort");
+} finally {
+  deliveryRuntime.deliver = originalDeliver;
+  globalThis.fetch = originalFetch;
+}
+
 const database = `notification_live_producer_test_${process.pid}`;
 const role = `notification_live_producer_role_${process.pid}`;
 const password = crypto.randomBytes(20).toString("hex");
