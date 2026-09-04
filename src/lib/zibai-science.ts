@@ -95,9 +95,10 @@ function daysInYear(year: number): number {
 export function equationOfTimeMinutes(at: Date): number {
   validInstant(at);
   const start = Date.UTC(at.getUTCFullYear(), 0, 1);
-  const day = Math.floor((at.getTime() - start) / 86_400_000) + 1;
-  const fractionalHour = at.getUTCHours() + at.getUTCMinutes() / 60 + at.getUTCSeconds() / 3600;
-  const gamma = 2 * Math.PI / daysInYear(at.getUTCFullYear()) * (day - 1 + (fractionalHour - 12) / 24);
+  const elapsedYearFraction = (at.getTime() - start) / (daysInYear(at.getUTCFullYear()) * 86_400_000);
+  // The noon-origin phase must not change when the civil year changes length.
+  // Retain millisecond precision so the inverse solver sees the same clock.
+  const gamma = 2 * Math.PI * (elapsedYearFraction - 0.5 / 365);
   return 229.18 * (
     0.000075 + 0.001868 * Math.cos(gamma) - 0.032077 * Math.sin(gamma)
     - 0.014615 * Math.cos(2 * gamma) - 0.040849 * Math.sin(2 * gamma)
