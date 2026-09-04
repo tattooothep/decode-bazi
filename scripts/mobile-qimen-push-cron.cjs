@@ -11,6 +11,7 @@ const componentCatalog = require("../src/lib/qimen-component-catalog.cjs");
 const sourceManifestRuntime = require("../src/lib/qimen-canonical-source-manifest.cjs");
 const canonicalOccurrenceRuntime = require("../src/lib/qimen-canonical-occurrence-builder.cjs");
 const qimenAdvisory = require("../src/lib/qimen-notification-advisory.cjs");
+const seasonalRuntime = require("../src/lib/qimen-seasonal-vigor.cjs");
 const localEngineRuntime = require("../src/lib/qimen-local-engine-pool.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
@@ -222,8 +223,18 @@ function localizedDecisionWarning(language, code) {
     : language === "zh" ? `盤局提醒 ${code}` : `chart warning ${code}`;
 }
 
+function verifyCurrentSnapshot(snapshot) {
+  return snapshot?.snapshotSchema === 4 ? payloadRuntime.verifyQimenThreeLayerSnapshotV4(snapshot)
+    : payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot);
+}
+
+function snapshotCapabilityMatches(capability, snapshot) {
+  return (Number(capability) === 3 && snapshot?.snapshotSchema === 3)
+    || (Number(capability) === 4 && (snapshot?.snapshotSchema === 3 || snapshot?.snapshotSchema === 4));
+}
+
 function buildQimenCopy(locale, snapshot) {
-  if (!payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)) throw new TypeError("qimen_snapshot_invalid");
+  if (!verifyCurrentSnapshot(snapshot)) throw new TypeError("qimen_snapshot_invalid");
   const language = locale === "th" || locale === "zh" ? locale : "en";
   const decision = parsedHourDecision(snapshot);
   const direction = DIRECTION[snapshot.selectedDirection]?.[language] || snapshot.selectedDirection;
@@ -252,8 +263,9 @@ function buildQimenCopy(locale, snapshot) {
 }
 
 function buildQimenNotice(row, snapshot, occurrenceId, sendDeadline) {
-  if (!payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)) throw new TypeError("qimen_snapshot_invalid");
-  const payload = payloadRuntime.buildQimenV3ProviderData(snapshot);
+  if (!verifyCurrentSnapshot(snapshot)) throw new TypeError("qimen_snapshot_invalid");
+  const payload = snapshot.snapshotSchema === 4
+    ? payloadRuntime.buildQimenV4ProviderData(snapshot) : payloadRuntime.buildQimenV3ProviderData(snapshot);
   const historyCopies = delivery.localizedHistoryCopies((locale) => buildQimenCopy(locale, snapshot));
   const locale = notificationPayload.normalizedLocale(row.token_locale);
   const providerCopy = buildQimenCopy(locale, snapshot);
@@ -271,6 +283,7 @@ function buildQimenNotice(row, snapshot, occurrenceId, sendDeadline) {
       snapshotDigest: snapshot.snapshotDigest,
       selectedDirection: snapshot.selectedDirection,
       calculationVersion: snapshot.versionTuple.hour,
+      ...(snapshot.snapshotSchema === 4 ? { seasonalEvidence: snapshot.layers.hour.contextEvidence } : {}),
     }),
     messages: Object.freeze([Object.freeze({
       tokenId: row.token_id,
@@ -379,7 +392,7 @@ async function admitOccurrence(db, row, snapshot, sendDeadline) {
     );
     const persisted = logical.rows[0];
     if (persisted?.state === "claimed" && persisted.push_log_id === null
-      && payloadRuntime.verifyQimenThreeLayerSnapshotV3(persisted.snapshot)) admitted = persisted;
+      && verifyCurrentSnapshot(persisted.snapshot)) admitted = persisted;
   }
   return admitted ? Object.freeze({
     id: admitted.id,
@@ -399,7 +412,7 @@ async function loadRecoverableOccurrence(db, row, canonicalWindow) {
   );
   const persisted = result.rows[0];
   if (persisted?.state !== "claimed" || persisted.push_log_id !== null
-    || !payloadRuntime.verifyQimenThreeLayerSnapshotV3(persisted.snapshot)) return null;
+    || !verifyCurrentSnapshot(persisted.snapshot)) return null;
   return Object.freeze({
     id: persisted.id,
     snapshot: persisted.snapshot,
@@ -411,6 +424,8 @@ async function loadRecoverableOccurrence(db, row, canonicalWindow) {
 async function defaultBuildCanonicalOccurrence(row, at, options = {}) {
   return canonicalOccurrenceRuntime.buildCanonicalQimenOccurrence(row, at, {
     signal: options.signal,
+    schema: options.schema,
+    doorMethod: options.doorMethod,
     fetchCanonicalQimenEngineSnapshot: options.fetchCanonicalQimenEngineSnapshot,
   });
 }
@@ -423,6 +438,8 @@ function createEngineSnapshotMemo(fetchSnapshot = qimenAdvisory.fetchCanonicalQi
     const key = payloadRuntime.canonicalStringify({
       date: input?.date, time: input?.time, timezone: input?.timezone, instant: input?.instant,
       lat: input?.lat, lng: input?.lng,
+      schema: options.schema === undefined ? 3 : options.schema,
+      doorMethod: options.doorMethod === undefined ? null : options.doorMethod,
     });
     let pending = cache.get(key);
     if (!pending) {
@@ -464,7 +481,7 @@ async function processClaim(db, claim, at, dependencies = {}) {
     && (row.location_permission === "foreground" || row.location_permission === "background")
     && Number.isFinite(Number(row.longitude)) && row.location_timezone;
   if (!locationFresh) reason = "location_stale";
-  else if (Number(row.qimen_payload_schema) !== 3) reason = "payload_capability_missing";
+  else if (![3, 4].includes(Number(row.qimen_payload_schema))) reason = "payload_capability_missing";
   else if (row.paused_until && new Date(row.paused_until) > at) reason = "paused";
   else if (inQuietHours(localMinute(row.location_timezone, at), Number(row.quiet_start), Number(row.quiet_end))) reason = "quiet_hours";
   if (reason) {
@@ -497,10 +514,22 @@ async function processClaim(db, claim, at, dependencies = {}) {
   let admitted = await loadRecoverableOccurrence(db, row, canonicalWindow);
   let snapshot = admitted?.snapshot || null;
   if (!snapshot) {
+    const schema = Number(row.qimen_payload_schema);
+    const doorMethod = schema === 4
+      ? (dependencies.seasonalDoorMethod ?? process.env.QIMEN_SEASONAL_DOOR_METHOD) : undefined;
+    // No default or door-lineage inference. Existing immutable occurrences
+    // above can still recover; creating V4 needs an explicitly selected method.
+    if (schema === 4 && (typeof doorMethod !== "string" || !Object.hasOwn(seasonalRuntime.DOOR_METHODS, doorMethod))) {
+      reason = "seasonal_door_method_unconfigured";
+      await finishClaim(db, row, at, next, reason);
+      return { reserved: 0, skipped: 1, reason };
+    }
     try {
       const build = dependencies.buildCanonicalOccurrence || defaultBuildCanonicalOccurrence;
       snapshot = await build(row, at, {
         signal: dependencies.signal,
+        schema,
+        doorMethod,
         fetchCanonicalQimenEngineSnapshot: dependencies.fetchCanonicalQimenEngineSnapshot,
       });
     } catch (error) {
@@ -522,8 +551,14 @@ async function processClaim(db, claim, at, dependencies = {}) {
       return { reserved: 0, skipped: 1, reason };
     }
   }
-  if (!payloadRuntime.verifyQimenThreeLayerSnapshotV3(snapshot)) {
+  if (!verifyCurrentSnapshot(snapshot)) {
     reason = "snapshot_invalid";
+    await finishClaim(db, row, at, next, reason);
+    return { reserved: 0, skipped: 1, reason };
+  }
+  if (!snapshotCapabilityMatches(row.qimen_payload_schema, snapshot)
+    || (!admitted && snapshot.snapshotSchema !== Number(row.qimen_payload_schema))) {
+    reason = "snapshot_capability_mismatch";
     await finishClaim(db, row, at, next, reason);
     return { reserved: 0, skipped: 1, reason };
   }
@@ -548,6 +583,15 @@ async function processClaim(db, claim, at, dependencies = {}) {
     }
   }
   snapshot = admitted.snapshot;
+  // An INSERT conflict may recover a snapshot produced by another runtime.
+  // Recheck immutable owner/window/capability after that concurrency fence.
+  if (!verifyCurrentSnapshot(snapshot) || !snapshotCapabilityMatches(row.qimen_payload_schema, snapshot)
+    || snapshot.accountId !== row.user_id || snapshot.purpose !== row.purpose
+    || snapshot.layers.hour.validFrom !== canonicalWindow.startAt || snapshot.layers.hour.validUntil !== canonicalWindow.endAt) {
+    reason = "persisted_snapshot_binding_mismatch";
+    await finishClaim(db, row, at, next, reason);
+    return { reserved: 0, skipped: 1, reason };
+  }
   const recoveredAdmission = admissionDecision(row, snapshot, at);
   if (!recoveredAdmission.allow || recoveredAdmission.sendDeadline !== admitted.sendDeadline) {
     await db.query(

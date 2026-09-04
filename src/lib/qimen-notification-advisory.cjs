@@ -1,9 +1,10 @@
 /**
  * Notification-only interpretation of canonical Qimen engine output.
- * Source contract: data/library/qmdj/auth-th/wangxiang-vigor-th.md and
- * geju-formations-th.md. This module never builds or mutates a chart: it
- * combines the engine's beginner reading, 旺相休囚死 order and detected flags.
+ * Historical V1 retains its cached order contract. Explicit schema 4 uses
+ * Yanbo nine-star vigor from canonical global-Jie month pillars, with an
+ * independently selected door method. It never mutates the arrangement engine.
  */
+const seasonalRuntime = require("./qimen-seasonal-vigor.cjs");
 const PURPOSE = "travel";
 const ENGINE_PROFILE_ID = 1;
 const ENGINE_CONTRACT_VERSION = "QIMEN_HOUR_NOTIFICATION_PIPELINE_CLOSURE_V6";
@@ -14,6 +15,7 @@ const ENGINE_NODE_RUNTIME = "v22.22.1";
 const ENGINE_REFERENCE_DATA_VERSION = "QIMEN_SQLITE_REFERENCE_TABLES_V1";
 const ENGINE_REFERENCE_DATA_SHA256 = "2bbe56382a78ee951da880706b3b1c895307306848319ebac026ed227d38e1c4";
 const ADVISORY_VERSION = "qimen-notification-advisory-v1";
+const SEASONAL_ADVISORY_VERSION = "qimen-notification-advisory-month-v2";
 const DIRECTION = Object.freeze({
   N: Object.freeze({ th: "เหนือ", en: "north", zh: "北方" }),
   NE: Object.freeze({ th: "ตะวันออกเฉียงเหนือ", en: "northeast", zh: "東北方" }),
@@ -575,6 +577,12 @@ function warningEvidence(root, row, components) {
 }
 
 function buildQimenAdvisory(result, options = {}) {
+  const schema = options.schema === undefined ? 3 : options.schema;
+  if (schema !== 3 && schema !== 4) throw new TypeError("qimen_notification_advisory_schema_invalid");
+  if (schema !== 4 && options.doorMethod !== undefined) throw new TypeError("qimen_notification_seasonal_schema_required");
+  if (schema === 4 && !Object.hasOwn(seasonalRuntime.DOOR_METHODS, options.doorMethod)) {
+    throw new TypeError("qimen_seasonal_door_method_required");
+  }
   const root = normalizedResult(result);
   const calculation = root?.calculation;
   const timezone = validTimezone(options.timezone || calculation?.input_timezone);
@@ -583,14 +591,34 @@ function buildQimenAdvisory(result, options = {}) {
   const inputAt = new Date(calculation?.input_datetime);
   if (!root || !timezone || purpose !== PURPOSE || !Number.isFinite(longitude) || !Number.isFinite(inputAt.valueOf())) return null;
   if (calculation?.time_mode !== "true_solar_time" || calculation?.ju_method !== "chai_bu") return null;
-  const vigor = vigorMap(root?.chart?.wang_xiang_status);
-  if (!vigor) return null;
+  let seasonalMaps = null;
+  let seasonalEvidence = null;
+  if (schema === 4) {
+    // Lazy import: the canonical pillar clock itself imports this module's
+    // apparent-solar helper. Do not create an initialization-time cycle.
+    const pillarRuntime = require("./qimen-canonical-pillars.cjs");
+    const canonical = pillarRuntime.canonicalQimenPillars({ instant: inputAt, longitude });
+    pillarRuntime.assertEnginePillars(calculation.pillars, canonical);
+    const monthWindow = require("./zibai-solar-term-runtime.cjs").solarTermMonthWindow(inputAt);
+    seasonalMaps = seasonalRuntime.separatedVigorForMonthPillar(canonical.monthPillarZh, options.doorMethod);
+    seasonalEvidence = seasonalRuntime.buildSeasonalVigorEvidence({
+      monthPillarZh: canonical.monthPillarZh,
+      monthBoundaryClock: canonical.yearMonthBoundaryClock,
+      monthValidFrom: monthWindow.startAt,
+      monthValidUntil: monthWindow.endAt,
+      doorMethod: options.doorMethod,
+    });
+  }
+  const vigor = schema === 4 ? null : vigorMap(root?.chart?.wang_xiang_status);
+  if (schema !== 4 && !vigor) return null;
+  const doorVigor = seasonalMaps ? seasonalMaps.door.byElement : vigor;
+  const starVigor = seasonalMaps ? seasonalMaps.star.byElement : vigor;
   const rows = (Array.isArray(root.palaces) ? root.palaces : []).map((row) => {
     const code = String(row?.direction || "").toUpperCase();
     const score = Number(row?.display_score);
     const deity = component(row, "deity", vigor);
-    const door = component(row, "door", vigor);
-    const star = component(row, "star", vigor);
+    const door = component(row, "door", doorVigor);
+    const star = component(row, "star", starVigor);
     if (!DIRECTION[code] || !Number.isFinite(score) || !deity || !door || !star) return null;
     const readingCode = String(row?.beginner_reading?.code || "context");
     const weakVigor = [door.vigor, star.vigor].some((value) => !ACTION_SUPPORTING_VIGOR.has(value));
@@ -609,6 +637,12 @@ function buildQimenAdvisory(result, options = {}) {
     || rows.find((row) => row.eligible) || rows[0];
   if (!selected) return null;
   const window = trueSolarShichenWindow({ timezone, longitude, instant: inputAt });
+  if (seasonalEvidence && (Date.parse(window.startAt) < Date.parse(seasonalEvidence.monthValidFrom)
+    || Date.parse(window.endAt) > Date.parse(seasonalEvidence.monthValidUntil))) {
+    const error = new RangeError("QIMEN_CONTEXT_TRANSITION_INSIDE_HOUR");
+    error.code = "QIMEN_CONTEXT_TRANSITION_INSIDE_HOUR";
+    throw error;
+  }
   const corrected = new Date(calculation.corrected_datetime);
   const engineCoordinate = new Date(calculation.apparent_solar_coordinate);
   const expectedCoordinate = apparentSolarCoordinate(longitude, inputAt).coordinate;
@@ -634,7 +668,7 @@ function buildQimenAdvisory(result, options = {}) {
   const warningValues = [...selected.evidence.displaySoftCodes];
   for (const [kind, item] of [["DOOR", selected.door], ["STAR", selected.star]]) {
     if (!ACTION_SUPPORTING_VIGOR.has(item.vigor)) {
-      const suffix = item.vigor === "休" ? "XIU" : item.vigor === "囚" ? "QIU" : "SI";
+      const suffix = item.vigor === "休" ? "XIU" : item.vigor === "囚" ? "QIU" : item.vigor === "廢" ? "FEI" : "SI";
       warningValues.push(`${kind}_VIGOR_${suffix}`);
     }
   }
@@ -645,7 +679,7 @@ function buildQimenAdvisory(result, options = {}) {
     ? (selected.readingCode === "suitable" && canonicalWarningCodes.length === 0 ? "clear" : "conditional")
     : null;
   return Object.freeze({
-    version: ADVISORY_VERSION,
+    version: schema === 4 ? SEASONAL_ADVISORY_VERSION : ADVISORY_VERSION,
     purpose,
     profileId: ENGINE_PROFILE_ID,
     school: "chaibu",
@@ -668,6 +702,11 @@ function buildQimenAdvisory(result, options = {}) {
     readingCode: selected.readingCode,
     readingVersion: String(selected.row?.beginner_reading?.version || "").trim() || null,
     wangXiangOrder: vigor ? Object.freeze([...root.chart.wang_xiang_status]) : null,
+    ...(seasonalMaps ? {
+      seasonalEvidence,
+      starWangXiangOrder: seasonalMaps.star.order,
+      doorWangXiangOrder: seasonalMaps.door.order,
+    } : {}),
     inputAt: inputAt.toISOString(),
     correctedAt: corrected.toISOString(),
     correctionMinutes: engineCorrection,
@@ -729,7 +768,9 @@ async function fetchCanonicalQimenEngineSnapshot(input, options = {}) {
     || Math.abs(engineInputAt.valueOf() - requestedInstant.valueOf()) > 1_500) {
     throw new RangeError("qimen_notification_engine_instant_mismatch");
   }
-  const advisory = buildQimenAdvisory(result, { timezone, longitude, purpose: PURPOSE });
+  const advisory = buildQimenAdvisory(result, {
+    timezone, longitude, purpose: PURPOSE, schema: options.schema, doorMethod: options.doorMethod,
+  });
   if (advisory && Math.abs(new Date(advisory.inputAt).valueOf() - requestedInstant.valueOf()) > 1_500) {
     throw new RangeError("qimen_notification_engine_instant_mismatch");
   }
@@ -775,9 +816,11 @@ function warningLabel(code, locale) {
     DOOR_VIGOR_QIU: { th: "ประตูอยู่ภาวะ囚", en: "gate qi is imprisoned 囚", zh: "門氣囚" },
     DOOR_VIGOR_SI: { th: "ประตูอยู่ภาวะ死", en: "gate qi is dead 死", zh: "門氣死" },
     DOOR_VIGOR_XIU: { th: "ประตูอยู่ภาวะ休", en: "gate qi is resting 休", zh: "門氣休" },
+    DOOR_VIGOR_FEI: { th: "กำลังประตูอ่อนตามเดือน (廢)", en: "gate vigor is depleted this month (廢)", zh: "門氣於本月為廢" },
     STAR_VIGOR_QIU: { th: "ดาวอยู่ภาวะ囚", en: "star qi is imprisoned 囚", zh: "星氣囚" },
     STAR_VIGOR_SI: { th: "ดาวอยู่ภาวะ死", en: "star qi is dead 死", zh: "星氣死" },
     STAR_VIGOR_XIU: { th: "ดาวอยู่ภาวะ休", en: "star qi is resting 休", zh: "星氣休" },
+    STAR_VIGOR_FEI: { th: "กำลังดาวอ่อนตามเดือน (廢)", en: "star vigor is depleted this month (廢)", zh: "星氣於本月為廢" },
   }[code];
   return localized?.[locale] || code;
 }
@@ -867,6 +910,11 @@ function qimenSourceFacts(advisory, extra = {}) {
     readingCode: advisory.readingCode,
     readingVersion: advisory.readingVersion,
     wangXiangOrder: advisory.wangXiangOrder,
+    ...(advisory.version === SEASONAL_ADVISORY_VERSION ? {
+      seasonalEvidence: advisory.seasonalEvidence,
+      starWangXiangOrder: advisory.starWangXiangOrder,
+      doorWangXiangOrder: advisory.doorWangXiangOrder,
+    } : {}),
     inputAt: advisory.inputAt,
     correctedAt: advisory.correctedAt,
     correctionMinutes: advisory.correctionMinutes,
@@ -887,6 +935,7 @@ function earliestExpiry(...values) {
 
 module.exports = {
   ADVISORY_VERSION,
+  SEASONAL_ADVISORY_VERSION,
   ENGINE_CONTRACT_VERSION,
   ENGINE_SOURCE_SHA256,
   PURPOSE,

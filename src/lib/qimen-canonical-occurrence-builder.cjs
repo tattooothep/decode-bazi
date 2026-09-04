@@ -10,6 +10,7 @@ const { buildFaqiaoFeipan } = require("./qimen-canonical-context-engine.cjs");
 const { solarTermMonthWindow } = require("./zibai-solar-term-runtime.cjs");
 const snapshotRuntime = require("./qimen-three-layer-notification.cjs");
 const componentCatalog = require("./qimen-component-catalog.cjs");
+const seasonalRuntime = require("./qimen-seasonal-vigor.cjs");
 
 const DIRECTIONS = Object.freeze(["N", "SW", "E", "SE", "C", "NW", "W", "NE", "S"]);
 const STAR_CODES = Object.freeze({
@@ -172,13 +173,21 @@ function contextLayer(kind, chart, calculationVersion, validFrom, validUntil, pi
   });
 }
 
-function hourLayer(result, version, validFrom, validUntil) {
+function hourLayer(result, version, validFrom, validUntil, seasonalEvidence = null) {
   const input = Array.isArray(result?.palaces) ? result.palaces : [];
   const byPalace = new Map();
-  const vigorOrder = Array.isArray(result?.chart?.wang_xiang_status) ? result.chart.wang_xiang_status : [];
-  if (vigorOrder.length !== 5 || new Set(vigorOrder).size !== 5
-    || !vigorOrder.every((element) => ["木", "火", "土", "金", "水"].includes(element))) throw canonicalError();
-  const vigorByElement = Object.fromEntries(vigorOrder.map((element, index) => [element, VIGOR_LABELS[index]]));
+  let seasonalMaps = null;
+  let vigorByElement = null;
+  if (version === seasonalRuntime.SEASONAL_HOUR_CALCULATION_VERSION) {
+    if (!seasonalRuntime.verifySeasonalVigorEvidence(seasonalEvidence)) throw canonicalError();
+    seasonalMaps = seasonalRuntime.separatedVigorForMonthPillar(seasonalEvidence.monthPillarZh, seasonalEvidence.doorMethod);
+  } else {
+    if (seasonalEvidence !== null) throw canonicalError();
+    const vigorOrder = Array.isArray(result?.chart?.wang_xiang_status) ? result.chart.wang_xiang_status : [];
+    if (vigorOrder.length !== 5 || new Set(vigorOrder).size !== 5
+      || !vigorOrder.every((element) => ["木", "火", "土", "金", "水"].includes(element))) throw canonicalError();
+    vigorByElement = Object.fromEntries(vigorOrder.map((element, index) => [element, VIGOR_LABELS[index]]));
+  }
   for (const row of input) {
     const palace = Number(row?.palace_id);
     if (!Number.isInteger(palace) || palace < 1 || palace > 9 || byPalace.has(palace)) throw canonicalError();
@@ -230,8 +239,8 @@ function hourLayer(result, version, validFrom, validUntil) {
       clashCodes: cleanEngineCodes([...classical, ...ui]
         .filter((flag) => flag?.active !== false && /(?:CHONG|CLASH)/iu.test(String(flag?.code || "")))
         .map((flag) => flag?.code)),
-      doorVigor: center ? null : vigorByElement[DOOR_ELEMENT[row.door_code]],
-      starVigor: vigorByElement[STAR_ELEMENT[row.star_code]],
+      doorVigor: center ? null : seasonalMaps ? seasonalMaps.door.byDoorCode[doorCode] : vigorByElement[DOOR_ELEMENT[row.door_code]],
+      starVigor: seasonalMaps ? seasonalMaps.star.byStarCode[starCode] : vigorByElement[STAR_ELEMENT[row.star_code]],
       isVoid: row.is_void_any === true,
       isHorse: row.is_traveling_horse === true,
     });
@@ -241,7 +250,7 @@ function hourLayer(result, version, validFrom, validUntil) {
     sourceCode: "QIMEN_VERIFIED_ZHUANPAN_SHIJIA", schoolCode: "zhuanpan_chai_bu",
     validFrom, validUntil, centerLodgingPolicy: "hour_engine_source_policy",
     ...layerEvidence("hour"),
-    contextEvidence: null,
+    contextEvidence: seasonalEvidence,
     palaces: Object.freeze(palaces),
   });
 }
@@ -254,6 +263,12 @@ function intersection(first, second) {
 }
 
 async function buildCanonicalQimenOccurrence(row, value, options = {}) {
+  const schema = options.schema === undefined ? 3 : options.schema;
+  if (schema !== 3 && schema !== 4) throw canonicalError("QIMEN_CANONICAL_SCHEMA_INVALID");
+  if (schema !== 4 && options.doorMethod !== undefined) throw canonicalError("qimen_notification_seasonal_schema_required");
+  if (schema === 4 && (typeof options.doorMethod !== "string" || !Object.hasOwn(seasonalRuntime.DOOR_METHODS, options.doorMethod))) {
+    throw canonicalError("qimen_seasonal_door_method_required");
+  }
   const at = value instanceof Date ? new Date(value.valueOf()) : new Date(value);
   const accountId = String(row?.user_id || "");
   const installationId = String(row?.installation_id || "");
@@ -267,27 +282,47 @@ async function buildCanonicalQimenOccurrence(row, value, options = {}) {
     || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw canonicalError();
 
   sourceManifestRuntime.verifyCanonicalSourceEvidence();
-  const manifest = sourceManifestRuntime.loadCanonicalSourceManifest();
+  const manifest = sourceManifestRuntime.loadCanonicalSourceManifest({ schema });
   const clock = civilClock(timezone, at);
   const fetchSnapshot = options.fetchCanonicalQimenEngineSnapshot || advisoryRuntime.fetchCanonicalQimenEngineSnapshot;
   const engine = await fetchSnapshot({
     ...clock, timezone, instant: at.toISOString(), lat: latitude, lng: longitude,
-  }, { signal: options.signal });
-  if (!engine?.advisory || !engine?.result || engine.advisory.purpose !== purpose) throw canonicalError();
+  }, { signal: options.signal, schema, doorMethod: options.doorMethod });
+  if (!engine?.result) throw canonicalError();
   sourceManifestRuntime.assertAllowedHourEngineContract(engine.result?.calculation?.engine_contract);
-  if (engine.advisory.recommendation !== "recommended") return null;
-  const selectedDirection = String(engine.advisory.direction?.code || "");
+  // The V4 decision and full grid must derive from the same raw response and
+  // explicit method. A stale legacy advisory supplied by a caller is not proof.
+  const advisory = schema === 4
+    ? advisoryRuntime.buildQimenAdvisory({ data: engine.result }, { timezone, longitude, purpose, schema, doorMethod: options.doorMethod })
+    : engine.advisory;
+  if (!advisory || advisory.purpose !== purpose) throw canonicalError();
+  const canonicalPillars = pillarRuntime.canonicalQimenPillars({ instant: at, longitude });
+  if (schema === 4) {
+    const engineAt = new Date(engine.result?.calculation?.input_datetime);
+    if (!Number.isFinite(engineAt.valueOf()) || Math.abs(engineAt.valueOf() - at.valueOf()) > 1500) {
+      throw canonicalError("QIMEN_CANONICAL_ENGINE_INSTANT_MISMATCH");
+    }
+    pillarRuntime.assertEnginePillars(engine.result?.calculation?.pillars, canonicalPillars);
+  }
+  if (advisory.recommendation !== "recommended") return null;
+  const selectedDirection = String(advisory.direction?.code || "");
   if (!DIRECTIONS.includes(selectedDirection) || selectedDirection === "C") throw canonicalError();
 
   const canonicalHourWindow = advisoryRuntime.trueSolarShichenWindow({ timezone, longitude, instant: at });
-  if (engine.advisory.validFrom !== canonicalHourWindow.startAt || engine.advisory.validUntil !== canonicalHourWindow.endAt) {
+  if (advisory.validFrom !== canonicalHourWindow.startAt || advisory.validUntil !== canonicalHourWindow.endAt) {
     throw canonicalError("QIMEN_CANONICAL_HOUR_WINDOW_MISMATCH");
   }
-  const canonicalPillars = pillarRuntime.canonicalQimenPillars({ instant: at, longitude });
   pillarRuntime.assertEnginePillars(engine.result?.calculation?.pillars, canonicalPillars);
   const { yearPillarZh, monthPillarZh, dayPillarZh } = canonicalPillars;
 
   const monthWindow = solarTermMonthWindow(at);
+  if (schema === 4 && (advisory.seasonalEvidence.monthPillarZh !== monthPillarZh
+    || advisory.seasonalEvidence.monthValidFrom !== monthWindow.startAt
+    || advisory.seasonalEvidence.monthValidUntil !== monthWindow.endAt
+    || Date.parse(monthWindow.startAt) > Date.parse(canonicalHourWindow.startAt)
+    || Date.parse(monthWindow.endAt) < Date.parse(canonicalHourWindow.endAt))) {
+    throw canonicalError("QIMEN_CONTEXT_TRANSITION_INSIDE_HOUR");
+  }
   const monthJu = resolveMonthYearJu(yearPillarZh);
   const monthChart = buildFaqiaoFeipan({
     dun: monthJu.dun, ju: monthJu.ju, subjectPillarZh: monthPillarZh, centerLodgingPolicy: CENTER_POLICY,
@@ -306,12 +341,14 @@ async function buildCanonicalQimenOccurrence(row, value, options = {}) {
   const layers = {
     month: contextLayer("month", monthChart, manifest.layers.month.calculationVersion, monthWindow.startAt, monthWindow.endAt, canonicalPillars),
     day: contextLayer("day", dayChart, manifest.layers.day.calculationVersion, dayValidity.validFrom, dayValidity.validUntil, canonicalPillars),
-    hour: hourLayer(engine.result, manifest.layers.hour.calculationVersion, canonicalHourWindow.startAt, canonicalHourWindow.endAt),
+    hour: hourLayer(engine.result, manifest.layers.hour.calculationVersion, canonicalHourWindow.startAt, canonicalHourWindow.endAt,
+      schema === 4 ? advisory.seasonalEvidence : null),
   };
   const referenceHash = crypto.createHash("sha256").update(snapshotRuntime.canonicalStringify({
     accountId, installationId, purpose, hourValidFrom: canonicalHourWindow.startAt,
   })).digest("hex");
-  return snapshotRuntime.buildQimenThreeLayerSnapshotV3({
+  const buildSnapshot = schema === 4 ? snapshotRuntime.buildQimenThreeLayerSnapshotV4 : snapshotRuntime.buildQimenThreeLayerSnapshotV3;
+  return buildSnapshot({
     event: "qimen_three_layer",
     notificationId: `qimen_ref_${referenceHash}`,
     accountId,
@@ -321,7 +358,7 @@ async function buildCanonicalQimenOccurrence(row, value, options = {}) {
     route: "/qimen/notification-detail",
     hourDecision: {
       direction: selectedDirection, purpose, recommendationCode: "recommended",
-      reasonCodes: advisoryReasonCodes(engine.advisory),
+      reasonCodes: advisoryReasonCodes(advisory),
     },
     layers,
   });
