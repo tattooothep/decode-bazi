@@ -305,11 +305,15 @@ BEGIN
    USING public.mobile_science_notification_chains c
    WHERE e.chain_id=c.id AND c.user_id=p_user_id
      AND c.primary_installation_id=p_installation_id
-     AND c.primary_token_id<>p_token_id AND c.lifecycle_state='shadow';
+     AND c.primary_token_id<>p_token_id AND c.lifecycle_state='shadow'
+     AND c.science_id='astronomy_fact' AND c.submode='civil_two_hour'
+     AND c.schema_version=1;
   UPDATE public.mobile_science_notification_chains c
      SET primary_token_id=p_token_id,target_revision=c.target_revision+1,updated_at=now()
    WHERE c.user_id=p_user_id AND c.primary_installation_id=p_installation_id
-     AND c.primary_token_id<>p_token_id AND c.lifecycle_state='shadow';
+     AND c.primary_token_id<>p_token_id AND c.lifecycle_state='shadow'
+     AND c.science_id='astronomy_fact' AND c.submode='civil_two_hour'
+     AND c.schema_version=1;
   INSERT INTO public.mobile_science_notification_endpoints
     (chain_id,token_id,installation_id,audience_binding,target_revision,primary_endpoint,active)
   SELECT c.id,p_token_id,p_installation_id,p_audience,c.target_revision,true,true
@@ -317,6 +321,7 @@ BEGIN
    WHERE c.user_id=p_user_id AND c.primary_installation_id=p_installation_id
      AND c.primary_token_id=p_token_id AND c.lifecycle_state='shadow'
      AND c.science_id='astronomy_fact' AND c.submode='civil_two_hour'
+     AND c.schema_version=1
   ON CONFLICT(chain_id,installation_id) DO UPDATE SET
     token_id=EXCLUDED.token_id,audience_binding=EXCLUDED.audience_binding,
     target_revision=EXCLUDED.target_revision,primary_endpoint=true,active=true,updated_at=now();
@@ -350,8 +355,23 @@ CREATE OR REPLACE FUNCTION hourkey_r8_record_astronomy_shadow_occurrence(
   p_snapshot jsonb,p_snapshot_digest text,p_scheduled_for timestamptz,p_expires_at timestamptz,
   p_model_digest text
 ) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
-DECLARE inserted_id uuid;
+DECLARE
+  inserted_id uuid;
+  locked_user_id uuid;
 BEGIN
+  SELECT c.user_id INTO locked_user_id
+    FROM public.mobile_science_notification_chains c
+   WHERE c.id=p_chain_id;
+  IF NOT FOUND THEN RETURN false; END IF;
+
+  PERFORM 1
+    FROM public.users u
+   WHERE u.id=locked_user_id
+     AND u.deleted_at IS NULL
+     AND u.is_active IS DISTINCT FROM false
+   FOR UPDATE;
+  IF NOT FOUND THEN RETURN false; END IF;
+
   WITH eligible AS (
     SELECT c.id
       FROM public.mobile_science_notification_chains c

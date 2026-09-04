@@ -51,7 +51,7 @@ try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); CREATE DATABASE ${database};`);
   psql(database, `
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE TABLE users(id uuid PRIMARY KEY);
+    CREATE TABLE users(id uuid PRIMARY KEY,deleted_at timestamptz,is_active boolean NOT NULL DEFAULT true);
     CREATE TABLE profiles(id uuid PRIMARY KEY,created_by_user_id uuid NOT NULL REFERENCES users(id));
     CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY REFERENCES users(id));
     CREATE TABLE mobile_push_tokens(
@@ -131,6 +131,35 @@ try {
     VALUES('${userId}',gen_random_uuid(),'astronomy_fact','civil_two_hour',1,'${tokenId}','${installationId}')
     RETURNING id;
   `).split("\n").at(-1)!;
+  const qizhengTokenId = psql(database, `
+    INSERT INTO mobile_push_tokens(user_id,installation_id,enabled)
+    VALUES('${userId}','${installationId}',false) RETURNING id;
+  `).split("\n").at(-1)!;
+  const qizhengAudience = psql(database,
+    `SELECT astronomy_fact_audience_binding FROM mobile_push_tokens WHERE id='${qizhengTokenId}'`,
+  );
+  const qizhengChainId = psql(database, `
+    WITH inserted AS (
+      INSERT INTO mobile_science_notification_chains
+        (user_id,org_id,science_id,submode,schema_version,primary_token_id,primary_installation_id)
+      VALUES('${userId}',gen_random_uuid(),'qizheng','electional_window',0,'${qizhengTokenId}','${installationId}')
+      RETURNING id
+    )
+    INSERT INTO mobile_science_notification_endpoints
+      (chain_id,token_id,installation_id,audience_binding,target_revision,primary_endpoint)
+    SELECT id,'${qizhengTokenId}','${installationId}','${qizhengAudience}',1,true FROM inserted
+    RETURNING chain_id;
+  `).split("\n").at(-1)!;
+  const qizhengBefore = psql(database, `
+    SELECT jsonb_build_object(
+      'chain',to_jsonb(c),
+      'endpoints',COALESCE((
+        SELECT jsonb_agg(to_jsonb(e) ORDER BY e.installation_id)
+          FROM mobile_science_notification_endpoints e WHERE e.chain_id=c.id
+      ),'[]'::jsonb)
+    )::text
+      FROM mobile_science_notification_chains c WHERE c.id='${qizhengChainId}';
+  `);
   const replacementTokenId = psql(database, `
     UPDATE mobile_push_tokens SET enabled=false WHERE id='${tokenId}';
     INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES('${userId}','${installationId}') RETURNING id;
@@ -144,11 +173,22 @@ try {
   assert.equal(psql(database,
     `SELECT primary_token_id::text FROM mobile_science_notification_chains WHERE id='${chainId}'`,
   ), replacementTokenId);
-  psql(database, `
-    INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
-    VALUES('${chainId}','${replacementTokenId}','${installationId}','${replacementAudience}',true)
-    ON CONFLICT(chain_id,installation_id) DO UPDATE SET primary_endpoint=EXCLUDED.primary_endpoint;
+  assert.equal(psql(database,
+    `SELECT token_id::text||':'||audience_binding||':'||target_revision::text
+       FROM mobile_science_notification_endpoints WHERE chain_id='${chainId}'`,
+  ), `${replacementTokenId}:${replacementAudience}:2`, "the scoped rebind creates the exact Astronomy endpoint");
+  const qizhengAfter = psql(database, `
+    SELECT jsonb_build_object(
+      'chain',to_jsonb(c),
+      'endpoints',COALESCE((
+        SELECT jsonb_agg(to_jsonb(e) ORDER BY e.installation_id)
+          FROM mobile_science_notification_endpoints e WHERE e.chain_id=c.id
+      ),'[]'::jsonb)
+    )::text
+      FROM mobile_science_notification_chains c WHERE c.id='${qizhengChainId}';
   `);
+  assert.equal(qizhengAfter, qizhengBefore,
+    "an Astronomy token refresh leaves the complete Qizheng chain and endpoint byte-identical");
   rejectsSql(database,
     `INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
      VALUES('${chainId}','${replacementTokenId}',gen_random_uuid(),'B8c7wP4nY2kLm8QrV5sT1u',true)`,

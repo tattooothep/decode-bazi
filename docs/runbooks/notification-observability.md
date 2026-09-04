@@ -30,6 +30,13 @@ This source-controlled package is read-only for health and reconciliation. It em
   claimed occurrences are reported as counts/ages only. Zi Bai due lag is
   scoped to the active calculation version and its enabled capable token owner;
   inactive installation rows are reported separately as an orphan count.
+- After the additive R8 migration exists, health requires the provider-free
+  astronomy shadow heartbeat to be present, no more than five minutes old, and
+  no more than 60 seconds in the future. A missing producer row, stale/future
+  heartbeat, query failure, or any enabled R8 provider makes overall health
+  fail without erasing failures from Ziwei or a legacy scheduler. Before that
+  migration exists, R8 is reported explicitly as `migration_not_applied` and is
+  neutral to the existing services.
 - Expo readiness is true only when `EXPO_IOS_PUSH_READY=true`; it is not inferred
   from the optional Expo access token or a fresh scheduler heartbeat.
 - Engagement rates use distinct accepted notification/installation targets as
@@ -115,6 +122,16 @@ shared ownership. Apply the tmpfiles contract before starting a worker and
 validate the unit files with `systemd-analyze verify` as part of that review. A
 failed preflight or unit validation is a deployment blocker, not a reason to
 weaken the service account or protections.
+
+For a release containing the R8 migration, the required order is strict:
+package the clean reviewed candidate with its exact `.release-commit` and
+signed R8 evidence, apply the additive migration, run the preflight from that
+unswitched candidate directory, and switch `/root/releases/current` only after
+the result is `r8Phase: application_ready`. The preflight binds the candidate
+commit/tree, runtime-file digest, build-artifact digest, migration schema,
+producer source digests, hard-off state, and the runtime role's least-privilege
+capabilities. A source-only declaration that says the migration will be applied
+does not satisfy this live database proof.
 
 ## Ziwei producer mutation boundary
 

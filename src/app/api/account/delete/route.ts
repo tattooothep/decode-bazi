@@ -11,16 +11,21 @@
  *     → login ด้วยอีเมล/รหัสผ่านเดิม = 401 ทันที · Google login = ไม่ match บัญชีเดิม (กลายเป็นสมัครใหม่)
  *  4. archive โปรไฟล์ทั้งหมดที่สร้างเอง + ใน org ตัวเอง
  *  5. เคลียร์ cookie (logout เครื่องนี้)
- * trade-off (JWT stateless · แก้ auth.ts ไม่ได้): token เครื่องอื่นที่ยังไม่หมดอายุจะยังผ่าน getSession
- * ได้จนหมด TTL — endpoint /api/account/* ปิดกั้นด้วย deleted_at แล้ว · ปิดทั้งระบบ = เฟสถัดไป (token_version)
+ *  6. เพิ่ม session_version ใน transaction เดียวกัน → token เครื่องอื่นใช้ต่อไม่ได้
+ * ทุก mutation ใช้ connection/transaction เดียวและ serialize กับ push lifecycle ด้วย user lock
  */
 import { NextResponse } from "next/server";
-import { q1 } from "@/lib/db";
+import { pool } from "@/lib/db";
 import { verifyPassword, clearAuthCookie } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { getAccountUser, clientIpFrom } from "@/lib/account-utils";
 
 const CONFIRM_WORDS = ["ลบบัญชี", "DELETE"];
+
+type DeletionAccount = {
+  id: string;
+  password_hash: string | null;
+};
 
 export async function POST(req: Request) {
   const acc = await getAccountUser();
@@ -42,19 +47,41 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
-  if (u.password_hash) {
-    if (!password) {
-      return NextResponse.json({ error: "กรุณากรอกรหัสผ่านเพื่อยืนยัน" }, { status: 400 });
+  const client = await pool.connect();
+  let deletedAt: string | undefined;
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      `SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))`,
+      [u.id],
+    );
+    const locked = await client.query<DeletionAccount>(
+      `SELECT id,password_hash FROM users
+        WHERE id=$1 AND deleted_at IS NULL AND is_active IS DISTINCT FROM false
+        FOR UPDATE`,
+      [u.id],
+    );
+    const account = locked.rows[0];
+    if (!account) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "account not available" }, { status: 404 });
     }
-    const ok = await verifyPassword(password, u.password_hash);
-    if (!ok) return NextResponse.json({ error: "รหัสผ่านไม่ถูกต้อง" }, { status: 401 });
-  }
+    if (account.password_hash) {
+      if (!password) {
+        await client.query("ROLLBACK");
+        return NextResponse.json({ error: "กรุณากรอกรหัสผ่านเพื่อยืนยัน" }, { status: 400 });
+      }
+      if (!(await verifyPassword(password, account.password_hash))) {
+        await client.query("ROLLBACK");
+        return NextResponse.json({ error: "รหัสผ่านไม่ถูกต้อง" }, { status: 401 });
+      }
+    }
 
-  // 1-3) soft-delete + snapshot + ตัดช่องทาง login เดิม (atomic ใน statement เดียว)
-  await q1(
-    `UPDATE users SET
+    const updated = await client.query<{ deleted_at: string }>(
+      `UPDATE users SET
         deleted_at = now(),
         is_active = false,
+        session_version = COALESCE(session_version,0)+1,
         deleted_snapshot = jsonb_build_object(
           'email', email,
           'password_hash', password_hash,
@@ -75,36 +102,41 @@ export async function POST(req: Request) {
         avatar = NULL,
         avatar_url = NULL,
         last_active_at = now()
-      WHERE id=$1 AND deleted_at IS NULL`,
+      WHERE id=$1 AND deleted_at IS NULL
+      RETURNING deleted_at::text`,
     [u.id]
-  );
+    );
+    deletedAt = updated.rows[0]?.deleted_at;
+    if (!deletedAt) throw new Error("account_delete_conflict");
 
-  // 4) archive โปรไฟล์ (soft · กู้คืนพร้อมบัญชีได้ใน 30 วัน)
-  await q1(
-    `UPDATE profiles SET is_archived=true, updated_at=now()
+    await client.query(
+      `UPDATE profiles SET is_archived=true, updated_at=now()
       WHERE (created_by_user_id = $1
          OR org_id IN (SELECT id FROM organizations WHERE owner_user_id = $1))
         AND is_archived = false`,
-    [u.id]
-  );
+      [u.id]
+    );
 
-  // Fence every R8 delivery path immediately after the account becomes
-  // inactive. The scheduler independently joins active users as a second
-  // fail-closed guard, so a concurrent run cannot admit this account.
-  await q1(
-    `SELECT hourkey_r8_revoke_delivery_scope($1::uuid,NULL::uuid)`,
-    [u.id]
-  );
-  await q1(
-    `UPDATE mobile_push_tokens
+    await client.query(
+      `SELECT hourkey_r8_revoke_delivery_scope($1::uuid,NULL::uuid)`,
+      [u.id]
+    );
+    await client.query(
+      `UPDATE mobile_push_tokens
         SET enabled=false,disabled_at=now(),updated_at=now(),
             astronomy_fact_audience_binding=
               translate(rtrim(encode(gen_random_bytes(24),'base64'),'='),'+/','-_')
       WHERE user_id=$1 AND enabled=true`,
-    [u.id]
-  );
+      [u.id]
+    );
+    await client.query("COMMIT");
+  } catch {
+    await client.query("ROLLBACK").catch(() => null);
+    return NextResponse.json({ error: "account delete failed" }, { status: 500 });
+  } finally {
+    client.release();
+  }
 
-  // 5) logout เครื่องนี้
   await clearAuthCookie();
 
   return NextResponse.json({

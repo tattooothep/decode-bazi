@@ -8,11 +8,14 @@ import {
   canonicalCbor,
   shadowAdmissionDecision,
 } from "../src/lib/mobile-science-shadow-r8";
+import { ASTRONOMY_FACT_MODEL_DIGEST } from "../src/lib/astro/astronomy-fact-model-attestation";
 import { runShadowScheduler, type ShadowSchedulerDb } from "./mobile-astronomy-fact-shadow-cron.mts";
 
 const require = createRequire(import.meta.url);
 const { Client } = require("pg");
+const preflight = require("./notification-observability-preflight.cjs");
 const KEY = Buffer.alloc(32, 7);
+const EXPECTED_R8_SCHEMA_DEFINITION_DIGEST = "fb8f54d63c6e693d7cf8f35befcf322b79519f718a6517d0b41c38c01b27dff8";
 const ROW = Object.freeze({
   chain_id: "00000000-0000-4000-8000-000000000001",
   account_delivery_chain_uuid: "00000000-0000-4000-8000-000000000002",
@@ -113,8 +116,11 @@ assert.match(schedulerSource, /e\.target_revision=c\.target_revision/u);
 assert.match(schedulerSource, /c\.consent_generation=s\.consent_generation/u);
 
 const health = require("./notification-health.cjs");
-assert.equal(await health.readR8ShadowHealth({ query: async () => ({ rows: [{ relation: null }] }) }), null,
-  "R8 shadow health is optional before the additive migration exists");
+assert.deepEqual(await health.readR8ShadowHealth({ query: async () => ({ rows: [{ relation: null }] }) }), {
+  phase: "migration_not_applied", migrationApplied: false, available: false, ok: true, reasons: [],
+  lastRunAt: null, lastCount: 0, providerSendEnabled: false, fresh: false,
+  ageSeconds: null, future: false, futureSkewSeconds: 0,
+}, "R8 shadow health is neutral only before the additive migration exists");
 const healthQueries: string[] = [];
 assert.deepEqual(await health.readR8ShadowHealth({
   query: async (sql: string) => {
@@ -122,7 +128,11 @@ assert.deepEqual(await health.readR8ShadowHealth({
     if (sql.includes("to_regclass")) return { rows: [{ relation: "mobile_science_notification_producer_state" }] };
     return { rows: [{ last_shadow_run_at: new Date("2026-09-04T05:00:00.000Z"), last_shadow_count: 3, provider_send_enabled: false }] };
   },
-}), { available: true, lastRunAt: "2026-09-04T05:00:00.000Z", lastCount: 3, providerSendEnabled: false });
+}, { now: new Date("2026-09-04T05:03:00.000Z") }), {
+  phase: "shadow", migrationApplied: true, available: true, ok: true, reasons: [],
+  lastRunAt: "2026-09-04T05:00:00.000Z", lastCount: 3, providerSendEnabled: false,
+  fresh: true, ageSeconds: 180, future: false, futureSkewSeconds: 0,
+});
 assert.equal(healthQueries.length, 2);
 
 const forward = readFileSync("migrations/20260904_mobile_science_notifications_r8.sql", "utf8");
@@ -132,6 +142,7 @@ assert.match(forward, /consent_generation bigint NOT NULL DEFAULT 1/u);
 
 const database = `mobile_science_shadow_r8_${process.pid}`;
 const databasePattern = /^mobile_science_shadow_r8_\d+$/u;
+let observedSchemaDefinitionDigest = "";
 assert.match(database, databasePattern);
 
 function psql(dbName: string, sql: string): string {
@@ -159,6 +170,19 @@ const clientOptions = {
 };
 assert.match(clientOptions.user, /^[a-z_][a-z0-9_]{0,62}$/u, "test database role is a safe identifier");
 
+async function waitForDatabaseLock(observer: any, applicationName: string): Promise<void> {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    const result = await observer.query(
+      `SELECT wait_event_type FROM pg_stat_activity
+        WHERE datname=$1 AND application_name=$2 AND state='active'`,
+      [database,applicationName],
+    );
+    if (result.rows[0]?.wait_event_type === "Lock") return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.fail(`${applicationName} did not reach a database lock wait`);
+}
+
 try {
   psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE); CREATE DATABASE ${database};`);
   psql(database, `
@@ -173,8 +197,14 @@ try {
     CREATE UNIQUE INDEX ux_mobile_push_tokens_active_installation
       ON mobile_push_tokens(installation_id) WHERE enabled=true;
     CREATE TABLE notification_scheduler_runs(name text PRIMARY KEY,last_run_at timestamptz NOT NULL,run_count int NOT NULL);
+    CREATE TABLE mobile_ziwei_hourly_producer_state(id integer);
+    CREATE TABLE mobile_push_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid());
+    CREATE TABLE mobile_push_attempts(id uuid PRIMARY KEY DEFAULT gen_random_uuid());
+    CREATE TABLE mobile_ziwei_hourly_occurrences(id uuid PRIMARY KEY DEFAULT gen_random_uuid());
+    CREATE TABLE mobile_ziwei_hourly_installations(id uuid PRIMARY KEY DEFAULT gen_random_uuid());
     INSERT INTO notification_scheduler_runs VALUES('qimen','2026-09-04T00:00:00Z',17);
   `);
+  psql(database, forward);
   psql(database, forward);
   psql(database, `GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${clientOptions.user};`);
 
@@ -309,8 +339,218 @@ try {
       [rollingChain],
     )).rows[0], { state: "expired", suppression_reason: "rolling_24h_cap" });
 
+    async function createRaceFixture(connection: any, label: string) {
+      const userId = crypto.randomUUID();
+      const orgId = crypto.randomUUID();
+      const installationId = crypto.randomUUID();
+      await connection.query("INSERT INTO users(id) VALUES($1)", [userId]);
+      const token = (await connection.query(
+        `INSERT INTO mobile_push_tokens(user_id,installation_id)
+         VALUES($1,$2) RETURNING id,astronomy_fact_audience_binding`,
+        [userId,installationId],
+      )).rows[0];
+      await connection.query(
+        `INSERT INTO mobile_science_notification_subscriptions
+          (user_id,org_id,science_id,submode,cadence,local_day_cap,locale,display_timezone,receipt,quiet_start,quiet_end)
+         VALUES($1,$2,'astronomy_fact','civil_two_hour','two_hour',12,'th','UTC','{}',1,2)`,
+        [userId,orgId],
+      );
+      await connection.query(
+        `INSERT INTO mobile_science_notification_shadow_cohort
+          (user_id,science_id,submode,enabled,approved_by,approved_at)
+         VALUES($1,'astronomy_fact','civil_two_hour',true,'r8-race-test',now())`,
+        [userId],
+      );
+      const chainId = (await connection.query(
+        `INSERT INTO mobile_science_notification_chains
+          (user_id,org_id,science_id,submode,schema_version,primary_token_id,primary_installation_id,consent_generation)
+         VALUES($1,$2,'astronomy_fact','civil_two_hour',1,$3,$4,1) RETURNING id`,
+        [userId,orgId,token.id,installationId],
+      )).rows[0].id;
+      await connection.query(
+        `INSERT INTO mobile_science_notification_endpoints
+          (chain_id,token_id,installation_id,audience_binding,target_revision,primary_endpoint)
+         VALUES($1,$2,$3,$4,1,true)`,
+        [chainId,token.id,installationId,token.astronomy_fact_audience_binding],
+      );
+      return { userId, chainId, label };
+    }
+
+    function recordOccurrence(connection: any, fixture: { chainId: string; label: string }) {
+      return connection.query(
+        `SELECT hourkey_r8_record_astronomy_shadow_occurrence(
+          $1,$2,decode('a100','hex'),digest($3,'sha256'),digest($4,'sha256'),1,
+          'shadowed',NULL,'{}',encode(digest('{}','sha256'),'hex'),
+          '2026-09-04T05:00:00Z','2026-09-04T07:00:00Z',$5
+        ) AS inserted`,
+        [fixture.chainId,`race-${fixture.label}`,`identity-${fixture.label}`,
+          `revision-${fixture.label}`,ASTRONOMY_FACT_MODEL_DIGEST],
+      );
+    }
+
+    async function finishDeletion(connection: any, userId: string) {
+      await connection.query(
+        "UPDATE users SET deleted_at=now(),is_active=false WHERE id=$1",
+        [userId],
+      );
+      await connection.query("SELECT hourkey_r8_revoke_delivery_scope($1,NULL::uuid)", [userId]);
+      await connection.query("UPDATE mobile_push_tokens SET enabled=false WHERE user_id=$1", [userId]);
+    }
+
+    const blocker = new Client({ ...clientOptions, application_name: "r8-race-blocker" });
+    const recorder = new Client({ ...clientOptions, application_name: "r8-race-recorder" });
+    const deleter = new Client({ ...clientOptions, application_name: "r8-race-deleter" });
+    const observer = new Client({ ...clientOptions, application_name: "r8-race-observer" });
+    await Promise.all([blocker.connect(),recorder.connect(),deleter.connect(),observer.connect()]);
+    try {
+      const recordWins = await createRaceFixture(client, "record-wins");
+      await blocker.query("BEGIN");
+      await blocker.query("SELECT 1 FROM mobile_science_notification_chains WHERE id=$1 FOR UPDATE", [recordWins.chainId]);
+      const recording = recordOccurrence(recorder, recordWins);
+      await waitForDatabaseLock(observer, "r8-race-recorder");
+      await deleter.query("BEGIN");
+      const deleteAdvisory = deleter.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))",
+        [recordWins.userId],
+      );
+      await deleteAdvisory;
+      const deleteUserLock = deleter.query("SELECT 1 FROM users WHERE id=$1 FOR UPDATE", [recordWins.userId]);
+      await waitForDatabaseLock(observer, "r8-race-deleter");
+      await blocker.query("COMMIT");
+      assert.equal((await recording).rows[0].inserted, true,
+        "when recording wins the shared user fence it commits the occurrence first");
+      await deleteUserLock;
+      await finishDeletion(deleter, recordWins.userId);
+      await deleter.query("COMMIT");
+      assert.equal((await client.query(
+        "SELECT lifecycle_state FROM mobile_science_notification_chains WHERE id=$1",
+        [recordWins.chainId],
+      )).rows[0].lifecycle_state, "revoked", "deletion follows and revokes the recorded chain");
+
+      const deleteWins = await createRaceFixture(client, "delete-wins");
+      await deleter.query("BEGIN");
+      await deleter.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))",
+        [deleteWins.userId],
+      );
+      await deleter.query("SELECT 1 FROM users WHERE id=$1 FOR UPDATE", [deleteWins.userId]);
+      await finishDeletion(deleter, deleteWins.userId);
+      const recordingAfterDelete = recordOccurrence(recorder, deleteWins);
+      await waitForDatabaseLock(observer, "r8-race-recorder");
+      await deleter.query("COMMIT");
+      assert.equal((await recordingAfterDelete).rows[0].inserted, false,
+        "when deletion wins the shared user fence, recording rechecks the inactive user and fails closed");
+      assert.equal((await client.query(
+        "SELECT count(*)::int AS count FROM mobile_science_notification_occurrences WHERE chain_id=$1",
+        [deleteWins.chainId],
+      )).rows[0].count, 0, "no post-deletion occurrence can be inserted");
+
+      const crossUserOne = await createRaceFixture(client, "cross-user-one");
+      const crossUserTwo = await createRaceFixture(client, "cross-user-two");
+      const [lowerUser,higherUser] = [crossUserOne,crossUserTwo]
+        .sort((left,right) => left.userId.localeCompare(right.userId));
+      await recorder.query("BEGIN");
+      assert.equal((await recordOccurrence(recorder,higherUser)).rows[0].inserted,true);
+      await deleter.query("BEGIN");
+      await deleter.query("SET LOCAL statement_timeout='1s'");
+      await deleter.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))",
+        [lowerUser.userId],
+      );
+      await deleter.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('mobile-push-user:'||$1::text,0))",
+        [higherUser.userId],
+      );
+      await deleter.query("SELECT 1 FROM users WHERE id=$1 FOR UPDATE", [lowerUser.userId]);
+      const schedulerSecondUser = recordOccurrence(recorder,lowerUser);
+      await waitForDatabaseLock(observer,"r8-race-recorder");
+      await deleter.query("COMMIT");
+      assert.equal((await schedulerSecondUser).rows[0].inserted,true,
+        "a multi-user push transfer and opposite scheduler order serialize without an advisory-lock cycle");
+      await recorder.query("COMMIT");
+    } finally {
+      await blocker.query("ROLLBACK").catch(() => null);
+      await deleter.query("ROLLBACK").catch(() => null);
+      await Promise.all([blocker.end(),recorder.end(),deleter.end(),observer.end()]);
+    }
+
     assert.deepEqual((await client.query("SELECT last_run_at,run_count FROM notification_scheduler_runs WHERE name='qimen'" )).rows[0],
       { last_run_at: new Date("2026-09-04T00:00:00.000Z"), run_count: 17 }, "R8 shadow does not mutate legacy scheduler heartbeat state");
+
+    psql(database, `REVOKE INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER
+      ON mobile_science_notification_producer_state,mobile_science_notification_subscriptions,
+         mobile_science_notification_shadow_cohort,mobile_science_notification_chains,
+         mobile_science_notification_endpoints,mobile_science_notification_occurrences
+      FROM hourkey_app`);
+    const proofEnvironment = { PGHOST: "test", PGPORT: "5432", PGDATABASE: database, PGUSER: "hourkey_app", PGPASSWORD: "hidden" };
+    const schemaProbeClient = new Client(clientOptions);
+    await schemaProbeClient.connect();
+    await schemaProbeClient.query("SET ROLE hourkey_app");
+    const schemaProbe = await preflight.inspectDatabaseAccess({
+      r8Required: true,
+      expectedModelDigest: ASTRONOMY_FACT_MODEL_DIGEST,
+      expectedSourceDigest: "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
+      expectedSchemaDigest: "0".repeat(64),
+      environment: proofEnvironment,
+      connect: async () => schemaProbeClient,
+      onError: (error: unknown) => { throw error; },
+    });
+    assert.match(schemaProbe.r8SchemaDefinitionDigest,/^[0-9a-f]{64}$/u);
+    assert.equal(schemaProbe.r8SchemaDefinitionDigest,EXPECTED_R8_SCHEMA_DEFINITION_DIGEST,
+      "the twice-applied migration must match the independently pinned complete catalog fingerprint");
+    observedSchemaDefinitionDigest = schemaProbe.r8SchemaDefinitionDigest;
+    const proofClient = new Client(clientOptions);
+    await proofClient.connect();
+    await proofClient.query("SET ROLE hourkey_app");
+    const databaseProof = await preflight.inspectDatabaseAccess({
+      r8Required: true,
+      expectedModelDigest: ASTRONOMY_FACT_MODEL_DIGEST,
+      expectedSourceDigest: "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
+      expectedSchemaDigest: EXPECTED_R8_SCHEMA_DEFINITION_DIGEST,
+      environment: proofEnvironment,
+      connect: async () => proofClient,
+    });
+    assert.deepEqual({
+      migration: databaseProof.r8MigrationApplied,
+      schema: databaseProof.r8SchemaComplete,
+      rows: databaseProof.r8ProducerRowsExact,
+      sources: databaseProof.r8SourceDigestsMatch,
+      hardOff: databaseProof.r8HardOff,
+      tablesReadOnly: databaseProof.r8RuntimeTablesReadOnly,
+      publicDenied: databaseProof.r8PublicMutationDenied,
+      functionsExecutable: databaseProof.r8ScopedFunctionsExecutable,
+      functionsHardened: databaseProof.r8ScopedFunctionsHardened,
+    }, {
+      migration: true, schema: true, rows: true, sources: true, hardOff: true,
+      tablesReadOnly: true, publicDenied: true, functionsExecutable: true, functionsHardened: true,
+    }, "the real twice-applied migration satisfies every R8 schema, hard-off, source, and least-privilege proof");
+
+    const hardOffConstraint = (await client.query(
+      `SELECT co.conname
+         FROM pg_catalog.pg_constraint co
+         JOIN pg_catalog.pg_class cl ON cl.oid=co.conrelid
+         JOIN pg_catalog.pg_namespace ns ON ns.oid=cl.relnamespace
+        WHERE ns.nspname='public' AND cl.relname='mobile_science_notification_producer_state'
+          AND pg_catalog.pg_get_constraintdef(co.oid,true) LIKE '%provider_send_enabled = false%'
+        ORDER BY co.conname LIMIT 1`,
+    )).rows[0]?.conname;
+    assert.match(hardOffConstraint,/^[a-z_][a-z0-9_]*$/u);
+    psql(database,`ALTER TABLE mobile_science_notification_producer_state DROP CONSTRAINT "${hardOffConstraint}";`);
+    const driftClient = new Client(clientOptions);
+    await driftClient.connect();
+    await driftClient.query("SET ROLE hourkey_app");
+    const driftProof = await preflight.inspectDatabaseAccess({
+      r8Required: true,
+      expectedModelDigest: ASTRONOMY_FACT_MODEL_DIGEST,
+      expectedSourceDigest: "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
+      expectedSchemaDigest: EXPECTED_R8_SCHEMA_DEFINITION_DIGEST,
+      environment: proofEnvironment,
+      connect: async () => driftClient,
+    });
+    assert.equal(driftProof.r8SchemaDefinitionDigestMatches,false,
+      "dropping one hard-off CHECK constraint changes the authenticated catalog fingerprint");
+    assert.equal(driftProof.r8SchemaComplete,false,
+      "catalog drift blocks application readiness even while current rows remain hard-off");
   } finally {
     await client.end();
     await leasePeer.end();
@@ -319,4 +559,4 @@ try {
   if (databasePattern.test(database)) psql("postgres", `DROP DATABASE IF EXISTS ${database} WITH (FORCE);`);
 }
 
-console.log("MOBILE_SCIENCE_SHADOW_R8_OK provider-incapable deterministic");
+console.log(`MOBILE_SCIENCE_SHADOW_R8_OK provider-incapable deterministic schema=${observedSchemaDefinitionDigest}`);

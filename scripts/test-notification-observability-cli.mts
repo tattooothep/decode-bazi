@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { accessSync, constants } from "node:fs";
-import { chmod, mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rename, rm, stat, symlink, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createRequire } from "node:module";
@@ -13,6 +14,70 @@ try {
   const health = require("./notification-health.cjs");
   const reconciliation = require("./notification-reconcile.cjs");
   const preflight = require("./notification-observability-preflight.cjs");
+  const sourceRoot = join(directory,"source-release");
+  await mkdir(join(sourceRoot,"docs/notification-science"),{ recursive: true });
+  await mkdir(join(sourceRoot,"scripts"),{ recursive: true });
+  await writeFile(join(sourceRoot,"app.txt"),"immutable application bytes\n");
+  await writeFile(join(sourceRoot,"scripts/tool.sh"),"#!/bin/sh\nexit 0\n");
+  await chmod(join(sourceRoot,"scripts/tool.sh"),0o755);
+  await writeFile(join(sourceRoot,"docs/notification-science/qizheng-r8-release-evidence.json"),"unsigned\n");
+  execFileSync("git",["init","-q"],{ cwd: sourceRoot });
+  execFileSync("git",["add","."],{ cwd: sourceRoot });
+  execFileSync("git",["-c","user.name=R8 Test","-c","user.email=r8@example.invalid","commit","-qm","fixture"],{ cwd: sourceRoot });
+  const sourceCommit = execFileSync("git",["rev-parse","HEAD"],{ cwd: sourceRoot,encoding: "utf8" }).trim();
+  const sourceDigest = preflight.computeInstalledSourceDigest(sourceRoot,sourceCommit,sourceRoot);
+  assert.match(sourceDigest,/^[0-9a-f]{64}$/u);
+  await writeFile(join(sourceRoot,"docs/notification-science/qizheng-r8-release-evidence.json"),"signed later\n");
+  assert.equal(preflight.computeInstalledSourceDigest(sourceRoot,sourceCommit,sourceRoot),sourceDigest,
+    "the exact post-application evidence path is the sole digest exception");
+  await writeFile(join(sourceRoot,"scripts/untracked-runtime.cjs"),"throw new Error('unexpected')\n");
+  assert.equal(preflight.computeInstalledSourceDigest(sourceRoot,sourceCommit,sourceRoot),null,
+    "unexpected runtime-reachable source fails closed");
+  await rm(join(sourceRoot,"scripts/untracked-runtime.cjs"));
+  await rm(join(sourceRoot,"app.txt"));
+  await symlink("scripts/tool.sh",join(sourceRoot,"app.txt"));
+  assert.equal(preflight.computeInstalledSourceDigest(sourceRoot,sourceCommit,sourceRoot),null,
+    "a tracked source path replaced by a symlink fails closed");
+  await rm(join(sourceRoot,"app.txt"));
+  await writeFile(join(sourceRoot,"app.txt"),"immutable application bytes\n");
+  await chmod(join(sourceRoot,"scripts/tool.sh"),0o644);
+  assert.equal(preflight.computeInstalledSourceDigest(sourceRoot,sourceCommit,sourceRoot),null,
+    "tracked executable mode drift fails closed");
+
+  const artifactRelease = join(directory,"artifact-release");
+  const firstBuildId = "abcdefghijklmnopqrst";
+  await mkdir(join(artifactRelease,".next/static",firstBuildId),{ recursive: true });
+  await mkdir(join(artifactRelease,".next/node_modules"),{ recursive: true });
+  await mkdir(join(artifactRelease,"node_modules/pg"),{ recursive: true });
+  await mkdir(join(artifactRelease,"node_modules/sharp"),{ recursive: true });
+  await writeFile(join(artifactRelease,".next/BUILD_ID"),firstBuildId);
+  await writeFile(join(artifactRelease,".next/trace"),"nondeterministic trace A");
+  await writeFile(join(artifactRelease,".next/trace-build"),"nondeterministic trace build A");
+  await writeFile(join(artifactRelease,".next/static",firstBuildId,"manifest.txt"),`id=${firstBuildId}`);
+  await writeFile(join(artifactRelease,"node_modules/pg/index.js"),"module.exports='pg';\n");
+  await writeFile(join(artifactRelease,"node_modules/sharp/index.js"),"module.exports='sharp';\n");
+  await symlink("../../node_modules/pg",join(artifactRelease,".next/node_modules/pg-fixture"));
+  await symlink("../../node_modules/sharp",join(artifactRelease,".next/node_modules/sharp-fixture"));
+  const firstArtifactDigest = preflight.computeBuildArtifactDigest(artifactRelease);
+  const secondBuildId = "zyxwvutsrqponmlkjihg";
+  await rename(join(artifactRelease,".next/static",firstBuildId),join(artifactRelease,".next/static",secondBuildId));
+  await writeFile(join(artifactRelease,".next/BUILD_ID"),secondBuildId);
+  await writeFile(join(artifactRelease,".next/trace"),"nondeterministic trace B");
+  await writeFile(join(artifactRelease,".next/trace-build"),"nondeterministic trace build B");
+  await writeFile(join(artifactRelease,".next/static",secondBuildId,"manifest.txt"),`id=${secondBuildId}`);
+  assert.equal(preflight.computeBuildArtifactDigest(artifactRelease),firstArtifactDigest,
+    "Next build ID and trace-only nondeterminism are normalized");
+  await writeFile(join(artifactRelease,".next/static",secondBuildId,"manifest.txt"),"changed application output");
+  assert.notEqual(preflight.computeBuildArtifactDigest(artifactRelease),firstArtifactDigest,
+    "application output drift changes the signed build digest");
+  await symlink("/etc",join(artifactRelease,".next/unsafe-link"));
+  assert.throws(() => preflight.computeBuildArtifactDigest(artifactRelease),/unexpected build artifact symlink/u,
+    "an arbitrary build artifact symlink fails closed");
+  const legacyReleaseRoot = join(directory,"legacy-release");
+  await mkdir(legacyReleaseRoot);
+  const inspectLegacy = (options: Record<string, unknown>) => preflight.inspect({
+    ...options, releaseRoot: legacyReleaseRoot,
+  });
   const runner = require("./notification-retry-receipt-runner.cjs");
   const heartbeat = join(directory, "retry.heartbeat");
   assert.equal(health.providerReadiness({ FCM_SERVICE_ACCOUNT_PATH: join(directory, "missing-service-account.json") }).fcm, false, "a routed FCM provider without a readable credential is unhealthy without printing its path");
@@ -32,6 +97,50 @@ try {
     "CLI health passes the fail-closed Ziwei runtime producer gate");
   assert.equal(typeof healthInput?.ziweiRuntime?.sourceReady, "boolean",
     "CLI health passes verified Ziwei source readiness");
+  const fixedNow = new Date("2026-09-04T08:00:00.000Z");
+  const r8Db = (relation: string | null, row?: Record<string, unknown>) => ({
+    calls: 0,
+    async query() {
+      this.calls += 1;
+      return this.calls === 1 ? { rows: [{ relation }] } : { rows: row ? [row] : [] };
+    },
+  });
+  assert.deepEqual(await health.readR8ShadowHealth(r8Db(null), { now: fixedNow }), {
+    phase: "migration_not_applied", migrationApplied: false, available: false, ok: true, reasons: [],
+    lastRunAt: null, lastCount: 0, providerSendEnabled: false, fresh: false,
+    ageSeconds: null, future: false, futureSkewSeconds: 0,
+  }, "R8 is neutral only before its migration exists");
+  assert.deepEqual((await health.readR8ShadowHealth(r8Db("mobile_science_notification_producer_state"), { now: fixedNow })).reasons,
+    ["r8_shadow_state_missing"], "an applied migration without the exact producer row fails closed");
+  const freshR8 = await health.readR8ShadowHealth(r8Db("mobile_science_notification_producer_state", {
+    last_shadow_run_at: new Date("2026-09-04T07:57:00.000Z"), last_shadow_count: 10000,
+    provider_send_enabled: false,
+  }), { now: fixedNow });
+  assert.equal(freshR8.ok, true, "a fresh provider-free shadow heartbeat is healthy");
+  assert.equal(freshR8.ageSeconds, 180);
+  assert.deepEqual((await health.readR8ShadowHealth(r8Db("mobile_science_notification_producer_state", {
+    last_shadow_run_at: null, provider_send_enabled: false,
+  }), { now: fixedNow })).reasons, ["r8_shadow_heartbeat_missing"]);
+  assert.deepEqual((await health.readR8ShadowHealth(r8Db("mobile_science_notification_producer_state", {
+    last_shadow_run_at: new Date("2026-09-04T07:54:59.000Z"), provider_send_enabled: false,
+  }), { now: fixedNow })).reasons, ["r8_shadow_heartbeat_stale"]);
+  assert.deepEqual((await health.readR8ShadowHealth(r8Db("mobile_science_notification_producer_state", {
+    last_shadow_run_at: new Date("2026-09-04T08:01:01.000Z"), provider_send_enabled: false,
+  }), { now: fixedNow })).reasons, ["r8_shadow_heartbeat_future"]);
+  assert.deepEqual((await health.readR8ShadowHealth(r8Db("mobile_science_notification_producer_state", {
+    last_shadow_run_at: new Date("2026-09-04T07:59:00.000Z"), provider_send_enabled: true,
+  }), { now: fixedNow })).reasons, ["r8_provider_send_enabled"]);
+  assert.deepEqual((await health.readR8ShadowHealth({ async query() { throw new Error("private"); } }, { now: fixedNow })).reasons,
+    ["r8_shadow_health_query_failed"], "an R8 health query error is never treated as migration-absent");
+  const mergedHealth = await health.main({
+    db: {}, args: [], env: {}, log: () => {},
+    collectHealth: async () => ({ ok: false, reasons: ["ziwei_existing_failure"], metrics: { legacy: true } }),
+    readR8ShadowHealth: async () => ({ ok: false, reasons: ["r8_shadow_heartbeat_stale"] }),
+  });
+  assert.equal(mergedHealth.ok, false);
+  assert.deepEqual(mergedHealth.reasons, ["ziwei_existing_failure", "r8_shadow_heartbeat_stale"],
+    "R8 health reasons merge with and never erase existing science failures");
+  assert.equal(mergedHealth.metrics.legacy, true);
   await runner.writeHeartbeat(heartbeat, new Date("2026-08-16T00:00:00.000Z"));
   assert.equal(await readFile(heartbeat, "utf8"), "2026-08-16T00:00:00.000Z\n", "retry runner heartbeat contains only a timestamp");
   await utimes(heartbeat, new Date("2026-08-16T00:00:00.000Z"), new Date("2026-08-16T00:00:00.000Z"));
@@ -136,7 +245,7 @@ try {
   assert.match(execFileSync("getent", ["passwd", "root"], { encoding: "utf8" }), /^root:/mu, "template runtime account exists on the reviewed host");
   accessSync("/usr/bin/node", constants.X_OK);
   const stateDirectory = "/var/lib/hourkey-notification";
-  const preflightReport = preflight.inspect({
+  const preflightReport = inspectLegacy({
     access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
     lookupUser: () => true, uid: () => 0,
     serviceUserAccess: () => true,
@@ -148,7 +257,7 @@ try {
     ].join("\n"),
   });
   assert.deepEqual(preflightReport, { ok: true, runtimeRoot: true, nodeExecutable: true, releaseReadable: true, environmentReadable: true, notificationEnvironmentReadable: true, notificationEnvironmentValid: true, credentialReadable: true, stateReady: false, stateCreatable: true, ziweiServiceUser: true, ziweiEnvironmentReadable: true, retryHeartbeatAccess: true, schedulerHeartbeatAccess: true, ziweiServiceAccess: true }, "absent state tree passes first-start preflight only through the single-owner tmpfiles contract and effective Ziwei service-user access");
-  const unsafeStatePreflight = preflight.inspect({
+  const unsafeStatePreflight = inspectLegacy({
     access: (target: string) => { if (target === stateDirectory) throw new Error("state-absent"); },
     lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
     notificationEnvironmentContract: () => true, readUnit: () => "d /var/lib/hourkey-notification 0750 root root -\n",
@@ -210,13 +319,13 @@ try {
   });
   assert.equal(wrongDatabaseRole.databaseConnected, false,
     "preflight rejects a non-hourkey_app PGUSER before attempting a database connection");
-  const incompleteSchedulerPreflight = preflight.inspect({
+  const incompleteSchedulerPreflight = inspectLegacy({
     access: (target: string) => { if (target.endsWith("mobile-monthly-report-push-cron.cjs")) throw new Error("missing-source"); },
     lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
     notificationEnvironmentContract: () => true,
   });
   assert.equal(incompleteSchedulerPreflight.ok, false, "preflight fails closed when any named scheduler heartbeat producer is absent from the release");
-  const blockedZiweiServiceUser = preflight.inspect({
+  const blockedZiweiServiceUser = inspectLegacy({
     access: () => {}, lookupUser: () => true, uid: () => 0,
     serviceUserAccess: () => false, notificationEnvironmentContract: () => true,
   });
@@ -224,7 +333,7 @@ try {
     "preflight fails closed when the effective non-root Ziwei worker cannot traverse/read/write its runtime paths");
   assert.equal(blockedZiweiServiceUser.ziweiEnvironmentReadable, false,
     "preflight separately reports that the effective Ziwei worker cannot read its dedicated environment");
-  const blockedLegacyRetryHeartbeat = preflight.inspect({
+  const blockedLegacyRetryHeartbeat = inspectLegacy({
     access: () => {}, lookupUser: () => true, uid: () => 0,
     serviceUserAccess: (_name: string, target: string, mode: number) =>
       !(target === "/var/lib/hourkey-notification" && mode === constants.X_OK),
@@ -233,7 +342,7 @@ try {
   assert.equal(blockedLegacyRetryHeartbeat.ok, false,
     "preflight blocks deployment when the effective retry worker cannot advance a pre-existing root-owned heartbeat");
   assert.equal(blockedLegacyRetryHeartbeat.retryHeartbeatAccess, false);
-  const blockedSchedulerHeartbeats = preflight.inspect({
+  const blockedSchedulerHeartbeats = inspectLegacy({
     access: () => {}, lookupUser: () => true, uid: () => 0,
     serviceUserAccess: (_name: string, target: string, mode: number) =>
       !(target === "/var/lib/hourkey-notification/schedulers" && mode === constants.X_OK),
@@ -242,19 +351,144 @@ try {
   assert.equal(blockedSchedulerHeartbeats.ok, false,
     "preflight blocks deployment when the effective health worker cannot stat legacy scheduler heartbeats");
   assert.equal(blockedSchedulerHeartbeats.schedulerHeartbeatAccess, false);
-  const invalidDedicatedEnvironment = preflight.inspect({
+  const invalidDedicatedEnvironment = inspectLegacy({
     access: () => {}, lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
     notificationEnvironmentContract: () => false,
   });
   assert.equal(invalidDedicatedEnvironment.ok, false,
     "preflight fails closed on a dedicated environment owner/mode/key/value contract mismatch");
   assert.equal(invalidDedicatedEnvironment.notificationEnvironmentValid, false);
-  const blockedPreflight = preflight.inspect({
+  const blockedPreflight = inspectLegacy({
     access: () => { throw new Error("private-path"); }, lookupUser: () => false, uid: () => 99,
   });
   assert.equal(blockedPreflight.ok, false, "preflight fails closed when executable or credential access is unavailable");
   assert.equal(JSON.stringify(blockedPreflight).includes("private-path"), false, "preflight never serializes filesystem exception content");
-  assert.equal(preflight.inspect({ access: () => {}, uid: () => 0 }).runtimeRoot, true, "preflight independently verifies the template root account exists on this host");
+  assert.equal(inspectLegacy({ access: () => {}, uid: () => 0 }).runtimeRoot, true, "preflight independently verifies the template root account exists on this host");
+
+  const r8ReleaseRoot = join(directory,"r8-release");
+  await mkdir(join(r8ReleaseRoot,"migrations"), { recursive: true });
+  await mkdir(join(r8ReleaseRoot,"docs/notification-science"), { recursive: true });
+  await writeFile(join(r8ReleaseRoot,"migrations/20260904_mobile_science_notifications_r8.sql"), "-- candidate\n");
+  const canonical = (value: any): string => {
+    if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+    if (value && typeof value === "object") return `{${Object.keys(value).sort()
+      .map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}`;
+    return JSON.stringify(value);
+  };
+  const r8Bundle = {
+    releaseMode: "hard_off",
+    backend: {
+      applicationCommit: "a".repeat(40), applicationTree: "b".repeat(40),
+      sourceDigest: "1".repeat(64), runtimeDigest: "c".repeat(64), buildArtifactDigest: "d".repeat(64),
+    },
+    science: {
+      modelDigest: "e".repeat(64), sourceDigest: "f".repeat(64),
+      databaseSchemaDigest: createHash("sha256").update("[]").digest("hex"),
+      astronomyFact: { providerSendEnabled: false },
+      qizheng: { providerSendEnabled: false, payloadSchema: 0, sourceStatus: "pending_double_verification" },
+    },
+    providerAttempts: 0,
+    activationBoundary: { requiredProductionRolloutOrder: "migration_then_application" },
+  };
+  const r8Evidence = {
+    schema: 1, bundle: r8Bundle,
+    bundleDigest: createHash("sha256").update(canonical(r8Bundle)).digest("hex"), signatures: [],
+  };
+  const r8EvidencePath = join(r8ReleaseRoot,"docs/notification-science/qizheng-r8-release-evidence.json");
+  await writeFile(r8EvidencePath, `${JSON.stringify(r8Evidence)}\n`);
+  await writeFile(join(r8ReleaseRoot,".release-commit"), `${r8Bundle.backend.applicationCommit}\n`);
+  const r8FsOptions = {
+    releaseRoot: r8ReleaseRoot, r8EvidencePath,
+    r8EvidenceOptions: { requireSignatures: false },
+    access: () => {}, lookupUser: () => true, uid: () => 0, serviceUserAccess: () => true,
+    notificationEnvironmentContract: () => true,
+    resolveCommitTree: () => r8Bundle.backend.applicationTree,
+    computeInstalledSourceDigest: () => r8Bundle.backend.sourceDigest,
+    computeRuntimeDigest: () => r8Bundle.backend.runtimeDigest,
+    computeBuildArtifactDigest: () => r8Bundle.backend.buildArtifactDigest,
+  };
+  const r8Candidate = preflight.inspect(r8FsOptions);
+  assert.equal(r8Candidate.ok, true);
+  assert.equal(r8Candidate.r8Phase, "migration_required",
+    "a matching candidate still declares migration-before-application until live database proof runs");
+  assert.equal(r8Candidate.r8ReleaseCommitMatches, true);
+  assert.equal(preflight.inspect({ ...r8FsOptions, resolveCommitTree: () => "0".repeat(40) }).r8Phase,
+    "release_mismatch", "a wrong application tree fails closed");
+  assert.deepEqual(preflight.inspect({
+    ...r8FsOptions, computeBuildArtifactDigest: () => "0".repeat(64),
+  }).r8Reasons, ["r8_build_artifact_digest_mismatch"]);
+  const missingMigrationArtifact = preflight.inspect({
+    ...r8FsOptions,
+    pathExists: (target: string) => !target.endsWith("20260904_mobile_science_notifications_r8.sql")
+      && (target === r8EvidencePath || target.endsWith("mobile-astronomy-fact-shadow-cron.mts")),
+  });
+  assert.equal(missingMigrationArtifact.r8Required,true,
+    "R8 evidence or runtime code still activates preflight when the migration artifact is missing");
+  assert.deepEqual(missingMigrationArtifact.r8Reasons,["r8_migration_artifact_missing"]);
+  const alternateR8RuntimeSignal = preflight.inspect({
+    ...r8FsOptions,
+    pathExists: (target: string) => target.endsWith("src/app/api/mobile/v1/astronomy-facts/route.ts"),
+  });
+  assert.equal(alternateR8RuntimeSignal.r8Required,true,
+    "any R8-exclusive runtime artifact activates fail-closed release and database proof");
+  assert.equal(alternateR8RuntimeSignal.r8Phase,"release_mismatch");
+  assert.ok(alternateR8RuntimeSignal.r8Reasons.includes("r8_migration_artifact_missing"));
+
+  const legacyRow = {
+    exact_runtime_role: true, producer_read_only: true, ziwei_parent_update: true,
+    ziwei_attempt_update: true, ziwei_parent_delete_guarded: true,
+    ziwei_occurrence_delete_denied: true, ziwei_installation_delete_denied: true,
+    ziwei_user_delete_denied: true, ziwei_profile_delete_denied: true,
+    ziwei_purge_executable: true, ziwei_purge_hardened: true, ziwei_integrity_triggers: true,
+  };
+  const validR8Row = {
+    r8_schema_complete: true, r8_producer_rows_exact: true, r8_source_digests_match: true,
+    r8_hard_off: true, r8_runtime_tables_read_only: true, r8_public_mutation_denied: true,
+    r8_scoped_functions_executable: true, r8_scoped_functions_hardened: true,
+  };
+  const r8Database = (r8Row: Record<string, boolean>, relations = true, legacy = legacyRow) => ({
+    environment: { PGHOST: "db", PGPORT: "5432", PGDATABASE: "hourkey", PGUSER: "hourkey_app", PGPASSWORD: "private" },
+    connect: async () => ({
+      async query(sql: string) {
+        if (/^(?:BEGIN|COMMIT|ROLLBACK)/u.test(sql)) return { rows: [] };
+        if (sql.includes("current_user='hourkey_app'")) return { rows: [legacy] };
+        if (sql.includes("unnest($1::text[])")) return { rows: relations
+          ? Array.from({ length: 6 }, (_, index) => ({ name: `r8-${index}`, relation: `r8-${index}` })) : [] };
+        if (sql.includes("WITH required_columns")) return { rows: [r8Row] };
+        if (sql.includes("SELECT 'column'::text AS kind")) return { rows: [] };
+        throw new Error("unexpected preflight SQL");
+      },
+      async end() {},
+    }),
+  });
+  const readyR8 = await preflight.runPreflight({ ...r8FsOptions, database: r8Database(validR8Row) });
+  assert.equal(readyR8.ok, true);
+  assert.equal(readyR8.r8Phase, "application_ready");
+  assert.deepEqual(readyR8.r8Reasons, []);
+  const missingMigrationR8 = await preflight.runPreflight({
+    ...r8FsOptions, database: r8Database(validR8Row,false),
+  });
+  assert.equal(missingMigrationR8.ok, false);
+  assert.deepEqual(missingMigrationR8.r8Reasons, ["r8_migration_not_applied_before_application"]);
+  const invalidSchemaR8 = await preflight.runPreflight({
+    ...r8FsOptions, database: r8Database({ ...validR8Row, r8_schema_complete: false }),
+  });
+  assert.deepEqual(invalidSchemaR8.r8Reasons, ["r8_schema_incomplete"]);
+  const invalidSourceR8 = await preflight.runPreflight({
+    ...r8FsOptions, database: r8Database({ ...validR8Row, r8_source_digests_match: false }),
+  });
+  assert.deepEqual(invalidSourceR8.r8Reasons, ["r8_source_digest_mismatch"]);
+  const unsafeR8 = await preflight.runPreflight({
+    ...r8FsOptions, database: r8Database({
+      ...validR8Row, r8_hard_off: false, r8_public_mutation_denied: false,
+    }),
+  });
+  assert.deepEqual(unsafeR8.r8Reasons, ["r8_hard_off_violation","r8_least_privilege_violation"]);
+  const brokenLegacyR8 = await preflight.runPreflight({
+    ...r8FsOptions, database: r8Database(validR8Row,true,{ ...legacyRow, ziwei_integrity_triggers: false }),
+  });
+  assert.equal(brokenLegacyR8.ok, false,
+    "complete R8 proof never overrides an existing Ziwei preflight failure");
   execFileSync("systemd-analyze", ["verify", retryUnit, receiptTimer, healthUnit, healthTimer], { stdio: "pipe" });
   const runbook = await readFile("docs/runbooks/notification-observability.md", "utf8");
   assert.match(runbook, /retry.*health[\s\S]+hourkey-notify/isu,

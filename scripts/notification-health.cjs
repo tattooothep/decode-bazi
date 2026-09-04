@@ -35,13 +35,36 @@ function createDb() {
   });
 }
 
-async function readR8ShadowHealth(db) {
-  if (!db || typeof db.query !== "function") return null;
+function r8HealthResult(overrides = {}) {
+  return {
+    phase: "shadow", migrationApplied: true, available: false, ok: false, reasons: [],
+    lastRunAt: null, lastCount: 0, providerSendEnabled: false, fresh: false,
+    ageSeconds: null, future: false, futureSkewSeconds: 0,
+    ...overrides,
+  };
+}
+
+async function readR8ShadowHealth(db, options = {}) {
+  if (!db || typeof db.query !== "function") {
+    return r8HealthResult({
+      phase: "migration_not_applied", migrationApplied: false, available: false,
+      ok: true, reasons: [],
+    });
+  }
+  const now = options.now instanceof Date ? options.now : new Date();
+  const maxAgeSeconds = Number.isFinite(options.maxAgeSeconds) ? Number(options.maxAgeSeconds) : 300;
+  const maxFutureSkewSeconds = Number.isFinite(options.maxFutureSkewSeconds)
+    ? Number(options.maxFutureSkewSeconds) : 60;
   try {
     const relation = await db.query(
       "SELECT to_regclass('mobile_science_notification_producer_state')::text AS relation",
     );
-    if (!relation.rows[0]?.relation) return null;
+    if (!relation.rows[0]?.relation) {
+      return r8HealthResult({
+        phase: "migration_not_applied", migrationApplied: false, available: false,
+        ok: true, reasons: [],
+      });
+    }
     const result = await db.query(
       `SELECT last_shadow_run_at,last_shadow_count,provider_send_enabled
          FROM mobile_science_notification_producer_state
@@ -49,17 +72,28 @@ async function readR8ShadowHealth(db) {
         LIMIT 1`,
     );
     const row = result.rows[0];
-    if (!row) return { available: false, lastRunAt: null, lastCount: 0, providerSendEnabled: false };
-    return {
-      available: true,
-      lastRunAt: row.last_shadow_run_at instanceof Date
-        ? row.last_shadow_run_at.toISOString()
-        : (row.last_shadow_run_at || null),
-      lastCount: Number(row.last_shadow_count || 0),
-      providerSendEnabled: row.provider_send_enabled === true,
-    };
+    if (!row) return r8HealthResult({ reasons: ["r8_shadow_state_missing"] });
+    const rawLastRun = row.last_shadow_run_at;
+    const lastRun = rawLastRun instanceof Date ? rawLastRun : (rawLastRun ? new Date(rawLastRun) : null);
+    const validLastRun = lastRun && Number.isFinite(lastRun.valueOf()) ? lastRun : null;
+    const ageSeconds = validLastRun ? (now.valueOf() - validLastRun.valueOf()) / 1000 : null;
+    const futureSkewSeconds = ageSeconds !== null && ageSeconds < 0 ? -ageSeconds : 0;
+    const future = futureSkewSeconds > maxFutureSkewSeconds;
+    const fresh = ageSeconds !== null && !future && ageSeconds <= maxAgeSeconds;
+    const providerSendEnabled = row.provider_send_enabled === true;
+    const reasons = [];
+    if (!validLastRun) reasons.push("r8_shadow_heartbeat_missing");
+    else if (future) reasons.push("r8_shadow_heartbeat_future");
+    else if (!fresh) reasons.push("r8_shadow_heartbeat_stale");
+    if (providerSendEnabled) reasons.push("r8_provider_send_enabled");
+    return r8HealthResult({
+      available: true, ok: reasons.length === 0, reasons,
+      lastRunAt: validLastRun ? validLastRun.toISOString() : null,
+      lastCount: Number(row.last_shadow_count || 0), providerSendEnabled, fresh,
+      ageSeconds, future, futureSkewSeconds,
+    });
   } catch {
-    return { available: false, lastRunAt: null, lastCount: 0, providerSendEnabled: false };
+    return r8HealthResult({ reasons: ["r8_shadow_health_query_failed"] });
   }
 }
 
@@ -82,10 +116,20 @@ async function main(options = {}) {
       providerReady: providerReadiness(options.env || process.env),
       ziweiRuntime: readZiweiRuntimeContext(options.env || process.env),
     });
-    const r8Shadow = await readR8ShadowHealth(db);
-    if (r8Shadow && report?.metrics && typeof report.metrics === "object") {
-      report = { ...report, metrics: { ...report.metrics, r8Shadow } };
-    }
+    const inspectR8 = options.readR8ShadowHealth || readR8ShadowHealth;
+    const r8Shadow = await inspectR8(db, {
+      now: options.now,
+      maxAgeSeconds: options.r8ShadowMaxAgeSeconds,
+      maxFutureSkewSeconds: options.r8ShadowMaxFutureSkewSeconds,
+    });
+    const existingReasons = Array.isArray(report?.reasons) ? report.reasons : [];
+    const r8Reasons = Array.isArray(r8Shadow?.reasons) ? r8Shadow.reasons : [];
+    report = {
+      ...report,
+      ok: report?.ok === true && r8Shadow?.ok === true,
+      reasons: [...new Set([...existingReasons, ...r8Reasons])],
+      metrics: { ...(report?.metrics && typeof report.metrics === "object" ? report.metrics : {}), r8Shadow },
+    };
     (options.log || console.log)(JSON.stringify(report));
     return report;
   } catch {

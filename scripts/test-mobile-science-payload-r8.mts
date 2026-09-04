@@ -84,6 +84,17 @@ for (const route of [webAccountDeleteRoute,mobileAccountDeleteRoute]) {
   assert.match(route, /astronomy_fact_audience_binding=\s*translate/iu,
     "account deletion rotates private audiences before local session teardown");
 }
+assert.match(webAccountDeleteRoute, /pool\.connect\(\)/u,
+  "web account deletion uses one checked-out database connection");
+assert.match(webAccountDeleteRoute, /client\.query\("BEGIN"\)/u);
+assert.match(webAccountDeleteRoute, /mobile-push-user:/u,
+  "web account deletion shares the scheduler's per-user advisory fence");
+assert.match(webAccountDeleteRoute, /FROM users[\s\S]+FOR UPDATE/u,
+  "web account deletion revalidates and locks the account inside its transaction");
+assert.match(webAccountDeleteRoute, /hourkey_r8_revoke_delivery_scope[\s\S]+client\.query\("COMMIT"\)/u);
+assert.match(webAccountDeleteRoute, /client\.query\("ROLLBACK"\)/u);
+assert.doesNotMatch(webAccountDeleteRoute, /\bq1\s*\(/u,
+  "web account deletion has no autocommit mutation escape hatch");
 assert.match(scheduler, /JOIN users u/iu);
 assert.match(scheduler, /u\.deleted_at IS NULL/iu);
 assert.match(pushRoute,
