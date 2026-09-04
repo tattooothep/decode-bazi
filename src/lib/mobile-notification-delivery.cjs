@@ -1081,7 +1081,14 @@ function currentPolicyDecision(row, context, capCount) {
     return { allow: false, terminal: true, reason: "policy_expired_local_day" };
   }
   if (context.has_prefs !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
-  const enabled = context.prefs?.[`${row.kind}_enabled`];
+  // `network_morning` uses the strict service payload/route contract, but it
+  // is optional daily guidance rather than an essential account service.
+  // Re-check the same daily consent on retry that the scheduler checks before
+  // reservation, so disabling daily alerts cannot leak a queued network card.
+  const consentKind = row.kind === "service" && row.payload?.event === "network_morning"
+    ? "daily"
+    : row.kind;
+  const enabled = context.prefs?.[`${consentKind}_enabled`];
   if (enabled !== true) return { allow: false, terminal: true, reason: "policy_consent_revoked" };
   const pausedUntil = context.prefs?.paused_until ? new Date(context.prefs.paused_until) : null;
   if (pausedUntil && Number.isFinite(pausedUntil.valueOf()) && pausedUntil > now) {

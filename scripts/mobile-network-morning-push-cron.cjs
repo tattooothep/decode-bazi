@@ -34,8 +34,13 @@ const USER_GAP_MS = 150;       // เว้นจังหวะกันยิ�
  * (ไม่มีชั้นจร/transit ในคะแนนคู่ — network-score-payload ตั้ง transit: 0) คะแนนคู่จึงเท่าเดิมทุกวัน
  * ถ้ากันซ้ำแค่รายวัน ผู้ใช้จะได้ข้อความเดิมเป๊ะทุกเช้า → กันด้วย cooldown ต่อ "คู่เดิม" เพิ่มอีกชั้น
  * (--cooldown=0 เพื่อปิด ถ้าวันหลัง engine มีชั้นจรรายวันแล้ว) */
-const COOLDOWN_RAW = Number((process.argv.find((a) => a.startsWith("--cooldown=")) || "").slice(11));
-const COOLDOWN_DAYS = Number.isFinite(COOLDOWN_RAW) && COOLDOWN_RAW >= 0 ? Math.floor(COOLDOWN_RAW) : 7;
+function parseCooldownDays(argv = process.argv) {
+  const raw = (argv.find((a) => a.startsWith("--cooldown=")) || "").slice(11).trim();
+  if (!raw) return 7;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : 7;
+}
+const COOLDOWN_DAYS = parseCooldownDays();
 
 // โหลด .env.local ของ release (AUTH_SECRET/PG*) — ไม่ log ค่า
 (function loadEnv() {
@@ -260,7 +265,10 @@ async function runScheduler(db, schedulerSignal) {
        * ตัวคุมกลางบังคับครบ: ยินยอม · ช่วงห้ามรบกวนตามเขตเวลาผู้ใช้ · เพดานต่อวัน
        */
       const verdict = guard.mayNotify({
-        category: "service",
+        // Network morning is optional daily guidance. Its transport payload
+        // stays `service` so `/network` remains a strict routable payload, but
+        // consent belongs to the user's daily-notification switch.
+        category: "network",
         prefs: u.has_prefs ? u : null,
         timezone: u.user_timezone,
         sentToday: Number(u.sent_today || 0),
@@ -334,6 +342,6 @@ async function main() {
   }
 }
 
-module.exports = { buildMessage,buildNetworkNotice,buildNetworkProducer,getJson,loadUsers,main,runScheduler };
+module.exports = { buildMessage,buildNetworkNotice,buildNetworkProducer,getJson,loadUsers,main,parseCooldownDays,runScheduler };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-network-push] category=service error_code=scheduler_failed"); process.exit(1); });
