@@ -517,7 +517,9 @@ function runFreshMobileApkBuild(bundle: any): void {
     assert.equal(publicReceipt.source.statusSha256,sha(Buffer.alloc(0)));
     assert.equal(publicReceipt.inputs.dependenciesSha256,bundle.buildEvidence.mobileDependencyInputManifestSha256);
     assert.equal(publicReceipt.inputs.toolchainSha256,bundle.buildEvidence.mobileToolchainInputManifestSha256);
-    assert.equal(publicReceipt.inputs.nativeSourceManifestSha256,bundle.buildEvidence.mobileNativeInputManifestSha256);
+    // The native manifest binds the fresh receipt's unique build-owned view path. Its exact
+    // digest is receipt-local; source identity and before/after/final continuity are verified below.
+    assert.match(publicReceipt.inputs.nativeSourceManifestSha256,HEX64);
     assert.equal(privateReceipt.inputs.dependencies.before.sha256,publicReceipt.inputs.dependenciesSha256);
     assert.equal(privateReceipt.inputs.dependencies.after.sha256,publicReceipt.inputs.dependenciesSha256);
     assert.equal(privateReceipt.inputs.toolchain.before.sha256,publicReceipt.inputs.toolchainSha256);
