@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_occurrences (
   identity_hash bytea NOT NULL CHECK (octet_length(identity_hash)=32),
   result_revision_hash bytea NOT NULL CHECK (octet_length(result_revision_hash)=32),
   rollout_epoch bigint NOT NULL CHECK (rollout_epoch > 0),
-  state text NOT NULL CHECK (state IN ('shadowed','suppressed','expired')),
+  state text NOT NULL CHECK (state IN ('shadowed','expired','revoked','rollback')),
   snapshot jsonb NOT NULL CHECK (jsonb_typeof(snapshot)='object' AND pg_column_size(snapshot)<=131072),
   snapshot_digest text NOT NULL CHECK (snapshot_digest ~ '^[0-9a-f]{64}$'),
   created_at timestamptz NOT NULL DEFAULT now(),
