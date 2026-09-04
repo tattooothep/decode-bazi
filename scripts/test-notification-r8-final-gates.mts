@@ -214,7 +214,6 @@ function filesTreeDigest(root: string, normalizeNext = false): string {
         assert.equal(resolved,realpathSync(join(releaseRoot,"node_modules",match![1])));
         assert.equal(statSync(resolved).isDirectory(),true);
         records.push(`${normalizedPath}\0link\0${normalizeNext ? target.replaceAll(buildId,"<BUILD_ID>") : target}\n`);
-        visit(resolved,relativePath);
       } else if (stats.isDirectory()) visit(path,relativePath);
       else {
         assert.equal(stats.isFile(),true,`artifact special file is forbidden: ${relativePath}`);
@@ -224,6 +223,7 @@ function filesTreeDigest(root: string, normalizeNext = false): string {
     }
   };
   visit(root);
+  records.sort((left,right) => Buffer.compare(Buffer.from(left),Buffer.from(right)));
   return sha(records.join(""));
 }
 
