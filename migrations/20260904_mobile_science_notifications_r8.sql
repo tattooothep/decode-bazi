@@ -100,6 +100,8 @@ CREATE TABLE IF NOT EXISTS mobile_science_notification_chains (
 CREATE TABLE IF NOT EXISTS mobile_science_notification_endpoints (
   chain_id uuid NOT NULL REFERENCES mobile_science_notification_chains(id) ON DELETE CASCADE,
   installation_id uuid NOT NULL,
+  audience_binding text NOT NULL UNIQUE
+    CHECK (audience_binding ~ '^[A-Za-z0-9_-]{22,64}$'),
   target_revision bigint NOT NULL DEFAULT 1 CHECK (target_revision > 0),
   primary_endpoint boolean NOT NULL DEFAULT false,
   active boolean NOT NULL DEFAULT true,

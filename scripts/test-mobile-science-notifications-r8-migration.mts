@@ -15,6 +15,7 @@ assert.match(forward, /CHECK \(qizheng_payload_schema=0\)/u);
 assert.match(forward, /UNIQUE NULLS NOT DISTINCT/u);
 assert.match(forward, /mobile_science_notification_shadow_cohort/u);
 assert.match(forward, /primary_endpoint/u);
+assert.match(forward, /audience_binding text NOT NULL UNIQUE/u);
 assert.match(forward, /octet_length\(identity_hash\)=32/u);
 assert.doesNotMatch(forward, /UPDATE mobile_(?:ziwei|zibai|qimen)_/iu);
 assert.doesNotMatch(rollback, /\bDROP\s+(?:TABLE|COLUMN|FUNCTION|TRIGGER|INDEX)\b/iu);
@@ -87,12 +88,12 @@ try {
     RETURNING id;
   `).split("\n").at(-1)!;
   psql(database, `
-    INSERT INTO mobile_science_notification_endpoints(chain_id,installation_id,primary_endpoint)
-    VALUES('${chainId}','${installationId}',true);
+    INSERT INTO mobile_science_notification_endpoints(chain_id,installation_id,audience_binding,primary_endpoint)
+    VALUES('${chainId}','${installationId}','A9c7wP4nY2kLm8QrV5sT1u',true);
   `);
   rejectsSql(database,
-    `INSERT INTO mobile_science_notification_endpoints(chain_id,installation_id,primary_endpoint)
-     VALUES('${chainId}',gen_random_uuid(),true)`,
+    `INSERT INTO mobile_science_notification_endpoints(chain_id,installation_id,audience_binding,primary_endpoint)
+     VALUES('${chainId}',gen_random_uuid(),'B8c7wP4nY2kLm8QrV5sT1u',true)`,
     "one chain has only one active primary endpoint",
   );
   psql(database, `
