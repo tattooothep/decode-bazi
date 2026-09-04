@@ -341,6 +341,7 @@ globalThis.fetch = async (_input: any, init?: RequestInit) => {
 const abortUser = {
   id: "acct-abort-001", email: "private@example.test", current_org_id: null, session_version: 0,
   profile_id: "profile-abort-001", has_prefs: true, yam_enabled: true, service_enabled: true,
+  daily_enabled: true,
   user_timezone: "Asia/Bangkok", sent_today: 0, quiet_start: 0,
   quiet_end: 0, max_per_day: 10, paused_until: null, yam_min_quality: "best", yam_lead_minutes: 60,
   tokens: [],
