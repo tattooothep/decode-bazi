@@ -16,6 +16,8 @@ The backend now recognizes Ziwei payload schemas 2 and 3 as the two delivery-cap
 
 `20260905_mobile_ziwei_schema3_compatibility.sql` drops and recreates only `mobile_push_tokens_ziwei_payload_schema_check`, expanding its domain from `(0,1,2)` to `(0,1,2,3)`. It is transactional and rerunnable and performs no row update, insert, or delete.
 
+The migration sets `lock_timeout='1s'` and `statement_timeout='5s'`. It therefore fails fast rather than waiting behind notification reads or registrations while requesting PostgreSQL's `ACCESS EXCLUSIVE` table lock. There is no retry loop inside the transaction and no service-pause choreography. If lock contention aborts the migration, an operator should retry the entire migration off-peak after the failed transaction has ended; they should not lengthen the lock wait or pause notification services.
+
 The historical `20260826_mobile_hourly_sciences.sql` migration remains unchanged with its original `(0,1,2)` constraint. A repository-wide migration scan found no stored database function that filters `ziwei_payload_schema=2`, so no function replacement belongs in this compatibility migration.
 
 ## RED / GREEN evidence
@@ -25,6 +27,14 @@ The new pure contract was run before implementation and failed at the missing ad
 ```text
 AssertionError: expected BEGIN ... DROP CONSTRAINT ... schema-3 compatibility expansion
 actual: empty migration source
+```
+
+The lock hardening was also pinned RED before its implementation:
+
+```text
+AssertionError: compatibility DDL fails fast instead of queuing an access-exclusive lock behind live traffic
+actual: SET LOCAL lock_timeout = '55s'
+expected: SET LOCAL lock_timeout = '1s'
 ```
 
 After the implementation:
@@ -41,6 +51,7 @@ QIMEN_PUSH_REGISTRATION_OK
 The focused contract verifies:
 
 - historical migration preservation and exact additive constraint expansion;
+- exact one-second lock and five-second statement timeouts with no in-transaction retry loop;
 - absence of capability-migration data rewrites or unnecessary stored-function replacements;
 - exact request validation through schema 3 and rejection of unreviewed future schemas;
 - effective platform-gated schema-2/schema-3 enrollment;

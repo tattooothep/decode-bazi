@@ -4,7 +4,8 @@
 -- and their immutable delivery history remain readable and eligible.
 BEGIN;
 
-SET LOCAL lock_timeout = '55s';
+SET LOCAL lock_timeout = '1s';
+SET LOCAL statement_timeout = '5s';
 
 ALTER TABLE mobile_push_tokens
   DROP CONSTRAINT IF EXISTS mobile_push_tokens_ziwei_payload_schema_check;

@@ -14,6 +14,12 @@ const recoveryPreflight = read("scripts/preflight-ziwei-birth-context-recovery.m
 assert.match(historicalMigration, /CHECK \(ziwei_payload_schema IN \(0,1,2\)\)/u,
   "historical migration evidence remains unchanged");
 assert.match(expansionMigration, /BEGIN;[\s\S]*DROP CONSTRAINT IF EXISTS mobile_push_tokens_ziwei_payload_schema_check/u);
+assert.match(expansionMigration, /SET LOCAL lock_timeout = '1s';/u,
+  "compatibility DDL fails fast instead of queuing an access-exclusive lock behind live traffic");
+assert.match(expansionMigration, /SET LOCAL statement_timeout = '5s';/u,
+  "compatibility DDL has a bounded execution window");
+assert.equal((expansionMigration.match(/\bBEGIN;/gu) || []).length, 1,
+  "migration has no in-transaction retry loop or service-pause choreography");
 assert.match(expansionMigration, /CHECK \(ziwei_payload_schema IN \(0,1,2,3\)\)/u,
   "the additive compatibility migration accepts only the existing values plus schema 3");
 assert.match(expansionMigration, /COMMIT;/u);
