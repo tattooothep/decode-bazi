@@ -275,7 +275,11 @@ try {
   const [savedDateRaceResult, qimenRaceResult] = await Promise.all([racingSavedDate, racingQimen]);
   result = await api("/api/mobile/v1/notifications", tokens[1]);
   check(savedDateRaceResult.response.status === 200 && qimenRaceResult.response.status === 200
-    && result.data.prefs?.savedDate === true && result.data.prefs?.qimen === true,
+    && qimenRaceResult.data.prefs?.qimenLocationFresh === true
+    && Number.isFinite(Date.parse(qimenRaceResult.data.prefs?.qimenLocationExpiresAt))
+    && result.data.prefs?.savedDate === true && result.data.prefs?.qimen === true
+    && result.data.prefs?.qimenLocationFresh === true
+    && result.data.prefs?.qimenLocationExpiresAt === qimenRaceResult.data.prefs?.qimenLocationExpiresAt,
   "two concurrent partial preference API writes serialize and merge without lost fields");
   rows = await db.query(`SELECT qimen_latitude,qimen_longitude FROM mobile_notification_prefs WHERE user_id=$1`, [users[1]]);
   check(Number(rows.rows[0]?.qimen_latitude) === 13.7563 && Number(rows.rows[0]?.qimen_longitude) === 100.5018,

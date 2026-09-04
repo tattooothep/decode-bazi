@@ -21,6 +21,9 @@ export type MobileNotificationPreferenceRow = {
   quiet_end: number;
   max_per_day: number;
   paused_until: string | Date | null;
+  qimen_latitude: number | string | null;
+  qimen_longitude: number | string | null;
+  qimen_location_updated_at: string | Date | null;
   privacy_preview: boolean;
   locale: string;
   timezone: string;
@@ -73,10 +76,41 @@ const DEFAULT_PREFERENCES: MobileNotificationPreferenceRow = Object.freeze({
   quiet_end: 7,
   max_per_day: 2,
   paused_until: null,
+  qimen_latitude: null,
+  qimen_longitude: null,
+  qimen_location_updated_at: null,
   privacy_preview: false,
   locale: "th",
   timezone: "Asia/Bangkok",
 });
+
+export const QIMEN_LOCATION_LEASE_MS = 7 * 24 * 60 * 60 * 1_000;
+
+export function qimenLocationLeaseStatus(
+  row: Pick<MobileNotificationPreferenceRow,
+    "qimen_latitude" | "qimen_longitude" | "qimen_location_updated_at">,
+  at = new Date(),
+): Readonly<{ fresh: boolean; expiresAt: string | null }> {
+  const latitude = Number(row.qimen_latitude);
+  const longitude = Number(row.qimen_longitude);
+  const capturedAt = row.qimen_location_updated_at === null
+    || row.qimen_location_updated_at === undefined
+    ? null
+    : new Date(row.qimen_location_updated_at);
+  if (
+    row.qimen_latitude === null
+    || row.qimen_longitude === null
+    || !Number.isFinite(latitude) || latitude < -90 || latitude > 90
+    || !Number.isFinite(longitude) || longitude < -180 || longitude > 180
+    || capturedAt === null || !Number.isFinite(capturedAt.valueOf())
+  ) return Object.freeze({ fresh: false, expiresAt: null });
+
+  const expiresAt = new Date(capturedAt.valueOf() + QIMEN_LOCATION_LEASE_MS);
+  return Object.freeze({
+    fresh: capturedAt <= at && expiresAt > at,
+    expiresAt: expiresAt.toISOString(),
+  });
+}
 
 function intInRange(value: unknown, min: number, max: number): number | null {
   if (typeof value !== "number" || !Number.isInteger(value)) return null;
@@ -174,7 +208,8 @@ export async function updateNotificationPreferences(
               np.qimen_enabled,np.ziwei_hourly_enabled,np.ziwei_profile_id,np.qizheng_electional_enabled,
               np.shrine_enabled,np.goal_enabled,np.service_enabled,
               np.yam_min_quality,np.yam_lead_minutes,np.daily_slot,np.quiet_start,np.quiet_end,np.max_per_day,
-              np.paused_until,np.privacy_preview,np.locale,np.timezone,
+              np.paused_until,np.qimen_latitude,np.qimen_longitude,np.qimen_location_updated_at,
+              np.privacy_preview,np.locale,np.timezone,
               COALESCE(np.timezone,u.timezone,'Asia/Bangkok') AS effective_timezone,
               COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th') AS effective_locale
          FROM users u LEFT JOIN mobile_notification_prefs np ON np.user_id=u.id
@@ -322,7 +357,9 @@ export async function updateNotificationPreferences(
        RETURNING security_enabled,saved_date_enabled,yam_enabled,auspicious_enabled,daily_enabled,
                  qimen_enabled,ziwei_hourly_enabled,ziwei_profile_id,qizheng_electional_enabled,
                  shrine_enabled,goal_enabled,service_enabled,yam_min_quality,yam_lead_minutes,daily_slot,
-                 quiet_start,quiet_end,max_per_day,paused_until,privacy_preview,locale,timezone`,
+                 quiet_start,quiet_end,max_per_day,paused_until,
+                 qimen_latitude,qimen_longitude,qimen_location_updated_at,
+                 privacy_preview,locale,timezone`,
       [
         userId,
         typeof body.savedDate === "boolean" ? body.savedDate : current.saved_date_enabled,

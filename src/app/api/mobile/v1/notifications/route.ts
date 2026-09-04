@@ -18,6 +18,7 @@ import { pool, q, q1 } from "@/lib/db";
 import { getMobileSession } from "@/lib/mobile-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import {
+  qimenLocationLeaseStatus,
   updateNotificationPreferences,
   type MobileNotificationPreferenceRow as PrefRow,
 } from "@/lib/mobile-notification-preferences";
@@ -64,7 +65,8 @@ async function readPrefs(userId: string): Promise<PrefRow> {
             np.qimen_enabled,np.ziwei_hourly_enabled,np.ziwei_profile_id,np.qizheng_electional_enabled,
             np.shrine_enabled,np.goal_enabled,np.service_enabled,
             np.yam_min_quality,np.yam_lead_minutes,np.daily_slot,
-            np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,np.privacy_preview,
+            np.quiet_start,np.quiet_end,np.max_per_day,np.paused_until,
+            np.qimen_latitude,np.qimen_longitude,np.qimen_location_updated_at,np.privacy_preview,
             CASE WHEN lower(COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th'))
                        IN ('th','en','zh','cn','vi','ja','ru','ko','es')
                  THEN lower(COALESCE(NULLIF(btrim(to_jsonb(u)->>'locale'),''),NULLIF(btrim(np.locale),''),'th'))
@@ -95,6 +97,9 @@ async function readPrefs(userId: string): Promise<PrefRow> {
     quiet_end: 7,
     max_per_day: 2,
     paused_until: null,
+    qimen_latitude: null,
+    qimen_longitude: null,
+    qimen_location_updated_at: null,
     privacy_preview: false,
     locale: row?.locale || "th",
     timezone: row?.timezone || "Asia/Bangkok",
@@ -107,12 +112,15 @@ function prefsPayload(row: PrefRow) {
   const untilIso = until === null || until === undefined
     ? null
     : (until instanceof Date ? until : new Date(String(until))).toISOString();
+  const qimenLocation = qimenLocationLeaseStatus(row);
   return {
     security: true,
     savedDate: row.saved_date_enabled,
     yam: row.yam_enabled,
     daily: row.daily_enabled,
     qimen: row.qimen_enabled,
+    qimenLocationFresh: qimenLocation.fresh,
+    qimenLocationExpiresAt: qimenLocation.expiresAt,
     ziweiHourly: row.ziwei_hourly_enabled,
     ziweiProfileId: row.ziwei_profile_id,
     qizhengElectional: false,
