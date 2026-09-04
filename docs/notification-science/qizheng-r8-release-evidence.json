@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-09-04T07:48:16Z",
+  "generatedAt": "2026-09-04T09:31:31Z",
   "bundle": {
     "releaseMode": "hard_off",
     "backend": {
@@ -11,31 +11,32 @@
         "7909d8e421f26786ce91c81e6808beedbb6febc3",
         "ac63fcc9805e8e8387138837c4c8bd5650686e26"
       ],
-      "applicationCommit": "8e5352a59b37294598bb3893c905b86122cfbdac",
-      "applicationTree": "f591df63308816f755afb707db1575c42bd45e5a",
-      "lockfileSha256": "6b95438aebc48381f2fc99ceba612a965042a3727c933333975d31250e3e6bb5",
-      "runtimeDigest": "c7e782f8ef65c8998c2274f2aca4952c89a712c071dceadf5c5c9058564096c3",
-      "buildArtifactDigest": "df9104e2a95f3e20fa559572134e4bd8e5ef0212999c829a64a18367f0828716"
+      "applicationCommit": "681997474c22ee99e9d68d493860ba6ba9c378c6",
+      "applicationTree": "8b193f36fab9f454854d7780b5bea0f6ef632333",
+      "lockfileSha256": "df3f6863add0a67d7be3cd189d9b954f333a9586e7c790884bae2d250edf855e",
+      "runtimeDigest": "d5bb3dabcc437c30fbcfdf0483df8b8ab720189cb8e913818b102f13a3e7a593",
+      "buildArtifactDigest": "7839fca84f567067319f791ce0242ea2c908adde96b6a31dab6cb15c54c84aa9"
     },
     "mobile": {
       "baselineCommit": "5af5f20687f40e55c23c52a15a6b620c700848b6",
-      "applicationCommit": "e7a3b1a495c03718da932e3310069bac20c89bab",
-      "applicationTree": "6fa6f92bc38d4cdbfb8750e6547a9e00da89e538",
+      "applicationCommit": "fd6ad331048ca835903b48c6146953a0dcad7903",
+      "applicationTree": "2f141215e2e1e56885af80a0966c42eae392bd94",
       "lockfileSha256": "a72870c3baf1a54c000472e42e14c6106b49e56b8d7d7c99026b35d5af42bf7d",
-      "runtimeDigest": "f052b249928a9a270f3b7f9c8da07f7f10a4d97acad589a3f0b2ee66d314d494",
-      "buildArtifactDigest": "8420384c5f765b2501e4c39e29882bbb6e191b507ec9b5af393ff88f764e618d"
+      "runtimeDigest": "c57c0c3e95c9cb68dad6109c3a91f504daa97058b933a20934ae514fa7cc46f8",
+      "buildArtifactDigest": "6904f049e13e584e36f97e2479bcc3b33c050bdd510529695b028f69e458a3c3"
     },
     "runtime": {
       "node": "22.22.1",
       "icu": "78.2",
-      "tzdb": "2025c",
+      "hostTzdb": "2025c",
+      "embeddedTzdb": "2026c",
       "astronomyEngine": "2.1.19",
-      "astronomyModel": "astronomy-engine-2.1.19-geocentric-apparent-v1"
+      "astronomyModel": "astronomy-engine-2.1.19-tzdb-2026c-geocentric-apparent-v2"
     },
     "science": {
       "sourceDigest": "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
-      "modelDigest": "c01e4169ed0242a9a474707ba6248a149060cbe9730da3cc6ba90d9e360958d7",
-      "copyDigest": "5e168809205d651704dbc45265f56ef9afbe15ec920a3d2e58eaa52945bcc7db",
+      "modelDigest": "6a4228e9f654062b3b131db3d434172243930151ed025193ae14449e7615964e",
+      "copyDigest": "4aae1bf56fd2e212fc73bb51703f5ef227b92448e7b2f12745e698dfdde45612",
       "astronomyFact": {
         "mode": "civil_two_hour",
         "payloadSchema": 1,
@@ -67,19 +68,21 @@
       "accounts": 10000,
       "boundariesPerDay": 120000,
       "boundaries": 360000,
-      "p95Minutes": 1.9,
-      "p99Minutes": 1.98,
-      "maxBacklogMinutes": 2,
-      "poolPercent": 48,
-      "quotaPercent": 50,
-      "headroomMultiplier": 2,
-      "legacyP95RegressionPercent": 2,
+      "processedOccurrences": 359934,
+      "p95Minutes": 1,
+      "p99Minutes": 1,
+      "maxBacklogMinutes": 1,
+      "poolPercent": 47.5,
+      "quotaPercent": 49.99,
+      "headroomMultiplier": 2.13,
+      "legacyP95RegressionPercent": 0,
       "duplicateLineages": 0,
       "crashReplayAttempts": 300,
       "deduplicatedReplays": 300,
       "revokedBeforeEnqueue": 33,
       "deletedBeforeEnqueue": 33,
       "providerCalls": 0,
+      "tzdb": "2026c",
       "zones": [
         "Pacific/Kiritimati",
         "Pacific/Pago_Pago",
@@ -113,9 +116,10 @@
     "activationBoundary": {
       "astronomyProviderActivationRequiresNewSignedMigration": true,
       "qizhengRequiresDoubleVerifiedSourcesAndNewSignedActivation": true,
-      "productionMigrationApplied": false
+      "productionMigrationApplied": false,
+      "requiredProductionRolloutOrder": "migration_then_application"
     }
   },
-  "bundleDigest": "b16cfae50dba8324ea6236eb6bcc09ff53b4477797fcc0bb022b4cd2f90f1e45",
+  "bundleDigest": "8f465a67fad789ca1f30cbe14fff1f713f0a3505f89a397870bf26dbaf0f9316",
   "signatures": []
 }
