@@ -70,6 +70,14 @@ const LEGACY_PRODUCERS = Object.freeze([
   "scripts/mobile-ziwei-hourly-push-cron.mts",
 ]);
 
+const NETWORK_RECOVERY_FILES = Object.freeze([
+  "scripts/mobile-network-morning-push-cron.cjs",
+  "scripts/test-mobile-push-retry-worker.mts",
+  "scripts/test-notification-live-producers-task3.mts",
+  "scripts/test-push-guard.mts",
+  "src/lib/mobile-notification-delivery.cjs",
+]);
+
 function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   if (value && typeof value === "object") {
@@ -188,7 +196,21 @@ for (const record of [bundle.backend,bundle.mobile]) {
 }
 assert.equal(git(backendRoot, ["rev-parse", `${bundle.backend.applicationCommit}^{tree}`]), bundle.backend.applicationTree);
 assert.equal(git(mobileRoot, ["rev-parse", `${bundle.mobile.applicationCommit}^{tree}`]), bundle.mobile.applicationTree);
-execFileSync("git", ["merge-base", "--is-ancestor", bundle.backend.baselineCommit, bundle.backend.applicationCommit], { cwd: backendRoot });
+assert.equal(bundle.backend.integrationMode, "patch_equivalent_cherry_pick");
+assert.deepEqual(bundle.backend.recoveryPatchCommits, [
+  "51559ea5644966775890f9ad2f29fcbcf0e7e6e1",
+  "7909d8e421f26786ce91c81e6808beedbb6febc3",
+  "ac63fcc9805e8e8387138837c4c8bd5650686e26",
+]);
+const cherry = git(backendRoot, ["cherry", bundle.backend.baselineCommit, bundle.backend.applicationCommit]);
+for (const commit of bundle.backend.recoveryPatchCommits) {
+  assert.match(cherry, new RegExp(`^- ${commit}(?:\\s|$)`, "mu"), `${commit} must be patch-equivalent to the installed recovery baseline`);
+}
+for (const path of NETWORK_RECOVERY_FILES) {
+  assert.equal(sha(blob(backendRoot, bundle.backend.baselineCommit, path)),
+    sha(blob(backendRoot, bundle.backend.applicationCommit, path)),
+    `${path} must match the installed network-morning recovery baseline byte-for-byte`);
+}
 execFileSync("git", ["merge-base", "--is-ancestor", bundle.mobile.baselineCommit, bundle.mobile.applicationCommit], { cwd: mobileRoot });
 assert.equal(sha(blob(backendRoot, bundle.backend.applicationCommit, "package-lock.json")), bundle.backend.lockfileSha256);
 assert.equal(sha(blob(mobileRoot, bundle.mobile.applicationCommit, "package-lock.json")), bundle.mobile.lockfileSha256);
@@ -253,7 +275,7 @@ for (const path of LEGACY_PRODUCERS) {
 }
 
 const snapshot = buildCivilSkySnapshot({
-  instant: new Date("2026-09-04T06:00:00.000Z"),
+  instant: new Date("2026-09-04T05:00:00.000Z"),
   timezone: "Asia/Bangkok",
   observation: { frame: "geocentric", location: null },
 });
