@@ -125,6 +125,20 @@ function filesTreeDigest(root: string): string {
   return sha(records.join(""));
 }
 
+function verifyCommand(
+  root: string,
+  executable: string,
+  args: readonly string[],
+  extraEnv: Readonly<Record<string, string>> = {},
+): void {
+  execFileSync(executable, [...args], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...process.env, ...extraEnv },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+}
+
 const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
 assert.equal(evidence.schema, 1);
 assert.ok(evidence.bundle && typeof evidence.bundle === "object");
@@ -290,12 +304,38 @@ assert.ok(bundle.soak.legacyP95RegressionPercent < 5);
 assert.equal(bundle.soak.duplicateLineages, 0);
 assert.equal(bundle.soak.providerCalls, 0);
 assert.equal(bundle.soak.qizhengSuppressionReasons.every((reason: string) => reason === "source_incomplete"), true);
-assert.deepEqual(Object.keys(bundle.verification).sort(), [
-  "backendProductionBuild", "backendTypecheck", "legacyProducerReplay",
-  "migrationApplyTwiceRollback", "mobileAndroidIosWebExport", "mobileLifecycleAndRoutes",
-  "mobileTypecheck", "providerFreeShadow", "retryRaceAndConsentFences", "strictPayloadPrivacy",
-].sort());
-assert.equal(Object.values(bundle.verification).every((status) => status === "PASS"), true);
+const crossRepoEnvironment = {
+  HOURKEY_MOBILE_ROOT: mobileRoot,
+  HOURKEY_MOBILE_SHA: bundle.mobile.applicationCommit,
+};
+verifyCommand(backendRoot, "npx", ["tsc", "--noEmit"]);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-astronomy-fact-r8.mts"]);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-mobile-science-notifications-r8-migration.mts"]);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-mobile-science-notification-detail-r8.mts"]);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-mobile-science-shadow-r8.mts"]);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-mobile-science-payload-r8.mts"], crossRepoEnvironment);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-notification-source-replay-task3.mts"], crossRepoEnvironment);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-mobile-push-retry-worker.mts"]);
+verifyCommand(backendRoot, "npx", ["tsx", "scripts/test-notification-science-final-blockers.mts"]);
+verifyCommand(mobileRoot, "npx", ["tsc", "--noEmit"]);
+verifyCommand(mobileRoot, "npx", ["tsx", "scripts/testNotificationScienceR8.mts"]);
+verifyCommand(mobileRoot, process.execPath, [
+  "--no-warnings", "--experimental-strip-types", "scripts/test-account-store-clients.mts",
+]);
+const observedVerification = {
+  backendTypecheck: "PASS",
+  backendProductionBuild: "PASS",
+  mobileTypecheck: "PASS",
+  mobileAndroidIosWebExport: "PASS",
+  migrationApplyTwiceRollback: "PASS",
+  strictPayloadPrivacy: "PASS",
+  providerFreeShadow: "PASS",
+  legacyProducerReplay: "PASS",
+  mobileLifecycleAndRoutes: "PASS",
+  retryRaceAndConsentFences: "PASS",
+};
+assert.deepEqual(bundle.verification, observedVerification,
+  "verification claims must match checks rerun by this gate against the signed commit pair");
 assert.deepEqual(bundle.activationBoundary, {
   astronomyProviderActivationRequiresNewSignedMigration: true,
   qizhengRequiresDoubleVerifiedSourcesAndNewSignedActivation: true,
