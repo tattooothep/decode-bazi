@@ -40,6 +40,7 @@ assert.equal(Object.isFrozen(currentManifest.layers.hour), true);
 assert.deepEqual({ ...currentManifest.layers.hour, calculationVersion: historical.versionTuple.hour }, manifest.loadCanonicalSourceManifest().layers.hour);
 
 let checkedPalaces = 0;
+let noSupportingPairCases = 0;
 const fullSizes: number[] = [];
 const compactSizes: number[] = [];
 for (const method of methods) {
@@ -57,6 +58,18 @@ for (const method of methods) {
   assert.equal(evidence.monthValidFrom, snapshot.layers.month.validFrom);
   assert.equal(evidence.monthValidUntil, snapshot.layers.month.validUntil);
   assert.equal(evidence.monthBoundaryClock, snapshot.layers.month.boundaryEvidence.clock);
+  const selectedHour = snapshot.layers.hour.palaces.find((palace: any) => palace.direction === snapshot.selectedDirection);
+  assert.ok(["旺", "相"].includes(selectedHour.starVigor) && ["旺", "相"].includes(selectedHour.doorVigor));
+  const otherPurpose = fixture.input(accountId, method);
+  otherPurpose.purpose = otherPurpose.hourDecision.purpose = "wealth";
+  assert.throws(() => runtime.buildQimenThreeLayerSnapshotV4(otherPurpose), /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u);
+  for (const palace of snapshot.layers.hour.palaces) {
+    if (palace.direction === "C" || (["旺", "相"].includes(palace.starVigor) && ["旺", "相"].includes(palace.doorVigor))) continue;
+    const weakSelected = fixture.input(accountId, method);
+    weakSelected.selectedDirection = weakSelected.hourDecision.direction = palace.direction;
+    assert.throws(() => runtime.buildQimenThreeLayerSnapshotV4(weakSelected), /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
+      "truthful per-palace states do not justify recommending a weak selected pair");
+  }
   for (const kind of ["month", "day"]) {
     for (const palace of snapshot.layers[kind].palaces) {
       assert.equal(palace.starVigor, null);
@@ -80,6 +93,16 @@ for (const method of methods) {
       palace.starVigor = maps.star.byStarCode[palace.starCode];
       palace.doorVigor = palace.direction === "C" ? null : maps.door.byDoorCode[palace.doorCode];
     }
+    const hasSupportingPair = input.layers.hour.palaces.some((palace: any) => palace.direction !== "C"
+      && ["旺", "相"].includes(palace.starVigor) && ["旺", "相"].includes(palace.doorVigor));
+    if (!hasSupportingPair) {
+      assert.throws(() => fixture.selectSupportingDirection(input), /qimen_fixture_no_supporting_direction/u);
+      assert.throws(() => runtime.buildQimenThreeLayerSnapshotV4(input), /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u);
+      noSupportingPairCases += 1;
+      // A distinct controlled synthetic chart allows positive full-grid tests.
+      // The original ineligible chart above remains invalid; no gate is bypassed.
+      fixture.arrangeSyntheticSupportingDoor(input);
+    } else fixture.selectSupportingDirection(input);
     const result = runtime.buildQimenThreeLayerSnapshotV4(input);
     assert.equal(runtime.verifyQimenThreeLayerSnapshotV4(result), true);
     for (let index = 0; index < 9; index += 1) {
@@ -171,12 +194,13 @@ for (const method of methods) {
     provider.qimenV4.replace(/^\{/u, '{"\\u0076":4,'),
     provider.qimenV4.replace('"v":4', '"v":3'),
     provider.qimenV4.replace(seasonal.SEASONAL_HOUR_CALCULATION_VERSION, historical.versionTuple.hour),
-    provider.qimenV4.replace('"starBaseQuality":"severe"', '"starBaseQuality":"unavailable"'),
+    provider.qimenV4.replace(/"starBaseQuality":"[a-z_]+"/u, '"starBaseQuality":"unavailable"'),
   ]) assert.throws(() => runtime.parseQimenV4ProviderData({ qimenV4: wire }), /QIMEN_V4_PROVIDER_PAYLOAD_INVALID/u);
   assert.throws(() => runtime.parseQimenV4ProviderData({ ...provider, qimenV3: provider.qimenV4 }));
   assert.throws(() => runtime.parseQimenV4ProviderData(Object.assign(Object.create({ inherited: true }), provider)));
   for (const mutate of [
     (s: any) => { s.extra = true; },
+    (s: any) => { s.purpose = "wealth"; },
     (s: any) => { s.layers.hour.extra = true; },
     (s: any) => { s.layers.hour.explanationCodes = ["HOUR_SOLE_ACTION_AUTHORITY", "HOUR_SOLE_ACTION_AUTHORITY"]; },
     (s: any) => { s.snapshotDigest = "0".repeat(64); },
@@ -218,10 +242,11 @@ for (const method of methods) {
   compactSizes.push(Buffer.byteLength(provider.qimenV4));
 }
 assert.notEqual(fixture.build(accountId, methods[0]).snapshotDigest, fixture.build(accountId, methods[1]).snapshotDigest);
+assert.equal(noSupportingPairCases, 4);
 for (const [snapshot, verify] of [[legacyV2, runtime.verifyQimenThreeLayerSnapshot], [historical, runtime.verifyQimenThreeLayerSnapshotV3]]) {
   const changed = structuredClone(snapshot); changed.layers.hour.palaces[0].starVigor = "廢";
   assert.equal(verify(resign(changed)), false, "historical vocabularies remain frozen even with a correct new digest");
   const evidence = structuredClone(snapshot); evidence.layers.hour.contextEvidence = fixture.build(accountId, methods[0]).layers.hour.contextEvidence;
   assert.equal(verify(resign(evidence)), false, "historical hour evidence stays null");
 }
-console.log(JSON.stringify({ result: "qimen V4 contract passed", profiles: methods.length, branchCases: 24, checkedPalaces, fullSizes, compactSizes }));
+console.log(JSON.stringify({ result: "qimen V4 contract passed", profiles: methods.length, branchCases: 24, noSupportingPairCases, checkedPalaces, fullSizes, compactSizes }));

@@ -421,7 +421,8 @@ function buildBaseSnapshot(input, schema) {
   const manifest = sourceManifestRuntime.loadCanonicalSourceManifest({ schema });
   if (!top || !layersRecord || top.event !== "qimen_three_layer"
     || !cleanCode(top.notificationId, 128) || !cleanCode(top.accountId, 128)
-    || !cleanCode(top.purpose, 48) || !ACTION_DIRECTIONS.has(top.selectedDirection)
+    || !cleanCode(top.purpose, 48) || (schema === 4 && top.purpose !== "travel")
+    || !ACTION_DIRECTIONS.has(top.selectedDirection)
     || !validIso(top.createdAt) || top.route !== "/qimen/notification-detail") throw invalid();
 
   const layers = Object.create(null);
@@ -438,7 +439,12 @@ function buildBaseSnapshot(input, schema) {
     const evidence = layers.hour.contextEvidence;
     const month = layers.month;
     const dayContext = layers.day.contextEvidence;
-    if (month.contextEvidence.subjectPillarZh !== month.contextEvidence.monthPillarZh
+    const selectedHour = layers.hour.palaces.find((palace) => palace.direction === top.selectedDirection);
+    // The immutable full contract can recheck this producer criterion directly.
+    // Correct per-palace labels alone do not justify a recommended direction.
+    if (!selectedHour || !["旺", "相"].includes(selectedHour.starVigor)
+      || !["旺", "相"].includes(selectedHour.doorVigor)
+      || month.contextEvidence.subjectPillarZh !== month.contextEvidence.monthPillarZh
       || dayContext.subjectPillarZh !== dayContext.dayPillarZh
       || dayContext.monthPillarZh !== month.contextEvidence.monthPillarZh
       || evidence.monthPillarZh !== month.contextEvidence.monthPillarZh
@@ -972,7 +978,8 @@ function parseAttestedProviderData(value, schema) {
   if (!record || !layersRecord || canonicalStringify(parsed) !== outer[key]
     || record.v !== schema || record.event !== "qimen_three_layer"
     || !cleanCode(record.accountId, 128) || !cleanCode(record.notificationId, 128)
-    || !cleanCode(record.purpose, 48) || !ACTION_DIRECTIONS.has(record.direction)
+    || !cleanCode(record.purpose, 48) || (schema === 4 && record.purpose !== "travel")
+    || !ACTION_DIRECTIONS.has(record.direction)
     || !validIso(record.hourStart) || !validIso(record.hourEnd)
     || Date.parse(record.hourEnd) - Date.parse(record.hourStart) < 90 * 60_000
     || Date.parse(record.hourEnd) - Date.parse(record.hourStart) > 150 * 60_000
