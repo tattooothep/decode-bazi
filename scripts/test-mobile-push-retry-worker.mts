@@ -1107,6 +1107,7 @@ try {
     transactional?: boolean;
     kind?: "daily" | "service" | "yam" | "qimen";
     sourceFacts?: Record<string, unknown>;
+    networkMorning?: boolean;
   } = {}) {
     const tokenId = crypto.randomUUID();
     const installationId = crypto.randomUUID();
@@ -1124,7 +1125,9 @@ try {
     );
     const date = new Date().toISOString().slice(0, 10);
     const payload = kind === "service"
-      ? { v: 1, kind, accountId: userId, event: "support_reply", referenceId: `case-${key}`, url: "/support" }
+      ? options.networkMorning
+        ? { v: 1, kind, accountId: userId, event: "network_morning", referenceId: `network|${date}|center-1`, url: "/network" }
+        : { v: 1, kind, accountId: userId, event: "support_reply", referenceId: `case-${key}`, url: "/support" }
       : kind === "yam"
         ? { v: 1, kind, accountId: userId, range: "09:00-11:00", quality: "best", date, url: "/today" }
         : kind === "qimen"
@@ -1150,6 +1153,7 @@ try {
       kind?: "daily" | "service" | "yam" | "qimen";
       sourceFacts?: Record<string, unknown>;
       policyNow?: string;
+      networkMorning?: boolean;
     } = {},
   ) {
     const attemptIds = await reservePolicyAttempt(key, options);
@@ -1167,6 +1171,12 @@ try {
   await assertPolicyBlocked("policy-revoked", async () => {
     await pool!.query(`UPDATE mobile_notification_prefs SET daily_enabled=false WHERE user_id=$1`, [userId]);
   }, "policy_consent_revoked");
+  await assertPolicyBlocked("policy-network-daily-revoked", async () => {
+    await pool!.query(
+      `UPDATE mobile_notification_prefs SET daily_enabled=false,service_enabled=true WHERE user_id=$1`,
+      [userId],
+    );
+  }, "policy_consent_revoked", { kind: "service", networkMorning: true });
   const paused = await assertPolicyBlocked("policy-paused", async () => {
     await pool!.query(`UPDATE mobile_notification_prefs SET paused_until=now()+interval '1 hour' WHERE user_id=$1`, [userId]);
   }, "policy_paused");

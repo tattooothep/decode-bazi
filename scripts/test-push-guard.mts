@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const G = require("../src/lib/push-guard.cjs");
+const NETWORK = require("./mobile-network-morning-push-cron.cjs");
 
 let passed = 0;
 function check(label: string, run: () => void): void {
@@ -133,6 +134,36 @@ check("🔴 ฝั่งเว็บปิด ฝั่งแอพเปิด 
     sentToday: 0, at: DAY,
   });
   assert.equal(r.allow, false, "ผู้ใช้ปิดที่เว็บแล้วยังได้รับ");
+});
+
+check("🔴 network-morning ต้องใช้สวิตช์รายวัน ไม่ใช่ service", () => {
+  const dailyOff = G.mayNotify({
+    category: "network",
+    prefs: { ...OPEN, daily_enabled: false, service_enabled: true },
+    sentToday: 0,
+    at: DAY,
+  });
+  assert.equal(dailyOff.allow, false, "ปิดรายวันแล้ว network-morning ยังส่งได้");
+  const dailyOn = G.mayNotify({
+    category: "network",
+    prefs: { ...OPEN, daily_enabled: true, service_enabled: false },
+    sentToday: 0,
+    at: DAY,
+  });
+  assert.equal(dailyOn.allow, true, "network-morning ผูกผิดกับสวิตช์ service");
+  const networkSource = readFileSync("scripts/mobile-network-morning-push-cron.cjs", "utf8");
+  assert.match(networkSource, /mayNotify\(\{[\s\S]{0,500}category:\s*"network"/u,
+    "scheduler ไม่ได้ส่ง category=network เข้าตัวคุมกลาง");
+});
+
+check("🔴 network-morning ต้องกันคู่เดิม 7 วันโดย default", () => {
+  assert.equal(NETWORK.parseCooldownDays(["node", "network-cron"]), 7,
+    "ไม่มี --cooldown ต้องไม่ถูก Number('') แปลงเป็น 0");
+  assert.equal(NETWORK.parseCooldownDays(["node", "network-cron", "--cooldown=0"]), 0,
+    "ผู้ดูแลยังต้องปิด cooldown อย่างชัดเจนได้");
+  assert.equal(NETWORK.parseCooldownDays(["node", "network-cron", "--cooldown=3"]), 3);
+  assert.equal(NETWORK.parseCooldownDays(["node", "network-cron", "--cooldown=invalid"]), 7,
+    "ค่าผิดรูปต้อง fail-safe กลับค่า default");
 });
 
 console.log("── ค่าเริ่มต้นต้องเป็นปิด ──");
