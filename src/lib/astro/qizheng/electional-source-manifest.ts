@@ -11,7 +11,7 @@ export type QizhengElectionalSourceArtifact = Readonly<{
   pages: number;
   byteSize: number;
   license: "Public domain";
-  transcriptionStatus: "pending_double_verification";
+  transcriptionStatus: "pending_double_verification" | "double_verified";
 }>;
 
 export const QIZHENG_ELECTIONAL_SOURCE_ARTIFACTS = Object.freeze([
