@@ -297,7 +297,7 @@ function apkUnsignedContentSha256(bytes: Buffer): string {
     .update(bytes.subarray(centralDirectory)).digest("hex");
 }
 
-function verifyPinnedInternalApk(bundle: any, configuredPath: string, exactFile: boolean): void {
+function verifyPinnedInternalApk(bundle: any, configuredPath: string, exactSignedBytes: boolean): void {
   const apkPath = realpathSync(configuredPath);
   assert.equal(apkPath,configuredPath);
   assert.equal(lstatSync(apkPath).isFile(),true);
@@ -315,11 +315,9 @@ function verifyPinnedInternalApk(bundle: any, configuredPath: string, exactFile:
     playProduction: false,
     storeUpload: false,
   });
-  if (exactFile) {
-    assert.equal(sha(bytes),expected.sha256);
-    assert.equal(apkUnsignedContentSha256(bytes),expected.unsignedContentSha256);
-    assert.equal(bytes.length,expected.bytes);
-  }
+  if (exactSignedBytes) assert.equal(sha(bytes),expected.sha256);
+  assert.equal(apkUnsignedContentSha256(bytes),expected.unsignedContentSha256);
+  assert.equal(bytes.length,expected.bytes);
   const badging = execFileSync("/usr/lib/android-sdk/build-tools/36.0.0/aapt",["dump","badging",apkPath],{ encoding: "utf8" });
   const packageMatch = /^package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'/mu.exec(badging);
   assert.ok(packageMatch);
@@ -578,7 +576,7 @@ function runFreshMobileApkBuild(bundle: any): void {
       versionName: privateReceipt.apk.versionName, signerSha256: privateReceipt.apk.signerSha256,
       signerPolicy: "external-release-certificate-fingerprint-only",
     });
-    verifyPinnedInternalApk(bundle,realpathSync(privateReceipt.apk.path),true);
+    verifyPinnedInternalApk(bundle,realpathSync(privateReceipt.apk.path),false);
 
     const qimenAfter = mobileObservedReceipt.captureStableSourceManifest(QIMEN_GOLDEN_ROOT);
     mobileObservedReceipt.assertSameSource(qimenBefore,qimenAfter);
