@@ -297,6 +297,9 @@ async function runScheduler(db, schedulerSignal) {
               LIMIT 1`,
             [u.id, String(COOLDOWN_DAYS), allyId, riskId])
         : { rows: [] };
+      // The cooldown lookup can outlive the scheduler lease. Never cross the
+      // external-send boundary after a shared timeout/abort.
+      schedulerSignal.throwIfAborted();
 
       if (DRY) {
         const dup = await db.query(`SELECT 1 FROM mobile_push_log WHERE user_id=$1 AND yam_key=$2`, [u.id, notice.key]);
