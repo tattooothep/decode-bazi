@@ -4,7 +4,10 @@ export declare const CALCULATION_VERSION: "ziwei-hourly-notification-v1";
 export declare function buildZiweiHourlyNotificationSnapshot(input: Readonly<Record<string, unknown>>): ZiweiHourlyNotificationSnapshot;
 export declare function verifyZiweiHourlyNotificationSnapshot(input: unknown): boolean;
 export declare function realizedShichenWindow(reference: unknown): boolean;
-export declare function buildZiweiHourlyProviderData(snapshot: unknown): Readonly<{ ziweiHourlyV2: string }>;
+export declare function buildZiweiHourlyProviderData(snapshot: unknown, options?: Readonly<{ schema: 2 }>): Readonly<{ ziweiHourlyV2: string }>;
+export declare function buildZiweiHourlyProviderData(snapshot: unknown, options: Readonly<{ schema: 3 }>): Readonly<{ ziweiHourlyV3: string }>;
+export declare function buildZiweiHourlyProviderData(snapshot: unknown, options: Readonly<{ schema: 2 | 3 }>): Readonly<{ ziweiHourlyV2: string }> | Readonly<{ ziweiHourlyV3: string }>;
+/** Accepts exact V2 or V3 transport envelopes; both expand into the unchanged V2 compact evidence schema. */
 export declare function parseZiweiHourlyProviderData(data: unknown): Readonly<Record<string, unknown>> | null;
 export declare function buildZiweiHourlyCopy(locale: string, snapshot: unknown): Readonly<{ title: string; body: string }>;
 export declare function buildZiweiHourlyPrivateCopy(locale: string): Readonly<{ title: string; body: string }>;

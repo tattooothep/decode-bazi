@@ -2,6 +2,7 @@
 
 const { createHash } = require("node:crypto");
 const ziweiHourlyPresentation = require("./ziwei-hourly-presentation.cjs");
+const { ZIWEI_WIRE_V3_MAX_BASE64, packZiweiHourlyWireV3, parseZiweiHourlyWireV3Json } = require("./ziwei-hourly-wire-v3.cjs");
 
 const LINEAGE = "iztro_2_5_8_normal_forward_zi_v1";
 const CALCULATION_VERSION = "ziwei-hourly-notification-v1";
@@ -321,13 +322,39 @@ function calendarDate(value) {
   return Number.isFinite(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
 }
 
-function buildZiweiHourlyProviderData(snapshot) {
+function buildZiweiHourlyProviderData(snapshot, options) {
   if (!verifyZiweiHourlyNotificationSnapshot(snapshot)) throw new TypeError("ziwei_hourly_snapshot_invalid");
+  if (options?.schema === 3) {
+    const tuple = packZiweiHourlyWireV3(compactSnapshot(snapshot));
+    if (!tuple) throw new TypeError("ziwei_hourly_wire_v3_invalid");
+    const encoded = Buffer.from(JSON.stringify(tuple), "utf8").toString("base64url");
+    if (encoded.length > ZIWEI_WIRE_V3_MAX_BASE64) throw new TypeError("ziwei_hourly_wire_v3_oversized");
+    return Object.freeze({ ziweiHourlyV3: encoded });
+  }
   const encoded = Buffer.from(canonicalStringify(compactSnapshot(snapshot)), "utf8").toString("base64url");
   return Object.freeze({ ziweiHourlyV2: encoded });
 }
 
 function parseZiweiHourlyProviderData(data) {
+  // Opt-in V3 expands into the historical compact schema before the same validators.
+  // Descriptor capture keeps malformed envelopes/accessors/prototypes fail-closed.
+  try {
+    if (data && typeof data === "object" && Object.hasOwn(data, "ziweiHourlyV3")) {
+      if (Array.isArray(data) || ![Object.prototype, null].includes(Object.getPrototypeOf(data))
+        || Reflect.ownKeys(data).length !== 1) return null;
+      const descriptor = Object.getOwnPropertyDescriptor(data, "ziweiHourlyV3");
+      if (!descriptor || !descriptor.enumerable || !("value" in descriptor)) return null;
+      const encoded = descriptor.value;
+      if (typeof encoded !== "string" || encoded.length === 0 || encoded.length > ZIWEI_WIRE_V3_MAX_BASE64
+        || !/^[A-Za-z0-9_-]+$/u.test(encoded) || encoded.length % 4 === 1) return null;
+      const json = Buffer.from(encoded, "base64url").toString("utf8");
+      if (Buffer.from(json, "utf8").toString("base64url") !== encoded) return null;
+      const expanded = parseZiweiHourlyWireV3Json(json);
+      return expanded ? parseZiweiHourlyProviderData({
+        ziweiHourlyV2: Buffer.from(canonicalStringify(expanded), "utf8").toString("base64url"),
+      }) : null;
+    }
+  } catch { return null; }
   if (!exactKeys(data, ["ziweiHourlyV2"]) || typeof data.ziweiHourlyV2 !== "string") return null;
   let value;
   try {
