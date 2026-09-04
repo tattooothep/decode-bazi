@@ -2,6 +2,7 @@
 "use strict";
 
 const { constants, accessSync, readFileSync } = require("node:fs");
+const { createHash } = require("node:crypto");
 const { execFileSync } = require("node:child_process");
 const pg = require("pg");
 const {
@@ -33,6 +34,46 @@ function hasStateDirectoryContract(readUnit) {
       && /^d \/var\/lib\/hourkey-notification\/schedulers 0750 hourkey-notify hourkey-notify -$/m.test(source);
   } catch {
     return false;
+  }
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function inspectR8HardOffEvidence(target, options = {}) {
+  const read = options.readFile || readFileSync;
+  const requireSignatures = options.requireSignatures !== false;
+  try {
+    const evidence = JSON.parse(read(target, "utf8"));
+    const bundleDigest = createHash("sha256").update(canonicalJson(evidence.bundle)).digest("hex");
+    const signatures = Array.isArray(evidence.signatures) ? evidence.signatures : [];
+    const signatureIds = new Set(signatures.map((signature) => signature?.reviewerId));
+    const signaturesValid = signatures.length === 5 && signatureIds.size === 5
+      && signatures.every((signature) => signature?.verdict === "PASS"
+        && signature?.bundleDigest === bundleDigest
+        && signature?.backendCommit === evidence.bundle?.backend?.applicationCommit
+        && signature?.mobileCommit === evidence.bundle?.mobile?.applicationCommit
+        && Array.isArray(signature?.findings?.critical)
+        && Array.isArray(signature?.findings?.important)
+        && Array.isArray(signature?.findings?.minor));
+    const hardOff = evidence?.bundle?.releaseMode === "hard_off"
+      && evidence?.bundle?.science?.astronomyFact?.providerSendEnabled === false
+      && evidence?.bundle?.science?.qizheng?.providerSendEnabled === false
+      && evidence?.bundle?.science?.qizheng?.payloadSchema === 0
+      && evidence?.bundle?.science?.qizheng?.sourceStatus === "pending_double_verification"
+      && evidence?.bundle?.providerAttempts === 0;
+    const ok = evidence?.schema === 1 && evidence?.bundleDigest === bundleDigest
+      && hardOff && (!requireSignatures || signaturesValid);
+    return { ok, bundleDigestValid: evidence?.bundleDigest === bundleDigest, hardOff,
+      signaturesValid: requireSignatures ? signaturesValid : signatures.length === 0 || signaturesValid };
+  } catch {
+    return { ok: false, bundleDigestValid: false, hardOff: false, signaturesValid: false };
   }
 }
 
@@ -220,14 +261,20 @@ function inspect(options = {}) {
     && schedulerHeartbeatAccess && ziweiServicePaths.every(([target, mode]) => {
     try { return serviceUserAccess("hourkey-notify", target, mode) === true; } catch { return false; }
   });
-  return {
-    ok: runtimeRoot && nodeExecutable && releaseReadable && environmentReadable
+  const r8EvidencePath = options.r8EvidencePath || env.HOURKEY_R8_HARD_OFF_MANIFEST;
+  const r8Evidence = r8EvidencePath
+    ? inspectR8HardOffEvidence(r8EvidencePath, options.r8EvidenceOptions)
+    : null;
+  const baseOk = runtimeRoot && nodeExecutable && releaseReadable && environmentReadable
       && notificationEnvironmentReadable && notificationEnvironmentValid && credentialReadable
-      && (stateReady || stateCreatable) && ziweiServiceUser && ziweiEnvironmentReadable && ziweiServiceAccess,
+      && (stateReady || stateCreatable) && ziweiServiceUser && ziweiEnvironmentReadable && ziweiServiceAccess;
+  return {
+    ok: baseOk && (!r8Evidence || r8Evidence.ok),
     runtimeRoot, nodeExecutable, releaseReadable, environmentReadable, notificationEnvironmentReadable,
     notificationEnvironmentValid, credentialReadable, stateReady, stateCreatable,
     ziweiServiceUser, ziweiEnvironmentReadable, retryHeartbeatAccess,
     schedulerHeartbeatAccess, ziweiServiceAccess,
+    ...(r8Evidence ? { r8Evidence } : {}),
   };
 }
 
@@ -256,4 +303,10 @@ if (require.main === module) {
   });
 }
 
-module.exports = { hasStateDirectoryContract, inspect, inspectDatabaseAccess, runPreflight };
+module.exports = {
+  hasStateDirectoryContract,
+  inspect,
+  inspectDatabaseAccess,
+  inspectR8HardOffEvidence,
+  runPreflight,
+};

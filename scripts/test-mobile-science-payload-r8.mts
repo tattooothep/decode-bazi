@@ -64,7 +64,11 @@ const notificationRoute = readFileSync("src/app/api/mobile/v1/notifications/rout
 assert.match(pushRoute, /astronomyFactPayloadSchema/u);
 assert.match(pushRoute, /astronomy_fact_payload_schema/u);
 assert.match(notificationRoute, /"astronomy_fact"/u);
-assert.match(notificationRoute, /"qizheng"/u);
+assert.match(notificationRoute, /qizhengElectional:\s*false/u);
+assert.match(notificationRoute, /qizhengElectionalAvailable:\s*false/u);
+const kindsBlock = /const KINDS = new Set\(\[([\s\S]*?)\]\);/u.exec(notificationRoute)?.[1] || "";
+assert.doesNotMatch(kindsBlock, /"qizheng"/u,
+  "source-blocked Qizheng must not become a provider/history notification category");
 
 const mobileRoot = process.env.HOURKEY_MOBILE_ROOT;
 const mobileSha = process.env.HOURKEY_MOBILE_SHA;
