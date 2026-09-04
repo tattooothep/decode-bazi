@@ -6,6 +6,7 @@ import * as scheduler from "./mobile-ziwei-hourly-push-cron.mts";
 
 const require = createRequire(import.meta.url);
 const runtime = require("../src/lib/ziwei-hourly-notification.cjs");
+const presentation = require("../src/lib/ziwei-hourly-presentation.cjs");
 const accountId = "00000000-0000-4000-8000-000000000001";
 const profileId = "00000000-0000-4000-8000-000000000002";
 const occurrenceId = "00000000-0000-4000-8000-000000000003";
@@ -92,12 +93,31 @@ assert.match(notice.messages[0].title, /Ziwei hour/u,
   "lock-screen copy follows current account locale even if this token still stores another locale");
 assert.doesNotMatch(`${notice.title} ${notice.body}`, /lucky|auspicious|best|มงคล|吉方|score/iu);
 
+const rowV3 = { ...row, ziwei_payload_schema: 3 };
+const noticeV3 = scheduler.buildZiweiNotice(rowV3, snapshot, occurrenceId, "2026-08-26T12:10:00.000Z", backendCommit);
+assert.deepEqual(Object.keys(noticeV3.payload), ["ziweiHourlyV3"], "an explicitly capable installation gets the lossless readable transport");
+assert.deepEqual(noticeV3.messages[0].data, noticeV3.payload);
+assert.deepEqual(runtime.parseZiweiHourlyProviderData(noticeV3.payload), runtime.parseZiweiHourlyProviderData(notice.payload));
+assert.equal(noticeV3.key, notice.key, "an in-window capability upgrade cannot invent a second occurrence key");
+const readable = runtime.buildZiweiHourlyCopy("en", snapshot, { schema: 3 });
+assert.equal(noticeV3.messages[0].title, readable.title);
+assert.equal(noticeV3.messages[0].body, readable.body);
+assert.equal(noticeV3.sourceFacts.payloadSchema, 3);
+assert.equal(noticeV3.sourceFacts.presentationVersion, presentation.READABLE_COPY_VERSION);
+assert.equal(noticeV3.sourceFacts.presentationCatalogSha256, presentation.READABLE_COPY_CATALOG_SHA256);
+assert.equal(noticeV3.sourceFacts.meaningCatalogSha256, presentation.PRESENTATION_CATALOG_SHA256);
+assert.equal(noticeV3.sourceFacts.presentationLocale, "en");
+for (const locale of presentation.SUPPORTED_LOCALES) assert.deepEqual(noticeV3.historyCopies[locale], runtime.buildZiweiHourlyCopy(locale, snapshot, { schema: 3 }));
+for (const schema of [0, 1, 4, undefined]) assert.throws(() => scheduler.buildZiweiNotice(
+  { ...row, ziwei_payload_schema: schema }, snapshot, occurrenceId, "2026-08-26T12:10:00.000Z", backendCommit,
+), /ziwei_hourly_token_capability_invalid/u);
+
 const source = readFileSync(new URL("./mobile-ziwei-hourly-push-cron.mts", import.meta.url), "utf8");
 assert.match(source, /to_char\(p\.birth_datetime AT TIME ZONE 'Asia\/Bangkok','YYYY-MM-DD"T"HH24:MI:SS'\) AS birth_wall/u);
 assert.match(source, /resolveCanonicalZiweiHourlyContext\(/u);
 assert.match(source, /canonicalContext\.birthFingerprint !== row\.birth_context_fingerprint/u);
 assert.match(source, /AS account_locale/u);
-assert.match(source, /t\.enabled=true AND t\.ziwei_payload_schema=2/u);
+assert.match(source, /t\.enabled=true AND t\.ziwei_payload_schema IN \(2,3\)/u);
 assert.match(source, /owner_generation/u);
 assert.match(source, /profile_id=\$3 AND owner_generation=\$5 AND window_valid_from=\$4/u,
   "a conflict lookup must never revive a stale occurrence from another owner generation");

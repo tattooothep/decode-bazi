@@ -89,6 +89,16 @@ const context = {
 
 assert.deepEqual(delivery.currentPolicyDecision(row, context, 999), { allow: true },
   "every-shichen Ziwei ignores the unrelated generic daily cap");
+assert.deepEqual(delivery.currentPolicyDecision({ ...row, ziwei_token_payload_schema: 3 }, context, 999), { allow: true },
+  "an upgrade to a backward-compatible V3 client cannot cancel a sealed V2 attempt");
+const rowV3 = { ...row, payload: { ziweiHourlyV3: "immutable-envelope" }, ziwei_token_payload_schema: 3 };
+assert.deepEqual(delivery.currentPolicyDecision(rowV3, context, 999), { allow: true });
+assert.deepEqual(delivery.currentPolicyDecision({ ...rowV3, ziwei_token_payload_schema: 2 }, context, 999),
+  { allow: false, terminal: true, reason: "policy_payload_schema_changed" }, "a downgraded V2 client cannot receive a sealed V3 attempt");
+for (const capability of [0, 1, 4]) assert.deepEqual(delivery.currentPolicyDecision({ ...rowV3, ziwei_token_payload_schema: capability }, context, 999),
+  { allow: false, terminal: true, reason: "policy_payload_schema_changed" });
+assert.deepEqual(delivery.currentPolicyDecision({ ...rowV3, payload: { ...row.payload, ...rowV3.payload } }, context, 999),
+  { allow: false, terminal: true, reason: "policy_payload_schema_changed" }, "mixed schemas are never silently selected");
 assert.deepEqual(delivery.currentPolicyDecision(row, {
   ...context, ziwei_hourly_current_owner_generation: 8,
 }, 0), { allow: false, terminal: true, reason: "policy_profile_changed" },

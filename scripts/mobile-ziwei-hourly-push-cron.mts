@@ -16,6 +16,7 @@ const { Pool } = require("pg");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const payloadRuntime = require("../src/lib/ziwei-hourly-notification.cjs");
+const presentation = require("../src/lib/ziwei-hourly-presentation.cjs");
 const { writeSchedulerHeartbeat } = require("../src/lib/notification-scheduler-heartbeat.cjs");
 
 const manifestDigest = createHash("sha256")
@@ -132,14 +133,17 @@ export function buildZiweiNotice(
     throw new TypeError("ziwei_hourly_owner_binding_invalid");
   }
   if (!/^[0-9a-f]{40}$/u.test(backendCommit)) throw new TypeError("ziwei_hourly_backend_commit_invalid");
-  const payload = payloadRuntime.buildZiweiHourlyProviderData(snapshot);
+  const schema = Number(row.ziwei_payload_schema);
+  if (schema !== 2 && schema !== 3) throw new TypeError("ziwei_hourly_token_capability_invalid");
+  const options = { schema };
+  const payload = payloadRuntime.buildZiweiHourlyProviderData(snapshot, options);
   const historyCopies = delivery.localizedHistoryCopies(
-    (locale: string) => payloadRuntime.buildZiweiHourlyCopy(locale, snapshot),
+    (locale: string) => payloadRuntime.buildZiweiHourlyCopy(locale, snapshot, options),
     ZIWEI_NOTIFICATION_LOCALES,
   );
   const requestedLocale = String(row.account_locale || "").trim().toLowerCase();
   const locale = ZIWEI_NOTIFICATION_LOCALES.includes(requestedLocale) ? requestedLocale : "en";
-  const providerCopy = payloadRuntime.buildZiweiHourlyCopy(locale, snapshot);
+  const providerCopy = payloadRuntime.buildZiweiHourlyCopy(locale, snapshot, options);
   return Object.freeze({
     userId: row.user_id,
     key: occurrenceKey(row, snapshot),
@@ -160,6 +164,13 @@ export function buildZiweiNotice(
       eventEndAt: snapshot.facts.reference.validUntil,
       sendDeadline,
       ownerGeneration: Number(row.owner_generation),
+      ...(schema === 3 ? {
+        payloadSchema: 3,
+        presentationVersion: presentation.READABLE_COPY_VERSION,
+        presentationCatalogSha256: presentation.READABLE_COPY_CATALOG_SHA256,
+        meaningCatalogSha256: presentation.PRESENTATION_CATALOG_SHA256,
+        presentationLocale: locale,
+      } : {}),
     }),
     messages: Object.freeze([Object.freeze({
       tokenId: row.token_id,
@@ -201,7 +212,7 @@ async function loadClaimContext(db: Db, claim: SchedulerRow): Promise<SchedulerR
        JOIN mobile_notification_prefs np ON np.user_id=i.user_id
          AND np.ziwei_hourly_enabled=true AND np.ziwei_profile_id=i.profile_id
        JOIN mobile_push_tokens t ON t.user_id=i.user_id AND t.installation_id=i.installation_id
-         AND t.enabled=true AND t.ziwei_payload_schema=2
+         AND t.enabled=true AND t.ziwei_payload_schema IN (2,3)
        JOIN users u ON u.id=i.user_id AND u.deleted_at IS NULL AND u.is_active=true
        JOIN profiles p ON p.id=i.profile_id AND p.created_by_user_id=i.user_id
          AND p.birth_time_known=true AND COALESCE(p.is_archived,false)=false
