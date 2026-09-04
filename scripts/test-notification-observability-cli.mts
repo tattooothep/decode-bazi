@@ -81,10 +81,15 @@ try {
   const runner = require("./notification-retry-receipt-runner.cjs");
   const heartbeat = join(directory, "retry.heartbeat");
   assert.equal(health.providerReadiness({ FCM_SERVICE_ACCOUNT_PATH: join(directory, "missing-service-account.json") }).fcm, false, "a routed FCM provider without a readable credential is unhealthy without printing its path");
-  assert.equal(health.providerReadiness({}).expo, false,
-    "CLI health reports Expo unready unless iOS delivery readiness is explicit");
-  assert.equal(health.providerReadiness({ EXPO_IOS_PUSH_READY: "true" }).expo, true,
+  assert.deepEqual(health.providerReadiness({ FCM_SERVICE_ACCOUNT_PATH: join(directory, "missing-service-account.json") }), {
+    fcm: false, expoIos: false, expoAndroid: false,
+  }, "CLI health reports both Expo platforms unready unless independently attested");
+  assert.equal(health.providerReadiness({ EXPO_IOS_PUSH_READY: "true" }).expoIos, true,
     "CLI health reflects the exact reviewed Expo iOS readiness flag");
+  assert.equal(health.providerReadiness({ EXPO_ANDROID_PUSH_READY: "TRUE" }).expoAndroid, false,
+    "CLI health rejects a non-exact Android Expo readiness value");
+  assert.equal(health.providerReadiness({ EXPO_ANDROID_PUSH_READY: "true" }).expoAndroid, true,
+    "CLI health reflects the exact reviewed Android Expo readiness flag");
   let healthInput: Record<string, any> | undefined;
   await health.main({
     db: {}, args: [], env: {}, log: () => {},

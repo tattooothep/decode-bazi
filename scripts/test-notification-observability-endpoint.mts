@@ -29,7 +29,10 @@ assert.equal(failedBody.includes("ExponentPushToken"), false, "health dependency
 let healthyInput: Record<string, any> | undefined;
 const healthy = await POST(request("Bearer notification-observability-internal-test"), {
   db: testDb,
-  env: { HOURKEY_INTERNAL_JOB_TOKEN: "notification-observability-internal-test" },
+  env: {
+    HOURKEY_INTERNAL_JOB_TOKEN: "notification-observability-internal-test",
+    FCM_SERVICE_ACCOUNT_PATH: "/definitely-not-a-real-hourkey-fcm-credential.json",
+  },
   collectHealth: async (_db, input) => { healthyInput = input; return { ok: true, reasons: [], metrics: { retry: { overdueCount: 0 } } }; },
 });
 assert.equal(healthy.status, 200, "authenticated internal caller receives aggregate healthy state");
@@ -38,20 +41,22 @@ assert.deepEqual(Object.keys(healthyInput?.heartbeat?.schedulers || {}), [
   "yam", "daily-fortune", "auspicious", "personal-reminders", "monthly-report", "network-morning",
   "zibai", "qimen", "ziwei-hourly",
 ], "authenticated endpoint supplies one heartbeat slot for every notification scheduler");
-assert.equal(healthyInput?.providerReady?.expo, false,
-  "internal notification health reports Expo unready without the explicit iOS readiness flag");
+assert.deepEqual(healthyInput?.providerReady, { fcm: false, expoIos: false, expoAndroid: false },
+  "internal notification health reports each provider platform independently and fail closed by default");
 
 let readyInput: Record<string, any> | undefined;
 await POST(request("Bearer notification-observability-internal-test"), {
   db: testDb,
   env: {
     HOURKEY_INTERNAL_JOB_TOKEN: "notification-observability-internal-test",
+    FCM_SERVICE_ACCOUNT_PATH: "/definitely-not-a-real-hourkey-fcm-credential.json",
     EXPO_IOS_PUSH_READY: "true",
+    EXPO_ANDROID_PUSH_READY: "true",
   },
   collectHealth: async (_db, input) => { readyInput = input; return { ok: true }; },
 });
-assert.equal(readyInput?.providerReady?.expo, true,
-  "internal notification health reflects the exact reviewed Expo iOS readiness flag");
+assert.deepEqual(readyInput?.providerReady, { fcm: false, expoIos: true, expoAndroid: true },
+  "internal notification health reflects independent exact Expo platform readiness flags");
 assert.equal(readyInput?.ziweiRuntime?.producerEnabled, false,
   "internal notification health passes the fail-closed Ziwei runtime producer gate");
 assert.equal(typeof readyInput?.ziweiRuntime?.sourceReady, "boolean",

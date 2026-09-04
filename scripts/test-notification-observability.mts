@@ -163,7 +163,7 @@ try {
     lookbackHours: 24,
     thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1, maxZibaiDueLagSeconds: 600, maxZibaiEngineFailureCount: 0, maxQimenDueLagSeconds: 600, maxQimenEngineFailureCount: 0 },
     heartbeat: { workerAt: new Date(Date.now() - 10_000).toISOString(), schedulers: freshSchedulers },
-    providerReady: { fcm: false, expo: true },
+    providerReady: { fcm: false, expoIos: true, expoAndroid: true },
   });
   assert.equal(report.ok, false, "health fails closed on overdue retry, stale lease, stalled receipt, readiness mismatch, and worker heartbeat loss");
   assert.equal(report.metrics.retry.overdueCount, 3, "retry_due attempts with NULL retry time are actionable and unhealthy beyond the historical metrics lookback");
@@ -204,7 +204,7 @@ try {
   const schedulerReport = await observability.collectHealth(pool, {
     thresholds: { schedulerHeartbeatSeconds: 1 },
     heartbeat: { workerAt: new Date().toISOString(), schedulers: partialSchedulers },
-    providerReady: { fcm: false, expo: true },
+    providerReady: { fcm: false, expoIos: true, expoAndroid: true },
   });
   assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_missing:yam"), true, "a missing named scheduler heartbeat has an actionable reason");
   assert.equal(schedulerReport.reasons.includes("scheduler_heartbeat_stale:daily-fortune"), true, "a stale named scheduler heartbeat has an actionable reason");
@@ -215,7 +215,7 @@ try {
   cadenceSchedulers["monthly-report"] = new Date(cadenceNow.valueOf() - 10 * 86_400_000).toISOString();
   const cadenceReport = await observability.collectHealth(pool, {
     now: cadenceNow, heartbeat: { workerAt: cadenceNow.toISOString(), schedulers: cadenceSchedulers },
-    providerReady: { fcm: false, expo: true },
+    providerReady: { fcm: false, expoIos: true, expoAndroid: true },
   });
   assert.equal(cadenceReport.reasons.includes("scheduler_heartbeat_stale:yam"), true, "hourly Yam freshness becomes stale after two hours");
   assert.equal(cadenceReport.reasons.includes("scheduler_heartbeat_stale:monthly-report"), false, "monthly scheduler freshness follows its reviewed monthly cadence");
@@ -227,7 +227,7 @@ try {
     now: futureNow,
     thresholds: { heartbeatFutureSkewSeconds: 60 },
     heartbeat: { workerAt: new Date(futureNow.valueOf() + 365 * 86_400_000).toISOString(), schedulers: futureSchedulers },
-    providerReady: { fcm: false, expo: true },
+    providerReady: { fcm: false, expoIos: true, expoAndroid: true },
   });
   assert.equal(futureReport.reasons.includes("worker_heartbeat_future"), true, "a worker heartbeat one year in the future is unhealthy with a named reason");
   assert.equal(futureReport.reasons.includes("scheduler_heartbeat_future:yam"), true, "a scheduler heartbeat beyond the explicit small skew is unhealthy with its name");
@@ -237,7 +237,7 @@ try {
     now: futureNow,
     thresholds: { heartbeatFutureSkewSeconds: 60 },
     heartbeat: { workerAt: new Date(futureNow.valueOf() + 30_000).toISOString(), schedulers: toleratedSchedulers },
-    providerReady: { fcm: false, expo: true },
+    providerReady: { fcm: false, expoIos: true, expoAndroid: true },
   });
   assert.equal(toleratedReport.reasons.includes("worker_heartbeat_future"), false, "documented 60-second clock skew is tolerated");
   assert.equal(toleratedReport.reasons.includes("scheduler_heartbeat_future:yam"), false, "the same small scheduler clock skew is tolerated");
@@ -316,7 +316,7 @@ try {
     lookbackHours: 24,
     thresholds: { maxRetryBacklogCount: 0, maxRetryAgeSeconds: 1, maxStaleLeaseCount: 0, staleAttemptSeconds: 1, maxReceiptStalledCount: 0, receiptStallSeconds: 1, workerHeartbeatSeconds: 1 },
     heartbeat: { workerAt: new Date(matrixNow - 10_000).toISOString(), schedulers: Object.fromEntries(schedulerNames.map((name) => [name, new Date(matrixNow).toISOString()])) },
-    providerReady: { fcm: false, expo: true },
+    providerReady: { fcm: false, expoIos: true, expoAndroid: true },
   });
   assert.equal(matrixHealth.metrics.retry.overdueCount - report.metrics.retry.overdueCount, 4, "claimOne's due retry lease matrix counts every reclaimable due retry but not active/permanent leases");
   assert.equal(matrixHealth.metrics.leases.staleCount - report.metrics.leases.staleCount, 9, "health counts expired/permanent leases and all unrecoverable null-token in-flight combinations");
@@ -355,7 +355,8 @@ try {
 
   await pool.query(`UPDATE mobile_push_attempts SET status='dead',updated_at=now() WHERE id='40000000-0000-4000-8000-000000000001'`);
   const inventoryReadiness = await observability.collectHealth(pool, {
-    lookbackHours: 24, heartbeat: { workerAt: new Date().toISOString() }, providerReady: { fcm: false, expo: true },
+    lookbackHours: 24, heartbeat: { workerAt: new Date().toISOString() },
+    providerReady: { fcm: false, expoIos: true, expoAndroid: true },
   });
   assert.equal(inventoryReadiness.metrics.readiness.credentialMismatchCount, 1, "provider credential readiness derives from enabled routable token inventory even without a current FCM attempt");
 

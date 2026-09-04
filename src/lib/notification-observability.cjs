@@ -143,14 +143,21 @@ async function collectHealth(db, input = {}) {
     () => readDb.query(
       `SELECT count(*) FILTER (WHERE NULLIF(btrim(device_push_token),'') IS NOT NULL
                        AND platform<>'ios' AND COALESCE(device_token_type,'')<>'apns')::int AS active_fcm_count,
-              count(*) FILTER (WHERE (NULLIF(btrim(device_push_token),'') IS NULL OR platform='ios' OR COALESCE(device_token_type,'')='apns')
-                       AND NULLIF(btrim(expo_push_token),'') IS NOT NULL)::int AS active_expo_count
+              count(*) FILTER (WHERE platform='ios'
+                       AND NULLIF(btrim(expo_push_token),'') IS NOT NULL)::int AS active_expo_ios_count,
+              count(*) FILTER (WHERE platform='android'
+                       AND (NULLIF(btrim(device_push_token),'') IS NULL OR COALESCE(device_token_type,'')='apns')
+                       AND NULLIF(btrim(expo_push_token),'') IS NOT NULL)::int AS active_expo_android_count,
+              count(*) FILTER (WHERE COALESCE(platform,'') NOT IN ('android','ios')
+                       AND (NULLIF(btrim(device_push_token),'') IS NULL OR COALESCE(device_token_type,'')='apns')
+                       AND NULLIF(btrim(expo_push_token),'') IS NOT NULL)::int AS active_expo_unknown_count
          FROM mobile_push_tokens WHERE enabled=true`,
     ),
     () => readDb.query(
       `SELECT count(*) FILTER (WHERE status='dead')::int AS dead_letter_count,
               count(*) FILTER (WHERE status='dead' AND (last_error ILIKE '%devicenotregistered%' OR last_error ILIKE '%invalid_token%' OR last_error ILIKE '%target_unavailable%'))::int AS invalid_token_count,
-              count(*) FILTER (WHERE status='dead' AND last_error='uncertain_provider_result')::int AS uncertain_count
+              count(*) FILTER (WHERE status='dead' AND last_error='uncertain_provider_result')::int AS uncertain_count,
+              count(*) FILTER (WHERE status='dead' AND last_error='InvalidCredentials')::int AS recent_invalid_credentials_count
          FROM mobile_push_attempts WHERE updated_at >= now()-($1::text||' hours')::interval`,
       [String(config.lookbackHours)],
     ),
@@ -308,9 +315,18 @@ async function collectHealth(db, input = {}) {
       now,
     ),
   }));
-  const activeProviders = { fcm: numeric(inventory.active_fcm_count), expo: numeric(inventory.active_expo_count) };
-  const credentialMismatchCount = Object.entries(activeProviders)
-    .filter(([provider, count]) => count > 0 && input.providerReady?.[provider] !== true).length;
+  const activeProviderCounts = {
+    fcm: numeric(inventory.active_fcm_count),
+    expoIos: numeric(inventory.active_expo_ios_count),
+    expoAndroid: numeric(inventory.active_expo_android_count),
+    expoUnknown: numeric(inventory.active_expo_unknown_count),
+  };
+  const credentialMismatchCount = [
+    activeProviderCounts.fcm > 0 && input.providerReady?.fcm !== true,
+    activeProviderCounts.expoIos > 0 && input.providerReady?.expoIos !== true,
+    activeProviderCounts.expoAndroid > 0 && input.providerReady?.expoAndroid !== true,
+    activeProviderCounts.expoUnknown > 0,
+  ].filter(Boolean).length;
   const metrics = {
     retry: { overdueCount: numeric(retry.overdue_count), oldestAgeSeconds: numeric(retry.oldest_age_seconds) },
     leases: { staleCount: numeric(expiredLease.stale_count) + numeric(permanentLease.stale_count) + numeric(unrecoverableInFlight.stale_count) + numeric(reserved.stale_count) },
@@ -318,8 +334,14 @@ async function collectHealth(db, input = {}) {
     readiness: {
       tokenMismatchCount: numeric(attemptReadiness.token_mismatch_count), credentialMismatchCount,
       mismatchCount: numeric(attemptReadiness.token_mismatch_count) + credentialMismatchCount,
+      activeProviderCounts,
     },
-    outcomes: { deadLetterCount: numeric(terminal.dead_letter_count), invalidTokenCount: numeric(terminal.invalid_token_count), uncertainCount: numeric(terminal.uncertain_count) },
+    outcomes: {
+      deadLetterCount: numeric(terminal.dead_letter_count),
+      invalidTokenCount: numeric(terminal.invalid_token_count),
+      uncertainCount: numeric(terminal.uncertain_count),
+      recentInvalidCredentialsCount: numeric(terminal.recent_invalid_credentials_count),
+    },
     worker,
     schedulers,
     engagement: {
@@ -378,6 +400,7 @@ async function collectHealth(db, input = {}) {
   if (metrics.leases.staleCount > config.thresholds.maxStaleLeaseCount) reasons.push("stale_lease");
   if (metrics.receipts.stalledCount > config.thresholds.maxReceiptStalledCount) reasons.push("receipt_poll_stalled");
   if (metrics.readiness.mismatchCount > 0) reasons.push("provider_readiness_mismatch");
+  if (metrics.outcomes.recentInvalidCredentialsCount > 0) reasons.push("provider_invalid_credentials");
   if (metrics.zibai.overdueCount > 0) reasons.push("zibai_due_lag");
   if (metrics.zibai.engineFailureCount > config.thresholds.maxZibaiEngineFailureCount) reasons.push("zibai_engine_failures");
   if (metrics.qimen.producerEnabled && metrics.qimen.overdueCount > 0) reasons.push("qimen_due_lag");

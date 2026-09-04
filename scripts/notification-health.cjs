@@ -25,7 +25,11 @@ function providerReadiness(env = process.env) {
     const credential = JSON.parse(readFileSync(keyPath, "utf8"));
     fcm = ["private_key", "client_email", "project_id", "token_uri"].every((key) => typeof credential?.[key] === "string" && credential[key].trim());
   } catch {}
-  return { fcm, expo: expoIosPushReady(env) };
+  return {
+    fcm,
+    expoIos: expoIosPushReady(env),
+    expoAndroid: env.EXPO_ANDROID_PUSH_READY === "true",
+  };
 }
 
 function createDb() {

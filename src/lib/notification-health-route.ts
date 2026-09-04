@@ -37,15 +37,23 @@ export function readHeartbeat(file: string | undefined): string | null {
   try { return statSync(file).mtime.toISOString(); } catch { return null; }
 }
 
-export function providerReadiness(env: NodeJS.ProcessEnv): { fcm: boolean; expo: boolean } {
+export function providerReadiness(env: NodeJS.ProcessEnv): {
+  fcm: boolean;
+  expoIos: boolean;
+  expoAndroid: boolean;
+} {
   const keyPath = env.FCM_SERVICE_ACCOUNT_PATH || "/root/secrets/hourkey-fcm-service-account.json";
+  const expoReadiness = {
+    expoIos: expoIosPushReady(env),
+    expoAndroid: env.EXPO_ANDROID_PUSH_READY === "true",
+  };
   try {
     const credential = JSON.parse(readFileSync(keyPath, "utf8"));
     const fcm = ["private_key", "client_email", "project_id", "token_uri"]
       .every((key) => typeof credential?.[key] === "string" && credential[key].trim());
-    return { fcm, expo: expoIosPushReady(env) };
+    return { fcm, ...expoReadiness };
   } catch {
-    return { fcm: false, expo: expoIosPushReady(env) };
+    return { fcm: false, ...expoReadiness };
   }
 }
 
