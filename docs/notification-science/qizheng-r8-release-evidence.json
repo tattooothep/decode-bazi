@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-09-04T13:31:59Z",
+  "generatedAt": "2026-09-04T13:38:43Z",
   "bundle": {
     "releaseMode": "hard_off",
     "backend": {
@@ -11,12 +11,12 @@
         "7909d8e421f26786ce91c81e6808beedbb6febc3",
         "ac63fcc9805e8e8387138837c4c8bd5650686e26"
       ],
-      "applicationCommit": "5a98cb68df1568c962a2bef20aaff93baf0fc0d3",
-      "applicationTree": "b1d71ccb5add0f5dff6c2305699687d929ab5dc1",
+      "applicationCommit": "2dd0692002993b401c3515ff92d0dc0b9f7bdfa1",
+      "applicationTree": "89d975177010c78b12a9abd8dc84ebbf50b1f921",
       "lockfileSha256": "df3f6863add0a67d7be3cd189d9b954f333a9586e7c790884bae2d250edf855e",
       "runtimeDigest": "a446658825c68b2fb2f461d0a1b51665bb3df4b0a4b99e61dd039e1a729b0fd7",
-      "sourceDigest": "a1182cc96ed413eaa4039bc02857176e4c36d658432a53ef96fa87e324491d2a",
-      "buildArtifactDigest": "a7d8d7d0c03779fffa3899fb0344f661ff9b17965debb0f456842568d0da85b8"
+      "sourceDigest": "b9e3412a768da38dee3fc58bc3b75b96fd89512fe7a454252b2f700be6d237d5",
+      "buildArtifactDigest": "6d309acd889f6271c82843b04c5ce908fb351b92cfbc78f3e8ec869ee648248f"
     },
     "mobile": {
       "baselineCommit": "5af5f20687f40e55c23c52a15a6b620c700848b6",
@@ -156,6 +156,6 @@
       "requiredProductionRolloutOrder": "migration_then_application"
     }
   },
-  "bundleDigest": "c542f532a872f23e86e1b1acc003dc69ad653572c34a83740a5c85bad923b2c0",
+  "bundleDigest": "a6abd4c082ef53386efe2988488ac84bba0b58a4a5244504f7c9b26d83a2e62d",
   "signatures": []
 }
