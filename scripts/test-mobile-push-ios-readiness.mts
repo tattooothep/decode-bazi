@@ -14,6 +14,12 @@ assert.equal(effectiveZiweiPayloadSchema("ios", 2, { EXPO_IOS_PUSH_READY: "true"
   "a ready iOS registration preserves its negotiated Ziwei schema");
 assert.equal(effectiveZiweiPayloadSchema("android", 2, {}), 2,
   "Android Ziwei capability is unchanged by the Expo iOS gate");
+assert.equal(effectiveZiweiPayloadSchema("ios", 3, {}), 0,
+  "an iOS schema-3 registration remains disabled while Expo iOS is unready");
+assert.equal(effectiveZiweiPayloadSchema("ios", 3, { EXPO_IOS_PUSH_READY: "true" }), 3,
+  "a ready iOS registration preserves its negotiated schema-3 capability");
+assert.equal(effectiveZiweiPayloadSchema("android", 3, {}), 3,
+  "Android preserves the explicitly validated schema-3 capability");
 
 const route = readFileSync("src/app/api/mobile/v1/push/route.ts", "utf8");
 assert.match(route, /effectiveZiweiPayloadSchema\(platform,\s*requestedZiweiPayloadSchema,\s*process\.env\)/u,

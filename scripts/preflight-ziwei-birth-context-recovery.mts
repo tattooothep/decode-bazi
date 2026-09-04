@@ -17,7 +17,7 @@ try {
        FROM profiles p
       WHERE p.created_by_user_id IN (
         SELECT DISTINCT user_id FROM mobile_push_tokens
-         WHERE enabled=true AND ziwei_payload_schema=2
+         WHERE enabled=true AND ziwei_payload_schema IN (2,3)
       )
         AND COALESCE(p.is_archived,false)=false
         AND (p.relationship_type IS NULL OR btrim(p.relationship_type)='')

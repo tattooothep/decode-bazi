@@ -264,7 +264,7 @@ async function collectHealth(db, input = {}) {
            FROM mobile_ziwei_hourly_installations i
            LEFT JOIN mobile_push_tokens t
              ON t.user_id=i.user_id AND t.installation_id=i.installation_id
-            AND t.enabled=true AND t.ziwei_payload_schema=2
+            AND t.enabled=true AND t.ziwei_payload_schema IN (2,3)
        ), occurrence AS (
          SELECT count(*) FILTER (WHERE state='claimed' AND push_log_id IS NULL
                   AND send_deadline<=now()

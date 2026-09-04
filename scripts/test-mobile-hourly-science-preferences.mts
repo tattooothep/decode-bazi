@@ -32,7 +32,8 @@ assert.match(prefs, /canonicalContext\.status !== "resolved"/u);
 assert.match(prefs, /if \(ziweiHourly \|\| body\.ziweiProfileId !== undefined\)/u,
   "enabling/changing selection is strict while disabling always remains reachable");
 assert.match(prefs, /mobile_ziwei_hourly_installations/u);
-assert.match(prefs, /t\.ziwei_payload_schema=2/u);
+assert.match(prefs, /t\.ziwei_payload_schema IN \(2,3\)/u,
+  "both lossless Ziwei payload schemas remain eligible without changing user consent");
 assert.match(prefs, /const ziweiPreferenceExplicit =\s*body\.ziweiHourly !== undefined\s*\|\| body\.ziweiProfileId !== undefined/u,
   "an explicit Ziwei save must synchronize the installation after profile recovery");
 assert.match(prefs, /if \(ziweiSchema\.rows\[0\]\?\.available === true && \(ziweiContextChanged \|\| ziweiPreferenceExplicit\)\)/u,

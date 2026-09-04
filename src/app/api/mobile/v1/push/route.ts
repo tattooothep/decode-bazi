@@ -191,7 +191,7 @@ export async function POST(req: Request) {
     || !(zibaiPayloadSchema === 1 || zibaiPayloadSchema === 2)
     || !zibaiVersionRuntime.isReadableCalculationVersion(zibaiCalculationVersion)
     || !(qimenPayloadSchema === 1 || qimenPayloadSchema === 2 || qimenPayloadSchema === 3)
-    || !(requestedZiweiPayloadSchema === 0 || requestedZiweiPayloadSchema === 1 || requestedZiweiPayloadSchema === 2)
+    || ![0, 1, 2, 3].includes(requestedZiweiPayloadSchema)
     || qizhengPayloadSchema !== 0
     || !(requestedAstronomyFactPayloadSchema === 0 || requestedAstronomyFactPayloadSchema === 1)
   ) {
@@ -433,7 +433,7 @@ export async function POST(req: Request) {
       });
     }
     if (ziweiProfile && ziweiCanonicalContext && ziweiCanonicalContext.status === "resolved") {
-      ziweiEnrolled = ziweiPayloadSchema === 2;
+      ziweiEnrolled = ziweiPayloadSchema === 2 || ziweiPayloadSchema === 3;
       await client.query(
         `INSERT INTO mobile_ziwei_hourly_installations
            (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,

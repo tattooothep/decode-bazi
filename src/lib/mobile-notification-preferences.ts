@@ -433,8 +433,8 @@ export async function updateNotificationPreferences(
              (user_id,installation_id,profile_id,enabled,reference_timezone,quiet_start,quiet_end,
               next_due_at,birth_context_fingerprint,updated_at)
            SELECT t.user_id,t.installation_id,$3::uuid,
-                  (t.ziwei_payload_schema=2),$4,np.quiet_start,np.quiet_end,
-                  CASE WHEN t.ziwei_payload_schema=2 THEN $2::timestamptz ELSE NULL END,$5,$2::timestamptz
+                  (t.ziwei_payload_schema IN (2,3)),$4,np.quiet_start,np.quiet_end,
+                  CASE WHEN t.ziwei_payload_schema IN (2,3) THEN $2::timestamptz ELSE NULL END,$5,$2::timestamptz
              FROM mobile_push_tokens t JOIN mobile_notification_prefs np ON np.user_id=t.user_id
             WHERE t.user_id=$1 AND t.enabled=true
            ON CONFLICT(user_id,installation_id) DO UPDATE SET
