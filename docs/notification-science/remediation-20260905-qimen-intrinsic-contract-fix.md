@@ -74,17 +74,26 @@ change corrects this. Across its original 24 month/profile arrangements, 4 have
 no supporting pair, 16 are intrinsically ineligible, and 4 are admissible. These
 counts describe **synthetic arrangements, not real-world notification frequency**.
 Explicitly rearranged whole-component synthetic controls exercise all 24 profile
-readers; original ineligible charts must stay negative. A focused independent
-review is strengthening the negative cases so severe-pair rejection cannot be
-mistaken for rejection of a stale weak selected direction.
+readers; original ineligible charts must stay negative. Fixture/test commit
+`fc85afc` explicitly selects each real supporting-but-severe synthetic pair for
+the negative assertion. Mobile test commit `3ef7ba0c` adds 16 complete rehashed,
+rebound severe star/door candidates; the parent reran that matrix successfully.
+These checks do not mistake a stale weak direction for the severe-pair rejection.
 
-Real isolated-PostgreSQL integration is being rerun against the corrected fixture;
-its earlier 23-check pass is not substituted for that new result. Reviewers still
-must bind exact final code and artifacts. This report is not a final signature.
+The independent real isolated-PostgreSQL rerun is recorded in `cbb416e`, with
+wording correction `6a7fdaa`: 26 checks, 14 fake sends, zero fetches and stable
+start/end implementation/fixture hashes. Three new malformed intrinsic-warning
+cases fail at both actual reservation and immutable retry boundaries. All five
+scratch database/role pairs were removed and independently confirmed absent.
+This is bounded integration evidence, not a production migration, delivery to a
+phone, or a final signature. Exact artifact and full-goal reviews remain open.
 
 No APK, production migration, deployment, credential mutation or push was made
 by this fix. The earlier diagnostic Hermes export from mobile `dad3b564` predates
-this guard and does not prove the newer source was built. Do not distribute a
+this guard. A newer export from `1d751099` completed with exit 0 and its source
+map contains this exact guard source (see mobile
+`remediation-20260905-android-bundle-evidence.md`); it is still not an APK or
+complete native build. Do not distribute a
 capability-4 APK before compatible DB/backend/method configuration is ready.
 Rollback must preserve V4 history/retry/enrollment support once any such rows
 exist; do not return to a schema-3-only sender as an alleged safe rollback.
