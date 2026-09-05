@@ -1,0 +1,2651 @@
+{
+  "schema": "hourkey-remediation-source-policy/v1",
+  "id": "notification-remediation-20260905-source-preflight-v1",
+  "scope": "source_identity_only_never_release_authorization",
+  "renamePolicy": "delete_and_add_no_similarity",
+  "references": {
+    "backend": {
+      "baselineCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "candidateCommit": "a96609b7b568367bc5dd1cefd1ad12948a8cced0",
+      "candidateTree": "e92a19862125b089145a049d9ba7b9cf46c4c8d2",
+      "deltaRecords": [
+        {
+          "path": "docs/notification-science/audit-20260905-expo-root-cause.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "395e486fc852ab1cc464708cc062c18ed3c21c28",
+            "sha256": "0ec35418f3ecefcbdae23b52898778f7c40a4ffa44ffe30e171b7c58e06c06c9",
+            "bytes": 18459
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/audit-20260905-qimen-vigor-source.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "91fa88f947e02623e6188dce74c23fe2aa95c5c0",
+            "sha256": "70867a6a91b1d620b860779352fee6ef358ace23b474abfcc29b3c85b6863e3b",
+            "bytes": 20281
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/qizheng-r8-release-evidence.json",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "6dcc753ea658748bc0860e50d86a0d57dc348fa1",
+            "sha256": "066465492adbeeb6b9a94910a7bdc687b8e2b91e83cba56e741d6fa8dca0081f",
+            "bytes": 7818
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "37331c11fe619d2c73dc7872a26c36b10570d05c",
+            "sha256": "bfed5ecbae59eaf7764e1e1c514e22082afdae7fd08d1b28b23850697aa6b044",
+            "bytes": 12733
+          },
+          "classification": "historical_signed_evidence_finalization",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-backend-artifact-identity.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "6a95266ee10f339e7e56369915dddbb3e1ddf0a3",
+            "sha256": "c449da3617a5be3beca41e66d82f171d55fe7aca6fb1a56926b94e8306b34ab2",
+            "bytes": 6132
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-capability-postgres-integration-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ebad8bc300b27f278394c4b29979692ad708483b",
+            "sha256": "da871466683bcb5ddc3e926e62fd9534462abd02b21c758a5782011fdc8ebbbc",
+            "bytes": 10095
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-delivery-health-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "3165f3f87e5a027cf0b54aa452d810f609ddff70",
+            "sha256": "ca25adc0f3caac340875dc9813a29ab45aa3b2a4cd5d9559c7982caa7367af9c",
+            "bytes": 4076
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-boundary-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "a868813956594caa021909037a1c57e23cab47f8",
+            "sha256": "d23f54383a90b843cc9835aadda7355df3da369fcf69d218fe3ace10e83e26ca",
+            "bytes": 5323
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-conditional-size-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "5c8adb35f3c80804a95e68bb817e4cfb002bb0f6",
+            "sha256": "e975971c5f3804df9cd36d4a75436c527b6ae0c6fd4d9e23e35ef39a5267268e",
+            "bytes": 7609
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-fresh-v4-only.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "dc54af1d0b4de8fddb6e332cddd115775347637b",
+            "sha256": "08b376e5422daf065085b91191ed5072cf730b39faac8667347f96c601c57b88",
+            "bytes": 10553
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-intrinsic-contract-fix.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "b0697a0ac8479635b9de66b79926bae21e9e8ba2",
+            "sha256": "97ddb92d551df9324d41392818069e7371cfc3a0d4ff81a144fccaa0e88e8ea5",
+            "bytes": 6034
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-intrinsic-independent-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "39517bc26ba3a4478cb596ea622024645083d1cc",
+            "sha256": "527d7cf61f81812d5b54f1691a334546af25519fec82c7fcac3669adc336a376",
+            "bytes": 6304
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-schema4-compatibility.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "cd15c24978aa3d732f3a449419454c2c8c41c382",
+            "sha256": "9fe1e1c2d936f7c833a1d6cf81942a7823c8e2d2b0e99b55ae93548afd799931",
+            "bytes": 3118
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-seasonal-integration.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "5f7ee7d9b88f55fef6ffa00826173c5e7d3ae3b7",
+            "sha256": "80b0ddd3f2ccdd81b54b0e85a6d5ec6a2e23c5e72d095b1cda640e364062e225",
+            "bytes": 6825
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-seasonal-root-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "b6405fa8630b1b13fbd217a6cb9e1fba5a5fa04c",
+            "sha256": "ec0676d5354dd1c2a690324b4496c2eb041e54d480f11325fe223c56a0828f2b",
+            "bytes": 9093
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-seven-day-audit.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "99e7d56f9acf493cae1f0262441ac1163a63c7c8",
+            "sha256": "3df541a50736e892c990c6199996dbcd37f0b3c7f7a96f2428635bba07204504",
+            "bytes": 12334
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-v4-contract-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "8906b1edf8e9656512b2919b8bd47fafec457825",
+            "sha256": "8d23fca93937976dac3b348c7834c422e1d5ee7058aa37e1d979bfde4cde9015",
+            "bytes": 8203
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-v4-durable-transport-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "8102e98691567e800ef72d2348dd7cc7ee63b56b",
+            "sha256": "23aeb030a4740d30c5d60ae8911fd1b9d9c1d2b920da6eea117884224c53f3e1",
+            "bytes": 9517
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-v4-fixture-correction.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "bf645340058c9645f3a8285bd5eb07a8eee78b90",
+            "sha256": "63ce224b76a2df7332e70ecac9df5b6ec9a0a58b22f8346b04a61f8512acb58f",
+            "bytes": 6876
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-v4-transport-independent-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "274eae3667245fb023129cceab7a505b1edd4142",
+            "sha256": "ac34fa69b71c48d5d49cc1556f3f345710bb59b20326e0f9ffa20402829f1ae3",
+            "bytes": 11480
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-wire-audit.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "111dabebd907dabafb5e431126d4ba326ea6229c",
+            "sha256": "10cd7cfdee28f9263ff9f99058a280d3797f4df903e5dc30e4472ba928dfcd06",
+            "bytes": 25747
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-r8-readiness-audit.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "877f979c62392f0d9cc2f1c4cd0a4f7eb67ecc43",
+            "sha256": "5e6c927b56ade522e8094b5c35534922c80c596f055a6c18b7e8ffbbde158ff7",
+            "bytes": 13187
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-status.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "6d68fab4eefc8f5ac2eb8054a3b40b35dff23aae",
+            "sha256": "f3dcd50ba8a5417eef3a91eef7ef9dd770065ee1bde6388c00352c5f255240bd",
+            "bytes": 16004
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-zibai-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ee1fc7b333f6d87c98d47702a42ffa549db0a0ec",
+            "sha256": "0e879cc701810629717ae0baad490f28a5c653f13f4eb1baa81452d4ce84a401",
+            "bytes": 4109
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-zibai-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "c45db6ce59ab35ea424d865aca46e7f4f9336da4",
+            "sha256": "788b2cfe929a85cbdfa0b4f668158350d1750bd4d449992f32de55f4adfd2de9",
+            "bytes": 8284
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-ziwei-delivery-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "0039f869fba64cb486a1a0f561906f64328a338f",
+            "sha256": "8590f8c91a0c0361054fac08aaf99e5a7147af27c505a6c7bbf3280518cb029a",
+            "bytes": 6334
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-ziwei-delivery-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "a3e24b3fd19b460d432ad2dd40c4cc11882dbbde",
+            "sha256": "543d986f6e971db3340c64e6df95a72a7a017b25b7dd758d043606bd1327c146",
+            "bytes": 5687
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-ziwei-readable-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "36adc439cab6ba6c8528b203690f28a44138723a",
+            "sha256": "4986d559ed932f24e78d467e111ecfa0ca972b0462e691c027741339bfe26916",
+            "bytes": 4793
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-ziwei-readable-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "111bb38d8837eba044a5db8af3ebb087a5e15c46",
+            "sha256": "54bcde3c4acfb7e45e85bf936901c8170dfd7c7571296dd086da4ddf35d7c01a",
+            "bytes": 5039
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-ziwei-schema3-compatibility-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "82de5141a1dd5b59d4c8cd37c468ca7c28a142dd",
+            "sha256": "a1d955153b2613f6bc873c3d7a760b013830248c38eb4b45af009f79c4263cb0",
+            "bytes": 5422
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-ziwei-wire-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "e04591f6d1f3fff49204e44aafd3be27bfa0a72c",
+            "sha256": "ac6fe75afa1ba3b8d22b0c15d0053be857b1d645bae933c0697a3423c2c8efa0",
+            "bytes": 6041
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/superpowers/plans/2026-09-05-zibai-year-seam.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "46696c25cb970bea50b8f9fb3a5a960f20975166",
+            "sha256": "f0f006c02cb95284f04f114b28cf2ee762a7994ab5d622240a6f33bca58770f7",
+            "bytes": 5641
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "docs/superpowers/specs/2026-09-05-zibai-year-seam-design.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "2b638d7e4c62b8bd221c807ff9da80b0dfc22834",
+            "sha256": "f44030ccf030288570291e4c5e237657659fb8b82d65c04f7aeaa1dd978e0c92",
+            "bytes": 1735
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "migrations/20260905_mobile_qimen_schema4_compatibility.sql",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "5cac80ce626f12c345d6d2490659f9504ccbf953",
+            "sha256": "7da2a7c11aae4b7d86fbe2879f66efd1f2e41ff43a7632e22a50f1d198aea8f1",
+            "bytes": 635
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "migrations/20260905_mobile_ziwei_schema3_compatibility.sql",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "3fa415adc58e0532eac5c2f258b24c8d91a05937",
+            "sha256": "c37ff59e9135920ae3afe919868885235842bdb0e639bce9d0185f8cc3e784da",
+            "bytes": 639
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/fixtures/qimen-seasonal-engine-witness.cjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "74fdcf1e09462806da0fd914280f4e3db8d6ae4c",
+            "sha256": "7aa55f318cd5b8dbc1a5049024f27b741f39e9667e30d5426bf86b6798545aaf",
+            "bytes": 4156
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/fixtures/qimen-three-layer-valid-snapshot-v4.cjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "5ae26d241c7586651245bb0e04c3366e08cfbce2",
+            "sha256": "bdf5cd6b4ad4611ba201928aea07710ae5330103c7908c14caae797e11ba201d",
+            "bytes": 6518
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/lib/remediation-backend-artifact.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "90804aaf35ff4c1a291c4ae887edaa7826551897",
+            "sha256": "2c4e640f627d55dea4c6bdc4c8c56cf78f373314c2cb57a8d52262b200c3b3b2",
+            "bytes": 7676
+          },
+          "classification": "backend_artifact_attestation_tooling",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/mobile-qimen-push-cron.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "2440aa8da807fdc1d418936c31ac6d70680be1ce",
+            "sha256": "1d02cfa1fe2f50fe2b80d1e0c0cc2ecedb118ee21033d49f9496152835b0b2ff",
+            "bytes": 35363
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "91119e3244c21a81b9e1ffd403ac316165cd2503",
+            "sha256": "ba74abbbd8a030123a278802450a1653c39ad95022c798863d32bfe390f5bd3f",
+            "bytes": 27795
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/mobile-ziwei-hourly-push-cron.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "5bd749839173e0d1c2077c2bc7ae34228f69cae9",
+            "sha256": "c418b9537948e2f17a38acf0e0e9200df33b71446e0c847a63dbe33070f2a06b",
+            "bytes": 22132
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "58895b9264e9bc34231fcf801c43482abc6a4c6f",
+            "sha256": "e14d56bbe00813668ea29cd1e99e45dfe3ba1dbdcbbb64f26b016a859f46faeb",
+            "bytes": 22738
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/notification-health.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "6eae7473d9e65710f78c10aaa1930ec39f561ba4",
+            "sha256": "53b1d43541e3d08aa73de1652836a751e4728c2496659d0ff8226f9a78605862",
+            "bytes": 6561
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "db0928e34d0a8b83b5f329dc0bd7835580f55812",
+            "sha256": "8fab3fcdd4323f32228acae30d4609c0e74ee93bcff28b0f4758807a5d0f6685",
+            "bytes": 6632
+          },
+          "classification": "platform_delivery_health",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/preflight-ziwei-birth-context-recovery.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "8d6e70a4df830252a3a257bb7a311db220f026a8",
+            "sha256": "bc71447b1156295656fa974abedb35b1fc2f90c3a15eaf763e804177b25c09e3",
+            "bytes": 2306
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "624aa442849832c6bb0e8f890e81f238d37033d2",
+            "sha256": "37312cf52eeb2c719a6921fe64e72f52637e8b4be9dd9e519f95ebc31530ae55",
+            "bytes": 2313
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-mobile-hourly-science-preferences.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "5b7150fe9d208fc9cfd5b1bd7c68e943cc9d2f3b",
+            "sha256": "8f0b404a1de45b175f2162d2b5a8ce95b2136ccb9f42317157f7f8375ac34c87",
+            "bytes": 8549
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "7d8262f924b195942a35abfae3c5972c0e65421c",
+            "sha256": "d2960547b7f6d47656e396e5b72fff2fdceb2b7093ae38ad03c8d8a456d46605",
+            "bytes": 8645
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-mobile-push-ios-readiness.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "b19b2161c77486eb07960f83d1845e30bfedbfed",
+            "sha256": "ee7addec2c8997b9fc8fc9bf5b4fdb6c42e13b3425ee177ea1e74ebbbf578aeb",
+            "bytes": 1462
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "1153f079bd300767f96eae6a81019ba8df515f12",
+            "sha256": "da639480b609f062ec1e647b88c555a17d6a7fcb6df650abb9cbe6c5e22cc149",
+            "bytes": 1895
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-notification-capability-postgres-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "e991eab5bb0119483e7731f3f78892d2eae86b3d",
+            "sha256": "81fc207dc7f6ac022cd31366e5d97ef7353900b6d08ce04416264ff3b6ff39f8",
+            "bytes": 26198
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-notification-delivery-health-platforms.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "95a6243536fcbb493b62c85dc74f0b9ceb914c79",
+            "sha256": "bd01ef9ad5e1eb46640f176881b45e81234044fbf98eed062ff55c0ca6001ab4",
+            "bytes": 6779
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-notification-observability-cli.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "27854cdd493402223da6a378abafa9f69a27c0a7",
+            "sha256": "ea011fa9e639550628aa547e2a276ba7171ab26514bba6f9246c2a4a064cae6a",
+            "bytes": 35077
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "84ff122e12a8b5015b6c6c88276188fd615c8bc8",
+            "sha256": "cf333bd03990ddedfb3ffa2f0b1f6df6a699ac0f36095551d844dfec7e2f8205",
+            "bytes": 35541
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-notification-observability-endpoint.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "6b7b7cb928339b5291c2f54c9ef2e9630797826e",
+            "sha256": "232b3af7f3a22b10d12d19e033441f8f01534086c6d84459811d4f7a6ffac99e",
+            "bytes": 4157
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "c3d61add24ac546a7bfea32f82d36bdcf26ec8e6",
+            "sha256": "b194fffea9d9964ff698eefb39bfe31a180f7731162dc77716fbc0e29db98852",
+            "bytes": 4470
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-notification-observability.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "f01e7ee5c1b01e4a22f36e3b0b5c83beaaf7c01e",
+            "sha256": "922b9e485bef4cf37b5cf3e63da93105ed99ebf44733d8e495d664550e812368",
+            "bytes": 34553
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "8ea79f2aeb084e648816254e758d8b7a0ed81bb3",
+            "sha256": "a30762ad15406bde7e522ea52b2b5efa14434e89b4a4fd931b91f8a1329bfcea",
+            "bytes": 34711
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-nine-star-component-month.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "e785042e481897b851101c98e65c2e29e230fafa",
+            "sha256": "46d5239abca8b14764d4546d04c4fddb9efc16809d27028752466c24a65c64d9",
+            "bytes": 2501
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-nine-star-month-rule.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "57fbc933fa9e8e47f78b33e851679fb3d646d81b",
+            "sha256": "b3cff50c384d1c403aeef4feb4fbc1b5923eca3d26d31afd153be24b333ee970",
+            "bytes": 2688
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-push-registration.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "3aacd49b0150b596f67373b7956336b66273b37d",
+            "sha256": "849a3a6b655bbfb2919656b4f333f421876affc33b5807a5cd6c511059808bf5",
+            "bytes": 1385
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "079aff263bda39cc000af858ae1f6b1af68e8dfa",
+            "sha256": "500043f309011d553b8c22a97ceabb671eee4a23f73ac27beeab5c801606b27b",
+            "bytes": 1474
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-scheduler.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "bbdb6ac021358004c6fd8774722c2244580aad2d",
+            "sha256": "70dad933c40f6eeb805fd6579e1e6ed7aaba7e46f61b2248da6a94680ac18cd3",
+            "bytes": 33485
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "7e53afb620f167e564de2738505f1a653320a3e5",
+            "sha256": "2bea40e1953b490d1a7bb95f4a92fb3c47b56183fad896b5465e286d4b4551f3",
+            "bytes": 36234
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-schema4-compatibility.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ba557bc3d51b43f7bdb8d6cbd32266bbb386e1f0",
+            "sha256": "d4030998e5ba3694d514cf86e80bd468fba89d3b6530cba8f0684f5e10d15fd6",
+            "bytes": 4035
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-seasonal-evidence.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "1d675c4963d940f8ff62477b2bdfbba94e1b6ba1",
+            "sha256": "b2aa1404abd5b0d0e85ffc626c02e133e577eb4cb0327f103de2669b77ca6ef7",
+            "bytes": 2985
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-seasonal-month-boundaries.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "518e665d8406d8b95968e0a450f1c428a02d0e78",
+            "sha256": "19adc312701e871e1f485f881159c20b8b54ef170d401e8b251ad1539cff0521",
+            "bytes": 10564
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-seasonal-occurrence-builder.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "f4ad96550fefb3750171d35accf3048bd10f128f",
+            "sha256": "42ce4ef7a311d401d360c64089ec27d6539c05cd8fc921ec93867acf8f0ed2c9",
+            "bytes": 3713
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-seasonal-root-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "19228845f4840805d2eaf7946338aebf5b3d5567",
+            "sha256": "2b1b1b09f387000948b4f63c56f4d68c29c5dd299cfd3bc80858169702efb5e6",
+            "bytes": 7669
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-seasonal-scheduler.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "1332aac9b85955efaa8218c7eed239f94f4c5ef1",
+            "sha256": "58eb7c0dff3fa84d9654bb547bfd72b803b519fb6d623c6602900af3dc5128fa",
+            "bytes": 8092
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-seasonal-vigor.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "36b1879aebabd8500419d083410e6ea5b08f18b3",
+            "sha256": "fa727a611b5a1da40a196879485d37c93ea0e4311a7276b77aabfdefae75ab7a",
+            "bytes": 7674
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-separated-door-month-rules.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "112fe2faa7d79885eae90875477c7334bc0d8463",
+            "sha256": "f4607defc418548427f258b20fae8b7140acbfc0d99c7ef6a7d4398a38fe3dc6",
+            "bytes": 3581
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-three-layer-v4.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "4e9e8f5fcd430972996cfd5f4e8defaff1bd8709",
+            "sha256": "595d5cc32ff30e96deed4b09b710c59558173e74e270a69e8990f7076728dbc1",
+            "bytes": 19253
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-conditional-size-independent-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "9f53ebc7a452781f23145908bd2e815e6c7042ef",
+            "sha256": "9e7e25cf76d9788ecce491e71f3041464273b21520cee0372e75326a674c0122",
+            "bytes": 13516
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-contract-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "9e89008b903171f3297f7fe979f8da3f8fe01e0b",
+            "sha256": "7471399f7c98824e359f3e2778756f51110de5ffe2c642e7167277feb55456a2",
+            "bytes": 7751
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-durable-delivery.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "39def91a972ab5fcd9a4f1221770c050b406f9ce",
+            "sha256": "9a3209e537834b41455938206a236768d3e2e177a01581a6eb142364fca70901",
+            "bytes": 21111
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-intrinsic-all-components-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ed7a4e5a5eb77eac028f4cef55879e55fd25c8f2",
+            "sha256": "5cd6667d9c6069fd9255dbc5e5ab90a4093766f5a68d1e8b746cb3079d3ccda5",
+            "bytes": 13529
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-intrinsic-warning-independent-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "fc3db2c55341fd7574698160227454cfc876a6ac",
+            "sha256": "c3debd4fe735f965854229a1a44e3f31b14a7088fb4a63c1d08e0e442b0d1e7f",
+            "bytes": 3150
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-size-independent-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "6363b86860a93641deeb3ed35f9231aa1a9d5e93",
+            "sha256": "1e98d6705b7a79fd86fe0a81192ecbafbcc3ac0af71b169453b8681f2de8dcf7",
+            "bytes": 6727
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-transport-independent-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "114666359dd44186d3ea675d09b4b38dcfddb1e1",
+            "sha256": "d54efa90daa76d45f87ccc39488ea310cd6f4f75bc4d94f7e57cbf231f5696e8",
+            "bytes": 9620
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-remediation-backend-artifact.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "84c36d3427c836a748f8c9efc5f261ed990b9fc3",
+            "sha256": "616be8431cc8fda110cf888393a7c3ce039a63aade45f4c16b62ab22ca1a2c11",
+            "bytes": 9046
+          },
+          "classification": "backend_artifact_attestation_tooling",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-zibai-year-seam.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "811ac5037612a0414abbd1a95fed8367b9927bf3",
+            "sha256": "64ae09fd12296083e305e90f2d68a7ec1290903a6a970c4b459f898bfa3998b1",
+            "bytes": 4941
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-notification-delivery-contract.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "461426b4f31a8ddeccfc15f1ddd499c0e59263c6",
+            "sha256": "0fc68fadad8d6c1b260311cfe69199f158cda4965474b7ff7ec101d8d60a70b6",
+            "bytes": 9569
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "77942df3dd45f397cc9bdccb069b9c8d22d88577",
+            "sha256": "25b4ed15693008ace08248a97a850c01936dc31ed39356620891a8aca3925fe5",
+            "bytes": 10698
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-readable-copy.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ddeb79653a660261ec152bf9d4be87401183cec1",
+            "sha256": "a213afe6d70c183f88d90e31aec4b2b158363b80c0133c5578c72b1a2605b634",
+            "bytes": 8978
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-scheduler.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "406bd4a0bc895dc3df492a6a1b32d7ec467882f5",
+            "sha256": "e49920bae6216c841e6bfd19b47a924f1d995f7f93a83079db80112b0a76aab5",
+            "bytes": 6348
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "7b9bb8d8ae5f03b4916977593f345e3d68d0e819",
+            "sha256": "431c44b06b230a5c693f1bc463855bf9b31b4990c10ab8ae3ec498fedbbcab09",
+            "bytes": 8065
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-v3-reservation.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "fb9017276dce259b81f6fbbd77da26da574d985a",
+            "sha256": "7fd471e0c35017c1cce02676f571e5141817c42f76558330e070e71e8fa94cce",
+            "bytes": 10096
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-wire-v3.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "194413cd9bb8bd3c4139918b8a4adc7f9393518e",
+            "sha256": "4e5d0fdd0f8e12454cb3e6b6714fb19d3e887277145d5baed2f2ddd2b281d1a4",
+            "bytes": 12511
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-schema3-compatibility.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "151303b61ff51d049bd38e929c3c578d309cd783",
+            "sha256": "3ee69284d9d3cc9b0aeb99d38698a7ac402a4351d63acb9b59555a6dcf05ad59",
+            "bytes": 4166
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/app/api/mobile/v1/push/route.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "bf5955be4d8228f218e1d5c14dfc2ea7dfd413e9",
+            "sha256": "aba6108404b83aca7f2f17f3bc8c8a7dd402f0a7a1d6f4ff94d4acf808d02a46",
+            "bytes": 31568
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "d3a8a0085adf7db3f97a02fe1ca2852f9d10d177",
+            "sha256": "8732c2b5bb7f2b8684397ed17fdcd621bcb0ef49d5b223d583d2357c4b6290c3",
+            "bytes": 31579
+          },
+          "classification": "shared_registration_delivery_compatibility",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/mobile-notification-delivery.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "ceae94f3a2ea370b10d60c843158c8bbdfd892cf",
+            "sha256": "73597dc8525940fdd69fa74f44b37f241335565e006d743e34b13b1e59cc4d26",
+            "bytes": 79707
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "04256485943211fb88931123c6a24485fba027e3",
+            "sha256": "4dae5477a85c7e1f6c54019d72066c2719c259fb0996ddc66f8d60284e570822",
+            "bytes": 90360
+          },
+          "classification": "shared_registration_delivery_compatibility",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/mobile-notification-preferences.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "f3d95438b6be53c904c1aae96bb300a0da0a6597",
+            "sha256": "5549f2afac5258bb81e05171f2f797a43df4d73e01ff896c884248d7285a83e7",
+            "bytes": 22292
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "fde624cf8add3fa7e208b20e0dbfa19b80467c8e",
+            "sha256": "75772629b9733b9bf2d64f8227434d22b50750f8e291de871deef7b30054eb24",
+            "bytes": 22320
+          },
+          "classification": "shared_registration_delivery_compatibility",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/mobile-qimen-notification-detail.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "2d5514f20c588dc7ef0a65f7150ef8bbf1d85c7d",
+            "sha256": "08e4bfc1260920138ad7f35d6293aa6afac81c8d2175e44975cc28a2a18a9bf5",
+            "bytes": 1904
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "142bd9b5b0eb072d2ed288ff9bdc74c6ad9f00a6",
+            "sha256": "5aefdf9612c28858243204edd4948bb62f6e55969affffbcdb349205c20b5b3f",
+            "bytes": 2013
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/notification-health-route.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "a81890b5de26e1a9dedf7b7e41c6f10d74210070",
+            "sha256": "39c23b03aff7e6cd9f90fbe6882290ff4e41c8bd5f06502e0faebdf5eb532cbd",
+            "bytes": 3799
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "5517e18aefd84c3bfd88be371f2b7e8b1b9b227c",
+            "sha256": "1cccbcad693854eac62c61cab929e82a2f9cac168a18f9d19626b6c8e486f235",
+            "bytes": 3933
+          },
+          "classification": "platform_delivery_health",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/notification-observability.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "f70bb333caa5b6f7ae7adb210cae03315ea5b266",
+            "sha256": "cc502b010eba39b9f5c0a4430335b0645a61d81b02e76b5994ed1a8c03c6d809",
+            "bytes": 30844
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "ccf472adff51e93200f5a0bbc6814868be0cb475",
+            "sha256": "d7e0ab046af9f8ca7eb38daf4c73c2980074426e516e7f18e495211760331f07",
+            "bytes": 32053
+          },
+          "classification": "platform_delivery_health",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/push-send.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "1b7912b2c8867ae342a6f5bbb02014033b0b4fc3",
+            "sha256": "c6132e799a9aaff1f51cce116c73f4f9a8e536c24c7c72e1018caca8d0c64596",
+            "bytes": 20877
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "36dc6211aba6e223ab07787d052a9979e250f3b0",
+            "sha256": "9cb77d1d86a4222c9769356746abfc3b03b94d313d8cd983cc6c231a4a92edbe",
+            "bytes": 21229
+          },
+          "classification": "shared_registration_delivery_compatibility",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/qimen-canonical-occurrence-builder.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "5a2e1a0708b7c50956c31a4533ff9d12206467cf",
+            "sha256": "7f115fc35e190370e0c8a1c3a3c54c3156f29a2c827b944ec07985a93a44fbcb",
+            "bytes": 16544
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "f3c92545860cec8091e3d6b6dbd1c23b116a1a2a",
+            "sha256": "1f5dc844d0f4d97a102488031cf6c9e1e152300d554f55b117dc13ac0a6eb057",
+            "bytes": 19039
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/qimen-canonical-source-manifest.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "05db6b80e83ef8a21e81359696c6f692ddb514e7",
+            "sha256": "188f3f35d97eb2be03a2c18e9aad7f747a74d0ee842a19241a44c802fce8053d",
+            "bytes": 4671
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "96e26f67db99cddcfa86f65cff163dd0984b9f2b",
+            "sha256": "dda140b06667b63cced276d89284b414ad91e411c6918381a00ecf97daca40ff",
+            "bytes": 5317
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/qimen-notification-advisory.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "06d6be9c44e63dd94a3463a26bbd7d29f313abe9",
+            "sha256": "0675b4ddf08268391ad0de8d6477888a9c271bd29f2aa34f6861b83af15e536d",
+            "bytes": 45775
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "45cd2f7a70283c8b78f822e4deda978adbe688ae",
+            "sha256": "6f0263954fd856e0b338365da2f5a06798119aecdf9e918dbbba1aafde890998",
+            "bytes": 48782
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/qimen-notification-presentation.cjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "305953f80cac4fd57cbfe3c39ee3ea54406497e8",
+            "sha256": "760384118ce57db2168583db4e01a2b485a3a296480916f9b7a366204a08360e",
+            "bytes": 10804
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/qimen-seasonal-vigor.cjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "fea7ea2711fa68ea273ecf1988b94704342b4d28",
+            "sha256": "b404c0eacdb9f1ad053f19df812a783b966c5c89155cfb4caee349a901cd6e47",
+            "bytes": 9302
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/qimen-three-layer-notification.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "c418f13a9ee13b1a4ec307d1353edf914828e996",
+            "sha256": "e46783653ff6817950454766d11ad489d9f19faed681a6af60740811125ed169",
+            "bytes": 39222
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "949b19b53a57ad31bf6c0cfe6934e1fceb030654",
+            "sha256": "25cfc642a9e4cac155c95895fe66d5dde9157007cdaf0ba1e033ac6511f93c92",
+            "bytes": 43952
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/zibai-science.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "85779d8e374b047dcee5fd770dded8caabbd42a2",
+            "sha256": "bd5ee2cfc1c51ff1f8bb78b382a7224849bed0bc04090532890ff53718a09746",
+            "bytes": 12790
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "8ec57091e19f3cb6d552717f805315d06919e41f",
+            "sha256": "187117f0913b443a7fbb6eac615c2429115a74adebc080245d3ec09915e5e45d",
+            "bytes": 12846
+          },
+          "classification": "zibai_year_seam_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/ziwei-hourly-notification.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "c04070ddb65e871d0c8cfba479ed65288358abd7",
+            "sha256": "6c26872f63be026e510adca6d7a95e7a5b672899c5e690484d623cd539099294",
+            "bytes": 20199
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "b0eb5db41a9167fa078820f0c648f8e1d91fe071",
+            "sha256": "4bbba77d0a991389fcce3c5be651754e837d29895411993bfd004cf8ccd30bb3",
+            "bytes": 22108
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/ziwei-hourly-notification.cjs.d.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "26dc244a6dba7ab8ab903de0fd85f78c68b6ddc2",
+            "sha256": "8d1272c8727ccdb86dfcb66d9d88809db81edf558d8cc8e2158e012bdcf4c870",
+            "bytes": 1047
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "5de81600771f36b0407ecdf9eb7cefb849967f2f",
+            "sha256": "6716fe82b935b87d15068c17e8233c684912bfc43a5e85c8f374d21e6affef30",
+            "bytes": 1561
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/ziwei-hourly-presentation.cjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "4ea5be9ad0102e93eb81d914158d164f2f62daf4",
+            "sha256": "9cdc6bf870f65f7d7a77cd1670934c035f2ada58fe92de2f5d50985e381c97c0",
+            "bytes": 7296
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "e51ec823f84204bd81ca9d6ba421189150c1cffe",
+            "sha256": "16c9f7054737f34228f4485b98af0154c392fb0f52a92b3335c1794128fb3c14",
+            "bytes": 9510
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/ziwei-hourly-presentation.cjs.d.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "1b3b80a9f33e5f3cc06f58ade113a41b1a89dc32",
+            "sha256": "31f9d0c41a43c74cf0eaaf88869fc391f842ebf009c8eb5d9e87a24d737ba54d",
+            "bytes": 948
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "be8da6bbf81e2c96dafcca289573a2cb7e3aebce",
+            "sha256": "78c403de56c36fb5f432b7e13fde2687d912b3ca8b89ebe8d4da907f1d99edac",
+            "bytes": 1276
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/ziwei-hourly-readable-copy-catalog.json",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "84beb79b53b0a8dce8f74c1323fcbdf58b4bfdba",
+            "sha256": "23ea576b5cd9fb95c7102315620980dff1637e11540d7f07d10d090eb1f732e6",
+            "bytes": 6309
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        },
+        {
+          "path": "src/lib/ziwei-hourly-wire-v3.cjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "0f206fc30747eba37af50887ea596deea26f853f",
+            "sha256": "a9130a322b117a808b3893187cd7130660770c2fce1fbcdd6a1298a3aff914b8",
+            "bytes": 8516
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:a96609b7b568367bc5dd1cefd1ad12948a8cced0;not-release-approval"
+        }
+      ]
+    },
+    "mobile": {
+      "baselineCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
+      "candidateCommit": "679e3c9fc1cd4c08104491abb2109032dcec7bd8",
+      "candidateTree": "4e42a3081d641f9cb8b27b2c0d073ed9c42b16d6",
+      "deltaRecords": [
+        {
+          "path": "App.tsx",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "69adc693be125414193a837d4d95551855f8c648",
+            "sha256": "8ed27b912a8925c2afb5b55514587138aada00f184f9cac2ab2a154a379de24e",
+            "bytes": 501590
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "b9ea2df1a2495f281db5ffc758181eb7ad35687d",
+            "sha256": "17d0cdc89f714e7f06d9d7aee40bc5afe79988f0b83748b0f04388acc172e04f",
+            "bytes": 502744
+          },
+          "classification": "r8_truth_audience_and_reader_integration",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "app.json",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "77af7e82a57546c32d81f9e99d1cf5d0a8057e8e",
+            "sha256": "e8e958cc394eec8bd3be657125ac552caf3632f411fad90eb8417f4abf366988",
+            "bytes": 5345
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "f688e59deede69c0a622b57ea77ba2b0a5a72288",
+            "sha256": "2bb2770572d541d4e9a8281464dfb8a99a45b343b95a05e14981b0b7650adecd",
+            "bytes": 5345
+          },
+          "classification": "v234_version_and_exact_source_gate_manifest",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science-remediation-20260905-ziwei-capability.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "b0a3a1b442bb95bcfbd7f1b22b2c16d729c4b2a0",
+            "sha256": "621ab3f01eeaf45f8905684191b53080fefff1ba1e1c467015f29069e20d1122",
+            "bytes": 5044
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-android-bundle-evidence.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "5d876c23104660fd5f1796303b6498b45282301b",
+            "sha256": "71dd5ee68e7eeec13743980522557cbb7e925d518a9911a7af61d89601e5f6b7",
+            "bytes": 4086
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-mobile-build-preflight.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "f2a60932aa3def45a6d5a7c9cbbd5aa322f1fe17",
+            "sha256": "38522d11a33bffb7d0482acba4be4d0abcd909d506bdf3677e173bf96b6c445b",
+            "bytes": 19786
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-native-build-isolation-preflight.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "2f59bfbd58f3e404df0f02088a0ca4f33cbaedee",
+            "sha256": "66a171077bfa866019cc3032b2359df7dec522a24e7f0f4c93ca97f5b7d3d72a",
+            "bytes": 13238
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-capability4-mobile.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "c1496de2c6e23e6e7fd6307c04e0892c18b77e3f",
+            "sha256": "f3f0b97f6224550bbc635d348bcaa3b0512f47e32f44879384af556bdd0db5e6",
+            "bytes": 2256
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-capability4-native-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ba1f467d6a3030bb2eb12320bf29b20dfc11ee8f",
+            "sha256": "908f5c3006575111c5482275086aac4e3585fd91bd5e5678a55b5d7de9d87b47",
+            "bytes": 8600
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-v4-mobile-report.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "75e66ce3ecf8aecab59f2b01c73eb88852819d94",
+            "sha256": "967b8250e46fddf34c873b7abb2bf3d8b01aec85199ec07322f377b629d6b011",
+            "bytes": 7457
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-v4-mobile-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "e79be00ec04feeeb74a632892a2193c7f9570dee",
+            "sha256": "2edcbf04cdb7d77be80860734fbb01013e404e56575936742b60fa54a93901f7",
+            "bytes": 10140
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-qimen-v4-parent-fixes.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "272c2a66648d0b03e822f2413e3394c6c9f6a640",
+            "sha256": "f035cf5a69dca0d0d60819de91b3ab9dacf25aaa2c50ebea133fd301d282c7e9",
+            "bytes": 2840
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-r8-mobile-truth-fixes.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "00039484675955d354349ed8cdbd2bad5faf2e42",
+            "sha256": "22ae393929c6a08e4bc24c010f10a70463add1994e2641aceced47852378b248",
+            "bytes": 2763
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-r8-mobile-truth-review.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "7919e1f172245cc24e79cdb10f29c4085af5565d",
+            "sha256": "a927c4771bb1236b94d0932b15ed47083f12b651023ceecdb7a4afc23f866d48",
+            "bytes": 9881
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-scoped-legacy-engine-check.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "e5a9f0b1b6a58e989ce84fcde8a0992814c51a94",
+            "sha256": "7597ffe273e8c0e85540d50aad604c71c852de3ec7557d2239a83f32fee8eac4",
+            "bytes": 3739
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-v234-apk-evidence.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "d1e2ae73ceadf923d3ed1895aaace7a024a347b5",
+            "sha256": "fe1eef9d7557ecc108278200f983c6174c1ee89f2d487ab8d251bc7851be1f50",
+            "bytes": 6184
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "docs/notification-science/remediation-20260905-v234-build-candidate.md",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "96fe66feadbc4980545e4f29b2b5b2c846256d00",
+            "sha256": "511567190a75d04cb5cb2dc2d6d5abc9a23a6b3b201910395df9ca8e22c9864d",
+            "bytes": 6480
+          },
+          "classification": "bounded_documentation_not_release_approval",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/fixtures/ziwei-hourly-v3-provider.json",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "19093ca69336707b7767ea7c1d207ebe16f22aa4",
+            "sha256": "6581124bb199b1dfdf8199cb71adefb77ff1be82e2b8eaf87e7e71ab70ebfdca",
+            "bytes": 15544
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/lib/qimen-legacy-engine-fetch-boundary.mjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "2ef0519dfd3adb725aad6af5e75087378f52b010",
+            "sha256": "f6886e07e43e84ca383ffb6d8d0eb57665c9de32a8a6402c339c0bfcb665f2e0",
+            "bytes": 2503
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/mobile-full-suite.mjs",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "eee013845ec51164f400afdf63ddcfe89ac8ac74",
+            "sha256": "142b44b730f18d7639e929316b18d7beaedb16522f790c4a4df8aa58edd35d6b",
+            "bytes": 50047
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "f904c9426d10915d6a704bea07408088cead4fdf",
+            "sha256": "c5dcb2845ed39716c3431342782230302f3178d8d7a83f7a37c365c7f1b1b7fe",
+            "bytes": 51405
+          },
+          "classification": "v234_version_and_exact_source_gate_manifest",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-account-store-clients.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "b9f95da2e877bc5dce8ce0fb87375a76a1898b0c",
+            "sha256": "ca6b0bb3f4e5de77649884bf7873ab05d71457e068e645acf7d9e7dfcd84f391",
+            "bytes": 73676
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "86ac298647a0bfcc1c34026906efdbf231510f08",
+            "sha256": "a4bdac96511a6d426a3d88bc89dbe331c913a0adf03c060056ee1fdf09e2765c",
+            "bytes": 87916
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-notification-app-wiring.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "31c62a23d49b41ef493efc6b6683d61367c2ba0e",
+            "sha256": "14bce6b23ec767a7a6ac6d00164bbcf73ba158ef4c51731355d401134ebce987",
+            "bytes": 12244
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "e70b089149787c835809be01b2309dbda906952e",
+            "sha256": "85b4d4f608f00c33c7f960958135c0f75cefce7ca3b11f66083e31f5f7350a7a",
+            "bytes": 12278
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-notification-remediation-source-gates.mjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "1b7bb93790fe71456157c89141ea00c16d8907ef",
+            "sha256": "914de1a48da2a7e97a79c2ffff9166247cb25d4f307771e3307dd27e060f04b8",
+            "bytes": 1964
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-capability4-native-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "459f96420f018951ecbb9a85e0877f0db438afa9",
+            "sha256": "7a1ff25b97f312fc951802e76203e55b8bfba02b088b2f62d0a58f87fcfde9ba",
+            "bytes": 18240
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-legacy-engine-fetch-boundary.mjs",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "e4f9cff9a8817ffcf92119f7a66d826cd3805610",
+            "sha256": "452da6d40999747b17ff6deeffd77042e4052effdce66a8c0c00dcb181aafef3",
+            "bytes": 3747
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-notification-android.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "ddbff8d9f617ccec0f7540906c32ba492ab5a1c0",
+            "sha256": "8022c87b037b07775d8e9f6067c0977e1ee9f9381b87398bad5101c8673074e4",
+            "bytes": 4211
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "7b602a62273fcaf344994a0f58ae697d7d1164af",
+            "sha256": "47c991cc926298cbc668e2f5b80952ea31839ffae387f8d5f9f1c4e1fee9da79",
+            "bytes": 4211
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-notification-c4.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "43c07bd2e67fcfb5b0c831c194c97043b58eee80",
+            "sha256": "533ebc9ba1db9117cf974c2ff1a022d3de0b334633958aec9c6e5b7a8ab2e304",
+            "bytes": 5802
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "4740037896f0ef6a825e684bbe5a98f6d9a81ad2",
+            "sha256": "f4008985f3d95cc9003d72243284b1dd0a229861fe205460c111092b6649e264",
+            "bytes": 5825
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-notification-live-golden.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "69b04f1e632e5c379659b5cf08280589aa8dba69",
+            "sha256": "4b190488d45933da490f5fc2ac502da6c092ac9e61f2ddf060622d3ec427b9f7",
+            "bytes": 9833
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "72a40c26d070997ecd3e57ef56be79a5b48c2f0d",
+            "sha256": "3c20518235114694062e79140fe2eed6acb4042e321ba7a16c9b4df6def50530",
+            "bytes": 10148
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-notification-payload-v3.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "7f006225fcf8ff311b75479a20f9437d940dc1d5",
+            "sha256": "4f2f34f8bcc789b8a2ff32d90ff2afacb7e46224625aa2bf5401d99951134d3f",
+            "bytes": 3687
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "6d6bf03dbcfea4fd4d49d5e6e619bda4789b49dc",
+            "sha256": "d0fa94b37b54de35783816cb6af630a96c6eccdd827127c694f332e4a8cd40a6",
+            "bytes": 3775
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-notification-payload-v4.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "925fee8cca9c1eaee9efa4d0d877e49c35046105",
+            "sha256": "e0ee18359411797fd034978a57a9c75af5801854cf5c1ab4155f71f654cd62b4",
+            "bytes": 18388
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-notification-render.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "3b11039c274af68821e707d16e3e185a675e6be4",
+            "sha256": "4e79e444f8d1b3987f8344bad6979137c23284c6abdf6af107dd4c4b43c56cd9",
+            "bytes": 36309
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "3675967d8ace1374985dd8403b23b074a5ceb548",
+            "sha256": "ca643369c8ff4cd2d20c76f1c4ee0ab14e4aa228b5d8d0cb9b5b237f43cac48c",
+            "bytes": 41084
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-intrinsic-warning-contract.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "90da28af911ac28a006a55468065b0dd47ccc740",
+            "sha256": "4df5e49b3993c1f692b363d0ac60966f01c9f7af0f6a05b81b75f089f4fa4e11",
+            "bytes": 4887
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-mobile-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "0a31fce6da836047ae64aab162ec13ac2d7d3a06",
+            "sha256": "ad2fa843eab08ab6108c2f15f9008305ce7f16b1cf7d059ff2520c4bdbdfab5d",
+            "bytes": 7871
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-qimen-v4-parent-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ccc9b3c2fa5757aac094c1af5f9004bab1496885",
+            "sha256": "65e5989c14ef5eff532664dea753b69c838eb64d78bb2ba8e39e02d148f45648",
+            "bytes": 4570
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-r8-preview-truth-review.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "ee6769788b8e57d4b589db609417d54c4c3a9a67",
+            "sha256": "4bdd6aa885fb37b95375363a0c36f4b027f449b572c4d3f8dc9f5a6e80c37da5",
+            "bytes": 15060
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-shrine-unity-mainhall-app-integration.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "8861bbeb50366766bf36b6e8f5eeadd7bf540be2",
+            "sha256": "2aec493bed05b8d49e85e576dc25f70219365658c70466d91a18c336fa0e298c",
+            "bytes": 7132
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "d9bacef7d0cccadd566e2665535edf3779b0bfe6",
+            "sha256": "0046c6e5bb3f72c26c7167e8edd2459a41712e74e0812dfcf6e1afd33c81e06b",
+            "bytes": 7132
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-v197-shrine-runtime-continuity-release.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "9b15925c56423cea291239139e352502e04de35c",
+            "sha256": "f2db2fb033cbdb561c9c49b8c21716128cd8412334d8299b5aa947eae867e3d9",
+            "bytes": 4181
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "0fd61de7e22e8c9b7488be6a814054167b1ff8e4",
+            "sha256": "5076c67613b45425da94b167d08dcfa8459f9fc7fb8021cfce643d9d1e81614e",
+            "bytes": 4349
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-notification-wiring.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "fe54afe7a83935f31998dc298734b2807f1d8a89",
+            "sha256": "ec036780ea0704f835ab70cc4d4c7a14ba90dc81ec26a7fca68689e3fd2fefee",
+            "bytes": 4921
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "3f9e6715ad10c3e370d8aaf56cc414944834ac90",
+            "sha256": "be3b0d72f33c844fe8505b1ea08bdd20838716293544fbfb3f9d5461e7f9d62a",
+            "bytes": 6702
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-push-capability.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "d17a36c490cd6cc9cdc301fd62a2465c60460d4a",
+            "sha256": "4426a97d87fd1acf288b238244df6bcaf9b2ad0f9c353e00f0a306e083f3333a",
+            "bytes": 4560
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "72fd970ca4c80a2f6fcf3bbba19263979e6f471d",
+            "sha256": "4f73357cee997f72c0370956753e8f5384171a1253031c128f3af71b3a8f69a0",
+            "bytes": 4574
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-hourly-wire-v3.mts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "f3322911c48b3a20db55f326c0c318a74c2f301f",
+            "sha256": "065b9eff2778e41e2ebd205547e6e4cfab368870b314c39bb12f696ebce3e833",
+            "bytes": 8529
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/test-ziwei-recovery-render.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "6306c9fab1a2b264c62d34e121b12b4d3e92c743",
+            "sha256": "0dd99a14e763d4fa7daffbd795715d732d9611ed7d334672061f645068c7ccb8",
+            "bytes": 9585
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "c37dd41ccb6ab6218b1bc608f35d9de75ef985e6",
+            "sha256": "82cb9b91128baa2187e7d7076f2b75db6dec1cb4af88cbbf1aacae53b3eddbe5",
+            "bytes": 11763
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "scripts/testNotificationScienceR8.mts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "6a1f2284ea5941f37121e6de18a0a5aad4087d8c",
+            "sha256": "2f0743282021815335563c4001b5267742ac8883f929d0af59325556ac6175f3",
+            "bytes": 7531
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "a9a8f44384ee063d9aa67b3720befde83e3e041c",
+            "sha256": "1ee99e459ee6d0c78708c7bc2d5cf1ef9acb754745f90f62f6f0fc9eb608474a",
+            "bytes": 8293
+          },
+          "classification": "explicit_regression_or_fixture",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/components/design/NotificationCenterScreen.tsx",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "8f9adeb1b5e991d70e423146635c563621e550f7",
+            "sha256": "e5d2934c9d3ec0ce4c028db9223bd958dd50a7049823e0021d9a0b7d7a1c94ec",
+            "bytes": 150271
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "5683f9958b44948541a19fa64f47362460e9dc06",
+            "sha256": "8b85a76c9982f59777833d0767fa3966d21534c942193f0e91ca7090fafac579",
+            "bytes": 152061
+          },
+          "classification": "r8_truth_audience_and_reader_integration",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/components/design/qimen/QimenNotificationDetailScreen.tsx",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "e6ed62c8cffee121761f2b1de7bb270a60d4b66d",
+            "sha256": "c47f1647790ea303bbbff969ce2a21f486d62d43929b9fa3c5a1c8d9cefaaaf2",
+            "bytes": 30860
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "09ee38a9f201445ca6a1dc81d199d57a877b606b",
+            "sha256": "01598036746a742bf9579ac87924f478792679fed202582d34cd2d6dac6166e7",
+            "bytes": 32204
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/greenfield/client.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "83b4cdd457b2dbd41aafb25d800b7c0ab90c75f9",
+            "sha256": "671a2a1f9e9279aa89a5d874ab434b181cdbc2e9ffc4713190dd05cb6dd5448b",
+            "bytes": 147720
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "79257ae7801d782293654b11f7c452b6778ca955",
+            "sha256": "4fa70cfde417b1becc8f02465fbf2ff0578f36feae6a944ff5d42740530ba76a",
+            "bytes": 147772
+          },
+          "classification": "r8_truth_audience_and_reader_integration",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/i18n/qimenNotification.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "1ca0e2fbb506eafdbdc8dfb8c55c73e6c0d49431",
+            "sha256": "c9a8de1224fc7201e6946a83c131a3ebd74b056408246625f80a4f0b7be153f5",
+            "bytes": 37009
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "10c1fa46af3349387a0c6305a271fc77afd8c617",
+            "sha256": "c28f6a87aa61924ebc6d29fdad66ae4a184cc56fd52d46bc5b1ae91b58f14e1d",
+            "bytes": 44869
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/i18n/scienceNotificationsR8.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "606a10ee008edf21a080562c845c7c41752d9a47",
+            "sha256": "4aae1bf56fd2e212fc73bb51703f5ef227b92448e7b2f12745e698dfdde45612",
+            "bytes": 15654
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "13cec56695e270c6ce770d12abe7f21ca7f0a9fd",
+            "sha256": "0b69c861288789a070148d11a42216b00d5ceba714a508c7ed7ce87fe4f131f1",
+            "bytes": 17642
+          },
+          "classification": "r8_truth_audience_and_reader_integration",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/native/notificationPreferencePolicy.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "50d93b4f32df619a20dae1d75e9efba16dba2443",
+            "sha256": "3c8c59c1be2b0bcc4aa8e7f30e4d076d4848e2e72c0f421092c67f7238de31b1",
+            "bytes": 3215
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "90f087c8bef0f7d17e95db446f8a92025f66d949",
+            "sha256": "7365ce8cf4be0746a784e7c534ad7fe52823331aebf49b7e581e8c60090f1be4",
+            "bytes": 3340
+          },
+          "classification": "r8_truth_audience_and_reader_integration",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/native/push.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "987fb4b77bb34401ef0800c8aea2c18155cd1dcf",
+            "sha256": "bb85689fa8d23a9ff90ee276098853739e2358b9512360f66328a9c02b842720",
+            "bytes": 29591
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "3ee70f1a3ca8d93b8182a681fc53271fb29a90e5",
+            "sha256": "96138b02a363702534ae0680589a3dfc54de2639105b46f4991fc4ec2871a0ca",
+            "bytes": 29923
+          },
+          "classification": "shared_registration_delivery_compatibility",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/navigation/notificationPayload.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "1f96bc277cb22c953ca46f31f55268d11ab491aa",
+            "sha256": "b8e5a832a713e8f5a469b9f5945c0bad9eb12cbaac6b63166e27d73de87481b8",
+            "bytes": 37927
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "6fa2ee228f4ae8e245c1933a31ba5ba193ee304f",
+            "sha256": "54f1c6d128f02562f3a8fc97a465448f1792c1e59737c72dfbd911d3acd9c34c",
+            "bytes": 38164
+          },
+          "classification": "r8_truth_audience_and_reader_integration",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/qimen/notificationContract.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "b4a89024a86d3d74c5a37116c58d28d0e602f426",
+            "sha256": "bd32fe7f0ffca496988040d92758716fd3465f71f5bbd558cf0d2f231918666c",
+            "bytes": 41849
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "0f44ae49f72459eaafdb4966b27ada2c31041b5b",
+            "sha256": "7e9e39f56798cd53a8d0be24551f86747ff23ab7ab0692debc548a07ab28c8b1",
+            "bytes": 56589
+          },
+          "classification": "qimen_v4_seasonal_correction",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/types/mobile.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "bc20c4971bf710182b541e8803cf4f4906fa3986",
+            "sha256": "4fd978a8eebb51c004a15e265b61dc0a6db961622dda6f369459283c644fb70a",
+            "bytes": 67837
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "17ea467b189ad2b0800580b871fa95e3f5c785af",
+            "sha256": "be2c7752f5a0a656f5a0189d05955e2f405d8d8039ab60140d9ddd36b4896a7e",
+            "bytes": 67845
+          },
+          "classification": "shared_registration_delivery_compatibility",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/ziwei/hourlyNotificationContract.ts",
+          "change": "modify",
+          "old": {
+            "mode": "100644",
+            "gitOid": "9ae802f812d73b126f62b01d520d103249e77919",
+            "sha256": "5e962b8ff51e002dbe32515d322cc4c6358bfc8ab6cba912025bffa2414880ee",
+            "bytes": 23612
+          },
+          "new": {
+            "mode": "100644",
+            "gitOid": "84d7ce78e1f3debe0a6f42e91ef9441721f74bce",
+            "sha256": "f93eb9e76fe7731d3439e9bc8bd79bf87d619c435741e303f696867364acb5f2",
+            "bytes": 23942
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        },
+        {
+          "path": "src/ziwei/hourlyWireV3.ts",
+          "change": "add",
+          "old": null,
+          "new": {
+            "mode": "100644",
+            "gitOid": "3a9b911bb4def9c416a10e3e9c570f0781c3870d",
+            "sha256": "a041c90114d72abe727a51bfe7dca36e0c0d864c1c78a7a5d264f5a1a8ed20a5",
+            "bytes": 8245
+          },
+          "classification": "ziwei_v3_lossless_readable_correction",
+          "authority": "frozen-review-reference:679e3c9fc1cd4c08104491abb2109032dcec7bd8;not-release-approval"
+        }
+      ]
+    }
+  },
+  "unchangedControls": [
+    {
+      "side": "backend",
+      "path": "scripts/mobile-yam-push-cron.cjs",
+      "anchorCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "kind": "unchanged_producer_source",
+      "mode": "100644",
+      "gitOid": "aec1cfc69553508179737969fe525cdbc3b8aaf0",
+      "sha256": "941861d4f478efec8bc2218592fbe70254530302986df2ff3d12c7099d40631c",
+      "bytes": 17431
+    },
+    {
+      "side": "backend",
+      "path": "scripts/mobile-daily-fortune-push-cron.cjs",
+      "anchorCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "kind": "unchanged_producer_source",
+      "mode": "100644",
+      "gitOid": "8ba1b26c9ea3d3c7456b82e2e203117f9bd434a1",
+      "sha256": "c9f8ae08e2e628251c02da5441de2bc010457f79fc2e4cf48134048e226486c1",
+      "bytes": 16378
+    },
+    {
+      "side": "backend",
+      "path": "scripts/mobile-auspicious-push-cron.cjs",
+      "anchorCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "kind": "unchanged_producer_source",
+      "mode": "100644",
+      "gitOid": "5c0dfdcbd751b4daaca8faaa1e8b7f4fe596d24c",
+      "sha256": "91e6f154c4d3e3b0c46098fdf778ebd3bd48c0858a6bdcefb7b5e37734a8afe9",
+      "bytes": 10836
+    },
+    {
+      "side": "backend",
+      "path": "scripts/mobile-personal-reminders-cron.cjs",
+      "anchorCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "kind": "unchanged_producer_source",
+      "mode": "100644",
+      "gitOid": "86000aa0e71f36c24a6b3538aafc63fc2d0dc685",
+      "sha256": "77b2a207755263c5a7eac847c7adf64c2cfe3113caf6821db16ca9ece79948dd",
+      "bytes": 13419
+    },
+    {
+      "side": "backend",
+      "path": "scripts/mobile-monthly-report-push-cron.cjs",
+      "anchorCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "kind": "unchanged_producer_source",
+      "mode": "100644",
+      "gitOid": "cde269669cf64f16790b30d62521fe4a9028147f",
+      "sha256": "06f9e0685e26e0e4fa4fe7d4ad6797a1d8255d686163789fa6717d6a3032abe6",
+      "bytes": 9538
+    },
+    {
+      "side": "backend",
+      "path": "scripts/mobile-network-morning-push-cron.cjs",
+      "anchorCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "kind": "unchanged_producer_source",
+      "mode": "100644",
+      "gitOid": "d2a2fbc5953b44e48a1cd5afac60bda3f092c47b",
+      "sha256": "a59170c350df4bb22fdbc5e1eae6d9545220bd18fc1065762217f2a1018645f1",
+      "bytes": 20264
+    },
+    {
+      "side": "backend",
+      "path": "scripts/mobile-zibai-push-cron.cjs",
+      "anchorCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
+      "kind": "unchanged_producer_source",
+      "mode": "100644",
+      "gitOid": "0fe38082eb7e5e74c5078f17887e6710b39b5d74",
+      "sha256": "f9e007f8c5e61d81ec69f9c5158f3d4661d9ecef3f245eb49b3e575cee4a9ec8",
+      "bytes": 20026
+    },
+    {
+      "side": "backend",
+      "path": "migrations/20260904_mobile_science_notifications_r8.sql",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "f641f28d26e931e000f9e3324d11b8565b28635e",
+      "sha256": "894e1b7b1bef020eb256f65cfbf8e3309c73bd007973921695f66ba6cebdc571",
+      "bytes": 24457
+    },
+    {
+      "side": "backend",
+      "path": "migrations/20260904_mobile_science_notifications_r8.rollback.sql",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "8084aa0e5898a5148a27e8b3aea7be70d5047ec2",
+      "sha256": "f05ab1cf1e5ed6404d9ad89d665934e1915e7ac9d7f419a7dae1d5abd048852f",
+      "bytes": 1340
+    },
+    {
+      "side": "backend",
+      "path": "package.json",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "f6e6b81927717edade848afcf86ef455aa8698e2",
+      "sha256": "2dcf598270a56f696ee8ef5c618e5e0c9312d6c09dcc20a8bfae932e79a12233",
+      "bytes": 4882
+    },
+    {
+      "side": "backend",
+      "path": "package-lock.json",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "537b0d369efb665079721c28b3d51ff13b29306e",
+      "sha256": "df3f6863add0a67d7be3cd189d9b954f333a9586e7c790884bae2d250edf855e",
+      "bytes": 274055
+    },
+    {
+      "side": "backend",
+      "path": "scripts/fixtures/astronomy-fact-r8-jpl-horizons-goldens.json",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "342187e66762c9e0637719dca9a99200a19b9430",
+      "sha256": "3c9d3e47394e81b8098029f7435d5c60006e7f44d9d0a1063cc135e529fb240a",
+      "bytes": 1365
+    },
+    {
+      "side": "backend",
+      "path": "src/lib/astro/astronomy-fact-r8.ts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "befd83b1f3398d056eb1d31fa35d4d954fef1f2b",
+      "sha256": "d0f5d25fe706e0939b93b2568a5572e826a25b5c28b6eb46fd9410c23381ddfb",
+      "bytes": 9958
+    },
+    {
+      "side": "backend",
+      "path": "src/lib/tianxing/ephemeris.ts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "994c9aac431a1d0e74b3a27512f98cbe17b60d98",
+      "sha256": "8b0ef72f390a19648a8f07252b4f52409df6ddb8f37fefd0db55eb44c6a39ff1",
+      "bytes": 9341
+    },
+    {
+      "side": "backend",
+      "path": "src/lib/astro/astronomy-fact-model-attestation.ts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "cb9e870303ecd823f977c60065fdf69e0afd2519",
+      "sha256": "7496bc1d7ab092dabdd1549854c9be91df4febf4ddf52c60cca3f5be90caecdc",
+      "bytes": 638
+    },
+    {
+      "side": "backend",
+      "path": "src/lib/astro/notification-r8-contract.ts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "e7b2e3825332bbb013d179bab5ac2252fccf3470",
+      "sha256": "9f231c7cd923469527988305668c7a5d5bbc2024be9ba1a1eaf290582e9d029f",
+      "bytes": 1212
+    },
+    {
+      "side": "backend",
+      "path": "src/lib/astro/qizheng/electional-source-manifest.ts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "8af7a272cb16452677d092dde89b6b8e904de7cd",
+      "sha256": "9295ba5ac0b916c92ece0e690b98a121fbf8d89def5844258325010a33a75d66",
+      "bytes": 6530
+    },
+    {
+      "side": "backend",
+      "path": "src/lib/mobile-science-notification-detail-r8.ts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "96d1da1cc98f9d44e803e8dfd8271af423f010de",
+      "sha256": "8c18e6076c52340578d761f53626dc43aafc07578f707a45f4fab44e795fb0fc",
+      "bytes": 3700
+    },
+    {
+      "side": "backend",
+      "path": "src/lib/mobile-science-shadow-r8.ts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "be17a3f01490060d3dcdd1fae50919410c7b28a5",
+      "sha256": "5cbab60a2ea701c2d86a6b0aa3536955bf219c9c5de4df5542a5651ac1f85d90",
+      "bytes": 10606
+    },
+    {
+      "side": "backend",
+      "path": "scripts/mobile-astronomy-fact-shadow-cron.mts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "220e1fa61a1abe93c688707176e47b1d34118cb8",
+      "sha256": "eda3cc725c49f2ce786f5feb4d4cc3109f34c8c4fb680bb0a2b620ea760d97be",
+      "bytes": 7692
+    },
+    {
+      "side": "backend",
+      "path": "scripts/test-notification-r8-final-gates.mts",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "61c2608ab17a1e30f731611d63b415c6a258fe2e",
+      "sha256": "4d8bcfd7b5751293261bd56783cfa441025b55defe2bad1667da5da45b2cc845",
+      "bytes": 47815
+    },
+    {
+      "side": "backend",
+      "path": "scripts/notification-observability-preflight.cjs",
+      "anchorCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
+      "kind": "unchanged_r8_science_foundation_or_historical_gate",
+      "mode": "100644",
+      "gitOid": "9b86a08607a6f8746d069fa7b0a87daa55996194",
+      "sha256": "1a6e21e35ac47378b7525f83aa0841561d6dd2d5c5ded01819aa688f33052590",
+      "bytes": 47578
+    },
+    {
+      "side": "backend",
+      "path": "docs/notification-science/qizheng-r8-release-evidence.json",
+      "anchorCommit": "a96609b7b568367bc5dd1cefd1ad12948a8cced0",
+      "kind": "preserved_historical_signed_evidence",
+      "mode": "100644",
+      "gitOid": "37331c11fe619d2c73dc7872a26c36b10570d05c",
+      "sha256": "bfed5ecbae59eaf7764e1e1c514e22082afdae7fd08d1b28b23850697aa6b044",
+      "bytes": 12733
+    }
+  ],
+  "science": {
+    "sourceDigest": "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
+    "modelDigest": "6a4228e9f654062b3b131db3d434172243930151ed025193ae14449e7615964e",
+    "astronomyFact": {
+      "mode": "civil_two_hour",
+      "payloadSchema": 1,
+      "providerSendEnabled": false,
+      "prediction": false
+    },
+    "qizheng": {
+      "payloadSchema": 0,
+      "providerSendEnabled": false,
+      "sourceStatus": "pending_double_verification",
+      "pendingSourcePacks": 10,
+      "verdictGeneration": false
+    }
+  },
+  "activationBoundary": {
+    "astronomyProviderActivationRequiresNewSignedMigration": true,
+    "qizhengRequiresDoubleVerifiedSourcesAndNewSignedActivation": true,
+    "productionMigrationApplied": false,
+    "requiredProductionRolloutOrder": "migration_then_application"
+  },
+  "signatureDimensions": [
+    "science_source_integrity",
+    "mobile_lifecycle_locale_privacy",
+    "backend_migration_delivery",
+    "scale_observability_rollback",
+    "red_team_cross_science"
+  ],
+  "requiredProofs": [
+    {
+      "id": "historical_baseline_provenance_and_unchanged_lane_replay",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "authorized_remediation_semantic_regression",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "backend_typecheck_production_build_fresh_reproducibility",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "backend_installed_reproducible_archive_identity",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "dependency_toolchain_native_input_closure",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "mobile_typecheck_android_ios_web_export",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "mobile_full_source_suite",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "mobile_observed_native_receipt_chain",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "mobile_fresh_apk_reproducibility",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "mobile_normal_postgates_and_sparse_owner_preservation",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "r8_astronomy_goldens_time_reference_frame",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "qizheng_pending_sources_and_hard_off_integrity",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "r8_isolated_migration_apply_twice_rollback_least_privilege",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "qimen4_ziwei3_compatibility_migrations",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "privacy_owner_lifecycle_revocation_races",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "durable_retry_receipts_caps_quiet_hours",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "provider_free_72h_10000_user_soak",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "nine_locale_human_copy_layout_accessibility",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "independent_review_authority",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "exact_bundle_five_hard_off_reviews",
+      "scope": "hard_off",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "production_schema_runtime_role_installed_preflight",
+      "scope": "production_change",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "qimen_explicit_door_method_authority",
+      "scope": "qimen_activation",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "expo_project_credential_authority_and_repair",
+      "scope": "expo_repair",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "physical_registered_device_receipt_and_immutable_detail",
+      "scope": "final_acceptance",
+      "validator": "not_implemented"
+    },
+    {
+      "id": "final_whole_remediation_five_reviews",
+      "scope": "final_acceptance",
+      "validator": "not_implemented"
+    }
+  ],
+  "conditionalActivation": [
+    {
+      "id": "separate_signed_astronomy_activation",
+      "scope": "astronomy_activation",
+      "requiredForCurrentHardOffRelease": false,
+      "requiredForCurrentGoalAcceptance": false,
+      "activationAvailable": false,
+      "reason": "separate_signed_activation_not_authorized"
+    },
+    {
+      "id": "double_verified_qizheng_rulepack_and_separate_activation",
+      "scope": "qizheng_activation",
+      "requiredForCurrentHardOffRelease": false,
+      "requiredForCurrentGoalAcceptance": false,
+      "activationAvailable": false,
+      "reason": "ten_source_packs_pending_activation_prohibited"
+    }
+  ]
+}
