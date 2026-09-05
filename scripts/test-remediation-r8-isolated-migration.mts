@@ -283,7 +283,7 @@ function createLifecycle(execute: DockerExecutor, owner: string, database = owne
   let finalPid1Checks = 0;
   let initializationPid1Checks = 0;
   const actions: string[] = [];
-  const sqlCalls: { targetScope: string; sha256: string }[] = [];
+  const sqlCalls: { targetScope: string; sha256: string; loginRole?: "hourkey_app" }[] = [];
   function owned(isolation = false): Inspection {
     requireCondition(id && !removed, "container_not_owned_or_removed");
     const inspection = inspectOne(execute, "container", id);
@@ -329,11 +329,13 @@ function createLifecycle(execute: DockerExecutor, owner: string, database = owne
         throw error;
       }
     },
-    sql(targetDatabase: string, sql: string): string {
+    sql(targetDatabase: string, sql: string, loginRole: "decode_user" | "hourkey_app" = "decode_user"): string {
       requireCondition(targetDatabase === "postgres" || targetDatabase === database, "unsafe_psql_target");
+      requireCondition(loginRole === "decode_user" || (loginRole === "hourkey_app" && targetDatabase === database), "unsafe_psql_login_role");
       requireCondition(finalPostgresPid1(), "postgres_entrypoint_initialization_in_progress");
-      sqlCalls.push({ targetScope: targetDatabase === "postgres" ? "isolated_cluster_catalog" : "owned_fixture_database", sha256: sha256(sql) });
-      return execute(["exec", "-i", id!, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "decode_user", "-d", targetDatabase, "-Atq", "--set=VERBOSITY=verbose"], sql);
+      sqlCalls.push({ targetScope: targetDatabase === "postgres" ? "isolated_cluster_catalog" : "owned_fixture_database", sha256: sha256(sql),
+        ...(loginRole === "hourkey_app" ? { loginRole } : {}) });
+      return execute(["exec", "-i", id!, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", loginRole, "-d", targetDatabase, "-Atq", "--set=VERBOSITY=verbose"], sql);
     },
     cleanup() {
       if (!id) { actions.push("no_exact_id_available_no_cleanup_attempted"); return; }
@@ -445,7 +447,121 @@ function checkFidelity(raw: string): unknown {
     "database_fidelity_mismatch");
   return result;
 }
-async function runIsolated(filename: string): Promise<void> {
+// Only the previously missing runtime-login/transfer behavior. This mode uses
+// the same owned cluster lifecycle; it does not repeat the original double
+// migration/rollback suite, impersonate a production connection, or change SQL.
+function runRuntimeChecks(lifecycle: ReturnType<typeof createLifecycle>, database: string, forward: string) {
+  const admin = (sql: string) => lifecycle.sql(database, sql).trim();
+  const runtime = (sql: string) => lifecycle.sql(database,
+    `SET statement_timeout='5s'; SET lock_timeout='1s';\n${sql}`, "hourkey_app").trim();
+  lifecycle.sql("postgres", `CREATE DATABASE ${database};`);
+  admin(`CREATE EXTENSION pgcrypto;
+    CREATE TABLE users(id uuid PRIMARY KEY,deleted_at timestamptz,is_active boolean NOT NULL DEFAULT true);
+    CREATE TABLE profiles(id uuid PRIMARY KEY,created_by_user_id uuid NOT NULL REFERENCES users(id));
+    CREATE TABLE mobile_notification_prefs(user_id uuid PRIMARY KEY REFERENCES users(id));
+    CREATE TABLE mobile_push_tokens(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      installation_id uuid NOT NULL,qizheng_payload_schema smallint NOT NULL DEFAULT 0,
+      enabled boolean NOT NULL DEFAULT true,expo_push_token text,device_push_token text);
+    CREATE UNIQUE INDEX ux_mobile_push_tokens_active_installation ON mobile_push_tokens(installation_id) WHERE enabled=true;`);
+  admin(forward);
+  const roleProof = JSON.parse(runtime(`
+    DO $check$ DECLARE t text; col text; sql text; denied integer := 0; BEGIN
+      IF current_user<>'hourkey_app' OR session_user<>'hourkey_app'
+        OR EXISTS(SELECT 1 FROM pg_roles WHERE rolname=current_user AND (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication))
+      THEN RAISE EXCEPTION 'runtime_login_not_exact'; END IF;
+      FOR t,col IN SELECT * FROM (VALUES
+        ('mobile_science_notification_producer_state','science_id'),
+        ('mobile_science_notification_subscriptions','user_id'),
+        ('mobile_science_notification_shadow_cohort','user_id'),
+        ('mobile_science_notification_chains','id'),
+        ('mobile_science_notification_endpoints','chain_id'),
+        ('mobile_science_notification_occurrences','id')) AS tables(name,first_column)
+      LOOP
+        EXECUTE format('SELECT count(*) FROM public.%I',t);
+        IF NOT has_table_privilege(current_user,'public.'||t,'SELECT')
+          OR has_table_privilege(current_user,'public.'||t,'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+          OR EXISTS(SELECT 1 FROM pg_class c CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl,acldefault('r',c.relowner))) a
+            WHERE c.oid=('public.'||t)::regclass AND a.grantee=0
+              AND a.privilege_type IN ('INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'))
+        THEN RAISE EXCEPTION 'runtime_or_public_mutation_privilege'; END IF;
+        FOREACH sql IN ARRAY ARRAY[format('INSERT INTO public.%I DEFAULT VALUES',t),
+          format('UPDATE public.%I SET %I=%I WHERE false',t,col,col),
+          format('DELETE FROM public.%I WHERE false',t),format('TRUNCATE public.%I',t)]
+        LOOP
+          BEGIN EXECUTE sql; RAISE EXCEPTION 'runtime_mutation_was_allowed';
+          EXCEPTION WHEN insufficient_privilege THEN denied:=denied+1; END;
+        END LOOP;
+      END LOOP;
+      IF denied<>24 THEN RAISE EXCEPTION 'runtime_denial_count'; END IF;
+      IF (SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+          WHERE n.nspname='public' AND p.proname IN ('hourkey_r8_remove_transferred_bindings','hourkey_r8_rebind_primary_token',
+            'hourkey_r8_revoke_delivery_scope','hourkey_r8_record_astronomy_shadow_occurrence','hourkey_r8_mark_astronomy_shadow_run')
+            AND p.prosecdef AND pg_get_userbyid(p.proowner)<>current_user
+            AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
+            AND has_function_privilege(current_user,p.oid,'EXECUTE')
+            AND NOT EXISTS(SELECT 1 FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a
+              WHERE a.grantee=0 AND a.privilege_type='EXECUTE'))<>5
+      THEN RAISE EXCEPTION 'scoped_function_privilege_or_hardening'; END IF;
+    END $check$;
+    SELECT json_build_object('exactRuntimeLogin',current_user='hourkey_app' AND session_user='hourkey_app',
+      'readableTables',6,'deniedDmlOperations',24,'hardenedScopedFunctions',5);`));
+  assert.deepEqual(roleProof, { exactRuntimeLogin: true, readableTables: 6, deniedDmlOperations: 24, hardenedScopedFunctions: 5 });
+  const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const cases = ["primary_expo", "primary_installation", "primary_native", "secondary_expo", "secondary_installation", "secondary_native", "same_binding", "no_match"];
+  for (const kind of cases) {
+    // Synthetic owned-cluster rows only. Parent cascades are the migration's
+    // existing transfer policy; never describe them as preserving all history.
+    admin(`DELETE FROM users;
+      INSERT INTO users(id) VALUES('${id(1)}'),('${id(2)}'),('${id(3)}');
+      INSERT INTO mobile_push_tokens(id,user_id,installation_id,expo_push_token,device_push_token) VALUES
+        ('${id(10)}','${id(1)}','${id(50)}','expo-0','native-0'),
+        ('${id(11)}','${id(1)}','${id(51)}','expo-1','native-1'),
+        ('${id(12)}','${id(2)}','${id(52)}','expo-2','native-2'),
+        ('${id(13)}','${id(1)}','${id(53)}','expo-3','native-3');
+      INSERT INTO mobile_science_notification_chains(id,user_id,org_id,science_id,submode,schema_version,primary_token_id,primary_installation_id) VALUES
+        ('${id(20)}','${id(1)}','${id(40)}','astronomy_fact','civil_two_hour',1,'${id(10)}','${id(50)}'),
+        ('${id(21)}','${id(1)}','${id(41)}','astronomy_fact','civil_two_hour',1,'${id(11)}','${id(51)}'),
+        ('${id(22)}','${id(2)}','${id(42)}','astronomy_fact','civil_two_hour',1,'${id(12)}','${id(52)}');
+      INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
+        SELECT c.id,t.id,t.installation_id,t.astronomy_fact_audience_binding,true
+          FROM mobile_science_notification_chains c JOIN mobile_push_tokens t ON t.id=c.primary_token_id;
+      INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
+        SELECT '${id(21)}',t.id,t.installation_id,t.astronomy_fact_audience_binding,false FROM mobile_push_tokens t WHERE t.id='${id(13)}';
+      INSERT INTO mobile_science_notification_occurrences(chain_id,science_id,submode,schema_version,notification_unit_id,identity_cbor,
+        identity_hash,result_revision_hash,rollout_epoch,state,snapshot,snapshot_digest,scheduled_for,expires_at)
+        SELECT c.id,'astronomy_fact','civil_two_hour',1,'fixture-'||c.id,decode('01','hex'),digest(c.id::text,'sha256'),
+          digest('revision-'||c.id,'sha256'),1,'shadowed','{"fixture":true}','${"a".repeat(64)}',
+          '2026-09-05T00:00:00Z','2026-09-05T02:00:00Z' FROM mobile_science_notification_chains c;`);
+    const protectedQuery = `SELECT json_build_object(
+      'chains',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM mobile_science_notification_chains c WHERE c.id IN ('${id(21)}','${id(22)}')),
+      'occurrences',(SELECT jsonb_agg(to_jsonb(o) ORDER BY o.id) FROM mobile_science_notification_occurrences o WHERE o.chain_id IN ('${id(21)}','${id(22)}')),
+      'tokens',(SELECT jsonb_agg(to_jsonb(t) ORDER BY t.id) FROM mobile_push_tokens t));`;
+    const before = admin(protectedQuery);
+    const target = kind.startsWith("secondary_") ? 3 : 0;
+    const user = kind === "same_binding" ? id(1) : id(3);
+    const installation = kind.endsWith("_installation") || kind === "same_binding" ? id(50 + target) : id(99);
+    const expo = kind.endsWith("_expo") || kind === "same_binding" ? `expo-${target}` : "unmatched-expo";
+    const native = kind.endsWith("_native") ? `'native-${target}'` : "NULL";
+    runtime(`SELECT hourkey_r8_remove_transferred_bindings('${user}','${installation}','${expo}',${native});`);
+    assert.equal(admin(protectedQuery), before, `unrelated chains/occurrences/token rows changed: ${kind}`);
+    const removedPrimary = kind.startsWith("primary_");
+    assert.deepEqual(JSON.parse(admin(`SELECT json_build_object(
+      'chains',(SELECT count(*) FROM mobile_science_notification_chains),
+      'occurrences',(SELECT count(*) FROM mobile_science_notification_occurrences),
+      'endpoints',(SELECT count(*) FROM mobile_science_notification_endpoints),
+      'targetEndpoints',(SELECT count(*) FROM mobile_science_notification_endpoints WHERE token_id='${id(10 + target)}'));`)), {
+      chains: removedPrimary ? 2 : 3, occurrences: removedPrimary ? 2 : 3,
+      endpoints: kind === "same_binding" || kind === "no_match" ? 4 : 3,
+      targetEndpoints: kind === "same_binding" || kind === "no_match" ? 1 : 0,
+    }, `transfer scope mismatch: ${kind}`);
+  }
+  lifecycle.sql("postgres", `DROP DATABASE ${database};`);
+  return { ...roleProof, transferCases: cases,
+    policy: "selected transferred primary chain cascades its own occurrence; unrelated chains, occurrences and token rows preserved",
+    productionProof: false, originalDoubleApplyRollbackRerun: false };
+}
+
+async function runIsolated(filename: string, runtimeOnly = false): Promise<void> {
   const destination = receiptDestination(filename); // Every preflight occurs before Docker.
   const sources = loadPinned();
   const authority = runtimeAuthority(sources);
@@ -459,6 +575,7 @@ async function runIsolated(filename: string): Promise<void> {
   let runFailure: string | null = null;
   let cleanupFailure: string | null = null;
   let fidelity: unknown = null;
+  let runtimeChecks: unknown = null;
   try {
     lifecycle.createAndStart();
     let ready = false;
@@ -469,8 +586,9 @@ async function runIsolated(filename: string): Promise<void> {
     requireCondition(ready, "isolated_postgres_readiness_timeout");
     fidelity = checkFidelity(lifecycle.sql("postgres", FIDELITY_SQL));
     // This role exists ONLY inside the newly owned cluster, never on a shared server.
-    lifecycle.sql("postgres", "CREATE ROLE hourkey_app NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;");
-    runOriginal(adapter, process.pid, sources);
+    lifecycle.sql("postgres", `CREATE ROLE hourkey_app ${runtimeOnly ? "LOGIN" : "NOLOGIN"} NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;`);
+    if (runtimeOnly) runtimeChecks = runRuntimeChecks(lifecycle, database, sources[FORWARD]!);
+    else runOriginal(adapter, process.pid, sources);
   } catch (error) {
     runFailure = error instanceof Failure ? error.message : "original_assertion_or_unclassified_run_failure";
   } finally {
@@ -480,16 +598,20 @@ async function runIsolated(filename: string): Promise<void> {
   const container = lifecycle.report();
   const success = runFailure === null && cleanupFailure === null && container.removed;
   const receipt = {
-    schema: "hourkey-r8-isolated-original-migration-v1", evidenceKind: "actual_isolated_postgresql", success,
+    schema: runtimeOnly ? "hourkey-r8-isolated-runtime-checks-v1" : "hourkey-r8-isolated-original-migration-v1", evidenceKind: "actual_isolated_postgresql", success,
     startedAt, finishedAt: new Date().toISOString(), authority, isolation: container, databaseFidelity: fidelity,
-    originalHarness: adapter.report(), runFailure, cleanupFailure,
-    executionAdaptations: ["Pinned original TypeScript transpiled in memory as CommonJS; original never imported",
+    ...(runtimeOnly ? { runtimeChecks } : { originalHarness: adapter.report() }), runFailure, cleanupFailure,
+    executionAdaptations: runtimeOnly ? ["Unchanged pinned forward SQL applied once in newly owned isolated cluster",
+      "Actual psql login as non-superuser hourkey_app; no SET ROLE impersonation",
+      "Synthetic token fixture includes native/Expo fields; existing container ownership, no-network and cleanup guards reused"] : ["Pinned original TypeScript transpiled in memory as CommonJS; original never imported",
       "Restricted require exposes assert, randomUUID, exact SQL buffers, guarded execFileSync, pinned actual model constant",
       "Exact original PID-named create/drop mapped to random owned database; no preemptive DROP, IF EXISTS or FORCE",
       "Exact original psql options plus --set=VERBOSITY=verbose; fixture/migration/assertion SQL bytes unchanged",
       "Owned isolated final postgres PID1 verified before pg_isready and every SQL call; temporary entrypoint server cannot qualify",
       "Original target mapped only to newly created exact container ID; fixed local Docker socket and minimal client environment"],
-    coverage: { requiredForwardRuns: 2, requiredRollbackRuns: 1, requiredSqlRejections: REJECTS.map(({ id, sqlstate }) => ({ id, sqlstate })),
+    coverage: runtimeOnly ? { scope: "isolated runtime privileges and transferred-binding behavior only",
+      exclusions: ["Installed production catalog fingerprint and complete legacy Ziwei preflight", "Other scoped-function execution and API authentication",
+        "Production migration, provider credentials, phone receipt and release approval"] } : { requiredForwardRuns: 2, requiredRollbackRuns: 1, requiredSqlRejections: REJECTS.map(({ id, sqlstate }) => ({ id, sqlstate })),
       scope: "Only the original pinned harness assertions on its minimal disposable schema; not full production schema or runtime-role proof",
       exclusions: ["Transferred-binding function execution: original fixture lacks expo_push_token/device_push_token",
         "Broad privilege checks beyond original SELECT and INSERT/UPDATE/DELETE checks",
@@ -501,13 +623,15 @@ async function runIsolated(filename: string): Promise<void> {
       containerId: container.containerId, removed: container.removed, runFailure, cleanupFailure }));
     throw new Failure("private_receipt_write_failed_or_incomplete");
   }
-  console.log(JSON.stringify({ status: success ? "R8_ISOLATED_ORIGINAL_MIGRATION_OK" : "R8_ISOLATED_ORIGINAL_MIGRATION_FAILED",
+  console.log(JSON.stringify({ status: runtimeOnly ? (success ? "R8_ISOLATED_RUNTIME_CHECKS_OK" : "R8_ISOLATED_RUNTIME_CHECKS_FAILED")
+    : (success ? "R8_ISOLATED_ORIGINAL_MIGRATION_OK" : "R8_ISOLATED_ORIGINAL_MIGRATION_FAILED"),
     receipt: destination.filename, containerId: container.containerId, removed: container.removed, runFailure, cleanupFailure }));
   requireCondition(success, "isolated_run_or_cleanup_failed_see_private_receipt");
 }
-function parseCli(args: string[]): { mode: "self-test" } | { mode: "run"; receipt: string } {
+function parseCli(args: string[]): { mode: "self-test" } | { mode: "run" | "runtime"; receipt: string } {
   if (args.length === 0 || JSON.stringify(args) === '["--self-test"]') return { mode: "self-test" };
   if (args.length === 3 && args[0] === "--run" && args[1] === "--receipt" && path.isAbsolute(args[2]!)) return { mode: "run", receipt: args[2]! };
+  if (args.length === 3 && args[0] === "--run-runtime" && args[1] === "--receipt" && path.isAbsolute(args[2]!)) return { mode: "runtime", receipt: args[2]! };
   throw new Failure("usage_requires_self_test_or_explicit_run_and_absolute_new_private_receipt");
 }
 function unitTests(): void {
@@ -695,6 +819,16 @@ function unitTests(): void {
     assert.throws(() => lifecycle.sql(ownedDatabase, "SELECT 1"));
     assert.throws(() => lifecycle.cleanup());
   });
+  check("runtime_login_is_scoped_to_owned_database", () => {
+    const fake = fakeDocker();
+    const lifecycle = createLifecycle(fake.execute, owner);
+    lifecycle.createAndStart(); assert.equal(lifecycle.ready(), true);
+    lifecycle.sql(ownedDatabase, "SELECT current_user,session_user", "hourkey_app");
+    assert.deepEqual(fake.calls.find((argv) => argv[0] === "exec" && argv[1] === "-i"),
+      ["exec", "-i", id, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "hourkey_app", "-d", ownedDatabase, "-Atq", "--set=VERBOSITY=verbose"]);
+    assert.throws(() => lifecycle.sql("postgres", "SELECT 1", "hourkey_app"));
+    lifecycle.cleanup();
+  });
   const corruptions: [string, (inspection: Inspection) => void][] = [
     ["identity", (value) => { value.Id = "c".repeat(64); }],
     ["owner_label", (value) => { value.Config.Labels[LABEL] = "foreign"; }],
@@ -780,6 +914,7 @@ function unitTests(): void {
     assert.deepEqual(parseCli([]), { mode: "self-test" });
     assert.deepEqual(parseCli(["--self-test"]), { mode: "self-test" });
     assert.deepEqual(parseCli(["--run", "--receipt", "/private/new.json"]), { mode: "run", receipt: "/private/new.json" });
+    assert.deepEqual(parseCli(["--run-runtime", "--receipt", "/private/new.json"]), { mode: "runtime", receipt: "/private/new.json" });
     for (const argv of [["--run"], ["--run", "--receipt", "relative.json"], ["--receipt", "/private/new.json"], ["--self-test", "--run"], ["--run", "--receipt", "/private/new.json", "--force"]]) assert.throws(() => parseCli(argv));
     assert.throws(() => receiptDestination("relative.json"));
     assert.throws(() => receiptDestination(path.join(ROOT, "package.json")));
@@ -791,7 +926,7 @@ function unitTests(): void {
 try {
   const mode = parseCli(process.argv.slice(2));
   if (mode.mode === "self-test") unitTests();
-  else await runIsolated(mode.receipt);
+  else await runIsolated(mode.receipt, mode.mode === "runtime");
 } catch (error) {
   // Failure diagnostics never include raw Docker stderr, SQL, or fixture IDs.
   console.error(error instanceof Failure ? error.message : "unclassified_isolated_harness_failure");

@@ -97,3 +97,46 @@ as an application release. Historical R8 evidence and gates remain unchanged.
 No Qizheng source pack was marked verified and no astronomy/Qizheng provider
 activation was enabled. Their future activation is not an additional requirement
 for the current hard-off remediation; existing prohibitions remain intact.
+
+## Later supplement: actual runtime login and transfer checks
+
+The two original fixture gaps above now have a separate, bounded execution.
+The existing harness adds explicit `--run-runtime` mode; original `--run`, pinned
+migration SQL and historical receipt remain separate. This mode applies the
+unchanged forward migration once, not another double-apply/rollback run.
+
+- Harness SHA-256: `3cc6b9f94de9e41b653d8ccb2a2b2a6223dd2c830b583a9b614e85d5f2241533`.
+- RED `353874` caught the previously ignored runtime-login argument; GREEN
+  `c0be3e` passed 53 fake checks. Targeted TypeScript checking exited 0 (`3f27ec`).
+- Independent `/root/cng_home_preservation` approved this exact slice for one
+  disposable PostgreSQL attempt; its self-test and type checks also passed.
+  This is not a final-goal signature.
+- Actual session `1469` exited 0 (`aa7147`), at
+  `2026-09-05T11:49:17.927Z`–`2026-09-05T11:49:30.578Z`, PostgreSQL 16.13.
+- Receipt: `/root/artifacts/hourkey-r8-runtime-aaKbBi/runtime-checks-01.private.json`,
+  13,282 bytes, SHA-256
+  `8b679db20bdc5e4c5e570a323f8b23e08ca33cc40bf80fb7680bee931db64c81`.
+
+Nine actual psql sessions logged in as `hourkey_app`, not `SET ROLE` under an
+administrator session. The test checked `current_user=session_user`, six
+readable R8 tables, 24 real mutation attempts rejected specifically for
+insufficient privilege, remaining broad mutation grants, PUBLIC restrictions
+and the five scoped functions' SECURITY DEFINER/search_path/EXECUTE metadata.
+Eight transfer fixtures covered Expo, installation and native-token matching
+for primary and secondary endpoints, plus same-binding and no-match cases.
+Unrelated chain/occurrence snapshots and every token row were compared exactly.
+
+The original SQL deliberately deletes a selected transferred primary chain
+and cascades its own occurrences. Secondary-endpoint transfer preserves the
+chain/history. The tests confirm this distinction; they do **not** claim that
+all history survives a primary transfer, or establish a new production defect.
+
+There were 47 SQL calls and 48 final-PID-1 checks. The owned container was
+gracefully stopped and removed without force. Parent read-only check `8df269`
+confirmed that exact test container absent and the production PostgreSQL
+container still running with its unchanged ID. Only disposable fixture data
+was removed; source, logs and receipts remain. No production SQL was executed.
+
+Still unproven: the installed production catalog fingerprint, complete legacy
+Ziwei preflight, actual execution of the other four scoped R8 functions, API
+authentication, rollout, provider repair, phone receipt and five final reviews.

@@ -157,16 +157,52 @@ complete successful terminal summary inspected and the count recorded.
 
 ## External boundaries and the full goal
 
-After retaining both exports, the sampled free space is 3,525,763,072 bytes
-(about 3.3 GiB); `df` rounds usage to 100%. The native run needs a new measured
-headroom decision, not an inference from the percentage alone. No cleanup has
-been authorized or performed, and no native run was started. A read-only
-process snapshot is not exclusive ownership of shared build inputs.
+The user subsequently approved the exact 12 inventoried cleanup targets.
+Cleanup session `11379` exited 0 (`1fe72f`); all 12 targets were absent and
+free space reached 7,412,244,480 bytes (`9e9dea`). This permanently removed
+the selected generated caches, the two export checkouts' dependency instances
+and export temporary directories, not their retained source, output or receipts.
+The main mobile dependencies and retained APKs were preserved. Details:
+`/root/artifacts/hourkey-all-platform-export-ulPjKX/approved-cleanup-completed.private.md`.
+
+One new observed native attempt then ran in
+`/root/artifacts/hourkey-v234-native-4fksRi/observed`, using the unchanged b610
+producer and the verified existing internal-upgrade certificate (no key rotation).
+Its own full source phase passed all 311 commands (`e09e10`), then Android
+compilation started. This was a real attempt, **not a completed APK**.
+At `2026-09-05T11:20:58.054Z`, the observed child failed after the outer monitor
+latched its 2 GiB low-space floor and stopped only the owned child PID namespace.
+Actual session `32826` terminated with exit 1 (`3c009f`), parent exit 1,
+minimum sampled free space 2,139,222,016 bytes and zero remaining owned mounts.
+The parent was not killed. Its failure receipt and source/native logs remain.
+No successful native receipt, new APK, deploy or phone-delivery proof is claimed.
+
+Post-run read-only checks (`9069e0`, corrected command format `3887f3`) found
+mobile b610 and backend 0dc6bc1 clean and production still at r573. The shared
+owner's HEAD, actual index bytes/identity/timestamps, and `git ls-files -v -z`
+hash match the actual pre-build seal. A first diagnostic used the non-NUL
+`ls-files -v` format; that different hash was a measurement-format mismatch,
+not an index mutation. Do not restore any owner files or index from old pins.
+
+The failed attempt now retains approximately 5.85 GB of generated cache,
+Unity build view and dependency-overlay output. No additional cleanup or
+automatic retry has been performed. Before another attempt, obtain a measured
+storage solution and preserve failure evidence; do not lower the safety floor
+or silently delete further worktree dependencies to force a build.
 
 Expo project credential repair is a separate authority boundary; it is **not**
 a prerequisite to compiling an otherwise authorized offline internal APK.
-The operator connection choice and scoped cleanup/storage question are pending.
+The operator connection choice remains pending; the original cleanup choice
+was resolved, but the failed native attempt needs a new storage decision.
 Do not export signing/service keys or delete registrations to bypass them.
+
+While native storage is pending, the missing isolated R8 runtime-login and
+transferred-binding checks completed successfully in actual session `1469`
+(`aa7147`). The unchanged migration, genuine restricted login, 24 denied
+mutations and eight transfer cases passed in a disposable cluster, now removed.
+See the later supplement in `remediation-20260905-isolated-r8-migration.md` for
+the exact receipt and selective history-cascade semantics. This does not replace
+the still-required installed catalog/runtime preflight or authorize deployment.
 
 Explicit Qimen door-method selection, compatible schema/backend rollout and
 rollback, Expo repair, physical receipt/detail opening, and five independent
