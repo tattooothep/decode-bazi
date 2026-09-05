@@ -322,18 +322,47 @@ assert.match(scheduler.buildQimenCopy("en", clearSnapshotV3).title, /^✓ Qimen 
 assert.match(scheduler.buildQimenCopy("zh", clearSnapshotV3).title, /^✓ 奇門 · 明確出行吉方 · /u);
 
 const canonicalBuilder = require("../src/lib/qimen-canonical-occurrence-builder.cjs");
-for (const instant of [
+const legacyCohort = [
   "2026-08-22T05:00:00.000Z", "2026-08-22T09:00:00.000Z", "2026-08-23T21:00:00.000Z",
   "2026-08-27T05:00:00.000Z", "2026-08-28T03:00:00.000Z", "2026-08-29T13:00:00.000Z",
   "2026-08-30T11:00:00.000Z", "2026-09-01T21:00:00.000Z",
-]) {
-  const actual = await canonicalBuilder.buildCanonicalQimenOccurrence({ ...row, latitude: 13.7563 }, new Date(instant));
-  assert.ok(actual, `${instant} remains an accepted canonical cohort occurrence`);
+];
+// Reproduction of historical V3 only, NOT permission for new V3 production.
+// Bound these existing eight external calculations to a non-saving loopback
+// endpoint. Every scheduler policy case below uses fake DB/transport boundaries.
+const pendingLegacyInstants = new Set(legacyCohort);
+const legacyFetch = globalThis.fetch;
+const advisoryRuntime = require("../src/lib/qimen-notification-advisory.cjs");
+for (const instant of legacyCohort) {
+  const actual = await canonicalBuilder.buildCanonicalQimenOccurrence({ ...row, latitude: 13.7563 }, new Date(instant), {
+    schema: 3,
+    fetchCanonicalQimenEngineSnapshot: (input: unknown, options: any) => advisoryRuntime.fetchCanonicalQimenEngineSnapshot(input, {
+      ...options, baseUrl: "http://127.0.0.1:4090",
+      fetchImpl: async (url: string, init: RequestInit) => {
+        assert.equal(url, "http://127.0.0.1:4090/api/qimen/calculate");
+        assert.equal(init.method, "POST");
+        assert.deepEqual(init.headers, { "Content-Type": "application/json", "User-Agent": "hourkey-mobile-notification/1.0" });
+        assert.deepEqual(JSON.parse(String(init.body)), {
+          datetime: instant, instant, timezone: "Asia/Bangkok", latitude: 13.7563, longitude: 100.5018,
+          profile_id: 1, purpose: "travel", system_type: "hour", skip_save: true, source_endpoint: "mobile-notification",
+        });
+        assert.ok(pendingLegacyInstants.delete(instant), "each historical calculation is allowed once");
+        const response = await legacyFetch(url, { ...init, redirect: "error", signal: AbortSignal.timeout(8_000) });
+        assert.equal(response.ok, true);
+        const body = await response.clone().json();
+        assert.equal(body.ok, true);
+        assert.equal(body.data.run_id, null, "historical regression calls must not persist calculations");
+        return response;
+      },
+    }),
+  });
+  assert.ok(actual, `${instant} remains reproducible under the frozen historical V3 contract`);
   for (const locale of ["th", "en", "zh"]) {
     const actualCopy = scheduler.buildQimenCopy(locale, actual);
     assert.ok(actualCopy.body.length <= 400, `${instant}/${locale} provider copy exceeds 400 characters`);
   }
 }
+assert.equal(pendingLegacyInstants.size, 0);
 
 assert.throws(() => snapshotRuntime.buildQimenThreeLayerSnapshotV3({
   ...snapshotV3Fixture.input(row.user_id),
@@ -391,6 +420,14 @@ recoveredInputV3.createdAt = canonicalAt.toISOString();
 recoveredInputV3.layers.hour.validFrom = canonicalWindow.startAt;
 recoveredInputV3.layers.hour.validUntil = canonicalWindow.endAt;
 const persistedSnapshot = snapshotRuntime.buildQimenThreeLayerSnapshotV3(recoveredInputV3);
+// Separate current-production fixture from the immutable historical V3 fixture.
+// Its arrangement is synthetic; only scheduler retry/admission is under test.
+const seasonalDoorMethod = "STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1";
+const freshInputV4 = require("./fixtures/qimen-three-layer-valid-snapshot-v4.cjs").input("acct_recovery", seasonalDoorMethod);
+freshInputV4.createdAt = canonicalAt.toISOString();
+freshInputV4.layers.hour.validFrom = canonicalWindow.startAt;
+freshInputV4.layers.hour.validUntil = canonicalWindow.endAt;
+const freshSnapshot = snapshotRuntime.buildQimenThreeLayerSnapshotV4(freshInputV4);
 const recoveryClaim = { user_id: "acct_recovery", installation_id: "installation_recovery", lease_token: "lease_recovery" };
 const recoveryRow = {
   ...recoveryClaim,
@@ -446,7 +483,7 @@ let boundaryRetry: { nextDueAt: string; reason: string } | null = null;
 const boundaryCautionDb = {
   async query(sql: string, params: unknown[] = []) {
     if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [{
-      ...recoveryRow,
+      ...recoveryRow, qimen_payload_schema: 4,
       location_captured_at: new Date(boundaryCautionAt.valueOf() - 24 * 60 * 60 * 1_000).toISOString(),
       location_expires_at: new Date(boundaryCautionAt.valueOf() + 6 * 24 * 60 * 60 * 1_000).toISOString(),
     }] };
@@ -460,6 +497,7 @@ const boundaryCautionDb = {
 };
 assert.deepEqual(
   await scheduler.processClaim(boundaryCautionDb, recoveryClaim, boundaryCautionAt, {
+    seasonalDoorMethod,
     signal: new AbortController().signal,
     async buildCanonicalOccurrence() {
       return null;
@@ -482,7 +520,7 @@ let transientDeliveryCalls = 0;
 const transientDb = {
   async query(sql: string, params: unknown[] = []) {
     if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [{
-      ...recoveryRow,
+      ...recoveryRow, qimen_payload_schema: 4,
       location_captured_at: new Date(transientAt.valueOf() - 24 * 60 * 60 * 1_000).toISOString(),
       location_expires_at: new Date(transientAt.valueOf() + 6 * 24 * 60 * 60 * 1_000).toISOString(),
     }] };
@@ -498,6 +536,7 @@ const transientDb = {
 const transportError = Object.assign(new Error("fetch failed"), { code: "ECONNRESET" });
 assert.deepEqual(
   await scheduler.processClaim(transientDb, recoveryClaim, transientAt, {
+    seasonalDoorMethod,
     signal: new AbortController().signal,
     async buildCanonicalOccurrence() { throw transportError; },
   }),
@@ -508,8 +547,9 @@ assert.equal(transientNextDueAt, transientRecoveryAt.toISOString());
 assert.equal(transientFinishReason, "engine_retry_ECONNRESET");
 
 const recoveredAfterTransient = await scheduler.processClaim(transientDb, recoveryClaim, transientRecoveryAt, {
+  seasonalDoorMethod,
   signal: new AbortController().signal,
-  async buildCanonicalOccurrence() { return persistedSnapshot; },
+  async buildCanonicalOccurrence() { return freshSnapshot; },
   async admitOccurrence(_db: unknown, _row: unknown, recoveredSnapshot: unknown, sendDeadline: string) {
     transientAdmissionCalls += 1;
     if (transientAdmissionCalls > 1) return null;
@@ -524,8 +564,9 @@ assert.deepEqual(recoveredAfterTransient, { reserved: 1, skipped: 0, reason: nul
 assert.equal(transientDeliveryCalls, 1, "recovery reserves one durable delivery");
 assert.deepEqual(
   await scheduler.processClaim(transientDb, recoveryClaim, transientRecoveryAt, {
+    seasonalDoorMethod,
     signal: new AbortController().signal,
-    async buildCanonicalOccurrence() { return persistedSnapshot; },
+    async buildCanonicalOccurrence() { return freshSnapshot; },
     async admitOccurrence() {
       transientAdmissionCalls += 1;
       return null;
@@ -544,6 +585,7 @@ const contractMismatch = Object.assign(new Error("QIMEN_HOUR_ENGINE_CONTRACT_NOT
   code: "QIMEN_HOUR_ENGINE_CONTRACT_NOT_ALLOWED",
 });
 await scheduler.processClaim(transientDb, recoveryClaim, transientAt, {
+  seasonalDoorMethod,
   signal: new AbortController().signal,
   async buildCanonicalOccurrence() { throw contractMismatch; },
 });
@@ -607,7 +649,7 @@ const abortDb = {
       return { rows: boundedClaims };
     }
     if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [{
-      ...recoveryRow,
+      ...recoveryRow, qimen_payload_schema: 4,
       user_id: params[0], installation_id: params[1], lease_token: params[2],
     }] };
     if (/SELECT id,state,push_log_id,snapshot,send_deadline/u.test(sql)) return { rows: [] };
@@ -622,6 +664,8 @@ const abortDb = {
 };
 await assert.rejects(
   scheduler.runScheduler(abortDb, abortController.signal, canonicalAt, {
+    seasonalDoorMethod,
+    async fetchCanonicalQimenEngineSnapshot() { throw new Error("abort policy test must not start an external engine"); },
     runtimeProducerEnabled: true,
     backendCommit: "d".repeat(40),
     batchLimit: 10_000,

@@ -45,28 +45,45 @@ assert.equal(calls, 3);
 
 async function processCase({ capability = 4, persisted = null, method = doorMethod, candidate = snapshot, expectedSchema = 4 }: any = {}) {
   const activeRow = { ...validRow, qimen_payload_schema: capability };
-  let builds = 0; let delivered: any = null; let finishReason: unknown;
+  let builds = 0; let admissions = 0; let delivered: any = null; let finishReason: unknown; let nextDue: unknown;
   const db = { async query(sql: string, params: any[] = []) {
     if (/SELECT q\.\*,t\.id AS token_id/u.test(sql)) return { rows: [activeRow] };
     if (/SELECT id,state,push_log_id,snapshot,send_deadline/u.test(sql)) return { rows: persisted ? [{
       id: "55555555-5555-4555-8555-555555555555", state: "claimed", push_log_id: null,
       snapshot: persisted, send_deadline: notice.sourceFacts.sendDeadline,
     }] : [] };
-    if (/UPDATE mobile_qimen_installations SET next_due_at/u.test(sql)) { finishReason = params[4]; return { rows: [], rowCount: 1 }; }
+    if (/UPDATE mobile_qimen_installations SET next_due_at/u.test(sql)) {
+      assert.doesNotMatch(sql, /enabled|consent|mobile_push_tokens|mobile_notification_prefs/u);
+      nextDue = params[3]; finishReason = params[4]; return { rows: [], rowCount: 1 };
+    }
     throw new Error(`unexpected SQL ${sql}`);
   } };
   const result = await scheduler.processClaim(db, row, at, {
     seasonalDoorMethod: method,
     buildCanonicalOccurrence: async (_row: any, _at: any, options: any) => {
-      builds += 1; assert.equal(options.schema, expectedSchema); assert.equal(options.doorMethod, method);
+      builds += 1; assert.equal(options.schema, expectedSchema);
+      assert.equal(options.doorMethod, expectedSchema === 4 ? method : undefined);
       return candidate;
     },
-    admitOccurrence: async (_db: any, _row: any, value: any, deadline: any) => ({
-      id: "55555555-5555-4555-8555-555555555555", snapshot: value, sendDeadline: deadline, recovered: false,
-    }),
+    admitOccurrence: async (_db: any, _row: any, value: any, deadline: any) => {
+      admissions += 1;
+      return { id: "55555555-5555-4555-8555-555555555555", snapshot: value, sendDeadline: deadline, recovered: false };
+    },
     deliver: async (_db: any, value: any) => { delivered = value; return { status: "pending" }; },
   });
-  return { result, builds, delivered, finishReason };
+  return { result, builds, admissions, delivered, finishReason, nextDue };
+}
+// An old client cannot represent 廢 or the separated seasonal source evidence.
+// Reject fresh production BEFORE consulting an engine; this is not a verdict
+// that the hour has no good direction, and it must not disable the installation.
+for (const method of [doorMethod, ""]) {
+  const upgrade = await processCase({ capability: 3, method, candidate: null, expectedSchema: 3 });
+  assert.deepEqual(upgrade.result, { reserved: 0, skipped: 1, reason: "payload_upgrade_required" });
+  assert.equal(upgrade.builds, 0);
+  assert.equal(upgrade.admissions, 0);
+  assert.equal(upgrade.delivered, null);
+  assert.equal(upgrade.finishReason, "payload_upgrade_required");
+  assert.equal(upgrade.nextDue, window.endAt, "keep the installation scheduled for future upgrade recovery");
 }
 const sent = await processCase();
 assert.deepEqual(sent.result, { reserved: 1, skipped: 0, reason: null });
@@ -88,6 +105,12 @@ const recovered = await processCase({ persisted: legacy, method: "" });
 assert.equal(recovered.result.reserved, 1);
 assert.equal(recovered.builds, 0, "already-claimed historical V3 is recovered unchanged after upgrade");
 assert.equal(recovered.delivered.payload.qimenV3, payloads.buildQimenV3ProviderData(legacy).qimenV3);
+const recoveredOldClient = await processCase({ capability: 3, persisted: legacy, method: "" });
+assert.equal(recoveredOldClient.result.reserved, 1);
+assert.equal(recoveredOldClient.builds, 0);
+assert.equal(recoveredOldClient.admissions, 0);
+assert.equal(recoveredOldClient.delivered.payload.qimenV3, payloads.buildQimenV3ProviderData(legacy).qimenV3,
+  "the fresh-production upgrade gate must not rewrite or block an already-claimed V3 occurrence");
 const downgrade = await processCase({ capability: 3, persisted: snapshot });
 assert.equal(downgrade.result.reason, "snapshot_capability_mismatch");
 assert.equal(downgrade.builds, 0);
@@ -95,4 +118,4 @@ assert.equal(downgrade.delivered, null);
 const badNew = await processCase({ candidate: legacy });
 assert.equal(badNew.result.reason, "snapshot_capability_mismatch", "new V4 occurrence cannot be mislabeled legacy");
 assert.equal(badNew.delivered, null);
-console.log("QIMEN_SEASONAL_SCHEDULER_OK explicit_method=PASS v4_notice=PASS upgrade=PASS downgrade=PASS memo=PASS");
+console.log("QIMEN_SEASONAL_SCHEDULER_OK explicit_method=PASS v4_notice=PASS fresh_v3_upgrade_gate=PASS legacy_recovery=PASS upgrade=PASS downgrade=PASS memo=PASS");

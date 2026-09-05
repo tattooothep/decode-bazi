@@ -360,6 +360,14 @@ async function processClaim(db, claim, at, dependencies = {}) {
   let snapshot = admitted?.snapshot || null;
   if (!snapshot) {
     const schema = Number(row.qimen_payload_schema);
+    // V3 cannot encode 廢 or separated star/door seasonal provenance. Keep
+    // immutable V3 recovery above, but never create a new legacy-science
+    // occurrence for an old client. Do not change its registration or consent.
+    if (schema === 3) {
+      reason = "payload_upgrade_required";
+      await finishClaim(db, row, at, next, reason);
+      return { reserved: 0, skipped: 1, reason };
+    }
     const doorMethod = schema === 4
       ? (dependencies.seasonalDoorMethod ?? process.env.QIMEN_SEASONAL_DOOR_METHOD) : undefined;
     // No default or door-lineage inference. Existing immutable occurrences

@@ -75,7 +75,10 @@ assert.equal(recovered.delivered.payload.qimenV3, runtime.buildQimenV3ProviderDa
 assert.equal(recovered.delivered.sourceFacts.calculationVersion, v3.versionTuple.hour);
 assert.equal(Object.hasOwn(recovered.delivered.sourceFacts, "seasonalEvidence"), false);
 const oldClient = await conflictCase(3, v3, v4);
-assert.equal(oldClient.outcome.reason, "persisted_snapshot_binding_mismatch");
+assert.equal(oldClient.outcome.reason, "payload_upgrade_required");
+assert.equal(oldClient.builds, 0);
+assert.equal(oldClient.inserts, 0);
+assert.equal(oldClient.reads, 1, "an old client may recover history but must not attempt a fresh INSERT");
 assert.equal(oldClient.delivered, null);
 const wrongOwner = await conflictCase(4, v4, await make("66666666-6666-4666-8666-666666666666"));
 assert.equal(wrongOwner.outcome.reason, "persisted_snapshot_binding_mismatch");
