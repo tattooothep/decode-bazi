@@ -8,6 +8,8 @@ const { createHash } = require("node:crypto");
 const { isDeepStrictEqual } = require("node:util");
 const ASSURANCE = "observed-not-bound-not-immutable-not-acceptance";
 const POLICY = "hourkey-fixed-bwrap-offline-internal-preview/v3";
+const CANONICAL_POLICY = "hourkey-fixed-bwrap-offline-internal-preview/v4";
+const CANONICAL_UNITY_BUILD_ROOT = "/root/worktrees/hourkey-v197-runtime-fix/android/unityLibrary/build";
 const DISCLAIMERS = Object.freeze(["Records one internal preview build observed on this host only.",
   "Does not prove reproducibility, immutability, provenance, or acceptance readiness.",
   "Does not authorize deploy, distribution, production signing, or release.",
@@ -279,6 +281,9 @@ function validate(reader, request) {
   keys(p.sandbox, ["policy", "rootReadOnly", "networkNamespace", "pidNamespace", "writableBinds", "homePolicy", "homePolicyDigest", "preservedHome",
     "privateHomeStorage", "readOnlyHomeInputs", "dedicatedGradleUserHome", "dedicatedNpmCache", "gradleReadOnlyDependencyCache",
     "nodeModulesBuildOverlay", "il2cppSourceBuildOverlay", "environmentKeys"]);
+  need(p.sandbox.policy === POLICY || p.sandbox.policy === CANONICAL_POLICY, "CHAIN_POLICY_UNSUPPORTED");
+  equal(pub.build.fixedPolicy, p.sandbox.policy, "CHAIN_POLICY_MISMATCH");
+  const canonicalRecipe = p.sandbox.policy === CANONICAL_POLICY;
   keys(p.sourceGates.sandbox, ["network", "parentNetworkNamespace", "pidNamespace", "readOnlyHomeInputs", "symlinks", "writableBinds"]);
   const mobile = sourceManifest(reader, p.source, { commit: e.sourceCommit, fingerprint: e.sourceFingerprint }, e.sourceRoot);
   equal(p.source.headCommit, e.sourceCommit); equal(p.source.statusSha256, e.statusSha256); equal(p.source.sourceFingerprint, e.sourceFingerprint);
@@ -304,17 +309,22 @@ function validate(reader, request) {
   }
   need(Array.isArray(sg.sandbox.symlinks) && sg.sandbox.symlinks.length <= 4096);
   for (const link of sg.sandbox.symlinks) { keys(link, ["path", "target"]); abs(link.path); abs(link.target); }
-  for (const key of ["dedicatedGradleUserHome", "dedicatedNpmCache"]) need(within(reader.root, abs(p.sandbox[key])));
+  const canonicalGradleHome = path.join(home.namespaceHome, ".gradle");
+  if (canonicalRecipe) equal(p.sandbox.dedicatedGradleUserHome, canonicalGradleHome);
+  else need(within(reader.root, abs(p.sandbox.dedicatedGradleUserHome)));
+  need(within(reader.root, abs(p.sandbox.dedicatedNpmCache)));
   abs(p.sandbox.gradleReadOnlyDependencyCache);
   for (const [name, outputs] of [["nodeModulesBuildOverlay", "outputRoots"], ["il2cppSourceBuildOverlay", "outputFiles"]]) {
     const overlay = p.sandbox[name]; keys(overlay, ["upperRoot", "entryCount", outputs]);
     need(within(reader.root, abs(overlay.upperRoot))); count(overlay.entryCount); strings(overlay[outputs]);
   }
-  equal(p.sandbox.policy, POLICY); equal(p.sandbox.rootReadOnly, true); equal(p.sandbox.networkNamespace, "unshared"); equal(p.sandbox.pidNamespace, "unshared");
+  equal(p.sandbox.rootReadOnly, true); equal(p.sandbox.networkNamespace, "unshared"); equal(p.sandbox.pidNamespace, "unshared");
   equal(sg.sandbox.network, "inherited"); equal(sg.sandbox.pidNamespace, "unshared"); equal(sg.sandbox.parentNetworkNamespace, e.parentNetworkNamespace);
-  equal(sg.sandbox.writableBinds, [home.namespaceHome, e.sourceRoot, reader.root]);
+  const requiredBinds = [home.namespaceHome, ...(canonicalRecipe ? [canonicalGradleHome] : []), e.sourceRoot, reader.root];
+  equal(sg.sandbox.writableBinds, requiredBinds);
   strings(p.sandbox.writableBinds); p.sandbox.writableBinds.forEach(abs);
-  for (const required of [home.namespaceHome, e.sourceRoot, reader.root]) need(p.sandbox.writableBinds.includes(required));
+  for (const required of requiredBinds) need(p.sandbox.writableBinds.includes(required));
+  if (!canonicalRecipe) need(!p.sandbox.writableBinds.includes(canonicalGradleHome), "CHAIN_POLICY_MISMATCH");
   sorted(p.sandbox.environmentKeys);
   const src = command(reader, sg, e.commands.source, false, ["mobile full suite: PASS (311 commands)", "OBSERVED_SOURCE_GATES_CHILD_OK"]);
   const build = command(reader, p.build, e.commands.build, false,
@@ -340,7 +350,11 @@ function validate(reader, request) {
   equal(nc.fixedCommands.sourceGateSelfTest, ["/usr/bin/node", "scripts/mobile-full-suite.mjs", "--self-test"]);
   equal(nc.fixedCommands.shrineUnityExportGate, ["/usr/bin/node", "scripts/test-shrine-unity-android-export.mts"]);
   equal(nc.fixedCommands.gradle.slice(1), ["--project-dir", `${e.sourceRoot}/android`, `-Duser.home=${home.privateHomeStorage}`,
-    "-PreactNativeArchitectures=arm64-v8a", ":unityLibrary:buildIl2Cpp", ":app:createBundleReleaseJsAndAssets", ":app:assembleRelease",
+    ...(canonicalRecipe ? ["--init-script", `${e.sourceRoot}/scripts/observed-native-clean.init.gradle`,
+      `-Dhourkey.observed.clean.unityBuildRoot=${CANONICAL_UNITY_BUILD_ROOT}`,
+      `-Dhourkey.observed.clean.privateUnityBuildRoot=${reader.root}/unity-build-owned-view/build`] : []),
+    "-PreactNativeArchitectures=arm64-v8a", ...(canonicalRecipe ? ["-PreactNativeDevServerIp=172.18.0.1", "clean"] : []),
+    ":unityLibrary:buildIl2Cpp", ":app:createBundleReleaseJsAndAssets", ":app:assembleRelease",
     "--offline", "--no-daemon", "--no-build-cache", "--rerun-tasks", "--stacktrace"]);
   const toolPaths = new Set(["/usr/bin/node", e.nativeCommands.gradle[0], ...Object.values(e.commands).map(x => x.argv[0])]);
   need(Array.isArray(e.tools) && e.tools.length > 0 && e.tools.length <= 256);
@@ -398,7 +412,7 @@ function validate(reader, request) {
     exitCode: src.record.exitCode, childResultSha256: sg.childResult.sha256, homeNamespaceVerified: true,
     networkPolicy: "inherited-for-existing-local-engine-checks", qimenGoldenCommit: e.qimenGoldenCommit,
     qimenGoldenSourceFingerprint: e.qimenGoldenSourceFingerprint });
-  equal(pub.build, { fixedPolicy: POLICY, commandRecordSha256: p.build.commandRecord.sha256,
+  equal(pub.build, { fixedPolicy: p.sandbox.policy, commandRecordSha256: p.build.commandRecord.sha256,
     stdout: redacted(p.build.stdout), stderr: redacted(p.build.stderr), exitCode: build.record.exitCode });
   equal(pub.apk, { ...apkMetadata, signerPolicy: "external-release-certificate-fingerprint-only" });
 }
@@ -410,6 +424,8 @@ function validate(reader, request) {
  * Limits may only tighten the documented hard ceilings. No receipt-selected
  * command is run and no manifested host input is opened. A valid result means
  * selected retained bytes crosslink, not that any described event occurred.
+ * Recognizes only the paired v3 legacy or v4 canonical-path/clean recipes;
+ * recognition does not prove either recipe actually executed or was isolated.
  * This subset must not replace or bypass existing mandatory release gates.
  */
 function verifyObservedMobileChain(request) {

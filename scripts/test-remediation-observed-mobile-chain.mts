@@ -12,6 +12,7 @@ const json = (value: unknown) => Buffer.from(`${JSON.stringify(value, null, 2)}\
 const clone = (value: any) => JSON.parse(JSON.stringify(value));
 const assurance = "observed-not-bound-not-immutable-not-acceptance";
 const policy = "hourkey-fixed-bwrap-offline-internal-preview/v3";
+const canonicalPolicy = "hourkey-fixed-bwrap-offline-internal-preview/v4";
 const limitations = ["Records one internal preview build observed on this host only.",
   "Does not prove reproducibility, immutability, provenance, or acceptance readiness.",
   "Does not authorize deploy, distribution, production signing, or release.",
@@ -163,6 +164,27 @@ function fixture() {
   return { root, write, receipt, publicReceipt, expected, sourceChild, nativeChild, records, manifests, mobile, home, seal };
 }
 
+function replaceGradle(f: ReturnType<typeof fixture>, argv: string[]) {
+  f.nativeChild.fixedCommands.gradle = [...argv];
+  f.expected.nativeCommands.gradle = [...argv];
+  f.receipt.build.childResult = f.write("observed-build-child-result.private.json", f.nativeChild);
+}
+function canonicalRecipe(f: ReturnType<typeof fixture>) {
+  f.receipt.sandbox.policy = canonicalPolicy;
+  f.publicReceipt.build.fixedPolicy = canonicalPolicy;
+  const cache = join(f.home.namespaceHome, ".gradle");
+  f.receipt.sandbox.dedicatedGradleUserHome = cache;
+  f.receipt.sandbox.writableBinds.splice(1, 0, cache);
+  f.receipt.sourceGates.sandbox.writableBinds.splice(1, 0, cache);
+  replaceGradle(f, ["/synthetic/gradle", "--project-dir", `${f.expected.sourceRoot}/android`,
+    `-Duser.home=${f.home.privateHomeStorage}`, "--init-script", `${f.expected.sourceRoot}/scripts/observed-native-clean.init.gradle`,
+    "-Dhourkey.observed.clean.unityBuildRoot=/root/worktrees/hourkey-v197-runtime-fix/android/unityLibrary/build",
+    `-Dhourkey.observed.clean.privateUnityBuildRoot=${f.root}/unity-build-owned-view/build`,
+    "-PreactNativeArchitectures=arm64-v8a", "-PreactNativeDevServerIp=172.18.0.1", "clean",
+    ":unityLibrary:buildIl2Cpp", ":app:createBundleReleaseJsAndAssets", ":app:assembleRelease",
+    "--offline", "--no-daemon", "--no-build-cache", "--rerun-tasks", "--stacktrace"]);
+}
+
 let checked = 0;
 function rejected(name: string, mutate: (f: ReturnType<typeof fixture>) => void, after?: (request: any, f: ReturnType<typeof fixture>) => void) {
   const f = fixture();
@@ -190,6 +212,37 @@ try {
   assert.match(result.validationScope, /not complete producer-policy equivalence or release approval/);
   assert.equal(fs.existsSync(valid.nativeChild.generatedApk), false, "reader must not require mutable generated APK");
   checked++;
+  // New recipe support is only synthetic byte/recipe consistency. Even fully
+  // rehashed records and caller argv pins never grant execution authority.
+  rejected("v3 new native writable alias", f => { f.receipt.sandbox.writableBinds.splice(1, 0, join(f.home.namespaceHome, ".gradle")); });
+  const current = fixture(); canonicalRecipe(current);
+  const currentResult = verifyObservedMobileChain(current.seal());
+  assert.equal(currentResult.chainIntegrityValid, true, "canonical v4 recipe must be recognized without weakening v3");
+  assert.equal(currentResult.executionAuthorityVerified, false); assert.equal(currentResult.releaseReady, false);
+  assert.deepEqual(currentResult.missingProofs, result.missingProofs); checked++;
+  for (const [name, mutate] of [
+    ["private v4/public v3", (f: ReturnType<typeof fixture>) => { f.publicReceipt.build.fixedPolicy = policy; }],
+    ["private v3/public v4", (f: ReturnType<typeof fixture>) => { f.receipt.sandbox.policy = policy; }],
+    ["unknown paired policy", (f: ReturnType<typeof fixture>) => { f.receipt.sandbox.policy = "future/v5"; f.publicReceipt.build.fixedPolicy = "future/v5"; }],
+    ["v4 old cache path", (f: ReturnType<typeof fixture>) => { f.receipt.sandbox.dedicatedGradleUserHome = join(f.root, "cache/gradle-user-home"); }],
+    ["v4 wrong canonical cache", (f: ReturnType<typeof fixture>) => { f.receipt.sandbox.dedicatedGradleUserHome = "/synthetic/other/.gradle"; }],
+    ["v4 old source writable list", (f: ReturnType<typeof fixture>) => { f.receipt.sourceGates.sandbox.writableBinds.splice(1, 1); }],
+    ["v4 old native writable list", (f: ReturnType<typeof fixture>) => { f.receipt.sandbox.writableBinds.splice(1, 1); }],
+    ["v4 unexpected source policy field", (f: ReturnType<typeof fixture>) => { f.receipt.sourceGates.sandbox.policy = "invented/v2"; }],
+    ["v4 legacy Gradle argv", (f: ReturnType<typeof fixture>) => { replaceGradle(f, fixture().expected.nativeCommands.gradle.map((x: string) => x.startsWith("-Duser.home=") ? `-Duser.home=${f.home.privateHomeStorage}` : x)); }],
+    ["v4 wrong Unity owner", (f: ReturnType<typeof fixture>) => { replaceGradle(f, f.expected.nativeCommands.gradle.map((x: string) => x.startsWith("-Dhourkey.observed.clean.unityBuildRoot=") ? "-Dhourkey.observed.clean.unityBuildRoot=/arbitrary/build" : x)); }],
+    ["v4 escaping private clean root", (f: ReturnType<typeof fixture>) => { replaceGradle(f, f.expected.nativeCommands.gradle.map((x: string) => x.startsWith("-Dhourkey.observed.clean.privateUnityBuildRoot=") ? "-Dhourkey.observed.clean.privateUnityBuildRoot=/arbitrary/build" : x)); }],
+    ["v4 wrong init script", (f: ReturnType<typeof fixture>) => { replaceGradle(f, f.expected.nativeCommands.gradle.map((x: string) => x.endsWith("/observed-native-clean.init.gradle") ? "/arbitrary/init.gradle" : x)); }],
+    ["v4 missing clean task", (f: ReturnType<typeof fixture>) => { replaceGradle(f, f.expected.nativeCommands.gradle.filter((x: string) => x !== "clean")); }],
+    ["v4 wrong dev-server resource", (f: ReturnType<typeof fixture>) => { replaceGradle(f, f.expected.nativeCommands.gradle.map((x: string) => x.startsWith("-PreactNativeDevServerIp=") ? "-PreactNativeDevServerIp=127.0.0.1" : x)); }],
+  ] as const) rejected(name, f => { canonicalRecipe(f); mutate(f); });
+  rejected("v3 new canonical cache", f => { f.receipt.sandbox.dedicatedGradleUserHome = join(f.home.namespaceHome, ".gradle"); });
+  rejected("v3 new source writable list", f => { f.receipt.sourceGates.sandbox.writableBinds.splice(1, 0, join(f.home.namespaceHome, ".gradle")); });
+  rejected("v3 new Gradle argv", f => {
+    const next = fixture(); canonicalRecipe(next);
+    replaceGradle(f, next.expected.nativeCommands.gradle.map((x: string) => x
+      .replace(next.home.privateHomeStorage, f.home.privateHomeStorage).replace(next.root, f.root)));
+  });
   // This standalone slice intentionally does not interpret all bwrap mount or
   // overlay policies. Even pinned, consistent receipt bytes must report that
   // separate policy proof missing; an adapter may not waive the existing gate.

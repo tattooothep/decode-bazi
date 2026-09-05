@@ -250,3 +250,106 @@ The fresh shared-owner preseal is retained in `shared-owner-before.private.json`
 At this checkpoint the attempt was running, with no successful terminal result,
 new accepted APK or deploy. Poll the actual session; do not restart based on a
 stale state file. Free space is not a guarantee that compilation will fit.
+
+## Native retry terminal result and build-fidelity diagnosis
+
+The preceding running checkpoint is superseded. Actual session `40880` is
+terminal (`7ce772`): producer exit 0 with no signal, but **outer launcher exit 1**,
+`abortRequested: true`, reason `low-space`, minimum free space 2,115,960,832
+bytes, and zero remaining owned mounts. This is 31,522,816 bytes below the
+unchanged 2 GiB floor. No first-latch timestamp or durable stop-attempt ledger
+was retained; absence of a stop message does not prove no request was dispatched.
+Do not retroactively accept this run or infer that every descendant was unsignalled.
+
+The actual producer completed its source phase (311 commands), native build
+(`BUILD SUCCESSFUL in 7m 35s`, **652 actionable tasks: 652 executed**), postflight
+checks and receipt publication. Parent stdout reported
+`OBSERVED_INTERNAL_PREVIEW_RECEIPT_OK`. These are completed inner stages, not
+an overall resource-safe or release-accepted run. Retained under the retry's
+`observed/` directory:
+
+- Child result: 2,426 bytes, SHA-256
+  `13eac98e0e1dbdc4e910e49ab44a0ccb53deee2121e5e0e4dcdf09d254a3e0af`;
+  native times `2026-09-05T12:50:47.933Z`–`2026-09-05T12:58:24.065Z`.
+- Source result: 608 bytes, SHA-256
+  `0e310808fad6b2308a2212a7dc15d7300c0bf1709959ec7a632e0c4deb981b1b`.
+- Private producer receipt: 35,631 bytes, SHA-256
+  `97230e70c799d02aae1ae54adfa03ad0492e4d12aa80b011b4166b99a27990e1`.
+- Actual APK: **165,372,404 bytes**, signed SHA-256
+  `76d66607f944de8e187e6533a5fa1b2b1c7d125614f6a6203b9c928e4382551f`,
+  unsigned-content SHA-256
+  `237b6ae7315a109873cfccdc9a88f9c514c18835654e222fbb0363ef8fbbd286`.
+
+The unchanged current APK adapter **failed** (`60bf8a`, exit 1): this candidate
+is 464 bytes larger than the preselected reference, with different unsigned
+content. It did not pass the remaining APK postgates. Both APKs contain the
+same 2,142 entry names; 11 payloads differ. Do not increase the size ceiling,
+repin the reference, normalize away these differences, or call this reproduced.
+
+Read-only diagnosis found concrete build-input/recipe differences:
+
+1. All 410 primary app sources plus the local Unity module match the reference
+   source-map texts. Hermes differs at the public API default branch: the
+   observed environment explicitly injected the URL, while the reference
+   daemon's retained environment-key list has no public API override. The
+   equal URL still leaves different compiled instructions. The historical
+   export temporary-path normalizer matches neither native HBC and is irrelevant.
+2. Three native libraries embed the Gradle header cache path. Reference uses
+   `/root/.gradle/caches/`; retry uses its artifact-specific cache. Expo core's
+   packaged difference is only 20 build-ID bytes, but its unstripped debug
+   data contains 179 cache-prefix string changes; this is actual pre-strip
+   input drift, not evidence of arbitrary random build IDs.
+3. Unity source realpaths changed from the canonical owner to the `/run/hourkey`
+   alias. Swappy `__TIMESTAMP__` changed by seven hours. The reference daemon
+   recorded no `TZ` key and logged `+0700`; its embedded source timestamp
+   matches UTC+7, while the observed environment forced UTC. Explicit
+   `Asia/Bangkok` is a proposed deterministic matching policy, not a claim
+   about the historical literal environment value.
+4. Reference Gradle ran `clean` and build in the same invocation. Expo generates
+   `ExpoInlineModulesList` during configuration; reference clean removed it,
+   whereas retry omitted clean and packaged an extra empty class. A separate
+   clean invocation is not equivalent. Unity's private `/build` is a mount root,
+   so its clean must preserve that root inode while deleting only private contents.
+5. The only actual resource-value difference is
+   `react_native_dev_server_ip`: reference `172.18.0.1`, retry `localhost`
+   (parent read-only extraction `093e68`). React Native supports an explicit
+   Gradle property; reopening networking is neither needed nor authorized.
+
+These findings justify build-environment and private-mount corrections, not
+app-formula changes or acceptance of the failed APK. No new native attempt,
+deployment, migration, key change or phone-delivery test follows from this
+diagnosis. Preserve the failed output, logs, seals and original baseline.
+The full goal's external choices, actual phone receipt/detail checks and five
+independent final signatures remain open.
+
+### Build recipe correction committed; no new APK acceptance yet
+
+Mobile commit `7253bc7f8651734de494b738e25b8f17adc9d8bc` changes only build/test
+scripts. It removes the forced public URL, pins matching UTC+7 compilation,
+privately exposes the canonical Gradle and Unity paths, pins the measured
+dev-server resource, and restores same-invocation clean with private mount-root
+preservation. Both receipt policy labels are explicitly v4; older v3 receipts
+retain their original interpretation. App source, formulas, native export,
+package/lock/config and the 311-command manifest are unchanged.
+
+Actual parent checks: full observed receipt regression `7914e5` passed,
+including real private namespace writes/read-only inputs and targeted TypeScript;
+real Gradle clean fixture `e697fa` passed baseline failure, corrected cleanup
+and four rejection cases. Independent `/root/v234_delivery_artifact_review`
+approved this implementation slice and closed the strict reader v3/v4
+compatibility finding. Reader tests passed 81 cases (`581e8e`: original 62 plus
+19 recipe cases), with syntax/type checks `341bb4`. These are scoped checks,
+not a new native run, final goal signatures or permission to release.
+
+The read-only APK adapter now pins this committed mobile source, while retaining
+the exact original APK size/unsigned hash, signer, historical exports and all
+postgates. No candidate was substituted for the reference. Copies of the failed
+retry's generated map/HBC are retained in its `observed/` directory as
+`retained-candidate.index.android.bundle.map` (20,507,030 bytes, SHA-256
+`418a75006db2eb54fded4bd203cdcf929bf4500dece63af5e681fd33c58da8fb`) and
+`retained-candidate.index.android.bundle` (7,306,492 bytes, SHA-256
+`5ed4c7bd0c2cb831cf884b6824ba3780d49341d6c8152b18035d33c0346ca528`).
+Parent copy check `207725` verified both originals and copies; neither is a
+successful reproduction. No further cleanup is authorized by the user's request
+to reduce ceremony by 50%; the separately requested exact cache cleanup awaits
+an answer. Use existing passed checks and avoid additional review frameworks.
