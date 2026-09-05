@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const MOBILE = "/root/worktrees/hourkey-mobile-zibai-v3-p0";
 // Build/test-only correction; the selected APK and historical export pins stay unchanged.
-const MOBILE_COMMIT = "3762fd72962700f215c346929260bbdf28d60082";
+const MOBILE_COMMIT = "3a7e182e44bf8aeb2556a311d03ca99a35aecfd6";
 const BUILD_TOOLS = "/usr/lib/android-sdk/build-tools/36.0.0";
 const sha = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 export const V234 = Object.freeze({
