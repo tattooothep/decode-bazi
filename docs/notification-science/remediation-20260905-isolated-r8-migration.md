@@ -1,5 +1,32 @@
 # Remediation: actual isolated R8 migration evidence
 
+## Latest bounded-session supplement
+
+The isolated runner now supplies fixed connection-startup `PGOPTIONS` with
+`lock_timeout=1s` and `statement_timeout=5s`, and verifies their effective
+`current_setting` values. Original forward/rollback SQL and all four source
+pins are unchanged. RED `f6ac5d`, 53 fake-executor groups GREEN `53d29a` (six
+new negative limit assertions within the existing fidelity group), and
+targeted TypeScript passed. Independent `/root/isolated_migration_safety_review`
+approved one fresh isolated run at runner SHA256
+`3bdd8cbafc26ba12645933bd50574eba10a49b6ce6644112a670b2a81c829d35`.
+
+Actual session `95812`, terminal `d91e48`, exited 0. From
+2026-09-05T16:24:49.444Z to 16:25:07.056Z, the original 66-call harness passed
+two forward migrations, one rollback and all seven exact SQLSTATE rejections.
+PostgreSQL 16.13 reported effective `1s` / `5s` settings. The owned no-network
+tmpfs container was removed; read-only postcheck `0a1333` confirmed its absence,
+the same running production PostgreSQL ID and unchanged r573 release.
+
+Receipt: `/root/artifacts/hourkey-r8-bounded-migration-7z2zEM/migration-01.private.json`
+SHA256: `c0c831022a544f7c3aa023fa97a78341af77cc35f6935e6a0bc8bd63d4531367`.
+The runner was dirty at recorded backend HEAD `49eb377`; its exact executed
+hash above is retained. This is per-lock/per-statement bounding, **not** a
+five-second whole-migration deadline or a production-contention test. Any
+eventual production application must explicitly use and recheck the same
+session limits; no production SQL, service setting or application changed.
+Previous runtime-function evidence remains separate and was not rerun.
+
 Goal remains **ACTIVE**. This records one successful disposable PostgreSQL test,
 not production migration, deployment, full installed-schema approval or a final
 five-reviewer signature.

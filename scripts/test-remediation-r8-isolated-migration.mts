@@ -218,6 +218,7 @@ const FIXED_ENV = Object.freeze([
   "POSTGRES_USER=decode_user", "POSTGRES_DB=postgres", "POSTGRES_HOST_AUTH_METHOD=trust",
   "PGDATA=/var/lib/postgresql/data", "LC_ALL=en_US.utf8", "TZ=UTC",
   "POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=en_US.utf8",
+  "PGOPTIONS=-c lock_timeout=1s -c statement_timeout=5s",
 ]);
 function inspectOne(execute: DockerExecutor, kind: "image" | "container", target: string): Inspection {
   let result: unknown;
@@ -432,6 +433,7 @@ function realDocker(executable: string, configDirectory: string): DockerExecutor
 }
 const FIDELITY_SQL = `SELECT json_build_object(
   'serverVersionNum',current_setting('server_version_num'),'encoding',current_setting('server_encoding'),
+  'lockTimeout',current_setting('lock_timeout'),'statementTimeout',current_setting('statement_timeout'),
   'timezone',current_setting('TimeZone'),'databaseLocale',(
     SELECT json_agg(json_build_object('name',datname,'encoding',pg_encoding_to_char(encoding),
       'collation',datcollate,'ctype',datctype) ORDER BY datname)
@@ -441,6 +443,7 @@ function checkFidelity(raw: string): unknown {
   let result: Inspection;
   try { result = JSON.parse(raw); } catch { throw new Failure("database_fidelity_json_invalid"); }
   requireCondition(result && result.serverVersionNum === "160013" && result.encoding === "UTF8" && result.timezone === "UTC" &&
+    result.lockTimeout === "1s" && result.statementTimeout === "5s" &&
     Array.isArray(result.databaseLocale) && result.databaseLocale.length === 2 &&
     JSON.stringify(result.databaseLocale.map((entry: Inspection) => entry.name)) === '["postgres","template1"]' &&
     result.databaseLocale.every((entry: Inspection) => entry.encoding === "UTF8" && entry.collation === "en_US.utf8" && entry.ctype === "en_US.utf8"),
@@ -755,10 +758,12 @@ async function runIsolated(filename: string, runtimeOnly = false): Promise<void>
     ...(runtimeOnly ? { runtimeChecks } : { originalHarness: adapter.report() }), runFailure, cleanupFailure,
     executionAdaptations: runtimeOnly ? ["Unchanged pinned forward SQL applied once in newly owned isolated cluster",
       "Actual psql login as non-superuser hourkey_app; no SET ROLE impersonation",
-      "Synthetic token fixture includes native/Expo fields; existing container ownership, no-network and cleanup guards reused"] : ["Pinned original TypeScript transpiled in memory as CommonJS; original never imported",
+      "Synthetic token fixture includes native/Expo fields; existing container ownership, no-network and cleanup guards reused",
+      "Fixed PGOPTIONS at connection startup: lock_timeout=1s and statement_timeout=5s; pinned migration SQL unchanged"] : ["Pinned original TypeScript transpiled in memory as CommonJS; original never imported",
       "Restricted require exposes assert, randomUUID, exact SQL buffers, guarded execFileSync, pinned actual model constant",
       "Exact original PID-named create/drop mapped to random owned database; no preemptive DROP, IF EXISTS or FORCE",
       "Exact original psql options plus --set=VERBOSITY=verbose; fixture/migration/assertion SQL bytes unchanged",
+      "Fixed PGOPTIONS at connection startup: lock_timeout=1s and statement_timeout=5s; no unbounded migration session",
       "Owned isolated final postgres PID1 verified before pg_isready and every SQL call; temporary entrypoint server cannot qualify",
       "Original target mapped only to newly created exact container ID; fixed local Docker socket and minimal client environment"],
     coverage: runtimeOnly ? { scope: "isolated runtime privileges and five scoped functions on synthetic fixtures only",
@@ -1055,11 +1060,16 @@ function unitTests(): void {
     assert.equal(fake.calls.some((argv) => ["container", "start", "stop", "rm", "exec"].includes(argv[0]!)), false);
   });
   check("encoding_and_locale_fidelity", () => {
-    const expected = { serverVersionNum: "160013", encoding: "UTF8", timezone: "UTC", databaseLocale: ["postgres", "template1"].map((name) =>
+    assert.ok(FIXED_ENV.includes("PGOPTIONS=-c lock_timeout=1s -c statement_timeout=5s"),
+      "migration sessions must have bounded lock and statement timeouts without rewriting pinned SQL");
+    const expected = { serverVersionNum: "160013", encoding: "UTF8", timezone: "UTC", lockTimeout: "1s", statementTimeout: "5s", databaseLocale: ["postgres", "template1"].map((name) =>
       ({ name, encoding: "UTF8", collation: "en_US.utf8", ctype: "en_US.utf8" })) };
     assert.deepEqual(checkFidelity(JSON.stringify(expected)), expected);
     assert.throws(() => checkFidelity(JSON.stringify({ ...expected, encoding: "SQL_ASCII" })));
     assert.throws(() => checkFidelity(JSON.stringify({ ...expected, timezone: "Asia/Bangkok" })));
+    for (const key of ["lockTimeout", "statementTimeout"]) for (const value of [undefined, "0", "30s"])
+      assert.throws(() => checkFidelity(JSON.stringify({ ...expected, [key]: value })),
+        "missing, disabled or longer session limits must reject");
     const wrongLocale = structuredClone(expected); wrongLocale.databaseLocale[1]!.collation = "C";
     assert.throws(() => checkFidelity(JSON.stringify(wrongLocale)));
   });
