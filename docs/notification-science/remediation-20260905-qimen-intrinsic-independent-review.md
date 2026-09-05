@@ -100,7 +100,7 @@ All completed with exit 0 and a throwing global fetch before runtime imports:
 - Existing cross-runtime intrinsic regression: 6 controls, 24 rejections.
 - Backend V4: 24 month/profile cases, 216 palaces; independent contract 70 checks;
   durable delivery 24 locale/provider/privacy combinations.
-- Mobile V4: 124 adversarial rejections, including 16 fully rebound strong/severe
+- Mobile V4: 124 adversarial rejections, plus 16 fully rebound strong/severe
   star/door selections; V2/V3 payload tests passed.
 - Mobile SDK bridge review: 78 checks, 4 bridges, no failures.
 - Production files match the reviewed commit objects; `git diff --check` passed.
