@@ -622,6 +622,20 @@ function buildAttestedSnapshot(input, schema) {
     kind, selectedTupleV3(layers[kind], v2.selectedDirection),
   ]));
   if (Object.values(selectedEvidence).some((evidence) => !evidence)) throw invalid();
+  if (schema === 4) {
+    // Recheck the producer's intrinsic policy from canonical component quality,
+    // not from caller-supplied reason codes. Seasonal strength is not goodness.
+    // Context layers are not action authorities; legacy V2/V3 remain frozen.
+    const selected = selectedEvidence.hour;
+    const expected = [];
+    for (const kind of ["deity", "door", "star"]) {
+      const quality = selected[`${kind}BaseQuality`];
+      if (quality === "severe") throw invalid();
+      if (quality === "inauspicious") expected.push(`hour_warning_INTRINSIC_${kind.toUpperCase()}_BAD`);
+    }
+    const actual = v2.hourDecision.reasonCodes.filter((code) => code.startsWith("hour_warning_INTRINSIC_"));
+    if (actual.length !== expected.length || expected.some((code) => !actual.includes(code))) throw invalid();
+  }
   const { snapshotDigest: _snapshotDigest, ...v2Base } = v2;
   const base = {
     ...v2Base,
