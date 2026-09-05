@@ -1,0 +1,799 @@
+/**
+ * Opt-in execution of the ORIGINAL pinned R8 migration test in a new disposable
+ * PostgreSQL cluster. Default/--self-test is pure: fake executors, no Docker.
+ *
+ * Run only after independent review:
+ *   node --experimental-strip-types scripts/test-remediation-r8-isolated-migration.mts \
+ *     --run --receipt /canonical/private/external/directory/new-receipt.json
+ *
+ * This is NOT a production migration, deployment, or release-readiness gate.
+ */
+import assert from "node:assert/strict";
+import crypto from "node:crypto";
+import { execFileSync as hostExecFileSync } from "node:child_process";
+import { readFileSync, realpathSync, lstatSync, statSync, openSync, writeFileSync, fsyncSync, closeSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { Script } from "node:vm";
+import ts from "typescript";
+
+type ExecOptions = { encoding: string; input: string; stdio: string[] };
+type SqlExecutor = (database: string, sql: string) => string;
+type DockerExecutor = (args: string[], input?: string) => string;
+const ROOT = realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."));
+const SELF = "scripts/test-remediation-r8-isolated-migration.mts";
+const ORIGINAL = "scripts/test-mobile-science-notifications-r8-migration.mts";
+const FORWARD = "migrations/20260904_mobile_science_notifications_r8.sql";
+const ROLLBACK = "migrations/20260904_mobile_science_notifications_r8.rollback.sql";
+const MODEL = "src/lib/astro/astronomy-fact-model-attestation.ts";
+const PINS: Record<string, string> = Object.freeze({
+  [ORIGINAL]: "bc4983b1cd5daeffedefa93ffa1a2592c26ee6a622031ebb72ba4ba23cfce558",
+  [FORWARD]: "894e1b7b1bef020eb256f65cfbf8e3309c73bd007973921695f66ba6cebdc571",
+  [ROLLBACK]: "f05ab1cf1e5ed6404d9ad89d665934e1915e7ac9d7f419a7dae1d5abd048852f",
+  [MODEL]: "7496bc1d7ab092dabdd1549854c9be91df4febf4ddf52c60cca3f5be90caecdc",
+});
+const IMAGE = "sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50";
+const LABEL = "org.hourkey.r8-isolated-migration.owner";
+const sha256 = (value: string | Buffer): string => crypto.createHash("sha256").update(value).digest("hex");
+class Failure extends Error {
+  constructor(code: string) { super(code); this.name = "R8IsolatedFailure"; }
+}
+class SqlFailure extends Failure {
+  status: number | null;
+  sqlstate: string | null;
+  constructor(status: number | null, sqlstate: string | null) {
+    super(`sql_execution_failed:${status ?? "none"}:${sqlstate ?? "none"}`);
+    this.status = status; this.sqlstate = sqlstate;
+  }
+}
+function requireCondition(value: unknown, code: string): asserts value {
+  if (!value) throw new Failure(code);
+}
+function loadPinned(): Record<string, string> {
+  return Object.freeze(Object.fromEntries(Object.entries(PINS).map(([name, digest]) => {
+    const bytes = readFileSync(path.join(ROOT, name));
+    requireCondition(sha256(bytes) === digest, `source_pin_mismatch:${name}`);
+    return [name, bytes.toString("utf8")];
+  })));
+}
+function transpile(source: string, filename: string): string {
+  const output = ts.transpileModule(source, {
+    // A virtual .cts name is required: TypeScript preserves ESM for .mts even
+    // with module=CommonJS. Source text remains the exact pinned original.
+    fileName: filename.replace(/\.(?:mts|ts)$/u, ".cts"),
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: false },
+    reportDiagnostics: true,
+  });
+  requireCondition(!output.diagnostics?.some((item) => item.category === ts.DiagnosticCategory.Error), "source_transpile_error");
+  return output.outputText;
+}
+function modelDigest(sources: Record<string, string>): string {
+  requireCondition(sha256(sources[MODEL]!) === PINS[MODEL], "model_source_pin_mismatch");
+  const exports: Record<string, unknown> = {};
+  // No module import occurs before the authority check. This exact module is
+  // only the two constant exports; it does not import the astronomy runtime.
+  new Script(transpile(sources[MODEL]!, MODEL)).runInNewContext({ exports },
+    { timeout: 1000, contextCodeGeneration: { strings: false, wasm: false } });
+  requireCondition(typeof exports.ASTRONOMY_FACT_MODEL_DIGEST === "string" && /^[0-9a-f]{64}$/u.test(exports.ASTRONOMY_FACT_MODEL_DIGEST), "model_constant_invalid");
+  return exports.ASTRONOMY_FACT_MODEL_DIGEST;
+}
+const ORIGINAL_PID = 424242;
+const originalDatabase = `mobile_science_r8_${ORIGINAL_PID}`;
+const ownedDatabase = "r8_isolated_0123456789abcdef0123456789abcdef";
+function originalArgs(db: string): string[] {
+  return ["exec", "-i", "decode-postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "decode_user", "-d", db, "-Atq"];
+}
+function options(input: string): ExecOptions {
+  return { encoding: "utf8", input, stdio: ["pipe", "pipe", "pipe"] };
+}
+const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const REJECTS: { id: string; pattern: RegExp; sqlstate: string }[] = [
+  { id: "subscription_hard_off", pattern: new RegExp(`^UPDATE mobile_science_notification_subscriptions SET enabled=true WHERE user_id='${UUID}'$`, "u"), sqlstate: "23514" },
+  { id: "producer_hard_off", pattern: /^UPDATE mobile_science_notification_producer_state SET provider_send_enabled=true$/u, sqlstate: "23514" },
+  { id: "qizheng_schema_zero", pattern: new RegExp(`^UPDATE mobile_push_tokens SET qizheng_payload_schema=1 WHERE user_id='${UUID}'$`, "u"), sqlstate: "23514" },
+  { id: "shadow_requires_approval", pattern: new RegExp(`^INSERT INTO mobile_science_notification_shadow_cohort\\(user_id,science_id,submode,enabled\\)\\n     VALUES\\('${UUID}','astronomy_fact','civil_two_hour',true\\)$`, "u"), sqlstate: "23514" },
+  { id: "single_primary_endpoint", pattern: new RegExp(`^INSERT INTO mobile_science_notification_endpoints\\(chain_id,token_id,installation_id,audience_binding,primary_endpoint\\)\\n     VALUES\\('${UUID}','${UUID}',gen_random_uuid\\(\\),'B8c7wP4nY2kLm8QrV5sT1u',true\\)$`, "u"), sqlstate: "23505" },
+  { id: "immutable_update", pattern: /^UPDATE mobile_science_notification_occurrences SET snapshot='\{"changed":true\}'$/u, sqlstate: "23514" },
+  { id: "immutable_delete", pattern: /^DELETE FROM mobile_science_notification_occurrences$/u, sqlstate: "23514" },
+];
+function createAdapter(execute: SqlExecutor, database: string, pid: number, sources = loadPinned()) {
+  requireCondition(/^r8_isolated_[0-9a-f]{32}$/u.test(database), "unsafe_owned_database");
+  requireCondition(Number.isSafeInteger(pid) && pid > 0, "unsafe_original_pid");
+  const original = `mobile_science_r8_${pid}`;
+  let created = false;
+  let dropped = false;
+  const fatal: string[] = [];
+  const statements: { kind: string; sha256: string; outcome: string; sqlstate?: string }[] = [];
+  const rejected = new Set<string>();
+  const fail = (code: string): never => { fatal.push(code); throw new Failure(code); };
+  function invoke(db: string, sql: string, kind: string): string {
+    const record: (typeof statements)[number] = { kind, sha256: sha256(sql), outcome: "started" };
+    statements.push(record);
+    const expected = REJECTS.find((candidate) => candidate.pattern.test(sql));
+    try {
+      const result = execute(db, sql);
+      requireCondition(typeof result === "string", "executor_return_type");
+      record.outcome = "success";
+      if (expected) fail(`expected_sql_rejection_missing:${expected.id}`);
+      return result;
+    } catch (error) {
+      if (expected && error instanceof SqlFailure && error.status === 3 && error.sqlstate === expected.sqlstate) {
+        if (rejected.has(expected.id)) fail(`duplicate_expected_rejection:${expected.id}`);
+        rejected.add(expected.id);
+        record.outcome = "expected_rejection"; record.sqlstate = error.sqlstate;
+        throw new Failure(`expected_sql_rejection:${expected.id}`); // Original rejectsSql catches ONLY this acceptable failure.
+      }
+      record.outcome = "fatal";
+      fail(error instanceof Failure ? error.message : "unclassified_executor_failure");
+    }
+  }
+  return {
+    fail,
+    execFileSync(command: string, args: string[], config: ExecOptions) {
+      if (command !== "docker" || !Array.isArray(args) || args.length !== 12 ||
+          JSON.stringify(args) !== JSON.stringify(originalArgs(args[10]!))) fail("unrecognized_original_argv");
+      if (!config || JSON.stringify(Object.keys(config).sort()) !== '["encoding","input","stdio"]' ||
+          config.encoding !== "utf8" || typeof config.input !== "string" ||
+          JSON.stringify(config.stdio) !== '["pipe","pipe","pipe"]') fail("unrecognized_original_exec_options");
+      const sql = config.input;
+      if (args[10] === "postgres") {
+        if (sql === `DROP DATABASE IF EXISTS ${original} WITH (FORCE); CREATE DATABASE ${original};`) {
+          if (created || dropped || fatal.length) fail("duplicate_or_failed_create");
+          // No preemptive DROP, IF EXISTS, or FORCE. A collision must fail closed.
+          const output = invoke("postgres", `CREATE DATABASE ${database};`, "owned_database_create");
+          created = true;
+          return output;
+        }
+        if (sql === `DROP DATABASE IF EXISTS ${original} WITH (FORCE);`) {
+          if (!created || dropped) fail("drop_without_owned_database");
+          const output = invoke("postgres", `DROP DATABASE ${database};`, "owned_database_drop");
+          dropped = true;
+          return output;
+        }
+        fail("unrecognized_database_lifecycle");
+      }
+      if (args[10] !== original || !created || dropped || fatal.length) fail("unrecognized_or_inactive_database_target");
+      // SQL fixtures, both forward runs, rollback, and every assertion are byte-identical.
+      return invoke(database, sql, sql === sources[FORWARD] ? "forward" : sql === sources[ROLLBACK] ? "rollback" : "original_fixture_or_assertion");
+    },
+    assertHealthy(complete = false) {
+      requireCondition(fatal.length === 0, `latched_adapter_failure:${fatal[0]}`);
+      if (complete) {
+        requireCondition(created && dropped, "original_lifecycle_incomplete");
+        requireCondition(rejected.size === 7, "original_expected_rejections_incomplete");
+        requireCondition(statements.filter((entry) => entry.kind === "forward").length === 2, "forward_count_not_two");
+        requireCondition(statements.filter((entry) => entry.kind === "rollback").length === 1, "rollback_count_not_one");
+      }
+    },
+    report() {
+      return { statements, counts: { totalCalls: statements.length, forwardAttempts: statements.filter((entry) => entry.kind === "forward").length,
+        successfulForwards: statements.filter((entry) => entry.kind === "forward" && entry.outcome === "success").length,
+        rollbackAttempts: statements.filter((entry) => entry.kind === "rollback").length,
+        successfulRollbacks: statements.filter((entry) => entry.kind === "rollback" && entry.outcome === "success").length,
+        confirmedExpectedRejections: rejected.size },
+        transcriptSha256: sha256(JSON.stringify(statements)), expectedRejects: [...rejected], fatal: [...fatal], created, dropped };
+    },
+  };
+}
+function runOriginal(adapter: ReturnType<typeof createAdapter>, pid: number, sources: Record<string, string>): void {
+  for (const [name, digest] of Object.entries(PINS)) requireCondition(sha256(sources[name]!) === digest, "execution_source_pin_mismatch");
+  const output = transpile(sources[ORIGINAL]!, ORIGINAL);
+  const ASTRONOMY_FACT_MODEL_DIGEST = modelDigest(sources);
+  const logs: string[] = [];
+  const restrictedRequire = (name: string): unknown => {
+    switch (name) {
+      case "node:assert/strict": return Object.freeze({ default: assert });
+      case "node:crypto": return Object.freeze({ default: Object.freeze({ randomUUID: () => crypto.randomUUID() }) });
+      case "node:child_process": return Object.freeze({ execFileSync: adapter.execFileSync });
+      case "node:fs": return Object.freeze({ readFileSync: (name: string, encoding: string) => {
+        if ((name !== FORWARD && name !== ROLLBACK) || encoding !== "utf8") adapter.fail("restricted_fs_rejected");
+        return sources[name];
+      } });
+      case "../src/lib/astro/astronomy-fact-model-attestation": return Object.freeze({ ASTRONOMY_FACT_MODEL_DIGEST });
+      default: return adapter.fail("restricted_require_rejected");
+    }
+  };
+  try {
+    // The VM is an execution adapter, not an arbitrary-code security boundary.
+    // Execution authority is the exact pinned, fully reviewed original source.
+    new Script(output, { filename: ORIGINAL }).runInNewContext({
+      require: restrictedRequire, exports: {}, process: Object.freeze({ pid }),
+      console: Object.freeze({ log: (value: string) => { logs.push(value); } }),
+    }, { timeout: 180_000, contextCodeGeneration: { strings: false, wasm: false } });
+  } finally {
+    adapter.assertHealthy(); // Catches guard/infrastructure failures swallowed by the original's catch blocks.
+  }
+  adapter.assertHealthy(true);
+  requireCondition(JSON.stringify(logs) === '["MOBILE_SCIENCE_NOTIFICATIONS_R8_MIGRATION_OK hard-off immutable"]', "original_success_marker_missing");
+}
+// Docker inspect is untrusted JSON. Every field below is checked before use.
+type Inspection = Record<string, any>;
+const TMPFS = Object.freeze({
+  "/var/lib/postgresql/data": "rw,nosuid,nodev,size=402653184,uid=70,gid=70,mode=0700",
+  "/var/run/postgresql": "rw,nosuid,nodev,size=16777216,uid=70,gid=70,mode=0775",
+  "/tmp": "rw,nosuid,nodev,size=16777216,uid=70,gid=70,mode=1777",
+});
+const FIXED_ENV = Object.freeze([
+  "POSTGRES_USER=decode_user", "POSTGRES_DB=postgres", "POSTGRES_HOST_AUTH_METHOD=trust",
+  "PGDATA=/var/lib/postgresql/data", "LC_ALL=en_US.utf8", "TZ=UTC",
+  "POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=en_US.utf8",
+]);
+function inspectOne(execute: DockerExecutor, kind: "image" | "container", target: string): Inspection {
+  let result: unknown;
+  try { result = JSON.parse(execute([kind, "inspect", target])); }
+  catch { throw new Failure(`${kind}_inspection_failed`); }
+  requireCondition(Array.isArray(result) && result.length === 1 && result[0] && typeof result[0] === "object", "invalid_inspection_shape");
+  return result[0];
+}
+function checkIdentity(inspection: Inspection, id: string, name: string, owner: string): void {
+  requireCondition(/^[0-9a-f]{64}$/u.test(id) && /^[0-9a-f]{32}$/u.test(owner) && name === `hourkey-r8-isolated-${owner}`, "invalid_owned_identity");
+  requireCondition(inspection.Id === id && inspection.Name === `/${name}` && inspection.Image === IMAGE &&
+    inspection.Config?.Image === IMAGE && inspection.Config?.Labels?.[LABEL] === owner, "owned_container_identity_mismatch");
+}
+function expectedEnvironment(image: Inspection): string[] {
+  requireCondition(Array.isArray(image.Config?.Env) && image.Config.Env.every((entry: unknown) => typeof entry === "string"), "image_environment_invalid");
+  const values = new Map<string, string>();
+  for (const entry of [...image.Config.Env, ...FIXED_ENV]) values.set(entry.split("=", 1)[0], entry);
+  return [...values.values()].sort();
+}
+function checkIsolation(inspection: Inspection, image: Inspection): void {
+  const config = inspection.Config;
+  const host = inspection.HostConfig;
+  requireCondition(config && host && inspection.State, "isolation_metadata_missing");
+  const empty = (value: unknown) => value == null || (Array.isArray(value) ? value.length === 0 : typeof value === "object" && Object.keys(value).length === 0);
+  requireCondition(host.NetworkMode === "none" && host.ReadonlyRootfs === true && host.Privileged === false &&
+    host.PublishAllPorts === false && host.AutoRemove === false && host.RestartPolicy?.Name === "no", "unsafe_container_mode");
+  requireCondition(config.User === "70:70" && config.StopSignal === "SIGINT" && config.OpenStdin === false && config.Tty === false &&
+    JSON.stringify(config.Entrypoint) === '["docker-entrypoint.sh"]' && JSON.stringify(config.Cmd) === '["postgres"]' &&
+    JSON.stringify(config.Healthcheck?.Test) === '["NONE"]', "unsafe_container_process");
+  requireCondition(host.Memory === 536870912 && host.MemorySwap === 536870912 && host.NanoCpus === 1_000_000_000 &&
+    host.PidsLimit === 128 && host.ShmSize === 16777216, "resource_bounds_mismatch");
+  requireCondition(JSON.stringify(host.CapDrop) === '["ALL"]' && empty(host.CapAdd) &&
+    JSON.stringify(host.SecurityOpt) === '["no-new-privileges:true"]' && host.LogConfig?.Type === "none", "unsafe_security_options");
+  requireCondition([host.Binds, host.VolumesFrom, host.Mounts, host.PortBindings, host.Devices, host.DeviceRequests,
+    host.ExtraHosts, host.Links, host.Dns, host.DnsSearch, host.DnsOptions].every(empty), "host_mount_port_device_or_network_injection");
+  requireCondition(!host.PidMode && host.IpcMode === "private" && host.CgroupnsMode !== "host" && !host.UTSMode && !host.UsernsMode,
+    "host_namespace_injection");
+  requireCondition(JSON.stringify(Object.entries(host.Tmpfs ?? {}).sort()) === JSON.stringify(Object.entries(TMPFS).sort()), "tmpfs_bounds_mismatch");
+  requireCondition(Array.isArray(inspection.Mounts) && inspection.Mounts.every((mount: Inspection) =>
+    mount.Type === "tmpfs" && Object.hasOwn(TMPFS, mount.Destination) && !mount.Source && mount.RW === true), "unexpected_material_mount");
+  requireCondition(JSON.stringify(Object.keys(config.Volumes ?? {}).sort()) === '["/var/lib/postgresql/data"]', "unexpected_image_volume");
+  requireCondition(Array.isArray(config.Env) && JSON.stringify([...config.Env].sort()) === JSON.stringify(expectedEnvironment(image)), "container_environment_mismatch");
+  const exposed = Object.keys(image.Config?.ExposedPorts ?? {}).sort();
+  requireCondition(JSON.stringify(Object.keys(config.ExposedPorts ?? {}).sort()) === JSON.stringify(exposed), "unexpected_exposed_port");
+  requireCondition(Object.entries(inspection.NetworkSettings?.Ports ?? {}).every(([name, binding]) => exposed.includes(name) && binding === null) &&
+    Object.keys(inspection.NetworkSettings?.Networks ?? {}).every((name) => name === "none"), "unexpected_container_network");
+}
+function createArguments(name: string, owner: string): string[] {
+  requireCondition(/^[0-9a-f]{32}$/u.test(owner) && name === `hourkey-r8-isolated-${owner}`, "invalid_create_identity");
+  return ["create", "--pull=never", `--name=${name}`, `--label=${LABEL}=${owner}`,
+    "--network=none", "--read-only", "--user=70:70", "--cap-drop=ALL", "--security-opt=no-new-privileges:true",
+    "--cpus=1", "--memory=512m", "--memory-swap=512m", "--pids-limit=128", "--shm-size=16m", "--ipc=private",
+    "--restart=no", "--log-driver=none", "--no-healthcheck", "--stop-signal=SIGINT",
+    ...Object.entries(TMPFS).map(([destination, value]) => `--tmpfs=${destination}:${value}`),
+    ...FIXED_ENV.map((entry) => `--env=${entry}`), IMAGE];
+}
+function createLifecycle(execute: DockerExecutor, owner: string, database = ownedDatabase) {
+  requireCondition(/^r8_isolated_[0-9a-f]{32}$/u.test(database), "unsafe_lifecycle_database");
+  const name = `hourkey-r8-isolated-${owner}`;
+  let id: string | null = null;
+  let image: Inspection | null = null;
+  let removed = false;
+  let finalPid1Checks = 0;
+  let initializationPid1Checks = 0;
+  const actions: string[] = [];
+  const sqlCalls: { targetScope: string; sha256: string }[] = [];
+  function owned(isolation = false): Inspection {
+    requireCondition(id && !removed, "container_not_owned_or_removed");
+    const inspection = inspectOne(execute, "container", id);
+    checkIdentity(inspection, id, name, owner);
+    if (isolation) { requireCondition(image, "image_not_verified"); checkIsolation(inspection, image); }
+    return inspection;
+  }
+  function finalPostgresPid1(): boolean {
+    // The pinned entrypoint starts a temporary socket-only PostgreSQL child
+    // while PID 1 is still bash. That child can pass pg_isready before initdb
+    // setup finishes. Only the final exec-to-postgres is ready for fixture SQL.
+    requireCondition(owned(true).State.Running === true, "container_not_running");
+    const comm = execute(["exec", id!, "cat", "/proc/1/comm"]);
+    if (comm === "bash\n" || comm === "docker-entrypoi\n") { initializationPid1Checks += 1; return false; }
+    requireCondition(comm === "postgres\n", "unexpected_pid1_process");
+    finalPid1Checks += 1;
+    return true;
+  }
+  return {
+    createAndStart() {
+      requireCondition(!id, "duplicate_container_create");
+      image = inspectOne(execute, "image", IMAGE); // Exact local ID. No pull and no tag resolution.
+      requireCondition(image.Id === IMAGE && image.Os === "linux" &&
+        JSON.stringify(Object.keys(image.Config?.Volumes ?? {})) === '["/var/lib/postgresql/data"]' &&
+        JSON.stringify(image.Config?.Entrypoint) === '["docker-entrypoint.sh"]' && JSON.stringify(image.Config?.Cmd) === '["postgres"]', "pinned_image_config_mismatch");
+      expectedEnvironment(image);
+      const result = execute(createArguments(name, owner)).trim();
+      requireCondition(/^[0-9a-f]{64}$/u.test(result), "create_returned_no_exact_id_cleanup_unresolved");
+      id = result;
+      actions.push("created_exact_id");
+      requireCondition(owned(true).State.Running === false, "unexpected_running_before_start");
+      execute(["start", id]);
+      actions.push("started_exact_id");
+    },
+    ready(): boolean {
+      if (!finalPostgresPid1()) return false;
+      try {
+        execute(["exec", id!, "pg_isready", "-q", "-h", "/var/run/postgresql", "-U", "decode_user", "-d", "postgres"]);
+        return true;
+      } catch (error) {
+        if (error instanceof SqlFailure && error.status === 1 && error.sqlstate === null) return false;
+        if (error instanceof SqlFailure && error.status === 2 && error.sqlstate === null) return false;
+        throw error;
+      }
+    },
+    sql(targetDatabase: string, sql: string): string {
+      requireCondition(targetDatabase === "postgres" || targetDatabase === database, "unsafe_psql_target");
+      requireCondition(finalPostgresPid1(), "postgres_entrypoint_initialization_in_progress");
+      sqlCalls.push({ targetScope: targetDatabase === "postgres" ? "isolated_cluster_catalog" : "owned_fixture_database", sha256: sha256(sql) });
+      return execute(["exec", "-i", id!, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "decode_user", "-d", targetDatabase, "-Atq", "--set=VERBOSITY=verbose"], sql);
+    },
+    cleanup() {
+      if (!id) { actions.push("no_exact_id_available_no_cleanup_attempted"); return; }
+      requireCondition(!removed, "duplicate_container_cleanup");
+      let inspection = owned(); // Identity required even if initial isolation checks failed.
+      if (inspection.State?.Running === true) {
+        // SIGINT is PostgreSQL fast/graceful shutdown. -1 forbids Docker's timeout SIGKILL escalation.
+        // The client itself has a bounded timeout; on failure leave evidence, do not force-remove.
+        execute(["stop", "--timeout=-1", id]);
+        actions.push("graceful_stop_exact_id");
+        inspection = owned();
+      }
+      requireCondition(inspection.State?.Running === false, "cleanup_still_running");
+      owned(); // Fresh identity check immediately before the sole non-force removal.
+      requireCondition(execute(["rm", id]).trim() === id, "cleanup_remove_receipt_mismatch");
+      removed = true;
+      actions.push("nonforce_remove_exact_id");
+    },
+    report() {
+      return { containerId: id, name, ownerLabel: LABEL, owner, imageId: IMAGE, imageConfigSha256: image ? sha256(JSON.stringify(image.Config)) : null,
+        createArgumentsSha256: sha256(JSON.stringify(createArguments(name, owner))), actions: [...actions], sqlCalls,
+        pid1Checks: { expectedFinalComm: "postgres", finalPid1Checks, initializationPid1Checks }, removed };
+    },
+  };
+}
+function absent(filename: string): void {
+  try { lstatSync(filename); }
+  catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return; throw new Failure("path_absence_check_failed"); }
+  throw new Failure("path_already_exists");
+}
+function receiptDestination(filename: string): { filename: string; directory: string; device: number; inode: number } {
+  requireCondition(path.isAbsolute(filename) && path.normalize(filename) === filename, "receipt_requires_canonical_absolute_path");
+  const directory = path.dirname(filename);
+  requireCondition(realpathSync(directory) === directory && !filename.startsWith(`${ROOT}/`) && directory !== ROOT,
+    "receipt_requires_external_canonical_directory");
+  const metadata = statSync(directory);
+  requireCondition(metadata.isDirectory() && metadata.uid === process.getuid?.() && (metadata.mode & 0o077) === 0,
+    "receipt_directory_requires_current_owner_private_permissions");
+  absent(filename);
+  return { filename, directory, device: metadata.dev, inode: metadata.ino };
+}
+function writeReceipt(destination: ReturnType<typeof receiptDestination>, value: unknown): void {
+  const rechecked = receiptDestination(destination.filename);
+  requireCondition(rechecked.device === destination.device && rechecked.inode === destination.inode, "receipt_directory_changed");
+  const descriptor = openSync(destination.filename, "wx", 0o600);
+  try { writeFileSync(descriptor, `${JSON.stringify(value, null, 2)}\n`, "utf8"); fsyncSync(descriptor); }
+  finally { closeSync(descriptor); }
+}
+function runtimeAuthority(sources: Record<string, string>) {
+  requireCondition(!process.env.NODE_OPTIONS && !process.env.NODE_PATH && !process.env.LD_PRELOAD && !process.env.LD_LIBRARY_PATH,
+    "unattested_runtime_injection_environment");
+  requireCondition(process.execArgv.includes("--experimental-strip-types") && process.execArgv.every((value) =>
+    value === "--experimental-strip-types" || value === "--no-warnings"), "unattested_runtime_loader_arguments");
+  const require = createRequire(import.meta.url);
+  const typescriptEntry = realpathSync(require.resolve("typescript"));
+  const loadedCommonJs = Object.keys(require.cache).map((filename) => realpathSync(filename)).sort();
+  requireCondition(loadedCommonJs.includes(typescriptEntry) && loadedCommonJs.every((filename) =>
+    filename.startsWith(`${path.dirname(path.dirname(typescriptEntry))}/`)), "unattested_commonjs_runtime_dependency");
+  const files = [SELF, ...Object.keys(PINS), "package.json", "package-lock.json"].map((name) => ({
+    path: name, sha256: sha256(readFileSync(path.join(ROOT, name))),
+  }));
+  const nodeExecutable = realpathSync(process.execPath);
+  const dockerExecutable = realpathSync("/usr/bin/docker");
+  const head = hostExecFileSync("/usr/bin/git", ["-C", ROOT, "rev-parse", "HEAD"], {
+    encoding: "utf8", timeout: 5000, env: { PATH: "/usr/bin:/bin", GIT_CONFIG_NOSYSTEM: "1" }, stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+  requireCondition(/^[0-9a-f]{40}$/u.test(head), "git_head_invalid");
+  return {
+    root: ROOT, head, files, modelDigest: modelDigest(sources),
+    originalTranspiledSha256: sha256(transpile(sources[ORIGINAL]!, ORIGINAL)), modelTranspiledSha256: sha256(transpile(sources[MODEL]!, MODEL)),
+    transpilation: { virtualFilenameExtension: ".cts", target: "ES2022", module: "CommonJS", esModuleInterop: false },
+    node: { version: process.version, executable: nodeExecutable, sha256: sha256(readFileSync(nodeExecutable)), execArgv: process.execArgv },
+    typescript: { version: ts.version, files: [...loadedCommonJs, require.resolve("typescript/package.json")].map((filename) => ({ path: filename, sha256: sha256(readFileSync(filename)) })) },
+    dockerClient: { executable: dockerExecutable, sha256: sha256(readFileSync(dockerExecutable)), socket: "unix:///var/run/docker.sock", timeoutMs: 30_000,
+      environmentKeys: ["PATH", "DOCKER_CONFIG"], inheritedEnvironment: false },
+    builtins: ["node:assert/strict", "node:crypto", "node:child_process", "node:fs", "node:path", "node:url", "node:module", "node:vm"],
+  };
+}
+function realDocker(executable: string, configDirectory: string): DockerExecutor {
+  return (args, input) => {
+    try {
+      return hostExecFileSync(executable, ["--host=unix:///var/run/docker.sock", `--config=${configDirectory}`, ...args], {
+        encoding: "utf8", input, stdio: ["pipe", "pipe", "pipe"], timeout: 30_000, maxBuffer: 1_048_576,
+        env: { PATH: "/usr/bin:/bin", DOCKER_CONFIG: configDirectory },
+      });
+    } catch (error) {
+      // Never forward execFileSync's error: it contains the raw SQL/fixture data.
+      const failure = error as { status?: number; stderr?: string | Buffer };
+      const stderr = typeof failure.stderr === "string" ? failure.stderr : Buffer.isBuffer(failure.stderr) ? failure.stderr.toString("utf8") : "";
+      const sqlstate = /\bERROR:\s+([0-9A-Z]{5}):/u.exec(stderr)?.[1] ?? null;
+      throw new SqlFailure(Number.isInteger(failure.status) ? failure.status! : null, sqlstate);
+    }
+  };
+}
+const FIDELITY_SQL = `SELECT json_build_object(
+  'serverVersionNum',current_setting('server_version_num'),'encoding',current_setting('server_encoding'),
+  'timezone',current_setting('TimeZone'),'databaseLocale',(
+    SELECT json_agg(json_build_object('name',datname,'encoding',pg_encoding_to_char(encoding),
+      'collation',datcollate,'ctype',datctype) ORDER BY datname)
+    FROM pg_database WHERE datname IN ('postgres','template1')
+  ))::text;`;
+function checkFidelity(raw: string): unknown {
+  let result: Inspection;
+  try { result = JSON.parse(raw); } catch { throw new Failure("database_fidelity_json_invalid"); }
+  requireCondition(result && result.serverVersionNum === "160013" && result.encoding === "UTF8" && result.timezone === "UTC" &&
+    Array.isArray(result.databaseLocale) && result.databaseLocale.length === 2 &&
+    JSON.stringify(result.databaseLocale.map((entry: Inspection) => entry.name)) === '["postgres","template1"]' &&
+    result.databaseLocale.every((entry: Inspection) => entry.encoding === "UTF8" && entry.collation === "en_US.utf8" && entry.ctype === "en_US.utf8"),
+    "database_fidelity_mismatch");
+  return result;
+}
+async function runIsolated(filename: string): Promise<void> {
+  const destination = receiptDestination(filename); // Every preflight occurs before Docker.
+  const sources = loadPinned();
+  const authority = runtimeAuthority(sources);
+  const owner = crypto.randomBytes(16).toString("hex");
+  const database = `r8_isolated_${crypto.randomBytes(16).toString("hex")}`;
+  const configDirectory = path.join(destination.directory, `uncreated-r8-docker-config-${owner}`);
+  absent(configDirectory); // Docker only reads this deliberately nonexistent config; no ambient auth/context.
+  const lifecycle = createLifecycle(realDocker(authority.dockerClient.executable, configDirectory), owner, database);
+  const adapter = createAdapter(lifecycle.sql, database, process.pid, sources);
+  const startedAt = new Date().toISOString();
+  let runFailure: string | null = null;
+  let cleanupFailure: string | null = null;
+  let fidelity: unknown = null;
+  try {
+    lifecycle.createAndStart();
+    let ready = false;
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      if (lifecycle.ready()) { ready = true; break; }
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+    }
+    requireCondition(ready, "isolated_postgres_readiness_timeout");
+    fidelity = checkFidelity(lifecycle.sql("postgres", FIDELITY_SQL));
+    // This role exists ONLY inside the newly owned cluster, never on a shared server.
+    lifecycle.sql("postgres", "CREATE ROLE hourkey_app NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;");
+    runOriginal(adapter, process.pid, sources);
+  } catch (error) {
+    runFailure = error instanceof Failure ? error.message : "original_assertion_or_unclassified_run_failure";
+  } finally {
+    try { lifecycle.cleanup(); }
+    catch (error) { cleanupFailure = error instanceof Failure ? error.message : "unclassified_cleanup_failure"; }
+  }
+  const container = lifecycle.report();
+  const success = runFailure === null && cleanupFailure === null && container.removed;
+  const receipt = {
+    schema: "hourkey-r8-isolated-original-migration-v1", evidenceKind: "actual_isolated_postgresql", success,
+    startedAt, finishedAt: new Date().toISOString(), authority, isolation: container, databaseFidelity: fidelity,
+    originalHarness: adapter.report(), runFailure, cleanupFailure,
+    executionAdaptations: ["Pinned original TypeScript transpiled in memory as CommonJS; original never imported",
+      "Restricted require exposes assert, randomUUID, exact SQL buffers, guarded execFileSync, pinned actual model constant",
+      "Exact original PID-named create/drop mapped to random owned database; no preemptive DROP, IF EXISTS or FORCE",
+      "Exact original psql options plus --set=VERBOSITY=verbose; fixture/migration/assertion SQL bytes unchanged",
+      "Owned isolated final postgres PID1 verified before pg_isready and every SQL call; temporary entrypoint server cannot qualify",
+      "Original target mapped only to newly created exact container ID; fixed local Docker socket and minimal client environment"],
+    coverage: { requiredForwardRuns: 2, requiredRollbackRuns: 1, requiredSqlRejections: REJECTS.map(({ id, sqlstate }) => ({ id, sqlstate })),
+      scope: "Only the original pinned harness assertions on its minimal disposable schema; not full production schema or runtime-role proof",
+      exclusions: ["Transferred-binding function execution: original fixture lacks expo_push_token/device_push_token",
+        "Broad privilege checks beyond original SELECT and INSERT/UPDATE/DELETE checks",
+        "Production migration application, provider credentials, real deliveries, phone receipts and release readiness"] },
+  };
+  try { writeReceipt(destination, receipt); } // New canonical external private file only, exclusive creation.
+  catch {
+    console.error(JSON.stringify({ status: "R8_ISOLATED_RECEIPT_WRITE_FAILED", receipt: destination.filename,
+      containerId: container.containerId, removed: container.removed, runFailure, cleanupFailure }));
+    throw new Failure("private_receipt_write_failed_or_incomplete");
+  }
+  console.log(JSON.stringify({ status: success ? "R8_ISOLATED_ORIGINAL_MIGRATION_OK" : "R8_ISOLATED_ORIGINAL_MIGRATION_FAILED",
+    receipt: destination.filename, containerId: container.containerId, removed: container.removed, runFailure, cleanupFailure }));
+  requireCondition(success, "isolated_run_or_cleanup_failed_see_private_receipt");
+}
+function parseCli(args: string[]): { mode: "self-test" } | { mode: "run"; receipt: string } {
+  if (args.length === 0 || JSON.stringify(args) === '["--self-test"]') return { mode: "self-test" };
+  if (args.length === 3 && args[0] === "--run" && args[1] === "--receipt" && path.isAbsolute(args[2]!)) return { mode: "run", receipt: args[2]! };
+  throw new Failure("usage_requires_self_test_or_explicit_run_and_absolute_new_private_receipt");
+}
+function unitTests(): void {
+  const sources = loadPinned();
+  let checks = 0;
+  function check(name: string, action: () => void) {
+    try { action(); checks += 1; }
+    catch (error) { throw new Failure(`unit_failed:${name}:${error instanceof Failure ? error.message : (error as Error).name}`); }
+  }
+  const calls: [string, string][] = [];
+  const adapter = createAdapter((db, sql) => { calls.push([db, sql]); return ""; }, ownedDatabase, ORIGINAL_PID);
+  adapter.execFileSync("docker", originalArgs("postgres"), options(`DROP DATABASE IF EXISTS ${originalDatabase} WITH (FORCE); CREATE DATABASE ${originalDatabase};`));
+  assert.deepEqual(calls, [["postgres", `CREATE DATABASE ${ownedDatabase};`]], "replace only original lifecycle; never execute its preemptive DROP or FORCE");
+  assert.throws(() => adapter.execFileSync("docker", originalArgs("production"), options("SELECT 1")));
+  assert.throws(() => adapter.assertHealthy(), "swallowed guard failures remain fatal");
+  assert.throws(() => checkIdentity({ Id: "existing-production-id" }, "a".repeat(64), "r8-test", "owned-label"),
+    "refuse mismatched container identity before start, SQL, stop, or removal");
+  checks += 2;
+  const createSql = `DROP DATABASE IF EXISTS ${originalDatabase} WITH (FORCE); CREATE DATABASE ${originalDatabase};`;
+  const dropSql = `DROP DATABASE IF EXISTS ${originalDatabase} WITH (FORCE);`;
+  for (const [name, command, argv, config] of [
+    ["wrong_executable", "psql", originalArgs("postgres"), options(createSql)],
+    ["wrong_container", "docker", originalArgs("postgres").map((value) => value === "decode-postgres" ? "production" : value), options(createSql)],
+    ["wrong_user", "docker", originalArgs("postgres").map((value) => value === "decode_user" ? "postgres" : value), options(createSql)],
+    ["extra_argv", "docker", [...originalArgs("postgres"), "--host=production"], options(createSql)],
+    ["extra_options", "docker", originalArgs("postgres"), { ...options(createSql), env: {} }],
+    ["changed_lifecycle", "docker", originalArgs("postgres"), options(`${createSql} SELECT 1;`)],
+    ["drop_before_create", "docker", originalArgs("postgres"), options(dropSql)],
+    ["foreign_database", "docker", originalArgs("production"), options("SELECT 1")],
+  ] as [string, string, string[], ExecOptions][]) check(name, () => {
+    let invoked = 0;
+    const target = createAdapter(() => { invoked += 1; return ""; }, ownedDatabase, ORIGINAL_PID, sources);
+    assert.throws(() => target.execFileSync(command, argv, config));
+    assert.equal(invoked, 0);
+    assert.throws(() => target.assertHealthy());
+  });
+  check("database_collision_never_dropped", () => {
+    const sqls: string[] = [];
+    const target = createAdapter((_db, sql) => { sqls.push(sql); throw new SqlFailure(3, "42P04"); }, ownedDatabase, ORIGINAL_PID, sources);
+    assert.throws(() => target.execFileSync("docker", originalArgs("postgres"), options(createSql)));
+    assert.throws(() => target.execFileSync("docker", originalArgs("postgres"), options(dropSql)));
+    assert.equal(sqls.length, 1); assert.doesNotMatch(sqls[0]!, /DROP|FORCE/u);
+    assert.throws(() => target.assertHealthy());
+  });
+  for (const [name, error] of [
+    ["infrastructure_not_rejection", new SqlFailure(1, null)],
+    ["wrong_sqlstate_not_rejection", new SqlFailure(3, "08006")],
+    ["wrong_status_not_rejection", new SqlFailure(1, "23514")],
+    ["unknown_error_not_rejection", new Error("private fixture must not appear")],
+  ] as [string, Error][]) check(name, () => {
+    const target = createAdapter((_db, sql) => { if (sql.startsWith("CREATE DATABASE")) return ""; throw error; }, ownedDatabase, ORIGINAL_PID, sources);
+    target.execFileSync("docker", originalArgs("postgres"), options(createSql));
+    try { target.execFileSync("docker", originalArgs(originalDatabase), options("UPDATE mobile_science_notification_producer_state SET provider_send_enabled=true")); } catch { /* Simulate original rejectsSql. */ }
+    assert.throws(() => target.assertHealthy());
+    assert.equal(target.report().expectedRejects.length, 0);
+    assert.doesNotMatch(JSON.stringify(target.report()), /private fixture/u);
+  });
+  check("expected_rejection_missing_stays_fatal", () => {
+    const target = createAdapter(() => "", ownedDatabase, ORIGINAL_PID, sources);
+    target.execFileSync("docker", originalArgs("postgres"), options(createSql));
+    assert.throws(() => target.execFileSync("docker", originalArgs(originalDatabase), options("DELETE FROM mobile_science_notification_occurrences")));
+    assert.throws(() => target.assertHealthy());
+  });
+  check("unchanged_complete_original_control_flow", () => {
+    // Simulated SQL responses exercise the ORIGINAL JS assertions and adapter.
+    // These are not PostgreSQL results, and are never emitted as a receipt.
+    const fixtureId = "00000000-0000-4000-8000-000000000001";
+    const audience = "A".repeat(32);
+    let deleted = false;
+    const sqls: string[] = [];
+    const target = createAdapter((_db, sql) => {
+      sqls.push(sql);
+      const reject = REJECTS.find((item) => item.pattern.test(sql));
+      if (reject) throw new SqlFailure(3, reject.sqlstate);
+      if (sql.startsWith("SELECT source_digest")) return modelDigest(sources);
+      if (sql.startsWith("SELECT has_table_privilege")) return sql.endsWith("'SELECT')") ? "t" : "f";
+      if (sql.startsWith("SELECT has_function_privilege")) return "t";
+      if (sql.includes("RETURNING id") || sql.includes("RETURNING chain_id")) return fixtureId;
+      if (sql.startsWith("SELECT astronomy_fact_audience_binding")) return audience;
+      if (sql.startsWith("SELECT hourkey_r8_rebind_primary_token")) return "1";
+      if (sql.startsWith("SELECT primary_token_id")) return fixtureId;
+      if (sql.startsWith("SELECT token_id::text")) return `${fixtureId}:${audience}:2`;
+      if (sql.includes("SELECT jsonb_build_object")) return "{\"simulated\":true}";
+      if (sql.startsWith("DELETE FROM users")) { deleted = true; return ""; }
+      if (sql === "SELECT count(*) FROM mobile_science_notification_occurrences") return deleted ? "0" : "1";
+      if (sql.startsWith("SELECT count(*)")) return "0";
+      if (sql.startsWith("SELECT lifecycle_state")) return "rollback";
+      if (sql.startsWith("SELECT active")) return "f";
+      return "";
+    }, ownedDatabase, ORIGINAL_PID, sources);
+    runOriginal(target, ORIGINAL_PID, sources);
+    assert.equal(sqls.filter((sql) => sql === sources[FORWARD]).length, 2);
+    assert.equal(sqls.filter((sql) => sql === sources[ROLLBACK]).length, 1);
+    assert.equal(target.report().expectedRejects.length, 7);
+    assert.equal(sqls[0], `CREATE DATABASE ${ownedDatabase};`);
+    assert.equal(sqls.at(-1), `DROP DATABASE ${ownedDatabase};`);
+    assert.throws(() => target.execFileSync("docker", originalArgs(originalDatabase), options("SELECT 1")));
+  });
+  check("pin_before_execution", () => {
+    const target = createAdapter(() => { throw new Error("must not execute"); }, ownedDatabase, ORIGINAL_PID, sources);
+    assert.throws(() => runOriginal(target, ORIGINAL_PID, { ...sources, [ORIGINAL]: `${sources[ORIGINAL]}\nrequire('node:net')` }), /pin_mismatch/u);
+    assert.throws(() => modelDigest({ ...sources, [MODEL]: `${sources[MODEL]}\nthrow new Error('never execute')` }), /pin_mismatch/u);
+    assert.equal(target.report().statements.length, 0);
+  });
+  const owner = "b".repeat(32);
+  const name = `hourkey-r8-isolated-${owner}`;
+  const id = "a".repeat(64);
+  const fakeImage = { Id: IMAGE, Os: "linux", Config: { Volumes: { "/var/lib/postgresql/data": {} }, ExposedPorts: { "5432/tcp": {} }, Env: ["PATH=/usr/local/bin:/usr/bin:/bin"], Entrypoint: ["docker-entrypoint.sh"], Cmd: ["postgres"] } };
+  function fakeDocker() {
+    let removed = false;
+    const processState = { pid1Comm: "postgres\n" };
+    const inspection: Inspection = {
+      Id: id, Image: IMAGE, Name: `/${name}`, State: { Running: false }, Mounts: [], NetworkSettings: { Ports: { "5432/tcp": null }, Networks: {} },
+      Config: { Image: IMAGE, Labels: { [LABEL]: owner }, User: "70:70", StopSignal: "SIGINT", OpenStdin: false, Tty: false,
+        Entrypoint: ["docker-entrypoint.sh"], Cmd: ["postgres"], Healthcheck: { Test: ["NONE"] }, Env: expectedEnvironment(fakeImage), Volumes: { "/var/lib/postgresql/data": {} }, ExposedPorts: { "5432/tcp": {} } },
+      HostConfig: { NetworkMode: "none", ReadonlyRootfs: true, Privileged: false, PublishAllPorts: false, AutoRemove: false,
+        RestartPolicy: { Name: "no" }, Memory: 536870912, MemorySwap: 536870912, NanoCpus: 1_000_000_000, PidsLimit: 128, ShmSize: 16777216,
+        CapDrop: ["ALL"], SecurityOpt: ["no-new-privileges:true"], LogConfig: { Type: "none" }, IpcMode: "private", Tmpfs: { ...TMPFS } },
+    };
+    const calls: string[][] = [];
+    const execute: DockerExecutor = (args) => {
+      calls.push(args);
+      if (args[0] === "image") { assert.equal(args[2], IMAGE); return JSON.stringify([fakeImage]); }
+      if (args[0] === "create") { assert.deepEqual(args, createArguments(name, owner)); return id; }
+      if (args[0] === "container") { assert.equal(args[2], id); assert.equal(removed, false); return JSON.stringify([inspection]); }
+      if (args[0] === "start") { assert.equal(args[1], id); inspection.State.Running = true; return id; }
+      if (args[0] === "stop") { assert.deepEqual(args, ["stop", "--timeout=-1", id]); inspection.State.Running = false; return id; }
+      if (args[0] === "rm") { assert.deepEqual(args, ["rm", id]); assert.equal(inspection.State.Running, false); removed = true; return id; }
+      if (args[0] === "exec") {
+        assert.equal(args[1] === "-i" ? args[2] : args[1], id);
+        if (args[2] === "cat") { assert.deepEqual(args, ["exec", id, "cat", "/proc/1/comm"]); return processState.pid1Comm; }
+        if (args[2] === "pg_isready") return "";
+        assert.equal(args[1], "-i"); assert.equal(args[3], "psql"); return "";
+      }
+      throw new Failure("unexpected_fake_docker_command");
+    };
+    return { execute, inspection, calls, processState };
+  }
+  check("temporary_postgres_cannot_satisfy_readiness_or_sql", () => {
+    const fake = fakeDocker(); fake.processState.pid1Comm = "bash\n";
+    const lifecycle = createLifecycle(fake.execute, owner);
+    lifecycle.createAndStart();
+    assert.equal(lifecycle.ready(), false, "temporary socket server is not the final PID1 postgres");
+    assert.equal(fake.calls.some((argv) => argv[0] === "exec" && argv[2] === "pg_isready"), false);
+    assert.throws(() => lifecycle.sql(ownedDatabase, "SELECT 1"));
+    assert.equal(fake.calls.some((argv) => argv[0] === "exec" && argv[1] === "-i"), false);
+    fake.processState.pid1Comm = "postgres\n";
+    assert.equal(lifecycle.ready(), true);
+    lifecycle.sql(ownedDatabase, "SELECT 1"); lifecycle.cleanup();
+  });
+  check("entrypoint_comm_is_not_ready", () => {
+    const fake = fakeDocker(); fake.processState.pid1Comm = "docker-entrypoi\n";
+    const lifecycle = createLifecycle(fake.execute, owner); lifecycle.createAndStart();
+    assert.equal(lifecycle.ready(), false);
+    assert.throws(() => lifecycle.sql(ownedDatabase, "SELECT 1"));
+    assert.equal(fake.calls.some((argv) => argv[0] === "exec" && (argv[1] === "-i" || argv[2] === "pg_isready")), false);
+    lifecycle.cleanup();
+  });
+  for (const comm of ["", "postgres", "postgres\nextra\n", "sh\n", "unknown\n"]) check(`unexpected_pid1_${JSON.stringify(comm)}`, () => {
+    const fake = fakeDocker(); fake.processState.pid1Comm = comm;
+    const lifecycle = createLifecycle(fake.execute, owner); lifecycle.createAndStart();
+    assert.throws(() => lifecycle.ready(), /unexpected_pid1_process/u);
+    assert.throws(() => lifecycle.sql(ownedDatabase, "SELECT 1"), /unexpected_pid1_process/u);
+    assert.equal(fake.calls.some((argv) => argv[0] === "exec" && (argv[1] === "-i" || argv[2] === "pg_isready")), false);
+    lifecycle.cleanup();
+  });
+  check("ownership_and_isolation_precede_pid1_inspection", () => {
+    for (const corrupt of [(value: Inspection) => { value.Config.Labels[LABEL] = "foreign"; },
+      (value: Inspection) => { value.HostConfig.NetworkMode = "host"; }]) {
+      const fake = fakeDocker(); const lifecycle = createLifecycle(fake.execute, owner);
+      lifecycle.createAndStart(); corrupt(fake.inspection);
+      assert.throws(() => lifecycle.ready()); assert.throws(() => lifecycle.sql(ownedDatabase, "SELECT 1"));
+      assert.equal(fake.calls.some((argv) => argv[0] === "exec"), false);
+    }
+  });
+  check("owned_lifecycle_and_psql_mapping", () => {
+    const fake = fakeDocker();
+    const lifecycle = createLifecycle(fake.execute, owner);
+    lifecycle.createAndStart(); assert.equal(lifecycle.ready(), true);
+    assert.throws(() => lifecycle.sql("r8_isolated_" + "f".repeat(32), "SELECT 1"));
+    lifecycle.sql(ownedDatabase, "SELECT 1"); lifecycle.cleanup();
+    assert.equal(lifecycle.report().removed, true);
+    assert.deepEqual(fake.calls.find((argv) => argv[0] === "exec" && argv[1] === "-i"),
+      ["exec", "-i", id, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "decode_user", "-d", ownedDatabase, "-Atq", "--set=VERBOSITY=verbose"]);
+    assert.throws(() => lifecycle.sql(ownedDatabase, "SELECT 1"));
+    assert.throws(() => lifecycle.cleanup());
+  });
+  const corruptions: [string, (inspection: Inspection) => void][] = [
+    ["identity", (value) => { value.Id = "c".repeat(64); }],
+    ["owner_label", (value) => { value.Config.Labels[LABEL] = "foreign"; }],
+    ["image", (value) => { value.Image = "sha256:" + "c".repeat(64); }],
+    ["network", (value) => { value.HostConfig.NetworkMode = "host"; }],
+    ["root_writable", (value) => { value.HostConfig.ReadonlyRootfs = false; }],
+    ["bind_mount", (value) => { value.HostConfig.Binds = ["/var/run/docker.sock:/socket"]; }],
+    ["unbounded_tmpfs", (value) => { value.HostConfig.Tmpfs["/tmp"] = "rw"; }],
+    ["wrong_uid", (value) => { value.Config.User = "0:0"; }],
+    ["host_environment", (value) => { value.Config.Env.push("PGPASSWORD=forbidden"); }],
+    ["published_port", (value) => { value.HostConfig.PortBindings = { "5432/tcp": [{ HostPort: "5432" }] }; }],
+    ["actual_port_mapping", (value) => { value.NetworkSettings.Ports["5432/tcp"] = [{ HostIp: "0.0.0.0", HostPort: "5432" }]; }],
+    ["extra_exposed_port", (value) => { value.Config.ExposedPorts["8080/tcp"] = {}; }],
+    ["extra_null_port", (value) => { value.NetworkSettings.Ports["8080/tcp"] = null; }],
+    ["unbounded_memory", (value) => { value.HostConfig.Memory = 0; }],
+    ["extra_volume", (value) => { value.Mounts.push({ Type: "volume", Source: "existing", Destination: "/other", RW: true }); }],
+  ];
+  for (const [name, corrupt] of corruptions) check(`reject_before_start_${name}`, () => {
+    const fake = fakeDocker(); corrupt(fake.inspection);
+    const lifecycle = createLifecycle(fake.execute, owner);
+    assert.throws(() => lifecycle.createAndStart());
+    assert.equal(fake.calls.some((argv) => argv[0] === "start" || argv[0] === "exec"), false);
+  });
+  check("recheck_isolation_before_sql", () => {
+    const fake = fakeDocker(); const lifecycle = createLifecycle(fake.execute, owner);
+    lifecycle.createAndStart(); fake.inspection.HostConfig.Privileged = true;
+    assert.throws(() => lifecycle.sql(ownedDatabase, "SELECT 1"));
+    assert.equal(fake.calls.some((argv) => argv[0] === "exec"), false);
+    lifecycle.cleanup(); // The exact container remains ours; safe to contain it without starting/SQL.
+  });
+  check("cleanup_refuses_changed_owner", () => {
+    const fake = fakeDocker(); const lifecycle = createLifecycle(fake.execute, owner);
+    lifecycle.createAndStart(); fake.inspection.Config.Labels[LABEL] = "foreign";
+    assert.throws(() => lifecycle.cleanup());
+    assert.equal(fake.calls.some((argv) => argv[0] === "stop" || argv[0] === "rm"), false);
+  });
+  for (const failure of ["stop_timeout", "stop_still_running", "remove_failure"]) check(failure, () => {
+    const fake = fakeDocker();
+    const lifecycle = createLifecycle((argv, input) => {
+      if (argv[0] === "stop" && failure === "stop_timeout") throw new SqlFailure(null, null);
+      if (argv[0] === "stop" && failure === "stop_still_running") return id;
+      if (argv[0] === "rm" && failure === "remove_failure") throw new SqlFailure(1, null);
+      return fake.execute(argv, input);
+    }, owner);
+    lifecycle.createAndStart(); assert.throws(() => lifecycle.cleanup());
+    assert.equal(lifecycle.report().removed, false);
+    if (failure !== "remove_failure") assert.equal(fake.calls.some((argv) => argv[0] === "rm"), false);
+  });
+  check("identity_rechecked_after_graceful_stop", () => {
+    const fake = fakeDocker();
+    const lifecycle = createLifecycle((argv, input) => {
+      const output = fake.execute(argv, input);
+      if (argv[0] === "stop") fake.inspection.Config.Labels[LABEL] = "foreign";
+      return output;
+    }, owner);
+    lifecycle.createAndStart(); assert.throws(() => lifecycle.cleanup());
+    assert.equal(fake.calls.some((argv) => argv[0] === "rm"), false);
+  });
+  check("failed_isolation_cleans_only_unstarted_owned_id", () => {
+    const fake = fakeDocker(); fake.inspection.HostConfig.NetworkMode = "host";
+    const lifecycle = createLifecycle(fake.execute, owner);
+    assert.throws(() => lifecycle.createAndStart()); lifecycle.cleanup();
+    assert.equal(lifecycle.report().removed, true);
+    assert.equal(fake.calls.some((argv) => ["start", "stop", "exec"].includes(argv[0]!)), false);
+  });
+  check("missing_create_id_never_resolved_by_generic_name", () => {
+    const fake = fakeDocker();
+    const lifecycle = createLifecycle((argv, input) => argv[0] === "create" ? "" : fake.execute(argv, input), owner);
+    assert.throws(() => lifecycle.createAndStart()); lifecycle.cleanup();
+    assert.equal(lifecycle.report().removed, false);
+    assert.equal(fake.calls.some((argv) => ["container", "start", "stop", "rm", "exec"].includes(argv[0]!)), false);
+  });
+  check("encoding_and_locale_fidelity", () => {
+    const expected = { serverVersionNum: "160013", encoding: "UTF8", timezone: "UTC", databaseLocale: ["postgres", "template1"].map((name) =>
+      ({ name, encoding: "UTF8", collation: "en_US.utf8", ctype: "en_US.utf8" })) };
+    assert.deepEqual(checkFidelity(JSON.stringify(expected)), expected);
+    assert.throws(() => checkFidelity(JSON.stringify({ ...expected, encoding: "SQL_ASCII" })));
+    assert.throws(() => checkFidelity(JSON.stringify({ ...expected, timezone: "Asia/Bangkok" })));
+    const wrongLocale = structuredClone(expected); wrongLocale.databaseLocale[1]!.collation = "C";
+    assert.throws(() => checkFidelity(JSON.stringify(wrongLocale)));
+  });
+  check("explicit_cli_only_and_private_new_receipt", () => {
+    assert.deepEqual(parseCli([]), { mode: "self-test" });
+    assert.deepEqual(parseCli(["--self-test"]), { mode: "self-test" });
+    assert.deepEqual(parseCli(["--run", "--receipt", "/private/new.json"]), { mode: "run", receipt: "/private/new.json" });
+    for (const argv of [["--run"], ["--run", "--receipt", "relative.json"], ["--receipt", "/private/new.json"], ["--self-test", "--run"], ["--run", "--receipt", "/private/new.json", "--force"]]) assert.throws(() => parseCli(argv));
+    assert.throws(() => receiptDestination("relative.json"));
+    assert.throws(() => receiptDestination(path.join(ROOT, "package.json")));
+    assert.throws(() => receiptDestination(`/tmp/r8-isolated-must-not-create-${owner}.json`));
+    assert.throws(() => absent(path.join(ROOT, "package.json")));
+  });
+  console.log(`R8_ISOLATED_ADAPTER_UNIT_OK checks=${checks} (fake executor only; no migration evidence)`);
+}
+try {
+  const mode = parseCli(process.argv.slice(2));
+  if (mode.mode === "self-test") unitTests();
+  else await runIsolated(mode.receipt);
+} catch (error) {
+  // Failure diagnostics never include raw Docker stderr, SQL, or fixture IDs.
+  console.error(error instanceof Failure ? error.message : "unclassified_isolated_harness_failure");
+  process.exitCode = 1;
+}
