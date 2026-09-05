@@ -85,11 +85,11 @@ adapter reusing the existing checks and pinned producer, not 25 new validators
 to match the later source-only policy's bookkeeping entries. That policy stays
 fail-closed; the adapter must not manufacture release authority.
 
-Remaining mobile evidence comprises:
+Mobile evidence sequence (completed stages are labelled):
 
-1. Bind the completed, independently reviewed all-platform export comparison
-   above into the current adapter. Do not substitute CNG parity or an
-   Android-only export, or rerun these exports merely for paperwork.
+1. **Completed APK/export stage:** the current adapter below binds the
+   independently reviewed all-platform export comparison. Do not substitute
+   CNG parity, an Android-only export, or rerun exports merely for paperwork.
 2. One observed source-to-native run, including the producer's own complete
    source phase, fresh IL2CPP/APK and every actionable Gradle task executed.
    Do not splice in the standalone diagnostic source run.
@@ -112,6 +112,48 @@ mount/overlay policy equivalence unverified. Self-consistent receipts,
 expected hashes and synthetic PASS fixtures do not establish actual execution,
 cryptographic verification, watcher continuity or release readiness. Neither
 this reader nor its tests are connected to the unchanged release gate.
+
+## Current APK/export acceptance stage
+
+`scripts/verify-remediation-mobile-apk.mts` now adapts the original unsigned
+APK comparator and existing read-only output checks to the independently
+selected V234 baseline. It binds the two completed export receipts and their
+independent review, without rebuilding exports or changing the old release
+gate/policy. The retained baseline is 165,371,940 bytes, signed SHA-256
+`7d4f11b5c78d952c0f246f2f52047a8c5c896fa737044d84494808d48e7f802e`,
+unsigned-content SHA-256
+`d94528b7e630b7e2341fea1de64e9faee6007748a5fc1be439f948e312a098ce`.
+Its independently measured baseline receipt is
+`/root/artifacts/hourkey-v234-notification-build-46H3ru/v234-native-comparison-baseline.private.json`,
+SHA-256 `10a6b5f6da130733fa0833041e8e23984c69ae4ab1bd120ac2793c867bb77dfc`.
+These identities were selected before any new observed native run.
+
+The adapter's 16 targeted tests passed (`9c9a81`), including exact historical
+helper preservation and rejection of version, signer, ABI, permission and
+channel mismatches. Git checks disable optional locks, fsmonitor, external
+configuration and network access; child environments preserve HOME exactly
+without inheriting credentials or preloads. A real read-only invocation of
+the final code on the retained V234 APK and existing generated sourcemap/bundle
+exited 0 (session `40999`, `b77ede`), with the actual mobile index identity,
+timestamps and hash unchanged before/after.
+That invocation ran signature/package/ABI/permission/channel inspections,
+the existing 12-source gate, all 410 first-party source-content comparisons,
+packaged Hermes equality and the existing protected V194 postgate.
+This is an operational check of the new adapter on **retained** bytes, not a
+fresh b610 build or native reproduction. It explicitly returns
+`nativeExecutionVerified: false` and `releaseReady: false`; the observed
+source-to-native execution, preservation and final release review remain open.
+
+An independent read-only task-count review by `/root/v234_delivery_artifact_review`
+found 23 cleanup tasks in
+`/root/artifacts/hourkey-v234-notification-build-46H3ru/build.log`:
+16 `clean` plus seven `externalNativeBuildClean*` tasks (parent also checked the
+actual task rows in `d736ac`).
+The observed producer omits `clean` but retains the same three build targets
+and rerun/no-build-cache flags. Do not infer a current count by subtracting
+only 16, and do not copy 652/659/675 as a verified current count. A future
+observed run must still show every actionable task executed, with its actual
+complete successful terminal summary inspected and the count recorded.
 
 ## External boundaries and the full goal
 
