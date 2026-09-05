@@ -62,3 +62,21 @@ Earlier attempts failed from isolated-network Google Font DNS and then missing b
 7. Obtain all five independent final signatures across the full goal, not only this scheduler slice.
 
 No migration, rollout, service restart, APK distribution/install, preference mutation, or real push send occurred in this change.
+
+## Committed-source build and independent slice review
+
+The runtime/test change and this report's initial version were committed as `c2d89a181da7536f4dfe0e73ad369bb7ac1a3a6c`. A fresh `next build --webpack` on that clean commit completed with exit0 at `2026-09-05T04:00:47.392Z`, including TypeScript,150 static pages, and build traces. It used the same sanitized build-only environment described above, not production credentials.
+
+Private evidence directory: `/root/artifacts/hourkey-notification-backend-build-0bMXdy`.
+
+- Build ID: `WyxmNpHuFUJjMbJXBKWg-`.
+- Preserved `next-build-c2d89a1.tar.gz`:11,109,507 bytes; SHA-256 `4bf605bcf19da3197e18fed008230df38bf4f3c975c31e14e964702dd5026be7`.
+- The archive contains2,999 Next output entries, excludes only `.next/cache`, and was layout-checked. It is not a standalone deployed release; pinned source, dependencies, runtime environment, migrations, and rollout gates remain necessary.
+- Build log SHA-256: `613d2041fb4d8a7ce4ffcd4ef18bed783b384b8c3c52946b2847de1da336a88e`.
+- Build result SHA-256: `fc96b5ff463e7b79be22e88e0401d3a56b2e653b7310f2aa81df738c6fc9f884`.
+- Dependency lock SHA-256: `df3f6863add0a67d7be3cd189d9b954f333a9586e7c790884bae2d250edf855e`.
+- `artifact.json` binds the archive, source commit, dependency lock, build result/log, and scheduler hash. This later evidence-only documentation addition does not change that compiled runtime.
+
+Independent reviewer `/root/qimen_fresh_v4_gate_review` **APPROVED the bounded slice**, base `c51d5ea...` to `c2d89a1...`, with no Critical/Important/Minor finding. It independently ran the seasonal scheduler,72 crossing cases,24 durable cases, and63 additional in-memory checks including actual `runScheduler` dispatch and a removed-guard counterexample. Network, worker, PostgreSQL construction and forbidden-import attempt counters were0. Report: `/root/artifacts/hourkey-v234-notification-build-46H3ru/qimen-fresh-v4-gate-review.md`, SHA-256 `b8f881d353ceab1a2c3c4b27a0a39ad33c3c72ed5e8d5aafd2e9f6cf006d1329`. The parent read the complete report and rechecked the four source hashes. This is not release approval or one of the final five whole-goal signatures.
+
+Read-only live preflight still showed `/root/releases/current` resolving to r573; its scheduler hash was `1d02cfa1fe2f50fe2b80d1e0c0cc2ecedb118ee21033d49f9496152835b0b2ff` and did not contain the new guard. The Qimen timer was active each minute and its last oneshot exited0; the backend service and Zibai/Ziwei/retry timers were active. The Qimen service points to the current-release script, with existing producer-commit drop-in `5428ab01bb45d045849cb5c8d5faee74c6f94845`. Those identities were inspected, not changed. Active timers are liveness evidence, not proof of eligible occurrences or phone delivery. A read-only database size check reported145MB; no backup/migration was executed in this slice.
