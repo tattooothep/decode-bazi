@@ -3,6 +3,36 @@
 The full notification-remediation goal remains **ACTIVE**. This document is a
 current evidence handoff, not a release policy, approval, or substitute gate.
 
+## 6 September: explicit door-method approval and staging capacity
+
+The user approved recommendation 1: retain the app's existing door policy while
+using the corrected actual-month nine-star rules. The selected method is
+`STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1`. This resolves the earlier pending choice
+below; it does not claim that distinct door traditions are identical or give the
+existing editorial/product policy unanimous primary-text provenance.
+
+The Qimen systemd source now supplies that exact method through `/usr/bin/env`
+in its existing launcher. An inherited shared-environment value cannot replace
+the approved method. The classifier and scheduler still require explicit input;
+their missing/unknown-method rejection, separated star/door rules, history,
+thresholds, and other science services are unchanged. The live unit has not been
+installed or reloaded, so the method is prepared for coordinated rollout, not
+claimed active on production.
+
+The existing ops regression failed first for the absent explicit launch setting
+(`6a4ca1`), then passed after the single-unit change (`ee60f0`). The existing
+192-case separated-door suite (`52ad66`), seasonal scheduler cases including
+missing-method/legacy recovery (`96bb12`), and Ziwei ops suite (`d60472`) also
+passed offline. No provider send or live scheduler execution was used as a test.
+
+Recommendation 2 was also explicitly approved. The sole completed-build cache
+`/root/artifacts/hourkey-v234-native-canonical-retry-7imwDL/observed/cache`
+was removed in session 72842, exit 0 (`ffceba`), recovering 2,932,047,872 bytes.
+APK, HBC/map, receipts and logs retained their exact seven checked hashes.
+Details are in that build root's `backend-staging-space-preflight.private.md`.
+This resolves staging capacity, not rollout, credential repair, phone acceptance
+or the five independent final release reviews.
+
 ## Verified boundaries
 
 - Mobile checkpoint `b610fb6f21054ea0aa587f5ee42ce41dfc4a2953` completed the

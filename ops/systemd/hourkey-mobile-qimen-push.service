@@ -10,7 +10,8 @@ WorkingDirectory=/root/releases/current
 Environment=NODE_ENV=production
 EnvironmentFile=-/etc/hourkey/hourkey.env
 UMask=0027
-ExecStart=/usr/bin/node --import tsx /root/releases/current/scripts/mobile-qimen-push-cron.cjs --batch=500 --max-per-run=2500 --workers=20
+# User approved retaining the existing door policy on 2026-09-06; nine-star month rules remain separate.
+ExecStart=/usr/bin/env QIMEN_SEASONAL_DOOR_METHOD=STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1 /usr/bin/node --import tsx /root/releases/current/scripts/mobile-qimen-push-cron.cjs --batch=500 --max-per-run=2500 --workers=20
 TimeoutStartSec=55
 NoNewPrivileges=true
 PrivateTmp=true

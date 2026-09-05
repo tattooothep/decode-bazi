@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import science from "../src/lib/notification-science.cjs";
 import sourceManifest from "../src/lib/qimen-canonical-source-manifest.cjs";
 
@@ -17,7 +18,13 @@ const preflight = readFileSync("scripts/notification-observability-preflight.cjs
 const engineWorker = readFileSync("src/lib/qimen-local-engine-worker.cjs", "utf8");
 
 assert.match(service, /^WorkingDirectory=\/root\/releases\/current$/mu);
-assert.match(service, /^ExecStart=\/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-qimen-push-cron\.cjs --batch=500 --max-per-run=2500 --workers=20$/mu);
+assert.match(service, /^ExecStart=\/usr\/bin\/env QIMEN_SEASONAL_DOOR_METHOD=STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1 \/usr\/bin\/node --import tsx \/root\/releases\/current\/scripts\/mobile-qimen-push-cron\.cjs --batch=500 --max-per-run=2500 --workers=20$/mu,
+  "the 6 September user-approved door method is explicit in the Qimen launcher, not an algorithm default");
+const approvedAssignment = service.match(/^ExecStart=\/usr\/bin\/env (QIMEN_SEASONAL_DOOR_METHOD=\S+) /mu)![1];
+assert.equal(execFileSync("/usr/bin/env", [approvedAssignment, process.execPath, "-e",
+  "process.stdout.write(process.env.QIMEN_SEASONAL_DOOR_METHOD)"], {
+  encoding: "utf8", env: { ...process.env, QIMEN_SEASONAL_DOOR_METHOD: "TONGZONG_DARK_RESIDUAL_QI_DOOR_MONTH_V1" },
+}), "STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1", "a stale shared environment cannot replace the approved method");
 assert.match(service, /^TimeoutStartSec=55$/mu);
 assert.match(service, /^NoNewPrivileges=true$/mu);
 assert.match(service, /^ProtectSystem=strict$/mu);
