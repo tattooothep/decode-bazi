@@ -4,7 +4,7 @@ Reviewer: `/root/qimen_transport_review_0905b`. Reviewer wrote only the independ
 
 ## Verdict
 
-The occurrence-bound reservation/retry work is acceptable after the parent author's fix of the reproduced malformed-envelope downgrade. The public retry-worker regression now passes 19 checks. Whole-envelope size evidence and the existing implementation report still require correction; the current copy implementation is not a nine-locale implementation. Those limitations prevent calling the full notification release ready.
+**PASS for the bounded occurrence-bound reservation/retry implementation** after the parent author's fix of the reproduced malformed-envelope downgrade. The public retry-worker regression now passes 19 checks. The supplemental 144-case size audit found no tested provider payload over 4,096 bytes, but disproved describing all HTTP wrappers as below 4,000 bytes. The current copy implementation is not a nine-locale implementation. These limits prevent calling the full notification release ready.
 
 Reviewed worktree: `/root/worktrees/hourkey-qizheng-r8`; base HEAD when reviewed was `23699e2`. Implementation was uncommitted. Reviewed file hashes after the retry fix:
 
@@ -69,13 +69,14 @@ The following fresh checks passed with `globalThis.fetch` replaced by a function
 
 | Test | Result |
 | --- | --- |
-| `test-qimen-v4-durable-delivery.mts` before the parent retry fix | 24 reservations passed |
+| `test-qimen-v4-durable-delivery.mts` | 24 reservations passed after parent retry fix and updated source assertion |
+| `test-qimen-v4-transport-independent-review.mts` | 19 checks passed |
 | `test-qimen-seasonal-root-review.mts` | 72 boundary cases; real INSERT-conflict harness; V3 bytes and owner/downgrade gates passed |
 | `test-ziwei-hourly-v3-reservation.mts` | 72 in-memory reservations, 9 locales, 2 schemas/providers/privacy modes passed |
 | `test-ziwei-hourly-notification-delivery-contract.mts` | PASS |
 | `test-zibai-delivery-contract.mts` | PASS |
 
-After the retry fix, the author test reached its final obsolete source-regex assertion and failed because it still expected descriptor-only `qimenAttested` classification. The new behavioral regression passes; the obsolete assertion must be updated rather than restoring the vulnerable condition. Fresh all-green aggregate evidence must be collected after that update and any concurrent copy changes.
+After the retry fix, the author test initially reached its final obsolete source-regex assertion and failed because it still expected descriptor-only `qimenAttested` classification. The parent updated that assertion to require the persisted-occurrence/evidence design. This reviewer then independently reran all six tests listed above with the fetch tripwire; all passed. Concurrent copy or transport changes after the reviewed hashes require revalidation.
 
 ## Size evidence limitation
 
@@ -92,11 +93,30 @@ Using the valid V4 fixture, a 256-character synthetic target, and the exact curr
 
 These are measurements, **not proof that FCM rejects those messages**: provider limits may count fields differently from total HTTP bytes. They do disprove treating this test as evidence that the whole HTTP envelope is below 4,000 bytes. The chosen engineering budget must be defined, tested on the final copied/localized payload and enforced without truncating required meaning.
 
+### Supplemental 144-case measurement
+
+`scripts/test-qimen-v4-size-independent-review.mts` independently measures both profiles × twelve month branches × three currently implemented copy languages × two providers. It first verifies rejection of the four original no-support fixtures, then uses the explicitly named synthetic door-arrangement helper to create separate positive controls. It is a transport/contract matrix, not proof that these artificial month metadata match the retained fixture date.
+
+The script checks that provider preparation does not truncate any visible title or body. It separately measures the credential-free prepared message, final HTTP request body with a 256-character synthetic target, JSON encoding of FCM notification+data, and the sum of UTF-8 notification/data key and string-value bytes. The last two are deliberately labeled separately, not equated to the HTTP wrapper.
+
+| Locale / provider | Maximum prepared | Maximum HTTP | FCM notification+data JSON | FCM notification/data keys+values |
+| --- | ---: | ---: | ---: | ---: |
+| Thai / FCM | 3,777 B | 4,056 B | 3,661 B | 3,149 B |
+| Thai / Expo | 3,256 B | 3,539 B | — | — |
+| English / FCM | 3,247 B | 3,526 B | 3,131 B | 2,619 B |
+| English / Expo | 2,726 B | 3,009 B | — | — |
+| Chinese / FCM | 3,114 B | 3,393 B | 2,998 B | 2,486 B |
+| Chinese / Expo | 2,593 B | 2,876 B | — | — |
+
+Results: 144 positive measurements, four original negative controls, no truncation, zero network calls. None of the measured prepared messages reaches 4,000 bytes. Twelve full HTTP request bodies reach 4,000 bytes, but none exceeds 4,096. Neither measured FCM notification/data metric exceeds 4,096. The largest HTTP witness is the ordinary-profile 壬申 Thai fixture; the English maximum uses the explicit separate dark-profile 乙亥 synthetic arrangement.
+
+This bounded matrix supports **an incorrect description of the 4,000-byte evidence, not a demonstrated provider-limit breach**. It does not cover every warning combination, every possible future copy string, every target length, or the pending six additional locale identifiers. There is still no runtime numeric guard in the reviewed files.
+
 ## Language and evidence limitations
 
 The reviewed copy builder selects Thai, Chinese or English, with other locales falling back to English. Accepting nine locale identifiers in `QIMEN_PRESENTATION_LOCALES` does not prove nine-language meaning. Current V3 hashes establish compatibility for the three fixture copies only. The separately assigned nine-locale work needs a new bounded payload/copy review.
 
-The author report's claim that every listed test was pure and made no engine request is inaccurate. `test-qimen-scheduler.mts` calls `buildCanonicalQimenOccurrence` eight times without a calculation override. The default advisory fetch path issues `POST /api/qimen/calculate` with `skip_save: true`. This reviewer inspected that call chain but did **not** run the test, replay those requests, import the external engine/database module, or claim that `skip_save` proves absence of every service-side effect.
+The author report's original claim that every listed test was pure and made no engine request is inaccurate. `test-qimen-scheduler.mts` calls `buildCanonicalQimenOccurrence` eight times without a calculation override. The default advisory fetch path issues `POST /api/qimen/calculate` with `skip_save: true`. The external route forwards to `calculateQimenNotificationChart`; source inspection at `qimenEngine.js:1809` shows `skip_save` bypasses `saveCalculationRun`. This reviewer inspected that call chain but did **not** run the test, replay those requests, import the external engine/database module, or claim that this one guard proves absence of every service-side effect.
 
 Tests importing the cron also execute its existing `.env.local` loader, so they should be described as in-memory/no DB connection rather than completely environment-free. This report does not assert which prior test commands were actually run beyond their reported evidence.
 
