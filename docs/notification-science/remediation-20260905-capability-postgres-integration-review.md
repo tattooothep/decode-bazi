@@ -68,8 +68,9 @@ not end-to-end Ziwei reservation/delivery.
 5. **Real V4 reservation and retries:** TH/EN/ZH × FCM/Expo envelopes use
    account locale despite a different token/prefs locale. Parent, attempt and
    occurrence link commit together. Actual immutable triggers reject attempts
-   to change provider messages or occurrence snapshots. Stored envelopes stay
-   under the existing 4000-byte guard and do not persist fixture credentials.
+   to change provider messages or occurrence snapshots. The tested stored
+   envelopes remain below 4000 bytes (a test assertion, not runtime enforcement
+   or a whole-HTTP limit) and do not persist fixture credentials.
 6. **Immutable localized replay:** each case receives one simulated retryable
    failure, then changes the account locale before retrying. The worker still
    passes the exact originally stored provider message to the fake sender.
