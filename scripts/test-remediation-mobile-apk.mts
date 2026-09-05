@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import {
-  apkUnsignedContentSha256, assertApkInspection, readOnlyEnvironment, V234,
+  apkUnsignedContentSha256, assertApkInspection, assertGradleTaskExecution, readOnlyEnvironment, V234,
 } from "./verify-remediation-mobile-apk.mts";
 
 let checks = 0;
@@ -79,4 +79,40 @@ test("recorded V234 inspections satisfy the new parser without re-executing a to
   assertApkInspection({ ...good, badging: receipt.commands.badging.stdout.text,
     signature: receipt.commands.signature.stdout.text, inventory: receipt.commands.inventory.stdout.text }, "hourkey-reminders");
 });
+const reviewedChild = "2f6dbd056242490f9d366855a1c7cca189c313d49164fcc49dc614e696e7a398";
+const tasks = [":unityLibrary:buildIl2Cpp", ":app:createBundleReleaseJsAndAssets", ":app:compileReleaseKotlin",
+  ":app:compileReleaseJavaWithJavac", ":app:packageRelease", ":app:assembleRelease"];
+const nativeLog = ["> Task :app:clean UP-TO-DATE", "> Task :expo:preBuild UP-TO-DATE",
+  "> Task :unityLibrary:clean", "OBSERVED_UNITY_CLEAN_CONTENTS_OK",
+  ...tasks.map(task => `> Task ${task}`), "BUILD SUCCESSFUL in 1s", "675 actionable tasks: 674 executed, 1 up-to-date"].join("\n");
+test("approved empty app clean is reported separately, never as executed", () => {
+  assert.deepEqual(assertGradleTaskExecution(nativeLog, reviewedChild), {
+    actionableTasks: 675, executedTasks: 674, precleanedEmptyTasks: [":app:clean"],
+  });
+});
+test("fully executed task summaries still pass without the exception", () => {
+  const log = nativeLog.replace(":app:clean UP-TO-DATE", ":app:clean")
+    .replace("674 executed, 1 up-to-date", "675 executed");
+  assert.deepEqual(assertGradleTaskExecution(log, reviewedChild), {
+    actionableTasks: 675, executedTasks: 675, precleanedEmptyTasks: [],
+  });
+});
+for (const [name, log, child] of [
+  ["unreviewed preclean implementation", nativeLog, "0".repeat(64)],
+  ["two unexecuted tasks", nativeLog.replace("674 executed, 1 up-to-date", "673 executed, 2 up-to-date"), reviewedChild],
+  ["wrong clean task", nativeLog.replace(":app:clean UP-TO-DATE", ":expo:clean UP-TO-DATE"), reviewedChild],
+  ["missing clean row", nativeLog.replace("> Task :app:clean UP-TO-DATE\n", ""), reviewedChild],
+  ["missing Unity clean confirmation", nativeLog.replace("OBSERVED_UNITY_CLEAN_CONTENTS_OK", ""), reviewedChild],
+  ["cache reuse", nativeLog + "\n> Task :app:mergeReleaseResources FROM-CACHE", reviewedChild],
+  ["unknown up-to-date task", nativeLog + "\n> Task :app:mergeReleaseResources UP-TO-DATE", reviewedChild],
+  ["failed build", nativeLog.replace("BUILD SUCCESSFUL in 1s", "BUILD FAILED in 1s"), reviewedChild],
+  ["contradictory summary", nativeLog + "\n675 actionable tasks: 675 executed", reviewedChild],
+  ["malformed additional summary", nativeLog + "\n675 actionable tasks: 673 executed, 1 up-to-date, 1 from cache", reviewedChild],
+  ["conflicting app clean status", nativeLog + "\n> Task :app:clean SKIPPED", reviewedChild],
+  ["extra summary field", nativeLog + ", 1 from cache", reviewedChild],
+  ["summary count mismatch", nativeLog.replace("674 executed", "675 executed"), reviewedChild],
+] as const) test(`task criterion rejects ${name}`, () => assert.throws(() => assertGradleTaskExecution(log, child)));
+for (const task of tasks) for (const status of ["UP-TO-DATE", "FROM-CACHE", "SKIPPED", "NO-SOURCE", "FAILED"])
+  test(`task criterion rejects ${task} ${status}`, () => assert.throws(() =>
+    assertGradleTaskExecution(nativeLog.replace(`> Task ${task}\n`, `> Task ${task} ${status}\n`), reviewedChild)));
 console.log(`remediation mobile APK adapter tests: PASS (${checks} checks; synthetic/retained parser evidence, not a native build)`);

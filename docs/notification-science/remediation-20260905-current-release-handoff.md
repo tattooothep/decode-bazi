@@ -353,3 +353,41 @@ Parent copy check `207725` verified both originals and copies; neither is a
 successful reproduction. No further cleanup is authorized by the user's request
 to reduce ceremony by 50%; the separately requested exact cache cleanup awaits
 an answer. Use existing passed checks and avoid additional review frameworks.
+
+## Completed canonical native build and approved empty-clean criterion
+
+The preceding pending-cleanup state is superseded. The user approved the exact
+cache cleanup, which completed and retained prior APKs/logs/receipts. After the
+two focused clean-guard corrections, mobile
+`3a7e182e44bf8aeb2556a311d03ca99a35aecfd6` completed the actual observed build in
+`/root/artifacts/hourkey-v234-native-canonical-retry-7imwDL`.
+Launcher session `26413`, terminal `ec6feb`, exited 0 with no signal/resource
+abort and zero remaining owned mounts; minimum available space was 2,572,025,856
+bytes. Its own source suite passed all 311 commands. Gradle succeeded in 7m44s:
+**675 actionable / 674 executed / one empty :app:clean up-to-date**.
+
+Actual APK checks `92062/f13326` passed the unchanged size/unsigned-content
+reproduction, signature/package/ABI/permissions/channel, 410 source texts,
+packaged bundle and protected V194 postgates. APK size is 165,371,940 bytes;
+signed SHA256 is
+`9fa1db142e36ed748c7505cb90caa89dfa3e1cd05cfe66620ee0e653034a3e5f`.
+The selected baseline remains unchanged. Shared-owner seals and six retained
+manifest groups match; production remains r573. Candidate map/HBC are retained.
+
+The user then explicitly approved correcting only the empty-clean criterion.
+The existing current APK adapter's new `--gradle-log` mode binds that exception
+to the exact reviewed preclean child and retained log/source-manifest hashes.
+It reports 674 executed plus one precleaned-empty task, never 675 executed.
+Cache reuse and skipped mandatory build work still reject. Parent regressions
+passed 61 checks and the actual retained log (`bfba4f`); targeted TypeScript
+passed (`8ddbad`). The original APK postgate body, baseline pins and obsolete
+destructive historical gate are unchanged. No rebuild is required for this
+tooling-only correction. See the artifact's
+`completed-build-checkpoint.private.md` for actual receipts and review scope.
+Independent `/root/v234_delivery_artifact_review` closed both parser findings
+and gave scoped PASS on the final two code/test hashes. This is not one of the
+five final release signatures.
+
+This is not full-goal approval. Door-method choice, compatible backend/schema
+rollout, authorized Expo repair, Type C reference comparison, actual phone
+receipt/detail opening and five independent final reviews remain outstanding.

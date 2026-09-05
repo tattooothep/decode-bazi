@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const MOBILE = "/root/worktrees/hourkey-mobile-zibai-v3-p0";
@@ -107,6 +107,74 @@ function sourceIsCurrent() {
   assert.equal(run([...git, "status", "--porcelain=v1", "--untracked-files=all"]).length, 0);
 }
 
+// User-approved exception: this exact reviewed child removes app/build before
+// Gradle. Only its empty :app:clean may be counted separately, never as executed.
+const PRECLEAN_CHILD_SHA256 = "2f6dbd056242490f9d366855a1c7cca189c313d49164fcc49dc614e696e7a398";
+export function assertGradleTaskExecution(log: string, childSourceSha256: string) {
+  assert.ok(typeof log === "string" && Buffer.byteLength(log) <= 16 * 1024 * 1024);
+  assert.equal((log.match(/^BUILD SUCCESSFUL in .+$/gmu) ?? []).length, 1);
+  assert.doesNotMatch(log, /\b(?:FROM-CACHE|BUILD FAILED)\b/u);
+  const summaries = log.split(/\r?\n/u).filter(line => /^\d+ actionable tasks:/u.test(line));
+  assert.equal(summaries.length, 1, "one complete Gradle task summary is required");
+  const summary = /^(\d+) actionable tasks: (\d+) executed(?:, (\d+) up-to-date)?$/u.exec(summaries[0]);
+  assert.ok(summary, "unrecognized Gradle task summary");
+  const [actionableTasks, executedTasks, upToDate] = summary.slice(1).map(value => Number(value ?? 0));
+  assert.ok([actionableTasks, executedTasks, upToDate].every(Number.isSafeInteger));
+  assert.ok(executedTasks > 0 && actionableTasks === executedTasks + upToDate && upToDate <= 1);
+  const tasks = log.split(/\r?\n/u).filter(line => line.startsWith("> Task ")).map(line => {
+    const task = /^> Task (:\S+)(?: (UP-TO-DATE|FROM-CACHE|SKIPPED|NO-SOURCE|FAILED))?$/u.exec(line);
+    assert.ok(task, "unrecognized task status");
+    assert.notEqual(task[2], "FAILED");
+    return { name: task[1], status: task[2] ?? "executed" };
+  });
+  for (const name of [":unityLibrary:buildIl2Cpp", ":app:createBundleReleaseJsAndAssets", ":app:compileReleaseKotlin",
+    ":app:compileReleaseJavaWithJavac", ":app:packageRelease", ":app:assembleRelease"]) {
+    const rows = tasks.filter(task => task.name === name);
+    assert.ok(rows.length > 0 && rows.every(task => task.status === "executed"), `${name} must execute`);
+  }
+  const emptyClean = tasks.filter(task => task.name === ":app:clean" && task.status === "UP-TO-DATE");
+  assert.equal(emptyClean.length, upToDate);
+  for (const task of tasks.filter(task => task.status === "UP-TO-DATE" && task.name !== ":app:clean"))
+    assert.match(task.name, /:(?:classes|preBuild|preReleaseBuild|generateReleaseAssets)$/u,
+      "only lifecycle tasks without actions may otherwise be up-to-date");
+  if (upToDate === 1) {
+    assert.equal(tasks.filter(task => task.name === ":app:clean").length, 1, "conflicting empty-clean task rows");
+    assert.equal(childSourceSha256, PRECLEAN_CHILD_SHA256, "empty-clean exception requires the reviewed preclean implementation");
+    assert.match(log, /^OBSERVED_UNITY_CLEAN_CONTENTS_OK$/mu);
+    assert.ok(tasks.some(task => task.name === ":unityLibrary:clean" && task.status === "executed"));
+  }
+  return { actionableTasks, executedTasks, precleanedEmptyTasks: upToDate ? [":app:clean"] : [] };
+}
+
+export function verifyRemediationGradleLog(logPath: string) {
+  sourceIsCurrent();
+  const root = dirname(logPath);
+  assert.equal(logPath, join(root, "fixed-offline-build-command.stdout.log"));
+  const log = readStable(logPath, 16 * 1024 * 1024);
+  const publicFile = readStable(join(root, "observed-internal-preview-receipt.public.json"), 1024 * 1024);
+  const receipt = JSON.parse(publicFile.bytes.toString());
+  assert.equal(receipt.schema, "hourkey-observed-internal-preview-receipt-public/v2");
+  assert.equal(receipt.source.headCommit, MOBILE_COMMIT);
+  assert.equal(receipt.build.fixedPolicy, "hourkey-fixed-bwrap-offline-internal-preview/v4");
+  assert.equal(receipt.build.exitCode, 0);
+  assert.deepEqual(receipt.build.stdout, { bytes: log.bytes.length, sha256: sha(log.bytes) });
+  const manifestFile = readStable(join(root, "source-before.private.json"), 16 * 1024 * 1024);
+  assert.equal(sha(manifestFile.bytes), receipt.source.manifestSha256);
+  const manifest = JSON.parse(manifestFile.bytes.toString());
+  const childPath = "scripts/observed-internal-preview-build-child.mts";
+  const child = readStable(join(MOBILE, childPath), 1024 * 1024);
+  assert.equal(sha(child.bytes), PRECLEAN_CHILD_SHA256);
+  const rows = manifest.files.filter((file: { path: string }) => file.path === childPath);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].sha256, PRECLEAN_CHILD_SHA256);
+  const counts = assertGradleTaskExecution(log.bytes.toString(), sha(child.bytes));
+  for (const file of [log, publicFile, manifestFile, child]) file.unchanged();
+  sourceIsCurrent();
+  return { taskCriterionPassed: true, ...counts, buildLogSha256: sha(log.bytes),
+    sourceCommit: MOBILE_COMMIT, validationScope: "retained task log and reviewed preclean implementation only",
+    executionAuthorityVerified: false, releaseReady: false };
+}
+
 function bindCompletedExportEvidence() {
   // Bind completed, independently reviewed execution: do not rerun export or
   // infer a fresh native build from these receipts. Literal pins predate it.
@@ -177,9 +245,13 @@ export function verifyRemediationMobileApk(apkPath: string, mapPath: string, bun
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const args = process.argv.slice(2);
-    assert.equal(args.length, 6, "usage: --apk <path> --map <path> --bundle <path>");
-    assert.deepEqual([args[0], args[2], args[4]], ["--apk", "--map", "--bundle"]);
-    console.log(JSON.stringify(verifyRemediationMobileApk(args[1], args[3], args[5])));
+    if (args.length === 2 && args[0] === "--gradle-log") {
+      console.log(JSON.stringify(verifyRemediationGradleLog(args[1])));
+    } else {
+      assert.equal(args.length, 6, "usage: --apk <path> --map <path> --bundle <path>, or --gradle-log <path>");
+      assert.deepEqual([args[0], args[2], args[4]], ["--apk", "--map", "--bundle"]);
+      console.log(JSON.stringify(verifyRemediationMobileApk(args[1], args[3], args[5])));
+    }
   } catch {
     console.error("REMEDIATION_MOBILE_APK_CHECKS_FAILED"); process.exitCode = 1;
   }
