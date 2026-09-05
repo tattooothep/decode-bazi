@@ -137,6 +137,64 @@ confirmed that exact test container absent and the production PostgreSQL
 container still running with its unchanged ID. Only disposable fixture data
 was removed; source, logs and receipts remain. No production SQL was executed.
 
-Still unproven: the installed production catalog fingerprint, complete legacy
+At that checkpoint, still unproven: the installed production catalog fingerprint, complete legacy
 Ziwei preflight, actual execution of the other four scoped R8 functions, API
 authentication, rollout, provider repair, phone receipt and five final reviews.
+
+## Later supplement: all five scoped functions under the runtime login
+
+The same runtime mode now covers the four remaining scoped functions, without
+changing migration SQL, the original mode, container isolation or cleanup rules.
+Both `/root/isolated_migration_safety_review` and `/root/cng_home_preservation`
+independently approved one attempt at harness SHA-256
+`6a14835b203b952374a763a623388460c56a6abd1bc699bb86f6690ff2136211`.
+The 53 existing fake guard checks (`2b34d8`) and targeted TypeScript/diff checks
+(`080532`) passed; those checks do not execute the new SQL fixtures.
+
+Actual session `56268` exited 0 (`e8fb93`), at
+`2026-09-05T12:39:32.131Z`–`2026-09-05T12:40:08.326Z`.
+Receipt: `/root/artifacts/hourkey-r8-runtime-full-O0Ag4Z/runtime-checks-01.private.json`,
+30,147 bytes, SHA-256
+`cabbed95bbcea837541310f7fd1d63a6ca797fe837b962c078e0d4ebe94652ef`.
+Execution HEAD was `a110da7ca428399a1cd1081521c3847b312089ca`; the then-uncommitted
+test supplement is identified by its exact source hash, not attributed to HEAD.
+Root rehashed all seven recorded authority files after execution; all matched.
+
+The run made 147 SQL calls, including 31 genuine `hourkey_app` logins, with 148
+final-PID checks and one initialization wait. Besides the previous eight transfer
+cases and 24 denied mutations, actual execution verified:
+
+- Rebind rejects wrong user, installation, audience and disabled token with
+  SQLSTATE 23514; valid replacement updates only the selected Astronomy binding,
+  and repeat keeps its chain revision stable. Qizheng and other bindings survive.
+- Mark-shadow updates only the matching Astronomy producer. Wrong digest or
+  incomplete evidence makes no change; negative count raises 23514.
+- Record-shadow checks missing/ineligible chains, account status, cohort,
+  consent, token, endpoint revision and model digest; eligible input is stored
+  exactly and duplicate input does not rewrite history.
+- Revoke respects installation/user scope and preserves occurrences. Rollback
+  chain rows survive, but their selected endpoints are deleted. Repeated revoke
+  advances non-rollback revisions; no idempotent-revision guarantee is claimed.
+
+The added 22 runtime calls are rebind 6, mark-shadow 4, record-shadow 10 and
+revoke 2. Revoke's four receipt labels describe coverage, not four invocations.
+Independent `/root/v234_delivery_artifact_review` verified the receipt, all source
+hashes and counts, and unchanged older receipts (`fc07ee`); this is a bounded
+retained-evidence PASS, not a final release signature.
+
+Owned container `ca60e128808d85712c2216a814134facfb6a44d934492fe637ebe0665b6a4541`
+was gracefully stopped and removed without force. Root separately confirmed it
+absent and production PostgreSQL still running with the unchanged exact ID.
+Only the disposable fixture was removed; this execution did not query production.
+
+A separate read-only installed-runtime check (`4d6ee1`) used the actual
+`hourkey_app` login with default read-only transactions and bounded timeouts.
+Legacy Ziwei permission/integrity checks passed; the R8 relations were not all
+installed. No catalog/source expected digest was supplied, so this is not full
+installed R8 approval. False R8 proof defaults on absent tables do not establish
+that R8 sending is enabled or that its hard-off constraint failed.
+
+Still unproven: installed R8 catalog equivalence, API authentication/concurrency,
+safe rollout, provider repair, physical receipt/detail opening and five final
+reviews. Scoped storage tests do not recompute astronomy, hashes or rollout
+epochs, and do not authorize shadow/provider activation.

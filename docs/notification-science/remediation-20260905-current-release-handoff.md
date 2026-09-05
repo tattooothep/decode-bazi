@@ -211,3 +211,42 @@ separate door traditions, readable nine-locale Ziwei Type C, Zibai leap-seam
 correction, immutable history, existing profiles and all unaffected lanes.
 Qizheng predictions and separately unapproved activation remain off; optional
 pending source packs are not a new condition for this hard-off remediation.
+
+## Subsequent cleanup, scoped-runtime proof and native retry
+
+The user authorized the five additional targets previously listed. Read-only
+check `7b9d80` found no active references across 16 mount namespaces. Cleanup
+session `89703` exited 0 (`f536ce`), permanently removing only the failed run's
+cache, Unity build output and dependency overlay, plus old r521 dependencies
+and v216 intermediates. Free space reached 11,291,025,408 bytes; observed recovery
+was 9,191,952,384 bytes. Main mobile dependencies, internal keystore, retained
+APK, parent logs and failure receipt retained exact identities/timestamps, and
+production still resolved to r573. Details:
+`/root/artifacts/hourkey-v234-native-4fksRi/approved-additional-cleanup.private.md`.
+This resolves that storage authorization, not native reproduction or release
+approval. Old dependency instances were permanently deleted, not recoverable by
+undo; regenerated dependencies are new instances.
+
+A later expanded runtime attempt passed: session `56268`, exit 0 (`e8fb93`),
+receipt SHA-256 `cabbed95bbcea837541310f7fd1d63a6ca797fe837b962c078e0d4ebe94652ef`.
+It executed all five scoped functions through genuine runtime logins, including
+rebind, revoke, record-shadow and mark-shadow, on synthetic isolated fixtures.
+The owned container was removed and production remained unchanged. See the
+migration-evidence document for the exact coverage, counts and exclusions.
+Separate read-only installed-runtime check `4d6ee1` passed legacy Ziwei privilege
+and integrity checks but found R8 relations not all installed. This is not the
+complete installed-schema preflight and does not permit deployment.
+
+A new native attempt started in actual session `40880` (`9cac4a`), parent PID
+`3589909`, artifact `/root/artifacts/hourkey-v234-native-retry-wrGQVO`, with
+11,290,337,280 bytes free. Launcher SHA-256:
+`4a0c1f39d012e4ea19ab13625bb02c931b73f2c931c574dcfaa893948ec386c2`.
+Independent `/root/cng_home_preservation` approved one attempt: the only changes
+from the previous reviewed launcher were the fresh destination and two prelaunch
+floors raised from 7 to 10 GB. The b610 producer, existing internal signer and
+pidfd helper remain pinned; the 2 GiB low-space floor is unchanged. The 45-minute
+limit requests an owned-child stop, not guaranteed parent termination.
+The fresh shared-owner preseal is retained in `shared-owner-before.private.json`.
+At this checkpoint the attempt was running, with no successful terminal result,
+new accepted APK or deploy. Poll the actual session; do not restart based on a
+stale state file. Free space is not a guarantee that compilation will fit.

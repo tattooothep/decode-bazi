@@ -447,7 +447,7 @@ function checkFidelity(raw: string): unknown {
     "database_fidelity_mismatch");
   return result;
 }
-// Only the previously missing runtime-login/transfer behavior. This mode uses
+// Only the previously missing runtime-login/scoped-function behavior. This mode uses
 // the same owned cluster lifecycle; it does not repeat the original double
 // migration/rollback suite, impersonate a production connection, or change SQL.
 function runRuntimeChecks(lifecycle: ReturnType<typeof createLifecycle>, database: string, forward: string) {
@@ -555,8 +555,160 @@ function runRuntimeChecks(lifecycle: ReturnType<typeof createLifecycle>, databas
       targetEndpoints: kind === "same_binding" || kind === "no_match" ? 1 : 0,
     }, `transfer scope mismatch: ${kind}`);
   }
+  // The final no_match transfer case leaves the complete synthetic fixture in
+  // place. Exercise the remaining capabilities using the same genuine login,
+  // never SET ROLE and never the shared production cluster.
+  const state = (exclude = "") => admin(`SELECT jsonb_object_agg(name,rows ORDER BY name) FROM (
+    ${["users", "profiles", "mobile_notification_prefs", "mobile_push_tokens",
+      "mobile_science_notification_producer_state", "mobile_science_notification_subscriptions",
+      "mobile_science_notification_shadow_cohort", "mobile_science_notification_chains",
+      "mobile_science_notification_endpoints", "mobile_science_notification_occurrences"]
+      .map((table) => `SELECT '${table}' AS name,COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) AS rows
+        FROM ${table} t ${table === exclude ? "WHERE false" : ""}`).join(" UNION ALL ")}
+    ) fixture;`);
+  const rejectedUnchanged = (sql: string) => {
+    const before = state();
+    assert.throws(() => runtime(sql), (error: unknown) =>
+      error instanceof SqlFailure && error.status === 3 && error.sqlstate === "23514");
+    assert.equal(state(), before, "rejected scoped call changed fixture state");
+  };
+  const falseUnchanged = (sql: string) => {
+    const before = state();
+    assert.equal(runtime(sql), "f");
+    assert.equal(state(), before, "ineligible scoped call changed fixture state");
+  };
+  admin(`UPDATE mobile_push_tokens SET enabled=false WHERE id='${id(10)}';
+    INSERT INTO mobile_push_tokens(id,user_id,installation_id,enabled) VALUES
+      ('${id(14)}','${id(1)}','${id(50)}',true),
+      ('${id(15)}','${id(1)}','${id(50)}',false),
+      ('${id(16)}','${id(1)}','${id(54)}',true);
+    INSERT INTO mobile_science_notification_chains(id,user_id,org_id,science_id,submode,schema_version,
+      primary_token_id,primary_installation_id,lifecycle_state) VALUES
+      ('${id(23)}','${id(1)}','${id(43)}','qizheng','electional_window',0,'${id(15)}','${id(50)}','shadow'),
+      ('${id(24)}','${id(1)}','${id(44)}','astronomy_fact','civil_two_hour',1,'${id(16)}','${id(54)}','rollback');
+    INSERT INTO mobile_science_notification_endpoints(chain_id,token_id,installation_id,audience_binding,primary_endpoint)
+      SELECT c.id,t.id,t.installation_id,t.astronomy_fact_audience_binding,true
+      FROM mobile_science_notification_chains c JOIN mobile_push_tokens t ON t.id=c.primary_token_id
+      WHERE c.id IN ('${id(23)}','${id(24)}');`);
+  const audience = admin(`SELECT astronomy_fact_audience_binding FROM mobile_push_tokens WHERE id='${id(14)}';`);
+  assert.match(audience, /^[A-Za-z0-9_-]{22,64}$/u);
+  const rebind = (user = id(1), installation = id(50), token = id(14), binding = audience) =>
+    `SELECT hourkey_r8_rebind_primary_token('${user}','${installation}','${token}','${binding}');`;
+  const rebindCases = ["wrong_user", "wrong_installation", "wrong_audience", "disabled_token", "replacement", "repeat_revision_stable"];
+  rejectedUnchanged(rebind(id(2)));
+  rejectedUnchanged(rebind(id(1), id(51)));
+  rejectedUnchanged(rebind(id(1), id(50), id(14), "invalid-audience"));
+  const oldAudience = admin(`SELECT astronomy_fact_audience_binding FROM mobile_push_tokens WHERE id='${id(10)}';`);
+  rejectedUnchanged(rebind(id(1), id(50), id(10), oldAudience));
+  const unrelatedBindingState = () => admin(`SELECT jsonb_build_object(
+    'chains',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM mobile_science_notification_chains c WHERE c.id<>'${id(20)}'),
+    'endpoints',(SELECT jsonb_agg(to_jsonb(e) ORDER BY e.chain_id,e.installation_id) FROM mobile_science_notification_endpoints e WHERE e.chain_id<>'${id(20)}'),
+    'occurrences',(SELECT jsonb_agg(to_jsonb(o) ORDER BY o.id) FROM mobile_science_notification_occurrences o),
+    'tokens',(SELECT jsonb_agg(to_jsonb(t) ORDER BY t.id) FROM mobile_push_tokens t));`);
+  const beforeRebind = unrelatedBindingState();
+  for (let repetition = 0; repetition < 2; repetition += 1) {
+    assert.equal(runtime(rebind()), "1"); // Endpoint upsert reports 1 on repeat; chain revision remains 2.
+    assert.equal(unrelatedBindingState(), beforeRebind);
+    assert.deepEqual(JSON.parse(admin(`SELECT jsonb_build_object('token',c.primary_token_id,'revision',c.target_revision,
+      'endpointToken',e.token_id,'endpointRevision',e.target_revision,'audience',e.audience_binding,
+      'primary',e.primary_endpoint,'active',e.active) FROM mobile_science_notification_chains c
+      JOIN mobile_science_notification_endpoints e ON e.chain_id=c.id WHERE c.id='${id(20)}';`)),
+    { token: id(14), revision: 2, endpointToken: id(14), endpointRevision: 2, audience, primary: true, active: true });
+  }
+
+  const model = modelDigest(loadPinned());
+  const mark = (count = 3, digest = model) =>
+    `SELECT hourkey_r8_mark_astronomy_shadow_run('2026-09-05T12:00:00Z',${count},'${digest}');`;
+  const markCases = ["wrong_model", "incomplete_evidence", "negative_count", "astronomy_only_update"];
+  falseUnchanged(mark(3, "0".repeat(64)));
+  admin("UPDATE mobile_science_notification_producer_state SET evidence_complete=false WHERE science_id='astronomy_fact';");
+  falseUnchanged(mark());
+  admin("UPDATE mobile_science_notification_producer_state SET evidence_complete=true WHERE science_id='astronomy_fact';");
+  rejectedUnchanged(mark(-1));
+  const qizhengProducers = () => admin("SELECT jsonb_agg(to_jsonb(p) ORDER BY p.submode) FROM mobile_science_notification_producer_state p WHERE science_id='qizheng';");
+  const producersBefore = qizhengProducers();
+  const nonProducerBefore = state("mobile_science_notification_producer_state");
+  assert.equal(runtime(mark()), "t");
+  assert.equal(qizhengProducers(), producersBefore);
+  assert.equal(state("mobile_science_notification_producer_state"), nonProducerBefore);
+  assert.equal(admin(`SELECT last_shadow_run_at='2026-09-05T12:00:00Z'::timestamptz
+    AND last_shadow_count=3 AND provider_send_enabled=false
+    FROM mobile_science_notification_producer_state WHERE science_id='astronomy_fact';`), "t");
+
+  admin(`INSERT INTO mobile_science_notification_subscriptions
+      (user_id,org_id,science_id,submode,cadence,local_day_cap,locale,display_timezone,receipt)
+    VALUES('${id(1)}','${id(40)}','astronomy_fact','civil_two_hour','two_hour',12,'th','Asia/Bangkok','{}');
+    INSERT INTO mobile_science_notification_shadow_cohort(user_id,science_id,submode,enabled,approved_by,approved_at)
+    VALUES('${id(1)}','astronomy_fact','civil_two_hour',true,'isolated synthetic fixture','2026-09-05T00:00:00Z');`);
+  const shadow = (chain = id(20), digest = model) => `SELECT hourkey_r8_record_astronomy_shadow_occurrence(
+    '${chain}','runtime-shadow-unit',decode('0102','hex'),digest('runtime-identity','sha256'),digest('runtime-revision','sha256'),
+    1,'shadowed',NULL,'{"fixture":"scoped-runtime","locale":"th"}','${"b".repeat(64)}',
+    '2026-09-05T12:00:00Z','2026-09-05T14:00:00Z','${digest}');`;
+  const shadowCases = ["missing_chain", "wrong_model"];
+  falseUnchanged(shadow(id(99)));
+  falseUnchanged(shadow(id(20), "0".repeat(64)));
+  const ineligible: [string, string, string][] = [
+    ["inactive_user", `UPDATE users SET is_active=false WHERE id='${id(1)}';`, `UPDATE users SET is_active=true WHERE id='${id(1)}';`],
+    ["deleted_user", `UPDATE users SET deleted_at='2026-09-05T00:00:00Z' WHERE id='${id(1)}';`, `UPDATE users SET deleted_at=NULL WHERE id='${id(1)}';`],
+    ["disabled_cohort", "UPDATE mobile_science_notification_shadow_cohort SET enabled=false;", "UPDATE mobile_science_notification_shadow_cohort SET enabled=true;"],
+    ["consent_mismatch", "UPDATE mobile_science_notification_subscriptions SET consent_generation=2;", "UPDATE mobile_science_notification_subscriptions SET consent_generation=1;"],
+    ["disabled_token", `UPDATE mobile_push_tokens SET enabled=false WHERE id='${id(14)}';`, `UPDATE mobile_push_tokens SET enabled=true WHERE id='${id(14)}';`],
+    ["stale_endpoint_revision", `UPDATE mobile_science_notification_endpoints SET target_revision=1 WHERE chain_id='${id(20)}';`, `UPDATE mobile_science_notification_endpoints SET target_revision=2 WHERE chain_id='${id(20)}';`],
+  ];
+  for (const [name, invalidate, restore] of ineligible) {
+    admin(invalidate); falseUnchanged(shadow()); admin(restore); shadowCases.push(name);
+  }
+  const existingOccurrences = () => admin("SELECT jsonb_agg(to_jsonb(o) ORDER BY o.id) FROM mobile_science_notification_occurrences o WHERE notification_unit_id<>'runtime-shadow-unit';");
+  const oldOccurrences = existingOccurrences();
+  const beforeInsert = state("mobile_science_notification_occurrences");
+  assert.equal(runtime(shadow()), "t");
+  assert.equal(state("mobile_science_notification_occurrences"), beforeInsert);
+  assert.equal(existingOccurrences(), oldOccurrences);
+  assert.equal(admin(`SELECT count(*)=1 AND bool_and(chain_id='${id(20)}' AND science_id='astronomy_fact' AND submode='civil_two_hour'
+    AND schema_version=1 AND identity_cbor=decode('0102','hex') AND identity_hash=digest('runtime-identity','sha256')
+    AND result_revision_hash=digest('runtime-revision','sha256') AND rollout_epoch=1 AND state='shadowed' AND suppression_reason IS NULL
+    AND snapshot='{"fixture":"scoped-runtime","locale":"th"}'::jsonb AND snapshot_digest='${"b".repeat(64)}'
+    AND scheduled_for='2026-09-05T12:00:00Z'::timestamptz AND expires_at='2026-09-05T14:00:00Z'::timestamptz)
+    FROM mobile_science_notification_occurrences WHERE notification_unit_id='runtime-shadow-unit';`), "t");
+  falseUnchanged(shadow());
+  shadowCases.push("eligible_exact_fields", "duplicate_does_not_rewrite");
+
+  const revoke = (installation: string | null) => `SELECT hourkey_r8_revoke_delivery_scope('${id(1)}',${installation === null ? "NULL" : `'${installation}'`});`;
+  const occurrencesBeforeRevoke = state("mobile_science_notification_chains");
+  const immutableBeforeRevoke = admin("SELECT jsonb_agg(to_jsonb(o) ORDER BY o.id) FROM mobile_science_notification_occurrences o;");
+  const protectedRevoke = (includeSameUser = true) => admin(`SELECT jsonb_build_object(
+    'chains',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM mobile_science_notification_chains c
+      WHERE c.user_id='${id(2)}' OR c.lifecycle_state='rollback' ${includeSameUser ? `OR c.id='${id(21)}'` : ""}),
+    'otherUserEndpoints',(SELECT jsonb_agg(to_jsonb(e) ORDER BY e.chain_id,e.installation_id)
+      FROM mobile_science_notification_endpoints e JOIN mobile_science_notification_chains c ON c.id=e.chain_id WHERE c.user_id='${id(2)}'));
+  `);
+  const protectedBeforeInstallation = protectedRevoke();
+  assert.equal(runtime(revoke(id(50))), "2"); // Astronomy + Qizheng of this installation; not another science's standalone tables.
+  assert.equal(protectedRevoke(), protectedBeforeInstallation);
+  assert.equal(admin(`SELECT count(*)=2 AND bool_and(lifecycle_state='revoked' AND active=false
+    AND target_revision=CASE WHEN id='${id(20)}' THEN 3 ELSE 2 END)
+    FROM mobile_science_notification_chains WHERE id IN ('${id(20)}','${id(23)}');`), "t");
+  assert.equal(admin(`SELECT count(*) FROM mobile_science_notification_endpoints WHERE installation_id='${id(50)}';`), "0");
+  const protectedBeforeUser = protectedRevoke(false);
+  assert.equal(runtime(revoke(null)), "3"); // Previously revoked rows also advance; rollback chain does not.
+  assert.equal(protectedRevoke(false), protectedBeforeUser);
+  assert.equal(admin(`SELECT count(*)=3 AND bool_and(lifecycle_state='revoked' AND active=false
+    AND target_revision=CASE id WHEN '${id(20)}'::uuid THEN 4 WHEN '${id(23)}'::uuid THEN 3 ELSE 2 END)
+    FROM mobile_science_notification_chains WHERE user_id='${id(1)}' AND lifecycle_state<>'rollback';`), "t");
+  assert.equal(admin(`SELECT count(*) FROM mobile_science_notification_endpoints e
+    JOIN mobile_science_notification_chains c ON c.id=e.chain_id WHERE c.user_id='${id(1)}';`), "0");
+  assert.equal(admin("SELECT jsonb_agg(to_jsonb(o) ORDER BY o.id) FROM mobile_science_notification_occurrences o;"), immutableBeforeRevoke);
+  // Compare all non-chain/non-endpoint rows, including subscriptions and tokens.
+  const beforeRevokeObject = JSON.parse(occurrencesBeforeRevoke);
+  const afterRevokeObject = JSON.parse(state("mobile_science_notification_chains"));
+  delete beforeRevokeObject.mobile_science_notification_endpoints;
+  delete afterRevokeObject.mobile_science_notification_endpoints;
+  assert.deepEqual(afterRevokeObject, beforeRevokeObject);
+  assert.equal(admin("SELECT count(*) FROM mobile_science_notification_producer_state WHERE provider_send_enabled;"), "0");
   lifecycle.sql("postgres", `DROP DATABASE ${database};`);
   return { ...roleProof, transferCases: cases,
+    scopedFunctionCases: { rebind: rebindCases, markShadow: markCases, recordShadow: shadowCases,
+      revoke: ["installation_scope", "whole_user_scope", "rollback_chain_preserved_selected_endpoints_removed", "occurrences_preserved"] },
     policy: "selected transferred primary chain cascades its own occurrence; unrelated chains, occurrences and token rows preserved",
     productionProof: false, originalDoubleApplyRollbackRerun: false };
 }
@@ -609,8 +761,9 @@ async function runIsolated(filename: string, runtimeOnly = false): Promise<void>
       "Exact original psql options plus --set=VERBOSITY=verbose; fixture/migration/assertion SQL bytes unchanged",
       "Owned isolated final postgres PID1 verified before pg_isready and every SQL call; temporary entrypoint server cannot qualify",
       "Original target mapped only to newly created exact container ID; fixed local Docker socket and minimal client environment"],
-    coverage: runtimeOnly ? { scope: "isolated runtime privileges and transferred-binding behavior only",
-      exclusions: ["Installed production catalog fingerprint and complete legacy Ziwei preflight", "Other scoped-function execution and API authentication",
+    coverage: runtimeOnly ? { scope: "isolated runtime privileges and five scoped functions on synthetic fixtures only",
+      exclusions: ["Installed production catalog fingerprint and complete legacy Ziwei preflight", "API authentication and concurrent transaction races",
+        "Astronomy calculation validity, snapshot/hash recomputation and rollout-epoch equivalence",
         "Production migration, provider credentials, phone receipt and release approval"] } : { requiredForwardRuns: 2, requiredRollbackRuns: 1, requiredSqlRejections: REJECTS.map(({ id, sqlstate }) => ({ id, sqlstate })),
       scope: "Only the original pinned harness assertions on its minimal disposable schema; not full production schema or runtime-role proof",
       exclusions: ["Transferred-binding function execution: original fixture lacks expo_push_token/device_push_token",
