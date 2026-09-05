@@ -94,21 +94,29 @@ function providerQueueSafetySeconds(categoryInput) {
     : ttl;
 }
 
+function exactStringEnvelope(data, payloadKeys) {
+  try {
+    if (!data || typeof data !== "object" || Array.isArray(data)
+      || ![Object.prototype, null].includes(Object.getPrototypeOf(data))) return false;
+    const keys = Reflect.ownKeys(data);
+    if (keys.length !== 2 || !keys.includes("notificationId")) return false;
+    const payloadKey = payloadKeys.find((key) => keys.includes(key));
+    if (!payloadKey || keys.some((key) => key !== "notificationId" && key !== payloadKey)) return false;
+    return ["notificationId", payloadKey].every((key) => {
+      const descriptor = Object.getOwnPropertyDescriptor(data, key);
+      return descriptor?.enumerable && "value" in descriptor && typeof descriptor.value === "string";
+    });
+  } catch {
+    return false;
+  }
+}
+
 function providerData(message, stringifyValues) {
   const data = message?.data && typeof message.data === "object" ? message.data : {};
-  const dataKeys = Object.keys(data).sort();
   const exactQimenEnvelope = categoryOf(message) === "qimen"
-    && typeof data.notificationId === "string"
-    && ((typeof data.qimenV2 === "string"
-      && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "qimenV2")
-      || (typeof data.qimenV3 === "string"
-        && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "qimenV3"));
+    && exactStringEnvelope(data, ["qimenV2", "qimenV3", "qimenV4"]);
   const exactZiweiEnvelope = categoryOf(message) === "ziwei"
-    && typeof data.notificationId === "string"
-    && ((typeof data.ziweiHourlyV2 === "string"
-      && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "ziweiHourlyV2")
-      || (typeof data.ziweiHourlyV3 === "string"
-        && dataKeys.length === 2 && dataKeys[0] === "notificationId" && dataKeys[1] === "ziweiHourlyV3"));
+    && exactStringEnvelope(data, ["ziweiHourlyV2", "ziweiHourlyV3"]);
   const out = {};
   const zibaiShichenKeys = new Set(["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"]);
   const exactZibaiPayload = data.kind === "zibai"

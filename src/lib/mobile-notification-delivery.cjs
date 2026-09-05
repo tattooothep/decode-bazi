@@ -4,6 +4,7 @@ const push = require("./push-send.cjs");
 const notificationPayload = require("./notification-payload.cjs");
 const notificationScience = require("./notification-science.cjs");
 const qimenRuntime = require("./qimen-three-layer-notification.cjs");
+const qimenPresentation = require("./qimen-notification-presentation.cjs");
 const qimenAdvisory = require("./qimen-notification-advisory.cjs");
 const zibaiVersionRuntime = require("./zibai-version-runtime.cjs");
 const ziweiHourlyRuntime = require("./ziwei-hourly-notification.cjs");
@@ -14,6 +15,7 @@ const DEFAULT_MAX_ATTEMPTS = 5;
 const DEFAULT_BASE_DELAY_SECONDS = 300;
 const DEFAULT_LEASE_SECONDS = 60;
 const MAX_DELAY_SECONDS = 21_600;
+const QIMEN_PRESENTATION_LOCALES = new Set(["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]);
 
 function cleanJson(value) {
   return JSON.parse(JSON.stringify(value));
@@ -85,6 +87,123 @@ function messageSha256(message) {
 function exactIsoInstant(value) {
   const instant = value instanceof Date ? value : new Date(value);
   return Number.isFinite(instant.valueOf()) ? instant.toISOString() : null;
+}
+
+function qimenPayloadDescriptor(payload) {
+  try {
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)
+      || ![Object.prototype, null].includes(Object.getPrototypeOf(payload))) return null;
+    const keys = Reflect.ownKeys(payload);
+    if (keys.length !== 1) return null;
+    const key = keys[0];
+    const schema = key === "qimenV2" ? 2 : key === "qimenV3" ? 3 : key === "qimenV4" ? 4 : null;
+    const descriptor = Object.getOwnPropertyDescriptor(payload, key);
+    return schema && descriptor?.enumerable && "value" in descriptor && typeof descriptor.value === "string"
+      ? Object.freeze({ key, schema }) : null;
+  } catch { return null; }
+}
+
+function qimenPayloadContract(payload) {
+  const descriptor = qimenPayloadDescriptor(payload);
+  if (!descriptor) return null;
+  if (descriptor.schema === 4) return Object.freeze({
+    ...descriptor,
+    parse: qimenRuntime.parseQimenV4ProviderData,
+    verify: qimenRuntime.verifyQimenThreeLayerSnapshotV4,
+    build: qimenRuntime.buildQimenV4ProviderData,
+  });
+  if (descriptor.schema === 3) return Object.freeze({
+    ...descriptor,
+    parse: qimenRuntime.parseQimenV3ProviderData,
+    verify: qimenRuntime.verifyQimenThreeLayerSnapshotV3,
+    build: qimenRuntime.buildQimenV3ProviderData,
+  });
+  return Object.freeze({
+    ...descriptor,
+    parse: qimenRuntime.parseQimenV2ProviderData,
+    verify: qimenRuntime.verifyQimenThreeLayerSnapshot,
+    build: qimenRuntime.buildQimenV2ProviderData,
+  });
+}
+
+function qimenTokenSupportsPayload(capability, payload) {
+  const schema = Number(capability);
+  return Boolean(payload && [2, 3, 4].includes(schema) && schema >= payload.schema);
+}
+
+function qimenHasAttestationEvidence(row) {
+  try {
+    const payload = row.payload;
+    if (payload && typeof payload === "object") {
+      if (Array.isArray(payload) || ![Object.prototype, null].includes(Object.getPrototypeOf(payload))) return true;
+      if (Reflect.ownKeys(payload).some((key) => typeof key !== "string" || /^qimenV/iu.test(key))) return true;
+    }
+    const source = row.source_facts;
+    return Boolean(source && typeof source === "object"
+      && ["snapshotDigest", "seasonalEvidence"].some((key) => Object.hasOwn(source, key)));
+  } catch { return true; }
+}
+
+function qimenLockedCopy(locale, snapshot) {
+  return qimenPresentation.buildQimenCopy(notificationPayload.normalizedLocale(locale), snapshot);
+}
+
+function qimenAttemptAttestationValid(row, snapshot, occurrence) {
+  try {
+    const payload = qimenPayloadContract(row.payload);
+    if (!payload || !payload.verify(snapshot)) return false;
+    const source = row.source_facts;
+    const compact = payload.parse(row.payload);
+    if (!source || !occurrence
+      || source.snapshotDigest !== snapshot.snapshotDigest
+      || source.selectedDirection !== snapshot.selectedDirection
+      || source.calculationVersion !== snapshot.versionTuple.hour
+      || source.eventEndAt !== snapshot.layers.hour.validUntil
+      || source.sendDeadline !== exactIsoInstant(occurrence.send_deadline)
+      || snapshot.accountId !== row.user_id
+      || snapshot.purpose !== "travel"
+      || occurrence.occurrence_user_id !== row.user_id
+      || occurrence.occurrence_installation_id !== row.installation_id
+      || occurrence.occurrence_state !== "reserved"
+      || occurrence.occurrence_key !== row.yam_key
+      || occurrence.selected_direction !== snapshot.selectedDirection
+      || occurrence.snapshot_digest !== snapshot.snapshotDigest
+      || stableStringify(occurrence.version_tuple) !== stableStringify(snapshot.versionTuple)
+      || exactIsoInstant(occurrence.hour_valid_from) !== snapshot.layers.hour.validFrom
+      || exactIsoInstant(occurrence.hour_valid_until) !== snapshot.layers.hour.validUntil
+      || compact.accountId !== row.user_id
+      || compact.purpose !== "travel"
+      || compact.direction !== snapshot.selectedDirection
+      || compact.hourStart !== snapshot.layers.hour.validFrom
+      || compact.hourEnd !== snapshot.layers.hour.validUntil
+      || compact.snapshotDigest !== snapshot.snapshotDigest
+      || stableStringify(row.payload) !== stableStringify(payload.build(snapshot))) return false;
+    if (payload.schema === 4
+      && stableStringify(source.seasonalEvidence) !== stableStringify(snapshot.layers.hour.contextEvidence)) return false;
+    if (payload.schema === 4) {
+      if (!QIMEN_PRESENTATION_LOCALES.has(source.presentationLocale)) return false;
+      const expectedCopy = qimenLockedCopy(source.presentationLocale, snapshot);
+      if (row.title !== expectedCopy.title || row.body !== expectedCopy.body) return false;
+    }
+    const providerMessage = row.provider_message;
+    const visible = row.provider === "fcm"
+      ? providerMessage?.notification : row.provider === "expo" ? providerMessage : null;
+    if (!visible || typeof visible.title !== "string" || typeof visible.body !== "string") return false;
+    if (payload.schema >= 3
+      && (row.privacy_safe !== true || visible.title !== row.title || visible.body !== row.body)) return false;
+    const expectedMessage = cleanJson(push.prepareMessage({
+      category: "qimen",
+      title: visible.title,
+      body: visible.body,
+      url: "/qimen/notification-detail",
+      transactional: false,
+      data: { ...payload.build(snapshot), notificationId: row.push_log_id },
+    }, row.provider));
+    return stableStringify(providerMessage) === stableStringify(expectedMessage)
+      && row.message_sha256 === messageSha256(expectedMessage);
+  } catch {
+    return false;
+  }
 }
 
 function ziweiPayloadDescriptor(payload) {
@@ -271,20 +390,8 @@ async function deriveParent(db, pushLogId) {
 
 async function reserve(db, notice, dry = false) {
   assertTransactionalKind(notice);
-  const qimenV2 = notice?.kind === "qimen" && typeof notice?.payload?.qimenV2 === "string";
-  const qimenV3 = notice?.kind === "qimen" && typeof notice?.payload?.qimenV3 === "string";
-  if (qimenV2 && qimenV3) throw new TypeError("qimen_notice_schema_mismatch");
-  const qimenPayload = qimenV3 ? Object.freeze({
-    key: "qimenV3", schema: 3,
-    parse: qimenRuntime.parseQimenV3ProviderData,
-    verify: qimenRuntime.verifyQimenThreeLayerSnapshotV3,
-    build: qimenRuntime.buildQimenV3ProviderData,
-  }) : qimenV2 ? Object.freeze({
-    key: "qimenV2", schema: 2,
-    parse: qimenRuntime.parseQimenV2ProviderData,
-    verify: qimenRuntime.verifyQimenThreeLayerSnapshot,
-    build: qimenRuntime.buildQimenV2ProviderData,
-  }) : null;
+  const qimenPayload = notice?.kind === "qimen" ? qimenPayloadContract(notice.payload) : null;
+  if (notice?.kind === "qimen" && !qimenPayload) throw new TypeError("qimen_notice_schema_mismatch");
   const qimenOccurrenceId = qimenPayload && typeof notice?.qimenOccurrenceId === "string"
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(notice.qimenOccurrenceId)
     ? notice.qimenOccurrenceId : null;
@@ -393,7 +500,7 @@ async function reserve(db, notice, dry = false) {
     if (qimenPayload) {
       if (!Array.isArray(notice.messages) || notice.messages.length !== 1) return null;
       const item = notice.messages[0];
-      if (typeof item?.data?.[qimenPayload.key] !== "string"
+      if (qimenPayloadDescriptor(item?.data)?.schema !== qimenPayload.schema
         || item.data[qimenPayload.key] !== notice.payload[qimenPayload.key]) {
         throw new TypeError("qimen_notice_schema_mismatch");
       }
@@ -402,7 +509,8 @@ async function reserve(db, notice, dry = false) {
                 t.device_push_token,t.device_token_type,t.expo_push_token,t.platform,t.qimen_payload_schema,
                 o.id AS occurrence_id,o.user_id AS occurrence_user_id,
                 o.installation_id AS occurrence_installation_id,o.state,o.push_log_id,
-                o.selected_direction,o.snapshot_digest,o.snapshot,o.hour_valid_until,o.send_deadline,o.version_tuple,
+                o.occurrence_key,o.selected_direction,o.snapshot_digest,o.snapshot,
+                o.hour_valid_from,o.hour_valid_until,o.send_deadline,o.version_tuple,
                 o.snapshot->>'accountId' AS snapshot_account_id,o.snapshot->>'purpose' AS snapshot_purpose
            FROM mobile_push_tokens t
            JOIN mobile_qimen_occurrences o ON o.id=$3 AND o.user_id=t.user_id
@@ -426,16 +534,18 @@ async function reserve(db, notice, dry = false) {
         installation_id: binding.occurrence_installation_id,
         state: binding.state,
         push_log_id: binding.push_log_id,
+        occurrence_key: binding.occurrence_key,
         selected_direction: binding.selected_direction,
         snapshot_digest: binding.snapshot_digest,
         snapshot: binding.snapshot,
+        hour_valid_from: binding.hour_valid_from,
         hour_valid_until: binding.hour_valid_until,
         send_deadline: binding.send_deadline,
         version_tuple: binding.version_tuple,
         snapshot_account_id: binding.snapshot_account_id,
         snapshot_purpose: binding.snapshot_purpose,
       } : null;
-      if (!qimenToken || Number(qimenToken.qimen_payload_schema) !== qimenPayload.schema) {
+      if (!qimenToken || !qimenTokenSupportsPayload(qimenToken.qimen_payload_schema, qimenPayload)) {
         throw new Error("qimen_token_capability_changed");
       }
       if (!qimenOccurrence || qimenOccurrence.state !== "claimed" || qimenOccurrence.push_log_id !== null) return null;
@@ -453,19 +563,25 @@ async function reserve(db, notice, dry = false) {
         throw new Error("qimen_occurrence_binding_changed");
       }
       const iso = (value) => value instanceof Date ? value.toISOString() : new Date(value).toISOString();
-      if (qimenOccurrence.snapshot_account_id !== notice.userId
+      if (qimenOccurrence.user_id !== notice.userId
+        || qimenOccurrence.snapshot_account_id !== notice.userId
         || qimenOccurrence.snapshot_purpose !== "travel"
         || compact.accountId !== notice.userId
         || compact.purpose !== "travel"
+        || (qimenPayload.schema === 4 && qimenOccurrence.occurrence_key !== notice.key)
         || compact.direction !== qimenOccurrence.selected_direction
         || compact.hourStart !== qimenOccurrence.snapshot.layers.hour.validFrom
+        || compact.hourStart !== iso(qimenOccurrence.hour_valid_from)
         || compact.hourEnd !== iso(qimenOccurrence.hour_valid_until)
         || compact.snapshotDigest !== qimenOccurrence.snapshot_digest
         || qimenOccurrence.selected_direction !== notice.sourceFacts?.selectedDirection
         || qimenOccurrence.snapshot_digest !== notice.sourceFacts?.snapshotDigest
+        || stableStringify(qimenOccurrence.version_tuple) !== stableStringify(qimenOccurrence.snapshot.versionTuple)
         || qimenOccurrence.version_tuple?.hour !== notice.sourceFacts?.calculationVersion
         || iso(qimenOccurrence.hour_valid_until) !== notice.sourceFacts?.eventEndAt
-        || iso(qimenOccurrence.send_deadline) !== notice.sourceFacts?.sendDeadline) {
+        || iso(qimenOccurrence.send_deadline) !== notice.sourceFacts?.sendDeadline
+        || (qimenPayload.schema === 4 && stableStringify(notice.sourceFacts?.seasonalEvidence)
+          !== stableStringify(qimenOccurrence.snapshot.layers.hour.contextEvidence))) {
         throw new Error("qimen_occurrence_binding_changed");
       }
     }
@@ -571,6 +687,13 @@ async function reserve(db, notice, dry = false) {
     }
     const historyCopy = historyCopyFor(notice, context.locale);
     let reservationSourceFacts = notice.sourceFacts || {};
+    if (qimenPayload?.schema === 4) {
+      const expectedCopy = qimenLockedCopy(context.locale, qimenOccurrence.snapshot);
+      if (historyCopy.title !== expectedCopy.title || historyCopy.body !== expectedCopy.body) {
+        throw new TypeError("qimen_notice_copy_mismatch");
+      }
+      reservationSourceFacts = { ...notice.sourceFacts, presentationLocale: context.locale };
+    }
     if (ziweiPayload?.schema === 3) {
       const expectedCopy = ziweiHourlyRuntime.buildZiweiHourlyCopy(context.locale, ziweiOccurrence.snapshot, { schema: 3 });
       if (historyCopy.title !== expectedCopy.title || historyCopy.body !== expectedCopy.body) {
@@ -628,8 +751,8 @@ async function reserve(db, notice, dry = false) {
         platform: token.platform,
       });
       if (!provider) continue;
-      const qimenV3PrivacySafeCopy = qimenPayload?.schema === 3;
-      const providerCopy = qimenV3PrivacySafeCopy ? historyCopy
+      const qimenFullCopyIsPrivacySafe = qimenPayload?.schema === 3 || qimenPayload?.schema === 4;
+      const providerCopy = qimenFullCopyIsPrivacySafe ? historyCopy
         : notice.kind === "ziwei"
           ? context.privacy_preview === true ? historyCopy : ziweiHourlyRuntime.buildZiweiHourlyPrivateCopy(context.locale)
           : notificationPayload.previewCopy(
@@ -652,7 +775,7 @@ async function reserve(db, notice, dry = false) {
          VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,'reserved',now(),now())
          ON CONFLICT(push_log_id,installation_id) DO NOTHING RETURNING id`,
         [parent.rows[0].id, token.id, token.installation_id, provider, JSON.stringify(providerMessage),
-          messageSha256(providerMessage), qimenV3PrivacySafeCopy || context.privacy_preview !== true,
+          messageSha256(providerMessage), qimenFullCopyIsPrivacySafe || context.privacy_preview !== true,
           notice.transactional === true],
       );
       if (inserted.rows[0]) attemptIds.push(inserted.rows[0].id);
@@ -1066,6 +1189,12 @@ function currentPolicyDecision(row, context, capCount) {
       if (locationExpiresAt <= now || now.valueOf() - capturedAt.valueOf() > locationLeaseMs) {
         return { allow: false, terminal: true, reason: "policy_location_expired" };
       }
+      if (context.qimen_attempt_attested !== true) {
+        return { allow: false, terminal: true, reason: "policy_attestation_changed" };
+      }
+      if (!qimenTokenSupportsPayload(row.qimen_token_payload_schema, qimenPayloadDescriptor(row.payload))) {
+        return { allow: false, terminal: true, reason: "policy_payload_schema_changed" };
+      }
     }
     const entitlementClock = notificationScience.zonedClock(
       notificationScience.safeTimezone(context.qimen_timezone),
@@ -1243,14 +1372,23 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
     context.zibai_calculation_version = zibai.rows[0]?.calculation_version;
   }
   if (row.kind === "qimen") {
-    const qimenAttested = typeof row.payload?.qimenV2 === "string" || typeof row.payload?.qimenV3 === "string";
-    if (qimenAttested) {
-      const qimen = await tx.query(
+    // Resolve ownership from the persisted occurrence, not from whether a
+    // possibly corrupted compact envelope still parses. A broken modern
+    // payload must never downgrade into the old generic-Qimen policy.
+    const qimen = await tx.query(
         `SELECT enabled,location_permission,location_captured_at,location_expires_at,
-                location_timezone,quiet_start,quiet_end
-           FROM mobile_qimen_installations WHERE user_id=$1 AND installation_id=$2`,
-        [row.user_id, row.installation_id],
-      );
+                location_timezone,quiet_start,quiet_end,
+                o.user_id AS occurrence_user_id,o.installation_id AS occurrence_installation_id,
+                o.state AS occurrence_state,o.occurrence_key,o.selected_direction,o.version_tuple,
+                o.hour_valid_from,o.hour_valid_until,o.send_deadline,o.snapshot,o.snapshot_digest
+           FROM mobile_qimen_installations i
+           JOIN mobile_qimen_occurrences o
+             ON o.user_id=i.user_id AND o.installation_id=i.installation_id AND o.push_log_id=$3
+          WHERE i.user_id=$1 AND i.installation_id=$2 FOR UPDATE OF i,o`,
+        [row.user_id, row.installation_id, row.push_log_id],
+    );
+    const qimenAttested = qimen.rows.length > 0 || qimenHasAttestationEvidence(row);
+    if (qimenAttested) {
       context.qimen_enabled = qimen.rows[0]?.enabled === true;
       context.qimen_location_required = true;
       context.qimen_location_permission = qimen.rows[0]?.location_permission;
@@ -1259,6 +1397,11 @@ async function applyCurrentPolicyLocked(tx, row, policyNow = null) {
       context.qimen_timezone = qimen.rows[0]?.location_timezone || "UTC";
       context.qimen_quiet_start = qimen.rows[0]?.quiet_start;
       context.qimen_quiet_end = qimen.rows[0]?.quiet_end;
+      context.qimen_attempt_attested = qimenAttemptAttestationValid(
+        row,
+        qimen.rows[0]?.snapshot,
+        qimen.rows[0],
+      );
     } else {
       context.qimen_enabled = context.prefs?.qimen_enabled === true;
       context.qimen_location_required = false;
@@ -1381,6 +1524,7 @@ async function processClaim(db, attempt, options = {}) {
         const token = await tx.query(
           `SELECT t.id,t.device_push_token,t.expo_push_token,
                   to_jsonb(t)->>'zibai_calculation_version' AS zibai_calculation_version,
+                  to_jsonb(t)->>'qimen_payload_schema' AS qimen_payload_schema,
                   to_jsonb(t)->>'ziwei_payload_schema' AS ziwei_payload_schema
              FROM mobile_push_tokens t
             WHERE t.user_id=$1 AND t.installation_id=$2 AND t.enabled=true
@@ -1392,6 +1536,8 @@ async function processClaim(db, attempt, options = {}) {
         if (!token.rows[0]) return { ...row, targetUnavailable: true };
         const policyRow = row.kind === "zibai"
           ? { ...row, zibai_token_calculation_version: token.rows[0].zibai_calculation_version }
+          : row.kind === "qimen"
+            ? { ...row, qimen_token_payload_schema: token.rows[0].qimen_payload_schema }
           : row.kind === "ziwei"
             ? { ...row, ziwei_token_payload_schema: token.rows[0].ziwei_payload_schema }
             : row;
@@ -1591,7 +1737,8 @@ module.exports = {
   assertNoCredentialFacts,assertTransactionalKind,
   claimOne,claimReceiptOne,deliver,deriveParent,errorSummary,finishAttempt,finishReceipt,
   messageSha256,pollReceiptBatch,recoverUncertainOne,reserve,retryDelaySeconds,runRetryBatch,stableStringify,
-  currentPolicyDecision,historyCopyFor,localizedHistoryCopies,trySchedulerRunLease,withInstallationLock,
+  currentPolicyDecision,historyCopyFor,localizedHistoryCopies,qimenAttemptAttestationValid,
+  qimenPayloadDescriptor,qimenTokenSupportsPayload,trySchedulerRunLease,withInstallationLock,
   withSchedulerRunLease,withZiweiProducerGate,ziweiAttemptAttestationValid,
   zibaiOccurrenceEndAt,
 };
