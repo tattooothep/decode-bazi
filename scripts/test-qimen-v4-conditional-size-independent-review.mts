@@ -108,6 +108,7 @@ type Sample = {
   notificationAndDataJsonBytes: number | null; notificationAndDataKeyValueBytes: number | null;
 };
 let noSupportingPairCases = 0;
+let hardIneligibleCases = 0;
 let validSnapshots = 0;
 let excludedOverWarningCap = 0;
 let baselineTooManyWarnings = 0;
@@ -134,13 +135,14 @@ for (const method of Object.keys(seasonal.DOOR_METHODS)) {
       palace.starVigor = maps.star.byStarCode[palace.starCode];
       palace.doorVigor = palace.direction === "C" ? null : maps.door.byDoorCode[palace.doorCode];
     }
-    const hasSupportingPair = base.layers.hour.palaces.some((palace: any) => palace.direction !== "C"
-      && ["旺", "相"].includes(palace.starVigor) && ["旺", "相"].includes(palace.doorVigor));
-    if (!hasSupportingPair) {
-      assert.throws(() => fixture.selectSupportingDirection(base), /qimen_fixture_no_supporting_direction/u);
+    const status = fixture.supportingDirectionStatus(base);
+    if (status.kind !== "admissible") {
+      assert.throws(() => fixture.selectSupportingDirection(base),
+        status.kind === "no_supporting_pair" ? /qimen_fixture_no_supporting_direction/u : /qimen_fixture_supporting_directions_intrinsically_ineligible/u);
       assert.throws(() => runtime.buildQimenThreeLayerSnapshotV4(base), /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u);
-      noSupportingPairCases += 1;
-      fixture.arrangeSyntheticSupportingDoor(base);
+      if (status.kind === "no_supporting_pair") noSupportingPairCases += 1;
+      else hardIneligibleCases += 1;
+      fixture.arrangeSyntheticAdmissibleDirection(base);
     } else fixture.selectSupportingDirection(base);
     const selected = base.layers.hour.palaces.find((palace: any) => palace.direction === base.selectedDirection);
     const mandatoryIntrinsicWarnings = ["deity", "door", "star"].filter(kind => {
@@ -203,10 +205,11 @@ for (const method of Object.keys(seasonal.DOOR_METHODS)) {
   }
 }
 assert.equal(noSupportingPairCases, 4);
+assert.equal(hardIneligibleCases, 16);
 assert.equal(totals.envelopes + rejectedCopies * 2, validSnapshots * 6);
 console.log(JSON.stringify({ result: "QIMEN_V4_CONDITIONAL_SIZE_INDEPENDENT_MEASUREMENT",
   policyAdmittedWarningSets: canonicalSets.length, warningCodes: warningCodes.length,
-  validSnapshots, noSupportingPairCases, excludedOverWarningCap, baselineTooManyWarnings, rejectedCopies, totals,
+  validSnapshots, noSupportingPairCases, hardIneligibleCases, excludedOverWarningCap, baselineTooManyWarnings, rejectedCopies, totals,
   canonicalBuilderControlledEngineBridge: bridge,
   maxByLocaleProvider: [...maxByLocaleProvider.values()], firstRejectedCopies, firstOverflows,
   noSilentTruncation: true, network: 0,

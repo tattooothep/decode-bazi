@@ -26,29 +26,69 @@ function contextLayer(kind, validFrom, validUntil, pillars) {
 
 // Select only an existing pair. No state rewriting, arrangement fallback or
 // claim that an ineligible chart contains a recommended direction is allowed.
-function selectSupportingDirection(value) {
-  const palace = value.layers.hour.palaces.find((candidate) => candidate.direction !== "C"
+function intrinsicConditions(palace) {
+  const entries = ["deity", "door", "star"].map((kind) => ({
+    kind, component: catalog.resolveQimenComponent(kind, palace[`${kind}Code`]),
+  }));
+  return {
+    severe: entries.some(({ component }) => !component || component.baseQuality === "severe"),
+    warnings: entries.filter(({ component }) => component?.baseQuality === "inauspicious")
+      .map(({ kind }) => `INTRINSIC_${kind.toUpperCase()}_BAD`),
+  };
+}
+
+function supportingDirectionStatus(value) {
+  const pairs = value.layers.hour.palaces.filter((candidate) => candidate.direction !== "C"
     && ["旺", "相"].includes(candidate.starVigor) && ["旺", "相"].includes(candidate.doorVigor));
-  if (!palace) throw new Error("qimen_fixture_no_supporting_direction");
+  if (pairs.length === 0) return { kind: "no_supporting_pair", palace: null };
+  const palace = pairs.find((candidate) => {
+    const conditions = intrinsicConditions(candidate);
+    return !conditions.severe && conditions.warnings.length <= 2;
+  });
+  return { kind: palace ? "admissible" : "hard_ineligible", palace: palace || null };
+}
+
+function selectSupportingDirection(value) {
+  const selection = supportingDirectionStatus(value);
+  if (selection.kind === "no_supporting_pair") throw new Error("qimen_fixture_no_supporting_direction");
+  if (selection.kind !== "admissible") throw new Error("qimen_fixture_supporting_directions_intrinsically_ineligible");
+  const palace = selection.palace;
   value.selectedDirection = palace.direction;
   value.hourDecision.direction = palace.direction;
+  value.hourDecision.reasonCodes = ["hour_conditional_good", "hour_reading_usable",
+    ...intrinsicConditions(palace).warnings.map((code) => `hour_warning_${code}`)];
   return value;
 }
 
-// TEST MATRIX ONLY: deliberately construct a different synthetic arrangement
-// by exchanging complete door tuples. Callers must first assert that the
-// original has no supporting pair. This is not a prediction or producer fallback;
-// no seasonal label is changed independently of its associated door component.
+// Historical fixture-helper alias. It now creates a complete admissible
+// synthetic arrangement rather than exchanging only a door into a severe star.
+// Callers must first assert that the original has no supporting pair.
 function arrangeSyntheticSupportingDoor(value) {
+  if (supportingDirectionStatus(value).kind !== "no_supporting_pair") {
+    throw new Error("qimen_fixture_supporting_pair_already_exists");
+  }
+  return arrangeSyntheticAdmissibleDirection(value);
+}
+
+// TEST MATRIX ONLY: construct a *different* arrangement after the original is
+// explicitly rejected for no seasonal pair or unavoidable intrinsic severity.
+// Swap entire component tuples, never just a name, quality, or vigor label.
+function arrangeSyntheticAdmissibleDirection(value) {
+  if (supportingDirectionStatus(value).kind === "admissible") throw new Error("qimen_fixture_admissible_direction_already_exists");
   const palaces = value.layers.hour.palaces.filter((palace) => palace.direction !== "C");
-  if (palaces.some((palace) => ["旺", "相"].includes(palace.starVigor)
-    && ["旺", "相"].includes(palace.doorVigor))) throw new Error("qimen_fixture_supporting_pair_already_exists");
-  const starPalace = palaces.find((palace) => ["旺", "相"].includes(palace.starVigor));
-  const doorPalace = palaces.find((palace) => ["旺", "相"].includes(palace.doorVigor));
-  if (!starPalace || !doorPalace) throw new Error("qimen_fixture_no_supporting_components");
-  const fields = ["doorCode", "doorZh", "doorVigor"];
-  if (Object.hasOwn(starPalace, "doorBaseQuality")) fields.push("doorBaseQuality");
-  for (const field of fields) [starPalace[field], doorPalace[field]] = [doorPalace[field], starPalace[field]];
+  const target = palaces[0];
+  for (const kind of ["star", "door", "deity"]) {
+    const donor = palaces.find((palace) => {
+      const component = catalog.resolveQimenComponent(kind, palace[`${kind}Code`]);
+      return component && component.baseQuality !== "severe" && component.baseQuality !== "inauspicious"
+        && (kind === "deity" || ["旺", "相"].includes(palace[`${kind}Vigor`]));
+    });
+    if (!donor) throw new Error("qimen_fixture_no_admissible_components");
+    const fields = [`${kind}Code`, `${kind}Zh`];
+    if (kind !== "deity") fields.push(`${kind}Vigor`);
+    if (Object.hasOwn(target, `${kind}BaseQuality`)) fields.push(`${kind}BaseQuality`);
+    for (const field of fields) [target[field], donor[field]] = [donor[field], target[field]];
+  }
   return selectSupportingDirection(value);
 }
 
@@ -79,4 +119,5 @@ function build(accountId, explicitDoorMethod) {
   return runtime.buildQimenThreeLayerSnapshotV4(input(accountId, explicitDoorMethod));
 }
 
-module.exports = { input, build, contextLayer, selectSupportingDirection, arrangeSyntheticSupportingDoor };
+module.exports = { input, build, contextLayer, intrinsicConditions, supportingDirectionStatus,
+  selectSupportingDirection, arrangeSyntheticSupportingDoor, arrangeSyntheticAdmissibleDirection };

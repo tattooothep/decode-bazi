@@ -41,6 +41,13 @@ assert.deepEqual({ ...currentManifest.layers.hour, calculationVersion: historica
 
 let checkedPalaces = 0;
 let noSupportingPairCases = 0;
+let hardIneligibleCases = 0;
+const componentTuples = (value: any) => Object.fromEntries(["deity", "door", "star"].map(kind => [kind,
+  value.layers.hour.palaces.map((palace: any) => runtime.canonicalStringify({
+    code: palace[`${kind}Code`], zh: palace[`${kind}Zh`],
+    ...(kind === "deity" ? {} : { vigor: palace[`${kind}Vigor`] }),
+  })).sort(),
+]));
 const fullSizes: number[] = [];
 const compactSizes: number[] = [];
 for (const method of methods) {
@@ -93,16 +100,35 @@ for (const method of methods) {
       palace.starVigor = maps.star.byStarCode[palace.starCode];
       palace.doorVigor = palace.direction === "C" ? null : maps.door.byDoorCode[palace.doorCode];
     }
-    const hasSupportingPair = input.layers.hour.palaces.some((palace: any) => palace.direction !== "C"
-      && ["旺", "相"].includes(palace.starVigor) && ["旺", "相"].includes(palace.doorVigor));
-    if (!hasSupportingPair) {
-      assert.throws(() => fixture.selectSupportingDirection(input), /qimen_fixture_no_supporting_direction/u);
+    const originalTuples = componentTuples(input);
+    const originalInstruments = input.layers.hour.palaces.map((palace: any) => [palace.earthInstrument, palace.heavenInstrument]);
+    const status = fixture.supportingDirectionStatus(input);
+    if (status.kind !== "admissible") {
+      assert.throws(() => fixture.selectSupportingDirection(input),
+        status.kind === "no_supporting_pair" ? /qimen_fixture_no_supporting_direction/u : /qimen_fixture_supporting_directions_intrinsically_ineligible/u);
       assert.throws(() => runtime.buildQimenThreeLayerSnapshotV4(input), /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u);
-      noSupportingPairCases += 1;
+      if (status.kind === "no_supporting_pair") noSupportingPairCases += 1;
+      else {
+        hardIneligibleCases += 1;
+        for (const candidate of input.layers.hour.palaces.filter((palace: any) => palace.direction !== "C"
+          && ["旺", "相"].includes(palace.starVigor) && ["旺", "相"].includes(palace.doorVigor))) {
+          const conditions = fixture.intrinsicConditions(candidate);
+          assert.equal(conditions.severe, true, "these sixteen originals are specifically severe, not merely over the soft-warning cap");
+          const rejected = structuredClone(input);
+          rejected.selectedDirection = rejected.hourDecision.direction = candidate.direction;
+          rejected.hourDecision.reasonCodes = ["hour_conditional_good", "hour_reading_caution",
+            ...conditions.warnings.map((code: string) => `hour_warning_${code}`)];
+          assert.throws(() => runtime.buildQimenThreeLayerSnapshotV4(rejected), /QIMEN_THREE_LAYER_SNAPSHOT_INVALID/u,
+            "each original seasonal supporting pair is still ineligible when its severe intrinsic component is selected");
+        }
+      }
       // A distinct controlled synthetic chart allows positive full-grid tests.
       // The original ineligible chart above remains invalid; no gate is bypassed.
-      fixture.arrangeSyntheticSupportingDoor(input);
+      fixture.arrangeSyntheticAdmissibleDirection(input);
     } else fixture.selectSupportingDirection(input);
+    assert.deepEqual(componentTuples(input), originalTuples,
+      "synthetic positive controls exchange whole tuples; no code, name, intrinsic quality or seasonal state is invented");
+    assert.deepEqual(input.layers.hour.palaces.map((palace: any) => [palace.earthInstrument, palace.heavenInstrument]), originalInstruments);
     const result = runtime.buildQimenThreeLayerSnapshotV4(input);
     assert.equal(runtime.verifyQimenThreeLayerSnapshotV4(result), true);
     for (let index = 0; index < 9; index += 1) {
@@ -243,10 +269,11 @@ for (const method of methods) {
 }
 assert.notEqual(fixture.build(accountId, methods[0]).snapshotDigest, fixture.build(accountId, methods[1]).snapshotDigest);
 assert.equal(noSupportingPairCases, 4);
+assert.equal(hardIneligibleCases, 16);
 for (const [snapshot, verify] of [[legacyV2, runtime.verifyQimenThreeLayerSnapshot], [historical, runtime.verifyQimenThreeLayerSnapshotV3]]) {
   const changed = structuredClone(snapshot); changed.layers.hour.palaces[0].starVigor = "廢";
   assert.equal(verify(resign(changed)), false, "historical vocabularies remain frozen even with a correct new digest");
   const evidence = structuredClone(snapshot); evidence.layers.hour.contextEvidence = fixture.build(accountId, methods[0]).layers.hour.contextEvidence;
   assert.equal(verify(resign(evidence)), false, "historical hour evidence stays null");
 }
-console.log(JSON.stringify({ result: "qimen V4 contract passed", profiles: methods.length, branchCases: 24, noSupportingPairCases, checkedPalaces, fullSizes, compactSizes }));
+console.log(JSON.stringify({ result: "qimen V4 contract passed", profiles: methods.length, branchCases: 24, noSupportingPairCases, hardIneligibleCases, checkedPalaces, fullSizes, compactSizes }));
