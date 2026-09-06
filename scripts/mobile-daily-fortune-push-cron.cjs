@@ -49,6 +49,7 @@ async function getJson(user, url, signal) {
 
 const guard = require("../src/lib/push-guard.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const dailyAiSummary = require("../src/lib/daily-ai-summary.cjs");
 const science = require("../src/lib/notification-science.cjs");
 const notificationPayload = require("../src/lib/notification-payload.cjs");
 const schedulerHeartbeat = require("../src/lib/notification-scheduler-heartbeat.cjs");
@@ -268,7 +269,29 @@ async function main() {
         nowMinutes: dateStr === baseDay ? (localNowMin ?? 0) : -1,
       });
       if (!notice) { skipped++; continue; }
-      const result = await delivery.deliver(db, notice, { dry: DRY });
+      /**
+       * สรุปดวงเช้า AI fusion (goal สาย ข · 6 ก.ย. 69): ถ้ามี snapshot ที่งาน
+       * กลางคืนสร้างไว้ ให้ใช้ข้อความ AI แทนสูตรสำเร็จ — ทับเฉพาะ title/body
+       * ต่อภาษา · key กันซ้ำ/payload/guard คงเดิม · ตาราง/แถวไม่มีหรือ query
+       * พัง = ใช้ข้อความสูตรเดิมเงียบๆ (แจ้งเตือนไม่มีวันเงียบ)
+       */
+      let finalNotice = notice;
+      try {
+        const ai = await db.query(
+          `SELECT summary FROM mobile_daily_ai_summaries
+            WHERE user_id=$1 AND profile_id=$2 AND forecast_date=$3 AND status='ready'`,
+          [u.id, u.profile_id, dateStr],
+        );
+        const summary = ai.rows[0]?.summary || null;
+        if (summary) {
+          finalNotice = dailyAiSummary.applyAiCopiesToNotice(notice, summary, {
+            dateLabel: `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`,
+            isTomorrow: dateStr !== baseDay,
+            score: Number(engine.today?.verdict?.score),
+          });
+        }
+      } catch { /* ตารางยังไม่มี/แถวเสีย → สูตรเดิม */ }
+      const result = await delivery.deliver(db, finalNotice, { dry: DRY });
       if (result.status === "accepted" || result.status === "dry") sent++;
       else if (result.status === "failed") failed++;
       else skipped++;
@@ -282,6 +305,6 @@ async function main() {
   await schedulerHeartbeat.writeSchedulerHeartbeat("daily-fortune");
 }
 
-module.exports = { DAILY_USERS_SQL,buildDailyCopy,buildDailyProducer,dailyForecastDate,dailySchedulerLeaseName,effectiveDailyMinute,effectiveDailySchedule,getJson,loadDailyUsers,main };
+module.exports = { DAILY_USERS_SQL,buildDailyCopy,buildDailyProducer,dailyForecastDate,dailySchedulerLeaseName,effectiveDailyMinute,effectiveDailySchedule,getJson,loadDailyUsers,main,signSession };
 
 if (require.main === module) main().catch(() => { console.error("[mobile-daily-push] category=daily error_code=scheduler_failed"); process.exit(1); });
