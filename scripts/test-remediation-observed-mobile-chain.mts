@@ -13,6 +13,7 @@ const clone = (value: any) => JSON.parse(JSON.stringify(value));
 const assurance = "observed-not-bound-not-immutable-not-acceptance";
 const policy = "hourkey-fixed-bwrap-offline-internal-preview/v3";
 const canonicalPolicy = "hourkey-fixed-bwrap-offline-internal-preview/v4";
+const boundedPolicy = "hourkey-fixed-bwrap-offline-internal-preview/v5";
 const limitations = ["Records one internal preview build observed on this host only.",
   "Does not prove reproducibility, immutability, provenance, or acceptance readiness.",
   "Does not authorize deploy, distribution, production signing, or release.",
@@ -184,6 +185,12 @@ function canonicalRecipe(f: ReturnType<typeof fixture>) {
     ":unityLibrary:buildIl2Cpp", ":app:createBundleReleaseJsAndAssets", ":app:assembleRelease",
     "--offline", "--no-daemon", "--no-build-cache", "--rerun-tasks", "--stacktrace"]);
 }
+function boundedRecipe(f: ReturnType<typeof fixture>) {
+  canonicalRecipe(f);
+  f.receipt.sandbox.policy = boundedPolicy;
+  f.publicReceipt.build.fixedPolicy = boundedPolicy;
+  replaceGradle(f, [...f.expected.nativeCommands.gradle.slice(0, -1), "--max-workers=2", "--no-parallel", "--stacktrace"]);
+}
 
 let checked = 0;
 function rejected(name: string, mutate: (f: ReturnType<typeof fixture>) => void, after?: (request: any, f: ReturnType<typeof fixture>) => void) {
@@ -220,6 +227,32 @@ try {
   assert.equal(currentResult.chainIntegrityValid, true, "canonical v4 recipe must be recognized without weakening v3");
   assert.equal(currentResult.executionAuthorityVerified, false); assert.equal(currentResult.releaseReady, false);
   assert.deepEqual(currentResult.missingProofs, result.missingProofs); checked++;
+  const bounded = fixture(); boundedRecipe(bounded);
+  const boundedResult = verifyObservedMobileChain(bounded.seal());
+  assert.equal(boundedResult.chainIntegrityValid, true, "paired v5 recognizes only the approved bounded Gradle recipe");
+  assert.equal(boundedResult.executionAuthorityVerified, false); assert.equal(boundedResult.releaseReady, false);
+  assert.deepEqual(boundedResult.missingProofs, result.missingProofs); checked++;
+  for (const oldPolicy of [policy, canonicalPolicy]) {
+    rejected(`private v5/public ${oldPolicy}`, f => { boundedRecipe(f); f.publicReceipt.build.fixedPolicy = oldPolicy; });
+    rejected(`private ${oldPolicy}/public v5`, f => { boundedRecipe(f); f.receipt.sandbox.policy = oldPolicy; });
+    rejected(`${oldPolicy} cannot inherit v5 flags`, f => {
+      boundedRecipe(f); f.receipt.sandbox.policy = oldPolicy; f.publicReceipt.build.fixedPolicy = oldPolicy;
+    });
+  }
+  for (const [name, mutate] of [
+    ["v5 missing worker limit", (argv: string[]) => argv.filter(x => x !== "--max-workers=2")],
+    ["v5 missing no-parallel", (argv: string[]) => argv.filter(x => x !== "--no-parallel")],
+    ["v5 wrong worker count", (argv: string[]) => argv.map(x => x === "--max-workers=2" ? "--max-workers=4" : x)],
+    ["v5 split worker arguments", (argv: string[]) => argv.flatMap(x => x === "--max-workers=2" ? ["--max-workers", "2"] : [x])],
+    ["v5 reversed flags", (argv: string[]) => [...argv.slice(0, -3), "--no-parallel", "--max-workers=2", "--stacktrace"]],
+    ["v5 flags after stacktrace", (argv: string[]) => [...argv.slice(0, -3), "--stacktrace", "--max-workers=2", "--no-parallel"]],
+    ["v5 duplicate worker flag", (argv: string[]) => [...argv.slice(0, -1), "--max-workers=2", "--stacktrace"]],
+    ["v5 extra generic flag", (argv: string[]) => [...argv.slice(0, -1), "--parallel", "--stacktrace"]],
+    ["v5 missing canonical clean", (argv: string[]) => argv.filter(x => x !== "clean")],
+  ] as const) rejected(name, f => { boundedRecipe(f); replaceGradle(f, mutate(f.expected.nativeCommands.gradle)); });
+  rejected("v5 retains canonical cache binding", f => {
+    boundedRecipe(f); f.receipt.sandbox.dedicatedGradleUserHome = join(f.root, "gradle-user-home");
+  });
   for (const [name, mutate] of [
     ["private v4/public v3", (f: ReturnType<typeof fixture>) => { f.publicReceipt.build.fixedPolicy = policy; }],
     ["private v3/public v4", (f: ReturnType<typeof fixture>) => { f.receipt.sandbox.policy = policy; }],
