@@ -21,6 +21,8 @@ const { Client } = require("pg");
 const DRY = process.argv.includes("--dry");
 const MOCK_AI = process.argv.includes("--mock-ai");
 const ONLY_USER = (process.argv.find((a) => a.startsWith("--user=")) || "").slice(7) || null;
+// --date=YYYY-MM-DD: ระบุวันเป้าหมายเอง (ข้ามหน้าต่างเวลา · ใช้ทดสอบ/ซ่อมรายคน — consent ยังบังคับเหมือนเดิม)
+const FORCE_DATE = (process.argv.find((a) => a.startsWith("--date=")) || "").slice(7) || null;
 const BASE = process.env.PUSH_INTERNAL_BASE || "http://127.0.0.1:3350";
 const MAX_AI_PER_RUN = 6;
 
@@ -108,7 +110,14 @@ async function buildFacts(user, dateStr) {
         .map((h) => ({ range: h.range, quality: String(h.quality || "flat") }))
         .slice(0, 12)
     : [];
-  const golden = hours.find((h) => h.quality === "best") || hours.find((h) => h.quality === "good") || null;
+  // ยามทองเลือกช่วงตื่น (05:00-22:59) ก่อน — ยามดึกเอาไว้ท้ายสุด (คนใช้จริงทำอะไรไม่ได้)
+  const waking = (h) => {
+    const hh = Number(h.range.slice(0, 2));
+    return hh >= 5 && hh < 23;
+  };
+  const golden = hours.find((h) => h.quality === "best" && waking(h))
+    || hours.find((h) => h.quality === "good" && waking(h))
+    || hours.find((h) => h.quality === "best") || hours.find((h) => h.quality === "good") || null;
 
   const verdict = today.verdict && typeof today.verdict === "object" ? today.verdict : {};
   const facts = {
@@ -134,10 +143,10 @@ async function buildFacts(user, dateStr) {
   };
 
   // ฉีเหมิน ณ ยามทอง (พังได้ ไม่ล้มงาน — AI จะถูกจำกัดไม่ให้พูดถึง)
-  const qimenTime = golden ? `${golden.range.slice(0, 5)}:00` : "09:00:00";
+  const qimenTime = golden ? golden.range.slice(0, 5) : "09:00";
   const qimen = await postJson(user, `${BASE}/api/mobile/v1/qimen`, {
     date: dateStr,
-    time: qimenTime.slice(0, 8),
+    time: qimenTime,
     lat: 13.7563,
     lng: 100.5018,
     timezone: user.user_timezone || "Asia/Bangkok",
@@ -225,9 +234,11 @@ async function main() {
         let offsetDays = null;
         if (localMin >= 210 && localMin < 405) offsetDays = 0;        // 03:30–06:45 → วันนี้
         else if (localMin >= 1050 && localMin < 1155) offsetDays = 1; // 17:30–19:15 → พรุ่งนี้
-        if (offsetDays === null && !DRY) { skipped++; continue; }
+        if (offsetDays === null && !DRY && !FORCE_DATE) { skipped++; continue; }
         const baseDay = guard.localDateStr(u.user_timezone, runAt);
-        const dateStr = shiftCivilDate(baseDay, offsetDays === null ? 0 : offsetDays);
+        const dateStr = FORCE_DATE && /^\d{4}-\d{2}-\d{2}$/u.test(FORCE_DATE)
+          ? FORCE_DATE
+          : shiftCivilDate(baseDay, offsetDays === null ? 0 : offsetDays);
 
         const existing = await db.query(
           `SELECT status, updated_at FROM mobile_daily_ai_summaries

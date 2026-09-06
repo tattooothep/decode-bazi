@@ -11,6 +11,8 @@
  * โมดูลนี้ pure logic + ตัวเรียก CLI แยก inject ได้ — เทสด้วย mock ล้วน
  */
 const { spawn } = require("node:child_process");
+const { writeFileSync, unlinkSync, chownSync, chmodSync } = require("node:fs");
+const { execFileSync } = require("node:child_process");
 const crypto = require("node:crypto");
 
 const LOCALES = ["th", "en", "zh"];
@@ -198,12 +200,129 @@ function invokeClaudeCli(prompt, opts = {}) {
   });
 }
 
+/** เรียก Grok CLI (pin 0.2.64 ผ่าน SIFU_GROK_BIN · login เป็น jarvis) แบบเดียวกับ sifu */
+function invokeGrokCli(prompt, opts = {}) {
+  const timeoutMs = Number.isInteger(opts.timeoutMs) ? opts.timeoutMs : AI_TIMEOUT_MS;
+  const bin = process.env.SIFU_GROK_BIN || "/root/.grok/bin/grok";
+  const promptFile = `/tmp/daily_ai_${crypto.randomUUID()}.txt`;
+  writeFileSync(promptFile, [
+    "=== GROK CLI TEXT-ONLY ADAPTER ===",
+    "You are invoked non-interactively. Do not call tools, read files, use web search, memory, or subagents.",
+    "Return only the final JSON answer through CLI output.",
+    prompt,
+  ].join("\n"), { mode: 0o600 });
+  try {
+    const ids = execFileSync("id", ["-u", "jarvis"]).toString().trim();
+    const gid = execFileSync("id", ["-g", "jarvis"]).toString().trim();
+    chownSync(promptFile, Number(ids), Number(gid));
+    chmodSync(promptFile, 0o600);
+  } catch { try { chmodSync(promptFile, 0o644); } catch { /* อ่านได้ก็พอ */ } }
+  return new Promise((resolve, reject) => {
+    const child = spawn("sudo", ["-u", "jarvis", "-H", bin,
+      "--prompt-file", promptFile,
+      "--verbatim", "--no-memory", "--no-subagents", "--disable-web-search",
+      "--tools", "todo_write", "--max-turns", "2",
+      "--output-format", "plain",
+    ], { cwd: "/home/jarvis", env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+    let out = "";
+    let err = "";
+    let done = false;
+    const finish = (fn, value) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      try { unlinkSync(promptFile); } catch { /* ไฟล์ชั่วคราว */ }
+      fn(value);
+    };
+    const timer = setTimeout(() => { child.kill("SIGKILL"); finish(reject, new Error("daily_ai_timeout")); }, timeoutMs);
+    child.stdout.on("data", (chunk) => { out += chunk.toString(); });
+    child.stderr.on("data", (chunk) => { err += chunk.toString().slice(0, 2_000); });
+    child.on("error", (error) => finish(reject, error));
+    child.on("close", (code) => {
+      if (code === 0 && out.trim()) finish(resolve, out);
+      else finish(reject, new Error(`daily_ai_grok_exit_${code}:${err.slice(0, 200)}`));
+    });
+  });
+}
+
+/** ทางสำรองชั้น 3: OpenRouter API (คีย์เดียวกับ sifu intro) — ไม่พึ่ง login CLI */
+async function invokeOpenRouter(prompt, opts = {}) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("daily_ai_no_openrouter_key");
+  const model = process.env.DAILY_AI_OPENROUTER_MODEL || process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), Number.isInteger(opts.timeoutMs) ? opts.timeoutMs : AI_TIMEOUT_MS);
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], temperature: 0.4 }),
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`daily_ai_openrouter_${res.status}`);
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (typeof text !== "string" || !text.trim()) throw new Error("daily_ai_openrouter_empty");
+    return text;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** ทางสำรองชั้น 4: Gemini API (คีย์เดียวกับ sifu gemini-api) */
+async function invokeGemini(prompt, opts = {}) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("daily_ai_no_gemini_key");
+  const model = (process.env.SIFU_GEMINI_MODEL || "gemini-3.1-pro-preview").trim();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), Number.isInteger(opts.timeoutMs) ? opts.timeoutMs : AI_TIMEOUT_MS);
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`daily_ai_gemini_${res.status}`);
+    const data = await res.json();
+    const text = (data?.candidates?.[0]?.content?.parts || [])
+      .map((part) => (typeof part?.text === "string" ? part.text : ""))
+      .join("");
+    if (!text.trim()) throw new Error("daily_ai_gemini_empty");
+    return text;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * สร้างสรุปดวง 3 ภาษาจาก facts — invoke ฉีดได้เพื่อเทส
+ * ตัวจริงไล่ตามลำดับ: Claude CLI → Grok CLI → OpenRouter API → Gemini API
  * คืน { summary, model, factsDigest } หรือโยน error (คนเรียกต้อง fallback เอง)
  */
 async function generateDailySummary(facts, options = {}) {
-  const invoke = options.invoke || invokeClaudeCli;
+  if (!options.invoke) {
+    const prompt = buildDailyAiPrompt(facts);
+    const attempts = [
+      ["claude-max-cli", invokeClaudeCli],
+      ["grok-cli", invokeGrokCli],
+      ["openrouter", invokeOpenRouter],
+      ["gemini-api", invokeGemini],
+    ];
+    let lastError = new Error("daily_ai_all_backends_failed");
+    for (const [model, invoke] of attempts) {
+      try {
+        const raw = await invoke(prompt, options);
+        const summary = validateDailySummary(raw, facts);
+        if (!summary) { lastError = new Error("daily_ai_summary_invalid"); continue; }
+        return { summary, model, factsDigest: factsDigest(facts) };
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError;
+  }
+  const invoke = options.invoke;
   const model = options.model || "claude-max-cli";
   const prompt = buildDailyAiPrompt(facts);
   const raw = await invoke(prompt, options);
@@ -258,6 +377,7 @@ module.exports = {
   SCIENCES,
   applyAiCopiesToNotice,
   availableSciences,
+  invokeGrokCli,
   buildDailyAiPrompt,
   extractJsonObject,
   factsDigest,

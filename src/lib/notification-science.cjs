@@ -8,6 +8,7 @@ const SCHEDULER_NAMES = Object.freeze([
   "zibai",
   "qimen",
   "ziwei-hourly",
+  "daily-ai-summary",
 ]);
 const SCHEDULER_LEASE_NAMES = Object.freeze([
   "yam",
@@ -20,6 +21,7 @@ const SCHEDULER_LEASE_NAMES = Object.freeze([
   "zibai",
   "qimen",
   "ziwei-hourly",
+  "daily-ai-summary",
 ]);
 
 // Slightly above each reviewed source cadence. Monthly work must not be judged
