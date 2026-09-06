@@ -1,30 +1,177 @@
 {
   "schema": 1,
-  "generatedAt": "2026-09-04T15:03:36Z",
+  "status": "FIVE_PREDEPLOYMENT_REVIEWS_PASS_ROLLOUT_NOT_YET_APPLIED",
+  "generatedAt": "2026-09-06",
   "bundle": {
     "releaseMode": "hard_off",
     "backend": {
       "baselineCommit": "6ebeb3b9be2c95156959717ca2e24d66119fc0ec",
-      "integrationMode": "patch_equivalent_cherry_pick",
-      "recoveryPatchCommits": [
-        "51559ea5644966775890f9ad2f29fcbcf0e7e6e1",
-        "7909d8e421f26786ce91c81e6808beedbb6febc3",
-        "ac63fcc9805e8e8387138837c4c8bd5650686e26"
-      ],
-      "applicationCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
-      "applicationTree": "553a44074945386a34047f722af4377e055635e4",
+      "applicationCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "applicationTree": "075c226397e042d2bc9f9dbb767fcb1f49437fd9",
       "lockfileSha256": "df3f6863add0a67d7be3cd189d9b954f333a9586e7c790884bae2d250edf855e",
-      "runtimeDigest": "a446658825c68b2fb2f461d0a1b51665bb3df4b0a4b99e61dd039e1a729b0fd7",
-      "sourceDigest": "c88f285ccad5ba965e972080c975c4e279569c52c49478362237db9803b96039",
-      "buildArtifactDigest": "6d309acd889f6271c82843b04c5ce908fb351b92cfbc78f3e8ec869ee648248f"
+      "runtimeDigest": "126a0e368b5ceb455bf594e0b3b4a1574e3b4203423a1d5eb45c567bea9bda0b",
+      "sourceDigest": "53797cb82a3b30481e20c8d554f7c50c1df1de29c6567956b89c327f6a033969",
+      "buildArtifactDigest": "19033ee93691df122a6285125cabf1f0c925c30870ac8c131830cfe985539b57",
+      "buildArtifactAlgorithm": "hourkey-preflight-build-artifact-v1",
+      "reproducibleArtifactDigest": "18e5cad3e80dd4beb2d2e04a3df19621c2d135944ab8e51b0ffcab80a10ab11c",
+      "reproducibleArtifactAlgorithm": "hourkey-r8-normalized-next-tree-metadata-order-v2",
+      "compiledCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "stagedPath": "/root/releases/decode-app-r574-notification-remediation-9cc455c",
+      "archive": {
+        "path": "/root/artifacts/hourkey-backend-fallback-build-7uODi5/next-output.tar.gz",
+        "bytes": 11273545,
+        "sha256": "0963e075eab2c8768f9e7fff5c9f70d9f29b1c9119f20271d7618ffff1fa753e"
+      },
+      "actualBuild": {
+        "session": 95874,
+        "terminalCheck": "6d4194",
+        "startedAt": "2026-09-06T05:10:15.152Z",
+        "endedAt": "2026-09-06T05:11:35.635Z",
+        "exitCode": 0,
+        "productionUnchanged": true
+      },
+      "stageCheck": {
+        "toolCheck": "203064",
+        "gitBlobsAndModes": 2457,
+        "dependenciesByteCompared": true,
+        "serviceUserReadablePaths": 4,
+        "liveSwitched": false
+      },
+      "startupSmoke": {
+        "toolCheck": "55fe24",
+        "health": 200,
+        "unauthenticatedRoutes": 5,
+        "status": 401,
+        "stderrBytes": 0,
+        "isolated": true,
+        "productionDatabase": false,
+        "providerCalls": 0
+      },
+      "producerOnlyFallback": {
+        "commit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+        "files": [
+          "scripts/mobile-ziwei-hourly-push-cron.mts",
+          "scripts/test-ziwei-hourly-scheduler.mts"
+        ],
+        "operatorMode": "ZIWEI_HOURLY_SNAPSHOT_MODE=legacy_three_layer",
+        "defaultMode": "six_layer",
+        "scope": "New occurrences use canonical schema1 only in explicit emergency mode. Existing schema1/schema2 snapshots, deadlines, readers, retries and history are preserved. Stored schema2 extensions are integrity/structure-checked and retained, not freshly recalculated in fallback. Other sciences, APK and producer-enabled gates are unchanged.",
+        "redCheck": "3a77af",
+        "greenCheck": "936cc4: 15 new/resume cases, 9 invalid modes, 10 rejection cases",
+        "typescriptCheck": "096c6f exit0",
+        "reservationChecks": [
+          "199ed6: schema1 108",
+          "9c89e6: schema2 108"
+        ],
+        "killSwitchCheck": "e8b1ca",
+        "independentReview": "/root/artifacts/hourkey-v234-memory-retry-TPI8W4/ziwei-fallback-review.private.md",
+        "independentTest": "e45964 exit0",
+        "scopedReviewPassed": true,
+        "built": true,
+        "deployed": false,
+        "enabledOnProduction": false,
+        "fullGoalAcceptance": false,
+        "buildRoot": "/root/artifacts/hourkey-backend-fallback-build-7uODi5",
+        "operatorRunbook": "/root/artifacts/hourkey-backend-fallback-build-7uODi5/rollout-notes.private.md"
+      },
+      "historicalEvidence": {
+        "path": "/root/artifacts/hourkey-remediation-review-dossier-4Xk7HM/candidate-draft.json",
+        "scope": "Prior commits/builds are historical only; no old signature or artifact is attributed to current application."
+      }
     },
     "mobile": {
       "baselineCommit": "5af5f20687f40e55c23c52a15a6b620c700848b6",
-      "applicationCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
-      "applicationTree": "ce2646523423da15835cd4fbbe3e20ef3ac73226",
+      "applicationCommit": "dd50877f19e761eff599e5618274c570ab289956",
+      "applicationTree": "5c61b516eff1bfdde2e58323aff72c14747f8ad9",
       "lockfileSha256": "a72870c3baf1a54c000472e42e14c6106b49e56b8d7d7c99026b35d5af42bf7d",
-      "runtimeDigest": "c57c0c3e95c9cb68dad6109c3a91f504daa97058b933a20934ae514fa7cc46f8",
-      "buildArtifactDigest": "2e8c2f8838ea35949fd28850e8eeb006f152d3b9992a01b37d738acfff3c05a1"
+      "runtimeDigest": "d0be99deed70da40c3474dc8e3c3308ca8743974ee42c28a43557cfffc71c918",
+      "runtimeDigestFiles": [
+        "App.tsx",
+        "src/components/design/NotificationCenterScreen.tsx",
+        "src/components/design/astronomy/AstronomyFactDetailScreen.tsx",
+        "src/components/design/qizheng/QizhengNotificationDetailScreen.tsx",
+        "src/greenfield/client.ts",
+        "src/greenfield/endpoints.ts",
+        "src/i18n/scienceNotificationsR8.ts",
+        "src/native/notificationPreferencePolicy.ts",
+        "src/native/push.ts",
+        "src/navigation/notificationPayload.ts",
+        "src/navigation/notificationRouteDispatcher.ts",
+        "src/types/mobile.ts"
+      ],
+      "buildArtifactDigest": "114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242",
+      "buildArtifactScope": "Current signed internal Android APK SHA256, not the older all-platform semantic export digest or an iOS native build.",
+      "currentNativeBuild": {
+        "session": 66502,
+        "parentPid": 237974,
+        "terminalObserved": true,
+        "terminalCheck": "2251a4",
+        "terminalEvidence": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/terminal.private.json",
+        "exitCode": 0,
+        "abortReason": null,
+        "remainingOwnedMounts": 0,
+        "minimumAvailableMemoryBytes": 7914745856,
+        "minimumRootFreeBytes": 2668322816,
+        "durableApkPath": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/Hourkey-v234-listener-fix-dd50877f-internal.apk",
+        "apkBytes": 165400344,
+        "apkSha256": "114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242",
+        "technicalApkInspection": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/apk-postinspection.private.json",
+        "sourceNativeChainReview": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/source-native-chain-review.private.md",
+        "sourceNativeChainReviewSha256": "84b3cc48bb5075f0f01159572ca4171b5465c94186ec5bc1f3973e2303876f7c",
+        "durableArchiveCheck": "a64805: both tar --compare invocations exit0",
+        "durableRoot": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp",
+        "actualObservedPath": "/dev/shm/hourkey-v234-listener-fix-wbLB8I/observed",
+        "launcherSha256": "fcff8e454a3119d5254fdb9d9db6120bfd8ac46572a6f44f993c9176d45394d4",
+        "policy": "hourkey-fixed-bwrap-offline-internal-preview/v5",
+        "launchCheck": "024851",
+        "sourceGates": {
+          "check": "cd5cde",
+          "startedAt": "2026-09-06T06:09:57.977Z",
+          "endedAt": "2026-09-06T06:15:16.163Z",
+          "exitCode": 0,
+          "signal": null,
+          "commandCount": 311
+        },
+        "nativeStage": {
+          "startedAt": "2026-09-06T06:15:33.221Z",
+          "endedAt": "2026-09-06T06:24:29.460Z",
+          "exitCode": 0,
+          "gradleDuration": "8m 53s",
+          "actionable": 675,
+          "executed": 674,
+          "precleanedEmptyTasks": [
+            ":app:clean"
+          ]
+        },
+        "scope": "Current dd50877f APK replaces held10006 APK. Actual build, retained chain and technical HBC inspection pass; not installed, physical-phone acceptance or full-goal completion."
+      },
+      "nativeBuildSourceBackendCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "exportHistory": {
+        "sourceCommit": "b610fb6f21054ea0aa587f5ee42ce41dfc4a2953",
+        "digest": "98cb3368dab2d1ff610c4b662258aa3d9429aeaea683324515bfbc48df20662f",
+        "scope": "Historical all-platform comparison before later six-layer UI changes. Not fresh current-commit iOS/web export or phone proof."
+      },
+      "installed": false,
+      "physicalPhoneAcceptance": false,
+      "listenerRemediation": {
+        "baselineCommit": "10006afcb54145d8bb34afffed8a352d49e29d4a",
+        "commit": "dd50877f19e761eff599e5618274c570ab289956",
+        "productionFiles": {
+          "App.tsx": "8be3b35c6cd05b44b585f251bf5ed549ed8e9e1c6ccf69784e0c021d1ca5ff6f",
+          "src/native/push.ts": "15785c9f462a826e2d8c79cf613fc7c6d7e38fcd28dd7353d30edc93e7da8de2"
+        },
+        "red": "3d7b57 actual effect: 0 response listeners vs2 while astronomy storage pending",
+        "green": [
+          "6b848c: actual native32detail/64reject/16App scenarios",
+          "b1b867: native account-store51/51",
+          "bef338: R8 normalization216/lifecycle23/audience6",
+          "23eeed: app wiring",
+          "2ad93f: TypeScript noEmit exit0",
+          "213e56: engagement bounded/owner test"
+        ],
+        "behavior": "Shared navigation/engagement listeners attach synchronously. Only one captured astronomy startup waits for trusted stored audience or registration; failed/empty storage does not consume it prematurely. Current-owner/epoch/audience/cleanup and newer-live-route guards retained. No new provider send or other-science formulas/copy changes.",
+        "limit": "Restored callbacks do not prove OS display or authenticated engagement submission when installation identity itself is unavailable."
+      }
     },
     "runtime": {
       "node": "22.22.1",
@@ -37,8 +184,9 @@
     "science": {
       "sourceDigest": "af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2",
       "modelDigest": "6a4228e9f654062b3b131db3d434172243930151ed025193ae14449e7615964e",
-      "copyDigest": "4aae1bf56fd2e212fc73bb51703f5ef227b92448e7b2f12745e698dfdde45612",
+      "copyDigest": "0b69c861288789a070148d11a42216b00d5ceba714a508c7ed7ce87fe4f131f1",
       "databaseSchemaDigest": "fb8f54d63c6e693d7cf8f35befcf322b79519f718a6517d0b41c38c01b27dff8",
+      "databaseSchemaDigestScope": "existing independently pinned expected schema; not observed on production, where R8 remains absent",
       "astronomyFact": {
         "mode": "civil_two_hour",
         "payloadSchema": 1,
@@ -50,188 +198,382 @@
         "providerSendEnabled": false,
         "sourceStatus": "pending_double_verification",
         "verdictGeneration": false
+      },
+      "qimen": {
+        "approvedDoorMethod": "STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1",
+        "approval": "user approved recommendation 1 on 2026-09-06",
+        "liveUnitConfigured": false,
+        "starAndDoorRulesSeparate": true
+      },
+      "ziwei": {
+        "locales": [
+          "th",
+          "en",
+          "zh",
+          "cn",
+          "vi",
+          "ja",
+          "ru",
+          "ko",
+          "es"
+        ],
+        "typeCVisualReferenceStatus": "Selected C reference SHA256 373340052e1c9b409b6f268219544f30bbfb38ac2863c0e9a1b588b8285f3288 at /var/www/hourkey-static/mobile-mockup-r0/hourkey-hourly-notification-options-abc-20260826.png. User approved full six-layer stored detail. Scoped UI/code and technical APK checks complete; rendered-device acceptance pending.",
+        "sixLayerCandidate": "Snapshot2 retains natal/decade/year/month/day/hour chart. Current dd50877f APK embeds six-layer detail plus listener fix; provider wires stay3-layer. Legacy schema1 remains readable. Optional producer fallback defaults six_layer and remains disabled on live production."
+      },
+      "zibai": {
+        "leapSeamCorrection": "implemented and bounded independently reviewed; not deployed"
       }
     },
     "providerAttempts": 0,
+    "providerAttemptsScope": "this remediation candidate has not sent any push; not an assertion about existing production traffic",
     "buildEvidence": {
-      "policy": {
-        "verifier": "committed_direct_execution_v3",
-        "backend": "fresh_detached_worktree_npm_ci_offline",
-        "mobile": "isolated_stable_module_export_then_observed_sandboxed_native_full_suite_signed_gradle"
-      },
-      "toolchain": {
-        "node": "v22.22.1",
-        "npm": "10.9.4",
-        "gradle": "9.3.1",
-        "androidBuildTools": "36.0.0"
-      },
       "mobileFullSuite": {
-        "commandCount": 301,
-        "commandManifestSha256": "eb5fe76fe502deb5e5616d494d2f5241f678ffc43e9c59d113aa2d73eeb70169",
-        "gradleExecutedTasks": 652
+        "commandCount": 311,
+        "commandManifestSha256": "df7d22b44c04a9af80f0a5a7d02f1ab6acc52b7d8b2c7534f6df18e6091bf31f",
+        "gradleActionableTasks": 675,
+        "gradleExecutedTasks": 674,
+        "precleanedEmptyTasks": [
+          ":app:clean"
+        ],
+        "exception": "user-approved exact reviewed child's preclean of empty app/build, not counted executed"
       },
-      "mobileNativeInputManifestSha256": "4bfa0c152149b7b1772bc4c561e03dc4fc1f8a798d11f5e484561a19185e8f8a",
-      "mobileDependencyInputManifestSha256": "d662ff27ea94ccd30f211b3a3285095004995a71606af8e231dcdbcac1d2308e",
-      "mobileToolchainInputManifestSha256": "13f8e0aed48f8426fd12b40bf6a75e8b0e5baeaddff672ee03dfa2f0707d9dea",
-      "observedBuildReceiptSha256": "328fd963adfcb29ad2940c12b576a6a52b2e4ed390da65a5665e0e5fc3ffcdfb",
+      "mobileNativeInputManifestSha256": "9913dbd97500cb54ed6d4cb57481e7e90e701e865597899a431f0c91862495b9",
+      "mobileDependencyInputManifestSha256": "3b0cb33e0ee572ad7de7073c7075e0b3daae97255c5d799a216cc426977720af",
+      "mobileToolchainInputManifestSha256": "bb184fcd35bdddecf1a7bc1ff53395bf00516792c400266e27b3baa03c0d8805",
+      "observedBuildReceiptSha256": "a2a5fa1689eba3f5947573535bfcc7fa0aef96fb70fbcf06212ef936b4681569",
+      "fixedBuildPolicy": "hourkey-fixed-bwrap-offline-internal-preview/v5",
+      "publicReceiptAssurance": "observed-not-bound-not-immutable-not-acceptance",
+      "publicReceiptLimitations": [
+        "Records one internal preview build observed on this host only.",
+        "Does not prove reproducibility, immutability, provenance, or acceptance readiness.",
+        "Does not authorize deploy, distribution, production signing, or release.",
+        "External signer secrets, store path, and store hash are not recorded; only the APK certificate SHA-256 is retained.",
+        "Source may change after the final observed boundary; consumers must re-verify current state."
+      ],
       "apk": {
-        "sha256": "c8954bda70e84ff24aa82d8d7a3ac2722c4b78da19e6e7e8c17a8647f3d3b118",
-        "unsignedContentSha256": "7b7c09679017b67da84be4bfb4b7539a64d1223c49978ed433f20af72fea9984",
-        "bytes": 165348100,
-        "packageName": "io.hourkey.app",
-        "versionCode": "233",
-        "versionName": "1.0.233",
+        "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/Hourkey-v234-listener-fix-dd50877f-internal.apk",
+        "bytes": 165400344,
+        "sha256": "114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242",
+        "unsignedContentSha256": "08335300b16fca443671dd7ba1a90e0bba16f282007332a4f32486c7a75b66b4",
         "signerSha256": "fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c",
+        "packageName": "io.hourkey.app",
+        "versionCode": 234,
+        "versionName": "1.0.234",
         "distribution": "internal_qa",
         "playProduction": false,
         "storeUpload": false
+      },
+      "artifacts": {
+        "result.json": {
+          "path": "/root/artifacts/hourkey-backend-fallback-build-7uODi5/result.json",
+          "bytes": 715,
+          "sha256": "769da7a4992db819e639913dd3c766c4b3645b8fddb25ab13aa8a49ebf034486"
+        },
+        "archive.json": {
+          "path": "/root/artifacts/hourkey-backend-fallback-build-7uODi5/archive.json",
+          "bytes": 176,
+          "sha256": "2086d11860131eb42214aaf20c860384f88965ff3eadd6c412d558f6c92cf960"
+        },
+        "next-build.stdout.log": {
+          "path": "/root/artifacts/hourkey-backend-fallback-build-7uODi5/next-build.stdout.log",
+          "bytes": 10418,
+          "sha256": "d55e3d1e8968fc393b0cd0d706732ed5fee7cae15cfdb4ea2e67b7e6782ffaa1"
+        },
+        "namespace-terminal.json": {
+          "path": "/root/artifacts/hourkey-backend-fallback-build-7uODi5/namespace-terminal.json",
+          "bytes": 268,
+          "sha256": "ea7149d10ca27efb0a0834e783bde85675459d588afae559780af1add65e156f"
+        },
+        "startup-result.private.json": {
+          "path": "/root/artifacts/hourkey-backend-fallback-build-7uODi5/startup-result.private.json",
+          "bytes": 1877,
+          "sha256": "f4da26998a6be2f1acb32f31aef6dfd508a407014bbb5dda848411e95c75e12a"
+        },
+        "terminal.private.json": {
+          "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/terminal.private.json",
+          "bytes": 758,
+          "sha256": "a2d12a5344f79dcc468c488b8eea859aa4a9e5e3ed9ab585025b47971a26ef7c"
+        },
+        "apk-postinspection.private.json": {
+          "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/apk-postinspection.private.json",
+          "bytes": 12933,
+          "sha256": "76d524e16e2fb8e5a82394669adf2c516b318a4842b84b72d49107fcbfdc9db3"
+        },
+        "source-native-chain-review.private.md": {
+          "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/source-native-chain-review.private.md",
+          "bytes": 3688,
+          "sha256": "84b3cc48bb5075f0f01159572ca4171b5465c94186ec5bc1f3973e2303876f7c"
+        },
+        "ziwei-fallback-review.private.md": {
+          "path": "/root/artifacts/hourkey-v234-memory-retry-TPI8W4/ziwei-fallback-review.private.md",
+          "bytes": 3195,
+          "sha256": "bef5e306b51b90e75e1c4246479c33a111f217a54eb398ffa194bd721bc99d45"
+        },
+        "observed-evidence.tar.gz": {
+          "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/observed-evidence.tar.gz",
+          "bytes": 56319009,
+          "sha256": "ba3bb9fc855f3fd106f6bf3aa4fa9f9b67c394d7a4f893de0e67e270ee7e3d51"
+        },
+        "mobile-generated.tar.gz": {
+          "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/mobile-generated.tar.gz",
+          "bytes": 8134273,
+          "sha256": "58312dde775970250e085481f095ecba5919872751aa6a54ea1add244f1d4978"
+        },
+        "observed-internal-preview-receipt.public.json": {
+          "path": "/dev/shm/hourkey-v234-listener-fix-wbLB8I/observed/observed-internal-preview-receipt.public.json",
+          "bytes": 3207,
+          "sha256": "a2a5fa1689eba3f5947573535bfcc7fa0aef96fb70fbcf06212ef936b4681569"
+        },
+        "observed-internal-preview-receipt.private.json": {
+          "path": "/dev/shm/hourkey-v234-listener-fix-wbLB8I/observed/observed-internal-preview-receipt.private.json",
+          "bytes": 34919,
+          "sha256": "ae25dc9ed7371fc8b954d5aacb5a0fc17a57f4d4d77deafe2c756563d40c7280"
+        },
+        "boundedMigration": {
+          "path": "/root/artifacts/hourkey-r8-bounded-migration-7z2zEM/migration-01.private.json",
+          "bytes": 29738,
+          "sha256": "c0c831022a544f7c3aa023fa97a78341af77cc35f6935e6a0bc8bd63d4531367"
+        },
+        "runtimeFiveFunctions": {
+          "path": "/root/artifacts/hourkey-r8-runtime-full-O0Ag4Z/runtime-checks-01.private.json",
+          "bytes": 30147,
+          "sha256": "cabbed95bbcea837541310f7fd1d63a6ca797fe837b962c078e0d4ebe94652ef"
+        }
+      },
+      "currentHermes": {
+        "path": "/root/worktrees/hourkey-mobile-zibai-v3-p0/android/app/build/generated/assets/react/release/index.android.bundle",
+        "bytes": 7334856,
+        "sha256": "42e9c36a9d2e94e4138880e79776c66d4a7eed505bcadef5e538d4c93ea265fe",
+        "packagedBytes": 7334856,
+        "packagedSha256": "42e9c36a9d2e94e4138880e79776c66d4a7eed505bcadef5e538d4c93ea265fe",
+        "matchesGenerated": true,
+        "archive": {
+          "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/mobile-generated.tar.gz",
+          "bytes": 8134273,
+          "sha256": "58312dde775970250e085481f095ecba5919872751aa6a54ea1add244f1d4978"
+        },
+        "archiveMember": "assets/react/release/index.android.bundle"
+      },
+      "currentSourceMap": {
+        "path": "/root/worktrees/hourkey-mobile-zibai-v3-p0/android/app/build/generated/sourcemaps/react/release/index.android.bundle.map",
+        "bytes": 20567262,
+        "sha256": "89de3eebb598e18445f73475010a32a98167ed74088db6f244657c96f2829de4",
+        "mandatorySources": 12,
+        "firstPartySources": 414,
+        "allContentsMatch": true,
+        "requiredNewModules": [
+          "/src/ziwei/sixLayerDetail.ts",
+          "/src/ziwei/sixLayerCopy.ts",
+          "/src/greenfield/api/ziweiNotificationDetail.ts",
+          "/src/components/design/ziwei/ZiweiSixLayerChart.tsx"
+        ],
+        "requiredFixSources": [
+          {
+            "path": "/App.tsx",
+            "sourceSha256": "8be3b35c6cd05b44b585f251bf5ed549ed8e9e1c6ccf69784e0c021d1ca5ff6f",
+            "embeddedSha256": "8be3b35c6cd05b44b585f251bf5ed549ed8e9e1c6ccf69784e0c021d1ca5ff6f",
+            "match": true
+          },
+          {
+            "path": "/src/native/push.ts",
+            "sourceSha256": "15785c9f462a826e2d8c79cf613fc7c6d7e38fcd28dd7353d30edc93e7da8de2",
+            "embeddedSha256": "15785c9f462a826e2d8c79cf613fc7c6d7e38fcd28dd7353d30edc93e7da8de2",
+            "match": true
+          }
+        ],
+        "archive": {
+          "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/mobile-generated.tar.gz",
+          "bytes": 8134273,
+          "sha256": "58312dde775970250e085481f095ecba5919872751aa6a54ea1add244f1d4978"
+        },
+        "archiveMember": "sourcemaps/react/release/index.android.bundle.map"
       }
-    },
-    "localeReviews": [
-      { "locale": "th", "status": "PASS", "scope": "hard_off_copy_contract", "note": "ภาษาไทยระบุชัดว่าเป็นข้อมูลท้องฟ้า ไม่ใช่คำพยากรณ์ และยังไม่เปิดส่งจริง" },
-      { "locale": "en", "status": "PASS", "scope": "hard_off_copy_contract", "note": "English copy separates sky facts from prediction and states that delivery is not enabled." },
-      { "locale": "zh", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Traditional Chinese copy states astronomy-only facts, no auspicious ranking, and hard-off delivery." },
-      { "locale": "cn", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Simplified Chinese copy states astronomy-only facts, no auspicious ranking, and hard-off delivery." },
-      { "locale": "vi", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Vietnamese copy distinguishes sky data from prediction and accurately describes disabled delivery." },
-      { "locale": "ja", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Japanese copy distinguishes astronomical data from fortune judgment and marks notification delivery off." },
-      { "locale": "ru", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Russian copy separates sky information from forecasts and truthfully marks delivery disabled." },
-      { "locale": "ko", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Korean copy separates celestial information from prediction and identifies the notification as disabled." },
-      { "locale": "es", "status": "PASS", "scope": "hard_off_copy_contract", "note": "Spanish copy separates sky information from prediction and explicitly states delivery is disabled." }
-    ],
-    "soak": {
-      "mode": "accelerated_provider_free_72h_simulation",
-      "observedWindowHours": 72,
-      "accounts": 10000,
-      "boundariesPerDay": 120000,
-      "boundaries": 360000,
-      "processedOccurrences": 359934,
-      "p95Minutes": 1,
-      "p99Minutes": 1,
-      "maxBacklogMinutes": 1,
-      "poolPercent": 47.5,
-      "quotaPercent": 49.99,
-      "headroomMultiplier": 2.13,
-      "legacyP95RegressionPercent": 0,
-      "duplicateLineages": 0,
-      "crashReplayAttempts": 300,
-      "deduplicatedReplays": 300,
-      "revokedBeforeEnqueue": 33,
-      "deletedBeforeEnqueue": 33,
-      "providerCalls": 0,
-      "tzdb": "2026c",
-      "zones": [
-        "Pacific/Kiritimati",
-        "Pacific/Pago_Pago",
-        "Asia/Bangkok",
-        "Asia/Kathmandu",
-        "Asia/Kolkata",
-        "Europe/London",
-        "Europe/Berlin",
-        "America/New_York"
-      ],
-      "qizhengSuppressionReasons": [
-        "source_incomplete",
-        "source_incomplete",
-        "source_incomplete",
-        "source_incomplete",
-        "source_incomplete"
-      ]
-    },
-    "verification": {
-      "backendTypecheck": "PASS",
-      "backendProductionBuild": "PASS",
-      "mobileTypecheck": "PASS",
-      "mobileAndroidIosWebExport": "PASS",
-      "migrationApplyTwiceRollback": "PASS",
-      "strictPayloadPrivacy": "PASS",
-      "providerFreeShadow": "PASS",
-      "legacyProducerReplay": "PASS",
-      "mobileLifecycleAndRoutes": "PASS",
-      "retryRaceAndConsentFences": "PASS"
     },
     "activationBoundary": {
       "astronomyProviderActivationRequiresNewSignedMigration": true,
       "qizhengRequiresDoubleVerifiedSourcesAndNewSignedActivation": true,
       "productionMigrationApplied": false,
       "requiredProductionRolloutOrder": "migration_then_application"
-    }
+    },
+    "unresolvedProofs": [
+      "Production backup/additive migrations and installed preflight must pass ok=true/r8Phase=application_ready before cutover. No migration/live switch performed.",
+      "Coordinated application/runtime/database commit cutover must drain original-deadline pending Ziwei; old-commit mismatch is terminal. Never demote readers or disable shared retry.",
+      "Deployed health/reconcile/required hard-off shadow heartbeat and APK enrollment pending. Live r573 rejects new capabilities.",
+      "Legacy Expo account authority/credential repair preserving current FCM unresolved.",
+      "Physical-phone receive/detail and nine-language rendered Type C acceptance unverified; provider accepted is not phone receipt.",
+      "Five independent full-goal final signatures after actual end-state checks. No goal-complete/release-ready claim."
+    ],
+    "goalComplete": false,
+    "deploymentPreparation": {
+      "status": "prepared_not_installed",
+      "classification": "ordinary provisioning for approved hard-off deployment; no source change, provider activation or existing-key rotation",
+      "shadowService": {
+        "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/hourkey-mobile-astronomy-fact-shadow.service",
+        "bytes": 600,
+        "sha256": "184805100f44a6a6514e4e469a19360870575bf40737026c10534ee6348853c6"
+      },
+      "shadowTimer": {
+        "path": "/root/artifacts/hourkey-v234-listener-fix-dSl3Wp/hourkey-mobile-astronomy-fact-shadow.timer",
+        "bytes": 226,
+        "sha256": "e73b2ef3c8c4d79032d82b8422f4db2f29c190a630c02eb267e68aaac2b3ba33"
+      },
+      "validation": "systemd-analyze verify exit0 (355e46); independent backend reviewer PASS for exact configs; unrelated existing nginx warning not changed",
+      "shadowEnvironment": {
+        "path": "/etc/hourkey/hourkey-r8-shadow.env",
+        "keys": [
+          "PGHOST",
+          "PGPORT",
+          "PGDATABASE",
+          "PGUSER",
+          "PGPASSWORD",
+          "R8_IDENTITY_HMAC_KEY",
+          "R8_IDENTITY_HMAC_KEY_ID"
+        ],
+        "runtimeRole": "hourkey_app",
+        "unixUser": "hourkey-notify",
+        "providerCredentials": false,
+        "provisioned": false,
+        "keyPolicy": "New absent base64 32–64-byte HMAC key and stable ID; retain across rollback, never emit key material in logs."
+      },
+      "preserve": "Existing notification enable flags and credentials unchanged. Do not blindly regenerate dedicated notification env from shared env. Recheck and drain old Ziwei pending before coordinated commits. Keep R8/Qizheng provider-off and no cohort enrollment."
+    },
+    "preDeploymentReviewRequirement": "Exactly five distinct independent current-bundle dimension PASS signatures before production mutation; source-only and historical signatures do not transfer."
   },
-  "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
+  "bundleDigest": "5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea",
   "signatures": [
     {
-      "reviewerId": "r8-science-source-gpt5-20260904T150806Z-d1f86822",
+      "reviewerId": "/root/listener_release_science_review",
       "dimension": "science_source_integrity",
       "verdict": "PASS",
-      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
-      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
-      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
-      "findings": { "critical": [], "important": [], "minor": [] },
+      "bundleDigest": "5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea",
+      "backendCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "mobileCommit": "dd50877f19e761eff599e5618274c570ab289956",
+      "findings": {
+        "critical": [],
+        "important": [],
+        "minor": []
+      },
       "testEvidence": [
-        "Fresh unsigned gate passed R8_FINAL_GATES_OK with 360000 boundaries and providerCalls=0.",
-        "NASA/JPL fixtures, all ten source PDFs, tzdb 2026c, factual-only preview, hard-off contract, profile clone guard, nine-locale separation and Qimen golden-source tests passed.",
-        "Verifier-only delta left all inspected science, source-manifest, ephemeris, migration, contract and shadow-runtime blobs byte-identical."
+        "PREDEPLOYMENT DIMENSION ONLY: permits continuation through the original backup, compatible migration and installed preflight gates; not provider activation, deployed acceptance, phone receipt, nine-language rendered acceptance, predictive accuracy or full-goal approval. R8 stays hard-off and Qizheng remains source-incomplete.",
+        "Independently recomputed canonical bundle digest 5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea. Candidate file SHA256 2e4e83de72d9bae3bb6c517910f7ec434ccf8f80fadc0cadfdd5005cac16b50f at review. Current source HEAD/tree and clean worktrees reconfirmed.",
+        "All 40 selected historical backend science/source/test inputs matched current files and exact backend git blobs; seven of eight selected mobile inputs unchanged, with the eighth being the intentionally changed R8 preview test. Entire mobile delta from 10006afc is App.tsx, src/native/push.ts and four tests; formula, science-parser, source and copy files unchanged. Historical report used as evidence, not inherited bundle approval.",
+        "Independently recomputed current APK SHA256 114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242 and extracted packaged Hermes SHA256 42e9c36a9d2e94e4138880e79776c66d4a7eed505bcadef5e538d4c93ea265fe; both match current bundle. Source-map SHA256 89de3eebb598e18445f73475010a32a98167ed74088db6f244657c96f2829de4 verified; nine selected embedded listener, parser and copy sources match current file bytes exactly.",
+        "Current technical inspection SHA256 76d524e16e2fb8e5a82394669adf2c516b318a4842b84b72d49107fcbfdc9db3, independent retained-chain report SHA256 84b3cc48bb5075f0f01159572ca4171b5465c94186ec5bc1f3973e2303876f7c and terminal record SHA256 a2d12a5344f79dcc468c488b8eea859aa4a9e5e3ed9ab585025b47971a26ef7c verified against exact bundle; reports are scoped evidence, not independently witnessed full build lifecycle or phone proof.",
+        "R8 copy SHA256 remains 0b69c861288789a070148d11a42216b00d5ceba714a508c7ed7ce87fe4f131f1. Exact committed astronomy model closure digest 6a4228e9f654062b3b131db3d434172243930151ed025193ae14449e7615964e and mobile runtime digest d0be99deed70da40c3474dc8e3c3308ca8743974ee42c28a43557cfffc71c918 independently recomputed and matched. Qizheng source digest af7999aff8395b33bc73fa3c6821e3455715bc03d76f0959afddb1392a394bf2 matches unchanged source manifest; ten sources remain pending_double_verification.",
+        "Independent same-source focused checks, all exit0 under bwrap read-only filesystem and unshared network: Qimen v4 parser 24 cases/124 adversarial rejections; Ziwei stored six-layer detail 12 rejection cases/nine locale key checks; R8 preview truth 216 normalization/23 lifecycle/six audience races/four hook additions; Qimen i18n; science import isolation; Qimen nine-star 60 cells; separated door rules 192 cases; R8 source-incomplete/provider-off contract. No broad retest or production-mutating harness used.",
+        "Current R8 preview test SHA256 e600b524205d6c36d1b9700ccb231f910e8a38faaab829b433063582926f264a; Qimen v4 test e0ee18359411797fd034978a57a9c75af5801854cf5c1ab4155f71f654cd62b4; Ziwei detail test fe62f1bccf5c8392bc9b6b22baabda5a90692f6e182429b0ea35130fdbb95cc0. These fixtures establish software behavior, not source-edition authentication or empirical predictive validation.",
+        "Chosen Qimen star and door traditions remain explicitly distinct, with STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1 selected and editorial provenance retained. Astronomy retains prediction:false and judgment:null. No concrete science/copy regression identified.",
+        "Prepared shadow service SHA256 184805100f44a6a6514e4e469a19360870575bf40737026c10534ee6348853c6 and timer SHA256 e73b2ef3c8c4d79032d82b8422f4db2f29c190a630c02eb267e68aaac2b3ba33 independently verified and read. They invoke the unchanged provider-free hard-off shadow worker once per minute, without science changes. Seven-key runtime environment remains planned, not inspected or provisioned by this reviewer. Existing gates and enable flags must remain preserved.",
+        "Only this signature file written. No application/source/build/production/DB/service/provider/credential changes or network calls made. This signature does not transfer to changed bundle bytes."
       ],
-      "reviewedAt": "2026-09-04T15:08:06Z"
+      "reviewedAt": "2026-09-06T06:39:17.845Z"
     },
     {
-      "reviewerId": "mobile-lifecycle-locale-privacy-2b476130-1d53-4d12-8375-04a74d8a5e93",
+      "reviewerId": "current-release-mobile-review-dd50877f",
       "dimension": "mobile_lifecycle_locale_privacy",
       "verdict": "PASS",
-      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
-      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
-      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
-      "findings": { "critical": [], "important": [], "minor": [] },
+      "bundleDigest": "5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea",
+      "backendCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "mobileCommit": "dd50877f19e761eff599e5618274c570ab289956",
+      "findings": {
+        "critical": [],
+        "important": [],
+        "minor": []
+      },
       "testEvidence": [
-        "Fresh aggregate gate, mobile typecheck, nine-locale science suite and i18n 106/106 passed.",
-        "Account/push/client 44/44 covered payload validation, audience isolation, preferences, Android channels, iOS authorization and foreground/background/killed route opening.",
-        "Account deletion, route dispatcher, Ziwei recovery, Zibai/Qimen/Ziwei compatibility and APK provenance checks passed with clean exact worktrees."
+        "SCOPE: Independent mobile_lifecycle_locale_privacy PRE-DEPLOYMENT dimension PASS for this exact current bundle only. Authorizes proceeding through the original mandatory rollout gates after all five current-bundle reviews; it is not permission to bypass backup, additive migration, installed preflight, coordinated cutover, health/reconcile/shadow heartbeat or enrollment gates. It is not full-goal, production-release, physical-phone, native iOS, or nine-language rendered-device acceptance.",
+        "INDEPENDENCE: Reviewer /root/current_release_mobile_review authored none of the application, listener fix, build tooling or pre-existing tests. Prior independent source review identified the blocking listener-startup regression in mobile10006; this current review confirms the fix in dd50877f and its replacement APK. No historical signature or old APK is transferred. Only this private signature was written during this bundle-binding turn; no source, build, database, service, credential or provider mutation was performed.",
+        "CURRENT IDENTITY: Fresh git checks confirmed mobile dd50877f19e761eff599e5618274c570ab289956 tree5c61b516eff1bfdde2e58323aff72c14747f8ad9 and backend9cc455c84cea3f9a132e2e1261da3086c59ca1da tree075c226397e042d2bc9f9dbb767fcb1f49437fd9. Both worktrees remained clean. Fresh production SHA256: App.tsx8be3b35c6cd05b44b585f251bf5ed549ed8e9e1c6ccf69784e0c021d1ca5ff6f; src/native/push.ts15785c9f462a826e2d8c79cf613fc7c6d7e38fcd28dd7353d30edc93e7da8de2. These equal the exact source independently approved at06:08:41Z.",
+        "FRESH BUNDLE/ARTIFACT CHECK b3f9b9 exit0: Existing canonicalDigest recomputed bundle5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea from candidate-dd50877f-current.json. Independently rehashed all15 buildEvidence.artifacts records, all8 technical-inspection source pins and both prepared shadow unit files; all recorded byte counts and hashes matched. This was a read-only, network-disabled check, not the historical release validator or a build. Initial sandbox probe cbb634 hid /dev/shm and failed to access a receipt; the corrected read-only /dev/shm binding passed without changing any artifact.",
+        "NEW APK: Freshly read durable /root/artifacts/hourkey-v234-listener-fix-dSl3Wp/Hourkey-v234-listener-fix-dd50877f-internal.apk:165400344 bytes, SHA256114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242. This equals the current bundle buildArtifactDigest and is not held10006 APKb65b3e8d178ecfd211a6f885cac4d1309b9de288321ad8727178d1dc7a43d50b.",
+        "INDEPENDENT NEW SOURCE MAP/HBC: Current map20567262 bytes SHA25689de3eebb598e18445f73475010a32a98167ed74088db6f244657c96f2829de4 equals its retained archive member. All414 first-party TS/TSX source texts match current files, including exact App/push fix hashes and all4 stored-six-layer modules: sixLayerDetail.ts, sixLayerCopy.ts, ziweiNotificationDetail.ts, ZiweiSixLayerChart.tsx. Generated, archived and APK-packaged HBC are byte-identical:7334856 bytes SHA25642e9c36a9d2e94e4138880e79776c66d4a7eed505bcadef5e538d4c93ea265fe. Sourcemap source-text checks do not claim binary/JSON asset text coverage.",
+        "LISTENER FIX SOURCE REVIEW: Shared response/receive listeners attach synchronously before storage awaits. Only one captured astronomy startup response waits for trusted nonempty stored audience or registration; rejected/empty storage leaves it pending rather than losing it. Original native response is captured/cleared once; strict account/audience parsing remains authoritative. Owner/alive/epoch checks, registration-wins publication, cleanup and newer-live-route supersession are retained. Legitimate later retaps are not blocked by global deduplication. Callback availability is not proof of OS display or authenticated engagement submission while installation identity is unavailable.",
+        "INDEPENDENT FINAL-SOURCE TEST RUNS, exact unchanged dd50877f source, all offline/read-only and exit0: fa5089 scripts/test-qimen-capability4-native-review.mts:32 actual-native live/cold detail loads,64 rejected routes,16 actual App observer scenarios including empty/rejected/pending storage then registration, strict mismatch/revocation, owner change/unmount and newer-live supersession; c3cb24 scripts/test-r8-preview-truth-review.mts:216 normalization,23 lifecycle,6 audience-race cases with hook-order checks;39e5a6 scripts/test-account-store-clients.mts:51/51 including six deferred-startup cases; a10501 scripts/test-notification-app-wiring.mts PASS. git diff --check passed. Full311 source suite was not rerun by this reviewer.",
+        "ADDITIONAL INDEPENDENT BEHAVIOR CHECK b4f245:11 exact-effect plus actual push helper cases passed before the final readiness refinement: immediate legacy pending/reject behavior, astronomy ready/mismatch, owner/unmount fences, registration-wins, newer-live supersession, legacy/astronomy startup-live races and legitimate retap. Final-source fa5089 explicitly rechecked refined empty/rejected/pending-then-registration behavior; no obsolete finally-release behavior is approved.",
+        "TYPE C/LOCALES/OWNERSHIP: Independently inspected the selected C reference373340052e1c9b409b6f268219544f30bbfb38ac2863c0e9a1b588b8285f3288 and the actual notification/detail source. Dedicated th/en/zh/cn/vi/ja/ru/ko/es copy, raw-star preservation, original stored profile/instant/timezone, six selectable layers and12palaces, truthful legacy/absent-decade states, no current-profile recalculation, memory-only account/token/notification/digest-fenced detail, authenticated no-store reader, consent-gated lock-screen preview and other-science provider hard-off were reviewed. These implementation files are unchanged by dd50877f except the separately reviewed shared listener fix and freshly matched in the new source map. Earlier independent targeted executions da92a6,de5b53,128e53,b12871,957a67,fa6108,4d39a5,7e13a5,4440a6 passed, including54locale-layer synthetic renders. This is not native typography/layout, native-speaker translation approval, or physical nine-language acceptance.",
+        "RETAINED BUILD EVIDENCE REUSED WITH LIMITS: Current terminal receipt records build66502/terminal2251a4 exit0, abortfalse, zero remaining owned mounts, minimum RAM7914745856 bytes/rootfree2668322816 bytes. Current independent source-native-chain-review.private.md SHA25684b3cc48bb5075f0f01159572ca4171b5465c94186ec5bc1f3973e2303876f7c reports existing reader PASS39files,311source commands,675actionable/674executed native tasks with the disclosed precleaned-empty app:clean exception. I did not witness the complete build lifetime, rerun that chain reader, or freshly scan all dependency/toolchain inputs; no reproducibility, immutable provenance or execution authority is inferred.",
+        "AUTHORSHIP CONFLICT RETAINED: Current apk-postinspection.private.json SHA25676d524e16e2fb8e5a82394669adf2c516b318a4842b84b72d49107fcbfdc9db3 explicitly discloses its inspector authored six-layer mobile code and concurrency tooling. Its package/signature/permission/V194 results are reused as technical evidence, not an independent implementation signature. My new map/HBC/source-pin/APK-byte checks are independent of that inspector. The current red-team chain reviewer separately declares no producer/verifier/implementation authorship.",
+        "BOUNDARIES: Bundle remains hard_off; astronomy providerSendEnabled=false and Qizheng schema0/providerSendEnabled=false. Prepared shadow service/timer hashes match the bundle and invoke the existing provider-free shadow worker; they are described as prepared_not_installed and no provider activation is authorized. Phone receive/detail, rendered Type C in nine languages/native-speaker review, current native iOS, Expo account authority and credential repair, actual rollout/enrollment, and five final full-goal signatures remain unverified or pending as disclosed. goalComplete=false. No blocker remains in this bounded mobile pre-deployment dimension."
       ],
-      "reviewedAt": "2026-09-04T15:17:15Z"
+      "reviewedAt": "2026-09-06T06:37:53Z"
     },
     {
-      "reviewerId": "codex-r8-backend-migration-delivery-20260904T150622Z",
+      "reviewerId": "listener_release_backend_review",
       "dimension": "backend_migration_delivery",
       "verdict": "PASS",
-      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
-      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
-      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
-      "findings": { "critical": [], "important": [], "minor": [] },
+      "bundleDigest": "5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea",
+      "backendCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "mobileCommit": "dd50877f19e761eff599e5618274c570ab289956",
+      "findings": {
+        "critical": [],
+        "important": [],
+        "minor": []
+      },
       "testEvidence": [
-        "Migration apply-twice/rollback, immutable evidence, cascade deletion, least privilege, Astronomy-only rebind and Qizheng preservation passed.",
-        "Scheduler idempotency, lifecycle interleavings, lock ordering, deadlock regression, provider incapability and schema fingerprint passed.",
-        "Restored-account/profile test proved profile reuse cannot revive a deleted lineage; payload, detail, observability, source replay, soak and TypeScript gates passed."
+        "Independent exact-bundle review: recomputed canonical bundle SHA-256 5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea from candidate-dd50877f-current.json; verified 21 distinct bound artifact paths, SHA-256 values and declared sizes with zero mismatches (3a80f5).",
+        "Replacement APK independently rehashed: 165400344 bytes, SHA-256 114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242. Verified binding to terminal session 66502 / 2251a4 exit 0, current technical inspection, retained source/native-chain review, generated HBC/map and archives. These retained reports are not this reviewer's independent observation of the entire native build lifecycle.",
+        "Current technical report SHA-256 76d524e16e2fb8e5a82394669adf2c516b318a4842b84b72d49107fcbfdc9db3 and independent retained-chain report SHA-256 84b3cc48bb5075f0f01159572ca4171b5465c94186ec5bc1f3973e2303876f7c verified; recorded source phase 311 commands and native 675 actionable / 674 executed plus the explicitly approved precleaned empty app:clean. Old 10006afc APK is not substituted or approved.",
+        "Reconfirmed exact clean backend/mobile HEADs and unchanged reviewed App.tsx / src/native/push.ts hashes. Recomputed mobile runtime digest d0be99deed70da40c3474dc8e3c3308ca8743974ee42c28a43557cfffc71c918. Earlier independent review in this same task compared all 2457 backend Git blobs and executable modes against worktree and staged release with zero differences; backend archive 0963e075eab2c8768f9e7fff5c9f70d9f29b1c9119f20271d7618ffff1fa753e freshly reverified. No backend rebuild is needed.",
+        "Fresh focused tests previously executed by this reviewer on these unchanged commits: Qimen schema-4 compatibility, Ziwei schema-3 compatibility and R8 authenticated stored-only detail PASS (4d888e); mobile account/store 51/51, native Qimen 32 live/cold loads / 64 rejected routes / 16 observer cases, app wiring PASS (f29811); R8 normalization 216 / lifecycle 23 / audience races 6 PASS. Account, installation, audience, bearer-authentication, capability negotiation and provider hard-off contracts remain preserved.",
+        "Independent rollout readiness inspection confirmed owner role decode_user, runtime role hourkey_app, unchanged forward SQL and current r573 migration absence. Aggregate-only bounded read-only query at 2026-09-06T06:19:25Z found zero pending or started Ziwei attempts with kind=ziwei; this historical observation does not replace the required immediate pre-cutover drain check. Existing Qimen/Ziwei source digests match the candidate; all enable flags and credentials must be preserved during coordinated commit advancement.",
+        "Prepared-not-installed shadow service SHA-256 184805100f44a6a6514e4e469a19360870575bf40737026c10534ee6348853c6 and timer e73b2ef3c8c4d79032d82b8422f4db2f29c190a630c02eb267e68aaac2b3ba33 independently reviewed and rehashed. Independent systemd-analyze verify exited 0 (04b5e5), with only an unrelated existing nginx warning; staged runtime paths are readable by hourkey-notify. New absent seven-key restricted shadow environment is ordinary hard-off deployment provisioning, not existing-key rotation, cohort enrollment or provider activation. Retain its stable HMAC key/ID across containment rollback.",
+        "Committed and staged astronomy model closure independently recomputed to 6a4228e9f654062b3b131db3d434172243930151ed025193ae14449e7615964e; attestation matches, embedded tzdb 2026c, fresh pure astronomy golden/DST test PASS. Non-dry provider-incapable shadow invocation is required for the database heartbeat even with zero cohort candidates; dry mode does not advance it.",
+        "Predeployment backend_migration_delivery dimension only. Original backup, three bounded additive migrations, signed installed preflight with ok=true and r8Phase=application_ready, original-deadline old-Ziwei drain, coordinated DB/runtime/application cutover, selected STANDARD_FIVE_ELEMENT_DOOR_MONTH_V1 launcher, deployed aggregate health/reconcile and fresh hard-off shadow heartbeat remain required. Do not demote Qimen4/Ziwei3 readers, extend deadlines, rewrite snapshots, disable shared retry, or blindly regenerate the dedicated notification environment from the shared file.",
+        "This actual current-bundle signature is independent; no historical signature was inherited. It does not establish physical-phone receipt/detail, rendered nine-language acceptance, Expo credential repair, provider activation or full-goal completion. No source, production database, environment, key, service or release mutation was performed; only this requested signature file was authored."
       ],
-      "reviewedAt": "2026-09-04T15:06:22Z"
+      "reviewedAt": "2026-09-06T06:36:03.875Z"
     },
     {
-      "reviewerId": "r8-scale-observability-rollback-delta-20260904t150943z",
+      "reviewerId": "listener_release_scale_review",
       "dimension": "scale_observability_rollback",
       "verdict": "PASS",
-      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
-      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
-      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
-      "findings": { "critical": [], "important": [], "minor": [] },
+      "bundleDigest": "5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea",
+      "backendCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "mobileCommit": "dd50877f19e761eff599e5618274c570ab289956",
+      "findings": {
+        "critical": [],
+        "important": [],
+        "minor": []
+      },
       "testEvidence": [
-        "Provider-free 10000-account/72-hour soak passed 360000 boundaries with p95/p99 1 minute, zero duplicate lineages and zero provider calls.",
-        "Retry 80 checks, preference races, migration rollback, schema, observability and live producer 165 checks passed.",
-        "Qimen 10000 queue passed and Yam, Daily, Auspicious, Personal, Monthly, Network, Zibai, Qimen and Ziwei producer sources remained byte-identical."
+        "Independent reviewer /root/listener_release_scale_review; current-bundle pre-deployment dimension approval only. Not implementation author, deployment authorization, full-goal acceptance, physical-phone proof, rendered nine-language acceptance, Expo credential repair, or 5,000/10,000-user capacity certification. Original backup/migration/installed-preflight/coordinated-cutover/health/reader-floor gates remain mandatory.",
+        "Current binding audit 6e4acb exit0, network-isolated and read-only: independently recomputed canonical bundle digest; verified 19 artifact byte counts and SHA256 values, both clean source HEAD/tree/lockfile bindings, exact committed App.tsx and push.ts hashes, and source/stage identity of the existing shadow script.",
+        "Current APK is 165400344 bytes, SHA256 114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242. Independently compared its extracted 7334856-byte Hermes bundle to current generated Hermes SHA256 42e9c36a9d2e94e4138880e79776c66d4a7eed505bcadef5e538d4c93ea265fe, and checked both listener-fix sources in the current source map. Inspected and rehashed current technical inspection 76d524e16e2fb8e5a82394669adf2c516b318a4842b84b72d49107fcbfdc9db3 and independent retained-chain report 84b3cc48bb5075f0f01159572ca4171b5465c94186ec5bc1f3973e2303876f7c. Their build/chain results are attributed retained evidence, not an independently witnessed build lifecycle.",
+        "Earlier fresh independent offline executions in this reviewer on the same now-reverified mobile commit: account/store 51/51 (a33859); Qimen native 32 live/cold loads, 64 rejected routes and 16 App observer scenarios (60defc); notification app wiring (2c8d1c); R8 216 normalization, 23 lifecycle and 6 audience races (4585bd). All exited 0; git diff --check and source worktrees clean.",
+        "Reviewed listener/storage/registration/cleanup/owner/superseding-live control flow. Shared listeners attach synchronously; one captured astronomy startup is audience- and owner-fenced, released on registration or cleanup; cleanup removes three native subscriptions. No new global queue, polling, provider send, registration trigger or backend worker delta. Prior shared-listener HOLD cause is resolved. Authenticated engagement still requires a usable installation identity; restored callbacks are not OS delivery proof.",
+        "Prepared shadow service SHA256 184805100f44a6a6514e4e469a19360870575bf40737026c10534ee6348853c6 and timer e73b2ef3c8c4d79032d82b8422f4db2f29c190a630c02eb267e68aaac2b3ba33 reviewed. systemd-analyze verify 5e2207 exit0; only unrelated existing nginx warning. Once-per-minute oneshot, TimeoutStartSec=45, existing advisory-lock serialization, provider-free existing script eda3cc725c49f2ce786f5feb4d4cc3109f34c8c4fb680bb0a2b620ea760d97be. Only aggregate result/generic failure logging; hard-off approved-cohort predicates retained. Planned seven-key environment uses runtime PGUSER hourkey_app; no provider credentials, existing-key rotation or enable-flag changes are proposed. Units and environment remain prepared_not_installed/unprovisioned.",
+        "Read retained unchanged-backend scale/observability review and rollout notes, and current bundle activation/unresolved-proof boundaries. Original-deadline Ziwei drain, coordinated source-commit cutover, compatible snapshot readers, producer-only fallback and uninterrupted other-science retry remain required. Historical 10006afc APK remains held; this signature applies only to the replacement exact bundle. Initial binding audit could not see /dev/shm inside the private /dev sandbox; corrected with a read-only shm bind and reran successfully. No production, database, provider, source, credential or service changes performed; only this requested signature file written."
       ],
-      "reviewedAt": "2026-09-04T15:09:43Z"
+      "reviewedAt": "2026-09-06T06:38:04.568Z"
     },
     {
-      "reviewerId": "r8-final-redteam-cross-science-20260904t150651z",
+      "reviewerId": "current_release_redteam_review",
       "dimension": "red_team_cross_science",
       "verdict": "PASS",
-      "bundleDigest": "d1f86822b35d7a9d261f5a7730d5cea289ff579f0a24233193711b3e12f24880",
-      "backendCommit": "d36ec3d37ff326d889748682f86f02cefcc374dd",
-      "mobileCommit": "dcbbeabfaf442ed52cd1abdd0de92a77bf3db27a",
-      "findings": { "critical": [], "important": [], "minor": [] },
+      "bundleDigest": "5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea",
+      "backendCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+      "mobileCommit": "dd50877f19e761eff599e5618274c570ab289956",
+      "findings": {
+        "critical": [],
+        "important": [],
+        "minor": []
+      },
       "testEvidence": [
-        "Prior APK provenance finding closed: pinned signed APK full SHA and fresh APK exact unsigned-content digest plus size are enforced.",
-        "Fresh forensic APK verified package/version, arm64-only ABI, one expected v2 signer, no source stamp and native before/after/final digest continuity.",
-        "Observed logs proved 301 source commands, 652 executed Gradle tasks, offline read-only bubblewrap, unshared network and mutation journal; aggregate gate passed."
+        "SCOPE: Actual independent red_team_cross_science PREDEPLOYMENT signature for this exact bundle only. After all five current-bundle dimension approvals, proceed only through the original backup, bounded additive migration, installed preflight ok=true/r8Phase=application_ready, original-deadline Ziwei drain, coordinated DB/runtime/application cutover and health/reconcile/hard-off-shadow-heartbeat/enrollment gates. This is not permission to bypass those gates, provider activation, physical-phone acceptance, Expo authority/credential repair, nine-language rendered acceptance or full-goal completion.",
+        "EXACT BINDING: Read all current candidate fields and independently recomputed canonical digest 5cbc2776c9b67ac713188a27196b4cb8bdf2034f3c72a719bba8f02c72dd5bea. Freshly verified bound sizes/SHA256 of current chain report84b3cc48bb5075f0f01159572ca4171b5465c94186ec5bc1f3973e2303876f7c, technical report76d524e16e2fb8e5a82394669adf2c516b318a4842b84b72d49107fcbfdc9db3 and both prepared shadow units. Source/build identities, hard_off, installed=false, productionMigrationApplied=false and goalComplete=false are consistent with the reviewed evidence.",
+        "OWN SOURCE VERIFICATION: Independently reproduced the original10006 shared-listener blocker and early astronomy response loss, then reviewed the exact dd50877f fix. Shared listeners now attach synchronously; only captured astronomy startup waits for trusted audience. Owner/alive/epoch/cleanup and newer-live guards preserve strict validation. Own offline read-only final-source runs passed: native Qimen32 detail loads/64 rejects/16 actual-effect cases, account-store51/51, R8 normalization216/lifecycle23/audience6, wiring and diff checks. App SHA2568be3b35c6cd05b44b585f251bf5ed549ed8e9e1c6ccf69784e0c021d1ca5ff6f; push15785c9f462a826e2d8c79cf613fc7c6d7e38fcd28dd7353d30edc93e7da8de2. Callback restoration is not authenticated engagement proof while installation identity is unavailable.",
+        "OWN CURRENT CHAIN VERIFICATION: Existing unchanged verifier invoked once, terminal267ed5 exit0, chainIntegrityValid=true, errors[],39files/458321794bytes. Fresh current source/golden manifests and six tool hashes matched; exact outer argv/environment-key and v5 native command expectations independently reconstructed. Current APK165400344bytes SHA256114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242 was verified. Logs show311 source commands and675actionable/674executed native tasks with approved empty app:clean exception. Root observed session66502/terminal2251a4 exit0; no entire-lifecycle/reproducibility claim inherited. Verifier executionAuthorityVerified/releaseReady remain false. Full chain was not rerun for this signature.",
+        "CURRENT HBC EVIDENCE: Read current technical inspection76d524e16e2fb8e5a82394669adf2c516b318a4842b84b72d49107fcbfdc9db3 and independent mobile signature for this same bundle. The latter records independent b3f9b9 checks of durable APK,414 first-party source texts including exact App/push fix, generated/archive/packaged HBC equality at7334856bytes SHA25642e9c36a9d2e94e4138880e79776c66d4a7eed505bcadef5e538d4c93ea265fe. Technical inspector authorship conflict is disclosed and not treated as independent implementation approval. Held10006 APK/signatures are not substituted or transferred.",
+        "NEGATIVE/CROSS-SCIENCE BOUNDARY: Own focused unchanged-backend scheduler test passed15 new/resume,9 invalid-mode and10 rejection cases covering wrong digest/account/profile/generation, canonical drift, deadline mismatch/expiry and immutable history. Own parser checks rejected owner spoof, unknown schema/mode, wrong/empty astronomy audience and Qizheng substitution; bounded engagement owner/queue tests passed. Producer fallback defaults six_layer, only explicit emergency production uses canonical schema1, retains verified stored schema2 extensions and original deadlines/history. No other-science formulas/readers/retries are changed; never disable shared retries or demote readers during fallback/cutover.",
+        "PREPARATION/ACTIVATION: Independently read exact prepared service184805100f44a6a6514e4e469a19360870575bf40737026c10534ee6348853c6 and timere73b2ef3c8c4d79032d82b8422f4db2f29c190a630c02eb267e68aaac2b3ba33 plus existing provider-free shadow worker. Seven explicit future env keys are PGHOST,PGPORT,PGDATABASE,PGUSER,PGPASSWORD,R8_IDENTITY_HMAC_KEY,R8_IDENTITY_HMAC_KEY_ID; runtime hourkey_app/Unix hourkey-notify. They remain prepared_not_installed/provisioned=false, contain no provider credentials, and do not authorize cohort enrollment. Preserve new stable HMAC identity across rollback and existing flags/credentials/shared retry. Astronomy provider-off, Qizheng schema0/provider-off/pending-double-verification and selected Qimen formula remain required.",
+        "INDEPENDENCE/LIMITS: Reviewer authored neither candidate implementation nor producer/verifier. This signature is my actual review, not inherited metadata. Prior source review and root-disclosed original blocker are acknowledged. Retained dependency/toolchain fingerprints are not fresh full-tree scans; HBC technical checks are attributed above. Only this signature file was written in this turn; no source, build, DB, provider, credential, service or production mutation. No important blocker remains within this exact bounded predeployment dimension. Separate actual end-state evidence and five full-goal signatures remain pending."
       ],
-      "reviewedAt": "2026-09-04T15:06:51Z"
+      "reviewedAt": "2026-09-06T06:41:10.466Z"
     }
+  ],
+  "notes": [
+    "Current dd50877f listener fix and replacement APK independently source/chain reviewed and technically inspected. Historical10006APK remains held and has not been distributed by this work.",
+    "Current candidate for the original authorized hard-off rollout. No production migration/key/service/release mutation has occurred. Full goal remains open.",
+    "Two shadow configuration files are private prepared deployment inputs, not installed. Five current-bundle review signatures requested separately."
   ]
 }
