@@ -180,6 +180,48 @@ async function buildFacts(user, dateStr) {
   return facts;
 }
 
+/**
+ * คำอ่าน fusion 5 ศาสตร์ (ท่อเดียวกับหน้า /fusion เว็บ) — เจ้านายสั่ง 6 ก.ย.
+ * สั่งงาน panel+judge แล้วรอผลจาก fusion5_jobs (worker เดิมประมวล)
+ * พัง/ช้าเกิน = คืน null → สรุปใช้ facts รายวัน 4 ตัวตามเดิม ไม่ล้มงาน
+ */
+async function fetchFusionReading(db, user, dateStr, timeoutMs = 10 * 60_000) {
+  try {
+    const token = fortuneCron.signSession(user);
+    const res = await fetch(`${BASE}/api/sifu/fusion5`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `decode_auth=${token}` },
+      body: JSON.stringify({
+        profileIds: [user.profile_id],
+        sciences: ["bazi", "qizheng", "ziwei", "western", "vedic"],
+        lang: "th",
+        question: `สรุปดวงประจำวันที่ ${dateStr} แบบฟันธง: ภาพรวมวัน การงาน การเงิน ความรัก สุขภาพ เดินทาง ช่วงเวลาดี-ร้ายของวัน สิ่งที่ควรทำและควรเลี่ยง`,
+      }),
+    });
+    const posted = await res.json().catch(() => null);
+    const jobId = posted && typeof posted.jobId === "string" ? posted.jobId : null;
+    if (!res.ok || !jobId) return null;
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
+      const row = await db.query("SELECT status, result FROM fusion5_jobs WHERE id=$1", [jobId]);
+      const status = row.rows[0]?.status;
+      if (status === "error") return null;
+      if (status === "done") {
+        const result = row.rows[0]?.result || {};
+        const reading = typeof result.reply === "string" ? result.reply.trim() : "";
+        if (!reading) return null;
+        const panels = Array.isArray(result.fusion5?.panels) ? result.fusion5.panels : [];
+        const sciences = panels.filter((p) => p && p.ok === true && typeof p.science === "string").map((p) => p.science);
+        return { reading: reading.slice(0, 12_000), sciences };
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function mockSummaryFor(facts) {
   const sciences = summaryLib.availableSciences(facts);
   const entry = (tag) => ({
@@ -254,6 +296,11 @@ async function main() {
         if (DRY) { console.log(`[daily-ai-summary] dry_candidate user=${u.id.slice(0, 8)} date=${dateStr}`); skipped++; continue; }
 
         const facts = await buildFacts(u, dateStr);
+        // เสียงเต็มวง 5 ศาสตร์จาก fusion (ข้ามใน mock — เทสท่อไม่ควรจ่ายจริง)
+        if (facts && !MOCK_AI) {
+          const fusion = await fetchFusionReading(db, u, dateStr);
+          if (fusion) facts.fusion = fusion;
+        }
         if (!facts || summaryLib.availableSciences(facts).length < 2) {
           failed++;
           await upsertSummary(db, u, dateStr, { status: "failed", facts: facts || {}, factsDigest: summaryLib.factsDigest(facts || {}), summary: null, model: "none", errorCode: "facts_insufficient" });

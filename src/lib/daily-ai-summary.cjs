@@ -16,7 +16,9 @@ const { execFileSync } = require("node:child_process");
 const crypto = require("node:crypto");
 
 const LOCALES = ["th", "en", "zh"];
-const SCIENCES = ["bazi", "tongshu", "qimen", "sky"];
+// 4 ตัวแรก = facts ตรงจาก engine รายวัน · 4 ตัวหลังมากับคำอ่าน fusion 5 ศาสตร์
+// (ท่อเดียวกับหน้า /fusion บนเว็บ: panel ต่อศาสตร์ + judge — เจ้านายสั่ง 6 ก.ย.)
+const SCIENCES = ["bazi", "tongshu", "qimen", "sky", "ziwei", "qizheng", "western", "vedic"];
 const LIFE_KEYS = ["work", "money", "love", "health", "travel"];
 const STANCES = ["support", "caution", "neutral"];
 const AI_TIMEOUT_MS = 180_000;
@@ -32,6 +34,13 @@ function availableSciences(facts) {
   if (facts && facts.tongshu && typeof facts.tongshu === "object") out.push("tongshu");
   if (facts && facts.qimen && typeof facts.qimen === "object") out.push("qimen");
   if (facts && facts.sky && typeof facts.sky === "object") out.push("sky");
+  // คำอ่าน fusion (judge 5 ศาสตร์จากเว็บ) เปิดสิทธิ์ศาสตร์ที่ panel วิ่งจริงเท่านั้น
+  if (facts && facts.fusion && typeof facts.fusion === "object"
+    && typeof facts.fusion.reading === "string" && facts.fusion.reading.trim()) {
+    for (const s of Array.isArray(facts.fusion.sciences) ? facts.fusion.sciences : []) {
+      if (SCIENCES.includes(s) && !out.includes(s)) out.push(s);
+    }
+  }
   return out;
 }
 
@@ -47,6 +56,7 @@ function buildDailyAiPrompt(facts) {
     "3. ฟันธงหนักได้เมื่อศาสตร์อิสระ ≥2 ชี้ทางเดียวกัน · ศาสตร์เดียวชี้ = เขียนเป็นข้อระวัง ไม่ใช่คำห้าม",
     "4. ศาสตร์ขัดกันห้ามซ่อน — บอกทั้งด้านดีและด้านต้องระวังตรงๆ",
     "5. ภาษาคนล้วน ห้ามศัพท์เทคนิค (ห้ามคำว่า 沖/合/aspect/transit) — ผู้อ่านคือคนทั่วไป",
+    "5.1 ถ้ามี FUSION_READING (คำอ่านจากซินแส 5 ศาสตร์): ใช้เป็นแกนหลักของคำฟันธง — สังเคราะห์เสียงของแต่ละศาสตร์ให้เห็นชัดใน scienceNotes (ศาสตร์ละ 1 note) และให้ agree สะท้อนศาสตร์ที่เห็นตรงกันจริงตามคำอ่าน ห้ามคัดลอกยาวๆ ให้ย่อยเป็นภาษาคนกระชับ",
     "6. กล้าฟันธง ห้ามกั๊ก ห้ามคำว่า 'อาจจะ/น่าจะ' เกิน 1 ครั้งต่อภาษา",
     "7. ห้ามทำนายเรื่องต้องห้าม: ความตาย โรคร้ายแรง คดีความ ผลการเมือง การพนัน หวย",
     "",
