@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { buildZiweiHourlyNotificationFacts } from "../src/lib/astro/ziwei/hourly-preview";
 import { buildZiweiNotice } from "./mobile-ziwei-hourly-push-cron.mts";
@@ -6,6 +7,7 @@ import { buildZiweiNotice } from "./mobile-ziwei-hourly-push-cron.mts";
 const require = createRequire(import.meta.url);
 const runtime = require("../src/lib/ziwei-hourly-notification.cjs");
 const delivery = require("../src/lib/mobile-notification-delivery.cjs");
+const presentation = require("../src/lib/ziwei-hourly-presentation.cjs");
 const accountId = "00000000-0000-4000-8000-000000000001";
 const profileId = "00000000-0000-4000-8000-000000000002";
 const occurrenceId = "00000000-0000-4000-8000-000000000003";
@@ -19,14 +21,25 @@ const facts = buildZiweiHourlyNotificationFacts({
 });
 const snapshot = runtime.buildZiweiHourlyNotificationSnapshot({ accountId, profile: { id: profileId, name: "Owner", isSelf: true }, facts });
 const deadline = "2026-09-04T22:10:00.000Z";
+const legacyCopies = delivery.localizedHistoryCopies(
+  (locale: string) => runtime.buildZiweiHourlyCopy(locale, snapshot, { schema: 3 }), presentation.SUPPORTED_LOCALES,
+);
+// Independently captured from the original 98cd3db formatter, before clock copy.
+assert.equal(createHash("sha256").update(JSON.stringify(legacyCopies)).digest("hex"),
+  "e2562291bf41c75e0c25ac8f421403be6eee36c53fbed6017cef0ce9a06417e9", "all nine frozen v1 copies remain byte-exact");
 
-function fixture(schema: 2 | 3, capability: number, provider: "fcm" | "expo", preview: boolean, locale = "th") {
-  const notice = buildZiweiNotice({
+function fixture(schema: 2 | 3, capability: number, provider: "fcm" | "expo", preview: boolean, locale = "th", legacy = false) {
+  let notice = buildZiweiNotice({
     user_id: accountId, installation_id: installationId, profile_id: profileId, token_id: tokenId,
     device_push_token: provider === "fcm" ? "fcm-fixture" : null, device_token_type: provider === "fcm" ? "fcm" : null,
     expo_push_token: "ExponentPushToken[ziwei-v3-reservation-fixture]", platform: "android",
     ziwei_payload_schema: schema, owner_generation: 7, account_locale: "en", token_locale: "en",
   }, snapshot, occurrenceId, deadline, "a".repeat(40));
+  if (legacy) notice = {
+    ...notice, ...legacyCopies.th, historyCopies: legacyCopies,
+    sourceFacts: { ...notice.sourceFacts, presentationVersion: "ziwei-hourly-readable-copy-v1" },
+    messages: notice.messages.map((message: any) => ({ ...message, ...legacyCopies[message.locale] })),
+  };
   const binding: any = {
     token_id: tokenId, token_installation_id: installationId,
     device_push_token: provider === "fcm" ? "fcm-fixture" : null, device_token_type: provider === "fcm" ? "fcm" : null,
@@ -74,12 +87,13 @@ function fixture(schema: 2 | 3, capability: number, provider: "fcm" | "expo", pr
 
 let accepted = 0;
 for (const locale of ["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]) {
-  for (const schema of [2, 3] as const) for (const provider of ["fcm", "expo"] as const) for (const preview of [false, true]) {
-    const f = fixture(schema, 3, provider, preview, locale);
+  for (const mode of ["v2", "readable-v1", "readable-v2"]) for (const provider of ["fcm", "expo"] as const) for (const preview of [false, true]) {
+    const schema = mode === "v2" ? 2 : 3;
+    const f = fixture(schema, 3, provider, preview, locale, mode === "readable-v1");
     const original = JSON.stringify(f.notice);
     assert.deepEqual(await delivery.reserve(f.db, f.notice), { id: pushLogId, attemptIds: [attemptId] });
     assert.equal(JSON.stringify(f.notice), original, "reservation cannot rewrite the original notice");
-    const publicCopy = runtime.buildZiweiHourlyCopy(locale, snapshot, { schema });
+    const publicCopy = runtime.buildZiweiHourlyCopy(locale, snapshot, { schema, presentationVersion: f.notice.sourceFacts.presentationVersion });
     assert.equal(f.captured.parent.title, publicCopy.title);
     assert.equal(f.captured.parent.body, publicCopy.body);
     const visible = provider === "fcm" ? f.captured.attempt.provider_message.notification : f.captured.attempt.provider_message;
@@ -108,6 +122,20 @@ for (const locale of ["th", "en", "zh", "cn", "vi", "ja", "ru", "ko", "es"]) {
       assert.equal(f.captured.parent.source_facts.presentationLocale, locale, "presentation locale is bound at reservation, not stale claim time");
       for (const key of ["payloadSchema", "presentationVersion", "presentationCatalogSha256", "meaningCatalogSha256", "presentationLocale"]) {
         assert.equal(delivery.ziweiAttemptAttestationValid({ ...sealedRow, source_facts: { ...sealedRow.source_facts, [key]: "forged" } }, snapshot, occurrence), false);
+      }
+      const otherVersion = mode === "readable-v1" ? "ziwei-hourly-readable-copy-v2" : "ziwei-hourly-readable-copy-v1";
+      assert.equal(delivery.ziweiAttemptAttestationValid({
+        ...sealedRow, source_facts: { ...sealedRow.source_facts, presentationVersion: otherVersion },
+      }, snapshot, occurrence), false, "even another recognized copy version cannot rewrite a sealed attempt");
+      if (mode === "readable-v2") {
+        const title = sealedRow.title.replace("05:00", "05:01");
+        assert.notEqual(title, sealedRow.title);
+        const message = structuredClone(sealedRow.provider_message);
+        if (provider === "fcm") message.notification = { title, body: sealedRow.body };
+        else Object.assign(message, { title, body: sealedRow.body });
+        assert.equal(delivery.ziweiAttemptAttestationValid({
+          ...sealedRow, title, privacy_safe: false, provider_message: message, message_sha256: delivery.messageSha256(message),
+        }, snapshot, occurrence), false, "forged civil time fails even with matching history/provider/hash");
       }
     }
     accepted++;
@@ -140,4 +168,4 @@ await assert.rejects(() => delivery.reserve(forgedHistory.db, {
   historyCopies: { ...forgedHistory.notice.historyCopies, th: { title: "Invented", body: "Unsupported lucky-hour claim" } },
 }), /ziwei_notice_copy_mismatch/u);
 assert.equal(forgedHistory.captured.parent, undefined, "incorrect meaning never reaches immutable history");
-console.log(`ZIWEI_V3_RESERVATION_OK accepted=${accepted} providers=2 locales=9 privacy=2 immutable_and_capability_fences=PASS (in-memory only)`);
+console.log(`ZIWEI_V3_RESERVATION_OK accepted=${accepted} versions=3 providers=2 locales=9 privacy=2 immutable_and_capability_fences=PASS (in-memory only)`);

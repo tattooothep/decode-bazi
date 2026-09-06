@@ -99,15 +99,17 @@ assert.deepEqual(Object.keys(noticeV3.payload), ["ziweiHourlyV3"], "an explicitl
 assert.deepEqual(noticeV3.messages[0].data, noticeV3.payload);
 assert.deepEqual(runtime.parseZiweiHourlyProviderData(noticeV3.payload), runtime.parseZiweiHourlyProviderData(notice.payload));
 assert.equal(noticeV3.key, notice.key, "an in-window capability upgrade cannot invent a second occurrence key");
-const readable = runtime.buildZiweiHourlyCopy("en", snapshot, { schema: 3 });
+const readable = runtime.buildZiweiHourlyCopy("en", snapshot, { schema: 3, presentationVersion: presentation.READABLE_CLOCK_COPY_VERSION });
 assert.equal(noticeV3.messages[0].title, readable.title);
 assert.equal(noticeV3.messages[0].body, readable.body);
 assert.equal(noticeV3.sourceFacts.payloadSchema, 3);
-assert.equal(noticeV3.sourceFacts.presentationVersion, presentation.READABLE_COPY_VERSION);
+assert.equal(noticeV3.sourceFacts.presentationVersion, presentation.READABLE_CLOCK_COPY_VERSION);
 assert.equal(noticeV3.sourceFacts.presentationCatalogSha256, presentation.READABLE_COPY_CATALOG_SHA256);
 assert.equal(noticeV3.sourceFacts.meaningCatalogSha256, presentation.PRESENTATION_CATALOG_SHA256);
 assert.equal(noticeV3.sourceFacts.presentationLocale, "en");
-for (const locale of presentation.SUPPORTED_LOCALES) assert.deepEqual(noticeV3.historyCopies[locale], runtime.buildZiweiHourlyCopy(locale, snapshot, { schema: 3 }));
+for (const locale of presentation.SUPPORTED_LOCALES) assert.deepEqual(noticeV3.historyCopies[locale], runtime.buildZiweiHourlyCopy(locale, snapshot, {
+  schema: 3, presentationVersion: presentation.READABLE_CLOCK_COPY_VERSION,
+}));
 for (const schema of [0, 1, 4, undefined]) assert.throws(() => scheduler.buildZiweiNotice(
   { ...row, ziwei_payload_schema: schema }, snapshot, occurrenceId, "2026-08-26T12:10:00.000Z", backendCommit,
 ), /ziwei_hourly_token_capability_invalid/u);

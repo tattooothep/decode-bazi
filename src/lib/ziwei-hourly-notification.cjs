@@ -407,7 +407,17 @@ function copyLocale(locale) {
 
 function buildZiweiHourlyCopy(locale, snapshot, options) {
   if (!verifyZiweiHourlyNotificationSnapshot(snapshot)) throw new TypeError("ziwei_hourly_snapshot_invalid");
-  if (options?.schema === 3) return ziweiHourlyPresentation.buildZiweiHourlyReadableCopy(locale, snapshot);
+  if (options?.schema === 3) {
+    const version = options.presentationVersion === undefined
+      ? ziweiHourlyPresentation.READABLE_COPY_VERSION : options.presentationVersion;
+    if (version === ziweiHourlyPresentation.READABLE_COPY_VERSION) {
+      return ziweiHourlyPresentation.buildZiweiHourlyReadableCopy(locale, snapshot);
+    }
+    if (version === ziweiHourlyPresentation.READABLE_CLOCK_COPY_VERSION) {
+      return ziweiHourlyPresentation.buildZiweiHourlyReadableClockCopy(locale, snapshot);
+    }
+    throw new TypeError("ziwei_hourly_copy_version_invalid");
+  }
   return ziweiHourlyPresentation.buildZiweiHourlyTypeCCopy(locale, snapshot);
 }
 

@@ -7,6 +7,7 @@ const PRESENTATION_VERSION = catalog.version;
 const PRESENTATION_CATALOG_SHA256 = "efea1c6c05c24867ce1df8e5ce5c639266a9544118ee8dc091f69c94adbdbd88";
 const MAX_LOCKSCREEN_COPY_UTF8_BYTES = 360;
 const SUPPORTED_LOCALES = Object.freeze([...catalog.supportedLocales]);
+const READABLE_CLOCK_COPY_VERSION = "ziwei-hourly-readable-copy-v2";
 const TONES = Object.freeze(["supportive", "drive", "caution", "contextual", "unavailable"]);
 const PALACE_ALIASES = Object.freeze({
   命宮: "命", 命宫: "命", 命: "命", 兄弟宮: "兄弟", 兄弟宫: "兄弟", 兄弟: "兄弟", 夫妻宮: "夫妻", 夫妻宫: "夫妻", 夫妻: "夫妻",
@@ -178,6 +179,41 @@ function buildZiweiHourlyReadableCopy(locale, snapshot) {
   return Object.freeze({ title, body });
 }
 
+// Additive copy version: the v1 formatter above remains byte-compatible with
+// sealed retries. These are civil endpoints from the frozen reference, not the
+// forward-Zi calculation date, the current account zone, or a fixed +2h guess.
+function buildZiweiHourlyReadableClockCopy(locale, snapshot) {
+  const legacy = buildZiweiHourlyReadableCopy(locale, snapshot);
+  const reference = snapshot?.facts?.reference;
+  const start = new Date(reference?.validFrom);
+  const end = new Date(reference?.validUntil);
+  if (typeof reference?.timezone !== "string" || !reference.timezone
+    || !Number.isFinite(start.valueOf()) || !Number.isFinite(end.valueOf()) || end <= start) {
+    throw new TypeError("ziwei_hourly_copy_clock_invalid");
+  }
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: reference.timezone, calendar: "gregory", numberingSystem: "latn", hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    second: "2-digit", timeZoneName: "longOffset",
+  });
+  const endpoint = (instant) => {
+    const parts = Object.fromEntries(formatter.formatToParts(instant)
+      .filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+    return {
+      date: `${parts.year}-${parts.month}-${parts.day}`,
+      time: `${parts.hour}:${parts.minute}${parts.second === "00" ? "" : `:${parts.second}`}`,
+      offset: parts.timeZoneName.replace(/^GMT/u, "UTC").replace(/^UTC$/u, "UTC+00:00"),
+    };
+  };
+  const from = endpoint(start), until = endpoint(end);
+  const endDate = from.date === until.date ? "" : `${until.date} `;
+  const startOffset = from.offset === until.offset ? "" : ` ${from.offset}`;
+  const clock = `${from.date} ${from.time}${startOffset}–${endDate}${until.time} ${until.offset}`;
+  const title = `${legacy.title} · ${clock}`;
+  if (title.length > 120) throw new RangeError("ziwei_hourly_readable_copy_too_long");
+  return Object.freeze({ title, body: legacy.body });
+}
+
 module.exports = Object.freeze({
   PRESENTATION_VERSION,
   PRESENTATION_CATALOG_SHA256,
@@ -186,6 +222,8 @@ module.exports = Object.freeze({
   buildZiweiHourlyPresentation,
   buildZiweiHourlyTypeCCopy,
   buildZiweiHourlyReadableCopy,
+  buildZiweiHourlyReadableClockCopy,
+  READABLE_CLOCK_COPY_VERSION,
   READABLE_COPY_VERSION: readableCatalog.version,
   READABLE_COPY_CATALOG_SHA256: "23ea576b5cd9fb95c7102315620980dff1637e11540d7f07d10d090eb1f732e6",
   resolveFlowStarPresentation,

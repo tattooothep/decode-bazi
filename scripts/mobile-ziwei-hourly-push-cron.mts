@@ -135,7 +135,7 @@ export function buildZiweiNotice(
   if (!/^[0-9a-f]{40}$/u.test(backendCommit)) throw new TypeError("ziwei_hourly_backend_commit_invalid");
   const schema = Number(row.ziwei_payload_schema);
   if (schema !== 2 && schema !== 3) throw new TypeError("ziwei_hourly_token_capability_invalid");
-  const options = { schema };
+  const options = { schema, ...(schema === 3 ? { presentationVersion: presentation.READABLE_CLOCK_COPY_VERSION } : {}) };
   const payload = payloadRuntime.buildZiweiHourlyProviderData(snapshot, options);
   const historyCopies = delivery.localizedHistoryCopies(
     (locale: string) => payloadRuntime.buildZiweiHourlyCopy(locale, snapshot, options),
@@ -166,7 +166,7 @@ export function buildZiweiNotice(
       ownerGeneration: Number(row.owner_generation),
       ...(schema === 3 ? {
         payloadSchema: 3,
-        presentationVersion: presentation.READABLE_COPY_VERSION,
+        presentationVersion: presentation.READABLE_CLOCK_COPY_VERSION,
         presentationCatalogSha256: presentation.READABLE_COPY_CATALOG_SHA256,
         meaningCatalogSha256: presentation.PRESENTATION_CATALOG_SHA256,
         presentationLocale: locale,

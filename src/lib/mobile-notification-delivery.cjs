@@ -228,7 +228,8 @@ function ziweiTokenSupportsPayload(capability, payload) {
 function ziweiPresentationAttestationValid(source, schema) {
   if (schema === 2) return source?.payloadSchema === undefined || source.payloadSchema === 2;
   return schema === 3 && source?.payloadSchema === 3
-    && source.presentationVersion === ziweiHourlyPresentation.READABLE_COPY_VERSION
+    && [ziweiHourlyPresentation.READABLE_COPY_VERSION, ziweiHourlyPresentation.READABLE_CLOCK_COPY_VERSION]
+      .includes(source.presentationVersion)
     && source.presentationCatalogSha256 === ziweiHourlyPresentation.READABLE_COPY_CATALOG_SHA256
     && source.meaningCatalogSha256 === ziweiHourlyPresentation.PRESENTATION_CATALOG_SHA256
     && ziweiHourlyPresentation.SUPPORTED_LOCALES.includes(source.presentationLocale);
@@ -266,7 +267,9 @@ function ziweiAttemptAttestationValid(row, snapshot, occurrence) {
     const expectedPayload = ziweiHourlyRuntime.buildZiweiHourlyProviderData(snapshot, { schema: payload.schema });
     if (stableStringify(row.payload) !== stableStringify(expectedPayload)) return false;
     if (payload.schema === 3) {
-      const expectedCopy = ziweiHourlyRuntime.buildZiweiHourlyCopy(source.presentationLocale, snapshot, { schema: 3 });
+      const expectedCopy = ziweiHourlyRuntime.buildZiweiHourlyCopy(source.presentationLocale, snapshot, {
+        schema: 3, presentationVersion: source.presentationVersion,
+      });
       if (row.title !== expectedCopy.title || row.body !== expectedCopy.body) return false;
     }
     const providerMessage = row.provider_message;
@@ -695,7 +698,9 @@ async function reserve(db, notice, dry = false) {
       reservationSourceFacts = { ...notice.sourceFacts, presentationLocale: context.locale };
     }
     if (ziweiPayload?.schema === 3) {
-      const expectedCopy = ziweiHourlyRuntime.buildZiweiHourlyCopy(context.locale, ziweiOccurrence.snapshot, { schema: 3 });
+      const expectedCopy = ziweiHourlyRuntime.buildZiweiHourlyCopy(context.locale, ziweiOccurrence.snapshot, {
+        schema: 3, presentationVersion: notice.sourceFacts.presentationVersion,
+      });
       if (historyCopy.title !== expectedCopy.title || historyCopy.body !== expectedCopy.body) {
         throw new TypeError("ziwei_notice_copy_mismatch");
       }
