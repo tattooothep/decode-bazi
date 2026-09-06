@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { lstatSync, readdirSync, readFileSync, readlinkSync, realpathSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { isAbsolute, join, resolve } from "node:path";
+import { METADATA_ORDER_POLICY, normalizeKnownNextMetadata } from "./remediation-next-metadata-order.mts";
 
 const require = createRequire(import.meta.url);
 const { computeBuildArtifactDigest } = require("../notification-observability-preflight.cjs") as {
@@ -52,7 +53,7 @@ function rawInputDigest(releaseRoot: string): string {
 // The normalized-Next branch of the historical R8 filesTreeDigest policy.
 // Keep the original verifier/evidence untouched. Tests execute that historical
 // pure function independently to prevent silent policy changes in this copy.
-function historicalReproducibleNextDigest(root: string): string {
+function historicalReproducibleNextDigest(root: string, metadataOrder = false): string {
   assert.equal(realpathSync(root), root);
   assert.equal(lstatSync(root).isDirectory(), true);
   const buildId = readFileSync(join(root, "BUILD_ID"), "utf8").trim();
@@ -109,7 +110,9 @@ function historicalReproducibleNextDigest(root: string): string {
       } else if (stats.isDirectory()) visit(path, relativePath);
       else {
         assert.equal(stats.isFile(), true, `artifact special file is forbidden: ${relativePath}`);
-        records.push(`${normalizedPath}\0file\0${sha(normalize(readFileSync(path)))}\n`);
+        const historicalBytes = normalize(readFileSync(path));
+        const measuredBytes = metadataOrder ? normalizeKnownNextMetadata(relativePath, historicalBytes) : historicalBytes;
+        records.push(`${normalizedPath}\0file\0${sha(measuredBytes)}\n`);
       }
     }
   };
@@ -125,7 +128,13 @@ function historicalReproducibleNextDigest(root: string): string {
  * one result for the other, or use either as proof that the phone received push.
  * Callers still need sealed build/source/dependency/archive and review evidence.
  */
-export function measureRemediationBackendArtifact(releaseRoot: string) {
+export function measureRemediationBackendArtifact(releaseRoot: string, options: Readonly<{
+  reproduciblePolicy?: "hourkey-r8-normalized-next-tree-v1" | typeof METADATA_ORDER_POLICY;
+}> = {}) {
+  const policy = options.reproduciblePolicy ?? "hourkey-r8-normalized-next-tree-v1";
+  assert.ok(policy === "hourkey-r8-normalized-next-tree-v1" || policy === METADATA_ORDER_POLICY,
+    "unsupported reproducibility policy");
+  const metadataOrder = policy === METADATA_ORDER_POLICY;
   assert.ok(isAbsolute(releaseRoot) && resolve(releaseRoot) === releaseRoot
     && realpathSync(releaseRoot) === releaseRoot && lstatSync(releaseRoot).isDirectory(),
   "release root must be a canonical absolute directory");
@@ -134,15 +143,19 @@ export function measureRemediationBackendArtifact(releaseRoot: string) {
     "Next output must be a canonical directory");
   const rawBefore = rawInputDigest(releaseRoot);
   const installedBefore = computeBuildArtifactDigest(releaseRoot);
-  const reproducible = historicalReproducibleNextDigest(nextRoot);
+  const historical = historicalReproducibleNextDigest(nextRoot);
+  const reproducible = metadataOrder ? historicalReproducibleNextDigest(nextRoot, true) : historical;
   const installedAfter = computeBuildArtifactDigest(releaseRoot);
   assert.equal(installedAfter, installedBefore, "installed artifact changed during measurement");
   assert.equal(rawInputDigest(releaseRoot), rawBefore, "raw artifact inputs changed during measurement");
   return Object.freeze({
-    schema: "hourkey-remediation-backend-artifact/v1",
+    schema: metadataOrder ? "hourkey-remediation-backend-artifact/v2" : "hourkey-remediation-backend-artifact/v1",
     assurance: "artifact_identity_only_not_release_approval",
     observedInputs: Object.freeze({ algorithm: "hourkey-next-raw-inputs-with-resolved-dependencies-v1", sha256: rawBefore }),
     installed: Object.freeze({ algorithm: "hourkey-preflight-build-artifact-v1", sha256: installedBefore }),
-    reproducible: Object.freeze({ algorithm: "hourkey-r8-normalized-next-tree-v1", sha256: reproducible }),
+    reproducible: Object.freeze({ algorithm: policy, sha256: reproducible }),
+    ...(metadataOrder ? { historicalReproducible: Object.freeze({
+      algorithm: "hourkey-r8-normalized-next-tree-v1", sha256: historical,
+    }) } : {}),
   });
 }
