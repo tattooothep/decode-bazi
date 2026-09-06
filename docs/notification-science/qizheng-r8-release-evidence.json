@@ -594,7 +594,20 @@
     "physicalPhoneReceiptAndOpenVerified": false,
     "expoCredentialRepairVerified": false,
     "overallNotificationHealthPass": false,
-    "fullGoalComplete": false
+    "fullGoalComplete": false,
+    "adminWatcherCorrection": {
+      "observedAt": "2026-09-06T07:17:09.852Z",
+      "receiptPath": "/root/artifacts/hourkey-r574-approved-rollout-dsYTiA/admin-notify-runtime-correction.json",
+      "receiptSha256": "af85d4cfa120c580e53a596ede04f6acb24e3e0ff41fb0c87bb89ebd5e58e647",
+      "oldR537ProcessReplaced": true,
+      "canonicalR574ProcessReady": true,
+      "inFlightWorkZeroBeforeAndAfterStop": true,
+      "installedUnitSha256": "4d6795b4e520f8ff2d085776c79088354d8511d0034543fc49eabc322c9271e8",
+      "preexistingLegacyParentsWithoutAttempts": 17,
+      "historicalRowsUnmodified": true,
+      "historicalClassificationCorrectionPendingUserApproval": true,
+      "reconciliationPass": false
+    }
   },
   "notes": [
     "Current dd50877f listener fix and replacement APK independently source/chain reviewed and technically inspected. Historical10006APK remains held and has not been distributed by this work.",
