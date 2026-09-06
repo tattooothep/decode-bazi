@@ -27,6 +27,7 @@ import {
   type NotificationEngagementEvent,
 } from "@/lib/mobile-notification-engagement";
 import { notificationHistoryPayload } from "@/lib/mobile-notification-history";
+import { recordAstronomyEngagementR8 } from "@/lib/mobile-astronomy-engagement-r8";
 import zibaiPayloadProjection from "@/lib/zibai-payload-projection.cjs";
 
 export const dynamic = "force-dynamic";
@@ -249,6 +250,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "invalid_engagement" }, { status: 400 });
     }
     try {
+      /**
+       * R8 astronomy receipts live in the delivery ledger, not mobile_push_log.
+       * Try the astronomy resolver first (occurrence-ownership verified inside);
+       * anything that is not an owned astronomy occurrence falls through to the
+       * legacy recorder byte-for-byte unchanged.
+       */
+      const astronomy = await recordAstronomyEngagementR8(pool, {
+        userId: session.userId, orgId: session.orgId ?? "",
+        notificationId, installationId, event, actionId,
+      });
+      if (astronomy === "conflict") {
+        return NextResponse.json(
+          { ok: false, error: "notification_engagement_conflict" },
+          { status: 503, headers: { "Cache-Control": "no-store" } },
+        );
+      }
+      if (astronomy !== "not_astronomy") {
+        return NextResponse.json(
+          { ok: true, recorded: astronomy === "recorded" },
+          { headers: { "Cache-Control": "no-store" } },
+        );
+      }
       const result = await recordNotificationEngagement(pool, session.userId, {
         notificationId, installationId, event, actionId,
       });
