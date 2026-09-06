@@ -40,3 +40,27 @@ Creation time is independent of due time, permitting pre-due revocation. UUIDs a
 `astronomy_fact` remains sky data without good/bad judgments. No source-approved non-hybrid hourly Qizheng verdict has been established; all ten canonical source sets still require double verification. Natal calculations and astronomy positions must not be relabelled as hourly 七政四餘 predictions.
 
 Rollback of this source-only checkpoint means reverting its additive commit after preserving any later dependent work. There is no production rollback to perform because nothing here was deployed.
+
+## Durable store checkpoint (source only, still no activation)
+
+Following reducer commit `0495c93`, added an event-sourced PostgreSQL store and an **unapplied draft** additive migration. The stable `(chain UUID, unit)` is unique. Creation never replaces an existing ledger. A row-locked transaction deduplicates the event UUID before version comparison, replays and validates persisted evidence, then appends the event and checkpoint atomically. Failure to roll back discards the connection.
+
+The new tables deliberately have no cascading dependency on shadow chains or tokens: those existing records can disappear on transfer. This protects the stored tombstone but does **not** solve the future production registry's responsibility to reuse the same chain UUID across device/consent changes. No new-table runtime grants, provider integration or legacy table mutations were introduced.
+
+Verification:
+
+- Missing store module failed first (`3d23f2`); failed-rollback regression reproduced before its fix (`fc7588`).
+- A real disposable PostgreSQL run reproduced the SQL `CHECK` null-identity weakness (`cd005d`); the three comparisons now require `IS TRUE`.
+- Corrected real PostgreSQL suite passed **25 counted checks plus setup assertions** (`f16c6b`): 8 concurrent creations, 8 identical-event submissions, competing same-version events, conflicting replay, durable reread, uncertainty recovery, late acknowledgment, attempted accepted-lineage reset, and a transaction failure injected between event INSERT and checkpoint UPDATE. This was not a killed production worker test or a real provider send.
+- TypeScript check exit 0 (`b02b65`); pure reducer remains 139 checks. The test helper has a separately reviewed fixed-image, network-disabled disposable cluster with an explicit Unix socket and no installed environment/credentials. Cleanup left no labeled test containers (`908741`). Only regenerable test data were removed.
+- Existing-lane **synthetic sentinels** stayed unchanged; this is scoped isolation evidence, not a production end-to-end nonregression or capacity result.
+- Independent store reviewers `/root/r8_delivery_gap` and `/root/r8_reducer_tests` returned scoped PASS on the pinned final store/draft/test. The latter also ran 18 fake-PG adversarial assertions (`412fbf`) covering corrupt evidence/checkpoints and caller mutation. The helper's author is not counted as its independent reviewer. None of these component reviews is a full-goal signature.
+
+Pinned files:
+
+- Store: `a567e40170272bd854be793092834fe18c9bd863de20c93450e194ed8557dbb1`.
+- Draft SQL: `8fd0fcc3eb96f89dcb6615912b5595fecf111c96b1801b32b4778fb3f5f6f3a9`.
+- Store test: `2a974681d2f7c98df0401f7a86394f3d3c44a4971e6d179be6f2a93f5f46c53f`.
+- Disposable helper: `6f01b15425e3822ee47872591f08b5830493410bfc47198b5897e884f815d7e0`.
+
+The production authorization/chain registry, true dispatch fencing, provider adapter, retry scheduler, rollout gates and physical-device proof above remain required. The database draft is **not** an activation migration. The existing live release and APK are unchanged, and the full goal remains open.
