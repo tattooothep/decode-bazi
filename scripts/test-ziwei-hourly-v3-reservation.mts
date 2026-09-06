@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { buildZiweiHourlyNotificationFacts } from "../src/lib/astro/ziwei/hourly-preview";
+import { buildZiweiHourlySixLayerSnapshot } from "../src/lib/astro/ziwei/hourly-six-layer";
 import { buildZiweiNotice } from "./mobile-ziwei-hourly-push-cron.mts";
 
 const require = createRequire(import.meta.url);
@@ -19,7 +20,11 @@ const facts = buildZiweiHourlyNotificationFacts({
   birthInstant: new Date("1984-12-31T06:15:00.000Z"), birthTimezone: "Asia/Bangkok", birthLocation: null,
   gender: "M", referenceInstant: new Date("2026-09-04T22:01:00.000Z"), referenceTimezone: "Asia/Bangkok",
 });
-const snapshot = runtime.buildZiweiHourlyNotificationSnapshot({ accountId, profile: { id: profileId, name: "Owner", isSelf: true }, facts });
+const snapshot = process.env.ZIWEI_TEST_SNAPSHOT_SCHEMA === "2"
+  ? buildZiweiHourlySixLayerSnapshot({ birthInstant: new Date("1984-12-31T06:15:00.000Z"), birthTimezone: "Asia/Bangkok", birthLocation: null,
+    gender: "M", referenceInstant: new Date("2026-09-04T22:01:00.000Z"), referenceTimezone: "Asia/Bangkok" },
+  { accountId, profile: { id: profileId, name: "Owner", isSelf: true } })
+  : runtime.buildZiweiHourlyNotificationSnapshot({ accountId, profile: { id: profileId, name: "Owner", isSelf: true }, facts });
 const deadline = "2026-09-04T22:10:00.000Z";
 const legacyCopies = delivery.localizedHistoryCopies(
   (locale: string) => runtime.buildZiweiHourlyCopy(locale, snapshot, { schema: 3 }), presentation.SUPPORTED_LOCALES,
@@ -168,4 +173,4 @@ await assert.rejects(() => delivery.reserve(forgedHistory.db, {
   historyCopies: { ...forgedHistory.notice.historyCopies, th: { title: "Invented", body: "Unsupported lucky-hour claim" } },
 }), /ziwei_notice_copy_mismatch/u);
 assert.equal(forgedHistory.captured.parent, undefined, "incorrect meaning never reaches immutable history");
-console.log(`ZIWEI_V3_RESERVATION_OK accepted=${accepted} versions=3 providers=2 locales=9 privacy=2 immutable_and_capability_fences=PASS (in-memory only)`);
+console.log(`ZIWEI_V3_RESERVATION_OK snapshotSchema=${snapshot.snapshotSchema} accepted=${accepted} versions=3 providers=2 locales=9 privacy=2 immutable_and_capability_fences=PASS (in-memory only)`);

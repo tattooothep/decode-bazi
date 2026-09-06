@@ -4,9 +4,7 @@ import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import {
-  buildZiweiHourlyNotificationFacts,
-} from "../src/lib/astro/ziwei/hourly-preview";
+import { buildZiweiHourlySixLayerSnapshot } from "../src/lib/astro/ziwei/hourly-six-layer";
 import { ZIWEI_HOURLY_LINEAGE_MANIFEST } from "../src/lib/astro/ziwei/hourly-lineage";
 import { resolveCanonicalZiweiHourlyContext } from "../src/lib/astro/ziwei/context-resolver";
 
@@ -256,18 +254,16 @@ function buildSnapshot(row: SchedulerRow, at: Date): any {
     && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180
     ? { lat: latitude, lng: longitude }
     : null;
-  const facts = buildZiweiHourlyNotificationFacts({
+  return buildZiweiHourlySixLayerSnapshot({
     birthInstant,
     birthTimezone: row.birth_tz,
     birthLocation,
     gender,
     referenceInstant: at,
     referenceTimezone: row.reference_timezone,
-  });
-  return payloadRuntime.buildZiweiHourlyNotificationSnapshot({
+  }, {
     accountId: row.user_id,
     profile: { id: row.profile_id, name: row.nickname || row.name || "", isSelf: true },
-    facts,
   });
 }
 
@@ -294,9 +290,18 @@ async function admitOccurrence(db: Db, row: SchedulerRow, snapshot: any, sendDea
     if (persisted?.state !== "claimed" || persisted.push_log_id !== null) return null;
   }
   if (Number(persisted.owner_generation) !== Number(row.owner_generation)
-    || !payloadRuntime.verifyZiweiHourlyNotificationSnapshot(persisted.snapshot)
-    || payloadRuntime.buildZiweiHourlyProviderData(persisted.snapshot).ziweiHourlyV2
-      !== payloadRuntime.buildZiweiHourlyProviderData(snapshot).ziweiHourlyV2) return null;
+    || !payloadRuntime.verifyZiweiHourlyNotificationSnapshot(persisted.snapshot)) return null;
+  // Recovery may run seconds later within the same admitted window. Validate
+  // against the stored instant using the current canonical profile binding;
+  // never replace the original snapshot/digest or extend its send deadline.
+  let comparable = persisted.snapshot.facts.reference.instant === snapshot.facts.reference.instant
+    ? snapshot : buildSnapshot(row, new Date(persisted.snapshot.facts.reference.instant));
+  // Preserve claimed pre-upgrade schema1 occurrences exactly as recorded.
+  if (persisted.snapshot.snapshotSchema === 1 && comparable.snapshotSchema === 2) {
+    comparable = payloadRuntime.buildZiweiHourlyNotificationSnapshot({ accountId: comparable.accountId, profile: comparable.profile, facts: comparable.facts });
+  }
+  if (payloadRuntime.buildZiweiHourlyProviderData(persisted.snapshot).ziweiHourlyV2
+      !== payloadRuntime.buildZiweiHourlyProviderData(comparable).ziweiHourlyV2) return null;
   return Object.freeze({
     id: persisted.id,
     snapshot: persisted.snapshot,

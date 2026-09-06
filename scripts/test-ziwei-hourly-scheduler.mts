@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { buildZiweiHourlyNotificationFacts } from "../src/lib/astro/ziwei/hourly-preview";
+import { buildZiweiHourlySixLayerSnapshot } from "../src/lib/astro/ziwei/hourly-six-layer";
+import { resolveCanonicalZiweiHourlyContext } from "../src/lib/astro/ziwei/context-resolver";
 import * as scheduler from "./mobile-ziwei-hourly-push-cron.mts";
 
 const require = createRequire(import.meta.url);
@@ -123,7 +125,6 @@ assert.match(source, /t\.enabled=true AND t\.ziwei_payload_schema IN \(2,3\)/u);
 assert.match(source, /owner_generation/u);
 assert.match(source, /profile_id=\$3 AND owner_generation=\$5 AND window_valid_from=\$4/u,
   "a conflict lookup must never revive a stale occurrence from another owner generation");
-assert.match(source, /buildZiweiHourlyNotificationFacts\(/u);
 assert.doesNotMatch(source, /buildZiweiHourlyPreview\(/u,
   "the production scheduler must never promote preview-only output");
 assert.match(source, /withSchedulerRunLease\(\s*db,\s*"ziwei-hourly"/u);
@@ -151,3 +152,44 @@ assert.deepEqual(await scheduler.runScheduler(disabledDb as never, new AbortCont
 }), { disabled: true, due: 0, reserved: 0, skipped: 0 });
 
 console.log("PASS Ziwei hourly scheduler — self profile, immutable occurrence, factual copy, hard release gates");
+
+// Exercise the actual builder/admission, not dependency stubs of those paths.
+const canonical = resolveCanonicalZiweiHourlyContext({ mode: "strict", birthWallClock: "1984-12-31T13:15:00",
+  birthTimezone: "Asia/Bangkok", birthTimezoneSource: "profile", referenceInstant: at, referenceTimezone: "Asia/Bangkok" });
+assert.equal(canonical.status, "resolved");
+const fullRow = { ...rowV3, nickname: "Owner", name: "Owner", birth_wall: "1984-12-31T13:15:00", birth_tz: "Asia/Bangkok", gender: "M",
+  birth_lat: 13.7563, birth_lng: 100.5018, birth_context_fingerprint: canonical.birthFingerprint,
+  lease_token: "00000000-0000-4000-8000-000000000008" };
+const fullSnapshot = buildZiweiHourlySixLayerSnapshot({ birthInstant: new Date("1984-12-31T06:15:00.000Z"),
+  birthTimezone: "Asia/Bangkok", birthLocation: { lat: 13.7563, lng: 100.5018 }, gender: "M", referenceInstant: at, referenceTimezone: "Asia/Bangkok" },
+{ accountId, profile: snapshot.profile });
+for (const { saved, runAt } of [{ saved: null, runAt: at }, ...[snapshot, fullSnapshot].flatMap(saved =>
+  [at, new Date(at.valueOf() + 2_000)].map(runAt => ({ saved, runAt })))]) {
+  let claimed = false; let attempts = 0; let inserted: any;
+  const queries: string[] = [];
+  const db = { async query(sql: string, params: any[] = []) {
+    queries.push(sql);
+    if (sql.includes("SELECT producer_enabled")) return { rows: [{ producer_enabled: true, source_digest: scheduler.SOURCE_DIGEST, backend_commit: backendCommit }] };
+    if (sql.includes("claim_mobile_ziwei_hourly_installations")) { const rows = claimed ? [] : [fullRow]; claimed = true; return { rows }; }
+    if (sql.includes("AS account_locale")) return { rows: [fullRow] };
+    if (sql.includes("INSERT INTO mobile_ziwei_hourly_occurrences")) {
+      inserted = JSON.parse(params[10]); assert.equal(inserted.snapshotSchema, 2);
+      return { rows: saved ? [] : [{ id: occurrenceId, snapshot: inserted, send_deadline: params[9], owner_generation: 7 }] };
+    }
+    if (sql.includes("SELECT id,state,push_log_id,snapshot")) return { rows: [{ id: occurrenceId, state: "claimed", push_log_id: null,
+      snapshot: saved, send_deadline: "2026-08-26T12:10:00.000Z", owner_generation: 7 }] };
+    if (sql.includes("UPDATE mobile_ziwei_hourly_installations")) return { rows: [] };
+    throw new Error(`unexpected synthetic query: ${sql}`);
+  } };
+  const result = await scheduler.runScheduler(db as never, new AbortController().signal, runAt, {
+    runtimeProducerEnabled: true, sourceManifestReady: true, backendCommit,
+    deliver: async (_db: any, actual: any) => {
+      attempts += 1; assert.equal(actual.sourceFacts.snapshotDigest, (saved || inserted).snapshotDigest);
+      return { status: "pending" };
+    },
+  });
+  assert.deepEqual(result, { disabled: false, due: 1, reserved: 1, skipped: 0 }, `stored schema ${saved?.snapshotSchema ?? "new"} retry ${runAt.toISOString()}`);
+  assert.equal(attempts, 1, "existing claimed schema1 and schema2 resume once without rewriting the stored chart");
+  assert.equal(queries.some(sql => /UPDATE mobile_ziwei_hourly_occurrences|DELETE /u.test(sql)), false);
+}
+console.log("PASS Ziwei six-layer producer — real builder, new occurrence, legacy/schema2 resume, no history rewrite");

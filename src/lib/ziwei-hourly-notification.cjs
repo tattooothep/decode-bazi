@@ -2,6 +2,7 @@
 
 const { createHash } = require("node:crypto");
 const ziweiHourlyPresentation = require("./ziwei-hourly-presentation.cjs");
+const { verifyZiweiSixLayerContext } = require("./ziwei-hourly-six-layer.cjs");
 const { ZIWEI_WIRE_V3_MAX_BASE64, packZiweiHourlyWireV3, parseZiweiHourlyWireV3Json } = require("./ziwei-hourly-wire-v3.cjs");
 
 const LINEAGE = "iztro_2_5_8_normal_forward_zi_v1";
@@ -228,28 +229,31 @@ function snapshotDigest(snapshotWithoutDigest) {
 }
 
 function verifyZiweiHourlyNotificationSnapshot(snapshot) {
+  const extended = snapshot?.snapshotSchema === 2;
   if (!exactKeys(snapshot, [
     "snapshotSchema", "discipline", "event", "accountId", "profile", "interpretation",
-    "facts", "snapshotDigest",
-  ]) || snapshot.snapshotSchema !== 1 || snapshot.discipline !== "ziwei"
+    "facts", "snapshotDigest", ...(extended ? ["sixLayers"] : []),
+  ]) || (!extended && snapshot.snapshotSchema !== 1) || snapshot.discipline !== "ziwei"
     || snapshot.event !== "ziwei_hourly" || snapshot.interpretation !== "none_structural_chart_only"
     || !UUID_RE.test(snapshot.accountId) || !/^[0-9a-f]{64}$/u.test(snapshot.snapshotDigest)
     || !exactKeys(snapshot.profile, ["id", "name", "isSelf"])
     || !UUID_RE.test(snapshot.profile.id) || !text(snapshot.profile.name, 0, 120)
-    || snapshot.profile.isSelf !== true || !verifyFacts(snapshot.facts)) return false;
+    || snapshot.profile.isSelf !== true || !verifyFacts(snapshot.facts)
+    || (extended && !verifyZiweiSixLayerContext(snapshot.sixLayers, snapshot.facts))) return false;
   const { snapshotDigest: declared, ...unsigned } = snapshot;
   return snapshotDigest(unsigned) === declared;
 }
 
 function buildZiweiHourlyNotificationSnapshot(input) {
   const unsigned = JSON.parse(JSON.stringify({
-    snapshotSchema: 1,
+    snapshotSchema: input?.sixLayers === undefined ? 1 : 2,
     discipline: "ziwei",
     event: "ziwei_hourly",
     accountId: input?.accountId,
     profile: input?.profile,
     interpretation: "none_structural_chart_only",
     facts: input?.facts,
+    ...(input?.sixLayers === undefined ? {} : { sixLayers: input.sixLayers }),
   }));
   const snapshot = Object.freeze({ ...unsigned, snapshotDigest: snapshotDigest(unsigned) });
   if (!verifyZiweiHourlyNotificationSnapshot(snapshot)) throw new TypeError("ziwei_hourly_snapshot_invalid");
