@@ -196,3 +196,15 @@ export async function sendFcmToDevice(
     };
   }
 }
+
+/**
+ * ตั๋ว OAuth + project id สำหรับท่อ R8 (additive · 6 ก.ย. 2569)
+ * R8 dispatcher มีตัวจำแนกผล/นโยบาย retry ของตัวเอง จึงต้องยิง HTTP เอง —
+ * ขอยืมเฉพาะตั๋วจากแคชเดิมตรงนี้ ไม่แตะพฤติกรรม sendFcmToDevice เดิมทุกบรรทัด
+ */
+export async function getFcmDispatchTicket(): Promise<{ token: string; projectId: string } | null> {
+  const key = loadKey();
+  if (key === null) return null;
+  const token = await getTicket();
+  return token === null ? null : { token, projectId: key.project_id };
+}
