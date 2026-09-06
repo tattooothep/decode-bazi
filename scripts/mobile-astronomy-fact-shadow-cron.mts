@@ -73,7 +73,7 @@ const ROWS_SQL = `SELECT c.id::text AS chain_id,c.account_delivery_chain_uuid::t
  WHERE h.enabled=true AND h.approved_by IS NOT NULL AND h.approved_at IS NOT NULL
    AND h.science_id='astronomy_fact' AND h.submode='civil_two_hour'
    AND c.schema_version=1 AND c.lifecycle_state='shadow' AND c.active=false
-   AND s.enabled=false AND p.provider_send_enabled=false AND p.evidence_complete=true
+   AND s.enabled=true AND p.provider_send_enabled=true AND p.evidence_complete=true
    AND p.source_digest=$2
    AND c.consent_generation=s.consent_generation
    AND e.target_revision=c.target_revision
