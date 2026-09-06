@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildZiweiHourlySixLayerSnapshot } from "../src/lib/astro/ziwei/hourly-six-layer";
+import { buildZiweiHourlyNotificationFacts } from "../src/lib/astro/ziwei/hourly-preview";
 import { ZIWEI_HOURLY_LINEAGE_MANIFEST } from "../src/lib/astro/ziwei/hourly-lineage";
 import { resolveCanonicalZiweiHourlyContext } from "../src/lib/astro/ziwei/context-resolver";
 
@@ -31,6 +32,13 @@ const ZIWEI_NOTIFICATION_LOCALES = Object.freeze(["th", "en", "zh", "cn", "vi", 
 
 type Db = { query: (sql: string, params?: unknown[]) => Promise<{ rows: any[]; rowCount?: number }> };
 type SchedulerRow = Record<string, any>;
+type SnapshotMode = "six_layer" | "legacy_three_layer";
+
+export function resolveSnapshotMode(value: unknown = process.env.ZIWEI_HOURLY_SNAPSHOT_MODE): SnapshotMode {
+  if (value === undefined || value === "six_layer") return "six_layer";
+  if (value === "legacy_three_layer") return "legacy_three_layer";
+  throw new TypeError("ziwei_hourly_snapshot_mode_invalid");
+}
 
 function loadEnv(): void {
   if (process.env.NODE_ENV === "production") return;
@@ -229,7 +237,7 @@ async function loadClaimContext(db: Db, claim: SchedulerRow): Promise<SchedulerR
   return result.rows[0] || null;
 }
 
-function buildSnapshot(row: SchedulerRow, at: Date): any {
+function buildSnapshot(row: SchedulerRow, at: Date, mode: SnapshotMode = "six_layer"): any {
   const gender = row.gender === "M" || row.gender === "F" ? row.gender : null;
   if (!row.birth_wall || !row.birth_tz || !gender) {
     throw new TypeError("ziwei_hourly_profile_inputs_unavailable");
@@ -254,20 +262,28 @@ function buildSnapshot(row: SchedulerRow, at: Date): any {
     && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180
     ? { lat: latitude, lng: longitude }
     : null;
-  return buildZiweiHourlySixLayerSnapshot({
+  const input = {
     birthInstant,
     birthTimezone: row.birth_tz,
     birthLocation,
     gender,
     referenceInstant: at,
     referenceTimezone: row.reference_timezone,
-  }, {
+  };
+  const owner = {
     accountId: row.user_id,
     profile: { id: row.profile_id, name: row.nickname || row.name || "", isSelf: true },
-  });
+  };
+  // Operator-only emergency producer mode. Readers, copy, transport and
+  // delivery gates stay unchanged; the normal path remains the full chart.
+  if (mode === "legacy_three_layer") {
+    return payloadRuntime.buildZiweiHourlyNotificationSnapshot({ ...owner, facts: buildZiweiHourlyNotificationFacts(input) });
+  }
+  return buildZiweiHourlySixLayerSnapshot(input, owner);
 }
 
-async function admitOccurrence(db: Db, row: SchedulerRow, snapshot: any, sendDeadline: string): Promise<any | null> {
+async function admitOccurrence(db: Db, row: SchedulerRow, snapshot: any, sendDeadline: string,
+  mode: SnapshotMode = "six_layer"): Promise<any | null> {
   const key = occurrenceKey(row, snapshot);
   const reference = snapshot.facts.reference;
   const inserted = await db.query(
@@ -295,10 +311,19 @@ async function admitOccurrence(db: Db, row: SchedulerRow, snapshot: any, sendDea
   // against the stored instant using the current canonical profile binding;
   // never replace the original snapshot/digest or extend its send deadline.
   let comparable = persisted.snapshot.facts.reference.instant === snapshot.facts.reference.instant
-    ? snapshot : buildSnapshot(row, new Date(persisted.snapshot.facts.reference.instant));
+    ? snapshot : buildSnapshot(row, new Date(persisted.snapshot.facts.reference.instant), mode);
   // Preserve claimed pre-upgrade schema1 occurrences exactly as recorded.
   if (persisted.snapshot.snapshotSchema === 1 && comparable.snapshotSchema === 2) {
     comparable = payloadRuntime.buildZiweiHourlyNotificationSnapshot({ accountId: comparable.accountId, profile: comparable.profile, facts: comparable.facts });
+  }
+  if (mode === "legacy_three_layer" && persisted.snapshot.snapshotSchema === 2 && comparable.snapshotSchema === 1) {
+    // Keep the already verified stored extension while comparing ALL current
+    // canonical facts/profile at its original instant, including the digest.
+    // Fallback must not invoke the six-layer builder or replace stored history.
+    try {
+      comparable = payloadRuntime.buildZiweiHourlyNotificationSnapshot({ accountId: comparable.accountId,
+        profile: comparable.profile, facts: comparable.facts, sixLayers: persisted.snapshot.sixLayers });
+    } catch { return null; }
   }
   if (payloadRuntime.buildZiweiHourlyProviderData(persisted.snapshot).ziweiHourlyV2
       !== payloadRuntime.buildZiweiHourlyProviderData(comparable).ziweiHourlyV2) return null;
@@ -341,7 +366,7 @@ async function processClaim(db: Db, claim: SchedulerRow, at: Date, dependencies:
     return { reserved: 0, skipped: 1, reason: "owner_or_capability_invalid" };
   }
   let snapshot;
-  try { snapshot = (dependencies.buildSnapshot || buildSnapshot)(row, at); }
+  try { snapshot = (dependencies.buildSnapshot || buildSnapshot)(row, at, dependencies.snapshotMode); }
   catch (error) {
     const next = retryAfterSnapshotFailure(at, error);
     await finishClaim(db, row, at, next, "profile_or_boundary_unsupported");
@@ -359,7 +384,7 @@ async function processClaim(db: Db, claim: SchedulerRow, at: Date, dependencies:
     return { reserved: 0, skipped: 1, reason: admission.reason };
   }
   const admit = dependencies.admitOccurrence || admitOccurrence;
-  const admitted = await admit(db, row, snapshot, admission.sendDeadline);
+  const admitted = await admit(db, row, snapshot, admission.sendDeadline, dependencies.snapshotMode);
   if (!admitted) {
     await finishClaim(db, row, at, next, "duplicate");
     return { reserved: 0, skipped: 1, reason: "duplicate" };
@@ -422,6 +447,7 @@ export async function runScheduler(db: Db, signal: AbortSignal, at = new Date(),
     || producer?.backend_commit !== runtimeCommit) {
     return { disabled: true, due: 0, reserved: 0, skipped: 0 };
   }
+  const snapshotMode = resolveSnapshotMode(dependencies.snapshotMode);
   const batch = Math.max(1, Math.min(1_000, Number(dependencies.batchLimit) || BATCH));
   const maximum = Math.max(1, Math.min(10_000, Number(dependencies.maxPerRun) || MAX_PER_RUN));
   const workers = Math.max(1, Math.min(20, Number(dependencies.workerCount) || WORKERS));
@@ -434,7 +460,7 @@ export async function runScheduler(db: Db, signal: AbortSignal, at = new Date(),
     try {
       await forEachBounded(claims, workers, async (claim) => {
         const result = await (dependencies.processClaim || processClaim)(db, claim, at, {
-          ...dependencies, backendCommit: runtimeCommit, signal,
+          ...dependencies, snapshotMode, backendCommit: runtimeCommit, signal,
         });
         report.reserved += result.reserved;
         report.skipped += result.skipped;
@@ -447,6 +473,7 @@ export async function runScheduler(db: Db, signal: AbortSignal, at = new Date(),
 
 async function main(): Promise<void> {
   loadEnv();
+  const snapshotMode = resolveSnapshotMode();
   const db = new Pool({
     host: process.env.PGHOST || "127.0.0.1",
     port: Number(process.env.PGPORT || 5433),
@@ -459,12 +486,12 @@ async function main(): Promise<void> {
     const leased = await delivery.withSchedulerRunLease(
       db,
       "ziwei-hourly",
-      (signal: AbortSignal) => runScheduler(db, signal),
+      (signal: AbortSignal) => runScheduler(db, signal, new Date(), { snapshotMode }),
       { timeoutMs: 50_000 },
     );
     if (!leased.acquired) return;
     const report = leased.result;
-    console.log(`[mobile-ziwei-hourly-push] disabled=${report.disabled} due=${report.due} reserved=${report.reserved} skipped=${report.skipped}`);
+    console.log(`[mobile-ziwei-hourly-push] disabled=${report.disabled} due=${report.due} reserved=${report.reserved} skipped=${report.skipped} snapshot_mode=${snapshotMode}`);
     await writeSchedulerHeartbeat("ziwei-hourly");
   } finally { await db.end(); }
 }
