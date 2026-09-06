@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "FIVE_PREDEPLOYMENT_REVIEWS_PASS_ROLLOUT_NOT_YET_APPLIED",
+  "status": "DEPLOYED_INTERNAL_APK_AVAILABLE_FULL_GOAL_OPEN",
   "generatedAt": "2026-09-06",
   "bundle": {
     "releaseMode": "hard_off",
@@ -571,9 +571,34 @@
       "reviewedAt": "2026-09-06T06:41:10.466Z"
     }
   ],
+  "postDeployment": {
+    "observedAt": "2026-09-06T07:07:09Z",
+    "receiptPath": "/root/artifacts/hourkey-r574-approved-rollout-dsYTiA/deployment-receipt.json",
+    "receiptSha256": "40991920d749fb8454ce6e3e86bcd2e30a9a68fe63e5df3aed1fe2dc634ce349",
+    "applicationCommit": "9cc455c84cea3f9a132e2e1261da3086c59ca1da",
+    "currentRelease": "/root/releases/decode-app-r574-notification-remediation-9cc455c",
+    "originalPredeploymentBundleAndSignaturesUnchanged": true,
+    "originalThreeMigrationsCommitted": true,
+    "installedPreflightPhase": "application_ready",
+    "fourRunningApplicationInstancesVerified": true,
+    "apkUrl": "https://hourkey.io/downloads/shrine/mainhall/apk/hourkey-v234-listener-fix-dd50877f-internal.apk",
+    "apkFullHttpsDownloadSha256": "114913a920065fabb9779ee45cfbd05c3958418b99efb3571447133e7f75e242",
+    "installedShadowUnitSha256": "d48799ea93b374991587395c889fe7ffd0428370d039d137ce7175a282488ec4",
+    "shadowUnitCorrection": "Only ExecStart worker path is pinned to the canonical r574 release so the unchanged exact-path entrypoint guard invokes main. Update this pin coherently at future release switches. The original signed prepared unit is retained, not reattributed.",
+    "scopedIndependentOperationalAddenda": 5,
+    "automaticShadowHeartbeatVerified": true,
+    "r8ProviderSendEnabled": false,
+    "qizhengPayloadSchema": 0,
+    "qizhengSourceStatus": "pending_double_verification",
+    "newApkRegistrationObserved": false,
+    "physicalPhoneReceiptAndOpenVerified": false,
+    "expoCredentialRepairVerified": false,
+    "overallNotificationHealthPass": false,
+    "fullGoalComplete": false
+  },
   "notes": [
     "Current dd50877f listener fix and replacement APK independently source/chain reviewed and technically inspected. Historical10006APK remains held and has not been distributed by this work.",
-    "Current candidate for the original authorized hard-off rollout. No production migration/key/service/release mutation has occurred. Full goal remains open.",
-    "Two shadow configuration files are private prepared deployment inputs, not installed. Five current-bundle review signatures requested separately."
+    "The immutable bundle and its five signatures describe the predeployment candidate. The separate postDeployment evidence records the completed authorized rollout and its reviewed operational path correction without rewriting those signatures.",
+    "The three migrations, coordinated producer/runtime commits, rolling application restart, provider-free shadow timer and APK publication are applied. Existing settings and notification history were independently compared with the backup. Full goal remains open for physical-phone evidence, Expo credential authority and final whole-goal acceptance."
   ]
 }
