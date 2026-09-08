@@ -72,15 +72,19 @@ await check("Yam/Qimen/Zi Bai ใช้ช่อง HIGH ใหม่ แต่ 
     assert.equal(expo.sound, "default");
     assert.equal(S.providerQueueSafetySeconds(category), category === "zibai" ? 360 : 300);
   }
+  // daily (สรุปดวงเช้า 8 ก.ย. 69): ต้อง popup+เสียง — ยืม channel เวลามงคล priority HIGH
+  // แต่ TTL ยังยาว 1 วัน (ไม่ใช่ 300 วิของยามเวลา)
   const ordinaryFcm = S.prepareMessage({ title: "Daily", body: "Body", category: "daily" }, "fcm");
   const ordinaryExpo = S.prepareMessage({ title: "Daily", body: "Body", category: "daily" }, "expo");
-  assert.equal(ordinaryFcm.android.priority, "NORMAL");
-  assert.equal(ordinaryFcm.android.notification.channel_id, "hourkey-reminders");
-  assert.equal(ordinaryFcm.android.notification.sound, undefined);
-  assert.equal(ordinaryExpo.priority, "normal");
-  assert.equal(ordinaryExpo.channelId, "hourkey-reminders");
-  assert.equal(ordinaryExpo.sound, null);
+  assert.equal(ordinaryFcm.android.priority, "HIGH");
+  assert.equal(ordinaryFcm.android.notification.channel_id, "hourkey-time-alerts-v2");
+  assert.equal(ordinaryExpo.priority, "high");
+  assert.equal(ordinaryExpo.channelId, "hourkey-time-alerts-v2");
   assert.equal(S.providerTtlSeconds("daily"), 86_400);
+  const trulyOrdinaryFcm = S.prepareMessage({ title: "Goal", body: "Body", category: "goal" }, "fcm");
+  assert.equal(trulyOrdinaryFcm.android.priority, "NORMAL");
+  assert.equal(trulyOrdinaryFcm.android.notification.channel_id, "hourkey-reminders");
+  assert.equal(trulyOrdinaryFcm.android.notification.sound, undefined);
   assert.equal(S.providerTtlSeconds("security"), 21_600);
 });
 

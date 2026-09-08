@@ -71,12 +71,17 @@ function channelOf(category) {
   if (category === "security") return "hourkey-security";
   if (category === "service") return "hourkey-service";
   if (category === "ziwei") return ZIWEI_HOURLY_CHANNEL_ID;
+  /* daily (สรุปดวงเช้า): channel hourkey-reminders ถูกสร้างระดับ DEFAULT ไม่มีเสียง
+   * = ไม่ popup (เจ้านายรายงาน 8 ก.ย.) — ยืม channel เวลามงคล (HIGH+เสียง มีทุกเครื่อง)
+   * โดยไม่ใส่ใน TIME_ALERT_CATEGORIES เพื่อไม่โดน TTL 300 วิของยามเวลา */
+  if (category === "daily") return TIME_ALERT_CHANNEL_ID;
   if (TIME_ALERT_CATEGORIES.has(category)) return TIME_ALERT_CHANNEL_ID;
   return "hourkey-reminders";
 }
 
 function interruptsImmediately(category) {
-  return category === "security" || category === "service" || TIME_ALERT_CATEGORIES.has(category);
+  return category === "security" || category === "service" || category === "daily"
+    || TIME_ALERT_CATEGORIES.has(category);
 }
 
 function providerTtlSeconds(categoryInput) {
