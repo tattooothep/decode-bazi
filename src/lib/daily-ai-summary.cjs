@@ -21,7 +21,9 @@ const LOCALES = ["th", "en", "zh"];
 const SCIENCES = ["bazi", "tongshu", "qimen", "sky", "ziwei", "qizheng", "western", "vedic"];
 const LIFE_KEYS = ["work", "money", "love", "health", "travel"];
 const STANCES = ["support", "caution", "neutral"];
-const AI_TIMEOUT_MS = 180_000;
+// 9 ก.ย. 69: 180 วิคับเมื่อ prompt มีคำอ่าน fusion (~11K ตัวอักษร) — สรุป 3 ภาษา
+// หลุดไปชั้นสำรองทั้งที่ claude ปกติ · ขยายเป็น 6 นาที (cron มีงบรอบละ 15 นาทีอยู่แล้ว)
+const AI_TIMEOUT_MS = 360_000;
 
 function factsDigest(facts) {
   return crypto.createHash("sha256").update(JSON.stringify(facts)).digest("hex");
