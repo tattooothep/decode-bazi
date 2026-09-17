@@ -40,6 +40,10 @@ export function distanceToMountainBoundary(deg: number): number {
   );
 }
 
+export const SENSOR_MAX_TILT_DEG = 25;
+export const SENSOR_MAX_CIRCULAR_STD_DEG = 6;
+export const SENSOR_MAX_REPEAT_SPREAD_DEG = 6;
+
 export function evaluateMobileLuopanMeasurement(input: LuopanMeasurementInput): MeasurementGate {
   const headingDeg = normalizeDeg(finite(input.headingDeg, 0));
   const accuracyDeg = Math.max(0, finite(input.accuracyDeg, 0));
@@ -55,26 +59,21 @@ export function evaluateMobileLuopanMeasurement(input: LuopanMeasurementInput): 
   const nearBoundary = isNearMountainBoundary(headingDeg, uncertaintyDeg);
   const reasons: string[] = [];
 
+  // 18 ก.ย. 2569: ผ่อนด่านเซนเซอร์ให้เข็มทิศมือถือจริงผ่านได้ (ก่อนหน้า 10°/3°/3° → เจ้านายวัด 10/10 ตก
+  // ทุกครั้งด้วยเหตุ phone_not_level) · ยังคงต้องราบพอ (≤25°) นิ่งพอ (≤6°) และ 3 รอบตรงกัน (≤6°)
   if (input.method === "sensor") {
     if (sampleCount < 20) reasons.push("insufficient_samples");
     if (accuracyClass <= 0 && accuracyDeg <= 0) reasons.push("heading_accuracy_unavailable");
-    if (circularStdDeg > 3) reasons.push("heading_not_stable");
-    if (repeatSpreadDeg > 3) reasons.push("repeat_readings_disagree");
-    if (maxTiltDeg > 10) reasons.push("phone_not_level");
+    if (circularStdDeg > SENSOR_MAX_CIRCULAR_STD_DEG) reasons.push("heading_not_stable");
+    if (repeatSpreadDeg > SENSOR_MAX_REPEAT_SPREAD_DEG) reasons.push("repeat_readings_disagree");
+    if (maxTiltDeg > SENSOR_MAX_TILT_DEG) reasons.push("phone_not_level");
   }
   if (input.northReference === "true" && accuracyClass <= 0 && accuracyDeg <= 0) {
     reasons.push("true_north_unavailable");
   }
-  // sensor path เดิม: คาบเส้น = fail (ห้ามเปลี่ยนพฤติกรรม)
-  // manual/map (ผู้ใช้กรอกองศาเอง): คาบเส้น = warning ไม่ fail (ให้ผังออกได้)
-  let boundaryWarning = false;
-  if (nearBoundary) {
-    if (input.method === "sensor") {
-      reasons.push("mountain_boundary_uncertain");
-    } else {
-      boundaryWarning = true;
-    }
-  }
+  // คาบเส้นภูเขา (ทุกวิธีวัด ตั้งแต่ 18 ก.ย. 2569): เตือน ไม่ตก — ผังออกได้ พร้อมธง boundary_warning/nearBoundary
+  // ให้หน้าแสดงคำเตือน "ทิศคาบเส้น 2 ภูเขา" · ก่อนหน้า sensor ตกทันที ทำให้เข็มจริงใช้ไม่ได้บ่อย
+  const boundaryWarning = nearBoundary;
 
   return {
     pass: reasons.length === 0,
