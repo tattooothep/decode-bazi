@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     sampleCount: Number(body.sample_count),
     circularStdDeg: Number(body.circular_std_deg),
     repeatSpreadDeg: Number(body.repeat_spread_deg),
-    maxTiltDeg: Number(body.max_tilt_deg),
+    maxTiltDeg: body.max_tilt_deg == null ? null : Number(body.max_tilt_deg),
   });
   if (!gate.pass) {
     return NextResponse.json({

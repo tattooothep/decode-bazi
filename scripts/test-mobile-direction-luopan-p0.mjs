@@ -114,7 +114,7 @@ try {
   result = await api("/api/mobile/v1/luopan/analysis", tokenA, { method: "POST", body: JSON.stringify({ method:"manual",north_reference:"manual",heading_deg:180,period:8 }) });
   check(result.response.status === 200 && result.data.measurement.uncertaintyDeg === 1, "manual center-of-mountain measurement uses bounded manual uncertainty");
   result = await api("/api/mobile/v1/luopan/analysis", tokenA, { method: "POST", body: JSON.stringify({ method:"manual",north_reference:"manual",heading_deg:187.5,period:8 }) });
-  check(result.response.status === 422 && result.data.measurement.reasons.includes("mountain_boundary_uncertain"), "manual measurement still fails closed at a 24-Mountain boundary");
+  check(result.response.status === 200 && result.data.measurement.boundary_warning === true, "manual measurement at a 24-Mountain boundary passes with an explicit boundary warning");
   result = await api("/api/mobile/v1/luopan/rings?degree=0", tokenA);
   check(result.response.status === 200 && result.data.sections.hex64 === "locked" && !result.data.hex64, "trial focused rings expose locks without private specialist rows");
   result = await api("/api/mobile/v1/luopan/analysis", tokenA, { method: "POST", body: JSON.stringify({ ...stableSensor, tigua_school:"full_24" }) });
@@ -139,7 +139,11 @@ try {
   result = await api("/api/mobile/v1/luopan/analysis", tokenA, { method: "POST", body: JSON.stringify({ ...stableSensor, sample_count: 5, circular_std_deg: 9 }) });
   check(result.response.status === 422 && result.data.measurement.reasons.includes("insufficient_samples"), "unstable sensor measurement fails closed");
   result = await api("/api/mobile/v1/luopan/analysis", tokenA, { method: "POST", body: JSON.stringify({ ...stableSensor, heading_deg: 187.4 }) });
-  check(result.response.status === 422 && result.data.measurement.reasons.includes("mountain_boundary_uncertain"), "measurement near a 24-Mountain boundary fails closed");
+  check(result.response.status === 200 && result.data.measurement.boundary_warning === true && result.data.measurement.nearBoundary === true, "sensor measurement near a 24-Mountain boundary passes with an explicit boundary warning (18 Sep 2026)");
+  result = await api("/api/mobile/v1/luopan/analysis", tokenA, { method: "POST", body: JSON.stringify({ ...stableSensor, max_tilt_deg: 30 }) });
+  check(result.response.status === 422 && result.data.measurement.reasons.includes("phone_not_level"), "tilt beyond 25 degrees still fails closed");
+  result = await api("/api/mobile/v1/luopan/analysis", tokenA, { method: "POST", body: JSON.stringify({ ...stableSensor, max_tilt_deg: null }) });
+  check(result.response.status === 422 && result.data.measurement.reasons.includes("phone_not_level"), "missing tilt evidence fails closed");
 
   const clientMeasurementId = `fixture_${runId}`;
   const measurement = { ...stableSensor, client_measurement_id: clientMeasurementId };

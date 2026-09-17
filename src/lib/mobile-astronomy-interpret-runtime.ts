@@ -45,9 +45,8 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
       );
       const found = existing.rows[0]?.locales;
       if (found && found[locale]) return { title: found[locale].title, body: found[locale].body };
-    } catch (error) {
-      if ((error as { code?: string })?.code !== "42P01") return null;
-      return null; // ตารางยังไม่ apply — ข้อความคงที่ไปก่อน
+    } catch {
+      return null; // ตารางยังไม่ apply / DB สะดุด — ข้อความคงที่ไปก่อน ไม่เสียค่า AI
     }
 
     // facts ของยามนี้
@@ -109,8 +108,8 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
     try {
       const localDate = String((facts as { localBoundary?: string }).localBoundary || "").slice(0, 10);
       const tone = await pool.query<{ summary: { th?: { pushTitle?: string; verdict?: string } } }>(
-        `SELECT summary FROM mobile_daily_ai_summaries WHERE user_id=$1::uuid AND forecast_date=$2::date AND status='ready' LIMIT 1`,
-        [admission.userId, localDate],
+        `SELECT summary FROM mobile_daily_ai_summaries WHERE user_id=$1::uuid AND profile_id=$3::uuid AND forecast_date=$2::date AND status='ready' LIMIT 1`,
+        [admission.userId, localDate, user.profile_id],
       );
       const th = tone.rows[0]?.summary?.th;
       if (th) dailyTone = { pushTitle: th.pushTitle, verdict: th.verdict };

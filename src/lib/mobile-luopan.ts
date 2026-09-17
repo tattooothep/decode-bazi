@@ -49,7 +49,8 @@ export function evaluateMobileLuopanMeasurement(input: LuopanMeasurementInput): 
   const accuracyDeg = Math.max(0, finite(input.accuracyDeg, 0));
   const circularStdDeg = Math.max(0, finite(input.circularStdDeg, 999));
   const repeatSpreadDeg = Math.max(0, finite(input.repeatSpreadDeg, 999));
-  const maxTiltDeg = Math.max(0, finite(input.maxTiltDeg, 999));
+  // ไม่มีค่าเอียงเลย (null/ไม่ส่ง/ไม่ใช่ตัวเลข) = ยืนยันความราบไม่ได้ → ให้ตกเหมือนกันทุกกรณี (เดิม null→0 ผ่าน แต่ไม่ส่ง→999 ตก)
+  const maxTiltDeg = input.maxTiltDeg == null ? 999 : Math.max(0, finite(input.maxTiltDeg, 999));
   const sampleCount = Math.max(0, Math.trunc(finite(input.sampleCount, 0)));
   const accuracyClass = Math.trunc(finite(input.accuracyClass, 0));
   const uncertaintyDeg = input.method === "sensor"

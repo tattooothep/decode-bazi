@@ -15,12 +15,18 @@ const summaryLib = require("./daily-ai-summary.cjs");
 const LOCALES = ["th", "en", "zh"];
 const SIGNS_TH = ["เมษ", "พฤษภ", "เมถุน", "กรกฎ", "สิงห์", "กันย์", "ตุลย์", "พิจิก", "ธนู", "มังกร", "กุมภ์", "มีน"];
 const SIGNS_EN = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
-const BODY_TH = { Sun: "อาทิตย์", Moon: "จันทร์", Mercury: "พุธ", Venus: "ศุกร์", Mars: "อังคาร", Jupiter: "พฤหัส", Saturn: "เสาร์", Rahu: "ราหู", Ketu: "เกตุ", Yuebo: "เยว่ป๋อ(月孛)" };
+const SIGNS_ZH = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"];
+const BODY_TH = { Sun: "อาทิตย์", Moon: "จันทร์", Mercury: "พุธ", Venus: "ศุกร์", Mars: "อังคาร", Jupiter: "พฤหัส", Saturn: "เสาร์", Rahu: "ราหู", Ketu: "เกตุ", Yuebo: "เยว่ป๋อ" };
+const BODY_ZH = { Sun: "太陽", Moon: "月亮", Mercury: "水星", Venus: "金星", Mars: "火星", Jupiter: "木星", Saturn: "土星", Rahu: "羅睺", Ketu: "計都", Yuebo: "月孛" };
+const THAI_RE = /[\u0E00-\u0E7F]/u;
+// คำต้องห้าม: คำตัดสินแบบตำราเลือกยาม (七政 election ยังล็อก) + เรื่องต้องห้ามของ HourKey
+const FORBIDDEN_RE = /ฤกษ์ดี|ฤกษ์ร้าย|ฤกษ์ยาม|吉時|凶時|吉时|凶时|auspicious hour|inauspicious hour|หวย|lottery|彩票|樂透|ความตาย|เสียชีวิต/iu;
 
 function signOf(lon) {
   const l = ((Number(lon) % 360) + 360) % 360;
-  const idx = Math.floor(l / 30);
-  return { idx, deg: Math.round((l - idx * 30) * 10) / 10, th: SIGNS_TH[idx], en: SIGNS_EN[idx] };
+  const idx = Math.min(11, Math.floor(l / 30));
+  const deg = Math.min(29.9, Math.round((l - idx * 30) * 10) / 10);
+  return { idx, deg, th: SIGNS_TH[idx], en: SIGNS_EN[idx], zh: SIGNS_ZH[idx] };
 }
 
 /** สรุป snapshot เป็นตารางอ่านง่ายให้ AI (ตัวเลขทุกตัวจาก engine) */
@@ -28,12 +34,12 @@ function skyTable(facts) {
   const rows = [];
   for (const b of Array.isArray(facts?.physicalBodies) ? facts.physicalBodies : []) {
     const s = signOf(b.longitudeTropicalDeg);
-    rows.push({ body: b.key, th: BODY_TH[b.key] || b.key, sign: `${s.th}/${s.en}`, deg: s.deg,
+    rows.push({ body: b.key, th: BODY_TH[b.key] || b.key, zh: BODY_ZH[b.key] || b.key, sign: `${s.th}/${s.en}/${s.zh}`, deg: s.deg,
       retrograde: b.retrograde === true, illuminated: typeof b.illuminatedFraction === "number" ? Math.round(b.illuminatedFraction * 100) : undefined });
   }
   for (const p of Array.isArray(facts?.points) ? facts.points : []) {
     const s = signOf(p.longitudeTropicalDeg);
-    rows.push({ body: p.key, th: BODY_TH[p.key] || p.key, sign: `${s.th}/${s.en}`, deg: s.deg, point: p.definition });
+    rows.push({ body: p.key, th: BODY_TH[p.key] || p.key, zh: BODY_ZH[p.key] || p.key, sign: `${s.th}/${s.en}/${s.zh}`, deg: s.deg, point: p.definition });
   }
   return rows;
 }
@@ -54,7 +60,8 @@ function transitHits(facts, natal) {
       }
     }
   }
-  return hits.slice(0, 12);
+  // เก็บมุมแน่นสุดก่อน (เดิมตัดตามลำดับพบ → มุม orb 0 หลุดได้เมื่อเกิน 12)
+  return hits.sort((a, b) => a.orb - b.orb).slice(0, 12);
 }
 
 function buildInterpretPrompt(input) {
@@ -74,6 +81,7 @@ function buildInterpretPrompt(input) {
     "5. น้ำเสียงต้องไม่ขัดกับ DAILY_TONE (สรุปดวงเช้าของวันเดียวกัน) — ถ้ายามนี้ต่างจากภาพรวมวัน ให้บอกว่าเป็น 'ช่วงย่อย'",
     "6. ห้ามเรื่องต้องห้าม: ความตาย โรคร้ายแรง คดีความ การเมือง การพนัน หวย",
     "7. ห้ามคำว่า 'อาจจะ/น่าจะ' เกิน 1 ครั้งต่อภาษา — กล้าฟันธงในกรอบข้อ 2",
+    "8. zh ต้องเป็นจีนตัวเต็มล้วน ห้ามมีอักษรไทยแม้ตัวเดียว (ชื่อดาว/ราศีใช้คอลัมน์ zh ใน SKY) · en ห้ามมีอักษรไทย · ทุกช่องเป็นบรรทัดเดียว ไม่ขึ้นบรรทัดใหม่",
     "",
     `== ช่วงเวลา == ${local} (2 ชั่วโมงถัดจากนี้) · เจ้าของดวง: ${profileName || "ผู้ใช้"}`,
     "== SKY (ตำแหน่งดาวจริง ณ ต้นยาม · ราศีสายัน) ==",
@@ -100,8 +108,16 @@ function buildInterpretPrompt(input) {
   ].join("\n");
 }
 
-function clean(value, max) {
-  return typeof value === "string" && value.trim().length > 0 && value.length <= max;
+// ยุบช่องว่าง/ขึ้นบรรทัด/อักขระควบคุมเป็นช่องว่างเดียว (ซอง FCM ปฏิเสธอักขระควบคุม → ถ้าปล่อยไว้จะถอยไปข้อความคงที่เงียบๆ)
+function normalizeText(value) {
+  return typeof value === "string" ? value.replace(/[\u0000-\u001f\u007f\u2028\u2029]+/gu, " ").replace(/\s+/gu, " ").trim() : "";
+}
+function clean(value, max, locale) {
+  const text = normalizeText(value);
+  if (text.length === 0 || text.length > max) return null;
+  if (locale !== "th" && THAI_RE.test(text)) return null;
+  if (FORBIDDEN_RE.test(text)) return null;
+  return text;
 }
 
 function validateInterpretation(raw) {
@@ -111,13 +127,16 @@ function validateInterpretation(raw) {
   for (const locale of LOCALES) {
     const e = parsed[locale];
     if (!e || typeof e !== "object") return null;
-    if (!clean(e.title, 60) || !clean(e.body, 240) || !clean(e.meaning, 900)) return null;
-    const list = (v) => Array.isArray(v) && v.length >= 1 && v.length <= 3 && v.every((x) => clean(x, 120));
-    if (!list(e.doList) || !list(e.avoidList)) return null;
-    out[locale] = {
-      title: e.title.trim(), body: e.body.trim(), meaning: e.meaning.trim(),
-      doList: e.doList.map((x) => x.trim()), avoidList: e.avoidList.map((x) => x.trim()),
+    const title = clean(e.title, 60, locale), body = clean(e.body, 240, locale), meaning = clean(e.meaning, 900, locale);
+    if (title === null || body === null || meaning === null) return null;
+    const list = (v) => {
+      if (!Array.isArray(v) || v.length < 1 || v.length > 3) return null;
+      const items = v.map((x) => clean(x, 120, locale));
+      return items.every((x) => x !== null) ? items : null;
     };
+    const doList = list(e.doList), avoidList = list(e.avoidList);
+    if (doList === null || avoidList === null) return null;
+    out[locale] = { title, body, meaning, doList, avoidList };
   }
   return out;
 }
@@ -132,16 +151,19 @@ function factsDigest(facts) {
  */
 async function generateAstronomyInterpretation(input, options = {}) {
   const prompt = buildInterpretPrompt(input);
-  let raw;
-  let model;
-  if (options.invoke) {
-    raw = await options.invoke(prompt, options);
-    model = options.model || "mock";
-  } else {
-    const result = await summaryLib.invokeAnyBackend(prompt, { timeoutMs: options.timeoutMs || 150_000 });
-    raw = result.raw;
-    model = result.model;
-  }
+  // งบเวลารวมทั้งสายสำรอง (ค่าเริ่ม 160 วิ < 170 วิ ที่ตัวส่งรอ) — ไม่ให้สายสำรอง 4 ชั้นลากถึง 600 วิ
+  const totalMs = options.totalTimeoutMs || 160_000;
+  const perBackendMs = Math.min(options.timeoutMs || 150_000, totalMs);
+  const run = options.invoke
+    ? options.invoke(prompt, options).then((raw) => ({ raw, model: options.model || "mock" }))
+    : summaryLib.invokeAnyBackend(prompt, { timeoutMs: perBackendMs });
+  let timer;
+  const result = await Promise.race([
+    run,
+    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("astronomy_interpretation_timeout")), totalMs); }),
+  ]).finally(() => clearTimeout(timer));
+  const raw = result.raw;
+  const model = result.model;
   const locales = validateInterpretation(raw);
   if (!locales) throw new Error("astronomy_interpretation_invalid");
   return { locales, model, factsDigest: factsDigest(input.facts) };

@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     headingDeg: Number(body.heading_deg), northReference, method,
     accuracyClass: Number(body.accuracy_class), accuracyDeg: Number(body.accuracy_deg),
     sampleCount: Number(body.sample_count), circularStdDeg: Number(body.circular_std_deg),
-    repeatSpreadDeg: Number(body.repeat_spread_deg), maxTiltDeg: Number(body.max_tilt_deg),
+    repeatSpreadDeg: Number(body.repeat_spread_deg), maxTiltDeg: body.max_tilt_deg == null ? null : Number(body.max_tilt_deg),
   });
   const saveLocation = body.save_location === true;
   const latitude = saveLocation && Number.isFinite(Number(body.latitude)) ? Number(body.latitude) : null;
