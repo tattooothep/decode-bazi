@@ -124,6 +124,16 @@ await assert.rejects(() => submitAstronomyFcmR8Once(prepareAstronomyFcmR8(input)
 const lateClock = (() => { let first = true; return () => { if (first) { first = false; return now; } return now + 300_000; }; })();
 const slow = await submitAstronomyFcmR8Once(prepareAstronomyFcmR8(input), token, lateClock, async () => response(429, "RESOURCE_EXHAUSTED", "QUOTA_EXCEEDED", "60"));
 check(!slow.retryable || (slow.retryNotBefore !== null && slow.retryNotBefore >= now + 300_000 + 60_000), "slow transport cannot shrink the backoff window");
+// ตีความรายยาม (18 ก.ย.): copy override ทับเฉพาะ title/body · data payload 7 คีย์คงเดิม
+const interpreted = prepareAstronomyFcmR8({ ...input, copy: { title: " จันทร์ทับดาวเกิด ", body: "ยามนี้ใจนิ่ง เหมาะคุยงานละเอียด" } });
+check(interpreted.message.notification.title === "จันทร์ทับดาวเกิด" && interpreted.message.notification.body === "ยามนี้ใจนิ่ง เหมาะคุยงานละเอียด", "interpretation copy overrides the visible title/body (trimmed)");
+assert.deepEqual(JSON.parse(interpreted.message.data.body), payload); checks += 1;
+check(interpreted.payloadDigest !== prepared.payloadDigest, "copy override is bound into the attempt digest");
+for (const badCopy of [{ title: "", body: "x" }, { title: "x".repeat(81), body: "y" }, { title: "ok", body: "y".repeat(241) }, { title: "ok", body: "bell" }, "not-object", { title: 1, body: "y" }]) {
+  const p = prepareAstronomyFcmR8({ ...input, copy: badCopy as never });
+  check(p.message.notification.title === prepared.message.notification.title, "invalid copy falls back to the fixed privacy copy");
+}
+check(prepareAstronomyFcmR8({ ...input, copy: null }).payloadDigest === prepared.payloadDigest, "null copy is identical to no copy");
 const source = readFileSync("src/lib/mobile-astronomy-fcm-r8.ts", "utf8");
 assert.doesNotMatch(source, /process\.env|\bfetch\s*\(|readFile|fcm-direct|push-send|setTimeout/u); checks += 1;
 console.log(`PASS astronomy FCM R8: ${checks} checks (injected transport only; no live send).`);

@@ -37,7 +37,20 @@ export async function GET(req: Request, context: { params: Promise<{ occurrenceI
       audience,
       category: "astronomy_fact",
     });
-    return detail ? NextResponse.json({ ok: true, detail }, { headers: PRIVATE_HEADERS }) : unavailable();
+    if (!detail) return unavailable();
+    // ตีความรายยาม (18 ก.ย.): snapshot ที่ AI แปลไว้ตอนส่ง — อ่านอย่างเดียว ไม่คำนวณใหม่
+    // ตาราง/แถวไม่มี = ส่ง null (แอพโชว์เฉพาะตำแหน่งดาวเหมือนเดิม)
+    let interpretation: unknown = null;
+    try {
+      const row = await pool.query<{ locales: unknown }>(
+        `SELECT locales FROM mobile_astronomy_interpretations_r8 WHERE occurrence_id=$1::uuid AND user_id=$2::uuid`,
+        [occurrenceId, session.userId],
+      );
+      interpretation = row.rows[0]?.locales ?? null;
+    } catch {
+      interpretation = null;
+    }
+    return NextResponse.json({ ok: true, detail, interpretation }, { headers: PRIVATE_HEADERS });
   } catch {
     return unavailable();
   }

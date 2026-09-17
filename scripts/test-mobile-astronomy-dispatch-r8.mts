@@ -119,6 +119,27 @@ if (!process.argv.includes("--run-isolated")) {
     check(r4b.status === "accepted", "retry claims from rejected_retryable and succeeds");
     check((await pool.query("SELECT count(*)::int AS n FROM mobile_astronomy_dispatch_queue_r8")).rows[0].n === 0, "successful retry clears the queue row");
 
+    // 4b) คำตีความรายยาม: interpret ส่ง copy → ซองใช้ข้อความนั้น · interpret พัง/ค้าง → ข้อความคงที่ ส่งต่อได้
+    const occI1 = await makeOccurrence();
+    let interpretSeen: string | null = null;
+    const rI1 = await dispatchAstronomyOccurrenceOnce({ ...deps(async (req) => {
+      const body = JSON.parse(req.body);
+      check(body.message.notification.title === "จันทร์ทับดาวเกิด" && body.message.notification.body === "ยามนี้ใจนิ่ง คุยงานละเอียดได้", "interpretation copy replaces the fixed copy in the envelope");
+      check(JSON.parse(body.message.data.body).occurrenceId === occI1, "data payload stays the strict 7-key contract under custom copy");
+      return accepted(projectId);
+    }) as object, interpret: async (id: string, admission: { locale: string; userId: string }) => {
+      interpretSeen = `${id}:${admission.locale}:${admission.userId}`;
+      return { title: "จันทร์ทับดาวเกิด", body: "ยามนี้ใจนิ่ง คุยงานละเอียดได้" };
+    } } as never, occI1);
+    check(rI1.status === "accepted" && interpretSeen === `${occI1}:${"th"}:${(await pool.query("SELECT user_id FROM mobile_science_notification_subscriptions LIMIT 1")).rows[0].user_id}`, "interpret receives occurrence + fenced admission (locale/user) and the unit is accepted");
+    const occI2 = await makeOccurrence();
+    const rI2 = await dispatchAstronomyOccurrenceOnce({ ...deps(async (req) => {
+      const body = JSON.parse(req.body);
+      check(typeof body.message.notification.title === "string" && body.message.notification.title.length > 0 && body.message.notification.title !== "จันทร์ทับดาวเกิด", "interpret failure falls back to the fixed copy");
+      return accepted(projectId);
+    }) as object, interpret: async () => { throw new Error("ai down"); } } as never, occI2);
+    check(rI2.status === "accepted", "interpret failure never blocks dispatch");
+
     // 5) Transport failure → unknown, never resent even with a healthy transport.
     const occ3 = await makeOccurrence();
     const r5 = await dispatchAstronomyOccurrenceOnce(deps(async () => { calls += 1; throw new Error("socket reset"); }), occ3);

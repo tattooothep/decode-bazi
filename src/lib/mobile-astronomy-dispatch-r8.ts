@@ -68,7 +68,14 @@ export type AstronomyDispatchDeps = Readonly<{
   transport: (request: AstronomyFcmTransportRequest) => Promise<AstronomyFcmTransportResponse>;
   /** เช็คของที่ต้องมีก่อนส่ง (เช่น ตั๋ว OAuth) — ล้ม = เลื่อนงาน ไม่เผา attempt */
   preflight?: () => Promise<boolean>;
+  /**
+   * ตีความรายยาม (18 ก.ย.): คืน title/body ภาษาคนสำหรับ locale ของผู้รับ
+   * null/โยน error/ช้าเกิน = ใช้ข้อความคงที่เดิม — ห้ามทำให้การส่งหยุด
+   */
+  interpret?: (occurrenceId: string, admission: AstronomyDispatchAdmissionRow) => Promise<Readonly<{ title: string; body: string }> | null>;
 }>;
+
+const INTERPRET_TIMEOUT_MS = 170_000;
 
 export type AstronomyDispatchResult = Readonly<{
   status: "not_admitted" | "skipped" | "accepted" | "not_accepted" | "unknown" | "stopped";
@@ -303,9 +310,23 @@ export async function dispatchAstronomyOccurrenceOnce(
     if (!outboxAdmission || !outboxAdmission.enabled) return { status: "stopped", reason: "resume_fence" };
   }
 
+  // คำตีความรายยาม — ก่อน prepare (freshness 5 วิของ prepared เริ่มนับหลังนี้)
+  let copy: Readonly<{ title: string; body: string }> | null = null;
+  if (deps.interpret) {
+    try {
+      copy = await Promise.race([
+        deps.interpret(occurrenceId, outboxAdmission),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), INTERPRET_TIMEOUT_MS).unref?.()),
+      ]);
+    } catch {
+      copy = null;
+    }
+  }
+
   let prepared;
   try {
     prepared = prepareAstronomyFcmR8({
+      copy,
       projectId: deps.projectId,
       locale: outboxAdmission.locale,
       payload: {

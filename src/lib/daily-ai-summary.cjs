@@ -308,6 +308,29 @@ async function invokeGemini(prompt, opts = {}) {
 }
 
 /**
+ * เรียก AI ตัวไหนก็ได้ที่ยังหายใจ ตามลำดับ Claude CLI → Grok CLI → OpenRouter → Gemini
+ * (ใช้ร่วมกับตัวตีความดาวจริงรายยาม 18 ก.ย.) — คืน { raw, model } หรือโยน error ตัวสุดท้าย
+ */
+async function invokeAnyBackend(prompt, options = {}) {
+  const attempts = [
+    ["claude-max-cli", invokeClaudeCli],
+    ["grok-cli", invokeGrokCli],
+    ["openrouter", invokeOpenRouter],
+    ["gemini-api", invokeGemini],
+  ];
+  let lastError = new Error("ai_all_backends_failed");
+  for (const [model, invoke] of attempts) {
+    try {
+      const raw = await invoke(prompt, options);
+      if (typeof raw === "string" && raw.trim()) return { raw, model };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
+/**
  * สร้างสรุปดวง 3 ภาษาจาก facts — invoke ฉีดได้เพื่อเทส
  * ตัวจริงไล่ตามลำดับ: Claude CLI → Grok CLI → OpenRouter API → Gemini API
  * คืน { summary, model, factsDigest } หรือโยน error (คนเรียกต้อง fallback เอง)
@@ -390,6 +413,7 @@ module.exports = {
   applyAiCopiesToNotice,
   availableSciences,
   invokeGrokCli,
+  invokeAnyBackend,
   buildDailyAiPrompt,
   extractJsonObject,
   factsDigest,
