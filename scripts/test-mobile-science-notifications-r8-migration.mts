@@ -194,6 +194,32 @@ try {
      VALUES('${chainId}','${replacementTokenId}',gen_random_uuid(),'B8c7wP4nY2kLm8QrV5sT1u',true)`,
     "one chain has only one active primary endpoint",
   );
+  // ── ลงแอพใหม่ (18 ก.ย. 2569): รหัสติดตั้งใหม่ + โทเค็นหลักเดิมถูกปิด → สายส่งต้องย้ายตามเอง ──
+  psql(database, readFileSync("migrations/drafts/20260918_r8_rebind_on_reinstall.sql", "utf8"));
+  const secondDeviceInstallation = crypto.randomUUID();
+  const secondDeviceTokenId = psql(database,
+    `INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES('${userId}','${secondDeviceInstallation}') RETURNING id;`);
+  const secondDeviceAudience = psql(database,
+    `SELECT astronomy_fact_audience_binding FROM mobile_push_tokens WHERE id='${secondDeviceTokenId}'`);
+  assert.equal(psql(database,
+    `SELECT hourkey_r8_rebind_primary_token('${userId}','${secondDeviceInstallation}','${secondDeviceTokenId}','${secondDeviceAudience}')`,
+  ), "0", "a second device never steals the chain while the primary token is still enabled");
+  assert.equal(psql(database,
+    `SELECT primary_token_id::text FROM mobile_science_notification_chains WHERE id='${chainId}'`), replacementTokenId);
+  psql(database, `UPDATE mobile_push_tokens SET enabled=false WHERE id='${replacementTokenId}'`);
+  assert.equal(psql(database,
+    `SELECT hourkey_r8_rebind_primary_token('${userId}','${secondDeviceInstallation}','${secondDeviceTokenId}','${secondDeviceAudience}')`,
+  ), "1", "a reinstall (new installation, prior primary token disabled) rebinds the chain");
+  assert.equal(psql(database,
+    `SELECT primary_token_id::text||':'||primary_installation_id::text||':'||target_revision::text
+       FROM mobile_science_notification_chains WHERE id='${chainId}'`,
+  ), `${secondDeviceTokenId}:${secondDeviceInstallation}:3`, "chain follows the new installation and bumps the target revision");
+  assert.equal(psql(database,
+    `SELECT count(*)::text||':'||min(token_id::text)||':'||min(audience_binding)||':'||min(target_revision)::text
+       FROM mobile_science_notification_endpoints WHERE chain_id='${chainId}'`,
+  ), `1:${secondDeviceTokenId}:${secondDeviceAudience}:3`, "exactly one primary endpoint remains, on the new installation");
+  assert.equal(psql(database, `
+    SELECT jsonb_build_object('chain',to_jsonb(c))::text FROM mobile_science_notification_chains c WHERE c.id='${qizhengChainId}'`).length > 0, true);
   psql(database, `
     INSERT INTO mobile_science_notification_occurrences
       (chain_id,science_id,submode,schema_version,notification_unit_id,identity_cbor,identity_hash,result_revision_hash,rollout_epoch,state,snapshot,snapshot_digest,scheduled_for,expires_at)
