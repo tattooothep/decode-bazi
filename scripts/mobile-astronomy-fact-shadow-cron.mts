@@ -84,6 +84,9 @@ export async function runShadowScheduler(
   options: ShadowSchedulerOptions,
 ): Promise<ShadowSchedulerResult> {
   if (!(options.at instanceof Date) || !Number.isFinite(options.at.valueOf())) throw new TypeError("r8_shadow_time_invalid");
+  // ซ่อมการผูกเครื่องก่อนคัดผู้รับ (19 ก.ย. 2569): ลงแอพใหม่แล้วโทเค็นหลักเดิมถูกปิดทีหลัง → สายส่งชี้โทเค็นตาย
+  // ทำนอก transaction หลัก และล้มได้โดยไม่กระทบการสร้างยาม (ฐานที่ยังไม่มีฟังก์ชัน = ข้าม)
+  if (!options.dry) await db.query("SELECT hourkey_r8_repair_stale_primary_tokens()").catch(() => null);
   if (!options.dry) await db.query("BEGIN");
   let inserted = 0;
   let duplicates = 0;

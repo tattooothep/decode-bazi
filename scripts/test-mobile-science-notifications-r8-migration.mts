@@ -220,6 +220,30 @@ try {
   ), `1:${secondDeviceTokenId}:${secondDeviceAudience}:3`, "exactly one primary endpoint remains, on the new installation");
   assert.equal(psql(database, `
     SELECT jsonb_build_object('chain',to_jsonb(c))::text FROM mobile_science_notification_chains c WHERE c.id='${qizhengChainId}'`).length > 0, true);
+  // ── ซ่อมเอง (19 ก.ย. 2569): โทเค็นหลักถูกปิด "ทีหลัง" การลงทะเบียน → ตัวสร้างยามต้องย้ายให้เองโดยไม่ต้องรอเปิดแอพ ──
+  // ตารางโทเค็นจำลองของเทสนี้ไม่มีคอลัมน์ของจริง 3 ตัวที่ฟังก์ชันซ่อมใช้คัดโทเค็นที่ส่งได้จริง — เติมให้เท่าของจริง
+  psql(database, `ALTER TABLE mobile_push_tokens
+    ADD COLUMN IF NOT EXISTS device_push_token text DEFAULT 'fixture-device-token',
+    ADD COLUMN IF NOT EXISTS astronomy_fact_payload_schema smallint DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS last_registered_at timestamptz DEFAULT now();`);
+  psql(database, readFileSync("migrations/drafts/20260919_r8_repair_stale_primary_tokens.sql", "utf8"));
+  assert.equal(psql(database, "SELECT has_function_privilege('hourkey_app','hourkey_r8_repair_stale_primary_tokens()','EXECUTE')"), "t");
+  assert.equal(psql(database, "SELECT hourkey_r8_repair_stale_primary_tokens()"), "0", "healthy chains are left untouched");
+  const thirdInstallation = crypto.randomUUID();
+  const thirdTokenId = psql(database,
+    `INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES('${userId}','${thirdInstallation}') RETURNING id;`);
+  psql(database, `UPDATE mobile_push_tokens SET enabled=false WHERE id='${secondDeviceTokenId}'`);
+  assert.equal(psql(database, "SELECT hourkey_r8_repair_stale_primary_tokens()"), "0",
+    "a replacement token that cannot carry the astronomy payload (schema 0) is never chosen");
+  psql(database, `UPDATE mobile_push_tokens SET astronomy_fact_payload_schema=1 WHERE id='${thirdTokenId}'`);
+  assert.equal(psql(database, "SELECT hourkey_r8_repair_stale_primary_tokens()"), "1", "a chain whose primary token died is repaired without any app registration");
+  assert.equal(psql(database,
+    `SELECT primary_token_id::text||':'||primary_installation_id::text||':'||target_revision::text
+       FROM mobile_science_notification_chains WHERE id='${chainId}'`,
+  ), `${thirdTokenId}:${thirdInstallation}:4`);
+  assert.equal(psql(database,
+    `SELECT count(*)::text FROM mobile_science_notification_endpoints WHERE chain_id='${chainId}' AND primary_endpoint AND active AND token_id='${thirdTokenId}'`), "1");
+  assert.equal(psql(database, "SELECT hourkey_r8_repair_stale_primary_tokens()"), "0", "repair is idempotent");
   psql(database, `
     INSERT INTO mobile_science_notification_occurrences
       (chain_id,science_id,submode,schema_version,notification_unit_id,identity_cbor,identity_hash,result_revision_hash,rollout_epoch,state,snapshot,snapshot_digest,scheduled_for,expires_at)
