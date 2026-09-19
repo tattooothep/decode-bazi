@@ -201,15 +201,18 @@ try {
     `INSERT INTO mobile_push_tokens(user_id,installation_id) VALUES('${userId}','${secondDeviceInstallation}') RETURNING id;`);
   const secondDeviceAudience = psql(database,
     `SELECT astronomy_fact_audience_binding FROM mobile_push_tokens WHERE id='${secondDeviceTokenId}'`);
+  // ขั้นกลาง (ฉบับ 18 ก.ย.): ย้ายเฉพาะเมื่อโทเค็นหลักเดิมถูกปิด
   assert.equal(psql(database,
     `SELECT hourkey_r8_rebind_primary_token('${userId}','${secondDeviceInstallation}','${secondDeviceTokenId}','${secondDeviceAudience}')`,
-  ), "0", "a second device never steals the chain while the primary token is still enabled");
-  assert.equal(psql(database,
-    `SELECT primary_token_id::text FROM mobile_science_notification_chains WHERE id='${chainId}'`), replacementTokenId);
-  psql(database, `UPDATE mobile_push_tokens SET enabled=false WHERE id='${replacementTokenId}'`);
+  ), "0", "18 Sep version: a new installation does not move the chain while the old token is still enabled");
+  // ฉบับ 19 ก.ย.: ลงแอพใหม่ทิ้งโทเค็นเก่าไว้ enabled เสมอ → "ลงทะเบียนล่าสุดชนะ"
+  psql(database, readFileSync("migrations/drafts/20260919_r8_rebind_latest_registration_wins.sql", "utf8"));
   assert.equal(psql(database,
     `SELECT hourkey_r8_rebind_primary_token('${userId}','${secondDeviceInstallation}','${secondDeviceTokenId}','${secondDeviceAudience}')`,
-  ), "1", "a reinstall (new installation, prior primary token disabled) rebinds the chain");
+  ), "1", "latest registration wins: a reinstall moves the chain even though the replaced app's token is still enabled");
+  assert.equal(psql(database,
+    `SELECT hourkey_r8_rebind_primary_token('${userId}','${secondDeviceInstallation}','${secondDeviceTokenId}','${secondDeviceAudience}')`,
+  ), "0", "registering the same token again is a no-op (no revision churn)");
   assert.equal(psql(database,
     `SELECT primary_token_id::text||':'||primary_installation_id::text||':'||target_revision::text
        FROM mobile_science_notification_chains WHERE id='${chainId}'`,
