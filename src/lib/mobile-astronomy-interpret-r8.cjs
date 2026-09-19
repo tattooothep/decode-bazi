@@ -21,7 +21,7 @@ const BODY_ZH = { Sun: "太陽", Moon: "月亮", Mercury: "水星", Venus: "金�
 const THAI_RE = /[\u0E00-\u0E7F]/u;
 // คำต้องห้าม: คำตัดสินแบบตำราเลือกยาม (七政 election ยังล็อก) + เรื่องต้องห้ามของ HourKey
 // ศัพท์เทคนิค/คำอ้างเกินที่ผู้ตรวจพบรั่วในคำอ่านจริง (19 ก.ย. 2569) — เจอ = ตีตก แล้วให้ AI เขียนใหม่ 1 รอบ
-const LEAK_RE = /\bnatal\b|\bretrograde\b|\bdegrees?\b|\borb\b|sub-window|องศา|เยว่ป๋อ|Yuebo|月孛|本命|逆行|吉角|ดาวโชค|วาสนา|เจ้าดวง|แข็งที่สุด|lucky planet|最旺|貴人/iu;
+const LEAK_RE = /\bnatal\b|\bretrograde\b|\bdegrees?\b|\borb\b|sub-window|องศา|เยว่ป๋อ|Yuebo|月孛|本命|逆行|吉角|ดาวโชค|วาสนา|เจ้าดวง|แข็งที่สุด|lucky planet|最旺|貴人|กำเนิด|ถอยหลัง|(?:ดาว|อาทิตย์|จันทร์|พุธ|ศุกร์|อังคาร|พฤหัส|เสาร์)จร/iu;
 const FORBIDDEN_RE = /ฤกษ์ดี|ฤกษ์ร้าย|ฤกษ์ยาม|吉時|凶時|吉时|凶时|auspicious hour|inauspicious hour|หวย|lottery|彩票|樂透|ความตาย|เสียชีวิต/iu;
 
 function signOf(lon) {

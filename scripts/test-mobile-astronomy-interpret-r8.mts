@@ -29,7 +29,7 @@ check(prompt.includes("ธนู") && prompt.includes("Saturn") && prompt.includ
 // validator
 const entry = (tag: string) => tag === "th" ? {
   title: "จันทร์ทับดาวเกิด", body: "ยามนี้อารมณ์นิ่ง เหมาะคุยงานละเอียด",
-  meaning: "บนฟ้าจันทร์อยู่ราศีธนู ทับอาทิตย์กำเนิดของคุณ แปลว่าใจนิ่ง คิดชัด",
+  meaning: "บนฟ้าจันทร์อยู่ราศีธนู ทับอาทิตย์ในดวงคุณ แปลว่าใจนิ่ง คิดชัด",
   doList: ["คุยงานละเอียด"], avoidList: ["ตัดสินใจเรื่องเงินก้อน"],
 } : tag === "zh" ? {
   title: "此刻適合細談工作", body: "此刻情緒平穩，適合細談工作",
@@ -82,7 +82,7 @@ check(!mixed.some((h: { natal: string }) => h.natal === "Ziqi"), "the experiment
 const np = lib.natalForPrompt({ bodies: [{ key: "Mars", lon: 334.6, signTh: "กุมภ์" }], keyPlanet: { key: "Mars", statusTh: "ปานกลาง" } });
 check(np.bodies[0].sign.startsWith("มีน/Pisces") && !JSON.stringify(np).includes("กุมภ์"), "natal signs are tropical like the sky table, never the sidereal engine label");
 check(np.keyPlanet.callIt.th === "ดาวหลักของคุณ" && np.keyPlanet.strength === "ปานกลาง", "key planet is sent with one fixed name and its real strength");
-for (const leak of ["ศุกร์ทำมุม 120 องศากับอังคาร", "เสาร์ทับเยว่ป๋อ", "อังคารดาวโชคของคุณ"]) {
+for (const leak of ["ศุกร์ทำมุม 120 องศากับอังคาร", "เสาร์ทับเยว่ป๋อ", "อังคารดาวโชคของคุณ", "อังคารจรหนุนเสาร์กำเนิด", "เสาร์ถอยหลังในเมษ"]) {
   check(lib.validateInterpretation({ ...good, th: { ...good.th, meaning: leak } }) === null, `leaked jargon or overclaim rejected: ${leak}`);
 }
 check(lib.validateInterpretation({ ...good, en: { ...good.en, body: "Venus trines your natal Mars" } }) === null, "english jargon rejected");

@@ -73,6 +73,11 @@ export type AstronomyDispatchDeps = Readonly<{
    * null/โยน error/ช้าเกิน = ใช้ข้อความคงที่เดิม — ห้ามทำให้การส่งหยุด
    */
   interpret?: (occurrenceId: string, admission: AstronomyDispatchAdmissionRow) => Promise<Readonly<{ title: string; body: string }> | null>;
+  /**
+   * "ไม่มีอะไรเปลี่ยน = ไม่เด้ง" (19 ก.ย.): true = ยามนี้เหมือนยามก่อน (ไม่มีมุมจันทร์ + ฉากหลังชุดเดิม) → ข้ามการส่ง
+   * ถูกถามก่อนแตะ ledger เสมอ — ข้ามแล้วต้องไม่เหลือร่องรอยการจองส่ง · โยน error/ช้าเกิน = ไม่ข้าม (ส่งตามปกติ)
+   */
+  suppress?: (occurrenceId: string, admission: AstronomyDispatchAdmissionRow) => Promise<boolean>;
 }>;
 
 const INTERPRET_TIMEOUT_MS = 230_000;
@@ -235,6 +240,19 @@ export async function dispatchAstronomyOccurrenceOnce(
   // ชั่วคราวต้องเลื่อนงาน ไม่ใช่เผา attempt เป็น submit_unknown ถาวร
   if (deps.preflight && !(await deps.preflight())) {
     return { status: "not_admitted", reason: "transport_unavailable" };
+  }
+
+  if (deps.suppress) {
+    let unchanged = false;
+    try {
+      unchanged = await Promise.race([
+        deps.suppress(occurrenceId, admission0),
+        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), INTERPRET_TIMEOUT_MS).unref?.()),
+      ]);
+    } catch {
+      unchanged = false;
+    }
+    if (unchanged) return { status: "skipped", reason: "unchanged_period" };
   }
 
   const chainUuid = await resolveAstronomyChainUuid(pool, {

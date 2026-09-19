@@ -22,8 +22,13 @@ export type InterpretRuntimeDeps = Readonly<{
   signSession: (user: { id: string; email: string; current_org_id: string | null; session_version: number | null }) => string;
   /** ตัวสร้างคำตีความ (ฉีดได้เพื่อเทส) */
   generate: (input: { facts: unknown; natal: unknown; dailyTone: unknown; previousPeriod?: unknown; profileName: string }) => Promise<{ locales: Locales; model: string; factsDigest: string }>;
+  /** มุมดาวของยาม (ฉีด transitHits ของ lib) — ใช้ตัดสิน "ไม่มีอะไรเปลี่ยน" แบบกำหนดแน่นอน ไม่พึ่ง AI · ไม่ส่ง = ไม่มีการข้ามยาม */
+  hits?: (facts: unknown, natal: unknown) => ReadonlyArray<{ transit: string; natal: string; aspect: string; pace: string }>;
   fetchImpl?: typeof fetch;
 }>;
+
+type StoredLocales = Locales & { _sig?: string; _unchanged?: boolean };
+type Resolved = Readonly<{ copy: Copy | null; unchanged: boolean }>;
 
 export function pickLocale(subscriptionLocale: string): "th" | "en" | "zh" {
   const l = String(subscriptionLocale || "th").toLowerCase();
@@ -34,19 +39,37 @@ export function pickLocale(subscriptionLocale: string): "th" | "en" | "zh" {
 
 export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
   const fetchImpl = deps.fetchImpl ?? fetch;
-  return async (occurrenceId: string, admission: AstronomyDispatchAdmissionRow): Promise<Copy | null> => {
+  // suppress() ถูกถามก่อนจองส่ง แล้ว interpret() ถูกถามอีกครั้งหลังจอง — ใช้ผลเดียวกัน ไม่ยิง AI ซ้ำ
+  const inflight = new Map<string, Promise<Resolved>>();
+  const resolveOnce = (occurrenceId: string, admission: AstronomyDispatchAdmissionRow): Promise<Resolved> => {
+    const key = `${occurrenceId}:${admission.userId}:${pickLocale(admission.locale)}`;
+    let pending = inflight.get(key);
+    if (!pending) {
+      pending = resolve(occurrenceId, admission).catch(() => ({ copy: null, unchanged: false }));
+      inflight.set(key, pending);
+    }
+    return pending;
+  };
+  const interpret = async (occurrenceId: string, admission: AstronomyDispatchAdmissionRow): Promise<Copy | null> =>
+    (await resolveOnce(occurrenceId, admission)).copy;
+  const suppress = async (occurrenceId: string, admission: AstronomyDispatchAdmissionRow): Promise<boolean> =>
+    (await resolveOnce(occurrenceId, admission)).unchanged;
+  return Object.assign(interpret, { suppress });
+
+  async function resolve(occurrenceId: string, admission: AstronomyDispatchAdmissionRow): Promise<Resolved> {
     const locale = pickLocale(admission.locale);
     const { pool } = deps;
+    const none: Resolved = { copy: null, unchanged: false };
     // มีแล้ว = ใช้เดิม (snapshot ต่อยามต้องเสถียร ไม่แปลซ้ำทุกครั้งที่ retry)
     try {
-      const existing = await pool.query<{ locales: Locales }>(
+      const existing = await pool.query<{ locales: StoredLocales }>(
         `SELECT locales FROM mobile_astronomy_interpretations_r8 WHERE occurrence_id=$1::uuid AND user_id=$2::uuid`,
         [occurrenceId, admission.userId],
       );
       const found = existing.rows[0]?.locales;
-      if (found && found[locale]) return { title: found[locale].title, body: found[locale].body };
+      if (found && found[locale]) return { copy: { title: found[locale].title, body: found[locale].body }, unchanged: found._unchanged === true };
     } catch {
-      return null; // ตารางยังไม่ apply / DB สะดุด — ข้อความคงที่ไปก่อน ไม่เสียค่า AI
+      return none; // ตารางยังไม่ apply / DB สะดุด — ข้อความคงที่ไปก่อน ไม่เสียค่า AI
     }
 
     // facts ของยามนี้
@@ -55,7 +78,7 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
       [occurrenceId],
     );
     const facts = occ.rows[0]?.snapshot?.facts;
-    if (!facts || typeof facts !== "object") return null;
+    if (!facts || typeof facts !== "object") return none;
 
     // user + โปรไฟล์ดวงตัวเอง (ตรรกะเดียวกับ cron รายวัน)
     const userRow = await pool.query<{ id: string; email: string; current_org_id: string | null; session_version: number | null; profile_id: string | null; profile_name: string | null }>(
@@ -70,7 +93,7 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
       [admission.userId],
     );
     const user = userRow.rows[0];
-    if (!user || !user.profile_id) return null;
+    if (!user || !user.profile_id) return none;
 
     // ดวงกำเนิดย่อจาก tianxing (ดาวจริงกำเนิด · ลัคนา · 用神)
     let natal: unknown = null;
@@ -115,6 +138,39 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
       dailyTone = null;
     }
 
+    // ── "ไม่มีอะไรเปลี่ยน = ไม่เด้ง": ไม่มีมุมจันทร์ในยามนี้ + ฉากหลัง (มุมดาวช้า) ชุดเดิมกับยามก่อนหน้า 2 ชม. ──
+    // ตัดสินจากเรขาคณิตล้วน · ไม่ข้ามสองยามติดกัน (กันเงียบยาวจนดูเหมือนระบบพัง) · ยามแรกของวันส่งเสมอ (ยามก่อนเป็นช่วงเงียบ ไม่มีคำอ่าน)
+    let signature = "";
+    if (deps.hits && Array.isArray((natal as { bodies?: unknown[] }).bodies) && (natal as { bodies: unknown[] }).bodies.length > 0) {
+      try {
+        const hits = deps.hits(facts, natal);
+        const fastCount = hits.filter((h) => h.pace === "fast_this_period").length;
+        signature = hits.filter((h) => h.pace !== "fast_this_period").map((h) => `${h.transit}>${h.natal}:${h.aspect}`).sort().join("|");
+        if (fastCount === 0 && signature) {
+          const before = await pool.query<{ locales: StoredLocales }>(
+            `SELECT i.locales FROM mobile_astronomy_interpretations_r8 i
+               JOIN mobile_science_notification_occurrences prev ON prev.id=i.occurrence_id
+               JOIN mobile_science_notification_occurrences cur ON cur.id=$2::uuid AND cur.chain_id=prev.chain_id
+              WHERE i.user_id=$1::uuid AND prev.scheduled_for = cur.scheduled_for - interval '2 hours'`,
+            [admission.userId, occurrenceId],
+          );
+          const prior = before.rows[0]?.locales;
+          if (prior && prior._sig === signature && prior._unchanged !== true && prior.th && prior.en && prior.zh) {
+            const carried: StoredLocales = { th: prior.th, en: prior.en, zh: prior.zh, _sig: signature, _unchanged: true };
+            await pool.query(
+              `INSERT INTO mobile_astronomy_interpretations_r8 (occurrence_id, user_id, locales, model, facts_digest)
+               VALUES ($1::uuid, $2::uuid, $3::jsonb, 'carried-unchanged', repeat('0',64))
+               ON CONFLICT (occurrence_id) DO NOTHING`,
+              [occurrenceId, admission.userId, JSON.stringify(carried)],
+            );
+            return { copy: { title: prior[locale].title, body: prior[locale].body }, unchanged: true };
+          }
+        }
+      } catch {
+        signature = "";
+      }
+    }
+
     // ยามก่อนหน้าในวันเดียวกัน (กันซ้ำ): หัวข้อ + คำแนะนำหลัก th ของคำอ่านล่าสุดของ user ภายใน 6 ชั่วโมง
     let previousPeriod: unknown = null;
     try {
@@ -134,19 +190,19 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
     try {
       generated = await deps.generate({ facts, natal, dailyTone, previousPeriod, profileName: user.profile_name || "" });
     } catch {
-      return null;
+      return none;
     }
     try {
       await pool.query(
         `INSERT INTO mobile_astronomy_interpretations_r8 (occurrence_id, user_id, locales, model, facts_digest)
          VALUES ($1::uuid, $2::uuid, $3::jsonb, $4, $5)
          ON CONFLICT (occurrence_id) DO NOTHING`,
-        [occurrenceId, admission.userId, JSON.stringify(generated.locales), generated.model, generated.factsDigest],
+        [occurrenceId, admission.userId, JSON.stringify(signature ? { ...generated.locales, _sig: signature } : generated.locales), generated.model, generated.factsDigest],
       );
     } catch {
       /* เก็บไม่ได้ก็ยังส่งข้อความตีความได้ในรอบนี้ */
     }
     const entry = generated.locales[locale];
-    return entry ? { title: entry.title, body: entry.body } : null;
-  };
+    return { copy: entry ? { title: entry.title, body: entry.body } : null, unchanged: false };
+  }
 }

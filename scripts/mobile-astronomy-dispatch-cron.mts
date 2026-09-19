@@ -44,15 +44,18 @@ function buildInterpret() {
   const fortuneCron = require("./mobile-daily-fortune-push-cron.cjs") as { signSession: (u: never) => string };
   const interpretLib = require("../src/lib/mobile-astronomy-interpret-r8.cjs") as {
     generateAstronomyInterpretation: (input: unknown) => Promise<never>;
+    transitHits: (facts: unknown, natal: unknown) => never;
   };
   return createAstronomyInterpretDep({
     pool,
     base: process.env.PUSH_INTERNAL_BASE || "http://127.0.0.1:3350",
     signSession: (user) => fortuneCron.signSession(user as never),
     generate: (input) => interpretLib.generateAstronomyInterpretation(input),
+    hits: (facts, natal) => interpretLib.transitHits(facts, natal),
   });
 }
 
+const interpretDep = buildInterpret();
 try {
   const ticket = await getFcmDispatchTicket();
   const projectId = ticket?.projectId || "";
@@ -62,7 +65,8 @@ try {
     projectId,
     transport: createAstronomyFcmTransport(getFcmDispatchTicket),
     preflight: async () => (await getFcmDispatchTicket()) !== null,
-    interpret: buildInterpret(),
+    interpret: interpretDep,
+    suppress: interpretDep?.suppress,
   }, { limit: Number.isInteger(limit) && limit > 0 ? limit : 50 });
   console.log(`[astronomy-dispatch] scanned=${report.scanned} dispatched=${report.dispatched} not_admitted=${report.notAdmitted} skipped=${report.skipped} stopped=${report.stopped} recovered=${report.recovered} failures=${report.failures} interpret=${interpretEnabled ? "on" : "off"}`);
 } finally {

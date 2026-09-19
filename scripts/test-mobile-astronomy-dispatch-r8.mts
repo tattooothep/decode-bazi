@@ -140,6 +140,18 @@ if (!process.argv.includes("--run-isolated")) {
     }) as object, interpret: async () => { throw new Error("ai down"); } } as never, occI2);
     check(rI2.status === "accepted", "interpret failure never blocks dispatch");
 
+    // 4c) "ไม่มีอะไรเปลี่ยน = ไม่เด้ง": suppress=true → ข้ามก่อนแตะ ledger ไม่มีการเรียกผู้ให้บริการ · suppress พัง → ส่งตามปกติ
+    const occS1 = await makeOccurrence();
+    const ledgersBeforeSuppress = (await pool.query("SELECT count(*)::int AS n FROM mobile_astronomy_delivery_ledgers_r8")).rows[0].n;
+    let suppressedCalls = 0;
+    const rS1 = await dispatchAstronomyOccurrenceOnce({ ...deps(async () => { suppressedCalls += 1; return accepted(projectId); }) as object,
+      suppress: async () => true } as never, occS1);
+    check(rS1.status === "skipped" && rS1.reason === "unchanged_period" && suppressedCalls === 0, "an unchanged period is skipped with no provider call");
+    check((await pool.query("SELECT count(*)::int AS n FROM mobile_astronomy_delivery_ledgers_r8")).rows[0].n === ledgersBeforeSuppress, "a suppressed period leaves no ledger row behind");
+    const rS2 = await dispatchAstronomyOccurrenceOnce({ ...deps(async () => accepted(projectId)) as object,
+      suppress: async () => { throw new Error("db down"); } } as never, occS1);
+    check(rS2.status === "accepted", "a failing suppress check never blocks delivery");
+
     // 5) Transport failure → unknown, never resent even with a healthy transport.
     const occ3 = await makeOccurrence();
     const r5 = await dispatchAstronomyOccurrenceOnce(deps(async () => { calls += 1; throw new Error("socket reset"); }), occ3);
