@@ -32,12 +32,12 @@ const entry = (tag: string) => tag === "th" ? {
   meaning: "บนฟ้าจันทร์อยู่ราศีธนู ทับอาทิตย์กำเนิดของคุณ แปลว่าใจนิ่ง คิดชัด",
   doList: ["คุยงานละเอียด"], avoidList: ["ตัดสินใจเรื่องเงินก้อน"],
 } : tag === "zh" ? {
-  title: "月亮合本命太陽", body: "此刻情緒平穩，適合細談工作",
-  meaning: "天上的月亮在射手座，與你本命太陽相合，代表心境安定、思路清晰",
+  title: "此刻適合細談工作", body: "此刻情緒平穩，適合細談工作",
+  meaning: "天上的月亮在射手座，與你命盤裡的太陽相合，代表心境安定、思路清晰",
   doList: ["細談工作"], avoidList: ["決定大筆金錢"],
 } : {
-  title: "Moon on your natal Sun", body: "A calm, steady mood; good for detailed work talks",
-  meaning: "The Moon sits in Sagittarius on your natal Sun, which reads as a settled mind and clear thinking",
+  title: "Good two hours for detailed work talks", body: "A calm, steady mood; good for detailed work talks",
+  meaning: "The Moon sits in Sagittarius on the Sun in your chart, which reads as a settled mind and clear thinking",
   doList: ["Talk through detailed work"], avoidList: ["Big money decisions"],
 };
 const good = { th: entry("th"), en: entry("en"), zh: entry("zh") };
@@ -52,7 +52,7 @@ for (const bad of [
 ]) check(lib.validateInterpretation(bad) === null, "broken interpretation rejected");
 
 const gen = await lib.generateAstronomyInterpretation({ facts, natal, dailyTone: null, profileName: "x" }, { invoke: async () => JSON.stringify(good), model: "mock" });
-check(gen.locales.th.title.includes("จันทร์") && gen.locales.zh.title.includes("月亮") && /^[a-f0-9]{64}$/.test(gen.factsDigest) && gen.model === "mock", "generate returns validated locales + digest");
+check(gen.locales.th.title.includes("จันทร์") && gen.locales.zh.meaning.includes("月亮") && /^[a-f0-9]{64}$/.test(gen.factsDigest) && gen.model === "mock", "generate returns validated locales + digest");
 await assert.rejects(() => lib.generateAstronomyInterpretation({ facts, natal }, { invoke: async () => "ไม่ใช่ json" }), /astronomy_interpretation_invalid/); checks += 1;
 
 // รอบตรวจ 18 ก.ย.: zh/en ห้ามไทย · อักขระควบคุมถูกยุบ · คำต้องห้าม · งบเวลารวม · ตาราง SKY มีชื่อจีน · clamp 29.9 · เรียง orb
@@ -63,10 +63,36 @@ check(ctl !== null && ctl.th.body === "บรรทัดหนึ่ง บร�
 check(lib.validateInterpretation({ ...good, th: { ...good.th, body: "ยามนี้ฤกษ์ดีมาก" } }) === null, "hourly-election verdict word rejected");
 check(lib.validateInterpretation({ ...good, zh: { ...good.zh, meaning: "今天是吉時" } }) === null, "zh election word rejected");
 await assert.rejects(() => lib.generateAstronomyInterpretation({ facts, natal }, { invoke: () => new Promise(() => {}), totalTimeoutMs: 50 }), /astronomy_interpretation_timeout/); checks += 1;
-check(prompt.includes("射手") && prompt.includes("月亮") && prompt.includes("ห้ามมีอักษรไทย"), "prompt carries zh names and the no-Thai rule");
+check(prompt.includes("射手") && prompt.includes("月亮") && prompt.includes("ห้ามอักษรไทย"), "prompt carries zh names and the no-Thai rule");
 check(lib.signOf(29.99).deg === 29.9 && lib.signOf(29.99).th === "เมษ" && lib.signOf(30).deg === 0, "degree within sign is clamped below 30");
 const manyNatal = { bodies: Array.from({ length: 15 }, (_, i) => ({ key: `N${i}`, lon: 175.4 + (i === 14 ? 0 : 2.9) })) };
 const capped = lib.transitHits(facts, manyNatal);
-check(capped.length === 12 && capped[0].orb === 0, "cap keeps the tightest aspects first");
+const slowOnly = capped.filter((h: { pace: string }) => h.pace === "slow_background");
+check(capped.length === 12 && slowOnly[0].orb === 0, "cap keeps the tightest slow aspects first");
+
+// ผลตรวจ 5 ผู้ตรวจ 19 ก.ย.: จันทร์นำ · ทิศจร→กำเนิดชัด · จุดคำนวณเฉพาะมุมทับ · จื่อชี่ไม่เทียบ · ราศีดวงกำเนิดเป็นสายัน · ศัพท์รั่วตีตก · เขียนใหม่ 1 รอบ
+const mixed = lib.transitHits(facts, { bodies: [
+  { key: "Sun", lon: 264.0 }, { key: "Mars", lon: 55.4 }, { key: "Rahu", lon: 295.4 }, { key: "Yuebo", lon: 2.5 }, { key: "Ziqi", lon: 175.4 },
+] });
+check(mixed[0].transit === "Moon" && mixed[0].pace === "fast_this_period" && mixed[0].direction.startsWith("Moon บนฟ้าตอนนี้ → Sun ในดวง"), "moon hits lead and carry an explicit transit→natal direction");
+check(mixed.some((h: { transit: string; natal: string; quality: string; pace: string }) => h.transit === "Sun" && h.natal === "Mars" && h.quality === "flowing" && h.pace === "slow_background"), "slow trine is tagged flowing + background with a duration");
+check(!mixed.some((h: { natal: string; aspect: string }) => h.natal === "Rahu" && !h.aspect.startsWith("ทับ")), "calculated natal points only count conjunctions (Sun trine Rahu is dropped)");
+check(mixed.some((h: { transit: string; natal: string }) => h.transit === "Saturn" && h.natal === "Yuebo"), "a conjunction to a calculated point is kept");
+check(!mixed.some((h: { natal: string }) => h.natal === "Ziqi"), "the experimental Ziqi body is never used as a natal target");
+const np = lib.natalForPrompt({ bodies: [{ key: "Mars", lon: 334.6, signTh: "กุมภ์" }], keyPlanet: { key: "Mars", statusTh: "ปานกลาง" } });
+check(np.bodies[0].sign.startsWith("มีน/Pisces") && !JSON.stringify(np).includes("กุมภ์"), "natal signs are tropical like the sky table, never the sidereal engine label");
+check(np.keyPlanet.callIt.th === "ดาวหลักของคุณ" && np.keyPlanet.strength === "ปานกลาง", "key planet is sent with one fixed name and its real strength");
+for (const leak of ["ศุกร์ทำมุม 120 องศากับอังคาร", "เสาร์ทับเยว่ป๋อ", "อังคารดาวโชคของคุณ"]) {
+  check(lib.validateInterpretation({ ...good, th: { ...good.th, meaning: leak } }) === null, `leaked jargon or overclaim rejected: ${leak}`);
+}
+check(lib.validateInterpretation({ ...good, en: { ...good.en, body: "Venus trines your natal Mars" } }) === null, "english jargon rejected");
+let calls = 0;
+const retried = await lib.generateAstronomyInterpretation({ facts, natal }, { model: "mock", invoke: async (text: string) => {
+  calls += 1;
+  return calls === 1 ? JSON.stringify({ ...good, th: { ...good.th, body: "เสาร์ถอยหลัง 12 องศา" } }) : (check(text.includes("เขียนใหม่ทั้งก้อน"), "second attempt tells the model it failed the gate"), JSON.stringify(good));
+} });
+check(calls === 2 && retried.locales.th.title === good.th.title, "one rewrite is attempted when the first answer fails the gate");
+const p2 = lib.buildInterpretPrompt({ facts, natal, dailyTone: null, previousPeriod: { title: "คุยเรื่องใจได้ลื่น" }, profileName: "x" });
+check(p2.includes("PREVIOUS_PERIOD") && p2.includes("คุยเรื่องใจได้ลื่น") && p2.includes("fast_this_period") && p2.includes('"keyPlanet":null'), "prompt carries the previous period and pace rules (no key planet when none supplied)");
 
 console.log(`PASS astronomy-interpret-r8: ${checks} checks (mock only; no AI, no DB).`);

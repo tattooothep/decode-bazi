@@ -21,7 +21,7 @@ export type InterpretRuntimeDeps = Readonly<{
   /** สร้าง JWT ของ user แบบเดียวกับ cron รายวัน (signSession) */
   signSession: (user: { id: string; email: string; current_org_id: string | null; session_version: number | null }) => string;
   /** ตัวสร้างคำตีความ (ฉีดได้เพื่อเทส) */
-  generate: (input: { facts: unknown; natal: unknown; dailyTone: unknown; profileName: string }) => Promise<{ locales: Locales; model: string; factsDigest: string }>;
+  generate: (input: { facts: unknown; natal: unknown; dailyTone: unknown; previousPeriod?: unknown; profileName: string }) => Promise<{ locales: Locales; model: string; factsDigest: string }>;
   fetchImpl?: typeof fetch;
 }>;
 
@@ -87,15 +87,13 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
         natal = {
           bodies: stars
             .filter((s: { key?: unknown; lonTrop?: unknown }) => typeof s?.key === "string" && Number.isFinite(Number(s?.lonTrop)))
-            .map((s: { key: string; lonTrop: number; retro?: boolean; signTh?: string; statusTh?: string; th?: string }) => ({
-              key: s.key, th: s.th, lon: Math.round(Number(s.lonTrop) * 10) / 10, signTh: s.signTh, retro: s.retro === true, statusTh: s.statusTh,
+            .map((s: { key: string; lonTrop: number; th?: string }) => ({
+              // ไม่ส่ง signTh ของ engine (นิรายนะ) — ตัว prompt คิดราศีสายันจาก lon เองให้ตรงระบบเดียวกับตารางฟ้า
+              key: s.key, th: s.th, lon: Math.round(Number(s.lonTrop) * 10) / 10,
             })),
-          ascendant: reading.ascendant ? { signTh: reading.ascendant.signTh, lon: reading.ascendant.lonTrop } : null,
-          yongshen: reading.yongshen ? { key: reading.yongshen.key, th: reading.yongshen.th, statusTh: reading.yongshen.statusTh } : null,
-          helpfulStars: Array.isArray(reading.en_stars) ? reading.en_stars.map((s: { key: string }) => s.key) : [],
-          harmfulStars: Array.isArray(reading.nan_stars) ? reading.nan_stars.map((s: { key: string }) => s.key) : [],
-          level: reading.level ?? null,
-          verdictTh: reading.verdictTh?.th ?? null,
+          // 七政 ใช้บอกแค่ "ดาวไหนคือดาวหลักของดวง" — ขั้วดี/ร้ายตัดสินด้วยมุมแบบตะวันตกอย่างเดียว (ผลตรวจ 19 ก.ย.:
+          // ส่งป้าย 恩/難 ไปด้วยทำให้สองตำราขัดกัน เช่น ศุกร์เป็น 仇星 ของดาวหลักแต่คำอ่านบอกว่า "หนุน")
+          keyPlanet: reading.yongshen ? { key: reading.yongshen.key, statusTh: reading.yongshen.statusTh } : null,
         };
       }
     } catch {
@@ -117,9 +115,24 @@ export function createAstronomyInterpretDep(deps: InterpretRuntimeDeps) {
       dailyTone = null;
     }
 
+    // ยามก่อนหน้าในวันเดียวกัน (กันซ้ำ): หัวข้อ + คำแนะนำหลัก th ของคำอ่านล่าสุดของ user ภายใน 6 ชั่วโมง
+    let previousPeriod: unknown = null;
+    try {
+      const prev = await pool.query<{ locales: Locales }>(
+        `SELECT i.locales FROM mobile_astronomy_interpretations_r8 i
+          WHERE i.user_id=$1::uuid AND i.occurrence_id<>$2::uuid AND i.created_at > now() - interval '6 hours'
+          ORDER BY i.created_at DESC LIMIT 1`,
+        [admission.userId, occurrenceId],
+      );
+      const th = prev.rows[0]?.locales?.th;
+      if (th) previousPeriod = { title: th.title, body: th.body, doList: th.doList, avoidList: th.avoidList };
+    } catch {
+      previousPeriod = null;
+    }
+
     let generated: { locales: Locales; model: string; factsDigest: string };
     try {
-      generated = await deps.generate({ facts, natal, dailyTone, profileName: user.profile_name || "" });
+      generated = await deps.generate({ facts, natal, dailyTone, previousPeriod, profileName: user.profile_name || "" });
     } catch {
       return null;
     }

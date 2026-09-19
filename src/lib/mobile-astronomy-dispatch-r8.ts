@@ -75,7 +75,7 @@ export type AstronomyDispatchDeps = Readonly<{
   interpret?: (occurrenceId: string, admission: AstronomyDispatchAdmissionRow) => Promise<Readonly<{ title: string; body: string }> | null>;
 }>;
 
-const INTERPRET_TIMEOUT_MS = 170_000;
+const INTERPRET_TIMEOUT_MS = 230_000;
 
 export type AstronomyDispatchResult = Readonly<{
   status: "not_admitted" | "skipped" | "accepted" | "not_accepted" | "unknown" | "stopped";
